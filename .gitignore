@@ -1,0 +1,52 @@
+# ---------- Segredos e configuração local ----------
+.env
+.env.*
+!.env.example
+*.key
+license.key
+# Chaves privadas de assinatura (public.pem pode ser distribuída; private.pem NUNCA)
+private.pem
+*_private.pem
+*.private.pem
+
+# ---------- Python / Django ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+# Ambientes virtuais
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+# Base de dados local
+*.sqlite3
+db.sqlite3
+# Ficheiros de media carregados
+media/
+# Staticfiles recolhidos
+staticfiles/
+
+# ---------- Node / Frontend ----------
+node_modules/
+frontend/node_modules/
+frontend_pcc/node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# ---------- Editores / SO ----------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# ---------- Testes / coverage ----------
+.coverage
+htmlcov/
+.pytest_cache/

@@ -1,0 +1,81 @@
+import React, { useState, useEffect } from 'react';
+import type { Supplier } from '../../api/mdm';
+import { Save, XCircle } from 'lucide-react';
+
+interface SupplierFormProps {
+  initialData?: Supplier | null;
+  onSubmit: (data: Partial<Supplier>) => void;
+  onCancel: () => void;
+  isLoading?: boolean;
+}
+
+export default function SupplierForm({ initialData, onSubmit, onCancel, isLoading }: SupplierFormProps) {
+  const [formData, setFormData] = useState<Partial<Supplier>>({
+    name: '',
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-[#f0f0f0]">
+      <div className="flex-1 p-4 overflow-y-auto">
+        <div className="bg-white p-4 border border-[#d0d0d0] shadow-sm mb-4">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-4">
+            
+            <div className="space-y-4">
+              <div className="flex flex-col">
+                <label className="text-[11px] font-semibold text-[#333] mb-1">Nome do Fornecedor *</label>
+                <input 
+                  type="text" 
+                  name="name"
+                  value={formData.name || ''}
+                  onChange={handleChange}
+                  className="border border-[#a0a0a0] px-2 py-1 text-[11px] focus:outline-none focus:border-blue-500 bg-white"
+                  placeholder="Ex: Bebidas de Portugal S.A."
+                  required
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* Footer / Toolbar */}
+      <div className="h-12 bg-[#e8e8e8] border-t border-[#d0d0d0] flex items-center justify-between px-4">
+        <div className="flex items-center space-x-2"></div>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="flex items-center space-x-1.5 px-4 py-1.5 bg-white border border-[#a0a0a0] hover:bg-[#e0e0e0] text-[11px] font-medium disabled:opacity-50"
+          >
+            <Save size={14} className="text-blue-600" />
+            <span>{isLoading ? 'A gravar...' : 'Gravar'}</span>
+          </button>
+          <button 
+            onClick={onCancel}
+            className="flex items-center space-x-1.5 px-4 py-1.5 bg-white border border-[#a0a0a0] hover:bg-[#e0e0e0] text-[11px] font-medium"
+          >
+            <XCircle size={14} className="text-red-600" />
+            <span>Cancelar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
