@@ -9,8 +9,6 @@ import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
 
 // Ícones de estado (SVG estilo Windows — não emoji).
-const svgUser = (<svg width="14" height="14" viewBox="0 0 24 24" fill="#dbe8ff"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" /></svg>);
-const svgBuilding = (<svg width="14" height="14" viewBox="0 0 24 24" fill="#dbe8ff"><path d="M4 21V4h9v6h7v11z" /><g fill="#1e3f66"><rect x="6" y="7" width="2" height="2" /><rect x="9" y="7" width="2" height="2" /><rect x="6" y="11" width="2" height="2" /><rect x="9" y="11" width="2" height="2" /><rect x="15" y="13" width="2" height="2" /><rect x="6" y="15" width="2" height="2" /><rect x="9" y="15" width="2" height="2" /><rect x="15" y="17" width="2" height="2" /></g></svg>);
 
 // Fundo temático de hotel (SVG — funciona offline; sobreposto pela cor do módulo).
 function HotelBackdrop({ tint }: { tint: string }) {
@@ -45,7 +43,6 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   const nav = useNavigate();
   const { data: lic } = useActiveModules();
   const user = tokenStore.getUser();
-  const company = getAppearance('companyName') || 'System Mwana Lodge';
   const erpName = getAppearance('erpName') || 'System Mwana Lodge';
   const customBg = getAppearance('wallpaper') || getAppearance('loginBg');
 
@@ -76,23 +73,38 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   const logout = async () => { await authApi.logout(); nav('/backoffice/login'); };
   const closeAll = () => { setModMenu(false); setTopMenu(null); setStart(false); };
 
-  // Dropdowns REAIS da barra de cima.
-  const quick = ws.icons.filter((i) => i.quick);
+  const quick = ws.icons.filter((i) => i.quick);   // atalhos do ambiente de trabalho
+
+  // Dropdowns REAIS da barra de cima — OS MESMOS DO POS (F&B, Marketing, Reporting,
+  // Utilitários). Antes eram outros (Favoritos/Recentes/Relatórios/Ferramentas): o
+  // sistema tinha dois vocabulários para as mesmas coisas, e quem aprendia um não
+  // reconhecia o outro.
   const MENUS: Record<string, { label: string; screen?: string; act?: () => void }[]> = {
-    Favoritos: quick.filter((i) => !i.launch).map((i) => ({ label: i.label, screen: i.screen })),
-    Recentes: recent.length ? recent.map((r) => ({ label: r.label, screen: r.screen })) : [{ label: '(sem recentes)' }],
-    Relatórios: [
-      { label: 'Relatórios do módulo', screen: ws.key === 'pms' ? 'rep_hotel' : ws.key === 'restauracao' ? 'rep_fnb' : 'rep_pos' },
-      { label: 'Dashboard de Gestão', screen: 'rep_admin' },
-      { label: 'Document Center', screen: 'doc_center' },
-      { label: 'Contabilidade', screen: 'acc_dashboard' },
+    'F&B': [
+      { label: 'Compras', screen: 'proc_po' },
+      { label: 'Documentos Internos', screen: 'doc_center' },
+      { label: 'Inventário', screen: 'wh_inventory' },
+      { label: 'Existências Stock', screen: 'wh_stock' },
+      { label: 'Contas a pagar', screen: 'fin_ledger' },
+      { label: 'Artigos', screen: 'posc_config' },
     ],
-    Ferramentas: [
-      { label: 'Personalização (aparência)', screen: 'adm_appearance' },
-      { label: 'Acessos por Perfil', screen: 'sec_access' },
-      { label: 'Certificação AGT', screen: 'fis_certification' },
-      { label: 'Suporte / Diagnóstico', screen: 'sys_diagnostics' },
-      { label: 'Backoffice clássico', act: () => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); } },
+    Marketing: [
+      { label: 'Promoções', screen: 'com_promotions' },
+      { label: 'Campanhas', screen: 'com_campaigns' },
+      { label: 'Fidelização', screen: 'com_loyalty' },
+    ],
+    Reporting: [
+      { label: 'Relatórios', screen: ws.key === 'pms' ? 'rep_hotel' : ws.key === 'restauracao' ? 'rep_fnb' : 'rep_pos' },
+      { label: 'Informação Online', screen: 'ops_dashboard' },
+      { label: 'Pesquisar Documentos', screen: 'doc_center' },
+    ],
+    Utilitários: [
+      { label: 'POS Front Office', act: () => window.open('/pos/terminal', '_blank', 'noopener') },
+      { label: 'Fecho do Dia', screen: 'pms_nightaudit' },
+      { label: 'Contas Correntes', screen: 'fin_cash' },
+      { label: 'SAFT-AO', screen: 'fis_saft' },
+      { label: 'Configuração POS', screen: 'posc_config' },
+      { label: 'Diagnóstico', screen: 'sys_diagnostics' },
       { label: 'Terminar sessão', act: logout },
     ],
   };
@@ -106,18 +118,24 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       {!customBg && <HotelBackdrop tint={ws.color} />}
 
       {/* ===== BARRA SUPERIOR ===== */}
-      <div className="h-[46px] flex items-center px-2 gap-1 flex-shrink-0 relative z-[100]"
-        style={{
-          background: `linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 8%, rgba(0,0,0,0.28) 100%), linear-gradient(to bottom, ${ws.colorDark}, #070f18)`,
-          borderBottom: `2px solid ${ws.accent}`, boxShadow: `0 3px 14px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.18), 0 0 22px -6px ${ws.glow}`,
-        }}>
+      {/* A MESMA barra do POS: mesmo fundo, mesma altura, mesma tipografia. Ter duas
+          barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
+      <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-white"
+        style={{ background: '#2b2b2b', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
         {/* Logo 3D = seletor de módulos */}
-        <button onClick={(e) => { e.stopPropagation(); setModMenu((s) => !s); setTopMenu(null); }} className="relative flex items-center gap-2 px-3.5 h-[36px] rounded-lg overflow-hidden"
-          style={{ background: `linear-gradient(to bottom, ${ws.glow}22, rgba(0,0,0,0.25))`, border: `1px solid ${ws.accent}88`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), 0 0 12px -3px ${ws.glow}` }}>
-          <span className="absolute top-0 left-0 right-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(rgba(255,255,255,0.28), rgba(255,255,255,0))' }} />
-          <span className="w-2.5 h-2.5 rounded-full" style={{ background: `radial-gradient(circle at 30% 30%, ${ws.glow}, ${ws.color})`, boxShadow: `0 0 8px ${ws.glow}` }} />
-          <span className="text-[20px] font-black tracking-tight relative" style={{ color: '#fff', textShadow: `0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(0,0,0,0.7), 0 0 14px ${ws.glow}66` }}>{erpName}</span>
-          <span className="text-white/70 text-[10px] relative">▼</span>
+        <button onClick={(e) => { e.stopPropagation(); setModMenu((s) => !s); setTopMenu(null); }}
+          title="Trocar de módulo"
+          className={`flex items-center gap-2 px-2 py-1 pr-4 mr-2 leading-none ${modMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+          <span className="text-[30px] font-black tracking-tight select-none"
+            style={{
+              background: 'linear-gradient(180deg,#ffd75e 0%,#c9a400 55%,#8a6f00 100%)',
+              WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+              textShadow: '0 1px 0 rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.55)',
+              filter: 'drop-shadow(0 2px 1px rgba(0,0,0,.6))',
+            }}>
+            {erpName}
+          </span>
+          <span className="text-[10px] text-[#9a9a9a] pb-1">Mwana Lodge ▾</span>
         </button>
         {modMenu && (
           <div className="absolute left-2 top-[46px] min-w-[240px] bg-[#f0f0f0] border border-[#333] shadow-2xl rounded-b-md overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
@@ -136,13 +154,17 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
         {Object.keys(MENUS).map((m) => (
           <div key={m} className="relative">
             <button onClick={(e) => { e.stopPropagation(); setTopMenu((o) => (o === m ? null : m)); setModMenu(false); }}
-              className="px-2.5 h-[30px] text-white/90 text-[12px] rounded hover:bg-white/10" style={topMenu === m ? { background: 'rgba(255,255,255,0.15)' } : {}}>{m}</button>
+              onMouseEnter={() => topMenu && setTopMenu(m)}
+              className={`px-4 py-2 text-[15px] font-semibold ${topMenu === m ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+              {m} ▾
+            </button>
             {topMenu === m && (
-              <div className="absolute left-0 top-[34px] min-w-[220px] bg-[#f0f0f0] border border-[#333] shadow-2xl rounded-b-md overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
+              <div className="absolute left-0 top-full min-w-[260px] py-1 shadow-2xl z-[120]"
+                style={{ background: '#2b2b2b', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
                 {MENUS[m].map((it, i) => (
                   <button key={i} onClick={() => it.act ? (it.act(), setTopMenu(null)) : open(it.screen, it.label)}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-[#dbe8ff] text-left border-b border-[#eee] last:border-0">
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ws.accent }} />{it.label}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#c9a400]" />{it.label}
                   </button>
                 ))}
               </div>
@@ -150,20 +172,12 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           </div>
         ))}
 
-        <div className="ml-2 flex items-center gap-1 px-2 h-[28px] bg-black/25 rounded border border-white/10">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.5" y2="16.5" /></svg>
-          <input placeholder="Pesquisa global…" className="bg-transparent outline-none text-white text-[12px] w-48 placeholder:text-white/50" />
-        </div>
-
-        <div className="flex-1" />
-        <div className="flex items-center gap-2.5 text-white/90 text-[12px] pr-1">
-          <span className="flex items-center gap-1.5">{svgUser} {user?.username || 'operador'}</span>
+        <div className="ml-auto flex items-center gap-4 text-[13px]">
+          <span className="text-[#e05555] font-semibold">
+            {clock.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
+          </span>
           <span className="opacity-30">|</span>
-          <span className="flex items-center gap-1.5">{svgBuilding} {company}</span>
-          <span className="opacity-30">|</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#7CFC98]" /> Servidor</span>
-          <span className="opacity-30">|</span>
-          <span>{clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
+          <span className="font-bold">{user?.username || 'operador'}</span>
         </div>
       </div>
 
