@@ -1635,3 +1635,133 @@ class CustomFieldDef(models.Model):
 
     def __str__(self):
         return f'{self.code} · {self.name}'
+
+
+class CardType(models.Model):
+    """TIPO DE CARTÃO — como se LÊ o cartão que o cliente encosta ao leitor.
+
+    Um leitor de banda magnética devolve uma pista em bruto, assim:
+
+        ;6034567890123456?
+
+    O `;` é o START SENTINEL e o `?` o END SENTINEL — marcas que o leitor põe e que
+    não fazem parte do número. A POSIÇÃO diz que pedaço do meio é o número do cartão
+    (às vezes a pista traz mais coisas: validade, código do clube).
+
+    Sem isto, o sistema guardava a pista inteira como se fosse o número — e o mesmo
+    cartão nunca mais era reconhecido no dia seguinte.
+    """
+    TYPES = [('MAGNETIC', 'Banda magnética'), ('RFID', 'RFID / Contactless'),
+             ('BARCODE', 'Código de barras'), ('QR', 'QR Code'), ('MANUAL', 'Manual')]
+
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=80)
+    card_kind = models.CharField(max_length=10, choices=TYPES, default='MAGNETIC')
+    length = models.PositiveSmallIntegerField(default=0)      # Tamanho (0 = não valida)
+
+    # Detalhes da pista
+    start_sentinel = models.CharField(max_length=4, blank=True, null=True)
+    end_sentinel = models.CharField(max_length=4, blank=True, null=True)
+    # Posição (1-based, como o instalador conta). 0 = usar a pista toda.
+    pos_start = models.PositiveSmallIntegerField(default=0)
+    pos_end = models.PositiveSmallIntegerField(default=0)
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_card_type'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+    def read(self, raw: str):
+        """Extrai o NÚMERO do cartão a partir da pista em bruto do leitor.
+
+        Devolve (numero, erro). O erro é uma frase para mostrar ao operador — não
+        um código: quem está ao balcão precisa de saber o que fazer.
+        """
+        if not raw:
+            return None, 'Cartão vazio.'
+        s = raw.strip()
+        if self.start_sentinel:
+            i = s.find(self.start_sentinel)
+            if i < 0:
+                return None, f'Não é um cartão "{self.name}" (falta a marca inicial).'
+            s = s[i + len(self.start_sentinel):]
+        if self.end_sentinel:
+            j = s.find(self.end_sentinel)
+            if j < 0:
+                return None, f'Leitura incompleta — passe o cartão outra vez.'
+            s = s[:j]
+        if self.pos_start or self.pos_end:
+            ini = max(0, (self.pos_start or 1) - 1)
+            fim = self.pos_end or len(s)
+            s = s[ini:fim]
+        s = s.strip()
+        if self.length and len(s) != self.length:
+            return None, f'O cartão devia ter {self.length} dígitos e tem {len(s)}.'
+        return s or None, None if s else 'Cartão ilegível.'
+
+
+class MemberCard(models.Model):
+    """CARTÃO DE MEMBRO — o cartão do sócio, do all-inclusive, do cliente frequente.
+
+    Um cartão pode fazer quatro coisas diferentes, e é preciso dizer QUAIS:
+      · CRÉDITO  — o cartão tem saldo e paga (pré-pago, all-inclusive);
+      · DÉBITO   — vai acumulando dívida para pagar no fim (conta corrente);
+      · PONTOS   — acumula pontos por consumo (fidelização);
+      · DESCONTO — dá desconto nos artigos da lista abaixo.
+
+    Sem estas quatro caixas, "cartão" era só uma etiqueta. Com elas, o POS sabe o
+    que fazer quando o cliente o encosta ao leitor.
+
+    O HAPPY HOUR ligado ao cartão é o que faz o all-inclusive: entre as 10h e as
+    18h, os artigos incluídos ficam a zero — mas só para quem tem o cartão.
+    """
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=80)
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    notes = models.CharField(max_length=200, blank=True, null=True)
+
+    has_credit = models.BooleanField(default=False)
+    has_debit = models.BooleanField(default=False)
+    has_points = models.BooleanField(default=False)
+    has_discount = models.BooleanField(default=False)
+
+    # Pacotes: os artigos que o cartão INCLUI (all-inclusive).
+    packages = models.ManyToManyField('inventory.Item', blank=True, related_name='member_cards')
+    happy_hour = models.ForeignKey('HappyHour', on_delete=models.SET_NULL, blank=True, null=True,
+                                   related_name='member_cards')
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_member_card'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+    def discount_for(self, item):
+        """Que desconto (%) este cartão dá NESTE artigo. 0 se não der nenhum."""
+        from decimal import Decimal
+        if not (self.is_active and self.has_discount):
+            return Decimal('0')
+        d = self.discounts.filter(item=item).first()
+        if not d and item.subfamily_id:
+            d = self.discounts.filter(subfamily_id=item.subfamily_id, item__isnull=True).first()
+        return d.discount_percent if d else Decimal('0')
+
+
+class MemberCardDiscount(models.Model):
+    """Desconto do cartão num artigo ou numa sub-família inteira."""
+    card = models.ForeignKey(MemberCard, on_delete=models.CASCADE, related_name='discounts')
+    item = models.ForeignKey('inventory.Item', on_delete=models.CASCADE, blank=True, null=True,
+                             related_name='card_discounts')
+    subfamily = models.ForeignKey('inventory.ItemSubFamily', on_delete=models.CASCADE,
+                                  blank=True, null=True, related_name='card_discounts')
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'pos_member_card_discount'

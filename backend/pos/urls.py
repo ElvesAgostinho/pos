@@ -17,7 +17,8 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          PmsExternalLinkViewSet, PmsMappingView,
                          StockErpLinkViewSet, UomViewSet, HappyHourViewSet, VoidReasonViewSet,
                          PosHardwareViewSet, KdsMonitorViewSet, SmartCashViewSet,
-                         CustomerTypeViewSet, CustomFieldViewSet)
+                         CustomerTypeViewSet, CustomFieldViewSet, CardTypeViewSet,
+                         MemberCardViewSet)
 
 router = DefaultRouter()
 router.register(r'config/modules', PosModuleViewSet, basename='pos-cfg-module')
@@ -49,6 +50,8 @@ router.register(r'config/kds-monitors', KdsMonitorViewSet, basename='pos-cfg-kds
 router.register(r'config/smart-cash', SmartCashViewSet, basename='pos-cfg-smartcash')
 router.register(r'config/customer-types', CustomerTypeViewSet, basename='pos-cfg-custtype')
 router.register(r'config/custom-fields', CustomFieldViewSet, basename='pos-cfg-customfield')
+router.register(r'config/card-types', CardTypeViewSet, basename='pos-cfg-cardtype')
+router.register(r'config/member-cards', MemberCardViewSet, basename='pos-cfg-membercard')
 router.register(r'outlets', OutletViewSet, basename='pos-outlet')
 router.register(r'product-configs', POSProductConfigViewSet, basename='pos-product-config')
 router.register(r'outlet-payment-methods', OutletPaymentMethodViewSet, basename='pos-outlet-payment')

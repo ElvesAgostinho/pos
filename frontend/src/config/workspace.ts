@@ -45,19 +45,14 @@ export const WORKSPACES: Workspace[] = [
     wallpaper: wp('#a05518', '#33200e'),
     licenseModule: 'hospitality',
     icons: [
-      { label: 'Mapa de Mesas', icon: 'table', screen: 'posc_map', quick: true },
       { label: 'Cozinha (KDS)', icon: 'kitchen', screen: 'hoc_kds', quick: true },
       { label: 'Bar', icon: 'cocktail', screen: 'hoc_bar_display', quick: true },
-      { label: 'Delivery', icon: 'delivery', screen: 'posc_destinations', quick: true },
       { label: 'Menus / Cartas', icon: 'book', screen: 'hoc_menus', quick: true },
       { label: 'Stock', icon: 'box', screen: 'wh_stock', quick: true },
-      { label: 'Mesas', icon: 'table', screen: 'posc_rooms' },
-      { label: 'Outlets / Salões', icon: 'folder', screen: 'posc_outlets' },
       { label: 'Room Service', icon: 'bell', screen: 'hoc_roomservice' },
       { label: 'Receitas', icon: 'note', screen: 'hoc_recipes' },
       { label: 'Dashboard F&B', icon: 'chart', screen: 'hoc_dashboard' },
       { label: 'Relatórios', icon: 'report', screen: 'rep_fnb' },
-      { label: 'Configuração', icon: 'gear', screen: 'posc_engine' },
     ],
   },
   {
@@ -68,15 +63,8 @@ export const WORKSPACES: Workspace[] = [
     icons: [
       { label: 'Abrir Terminal POS', icon: 'terminal', launch: '/pos', quick: true },   // frontoffice em janela separada
       { label: 'Vendas', icon: 'cart', screen: 'pfo_sales', quick: true },
-      { label: 'Caixas', icon: 'cashbox', screen: 'posc_cash', quick: true },
       { label: 'Clientes', icon: 'user', screen: 'md_customers', quick: true },
-      { label: 'Produtos', icon: 'product', screen: 'posc_product', quick: true },
-      { label: 'Supervisão', icon: 'chart', screen: 'posc_dashboard', quick: true },
-      { label: 'Pagamentos', icon: 'card', screen: 'posc_payments' },
-      { label: 'Operadores', icon: 'people', screen: 'posc_operators' },
-      { label: 'Terminais', icon: 'terminal', screen: 'posc_terminals' },
       { label: 'Relatórios', icon: 'report', screen: 'rep_pos' },
-      { label: 'Configuração', icon: 'gear', screen: 'posc_engine' },
     ],
   },
 ];
@@ -156,7 +144,7 @@ export const MODULE_TREE: Record<string, TreeFolder[]> = {
   ],
 
   restauracao: [
-    { key: 'res_sala', title: 'Sala & Mesas', items: ['posc_dashboard', 'posc_map', 'posc_rooms', 'posc_outlets', 'posc_reservations', 'posc_destinations', 'ops_tables'] },
+    { key: 'res_sala', title: 'Sala & Mesas', items: ['ops_tables'] },
     { key: 'res_cozinha', title: 'Cozinha & Produção', items: ['hoc_dashboard', 'hoc_kds', 'hoc_bar_display', 'hoc_pastry_display', 'hoc_buffet_display', 'hoc_routing', 'hoc_stations', 'hoc_timing', 'ops_kitchen'] },
     { key: 'res_pontos', title: 'Restaurantes & Bares', items: ['hoc_restaurants', 'hoc_bars', 'hoc_coffee', 'hoc_poolbar', 'hoc_roomservice', 'hoc_buffets', 'hoc_events'] },
     { key: 'res_menus', title: 'Menus & Receitas', items: ['hoc_menus', 'hoc_recipes', 'hoc_ingredients'] },
@@ -169,20 +157,20 @@ export const MODULE_TREE: Record<string, TreeFolder[]> = {
     { key: 'res_contab', title: 'Contabilidade', items: F_CONTAB },
     { key: 'res_relatorios', title: 'Relatórios & Documentos', items: ['rep_fnb', 'rep_kitchen', 'rep_warehouse', 'rep_procurement', 'hoc_reports', ...F_DOCS] },
     { key: 'res_dados', title: 'Dados Base', items: ['md_uoms', 'md_conversions', 'md_taxes', 'md_suppliers', 'md_payment_methods'] },
-    { key: 'res_config', title: 'Configuração do Serviço', items: ['posc_config', 'posc_engine', 'posc_product', 'posc_printers', 'posc_layouts', 'posc_cash', 'posc_payments', 'posc_operators', 'posc_shifts', 'posc_terminals', 'posc_offline', 'posc_audit'] },
+    { key: 'res_config', title: 'Configuração do Serviço', items: ['posc_config'] },
     { key: 'res_estrutura', title: 'Estrutura', items: F_ESTRUTURA },
     { key: 'res_seguranca', title: 'Utilizadores & Segurança', items: F_SEGURANCA },
     { key: 'res_sistema', title: 'Sistema & Administração', items: F_SISTEMA },
   ],
 
   pos: [
+    // O MÓDULO POS É A CONFIGURAÇÃO POS. Os ecrãs soltos antigos (Outlets, Terminais,
+    // Operadores, Turnos, Impressoras, Product Config…) foram ELIMINADOS: tudo isso
+    // vive agora dentro da Configuração POS, num só sítio e com CRUD real.
     { key: 'pos_config', title: 'Configuração POS', items: ['posc_config'] },
-    { key: 'pos_venda', title: 'Venda & Mesas', items: ['posc_dashboard', 'posc_map', 'posc_rooms', 'posc_reservations', 'posc_destinations', 'pfo_sales', 'pfo_terminal', 'ops_sales'] },
-    { key: 'pos_caixa', title: 'Caixa & Pagamentos', items: ['posc_cash', 'posc_payments', 'fin_receipts', 'fin_payments', 'fin_cash'] },
-    { key: 'pos_produtos', title: 'Artigos & Teclado', items: ['posc_layouts', 'posc_product', 'com_pricing'] },
+    { key: 'pos_terminal', title: 'Terminal', items: ['pfo_terminal', 'pfo_sales'] },
     { key: 'pos_promo', title: 'Promoções & Fidelização', items: ['com_dashboard', 'com_promotions', 'com_happyhour', 'com_combos', 'com_menus', 'com_discounts', 'com_giftcards', 'com_vouchers', 'com_loyalty', 'com_campaigns'] },
     { key: 'pos_fiscal', title: 'Faturação & Fiscal', items: F_FISCAL },
-    { key: 'pos_terminais', title: 'Terminais & Operadores', items: ['posc_terminals', 'posc_operators', 'posc_shifts', 'posc_printers', 'posc_offline', 'posc_layouts', 'posc_engine', 'posc_audit'] },
     { key: 'pos_clientes', title: 'Clientes', items: ['md_customers'] },
     { key: 'pos_contab', title: 'Contabilidade', items: F_CONTAB },
     { key: 'pos_relatorios', title: 'Relatórios & Documentos', items: ['rep_pos', 'rep_finance', ...F_DOCS] },

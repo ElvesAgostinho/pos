@@ -15,29 +15,15 @@ import ProductionAreasView from '../components/production/ProductionAreasView';
 import PurchaseOrdersView from '../components/procurement/PurchaseOrdersView';
 import GoodsReceiptsView from '../components/procurement/GoodsReceiptsView';
 import CollaboratorsList from '../pages/backoffice/workforce/CollaboratorsList';
-import POSOperatorsView from '../pages/backoffice/workforce/POSOperatorsView';
-import ShiftsView from '../pages/backoffice/workforce/ShiftsView';
 import RolesView from '../components/views/auth/RolesView';
 import PermissionsMatrixView from '../components/views/auth/PermissionsMatrixView';
 import ContextRulesView from '../components/views/auth/ContextRulesView';
 import OutletsView from '../components/posmgmt/OutletsView';
-import POSProductConfigView from '../components/posmgmt/POSProductConfigView';
-import OutletPaymentsView from '../components/posmgmt/OutletPaymentsView';
-import CashSessionsView from '../components/posmgmt/CashSessionsView';
-import TablesView from '../components/posmgmt/TablesView';
-import DeliveryDestinationCenter from '../components/posmgmt/DeliveryDestinationCenter';
 import SalesView from '../components/posmgmt/SalesView';
 import KDSView from '../components/posmgmt/KDSView';
 import AuditView from '../components/posmgmt/AuditView';
-import PrintSpoolerView from '../components/posmgmt/PrintSpoolerView';
-import OfflineSyncView from '../components/posmgmt/OfflineSyncView';
-import OperationConfigView from '../components/pos/OperationConfigView';
-import TerminalsConfig from '../pages/backoffice/TerminalsConfig';
 import EdcInboxView from '../components/views/EdcInboxView';
-import POSReservationsView from '../components/posmgmt/POSReservationsView';
 import GiftCardsView from '../components/posmgmt/GiftCardsView';
-import TableMapView from '../components/posmgmt/TableMapView';
-import PosSupervisionView from '../components/posmgmt/PosSupervisionView';
 import AppearanceView from '../components/admin/AppearanceView';
 import FeatureFlagsView from '../components/admin/FeatureFlagsView';
 import { CompaniesView, HotelsView, DepartmentsOrgView, AreasView } from '../components/org/OrgViews';
@@ -78,7 +64,6 @@ import AgtCertificationView from '../components/fiscal/AgtCertificationView';
 import SaftCenterViewNew from '../components/fiscal/SaftCenterView';
 import ProfileAccessView from '../components/security/ProfileAccessView';
 import AllergensView from '../components/production/AllergensView';
-import PosKeyboardDesigner from '../components/posmgmt/PosKeyboardDesigner';
 // F&B Operations Center (Centro 10)
 import FnbDashboardView from '../components/production/fnb/FnbDashboardView';
 import FnbOutletsView from '../components/production/fnb/FnbOutletsView';
@@ -274,22 +259,6 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   pms_ledger: FoliosView,
 
   // 12 · POS Management Center (mais pequeno)
-  posc_outlets: OutletsView,
-  posc_rooms: TablesView,
-  posc_destinations: DeliveryDestinationCenter,
-  posc_dashboard: PosSupervisionView,
-  posc_map: TableMapView,
-  posc_reservations: POSReservationsView,
-  posc_terminals: TerminalsConfig,
-  posc_product: POSProductConfigView,
-  posc_payments: OutletPaymentsView,
-  posc_cash: CashSessionsView,
-  posc_operators: POSOperatorsView,
-  posc_shifts: ShiftsView,
-  posc_printers: PrintSpoolerView,
-  posc_offline: OfflineSyncView,
-  posc_engine: OperationConfigView,
-  posc_audit: AuditView,
 
   // 13 · POS FrontOffice (interface de venda; terminal tátil em /pos/terminal)
   pfo_sales: SalesView,
@@ -407,7 +376,6 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   // --- Últimos casos de fronteira ---
   md_families: CategoriesView,        // famílias de artigos = agrupamento de categorias
   md_doctypes: FiscalSeriesView,      // tipos de documento vivem no centro fiscal
-  posc_layouts: PosKeyboardDesigner,  // designer do teclado táctil do POS
   hoc_allergens: AllergensView,       // alergénios (catálogo + atribuição a artigos)
   pfo_terminal: PosTerminalLauncher,  // lançador do terminal tátil
 
@@ -597,25 +565,11 @@ export const MODULES: NavModule[] = [
     ],
   },
   {
-    key: 'posmgmt', title: '12 · POS Management Center', items: [
+    // O MÓDULO POS é a CONFIGURAÇÃO POS. Os antigos ecrãs soltos (Outlets, Terminais,
+    // Operadores, Turnos, Impressoras, Product Config, Configuração Operacional…) foram
+    // ELIMINADOS: tudo isso vive agora dentro deste ecrã, num só sítio, com CRUD real.
+    key: 'posmgmt', title: '12 · POS', items: [
       { id: 'posc_config', name: 'Configuração POS' },
-      { id: 'posc_dashboard', name: 'Dashboard' },
-      { id: 'posc_outlets', name: 'Outlets' },
-      { id: 'posc_rooms', name: 'Salas & Mesas' },
-      { id: 'posc_map', name: 'Mapa de Mesas' },
-      { id: 'posc_destinations', name: 'Destinos de Serviço (Delivery)' },
-      { id: 'posc_reservations', name: 'Reservas de Mesa' },
-      { id: 'posc_layouts', name: 'Layouts & Keyboard Designer' },
-      { id: 'posc_product', name: 'POS Product Config' },
-      { id: 'posc_payments', name: 'Métodos de Pagamento' },
-      { id: 'posc_cash', name: 'Caixas & Sessões' },
-      { id: 'posc_terminals', name: 'Terminais' },
-      { id: 'posc_operators', name: 'Operadores' },
-      { id: 'posc_shifts', name: 'Turnos' },
-      { id: 'posc_printers', name: 'Impressoras / Printer Routing' },
-      { id: 'posc_offline', name: 'Sincronização Offline' },
-      { id: 'posc_engine', name: 'Configuração Operacional' },
-      { id: 'posc_audit', name: 'Auditoria' },
     ],
   },
   {
@@ -782,8 +736,6 @@ export const suiteIncludes = (suiteKey: string, moduleKey: string): boolean => {
 // Licenciamento por FUNCIONALIDADE: ecrã (id) -> chave de feature. Um ecrã só aparece
 // se a feature estiver ativa (licença + override do admin). Espelha core/modules.FEATURES.
 export const FEATURE_OF: Record<string, string> = {
-  posc_destinations: 'pos.delivery', posc_reservations: 'pos.table_reservations',
-  posc_giftcards: 'pos.giftcards', posc_kds: 'pos.kds',
   com_loyalty: 'commercial.loyalty', com_menus: 'commercial.combos',
   fis_commercial: 'fiscal.commercial_docs',
   pms_spa: 'pms.spa', pms_minibar: 'pms.minibar', pms_laundry: 'pms.laundry',
@@ -802,12 +754,6 @@ export function featureAllowed(itemId: string, activeFeatures: string[] | null):
 // Módulos sem entrada aqui mostram os itens como botões diretos.
 export interface MenuGroup { label: string; items: string[]; }
 export const MODULE_MENUS: Record<string, MenuGroup[]> = {
-  posmgmt: [
-    { label: 'Sala', items: ['posc_outlets', 'posc_rooms', 'posc_map', 'posc_reservations'] },
-    { label: 'Venda', items: ['posc_product', 'posc_payments', 'posc_cash'] },
-    { label: 'Configuração', items: ['posc_terminals', 'posc_operators', 'posc_shifts', 'posc_printers', 'posc_offline', 'posc_engine'] },
-    { label: 'Painel', items: ['posc_dashboard', 'posc_audit'] },
-  ],
   pms: [
     { label: 'Reservas', items: ['pms_reservations', 'pms_checkin'] },
     { label: 'Alojamento', items: ['pms_rooms', 'pms_housekeeping'] },

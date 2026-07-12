@@ -31,6 +31,8 @@ import UomEditor from './UomEditor';
 import HappyHourEditor from './HappyHourEditor';
 import PrinterSection from './PrinterSection';
 import KdsMonitorEditor from './KdsMonitorEditor';
+import CardTypeEditor from './CardTypeEditor';
+import MemberCardEditor from './MemberCardEditor';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
 
 /**
@@ -63,7 +65,7 @@ const MENUS: any[] = [
       { icon: '🖥', label: 'POS Front Office', url: '/pos/terminal' },
       { sep: true },
       { icon: '🌙', label: 'Fecho do Dia', view: 'pms_nightaudit' },
-      { icon: '💰', label: 'Contas Correntes', view: 'posc_cash' },
+      { icon: '💰', label: 'Contas Correntes', view: 'fin_cash' },
       { icon: '🧾', label: 'SAFT-AO', view: 'fis_saft' },
       { icon: '🔧', label: 'Configuração POS', section: 'articles' },
       { sep: true },
@@ -142,9 +144,6 @@ export default function PosConfigView({ onDesktop, onOpen }: {
     onError: notifyError,
   });
 
-
-  // MENUS DO TOPO — cada opção abre um ecrã real do sistema. As que ficam dentro
-  // desta janela mudam de secção; as outras saem para o ecrã do módulo respetivo.
   const rows: any[] = articles;
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
   const view = rows.slice((page - 1) * pageSize, page * pageSize);
@@ -762,6 +761,30 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'show_in_search', label: 'Mostrar no resultado da pesquisa', type: 'checkbox' },
                 { key: 'is_active', label: 'Ativo', type: 'checkbox' },
               ]} />
+          ) : section === 'c_types' ? (
+            <SimpleSection title="Tipo de Cartão" queryKey="cardtypes" endpoint="pos/config/card-types/"
+              columns={[
+                { key: 'code', label: 'Código', width: '22%' },
+                { key: 'name', label: 'Descrição', width: '40%' },
+                { key: 'kind_display', label: 'Tipo', width: '24%' },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[]}
+              renderEditor={(row, close) => <CardTypeEditor row={row} onClose={close} />} />
+          ) : section === 'c_members' ? (
+            <SimpleSection title="Cartão de Membro" queryKey="membercards" endpoint="pos/config/member-cards/"
+              columns={[
+                { key: 'code', label: 'Código', width: '13%' },
+                { key: 'name', label: 'Descrição', width: '20%' },
+                { key: 'packages_label', label: 'Packages', width: '13%' },
+                { key: 'has_credit', label: 'Crédito', width: '10%', toggle: true },
+                { key: 'has_debit', label: 'Débito', width: '10%', toggle: true },
+                { key: 'has_points', label: 'Pontos', width: '10%', toggle: true },
+                { key: 'has_discount', label: 'Desconto', width: '10%', toggle: true },
+                { key: 'is_active', label: 'Ativo', width: '8%', toggle: true },
+              ]}
+              fields={[]}
+              renderEditor={(row, close) => <MemberCardEditor row={row} onClose={close} />} />
           ) : section === 'p_printers' ? (
             <SimpleSection title="Impressora" queryKey="printers" endpoint="inventory/pos/printers/"
               columns={[

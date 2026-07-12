@@ -1566,3 +1566,152 @@ class CustomFieldViewSet(viewsets.ModelViewSet):
         qs = CustomFieldDef.objects.all()
         loc = self.request.query_params.get('location')
         return qs.filter(location=loc, is_active=True) if loc else qs
+
+
+# ==========================================================================
+# CARTÕES — TIPOS DE CARTÃO
+# ==========================================================================
+class CardTypeSerializer(serializers.ModelSerializer):
+    kind_display = serializers.CharField(source='get_card_kind_display', read_only=True)
+
+    class Meta:
+        from .models import CardType as _C
+        model = _C
+        fields = '__all__'
+
+
+class CardTypeViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CardTypeSerializer
+
+    def get_queryset(self):
+        from .models import CardType
+        return CardType.objects.all()
+
+    @action(detail=True, methods=['post'])
+    def test_read(self, request, pk=None):
+        """TESTAR A LEITURA — passa-se uma pista e vê-se que número sai.
+
+        É o que evita a instalação às cegas: o técnico encosta o cartão, cola aqui
+        o que o leitor devolveu, e vê logo se as marcas e a posição estão certas.
+        """
+        t = self.get_object()
+        numero, erro = t.read(request.data.get('raw') or '')
+        return Response({'ok': not erro, 'number': numero, 'detail': erro or f'Número lido: {numero}'})
+
+
+# ==========================================================================
+# CARTÕES — CARTÕES DE MEMBRO
+# ==========================================================================
+class MemberCardDiscountSerializer(serializers.ModelSerializer):
+    code = serializers.SerializerMethodField()
+    target = serializers.SerializerMethodField()
+    family = serializers.SerializerMethodField()
+    subfamily_name = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import MemberCardDiscount as _D
+        model = _D
+        fields = ('id', 'item', 'subfamily', 'code', 'target', 'family',
+                  'subfamily_name', 'discount_percent')
+
+    def get_code(self, o):
+        return o.item.code if o.item_id else (o.subfamily.code if o.subfamily_id else '')
+
+    def get_target(self, o):
+        return o.item.name if o.item_id else (o.subfamily.name if o.subfamily_id else '—')
+
+    def get_family(self, o):
+        sf = o.item.subfamily if o.item_id else o.subfamily
+        return sf.family.name if (sf and sf.family_id) else ''
+
+    def get_subfamily_name(self, o):
+        return o.item.subfamily.name if (o.item_id and o.item.subfamily_id) else (
+            o.subfamily.name if o.subfamily_id else '')
+
+
+class MemberCardSerializer(serializers.ModelSerializer):
+    discounts = MemberCardDiscountSerializer(many=True, required=False)
+    package_ids = serializers.PrimaryKeyRelatedField(
+        source='packages', many=True, required=False,
+        queryset=__import__('inventory.models', fromlist=['Item']).Item.objects.all())
+    packages_label = serializers.SerializerMethodField()
+    happy_hour_name = serializers.CharField(source='happy_hour.name', read_only=True, default=None)
+
+    class Meta:
+        from .models import MemberCard as _M
+        model = _M
+        exclude = ('packages',)
+
+    def get_packages_label(self, o):
+        n = o.packages.count()
+        return f'{n} artigo(s)' if n else ''
+
+    def _sync(self, obj, descontos, pacotes):
+        from .models import MemberCardDiscount
+        if pacotes is not None:
+            obj.packages.set(pacotes)
+        if descontos is not None:
+            obj.discounts.all().delete()
+            for d in descontos:
+                d.pop('card', None)
+                MemberCardDiscount.objects.create(card=obj, **d)
+
+    def create(self, validated):
+        from .models import MemberCard
+        ds = validated.pop('discounts', [])
+        ps = validated.pop('packages', [])
+        obj = MemberCard.objects.create(**validated)
+        self._sync(obj, ds, ps)
+        return obj
+
+    def update(self, instance, validated):
+        ds = validated.pop('discounts', None)
+        ps = validated.pop('packages', None)
+        for k, v in validated.items():
+            setattr(instance, k, v)
+        instance.save()
+        self._sync(instance, ds, ps)
+        return instance
+
+
+class MemberCardViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MemberCardSerializer
+
+    def get_queryset(self):
+        from .models import MemberCard
+        return MemberCard.objects.prefetch_related('packages', 'discounts__item', 'discounts__subfamily')
+
+    @action(detail=True, methods=['post'])
+    def simulate(self, request, pk=None):
+        """SIMULAR — o que é que este cartão faz a um artigo, aqui e agora.
+
+        Responde ao que o balcão pergunta: "o cliente tem o cartão All Inclusive;
+        esta cerveja fica a quanto?".
+        """
+        from decimal import Decimal
+        from inventory.models import Item
+        card = self.get_object()
+        item = Item.objects.filter(pk=request.data.get('item')).first()
+        if not item:
+            return Response({'detail': 'Artigo inválido.'}, status=400)
+
+        base = Decimal(str(item.sale_price or 0))
+        incluido = card.packages.filter(pk=item.pk).exists()
+        desc = card.discount_for(item)
+        happy = card.happy_hour.value_now() if card.happy_hour_id else None
+
+        if incluido:
+            final, porque = Decimal('0'), f'Incluído no pacote "{card.name}".'
+        elif desc:
+            final = (base - base * desc / Decimal('100')).quantize(Decimal('0.01'))
+            porque = f'Desconto de cartão: {desc}%.'
+        else:
+            final, porque = base, 'O cartão não mexe no preço deste artigo.'
+
+        return Response({
+            'item': item.name, 'base_price': str(base), 'final_price': str(final),
+            'in_package': incluido, 'discount_percent': str(desc),
+            'happy_hour_now': happy, 'detail': porque,
+        })

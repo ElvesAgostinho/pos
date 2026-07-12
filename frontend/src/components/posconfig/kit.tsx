@@ -58,8 +58,8 @@ export const SECTIONS = [
     { key: 'o_custom_fields', label: 'Campos personalizados' },
   ] },
   { key: 'cards', title: 'Cartões', items: [
-    { key: 'c_gift', label: 'Cartões Oferta' },
-    { key: 'c_loyalty', label: 'Fidelização' },
+    { key: 'c_types', label: 'Tipos de cartões' },
+    { key: 'c_members', label: 'Cartões de membro' },
   ] },
   { key: 'marketing', title: 'Marketing', items: [
     { key: 'm_promotions', label: 'Promoções' },
