@@ -48,6 +48,10 @@ def validate_issue(series: FiscalSeries, doc_type, customer_name, customer_tax_i
     errors = []
     if not series.is_active:
         errors.append('Série inativa/descontinuada.')
+    # (Documentos) "Série fechada" — uma série encerrada NUNCA volta a numerar. É assim
+    # que se muda de exercício sem partir a sequência: abre-se uma nova, fecha-se a velha.
+    if getattr(series, 'is_closed', False):
+        errors.append(f'A série {series.code} está FECHADA — abra uma nova série para continuar a numerar.')
     if not series.certified:
         errors.append('Série não certificada — emissão bloqueada.')
     if not doc_type.is_active:
@@ -183,6 +187,16 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
 
     FiscalAuditLog.objects.create(event='ISSUE', document_ref=invoice_no, user=user,
                                   ip_address=ip, detail=f"gross={gross} type={doc_type.code}")
+
+    # COMUNICAÇÃO À AGT: o documento entra na fila assim que é emitido (store-and-forward).
+    # A venda nunca espera pela AGT — se a linha estiver em baixo, sai daqui a pouco.
+    if doc_type.signable:
+        try:
+            from . import agt_client
+            agt_client.enqueue(doc)
+        except Exception as e:                      # noqa — a emissão NUNCA falha por causa da AGT
+            FiscalAuditLog.objects.create(event='AGT_ENQUEUE_FAIL', document_ref=invoice_no,
+                                          detail=str(e)[:250])
     return doc
 
 

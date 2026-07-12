@@ -200,6 +200,18 @@ class POSTable(models.Model):
     pos_x = models.PositiveIntegerField(default=40)
     pos_y = models.PositiveIntegerField(default=40)
     shape = models.CharField(max_length=8, choices=SHAPES, default='SQUARE')
+    # Desenho da planta da sala (o mapa é uma planta a sério, não uma grelha).
+    width = models.PositiveIntegerField(default=90)
+    height = models.PositiveIntegerField(default=110)
+    color = models.CharField(max_length=20, default='#0f8b8d')
+    text_color = models.CharField(max_length=20, default='#ffffff')
+    # Reservas online (a mesa aceita reservas do site/motor de reservas?)
+    online_reservation = models.BooleanField(default=False)
+    min_seats = models.PositiveIntegerField(default=0)
+    max_seats = models.PositiveIntegerField(default=0)
+    preferred_seats = models.PositiveIntegerField(default=0)
+    sector = models.ForeignKey('PosSector', on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='tables')
 
     class Meta:
         db_table = 'pos_table_v2'
@@ -294,6 +306,10 @@ class POSTicket(models.Model):
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)   # % desconto (VIP/manual)
     discount_authorized_by = models.CharField(max_length=100, blank=True, null=True)
     discount_total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    # O desconto APLICADO (o código autorizado). Sem isto, o relatório de descontos
+    # do fim do mês é uma coluna de percentagens sem explicação.
+    discount = models.ForeignKey('PosDiscount', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='tickets')
     grand_total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
 
     opened_at = models.DateTimeField(auto_now_add=True)
@@ -331,18 +347,33 @@ class POSTicket(models.Model):
         def q(v):
             return v.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         net = Decimal('0'); tax = Decimal('0'); gross = Decimal('0')
-        for l in self.lines.all():
+        discountable = Decimal('0')   # base do desconto: exclui os artigos "sem desconto"
+        scope_ids = None
+        if self.discount_id:
+            ids = list(self.discount.items.values_list('id', flat=True))
+            scope_ids = set(ids) if ids else None
+        for l in self.lines.filter(is_void=False).select_related('item'):   # anuladas não somam (mas ficam no registo)
             line_gross = l.line_total  # qty * unit_price = preço com IVA incluído
             rate = l.tax_percentage or Decimal('0')
             line_net = q(line_gross / (Decimal('1') + rate / Decimal('100'))) if rate > 0 else line_gross
             net += line_net
             tax += (line_gross - line_net)
             gross += line_gross
+            # (Artigo) "Não permite desconto" — o tabaco e as garrafas de marca não
+            # levam os 10% do gerente. A caixa exclui a linha da BASE do desconto.
+            if not (l.item and getattr(l.item, 'no_discount', False)):
+                # Âmbito do desconto (separador F&B): se o desconto só vale para certos
+                # artigos, a base é só desses. "Desconto de bebidas" não desconta a comida.
+                if scope_ids is None or (l.item_id in scope_ids):
+                    discountable += line_gross
         self.subtotal = q(net)
         self.tax_total = q(tax)
-        # Desconto (VIP/manual) sobre o total (com IVA incluído).
-        if self.discount_percent:
-            self.discount_total = q(gross * self.discount_percent / Decimal('100'))
+        # Desconto — só sobre as linhas que o permitem e que estão no âmbito.
+        if self.discount_id and self.discount.base == 'VALUE':
+            # Desconto de VALOR fixo: nunca pode ultrapassar a base (senão o total ia a negativo).
+            self.discount_total = q(min(self.discount.value, discountable))
+        elif self.discount_percent:
+            self.discount_total = q(discountable * self.discount_percent / Decimal('100'))
         self.grand_total = q(gross) - self.discount_total
         if save:
             self.save(update_fields=['subtotal', 'tax_total', 'discount_total', 'grand_total'])
@@ -360,7 +391,7 @@ class POSTicket(models.Model):
 class POSTicketLine(models.Model):
     KDS_STATUS = [
         ('NEW', 'Novo'), ('FIRED', 'Enviado'), ('PREPARING', 'Em Preparação'),
-        ('READY', 'Pronto'), ('SERVED', 'Servido'),
+        ('READY', 'Pronto'), ('SERVED', 'Servido'), ('CANCELLED', 'ANULADO'),
     ]
     ticket = models.ForeignKey(POSTicket, on_delete=models.CASCADE, related_name='lines')
     item = models.ForeignKey(Item, on_delete=models.PROTECT, related_name='pos_ticket_lines')
@@ -375,6 +406,12 @@ class POSTicketLine(models.Model):
     kds_status = models.CharField(max_length=10, choices=KDS_STATUS, default='NEW')
     fired_at = models.DateTimeField(blank=True, null=True)
     ready_at = models.DateTimeField(blank=True, null=True)
+    # Anulação: uma linha JÁ ENVIADA à produção nunca é apagada — é marcada como anulada,
+    # continua a existir para auditoria e a estação recebe o aviso de anulação.
+    is_void = models.BooleanField(default=False)
+    void_reason = models.CharField(max_length=255, blank=True, null=True)
+    voided_at = models.DateTimeField(blank=True, null=True)
+    kds_ack_at = models.DateTimeField(blank=True, null=True)   # estação confirmou que viu a anulação
 
     class Meta:
         db_table = 'pos_ticket_line'
@@ -454,6 +491,7 @@ class PrintJob(models.Model):
     reference = models.CharField(max_length=60, blank=True, null=True)
     copies = models.PositiveIntegerField(default=1)
     status = models.CharField(max_length=10, choices=STATUS, default='QUEUED')
+    error = models.CharField(max_length=200, blank=True, null=True)   # porque é que falhou
     created_at = models.DateTimeField(auto_now_add=True)
     printed_at = models.DateTimeField(blank=True, null=True)
 
@@ -661,3 +699,939 @@ class Payment(models.Model):
     
     class Meta:
         db_table = 'pos_payment'
+
+
+# ==========================================================================
+# CONFIGURAÇÃO POS — Módulos, Terminais e Parâmetros
+# ==========================================================================
+
+class PosModule(models.Model):
+    """MÓDULO do sistema — o que aparece no menu e no ambiente de trabalho.
+
+    "Licenciado" NÃO se marca aqui à mão: vem da licença assinada. Se bastasse
+    uma caixa para licenciar um módulo, a licença não valia nada.
+    """
+    module_id = models.CharField(max_length=60, unique=True)     # mwana-pos-config
+    name = models.CharField(max_length=80)
+    description = models.CharField(max_length=160, blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=100)
+    right_id = models.PositiveIntegerField(default=0)            # permissão necessária
+    text_key = models.CharField(max_length=40, blank=True, null=True)
+    menu = models.CharField(max_length=60, blank=True, null=True)
+    license_key = models.CharField(max_length=40, blank=True, null=True)  # módulo da licença
+    is_active = models.BooleanField(default=True)
+    show_in_menu = models.BooleanField(default=True)
+    show_on_desktop = models.BooleanField(default=False)
+    is_iframe = models.BooleanField(default=False)
+    is_external_window = models.BooleanField(default=False)
+    is_widget = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'pos_module'
+        ordering = ['sort_order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class PosTerminal(models.Model):
+    """TERMINAL — o posto de venda físico (ou virtual).
+
+    Um terminal "Virtual" não tem hardware: serve para vendas de outro sistema
+    (ex.: o menu digital do quarto) entrarem no POS como se fossem de um posto.
+    """
+    TYPES = [('NORMAL', 'Normal'), ('VIRTUAL', 'Virtual'), ('MOBILE', 'Portátil')]
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=80)
+    terminal_type = models.CharField(max_length=10, choices=TYPES, default='NORMAL')
+    outlet = models.ForeignKey('Outlet', on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='terminals')
+    # Parâmetros do posto (o quadro "Geral": nº do parâmetro → valor).
+    params = models.JSONField(default=dict, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_terminal'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+class TerminalPrinter(models.Model):
+    """Que impressoras este terminal usa, e como."""
+    LOCATIONS = [('TERMINAL', 'Terminal'), ('SERVER', 'Servidor'), ('NETWORK', 'Rede')]
+    terminal = models.ForeignKey(PosTerminal, on_delete=models.CASCADE, related_name='printers')
+    printer = models.ForeignKey('inventory.Printer', on_delete=models.CASCADE, related_name='terminals')
+    port = models.CharField(max_length=40, blank=True, null=True)       # COM1, USB001, IP:porta
+    location = models.CharField(max_length=10, choices=LOCATIONS, default='TERMINAL')
+    one_item_per_ticket = models.BooleanField(default=False)   # um talão por artigo
+    kds_monitor = models.CharField(max_length=60, blank=True, null=True)  # ecrã de cozinha
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_terminal_printer'
+        unique_together = ('terminal', 'printer')
+
+    def __str__(self):
+        return f'{self.terminal.code} → {self.printer.name}'
+
+
+class TerminalHardware(models.Model):
+    """Periféricos ligados ao terminal (gaveta, balança, leitor, display)."""
+    TYPES = [('DRAWER', 'Gaveta'), ('SCALE', 'Balança'), ('SCANNER', 'Leitor de códigos'),
+             ('DISPLAY', 'Display de cliente'), ('CARD', 'Terminal bancário'), ('OTHER', 'Outro')]
+    terminal = models.ForeignKey(PosTerminal, on_delete=models.CASCADE, related_name='hardware')
+    code = models.CharField(max_length=30)
+    description = models.CharField(max_length=80)
+    hw_type = models.CharField(max_length=10, choices=TYPES, default='OTHER')
+    port = models.CharField(max_length=40, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_terminal_hardware'
+
+    def __str__(self):
+        return f'{self.code} ({self.get_hw_type_display()})'
+
+
+class PosParameter(models.Model):
+    """CATÁLOGO DE PARÂMETROS — as perguntas de configuração, com número.
+
+    O número (8523, 8517…) é a referência: é por ele que o suporte fala com o
+    cliente ao telefone ("mude o 8610"). O valor concreto vive no terminal.
+    """
+    KINDS = [('BOOL', 'Sim/Não'), ('INT', 'Número'), ('TEXT', 'Texto'), ('CHOICE', 'Escolha')]
+    SCOPES = [('GLOBAL', 'Sistema'), ('TERMINAL', 'Terminal'), ('SECTOR', 'Setor')]
+    scope = models.CharField(max_length=10, choices=SCOPES, default='TERMINAL')
+    value = models.CharField(max_length=250, blank=True, null=True)   # valor GLOBAL
+    number = models.PositiveIntegerField(unique=True)          # 8523
+    name = models.CharField(max_length=120)                    # "Tipo Posto"
+    kind = models.CharField(max_length=8, choices=KINDS, default='BOOL')
+    group = models.CharField(max_length=40, default='Geral')
+    choices = models.JSONField(default=list, blank=True)       # ["Mesas", "Venda Direta", …]
+    default = models.CharField(max_length=120, blank=True, null=True)
+    help_text = models.CharField(max_length=250, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_parameter'
+        ordering = ['group', 'number']
+
+    def __str__(self):
+        return f'({self.number}) {self.name}'
+
+
+class PosSector(models.Model):
+    """SETOR — a sala de venda (Restaurante, Lounge Bar, Rooftop).
+
+    É o que o operador escolhe ao iniciar sessão. Determina o TECLADO que vê, o
+    NÍVEL DE PREÇO que se aplica, o ARMAZÉM de onde sai o stock e o HAPPY HOUR em vigor.
+    O mesmo artigo custa mais no Rooftop do que no Restaurante — é aqui que isso se define.
+    """
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=80)
+    price_level = models.PositiveSmallIntegerField(default=1)     # nível de preço (1..6)
+    happy_hour = models.ForeignKey('commercial.Promotion', on_delete=models.SET_NULL,
+                                   blank=True, null=True, related_name='sectors')
+    warehouse = models.ForeignKey('inventory.Warehouse', on_delete=models.SET_NULL,
+                                  blank=True, null=True, related_name='sectors')
+    outlet = models.ForeignKey(Outlet, on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='sectors')
+    seats = models.PositiveIntegerField(default=0)
+    keyboard = models.CharField(max_length=60, blank=True, null=True)   # teclado do Front Office
+    params = models.JSONField(default=dict, blank=True)                 # parâmetros do setor
+    # Planta da sala
+    map_bg_color = models.CharField(max_length=20, default='#fdeef0')
+    map_text_color = models.CharField(max_length=20, default='#ffffff')
+    is_active = models.BooleanField(default=True)
+
+    # --- Interface com o PMS ---
+    # É por aqui que o consumo do hóspede entra no folio do quarto com o encargo certo.
+    pms_department = models.CharField(max_length=60, blank=True, null=True)
+    pms_default_account = models.CharField(max_length=40, blank=True, null=True)   # Conta por defeito
+    pms_paymaster = models.CharField(max_length=20, blank=True, null=True)         # conta interna do PMS
+    pms_visible = models.BooleanField(default=True)                                # visível no PMS
+
+    class Meta:
+        db_table = 'pos_sector'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+# ==========================================================================
+# TECLADOS DO POS — o que o operador vê e toca no terminal.
+#
+# Estrutura: TECLADO → PÁGINAS (COMIDAS, BEBIDAS, CAFETARIA) → TECLAS.
+# Uma tecla é uma PASTA (abre outro nível: SNACKS, PETISCOS…) ou um ARTIGO
+# (vende). É esta árvore que o POS frontend desenha no ecrã.
+# ==========================================================================
+
+class PosKeyboard(models.Model):
+    number = models.PositiveIntegerField(unique=True)
+    name = models.CharField(max_length=80)
+    price_level = models.PositiveSmallIntegerField(default=1)   # nível de preço a usar
+    cols = models.PositiveSmallIntegerField(default=4)          # Horizontal
+    rows = models.PositiveSmallIntegerField(default=4)          # Vertical
+    show_codes = models.BooleanField(default=False)             # Visualizar Códigos
+    show_prices = models.BooleanField(default=False)            # Visualizar Preços
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_keyboard'
+        ordering = ['number']
+
+    def __str__(self):
+        return f'{self.number} · {self.name}'
+
+
+class PosKeyboardKey(models.Model):
+    """Uma tecla. Sem `parent` = PÁGINA (a fila de cima). Com `parent` = tecla dessa página.
+
+    Uma tecla-PASTA abre o nível seguinte; uma tecla-ARTIGO vende.
+    """
+    KINDS = [('PAGE', 'Página'), ('FOLDER', 'Pasta'), ('ITEM', 'Artigo')]
+    keyboard = models.ForeignKey(PosKeyboard, on_delete=models.CASCADE, related_name='keys')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True,
+                               related_name='children')
+    kind = models.CharField(max_length=6, choices=KINDS, default='FOLDER')
+    label = models.CharField(max_length=60)
+    item = models.ForeignKey('inventory.Item', on_delete=models.CASCADE, blank=True, null=True,
+                             related_name='keyboard_keys')
+    color = models.CharField(max_length=20, default='#1565c0')
+    text_color = models.CharField(max_length=20, default='#ffffff')
+    sort_order = models.PositiveIntegerField(default=0)
+    span = models.PositiveSmallIntegerField(default=1)     # nº de colunas que ocupa
+
+    class Meta:
+        db_table = 'pos_keyboard_key'
+        ordering = ['sort_order', 'id']
+
+    def __str__(self):
+        return f'{self.keyboard.name} · {self.label}'
+
+
+class TimeBand(models.Model):
+    """HORÁRIO-PERÍODO — a faixa horária (ex.: "08:01 as 10:00").
+
+    É a unidade com que o sistema fala de tempo: os relatórios agrupam vendas por
+    faixa (para se saber a que horas o restaurante enche), o happy hour aplica-se a
+    faixas, e os turnos dos operadores encaixam nelas. A COR é a que aparece nos
+    gráficos e nas grelhas de ocupação.
+    """
+    code = models.CharField(max_length=10, unique=True)     # 001, 002…
+    name = models.CharField(max_length=60)                  # "08:01 as 10:00"
+    color = models.CharField(max_length=20, default='#0080FF')
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_time_band'
+        ordering = ['sort_order', 'code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+class TimeBandSlot(models.Model):
+    """Os intervalos concretos da faixa. Uma faixa pode ter vários (ex.: o almoço
+    corta a meio para o serviço de esplanada)."""
+    band = models.ForeignKey(TimeBand, on_delete=models.CASCADE, related_name='slots')
+    time_from = models.TimeField()
+    time_to = models.TimeField()
+
+    class Meta:
+        db_table = 'pos_time_band_slot'
+        ordering = ['time_from']
+
+    def __str__(self):
+        return f'{self.time_from:%H:%M} → {self.time_to:%H:%M}'
+
+
+class PosSchedule(models.Model):
+    """HORÁRIO — junta faixas horárias a dias da semana.
+
+    "Happy Hour de Verão" = faixas 16:01-19:00, de segunda a sexta.
+    É o que o motor de promoções e os turnos consultam para saber se estão em vigor.
+    """
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=80)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_schedule'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+class PosScheduleLine(models.Model):
+    """Uma linha: este dia da semana, esta faixa horária."""
+    WEEKDAYS = [(0, 'Segunda'), (1, 'Terça'), (2, 'Quarta'), (3, 'Quinta'),
+                (4, 'Sexta'), (5, 'Sábado'), (6, 'Domingo')]
+    schedule = models.ForeignKey(PosSchedule, on_delete=models.CASCADE, related_name='lines')
+    weekday = models.PositiveSmallIntegerField(choices=WEEKDAYS)
+    band = models.ForeignKey('TimeBand', on_delete=models.CASCADE, related_name='schedule_lines')
+
+    class Meta:
+        db_table = 'pos_schedule_line'
+        unique_together = ('schedule', 'weekday', 'band')
+        ordering = ['weekday']
+
+
+class PosRight(models.Model):
+    """CATÁLOGO DE PERMISSÕES — cada função do sistema tem um número.
+
+    20000=Configuração, 20008=Adicionar artigo, 20258=Permitir alterar preço…
+    O número é a referência estável: o suporte diz "dê-lhe o 20258" e toda a gente
+    sabe do que se fala. Hierárquico: 20007=Artigos tem filhos (Adicionar/Editar/Apagar).
+    """
+    number = models.PositiveIntegerField(unique=True)
+    name = models.CharField(max_length=120)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True,
+                               related_name='children')
+    module = models.CharField(max_length=30, default='POS')      # POS, PMS, Geral
+    group = models.CharField(max_length=40, default='Geral')
+
+    class Meta:
+        db_table = 'pos_right'
+        ordering = ['number']
+
+    def __str__(self):
+        return f'{self.number}={self.name}'
+
+
+class PosUserGroup(models.Model):
+    """GRUPO DE UTILIZADORES — o perfil (Comercial, FO-MANAGER, KITCHEN…).
+
+    As permissões dão-se ao GRUPO, não à pessoa: quando entra um empregado novo,
+    põe-se no grupo e ele fica com tudo o que precisa — e nada do que não precisa.
+    """
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=80)
+    memo = models.TextField(blank=True, null=True)
+    default_module = models.CharField(max_length=30, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    # Permissões numeradas (a árvore da direita).
+    rights = models.ManyToManyField(PosRight, blank=True, related_name='groups')
+    # Funções do POS por separador (as caixas da esquerda).
+    pos_tables = models.JSONField(default=dict, blank=True)      # Ecrã de mesas
+    pos_documents = models.JSONField(default=dict, blank=True)   # Documentos
+    pos_shortcuts = models.JSONField(default=dict, blank=True)   # Atalhos barra superior
+    pos_payments = models.JSONField(default=dict, blank=True)    # Pagamentos
+    data_protection = models.JSONField(default=dict, blank=True) # Proteção de Dados (leitura/escrita)
+
+    class Meta:
+        db_table = 'pos_user_group'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+class PosUser(models.Model):
+    """UTILIZADOR — quem entra no sistema.
+
+    As PERMISSÕES vêm do GRUPO (PosUserGroup), não daqui: quando o dono muda o que
+    um perfil pode fazer, muda para toda a gente desse perfil de uma vez.
+    Aqui fica o que é DA PESSOA: identificação, contactos, caixas atribuídas,
+    setores onde pode vender, e as comissões que ganha.
+    """
+    # --- Dados de login ---
+    code = models.CharField(max_length=30, unique=True)          # AS, HHS, CONNECTOR…
+    group = models.ForeignKey('PosUserGroup', on_delete=models.SET_NULL, blank=True, null=True,
+                              related_name='users')
+    is_blocked = models.BooleanField(default=False)
+    must_change_password = models.BooleanField(default=False)
+    password_changed_at = models.DateTimeField(blank=True, null=True)
+    auth_user = models.OneToOneField('auth.User', on_delete=models.SET_NULL, blank=True, null=True,
+                                     related_name='pos_user')
+
+    # --- Dados do utilizador ---
+    number = models.PositiveIntegerField(default=0)
+    title = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=60, blank=True, null=True)    # Apelido
+    first_name = models.CharField(max_length=60, blank=True, null=True)   # Nome
+    language = models.CharField(max_length=10, default='pt-PT')
+    section = models.CharField(max_length=60, blank=True, null=True)      # Secção
+    birth_date = models.DateField(blank=True, null=True)
+    direct_dial = models.CharField(max_length=40, blank=True, null=True)
+    position = models.CharField(max_length=60, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    entry_date = models.DateField(blank=True, null=True)
+    exit_date = models.DateField(blank=True, null=True)
+
+    # --- Caixas atribuídas (que caixas este utilizador pode abrir) ---
+    cash_registers = models.JSONField(default=dict, blank=True)
+
+    # --- Impersonation (ligação a um servidor/relatórios específicos) ---
+    imp_data_access = models.CharField(max_length=60, blank=True, null=True)
+    imp_reporting = models.CharField(max_length=60, blank=True, null=True)
+    imp_sql_server = models.CharField(max_length=120, blank=True, null=True)
+    imp_database = models.CharField(max_length=120, blank=True, null=True)
+
+    # --- Complexos e secções de tarifas ---
+    all_complexes = models.BooleanField(default=True)
+    complexes = models.JSONField(default=list, blank=True)
+    rate_sections = models.JSONField(default=list, blank=True)
+
+    # --- Dados pessoais ---
+    street = models.CharField(max_length=150, blank=True, null=True)
+    city = models.CharField(max_length=60, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    country = models.CharField(max_length=60, default='Angola')
+    phone = models.CharField(max_length=40, blank=True, null=True)
+    mobile = models.CharField(max_length=40, blank=True, null=True)
+    fax = models.CharField(max_length=40, blank=True, null=True)
+    personal_email = models.EmailField(blank=True, null=True)
+
+    # --- Dados POS ---
+    pos_group = models.ForeignKey('PosUserGroup', on_delete=models.SET_NULL, blank=True, null=True,
+                                  related_name='pos_users')
+    all_sectors = models.BooleanField(default=True)
+    sectors = models.ManyToManyField('PosSector', blank=True, related_name='users')
+    internal_consumption = models.BooleanField(default=False)   # pode lançar consumo interno
+    discount_profile = models.CharField(max_length=60, blank=True, null=True)
+    use_cost_price = models.BooleanField(default=False)         # vende ao preço de custo
+    pos_pin = models.CharField(max_length=128, blank=True, null=True)   # PIN do terminal (hash)
+    pos_must_change_pin = models.BooleanField(default=False)
+
+    # --- EMS / F&B ---
+    is_event_manager = models.BooleanField(default=False)
+    email_group = models.CharField(max_length=60, blank=True, null=True)
+    is_fnb_user = models.BooleanField(default=False)
+
+    memo = models.TextField(blank=True, null=True)
+    email_signature = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_user'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.first_name or ""} {self.last_name or ""}'.strip()
+
+    @property
+    def full_name(self):
+        return f'{self.first_name or ""} {self.last_name or ""}'.strip() or self.code
+
+
+class PosUserCommission(models.Model):
+    """COMISSÃO — quanto o empregado ganha ao vender determinado artigo/sub-família.
+
+    É o que motiva a sala a vender a garrafa de vinho em vez do copo. Sem isto,
+    o hotel paga comissões numa folha de Excel e ninguém confere.
+    """
+    TYPES = [('PERCENT', 'Percentagem'), ('VALUE', 'Valor fixo')]
+    user = models.ForeignKey(PosUser, on_delete=models.CASCADE, related_name='commissions')
+    subfamily = models.ForeignKey('inventory.ItemSubFamily', on_delete=models.CASCADE,
+                                  blank=True, null=True, related_name='commissions')
+    item = models.ForeignKey('inventory.Item', on_delete=models.CASCADE,
+                             blank=True, null=True, related_name='commissions')
+    commission_type = models.CharField(max_length=8, choices=TYPES, default='PERCENT')
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'pos_user_commission'
+
+    def __str__(self):
+        alvo = self.item.name if self.item else (self.subfamily.name if self.subfamily else '—')
+        return f'{self.user.code}: {alvo} = {self.value}'
+
+
+class HRType(models.Model):
+    """TIPO R.H. — a família de recursos humanos (Tratamentos, Sala, Cozinha…).
+
+    Serve para agrupar as pessoas que PRESTAM serviço e são escolhidas no momento
+    da venda: a terapeuta do spa, o massagista, o barbeiro. É por aqui que o POS
+    sabe que lista de profissionais mostrar quando se lança um tratamento.
+    """
+    code = models.CharField(max_length=40, unique=True)
+    name = models.CharField(max_length=120)
+    notes = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_hr_type'
+        ordering = ['code']
+
+    def __str__(self):
+        return self.name
+
+
+class HumanResource(models.Model):
+    """RECURSO HUMANO — a pessoa que executa o serviço e a quem se paga comissão.
+
+    Não é um utilizador do sistema (esse é o PosUser): pode nem sequer ter login.
+    É quem aparece no POS a perguntar "quem fez este tratamento?" — e é por essa
+    escolha que a comissão é calculada e o horário validado.
+    """
+    GENDERS = [('F', 'Feminino'), ('M', 'Masculino'), ('O', 'Outro')]
+
+    code = models.CharField(max_length=30, unique=True)
+    first_name = models.CharField(max_length=60)                  # Nome
+    last_name = models.CharField(max_length=60, blank=True, null=True)   # Apelido
+    hr_type = models.ForeignKey(HRType, on_delete=models.PROTECT, related_name='resources')
+    gender = models.CharField(max_length=1, choices=GENDERS, blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=0)           # Ordem
+    license_code = models.CharField(max_length=40, blank=True, null=True)   # Código Licença (cédula profissional)
+    space = models.ForeignKey('PosSector', on_delete=models.SET_NULL, blank=True, null=True,
+                              related_name='resources')           # Espaço (gabinete/sala onde trabalha)
+
+    is_active = models.BooleanField(default=True)
+    is_front_office_user = models.BooleanField(default=False)     # também atende na receção
+
+    # Serviços que esta pessoa está habilitada a executar
+    services = models.ManyToManyField('inventory.Item', blank=True, related_name='resources')
+
+    # Período de validade do horário
+    schedule_from = models.DateField(blank=True, null=True)
+    schedule_to = models.DateField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_human_resource'
+        ordering = ['sort_order', 'code']
+
+    def __str__(self):
+        return f'{self.code} · {self.full_name}'
+
+    @property
+    def full_name(self):
+        return f'{self.first_name} {self.last_name or ""}'.strip()
+
+
+class HRScheduleLine(models.Model):
+    """Um turno do recurso: 'às terças, das 09:00 às 17:00'.
+
+    O calendário que se vê ao lado é DERIVADO daqui — não é uma imagem: cada dia
+    que cai num dia da semana com turno fica marcado como dia de trabalho.
+    """
+    resource = models.ForeignKey(HumanResource, on_delete=models.CASCADE, related_name='schedule')
+    weekday = models.PositiveSmallIntegerField()      # 0=Domingo … 6=Sábado (igual ao ecrã)
+    time_from = models.TimeField()
+    time_to = models.TimeField()
+
+    class Meta:
+        db_table = 'pos_hr_schedule'
+        ordering = ['weekday', 'time_from']
+
+
+class HRCommission(models.Model):
+    """Comissão do recurso — por sub-família ou por artigo."""
+    TYPES = [('PERCENT', 'Percentagem'), ('VALUE', 'Valor fixo')]
+    resource = models.ForeignKey(HumanResource, on_delete=models.CASCADE, related_name='commissions')
+    subfamily = models.ForeignKey('inventory.ItemSubFamily', on_delete=models.CASCADE,
+                                  blank=True, null=True, related_name='hr_commissions')
+    item = models.ForeignKey('inventory.Item', on_delete=models.CASCADE,
+                             blank=True, null=True, related_name='hr_commissions')
+    commission_type = models.CharField(max_length=8, choices=TYPES, default='PERCENT')
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'pos_hr_commission'
+
+
+class PosDiscount(models.Model):
+    """DESCONTO — o desconto AUTORIZADO, com nome, validade e quem o pode dar.
+
+    A diferença entre um hotel que ganha dinheiro e um que não ganha está aqui:
+    sem isto, o desconto é um número que o empregado escreve à mão e ninguém
+    consegue explicar ao fim do mês. Com isto, o desconto é um CÓDIGO — tem dono
+    (que grupos o podem aplicar), tem prazo (válido de/até), tem âmbito (que
+    artigos) e sai nos relatórios pelo nome.
+    """
+    BASES = [('PERCENT', 'Percentagem'), ('VALUE', 'Valor')]
+    CALC_MODES = [('GENERAL', 'Geral'), ('NIGHTS', 'Por noites'), ('FIRST', 'Primeira noite')]
+
+    number = models.PositiveIntegerField(default=0)          # Nr
+    code = models.CharField(max_length=40, unique=True)      # DESCPOS10
+    name = models.CharField(max_length=120)                  # Desconto POS 10%
+    base = models.CharField(max_length=8, choices=BASES, default='PERCENT')
+    value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    valid_from = models.DateField(blank=True, null=True)
+    valid_to = models.DateField(blank=True, null=True)
+
+    # Onde vale (os módulos onde o desconto aparece)
+    for_pms = models.BooleanField(default=False)
+    for_ems = models.BooleanField(default=False)
+    for_pos = models.BooleanField(default=True)
+
+    allow_manual = models.BooleanField(default=False)        # Permite Desconto Manual
+    calc_mode = models.CharField(max_length=10, choices=CALC_MODES, default='GENERAL')
+    calc_base = models.CharField(max_length=20, blank=True, null=True)
+    set_nights = models.BooleanField(default=False)          # Definir dias a descontar
+    stay_nights = models.PositiveIntegerField(default=0)     # Dias Estadia
+    paid_nights = models.PositiveIntegerField(default=0)     # Dias Pagos
+    use_intervals = models.BooleanField(default=False)
+
+    # QUEM o pode dar. Vazio = ninguém no POS (é preciso autorizar um grupo).
+    user_groups = models.ManyToManyField('PosUserGroup', blank=True, related_name='discounts')
+    # A QUE artigos se aplica (separador F&B). Vazio = à conta toda.
+    items = models.ManyToManyField('inventory.Item', blank=True, related_name='pos_discounts')
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_discount'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+    def is_valid_on(self, day=None):
+        from django.utils import timezone
+        day = day or timezone.localdate()
+        if not self.is_active:
+            return False
+        if self.valid_from and day < self.valid_from:
+            return False
+        if self.valid_to and day > self.valid_to:
+            return False
+        return True
+
+
+class PmsHotelLink(models.Model):
+    """LIGAÇÃO MULTI-HOTEL — o POS deste hotel a falar com o PMS de OUTRO.
+
+    Serve as redes: o hóspede do Hotel A janta no restaurante do Hotel B e o consumo
+    tem de cair no folio dele — que vive na base de dados do A. Sem isto, o empregado
+    do B não consegue lançar no quarto e a conta perde-se.
+
+    A password é de um SERVIÇO (utilizador da base de dados), não de uma pessoa:
+    entra, fica guardada e NUNCA é devolvida pela API — só se substitui.
+    """
+    MODES = [('SIMPLE', 'Simples'), ('FULL', 'Completo')]
+
+    is_active = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+    hotel_id = models.CharField(max_length=20, default='0')      # Id do Hotel (no outro sistema)
+    description = models.CharField(max_length=120)
+    server = models.CharField(max_length=120, blank=True, null=True)
+    database = models.CharField(max_length=120, blank=True, null=True)
+    trusted = models.BooleanField(default=False)                 # autenticação integrada (sem password)
+    username = models.CharField(max_length=60, blank=True, null=True)
+    password = models.CharField(max_length=200, blank=True, null=True)   # write-only na API
+    charge_code = models.CharField(max_length=40, blank=True, null=True)  # Encargo
+    paymaster = models.CharField(max_length=20, blank=True, null=True)
+    taxes = models.CharField(max_length=60, blank=True, null=True)        # Taxas a aplicar
+    mode = models.CharField(max_length=8, choices=MODES, default='SIMPLE')
+
+    last_test_at = models.DateTimeField(blank=True, null=True)
+    last_test_ok = models.BooleanField(default=False)
+    last_test_detail = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_pms_hotel_link'
+        ordering = ['description']
+
+    def __str__(self):
+        return self.description
+
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            PmsHotelLink.objects.exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+
+
+class PmsExternalLink(models.Model):
+    """LIGAÇÃO EXTERNA — cada SETOR pode falar com um PMS/base de dados diferente.
+
+    O Bar da Piscina de um resort pode estar noutra máquina que o Restaurante.
+    Aqui diz-se onde é que cada setor vai buscar (e lançar) as contas dos quartos.
+    """
+    sector = models.OneToOneField(PosSector, on_delete=models.CASCADE, related_name='external_link')
+    is_active = models.BooleanField(default=False)
+    company_id = models.CharField(max_length=20, default='0')
+    server = models.CharField(max_length=120, blank=True, null=True)
+    database = models.CharField(max_length=120, blank=True, null=True)
+    trusted = models.BooleanField(default=False)
+    username = models.CharField(max_length=60, blank=True, null=True)
+    password = models.CharField(max_length=200, blank=True, null=True)   # write-only na API
+
+    last_test_at = models.DateTimeField(blank=True, null=True)
+    last_test_ok = models.BooleanField(default=False)
+    last_test_detail = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_pms_external_link'
+
+    def __str__(self):
+        return f'Ligação de {self.sector.name}'
+
+
+class StockErpLink(models.Model):
+    """INTERFACE COM CONTROLO DE STOCKS — ligação a um ERP externo (Primavera, SAP…).
+
+    Há hotéis que já têm um ERP de compras/armazém e não o vão largar. Em vez de
+    duplicar o stock (e ter dois números diferentes para a mesma garrafa), o POS
+    liga-se ao ERP e vai lá buscar os saldos.
+
+    Enquanto estiver DESLIGADO, manda o motor de stock interno — que é o que o
+    hotel normal usa. Ligar isto é assumir que a verdade do stock está lá fora.
+    """
+    BLOCK_MODES = [('WARN', 'Avisar'), ('BLOCK', 'Bloqueio'), ('NONE', 'Não controlar')]
+
+    is_active = models.BooleanField(default=False)
+    name = models.CharField(max_length=60, default='ERP Externo')
+    url = models.CharField(max_length=200, blank=True, null=True)
+    instance = models.CharField(max_length=60, blank=True, null=True)   # Instância
+    company = models.CharField(max_length=60, blank=True, null=True)    # Empresa
+    username = models.CharField(max_length=60, blank=True, null=True)
+    password = models.CharField(max_length=200, blank=True, null=True)  # write-only na API
+
+    # Que parte do catálogo é que vem de lá
+    group = models.ForeignKey('inventory.ItemGroup', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+    family = models.ForeignKey('inventory.ItemFamily', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+    subfamily = models.ForeignKey('inventory.ItemSubFamily', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+
+    stock_control = models.BooleanField(default=False)
+    block_mode = models.CharField(max_length=6, choices=BLOCK_MODES, default='WARN')
+    import_rows = models.PositiveIntegerField(default=500)   # Importação - Número de linhas
+
+    last_sync_at = models.DateTimeField(blank=True, null=True)
+    last_test_at = models.DateTimeField(blank=True, null=True)
+    last_test_ok = models.BooleanField(default=False)
+    last_test_detail = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_stock_erp_link'
+
+    def __str__(self):
+        return self.name
+
+
+class HappyHour(models.Model):
+    """HAPPY HOUR — a que HORAS e em que DIAS muda o preço.
+
+    Não é um desconto solto: é uma GRELHA hora × dia da semana. Em cada célula
+    escolhe-se o nível de preço (Preço 1..5) ou a percentagem de desconto. Às
+    17h de quinta o gin passa ao Preço 2; às 20h volta ao normal — sozinho, sem
+    ninguém se lembrar de o mudar.
+
+    As células vivem em `cells`: {"3-17": 2} = quinta (3), hora 17, Preço 2.
+    """
+    KINDS = [('PRICE', 'Preço'), ('DISCOUNT', 'Desconto')]
+
+    name = models.CharField(max_length=120)
+    kind = models.CharField(max_length=8, choices=KINDS, default='PRICE')
+    show_half_hours = models.BooleanField(default=False)
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, blank=True, null=True,
+                               related_name='happy_hours')   # vazio = todos
+    cells = models.JSONField(default=dict, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_happy_hour'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def value_now(self, when=None):
+        """O que está em vigor NESTE momento: (nível de preço) ou (% de desconto)."""
+        from django.utils import timezone
+        when = when or timezone.localtime()
+        # Python: segunda=0 … domingo=6. O ecrã começa no domingo, como o original.
+        dia = (when.weekday() + 1) % 7
+        v = self.cells.get(f'{dia}-{when.hour}')
+        if not v and self.show_half_hours and when.minute >= 30:
+            v = self.cells.get(f'{dia}-{when.hour}.5')
+        return v or None
+
+
+class VoidReason(models.Model):
+    """MOTIVO DE ANULAÇÃO — porque é que o prato voltou para trás.
+
+    "Pedido Errado" não é o mesmo que "Reclamação Serviço Cozinha": o primeiro é
+    erro do empregado, o segundo é a cozinha a falhar. Sem motivos, o relatório de
+    anulações é uma lista de números e ninguém sabe onde está o problema.
+
+    O texto da TECLA é o que o empregado vê no terminal; o da IMPRESSÃO é o que sai
+    no talão de anulação que vai para a cozinha.
+    """
+    code = models.CharField(max_length=10, unique=True)
+    key_label = models.CharField(max_length=80)      # Tecla (no terminal)
+    print_label = models.CharField(max_length=80)    # Impressão (no talão da estação)
+    sort_order = models.PositiveIntegerField(default=50)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_void_reason'
+        ordering = ['sort_order', 'code']
+
+    def __str__(self):
+        return self.key_label
+
+
+class PosHardware(models.Model):
+    """HARDWARE — o catálogo dos aparelhos: impressoras, gavetas, balanças, TPA.
+
+    É aqui que vive a configuração da PORTA SÉRIE (baud rate, paridade, stop bits…).
+    Uma impressora térmica ligada a 9600 baud quando o aparelho fala a 19200 imprime
+    caracteres estranhos — e ninguém percebe porquê. Estes números não são enfeite.
+
+    Depois, cada Impressora (posto de impressão) aponta para um destes aparelhos.
+    """
+    TYPES = [('PRINTER', 'Impressora'), ('DRAWER', 'Gaveta'), ('SCALE', 'Balança'),
+             ('SCANNER', 'Leitor de códigos'), ('DISPLAY', 'Display de cliente'),
+             ('CARD', 'Terminal bancário (TPA)'), ('KDS', 'Monitor de cozinha'), ('OTHER', 'Outro')]
+    BAUDS = [(b, str(b)) for b in (2400, 4800, 9600, 19200, 38400, 57600, 115200)]
+    FLOWS = [('NONE', 'None'), ('XONXOFF', 'XON/XOFF'), ('RTSCTS', 'RTS/CTS')]
+    PARITY = [('NONE', 'None'), ('EVEN', 'Even'), ('ODD', 'Odd')]
+
+    hw_type = models.CharField(max_length=10, choices=TYPES, default='PRINTER')
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=80)
+
+    port = models.CharField(max_length=40, blank=True, null=True)     # COM1, USB, IP:porta
+    baud_rate = models.PositiveIntegerField(choices=BAUDS, default=9600)
+    flow_control = models.CharField(max_length=8, choices=FLOWS, default='NONE')
+    parity = models.CharField(max_length=6, choices=PARITY, default='NONE')
+    stop_bits = models.PositiveSmallIntegerField(default=1)
+    data_bits = models.PositiveSmallIntegerField(default=8)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_hardware'
+        ordering = ['hw_type', 'code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+class KdsMonitor(models.Model):
+    """MONITOR DE COZINHA — o ecrã que o cozinheiro vê.
+
+    Não é um ecrã só: a cozinha quente, a fria, o bar e a pastelaria querem ver
+    coisas diferentes. Cada monitor escolhe:
+      · POR PEDIDO — o cozinheiro vê a MESA inteira e manda tudo junto (é o certo:
+        os pratos da mesma mesa têm de sair ao mesmo tempo);
+      · POR ARTIGO — vê cada prato solto (serve para postos de linha: só grelhados).
+
+    Os BOTÕES são os passos que este posto usa. Uma pastelaria que só prepara e
+    entrega não precisa do passo "Produção" a estorvar o ecrã.
+    """
+    KINDS = [('ORDER', 'Por pedido'), ('ITEM', 'Por artigo')]
+    BUTTONS = ['PRODUCTION', 'FINISHED', 'DELIVERED', 'PRINT']
+
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=80)
+    kind = models.CharField(max_length=6, choices=KINDS, default='ORDER')
+    station = models.CharField(max_length=10, default='KITCHEN',
+                               choices=[('KITCHEN', 'Cozinha'), ('BAR', 'Bar'),
+                                        ('PASTRY', 'Pastelaria'), ('CASHIER', 'Caixa')])
+    buttons = models.JSONField(default=list, blank=True)     # ['PRODUCTION','FINISHED',...]
+    options = models.JSONField(default=dict, blank=True)     # alergénios, tempos, som…
+
+    header_text = models.CharField(max_length=120, blank=True, null=True)
+    header_image_url = models.CharField(max_length=300, blank=True, null=True)
+    footer_notifications = models.CharField(max_length=200, blank=True, null=True)
+
+    # As impressoras ATIVAS aqui substituem as de origem do pedido.
+    printers = models.ManyToManyField('inventory.Printer', blank=True, related_name='kds_monitors')
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_kds_monitor'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+class SmartCash(models.Model):
+    """CAIXA INTELIGENTE — a máquina que conta e guarda o dinheiro (Cashlogy, CashDro…).
+
+    O empregado não toca nas notas: a máquina recebe, confere, dá o troco certo e
+    sabe sempre quanto tem lá dentro. Acaba com a discussão do fecho de caixa e com o
+    desvio de notas — que é a fuga de dinheiro mais comum num hotel.
+
+    Fala-se com ela por HTTP: uma URL para as operações (pagar, troco, sangria) e
+    outra para o menu de manutenção.
+    """
+    TYPES = [('CASHLOGY', 'Cashlogy'), ('CASHDRO', 'CashDro'), ('GLORY', 'Glory'), ('OTHER', 'Outro')]
+
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=80)
+    device_type = models.CharField(max_length=10, choices=TYPES, default='CASHLOGY')
+    url_operations = models.CharField(max_length=250, blank=True, null=True)
+    url_menu = models.CharField(max_length=250, blank=True, null=True)
+    username = models.CharField(max_length=60, blank=True, null=True)
+    password = models.CharField(max_length=200, blank=True, null=True)   # write-only na API
+    terminal = models.ForeignKey('PosTerminal', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='smart_cash')
+    is_active = models.BooleanField(default=True)
+
+    last_test_at = models.DateTimeField(blank=True, null=True)
+    last_test_ok = models.BooleanField(default=False)
+    last_test_detail = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_smart_cash'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+class CustomerType(models.Model):
+    """TIPO DE CLIENTE — Hotel (hóspede), Passante (rua), Consumo Interno (staff).
+
+    Não é uma etiqueta: é o que decide o PREÇO e o que o POS deixa fazer. O hóspede
+    lança no quarto; o passante paga na hora; o consumo interno não paga mas fica
+    registado. Sem isto, o relatório não distingue quem come de graça de quem paga.
+    """
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=80)
+    for_ems = models.BooleanField(default=False)
+    for_pos = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_customer_type'
+        ordering = ['code']
+
+    def __str__(self):
+        return self.name
+
+
+class CustomFieldDef(models.Model):
+    """CAMPO PERSONALIZADO — o campo que ESTE hotel precisa e mais nenhum.
+
+    Um resort quer guardar o nº do voo; um hotel de cidade, a taxa turística pré-paga.
+    Em vez de mudar o sistema para cada cliente, define-se o campo aqui: onde aparece,
+    que tipo tem, quem o pode ler e escrever, e como se valida.
+    """
+    LOCATIONS = [('ENTITY', 'Entidade'), ('RESERVATION', 'Reserva (Detalhe)'),
+                 ('TICKET', 'Conta POS'), ('ITEM', 'Artigo'), ('GUEST', 'Hóspede')]
+    TYPES = [('TEXT', 'Texto'), ('NUMBER', 'Número'), ('DATE', 'Data'),
+             ('BOOL', 'Sim/Não'), ('LIST', 'Lista')]
+
+    code = models.CharField(max_length=40, unique=True)
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=12, choices=LOCATIONS, default='RESERVATION')
+    field_type = models.CharField(max_length=8, choices=TYPES, default='TEXT')
+
+    read_permission = models.PositiveIntegerField(default=0)    # nº da permissão (0 = todos)
+    write_permission = models.PositiveIntegerField(default=0)
+    regex = models.CharField(max_length=200, blank=True, null=True)   # Validação
+    size = models.PositiveIntegerField(default=0)                    # Tamanho
+    lines = models.PositiveIntegerField(default=0)                   # Número de linhas
+    is_list = models.BooleanField(default=False)
+    list_values = models.JSONField(default=list, blank=True)
+    default_value = models.CharField(max_length=200, blank=True, null=True)
+
+    show_in_search = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_custom_field'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'

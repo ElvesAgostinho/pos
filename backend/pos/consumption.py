@@ -16,17 +16,36 @@ def _active_recipe(item):
             .order_by('-status', '-version', '-id').first())
 
 
+def _warehouse_for(item, outlet):
+    """De que armazém sai este artigo NESTE ponto de venda.
+
+    As polpas vendidas no Restaurante saem do armazém do Restaurante; as mesmas
+    polpas vendidas no Bar da Piscina saem do armazém do Bar. É o mapeamento por
+    sub-família que manda — só se não houver é que se usa o armazém do outlet.
+    """
+    from inventory.models import SubFamilyMapping, Warehouse
+    if item.subfamily_id:
+        m = SubFamilyMapping.objects.filter(subfamily_id=item.subfamily_id, outlet=outlet).first()
+        if m and m.warehouse_id:
+            return m.warehouse
+    return outlet.warehouse or Warehouse.objects.first()
+
+
 def consume_ticket_stock(ticket, by=None):
     if ticket.stock_consumed:
         return
-    from inventory.models import Warehouse
     from inventory import stock as stock_engine
-    wh = ticket.outlet.warehouse or Warehouse.objects.first()
-    if not wh:
-        return  # sem armazém configurado, não há stock a mover
 
-    for line in ticket.lines.select_related('item').all():
+    # Linhas anuladas não consomem: o cliente não levou nada.
+    for line in ticket.lines.select_related('item', 'item__subfamily').filter(is_void=False):
         item = line.item
+        # (Artigo) "Não movimenta stock" — serviços, taxas, couvert: vendem-se mas
+        # não têm existência física. Sem esta caixa, o stock ficava negativo para sempre.
+        if getattr(item, 'no_stock_movement', False):
+            continue
+        wh = _warehouse_for(item, ticket.outlet)
+        if not wh:
+            continue  # sem armazém configurado, não há stock a mover
         sold = Decimal(str(line.quantity))
         recipe = _active_recipe(item)
         if recipe and recipe.lines.exists():

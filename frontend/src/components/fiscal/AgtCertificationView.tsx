@@ -1,29 +1,27 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
-import ClassicButton from '../ui/ClassicButton';
-import { ShieldCheck, ShieldAlert, KeyRound, Stamp } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Stamp, Lock, KeyRound } from 'lucide-react';
 import { apiClient } from '../../api/client';
 
+/**
+ * ESTADO DA CERTIFICAÇÃO AGT — só de leitura, e é assim de propósito.
+ *
+ * O certificado da AGT é atribuído ao SOFTWARE (ao fabricante), não ao contribuinte:
+ * um só número serve todos os clientes. A chave que assina os documentos é a chave DO
+ * PROGRAMA. Se o cliente a pudesse ver ou trocar, poderia assinar faturas fora do
+ * sistema — e a certificação deixava de valer. Por isso o número e a chave são
+ * instalados pelo fornecedor e NÃO são alteráveis a partir daqui (nem pela API).
+ */
 export default function AgtCertificationView() {
-  const qc = useQueryClient();
-  const { data } = useQuery({ queryKey: ['agt-cert'], queryFn: async () => (await apiClient.get('fiscal/certification/')).data });
-  const [cert, setCert] = useState('');
-  const [priv, setPriv] = useState('');
-  const [pub, setPub] = useState('');
-  const apply = useMutation({
-    mutationFn: async () => (await apiClient.post('fiscal/certification/', {
-      certificate_number: cert || undefined,
-      private_key: priv || undefined, public_key: pub || undefined,
-    })).data,
-    onSuccess: (r: any) => { alert(r.detail); setCert(''); setPriv(''); setPub(''); qc.invalidateQueries({ queryKey: ['agt-cert'] }); },
-    onError: (e: any) => alert(e?.response?.data?.detail || 'Erro'),
+  const { data } = useQuery({
+    queryKey: ['agt-cert'],
+    queryFn: async () => (await apiClient.get('fiscal/certification/')).data,
   });
-
   const certified = data?.certified;
+
   return (
     <ClassicWindow title="Certificação AGT" icon={<ShieldCheck size={14} className="text-gray-300" />}
-      footer={<div className="text-gray-600">As credenciais são geradas pelo fornecedor (PCC) e aplicadas aqui — o carimbo aparece automaticamente nas faturas</div>}>
+      footer={<div className="text-gray-600">A certificação pertence ao software (fabricante) — instalada pelo fornecedor, não alterável no sistema do cliente</div>}>
       <div className="p-4 space-y-3 max-w-3xl">
         {/* Estado */}
         <div className={`border p-3 flex items-center gap-3 ${certified ? 'bg-[#eafaf0] border-[#8fce9e]' : 'bg-[#fff7e6] border-[#e0c080]'}`}>
@@ -37,30 +35,39 @@ export default function AgtCertificationView() {
           </div>
         </div>
 
-        {/* Pré-visualização da menção (o carimbo na fatura) */}
+        {/* Menção estampada na fatura */}
         <div className="bg-white border border-[#a0a0a0] p-3">
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#1e3f66] mb-1"><Stamp size={13} /> Menção estampada na fatura</div>
           <div className="font-mono text-[11px] bg-[#f5f5f5] border border-[#e0e0e0] p-2">{data?.mention_preview || '—'}</div>
           <div className="text-[10px] text-gray-500 mt-1">Sai automaticamente no rodapé de cada fatura, no QR Code e no SAF-T.</div>
         </div>
 
-        {/* Aplicar credenciais do fornecedor */}
-        <div className="bg-white border border-[#a0a0a0] p-3 space-y-2 text-[11px]">
-          <div className="flex items-center gap-1.5 font-bold text-[#1e3f66]"><KeyRound size={13} /> Aplicar credenciais AGT (fornecidas pelo fornecedor)</div>
-          <div className="flex items-center gap-2">
-            <label className="w-40 text-gray-600">Nº de certificado AGT</label>
-            <input value={cert} onChange={(e) => setCert(e.target.value)} placeholder="Ex.: 147/AGT/2026" className="border border-[#a0a0a0] p-1 w-56" />
+        {/* Motor de assinatura */}
+        <div className="bg-white border border-[#a0a0a0] p-3 text-[11px]">
+          <div className="flex items-center gap-1.5 font-bold text-[#1e3f66] mb-2"><KeyRound size={13} /> Motor de assinatura</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>Chave de assinatura instalada: <b className={data?.has_keys ? 'text-green-700' : 'text-red-600'}>{data?.has_keys ? 'sim' : 'não'}</b></div>
+            <div>Versão da chave: <b>{data?.key_version ?? '—'}</b></div>
+            <div>Algoritmo: <b>RSA-SHA1</b> (norma AGT)</div>
+            <div>Encadeamento de documentos: <b className="text-green-700">ativo</b></div>
           </div>
+        </div>
+
+        {/* Porque é que isto não se edita aqui */}
+        <div className="bg-[#eef2f7] border border-[#9aa6b6] p-3 text-[11px] flex items-start gap-2">
+          <Lock size={16} className="text-[#25405e] flex-shrink-0 mt-0.5" />
           <div>
-            <label className="text-gray-600 block mb-1">Chave privada (PEM)</label>
-            <textarea value={priv} onChange={(e) => setPriv(e.target.value)} rows={4} placeholder="-----BEGIN RSA PRIVATE KEY-----" className="border border-[#a0a0a0] p-1 w-full font-mono text-[10px]" />
+            <div className="font-bold text-[#25405e]">Porque é que não pode alterar isto</div>
+            <div className="text-gray-700 mt-1">
+              O certificado da AGT é atribuído ao <b>programa</b>, não à empresa: um só número serve todos os
+              clientes deste software. A chave que assina as suas faturas é a chave do programa e <b>nunca esteve
+              nas suas mãos</b> — nem nas de um funcionário seu. É precisamente isso que dá validade fiscal aos
+              seus documentos.
+              <br />
+              O número e a chave são instalados pelo fornecedor no licenciamento. Se precisar de os atualizar
+              (renovação ou rotação de chave), contacte o fornecedor.
+            </div>
           </div>
-          <div>
-            <label className="text-gray-600 block mb-1">Chave pública (PEM)</label>
-            <textarea value={pub} onChange={(e) => setPub(e.target.value)} rows={3} placeholder="-----BEGIN PUBLIC KEY-----" className="border border-[#a0a0a0] p-1 w-full font-mono text-[10px]" />
-          </div>
-          <ClassicButton icon={ShieldCheck} label="Aplicar certificação" onClick={() => apply.mutate()} />
-          <div className="text-[10px] text-gray-500">O cliente não gera chaves — recebe-as do fornecedor (PCC → Certificação AGT). As chaves são validadas antes de serem instaladas.</div>
         </div>
       </div>
     </ClassicWindow>

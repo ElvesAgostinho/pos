@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { printFiscalInvoice, printCommercialDocument } from './printInvoice';
 import Pagination from '../ui/Pagination';
+import GridToggle from '../ui/GridToggle';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -122,7 +123,7 @@ export function FiscalSeriesView() {
               <div key={s.id} className="grid grid-cols-7 px-2 py-1 border-b border-[#eee] items-center">
                 <span>{s.doc_type_code} · {s.doc_type_name}</span>
                 <span>{s.prefix} {s.code}</span><span>{s.year}</span><span className="font-bold">{s.current_number}</span>
-                <span>{s.certified ? '✔' : '✘'}</span><span>{s.environment}</span>
+                <span><GridToggle value={!!s.certified} title="Certificado pela AGT — vem do software, não se liga aqui" /></span><span>{s.environment}</span>
                 <button className="text-[#1565c0] hover:underline text-left flex items-center gap-1" onClick={() => verify.mutate(s.id)}><ShieldCheck size={13} /> verificar</button>
               </div>
             ))}
@@ -137,7 +138,7 @@ export function FiscalSeriesView() {
           <div className="bg-white border border-[#c0c0c0] text-[12px]">
             <div className="grid grid-cols-5 font-bold bg-[#f0f0f0] border-b border-[#ddd] px-2 py-1"><span>Código</span><span>Nome</span><span>SAF-T</span><span>Assina</span><span>Retificativo</span></div>
             {(types || []).map((t: any) => (
-              <div key={t.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#eee]"><span className="font-bold">{t.code}</span><span>{t.name}</span><span>{t.saft_type}</span><span>{t.signable ? '✔' : '—'}</span><span>{t.is_rectifying ? '✔' : '—'}</span></div>
+              <div key={t.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#eee]"><span className="font-bold">{t.code}</span><span>{t.name}</span><span>{t.saft_type}</span><span><GridToggle value={!!t.signable} title="Documento assinável (regra fiscal)" /></span><span><GridToggle value={!!t.is_rectifying} title="Documento retificativo (regra fiscal)" /></span></div>
             ))}
           </div>
         </Section>
@@ -389,7 +390,7 @@ export function TaxEngineView() {
           <div className="bg-white border border-[#c0c0c0] text-[12px]">
             <div className="grid grid-cols-5 font-bold bg-[#f0f0f0] border-b border-[#ddd] px-2 py-1"><span>Código</span><span>Nome</span><span className="text-right">%</span><span>Padrão</span><span>Isenta</span></div>
             {(rates || []).map((x: any) => (
-              <div key={x.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#eee]"><span className="font-bold">{x.code}</span><span>{x.name}</span><span className="text-right">{Number(x.percentage)}%</span><span>{x.is_default ? '✔' : '—'}</span><span>{x.is_exempt ? '✔' : '—'}</span></div>
+              <div key={x.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#eee]"><span className="font-bold">{x.code}</span><span>{x.name}</span><span className="text-right">{Number(x.percentage)}%</span><span><GridToggle value={!!x.is_default} title="Taxa por defeito" /></span><span><GridToggle value={!!x.is_exempt} title="Isenta de IVA" /></span></div>
             ))}
           </div>
         </Section>

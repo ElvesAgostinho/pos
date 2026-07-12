@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Tax, Brand, PaymentMethod, DocumentSeries
+from .models import Brand, PaymentMethod, DocumentSeries
 
 
 @admin.register(DocumentSeries)
@@ -13,12 +13,6 @@ class DocumentSeriesAdmin(admin.ModelAdmin):
 class PaymentMethodAdmin(admin.ModelAdmin):
     list_display = ('code', 'name', 'method_type', 'currency', 'is_active', 'sort_order')
     list_filter = ('method_type', 'is_active')
-    search_fields = ('code', 'name')
-
-
-@admin.register(Tax)
-class TaxAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'percentage', 'is_active')
     search_fields = ('code', 'name')
 
 

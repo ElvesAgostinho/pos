@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.hashers import make_password, identify_hasher
 from .models import (
+    UserHotelAccess,
     EnterpriseGroup, Company, Hotel, Department, Area, Subarea, Workstation,
     Shift, Collaborator, PosOperator, OperatorLocationConstraint, OperatorWorkstationConstraint
 )
@@ -80,3 +81,11 @@ class PosOperatorAdmin(admin.ModelAdmin):
             except ValueError:
                 obj.pin_code = make_password(raw)
         super().save_model(request, obj, form, change)
+
+
+@admin.register(UserHotelAccess)
+class UserHotelAccessAdmin(admin.ModelAdmin):
+    """Que hotéis é que cada utilizador pode ver. Sem registos = vê todos (hotel único)."""
+    list_display = ('user', 'hotel', 'is_default', 'created_at')
+    list_filter = ('hotel',)
+    search_fields = ('user__username', 'hotel__name')

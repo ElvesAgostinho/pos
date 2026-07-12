@@ -1,11 +1,5 @@
 from django.contrib import admin
-from .models import Currency, GlobalConfig
-
-
-@admin.register(Currency)
-class CurrencyAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'symbol')
-    search_fields = ('code', 'name')
+from .models import GlobalConfig
 
 
 @admin.register(GlobalConfig)

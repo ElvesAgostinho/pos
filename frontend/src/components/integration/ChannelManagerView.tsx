@@ -24,6 +24,41 @@ export default function ChannelManagerView() {
       footer={<div className="flex items-center justify-between w-full"><span className="text-gray-600">Booking.com · Expedia · Airbnb · Agoda · Hotels.com — disponibilidade/tarifas e reservas · anti-overbooking automático</span>
         <button onClick={() => syncAll.mutate()} className={btn}><RefreshCw size={12} className={syncAll.isPending ? 'animate-spin' : ''} />Sincronizar todos</button></div>}>
       <div className="p-4 space-y-3 bg-[#ececec] h-full overflow-auto">
+        {/* ONDE OBTER AS CREDENCIAIS de cada plataforma */}
+        <div className="bg-white border border-[#c0c0c0] p-3 text-[12px]">
+          <div className="font-bold text-[#1e3f66] mb-2">Onde obter as credenciais de cada plataforma</div>
+          <table className="w-full border-collapse text-[11px]">
+            <thead>
+              <tr className="bg-[#f0f0f0]">
+                <th className="border border-[#ddd] px-2 py-1 text-left">Plataforma</th>
+                <th className="border border-[#ddd] px-2 py-1 text-left">Onde pedir / encontrar</th>
+                <th className="border border-[#ddd] px-2 py-1 text-left">Property ID</th>
+                <th className="border border-[#ddd] px-2 py-1 text-left">Chave API</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['Booking.com', 'Extranet → Conta → Connectivity Provider. Peça acesso à Connectivity API (Booking aprova o parceiro).', 'Hotel ID na Extranet (canto superior)', 'Fornecida pela Booking após aprovação'],
+                ['Expedia', 'Expedia Partner Central → Connectivity Settings → EPS Rapid / EQC API.', 'Property ID no Partner Central', 'API Key + Secret (EPS Rapid)'],
+                ['Airbnb', 'Airbnb Partner Portal → API access (só para software homologado).', 'Listing ID', 'OAuth token'],
+                ['Agoda', 'Agoda YCS → Connectivity → escolher provider.', 'Hotel ID (YCS)', 'API Key fornecida pela Agoda'],
+                ['Hotels.com', 'Gerido pela Expedia (mesma credencial).', 'Property ID Expedia', 'Chave Expedia'],
+              ].map((r) => (
+                <tr key={r[0]}>
+                  <td className="border border-[#ddd] px-2 py-1 font-bold">{r[0]}</td>
+                  <td className="border border-[#ddd] px-2 py-1 text-gray-700">{r[1]}</td>
+                  <td className="border border-[#ddd] px-2 py-1 text-gray-700">{r[2]}</td>
+                  <td className="border border-[#ddd] px-2 py-1 text-gray-700">{r[3]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-2 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#1e3f66]">
+            💡 <b>Como funciona:</b> preenche em baixo o canal, o <b>Property ID</b> e a <b>Chave API</b> → o sistema envia disponibilidade e tarifas, e recebe as reservas automaticamente (com <b>anti-overbooking</b>). As reservas entram no <b>PMS → Reservas</b>.
+            <br />⚠️ As OTAs só dão as credenciais a software <b>homologado</b> por elas — este é o passo comercial a fazer com cada plataforma.
+          </div>
+        </div>
+
         {/* Ligar canal */}
         <div className="bg-white border border-[#c0c0c0] p-3 flex flex-wrap items-end gap-2 text-[12px]">
           <label className="flex flex-col">Canal<select className="border border-[#a0a0a0] px-2 py-1" value={f.provider} onChange={e => setF({ ...f, provider: e.target.value })}>{PROVIDERS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>

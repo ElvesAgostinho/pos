@@ -5,6 +5,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { DoorClosed, Plus } from 'lucide-react';
 import { useRooms, useCreateRoom, useSetRoomStatus, useRoomTypes, useCreateRoomType } from '../../hooks/usePms';
 import { ROOM_STATUS } from '../../api/pms';
+import { notifyError, notifyGuide } from '../../utils/friendlyError';
 
 const CLS: Record<string, string> = {
   VACANT_CLEAN: 'text-green-700 font-bold', VACANT_DIRTY: 'text-orange-600 font-bold',
@@ -22,17 +23,36 @@ export default function RoomsView() {
   const [newType, setNewType] = useState('');
 
   const add = () => {
-    if (!draft.number) { alert('Indique o número do quarto.'); return; }
-    if (!draft.room_type) { alert('Escolha um tipo de quarto (crie um primeiro, se ainda não existir).'); return; }
+    if (!draft.number) {
+      notifyGuide({ title: 'Falta o número do quarto', message: 'Cada quarto precisa de um número (ex.: 101, 202-A).',
+        hint: 'Escreva o número no campo "Nº" e clique em "Novo Quarto".' });
+      return;
+    }
+    if (!draft.room_type) {
+      notifyGuide({
+        title: 'Falta o tipo de quarto',
+        message: roomTypes.length === 0
+          ? 'Ainda não existe nenhum tipo de quarto — e um quarto tem sempre de pertencer a um tipo (Standard, Suite, Duplo…).'
+          : 'Não escolheu o tipo deste quarto.',
+        hint: roomTypes.length === 0
+          ? 'Primeiro crie um tipo: escreva o nome (ex.: "Standard") no campo "Novo tipo" e clique em "Criar Tipo". Depois já pode adicionar o quarto.'
+          : 'Escolha o tipo na lista "— tipo —" e volte a clicar em "Novo Quarto".',
+      });
+      return;
+    }
     create.mutate({ number: draft.number, room_type: Number(draft.room_type), floor: draft.floor },
-      { onSuccess: () => setDraft(empty), onError: (e: any) => alert('Erro: ' + JSON.stringify(e?.response?.data)) });
+      { onSuccess: () => setDraft(empty), onError: notifyError });
   };
 
   const addType = () => {
-    if (!newType.trim()) return;
+    if (!newType.trim()) {
+      notifyGuide({ title: 'Falta o nome do tipo', message: 'Escreva o nome do tipo de quarto que quer criar.',
+        hint: 'Por exemplo: "Standard", "Suite", "Duplo Vista Mar".' });
+      return;
+    }
     createType.mutate({ code: newType.slice(0, 6).toUpperCase(), name: newType, capacity: 2, base_rate: 0 } as any,
       { onSuccess: (t: any) => { setNewType(''); setDraft((d: any) => ({ ...d, room_type: String(t.id) })); },
-        onError: (e: any) => alert('Erro ao criar tipo: ' + JSON.stringify(e?.response?.data)) });
+        onError: notifyError });
   };
 
   return (

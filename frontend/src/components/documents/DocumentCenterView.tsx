@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import AuditTrailView from '../system/AuditTrailView';
 import { useQuery } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
@@ -38,6 +39,7 @@ export default function DocumentCenterView() {
   // Filtros avançados (client-side, sobre os resultados)
   const [showAdv, setShowAdv] = useState(false);
   const [adv, setAdv] = useState<any>({ dateFrom: '', dateTo: '', valMin: '', valMax: '', status: '' });
+  const [view, setView] = useState<'docs' | 'trail'>('docs');
   const statuses = Array.from(new Set(rows.map((r: any) => r.status).filter(Boolean)));
   const filtered = rows.filter((r: any) => {
     if (adv.dateFrom && (r.date || '') < adv.dateFrom) return false;
@@ -59,10 +61,34 @@ export default function DocumentCenterView() {
     { label: 'JSON', icon: FileJson, color: '#b58900', run: () => exportJSON(filtered, EXPORT_COLS, expName) },
   ];
 
+  // O repositório tem DUAS metades: os DOCUMENTOS (o que foi emitido) e o TRILHO
+  // (tudo o que aconteceu — incluindo o que foi anulado/eliminado e porquê).
+  if (view === 'trail') {
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex gap-1 px-3 pt-2 bg-[#dfe3e8] border-b border-[#9aa6b6]">
+          <button onClick={() => setView('docs')}
+            className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#dfe3e8] text-gray-600 border-[#c0c7d0]">Documentos</button>
+          <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#25405e] border-[#9aa6b6]">
+            Trilho de Auditoria (tudo o que aconteceu)
+          </button>
+        </div>
+        <div className="flex-1 overflow-hidden"><AuditTrailView /></div>
+      </div>
+    );
+  }
+
   return (
     <ClassicWindow title="Document Center — Repositório Documental" icon={<FolderArchive size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Todos os documentos de todos os módulos · pesquisa global (nº, cliente, mesa, quarto, valor) · {data?.count ?? 0} resultado(s)</div>}>
       <div className="flex flex-col h-full bg-[#ececec]">
+        <div className="flex gap-1 px-3 pt-2 bg-[#dfe3e8] border-b border-[#9aa6b6]">
+          <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#25405e] border-[#9aa6b6]">Documentos</button>
+          <button onClick={() => setView('trail')}
+            className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#dfe3e8] text-gray-600 border-[#c0c7d0] hover:bg-[#eef2f6]">
+            Trilho de Auditoria (tudo o que aconteceu)
+          </button>
+        </div>
         {/* Dashboard */}
         <div className="flex flex-wrap gap-2 p-3 border-b border-[#c0c0c0] bg-[#f4f4f4]">
           {[['Emitidos hoje', dash?.total_today, '#1e3f66'], ['Faturas', dash?.invoices, '#c0392b'], ['Vendas POS', dash?.pos_sales, '#c9a400'], ['Check-ins', dash?.checkins, '#2980b9'], ['Compras', dash?.purchases, '#e67e22'], ['Mov. Stock', dash?.stock_moves, '#a0522d'], ['Anulados', dash?.voided, '#7f8c8d']].map(([l, v, c]: any) => (

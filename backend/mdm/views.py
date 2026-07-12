@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import Tax, Brand, PaymentMethod, DocumentSeries, Currency, Country, Bank, Language, Customer
+from .models import Brand, PaymentMethod, DocumentSeries, Currency, Country, Bank, Language, Customer
 from .serializers import (
     TaxSerializer, BrandSerializer, PaymentMethodSerializer, DocumentSeriesSerializer,
     CurrencySerializer, CountrySerializer, BankSerializer, LanguageSerializer, CustomerSerializer,
@@ -7,7 +7,9 @@ from .serializers import (
 
 
 class TaxViewSet(viewsets.ModelViewSet):
-    queryset = Tax.objects.all()
+    """Ver TaxSerializer: uma só fonte de imposto (fiscal.TaxRate)."""
+    from fiscal.models import TaxRate as _T
+    queryset = _T.objects.all()
     serializer_class = TaxSerializer
 
 

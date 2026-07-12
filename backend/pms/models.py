@@ -108,12 +108,31 @@ class Reservation(models.Model):
     def nights(self):
         return max((self.check_out - self.check_in).days, 0)
 
+    @property
+    def folio(self):
+        """A conta principal (retrocompatível: o resto do sistema usa `reserva.folio`)."""
+        return self.folios.filter(is_primary=True).first() or self.folios.first()
+
 
 class Folio(models.Model):
-    """Conta do hóspede: acumula charges (quarto, F&B do POS) e pagamentos."""
+    """Conta do hóspede: acumula charges (quarto, F&B do POS) e pagamentos.
+
+    UMA RESERVA PODE TER VÁRIAS CONTAS — é assim que funcionam os hotéis a sério:
+      · Conta A (principal): o alojamento, pago pela empresa que reservou;
+      · Conta B (extras): o bar, o minibar, o spa — pagos pelo próprio hóspede.
+    No check-out, cada uma é faturada a quem deve pagar. Sem isto, ou a empresa
+    paga os gin-tónicos do hóspede, ou o rececionista faz contas num papel.
+    """
     STATUS = [('OPEN', 'Aberto'), ('CLOSED', 'Fechado')]
-    reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name='folio')
+    PAYER = [('GUEST', 'Hóspede'), ('COMPANY', 'Empresa'), ('AGENCY', 'Agência'), ('HOUSE', 'Cortesia (casa)')]
+
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name='folios')
     number = models.CharField(max_length=30, unique=True)
+    label = models.CharField(max_length=60, default='A · Principal')   # "A · Principal", "B · Extras"
+    payer_type = models.CharField(max_length=8, choices=PAYER, default='GUEST')
+    payer_name = models.CharField(max_length=200, blank=True, null=True)
+    payer_nif = models.CharField(max_length=30, blank=True, null=True)  # a fatura sai com este contribuinte
+    is_primary = models.BooleanField(default=True)
     status = models.CharField(max_length=8, choices=STATUS, default='OPEN')
     opened_at = models.DateTimeField(auto_now_add=True)
     closed_at = models.DateTimeField(blank=True, null=True)
@@ -121,18 +140,23 @@ class Folio(models.Model):
 
     class Meta:
         db_table = 'pms_folio'
-        ordering = ['-opened_at']
+        ordering = ['-is_primary', 'opened_at']
 
     def __str__(self):
-        return f"Folio {self.number}"
+        return f"Folio {self.number} ({self.label})"
+
+    # Os lançamentos ANULADOS (estornados) continuam na conta para auditoria,
+    # mas não contam para o saldo — nunca se apaga um lançamento.
+    def _live(self):
+        return [c for c in self.charges.all() if not c.is_void]
 
     @property
     def charges_total(self):
-        return sum((c.amount for c in self.charges.all() if c.charge_type != 'PAYMENT'), Decimal('0'))
+        return sum((c.amount for c in self._live() if c.charge_type != 'PAYMENT'), Decimal('0'))
 
     @property
     def payments_total(self):
-        return sum((c.amount for c in self.charges.all() if c.charge_type == 'PAYMENT'), Decimal('0'))
+        return sum((c.amount for c in self._live() if c.charge_type == 'PAYMENT'), Decimal('0'))
 
     @property
     def balance(self):
@@ -157,6 +181,18 @@ class FolioCharge(models.Model):
     source_reference = models.CharField(max_length=60, blank=True, null=True)  # ex: ticket POS
     posted_by = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # --- ESTORNO: um lançamento errado NUNCA se apaga. Anula-se e fica o rasto. ---
+    is_void = models.BooleanField(default=False)
+    void_reason = models.CharField(max_length=255, blank=True, null=True)
+    voided_at = models.DateTimeField(blank=True, null=True)
+    voided_by = models.CharField(max_length=100, blank=True, null=True)
+    # O lançamento de sinal contrário que anula este (o "estorno" propriamente dito).
+    reversal_of = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True,
+                                    related_name='reversals')
+    # --- TRANSFERÊNCIA entre contas (ex.: o bar foi lançado na conta errada) ---
+    transferred_from = models.CharField(max_length=30, blank=True, null=True)   # nº do folio de origem
+    transferred_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = 'pms_folio_charge'

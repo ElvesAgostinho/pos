@@ -1,6 +1,6 @@
 from django.conf import settings
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from core.modules import optional_app_labels, all_modules, FEATURES, resolve_active_features
@@ -54,6 +54,19 @@ class LicenseStatusView(APIView):
 
     def get(self, request):
         return Response(_real_license())
+
+
+class LicenseLimitsView(APIView):
+    """Consumo vs licenciado: propriedades, terminais e utilizadores.
+
+    O sistema vende-se POR PROPRIEDADE — este ecrã mostra ao cliente quantas tem e
+    quantas pode ter. Criar acima do limite é recusado pelo servidor.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .limits import status
+        return Response(status())
 
 
 def _active_modules():

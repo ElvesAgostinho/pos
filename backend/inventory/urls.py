@@ -5,12 +5,24 @@ from .views import (
     PriceListViewSet, PriceListItemViewSet, ItemVariantViewSet, ItemUomViewSet,
     StockLevelViewSet, StockMovementViewSet,
 )
+from .pos_config import (
+    ItemGroupViewSet, ItemFamilyViewSet, ItemSubFamilyViewSet, PrinterViewSet, PosItemViewSet,
+    ReportDefinitionViewSet,
+)
 from .wh import (
     StockLocationViewSet, StockLotViewSet, StockTransferViewSet, InventoryCountViewSet,
     WarehouseDashboardView, WarehouseCostingView,
 )
 
 router = DefaultRouter()
+# --- Configuração POS → Artigos (Grupo → Família → Sub-Família → Artigo) ---
+router.register(r'pos/groups', ItemGroupViewSet, basename='pos-group')
+router.register(r'pos/families', ItemFamilyViewSet, basename='pos-family')
+router.register(r'pos/subfamilies', ItemSubFamilyViewSet, basename='pos-subfamily')
+router.register(r'pos/printers', PrinterViewSet, basename='pos-printer')
+router.register(r'pos/report-definitions', ReportDefinitionViewSet, basename='pos-repdef')
+router.register(r'pos/articles', PosItemViewSet, basename='pos-article')
+
 router.register(r'uoms', UnitOfMeasureViewSet, basename='inv-uom')
 router.register(r'categories', ItemCategoryViewSet, basename='inv-category')
 router.register(r'items', ItemViewSet, basename='inv-item')

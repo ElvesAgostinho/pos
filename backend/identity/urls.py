@@ -1,4 +1,6 @@
 from django.urls import path
+from .hotel_profile import HotelProfileView
+from .pos_params import PosGroupViewSet, PosCompanyViewSet
 from rest_framework.routers import DefaultRouter
 from .views import (
     EnterpriseGroupViewSet, CompanyViewSet, HotelViewSet,
@@ -10,6 +12,8 @@ from .hmc import (
 )
 
 router = DefaultRouter()
+router.register(r'pos/groups', PosGroupViewSet, basename='pos-org-group')
+router.register(r'pos/companies', PosCompanyViewSet, basename='pos-company')
 router.register(r'groups', EnterpriseGroupViewSet, basename='org-group')
 router.register(r'companies', CompanyViewSet, basename='org-company')
 router.register(r'hotels', HotelViewSet, basename='org-hotel')
@@ -24,4 +28,5 @@ router.register(r'resources', HotelResourceViewSet, basename='org-resource')
 
 urlpatterns = router.urls + [
     path('hmc/dashboard/', HmcDashboardView.as_view(), name='hmc-dashboard'),
+    path('hotel-profile/', HotelProfileView.as_view(), name='hotel-profile'),
 ]

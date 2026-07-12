@@ -65,16 +65,19 @@ def _make_entry(journal, date, description, source, reference, lines, autopost=T
     """lines = [(account, debit, credit), ...]. Cria e (opcional) lança."""
     if not journal:
         return None, 'Sem diário configurado.'
-    valid = [(a, d, c) for (a, d, c) in lines if a and (d or c)]
+    valid = [ln for ln in lines if ln[0] and (ln[1] or ln[2])]
     if not valid:
         return None, 'Sem contas mapeadas.'
     entry = JournalEntry.objects.create(
         number=_next_number(), journal=journal, period=_period(date), entry_date=date,
         description=description[:255], reference=reference, source=source,
         status='DRAFT', created_by=by)
-    for acc, d, c in valid:
+    for ln in valid:
+        acc, d, c = ln[0], ln[1], ln[2]
+        cc = ln[3] if len(ln) > 3 else None      # centro de custo (conta analítica)
         JournalEntryLine.objects.create(entry=entry, account=acc,
-                                        debit=Decimal(str(d or 0)), credit=Decimal(str(c or 0)))
+                                        debit=Decimal(str(d or 0)), credit=Decimal(str(c or 0)),
+                                        cost_center=cc)
     if autopost:
         try:
             entry.post(by=by)
@@ -91,11 +94,32 @@ def post_pos_ticket(ticket, autopost=True, by=None):
     grand = Decimal(str(ticket.grand_total or 0))
     tax = Decimal(str(ticket.tax_total or 0))
     net = grand - tax
-    lines = [
-        (_acc('POS_CASH', mp), grand, 0),
-        (_acc('SALES_SERVICE', mp), 0, net),
-        (_acc('VAT_PAYABLE', mp), 0, tax),
-    ]
+    vendas = _acc('SALES_SERVICE', mp)
+
+    # A receita reparte-se pelas CONTAS ANALÍTICAS dos artigos (centro de custo).
+    # Sem isto, o bar e o restaurante caíam ambos na conta "Vendas" e ninguém sabia
+    # qual dos dois dava lucro. O artigo sem conta analítica vai para a do outlet.
+    por_cc = {}
+    for l in ticket.lines.filter(is_void=False).select_related('item'):
+        cc = (getattr(l.item, 'analytic_account_sale', None) or ticket.outlet.code)
+        bruto = Decimal(str(l.line_total or 0))
+        taxa = Decimal(str(l.tax_percentage or 0))
+        liq = bruto / (Decimal('1') + taxa / Decimal('100')) if taxa > 0 else bruto
+        por_cc[cc] = por_cc.get(cc, Decimal('0')) + liq
+
+    lines = [(_acc('POS_CASH', mp), grand, 0, None)]
+    if por_cc and net > 0:
+        # Reparte o líquido REAL (já com desconto) na proporção de cada conta analítica.
+        total_cc = sum(por_cc.values()) or Decimal('1')
+        acumulado = Decimal('0')
+        itens = list(por_cc.items())
+        for i, (cc, v) in enumerate(itens):
+            parte = (net - acumulado) if i == len(itens) - 1 else (net * v / total_cc).quantize(Decimal('0.01'))
+            acumulado += parte
+            lines.append((vendas, 0, parte, cc))
+    else:
+        lines.append((vendas, 0, net, None))
+    lines.append((_acc('VAT_PAYABLE', mp), 0, tax, None))
     entry, _ = _make_entry(_journal('SALES'), ticket.closed_at.date() if ticket.closed_at else ticket.opened_at.date(),
                            f'Venda POS {ticket.ticket_number}', 'POS', ticket.ticket_number, lines, autopost, by)
     return entry

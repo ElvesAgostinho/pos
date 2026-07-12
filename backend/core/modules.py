@@ -113,7 +113,7 @@ FEATURES = [
     {"key": "pos.table_reservations", "name": "Reservas de Mesa", "module": "pos", "item": "posc_reservations", "default_on": True},
     {"key": "pos.giftcards", "name": "Gift Cards / Vouchers", "module": "pos", "item": "posc_giftcards", "default_on": True},
     {"key": "pos.kds", "name": "Kitchen Display (KDS)", "module": "pos", "item": "posc_kds", "default_on": True},
-    {"key": "commercial.loyalty", "name": "Fidelização (Loyalty)", "module": "commercial", "item": "com_loyalty", "default_on": False},
+    {"key": "commercial.loyalty", "name": "Fidelização (Loyalty)", "module": "commercial", "item": "com_loyalty", "default_on": True},
     {"key": "commercial.combos", "name": "Menus & Combos", "module": "commercial", "item": "com_menus", "default_on": True},
     {"key": "fiscal.commercial_docs", "name": "Documentos Comerciais (Orçamento/Proforma)", "module": "fiscal", "item": "fis_commercial", "default_on": True},
     {"key": "pms.spa", "name": "Spa", "module": "pms", "item": "pms_spa", "default_on": True},
@@ -122,8 +122,8 @@ FEATURES = [
     {"key": "pms.agencies", "name": "Agências & Empresas (crédito)", "module": "pms", "item": "pms_agencies", "default_on": True},
     {"key": "pms.night_audit", "name": "Night Audit", "module": "pms", "item": "pms_nightaudit", "default_on": True},
     {"key": "ops.center", "name": "Centro de Operações (torre de controlo)", "module": "ops", "item": "ops_dashboard", "default_on": True},
-    {"key": "integration.channel_manager", "name": "Channel Manager", "module": "integration", "item": "int_channel", "default_on": False},
-    {"key": "integration.booking_engine", "name": "Booking Engine (reservas online)", "module": "integration", "item": "int_booking", "default_on": False},
+    {"key": "integration.channel_manager", "name": "Channel Manager", "module": "integration", "item": "int_channel", "default_on": True},
+    {"key": "integration.booking_engine", "name": "Booking Engine (reservas online)", "module": "integration", "item": "int_booking", "default_on": True},
 ]
 FEATURE_KEYS = [f["key"] for f in FEATURES]
 
@@ -141,7 +141,10 @@ def resolve_active_features(active_modules, license_features=None, overrides=Non
     overrides = overrides or {}
     out = []
     for f in FEATURES:
-        if f["module"] not in active_modules and f["module"] not in ("ops",):
+        # 'ops' e 'integration' são transversais (não são apps opcionais): estão sempre
+        # disponíveis se a licença os permitir — senão o Booking Engine/Channel Manager
+        # nunca apareceriam, apesar de instalados.
+        if f["module"] not in active_modules and f["module"] not in ("ops", "integration"):
             # 'ops' é sempre disponível (núcleo de supervisão); os restantes exigem módulo ativo.
             if f["module"] != "ops":
                 continue

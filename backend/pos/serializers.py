@@ -47,10 +47,19 @@ class POSProductConfigSerializer(serializers.ModelSerializer):
     item_sale_price = serializers.DecimalField(source='item.sale_price', max_digits=12, decimal_places=2, read_only=True)
     item_image = serializers.CharField(source='item.image_url', read_only=True, default=None)
     effective_price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    # Alergénios declarados do artigo — o operador tem de os poder ver na venda.
+    allergens = serializers.SerializerMethodField()
 
     class Meta:
         model = POSProductConfig
         fields = '__all__'
+
+    def get_allergens(self, obj):
+        try:
+            prof = getattr(obj.item, 'production_profile', None)
+            return [a.name for a in prof.allergens.all()] if prof else []
+        except Exception:
+            return []
 
 
 class OutletPaymentMethodSerializer(serializers.ModelSerializer):
@@ -76,12 +85,21 @@ class CashSessionSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     outlet_name = serializers.CharField(source='outlet.name', read_only=True, default=None)
     movements = CashMovementSerializer(many=True, read_only=True)
-    expected_cash = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    expected_cash = serializers.SerializerMethodField()
 
     class Meta:
         model = CashSession
         fields = '__all__'
         read_only_fields = ('status', 'counted_amount', 'expected_amount', 'difference', 'closed_at')
+
+    def get_expected_cash(self, obj):
+        """(8005) FECHO CEGO — enquanto a caixa está ABERTA, o operador não vê o valor
+        esperado. Se o visse, escrevia-o na contagem e o desvio nunca aparecia.
+        Depois de fechada, o valor mostra-se (para a reconciliação do backoffice)."""
+        blind = self.context.get('blind_close', True)
+        if blind and obj.status == 'OPEN':
+            return None
+        return str(obj.expected_cash)
 
 
 class POSTableSerializer(serializers.ModelSerializer):
@@ -105,11 +123,17 @@ class POSTicketLineSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source='item.name', read_only=True)
     item_code = serializers.CharField(source='item.code', read_only=True)
     modifiers = POSLineModifierSerializer(many=True, read_only=True)
+    # Estado da produção (o operador tem de saber quando está PRONTO para servir).
+    kds_status_display = serializers.CharField(source='get_kds_status_display', read_only=True)
+    allergens = serializers.SerializerMethodField()
 
     class Meta:
         model = POSTicketLine
         fields = '__all__'
         read_only_fields = ('line_total',)
+
+    def get_allergens(self, obj):
+        return _item_allergens(obj.item)
 
 
 class POSTicketPaymentSerializer(serializers.ModelSerializer):
@@ -136,6 +160,15 @@ class POSTicketSerializer(serializers.ModelSerializer):
         read_only_fields = ('status', 'subtotal', 'tax_total', 'grand_total', 'closed_at')
 
 
+def _item_allergens(item):
+    """Alergénios declarados de um artigo (production.ItemProductionProfile)."""
+    try:
+        prof = getattr(item, 'production_profile', None)
+        return [a.name for a in prof.allergens.all()] if prof else []
+    except Exception:
+        return []
+
+
 class KDSLineSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source='description', read_only=True)
     ticket_number = serializers.CharField(source='ticket.ticket_number', read_only=True)
@@ -145,12 +178,22 @@ class KDSLineSerializer(serializers.ModelSerializer):
     dest_label = serializers.CharField(source='ticket.dest_label', read_only=True, default=None)
     dest_priority = serializers.CharField(source='ticket.dest_priority', read_only=True, default=None)
     delivery_status = serializers.CharField(source='ticket.delivery_status', read_only=True, default=None)
+    operator_name = serializers.CharField(source='ticket.operator_name', read_only=True, default=None)
+    guests = serializers.IntegerField(source='ticket.guests', read_only=True, default=None)
+    customer_name = serializers.CharField(source='ticket.customer_name', read_only=True, default=None)
+    # ALERGÉNIOS — informação crítica para a cozinha/bar.
+    allergens = serializers.SerializerMethodField()
 
     class Meta:
         model = POSTicketLine
         fields = ('id', 'ticket', 'ticket_number', 'table_label', 'outlet_name', 'item_name',
                   'description', 'quantity', 'note', 'kds_station', 'kds_status', 'kds_status_display',
-                  'fired_at', 'ready_at', 'dest_label', 'dest_priority', 'delivery_status')
+                  'fired_at', 'ready_at', 'dest_label', 'dest_priority', 'delivery_status',
+                  'operator_name', 'guests', 'customer_name', 'allergens',
+                  'is_void', 'void_reason', 'voided_at', 'kds_ack_at')
+
+    def get_allergens(self, obj):
+        return _item_allergens(obj.item)
 
 
 class POSDocumentSerializer(serializers.ModelSerializer):

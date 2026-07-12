@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
+import GridToggle from '../ui/GridToggle';
 import { FileText, Plus, Trash2, ShieldCheck, Award, Gauge, ScrollText } from 'lucide-react';
 import { esmApi } from '../../api/esm';
 
@@ -135,8 +136,12 @@ export function SrmSlaView() {
         <div className="flex-1 overflow-hidden">
           <ClassicGrid rowKey="id" data={rows} columns={[
             { header: 'Fornecedor', accessor: 'supplier_name', width: '34%' },
-            { header: 'HACCP', accessor: (r: any) => r.requires_haccp ? '✓' : '—', width: '12%' },
-            { header: 'Cadeia frio', accessor: (r: any) => r.requires_cold_chain ? '✓' : '—', width: '14%' },
+            { header: 'HACCP', width: '12%',
+              accessor: (r: any) => <GridToggle endpoint="esm/contracts" id={r.id} field="requires_haccp"
+                value={!!r.requires_haccp} invalidate="srm" title="Exige certificado HACCP a este fornecedor" /> },
+            { header: 'Cadeia frio', width: '14%',
+              accessor: (r: any) => <GridToggle endpoint="esm/contracts" id={r.id} field="requires_cold_chain"
+                value={!!r.requires_cold_chain} invalidate="srm" title="Exige cadeia de frio na entrega" /> },
             { header: 'Temp.', accessor: (r: any) => r.required_temperature || '—', width: '14%' },
             { header: 'Últ. auditoria', accessor: (r: any) => r.last_audit_date || '—', width: '18%' },
             { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '8%' },

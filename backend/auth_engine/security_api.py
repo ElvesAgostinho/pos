@@ -38,22 +38,59 @@ class MyAccessView(APIView):
                          'is_superuser': False, 'profiles': [p.name for p in profiles]})
 
 
+class MyHotelsView(APIView):
+    """GET /api/auth/hotels/ — hotéis a que o utilizador ATUAL tem acesso.
+
+    O frontend usa isto para mostrar (ou não) o seletor de propriedade e para
+    enviar o cabeçalho X-Hotel-Id em todos os pedidos.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from identity.models import Hotel
+        from core.tenancy import allowed_hotel_ids
+        allowed = allowed_hotel_ids(request.user)
+        qs = Hotel.objects.all() if allowed is None else Hotel.objects.filter(id__in=allowed)
+        return Response({
+            'restricted': allowed is not None,
+            'hotels': [{'id': h.id, 'name': h.name, 'location': h.location} for h in qs],
+        })
+
+
 # ---------------- Utilizadores ----------------
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
     profile_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     profiles = serializers.SerializerMethodField()
+    # A que hotéis este utilizador tem acesso (vazio = todos, instalação de hotel único).
+    hotel_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    hotels = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name',
                   'is_active', 'is_staff', 'is_superuser', 'last_login',
-                  'password', 'profile_ids', 'profiles']
+                  'password', 'profile_ids', 'profiles', 'hotel_ids', 'hotels']
         read_only_fields = ['last_login']
 
     def get_profiles(self, obj):
         return [{'id': r.profile_id, 'code': r.profile.code, 'name': r.profile.name}
                 for r in obj.eae_roles.select_related('profile').all()]
+
+    def get_hotels(self, obj):
+        from identity.models import UserHotelAccess
+        return [{'id': a.hotel_id, 'name': a.hotel.name}
+                for a in UserHotelAccess.objects.filter(user=obj).select_related('hotel')]
+
+    def _sync_hotels(self, user, hotel_ids):
+        if hotel_ids is None:
+            return
+        from identity.models import UserHotelAccess, Hotel
+        UserHotelAccess.objects.filter(user=user).delete()
+        for hid in hotel_ids:
+            h = Hotel.objects.filter(pk=hid).first()
+            if h:
+                UserHotelAccess.objects.create(user=user, hotel=h)
 
     def _sync(self, user, password, profile_ids):
         if password:
@@ -69,6 +106,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         profile_ids = validated_data.pop('profile_ids', None)
+        hotel_ids = validated_data.pop('hotel_ids', None)
         user = User(**validated_data)
         if password:
             user.set_password(password)
@@ -76,21 +114,29 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_unusable_password()
         user.save()
         self._sync(user, None, profile_ids)
+        self._sync_hotels(user, hotel_ids)
         return user
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
         profile_ids = validated_data.pop('profile_ids', None)
+        hotel_ids = validated_data.pop('hotel_ids', None)
         for k, v in validated_data.items():
             setattr(instance, k, v)
         instance.save()
         self._sync(instance, password, profile_ids)
+        self._sync_hotels(instance, hotel_ids)
         return instance
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().prefetch_related('eae_roles__profile').order_by('username')
     serializer_class = UserSerializer
+
+    def perform_create(self, serializer):
+        from licensing.limits import enforce
+        enforce('users')      # o nº de utilizadores é o que a licença cobre
+        serializer.save()
 
     @action(detail=True, methods=['post'])
     def set_password(self, request, pk=None):

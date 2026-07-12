@@ -56,3 +56,8 @@ if 'commercial' in settings.INSTALLED_APPS:
 if 'clm' in settings.INSTALLED_APPS:
     # Se estiver no modo Platform Control Center
     urlpatterns.append(path("api/clm/", include("clm.urls")))
+
+# Servir os ficheiros carregados (logótipos, imagens) em desenvolvimento.
+from django.conf import settings  # noqa: E402
+from django.conf.urls.static import static  # noqa: E402
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

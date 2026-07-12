@@ -11,6 +11,9 @@ class Allergen(models.Model):
     code = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=100)
     icon = models.CharField(max_length=50, blank=True, null=True)
+    # A foto é o que a cozinha reconhece de relance — mais depressa do que ler o texto.
+    photo_url = models.CharField(max_length=400, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'prod_allergen'
@@ -415,3 +418,47 @@ class QualityCheck(models.Model):
 
     def __str__(self):
         return f"{self.subject} · {self.get_result_display()}"
+
+
+# ==========================================================================
+# MENSAGENS DO POS — o que o operador manda dizer à cozinha.
+#
+# Uma "mensagem" é uma pergunta que o POS faz quando se pede certo artigo
+# (ex.: GELADO → "que sabor?"), e os MODELOS são as respostas possíveis
+# (SABOR CHOCOLATE, SABOR BAUNILHA…). Cada resposta sai impressa na comanda
+# da impressora certa. É assim que a cozinha sabe o que fazer sem perguntar.
+# ==========================================================================
+
+class PosMessage(models.Model):
+    code = models.CharField(max_length=40, unique=True)      # GELADO, TEMP, GELO, PONTO…
+    sort_order = models.PositiveIntegerField(default=0)
+    is_message = models.BooleanField(default=True)   # aparece como pergunta ao operador
+    is_comment = models.BooleanField(default=True)   # pode ser usada como comentário livre
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'prod_pos_message'
+        ordering = ['sort_order', 'code']
+        verbose_name = 'Mensagem do POS'
+        verbose_name_plural = 'Mensagens do POS'
+
+    def __str__(self):
+        return self.code
+
+
+class PosMessageOption(models.Model):
+    """Modelo (resposta) de uma mensagem: o que o operador escolhe e o que sai impresso."""
+    message = models.ForeignKey(PosMessage, on_delete=models.CASCADE, related_name='options')
+    key_label = models.CharField(max_length=60)        # o que aparece na TECLA do POS
+    print_label = models.CharField(max_length=60)      # o que sai IMPRESSO na comanda
+    sort_order = models.PositiveIntegerField(default=0)
+    printer = models.ForeignKey('inventory.Printer', on_delete=models.SET_NULL, blank=True, null=True,
+                                related_name='message_options')
+    on_emenu = models.BooleanField(default=False)      # visível no menu digital do hóspede
+
+    class Meta:
+        db_table = 'prod_pos_message_option'
+        ordering = ['sort_order', 'key_label']
+
+    def __str__(self):
+        return f'{self.message.code}: {self.key_label}'

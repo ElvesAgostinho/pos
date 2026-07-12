@@ -104,6 +104,23 @@ async function printDocumentFrom(url: string, params: any = {}) {
     <div class="sign">(assinatura)</div>
     <div class="mention">${p.print_mention || ''} &nbsp;/&nbsp; ${d.invoice_no}${p.qr_data ? `<div style="margin-top:4px;color:#888;word-break:break-all">QR: ${p.qr_data}</div>` : ''}</div>
 
+    ${(p.bank_accounts || []).length ? `
+    <div class="banks">
+      <div class="banks-title">DADOS BANCÁRIOS PARA PAGAMENTO</div>
+      <table class="banks-tbl">
+        <thead><tr><th>Banco</th><th>IBAN</th><th>Conta</th><th>Moeda</th></tr></thead>
+        <tbody>
+          ${p.bank_accounts.map((b: any) => `<tr>
+            <td>${b.bank_name || ''}</td>
+            <td class="mono">${b.iban || ''}</td>
+            <td class="mono">${b.account_number || ''}</td>
+            <td>${b.currency || 'AOA'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      ${p.bank_accounts[0]?.account_holder ? `<div class="muted">Titular: ${p.bank_accounts[0].account_holder}</div>` : ''}
+    </div>` : ''}
+
     <div class="foot">
       <b>${c.name || ''}</b><br/>
       ${c.address || ''} ${c.city ? '· ' + c.city : ''}<br/>

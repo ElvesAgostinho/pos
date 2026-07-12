@@ -44,10 +44,18 @@ class FolioSerializer(serializers.ModelSerializer):
     guest_name = serializers.CharField(source='reservation.guest.full_name', read_only=True)
     room_number = serializers.CharField(source='reservation.room.number', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    payer_type_display = serializers.CharField(source='get_payer_type_display', read_only=True)
+    confirmation = serializers.CharField(source='reservation.confirmation', read_only=True)
+    # As outras contas da MESMA reserva (para transferir lançamentos entre elas).
+    sibling_folios = serializers.SerializerMethodField()
 
     class Meta:
         model = Folio
         fields = '__all__'
+
+    def get_sibling_folios(self, obj):
+        return [{'id': f.id, 'number': f.number, 'label': f.label, 'status': f.status}
+                for f in obj.reservation.folios.exclude(pk=obj.pk)]
 
 
 class ReservationSerializer(serializers.ModelSerializer):

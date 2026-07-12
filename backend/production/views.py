@@ -102,3 +102,13 @@ class RecipeLineViewSet(viewsets.ModelViewSet):
         recipe_id = instance.recipe_id
         instance.delete()
         self._recalc(recipe_id)
+
+
+from .models import PosMessage  # noqa: E402
+from .serializers import PosMessageSerializer  # noqa: E402
+
+
+class PosMessageViewSet(viewsets.ModelViewSet):
+    """Mensagens do POS: perguntas ao operador (GELADO → que sabor?) e as respostas."""
+    queryset = PosMessage.objects.prefetch_related('options__printer').all()
+    serializer_class = PosMessageSerializer

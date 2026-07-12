@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
+import GridToggle from '../ui/GridToggle';
 import { Package, Plus, Trash2, Save, Search } from 'lucide-react';
 import { useMdItems, useMdCreateItem, useMdUpdateItem, useMdDeleteItem, useMdUoms, useMdCategories, useMdBrands } from '../../hooks/useMasterData';
 import { ITEM_TYPES } from '../../api/masterdata';
@@ -110,7 +111,10 @@ export default function ItemsView() {
     { header: 'Categoria', accessor: (r: MdItem) => r.category_name || '—', width: '13%' },
     { header: 'P. Venda', accessor: (r: MdItem) => money(r.sale_price), width: '11%' },
     { header: 'UN', accessor: (r: MdItem) => r.base_uom_code, width: '7%' },
-    { header: 'Ativo', accessor: (r: MdItem) => (r.is_active ? '✓' : '—'), width: '6%' },
+    { header: 'Ativo', width: '6%',
+      accessor: (r: MdItem) => <GridToggle endpoint="inventory/items" id={r.id} field="is_active"
+        value={!!r.is_active} invalidate="masterdata"
+        title="Desligar tira o artigo da venda no POS (o histórico mantém-se)" /> },
     { header: '', accessor: (r: MdItem) => <button onClick={(e) => { e.stopPropagation(); if (confirm(`Apagar o artigo ${r.name}?`)) delItem.mutate(r.id!); }} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '5%' },
   ];
 

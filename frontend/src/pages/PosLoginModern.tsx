@@ -72,7 +72,7 @@ const PosLoginModern: React.FC = () => {
   const sel = 'w-full h-11 bg-[#6f6f6f] border border-[#4d4d4d] rounded text-[#e8e8e8] text-lg pl-4 pr-10 appearance-none focus:outline-none focus:ring-2 focus:ring-[#7cbf30] shadow-[inset_0_1px_4px_rgba(0,0,0,0.35)]';
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 font-sans select-none"
+    <div className="min-h-screen flex items-center justify-center p-4 font-sans select-none overflow-y-auto"
       style={{ background: 'radial-gradient(circle at 32% 38%, #6f6f6f 0%, #545454 38%, #3a3a3a 100%)' }}>
       <div className="pointer-events-none fixed inset-0 opacity-[0.12]"
         style={{ background: 'repeating-linear-gradient(115deg, transparent 0 55px, rgba(255,255,255,0.25) 55px 110px)' }} />

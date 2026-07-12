@@ -12,13 +12,17 @@ import { apiClient } from '../api/client';
 import { useCombos } from '../hooks/useCommercial';
 import { printFiscalInvoice } from '../components/fiscal/printInvoice';
 import { getAppearance } from '../config/appearance';
+import { TouchKeypad, TouchKeyboard } from '../components/pos/TouchKeyboard';
+import { notifyError, notifyGuide } from '../utils/friendlyError';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const DEST_ICON: Record<string, any> = { POOL: Waves, BEACH: Waves, SPA: MapPin, GYM: MapPin, EVENT: MapPin };
+// Áreas de produção que recebem os pedidos do POS (e devolvem o estado "pronto").
+const STATION_PT: Record<string, string> = { KITCHEN: 'Cozinha', BAR: 'Bar', PASTRY: 'Pastelaria', NONE: '' };
 
 type Step = 'sector' | 'cash' | 'service' | 'order';
 type SrvTab = 'TABLE' | 'ROOM' | 'DESTINATION' | 'RESERV' | 'OPEN' | 'DELIVERY';
-type Modal = 'none' | 'pay' | 'cash' | 'split' | 'customer' | 'audit';
+type Modal = 'none' | 'pay' | 'cash' | 'split' | 'customer' | 'audit' | 'discount' | 'note';
 
 // ==========================================================================
 // POS Station — frente de loja 5 estrelas. Serve tudo o que o backoffice tem:
@@ -31,6 +35,29 @@ export default function PosStation() {
   const operator = tokenStore.getPosOperator();
   const opName = operator?.name || 'Operador';
   const inval = () => qc.invalidateQueries();
+
+  /**
+   * FECHAR A CONTA (pagamento, anulação, cobrança ao quarto).
+   *
+   * O terminal mostrava a conta já fechada porque saía do ecrã ANTES de os dados
+   * chegarem: invalidava e navegava no mesmo instante, e a mesa/lista de contas
+   * ainda vinham do cache antigo. Num POS a sério isto não acontece — a conta
+   * desaparece e a mesa fica livre no momento em que se recebe o dinheiro.
+   *
+   * Aqui: apaga-se a conta do cache (deixa de existir), RE-LÊ-SE do servidor o
+   * estado das mesas e das contas abertas, e só depois se volta ao mapa de sala.
+   */
+  const closeTicketAndRefresh = async (id?: number) => {
+    const tid = id ?? ticketId;
+    if (tid) qc.removeQueries({ queryKey: ['pos-ticket', tid] });
+    setTicketId(undefined);
+    setSelLine(undefined);
+    setCat(null);
+    setStep('service');
+    await qc.refetchQueries({ queryKey: ['pos-open'] });
+    await qc.refetchQueries({ queryKey: ['pos-tables'] });
+    qc.invalidateQueries();
+  };
 
   const [outlet, setOutlet] = useState<number | undefined>();
   const [step, setStep] = useState<Step>('sector');
@@ -52,9 +79,16 @@ export default function PosStation() {
   const { data: configs = [] } = Q(['pos-cfg', outlet], () => posMgmtApi.getProductConfigs(outlet!), { enabled: !!outlet });
   const { data: payments = [] } = Q(['pos-pay', outlet], () => posMgmtApi.getOutletPayments(outlet!), { enabled: !!outlet });
   const { data: cashSessions = [] } = Q(['pos-cash'], () => posMgmtApi.getCashSessions());
-  const { data: tables = [] } = Q(['pos-tables', outlet], () => posMgmtApi.getTables(outlet), { enabled: !!outlet });
-  const { data: openTickets = [] } = Q(['pos-open', outlet], () => posMgmtApi.getTickets({ outlet, status: 'OPEN' }), { enabled: !!outlet, refetchInterval: 15000 });
-  const { data: ticket } = Q(['pos-ticket', ticketId], () => posMgmtApi.getTicket(ticketId!), { enabled: !!ticketId });
+  // O mapa de sala e as contas abertas são partilhados por VÁRIOS terminais: têm de vir
+  // do servidor com frequência, senão dois empregados abrem a mesma mesa.
+  const { data: tables = [] } = Q(['pos-tables', outlet], () => posMgmtApi.getTables(outlet),
+    { enabled: !!outlet, refetchInterval: 8000, refetchOnMount: 'always' });
+  const { data: openTickets = [] } = Q(['pos-open', outlet], () => posMgmtApi.getTickets({ outlet, status: 'OPEN' }),
+    { enabled: !!outlet, refetchInterval: 8000, refetchOnMount: 'always' });
+  // refetchInterval: a conta é re-lida de 5 em 5s para que o estado que vem da COZINHA/BAR/
+  // PASTELARIA (Em preparação → Pronto) apareça no terminal sem o operador fazer nada.
+  const { data: ticket } = Q(['pos-ticket', ticketId], () => posMgmtApi.getTicket(ticketId!),
+    { enabled: !!ticketId, refetchInterval: 5000, refetchIntervalInBackground: true });
   const { data: combos = [] }: any = useCombos();
   const { data: destinations = [] } = Q(['pos-dest'], async () => (await apiClient.get('pos/service-destinations/', { params: { active: 1 } })).data);
   const { data: rooms = [] } = Q(['pms-rooms'], async () => { try { return (await apiClient.get('pms/rooms/')).data; } catch { return []; } });
@@ -106,7 +140,17 @@ export default function PosStation() {
   };
   const addItem = async (c: any) => { try { await posMgmtApi.addTicketLine(ticketId!, { item: c.item, quantity: qty }); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
   const addComboFn = async (cb: any) => { try { await posMgmtApi.addCombo(ticketId!, cb.id); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro no combo'); } };
-  const delLine = async (id: number) => { try { await posMgmtApi.deleteTicketLine(id); setSelLine(undefined); inval(); } catch { /* noop */ } };
+  // Remover artigo: se já foi enviado à produção, NÃO se apaga — anula-se e a área é avisada.
+  const delLine = async (id: number) => {
+    const l = (ticket?.lines || []).find((x: any) => x.id === id);
+    const fired = l && ['FIRED', 'PREPARING', 'READY'].includes(l.kds_status);
+    if (fired && !confirm(`"${l.description}" já está em produção na ${STATION_PT[l.kds_station] || 'cozinha'}.\n\nAo anular, essa área recebe imediatamente o aviso de ANULAÇÃO e o artigo fica registado como anulado (não é apagado).\n\nAnular assim mesmo?`)) return;
+    try {
+      await apiClient.delete(`pos/ticket-lines/${id}/`, { params: fired ? { reason: 'Anulado pelo operador' } : undefined });
+      setSelLine(undefined); inval();
+      if (fired) notifyGuide({ title: 'Artigo anulado', message: `A ${STATION_PT[l.kds_station] || 'cozinha'} foi avisada e o artigo aparece a vermelho no ecrã dessa área.`, hint: 'A anulação ficou registada na auditoria (operador, hora e motivo).' });
+    } catch (e) { notifyError(e); }
+  };
   const fireKitchen = async () => { try { await posMgmtApi.fireKitchen(ticketId!); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
   const dispatchOrder = async (tid: number) => { await apiClient.post(`pos/tickets/${tid}/dispatch_order/`); inval(); };
   const deliverOrder = async (tid: number) => { await apiClient.post(`pos/tickets/${tid}/deliver/`, { delivered_by: opName }); inval(); };
@@ -139,9 +183,16 @@ export default function PosStation() {
     } else {
       try {
         const res = await apiClient.post(`pos/tickets/${ticketId}/credit_note/`, { reason: 'Anulação no POS' });
-        setReceipt(null); setTicketId(undefined); setStep('service'); inval();
-        alert(`Venda anulada. Nota de Crédito: ${res.data.credit_note || '(sem documento fiscal)'}`);
-      } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao anular'); }
+        setReceipt(null);
+        await closeTicketAndRefresh(ticketId);
+        const st: string[] = res.data.notified_stations || [];
+        notifyGuide({
+          title: 'Venda anulada',
+          message: `Nota de Crédito: ${res.data.credit_note || '(sem documento fiscal)'}.`
+            + (st.length ? ` Foram avisadas as áreas de produção: ${st.join(', ')} — ${res.data.cancelled_items} artigo(s) marcados como ANULADOS nos ecrãs.` : ''),
+          hint: 'Tudo ficou registado na auditoria do POS (quem anulou, quando, motivo e áreas avisadas).',
+        });
+      } catch (e: any) { notifyError(e); }
     }
   };
 
@@ -283,9 +334,24 @@ export default function PosStation() {
   return (
     <Shell op={opName} clock={clock} onLogout={logout} onBack={() => setStep('service')} title={outletName}
       right={<div className="flex items-center gap-2">
+        {/* Estado da PRODUÇÃO (vem da Cozinha / Bar / Pastelaria, atualiza sozinho) */}
+        {lines.filter((l: any) => l.kds_status === 'PREPARING').length > 0 && (
+          <span className="h-9 px-3 bg-[#1565c0] text-white rounded text-sm font-bold flex items-center gap-1.5">
+            <Clock size={15} />{lines.filter((l: any) => l.kds_status === 'PREPARING').length} A PREPARAR
+          </span>
+        )}
+        {lines.filter((l: any) => l.kds_status === 'READY').length > 0 && (
+          <span className="h-9 px-3 bg-[#2e7d32] text-white rounded text-sm font-bold flex items-center gap-1.5 animate-pulse">
+            ✓ {lines.filter((l: any) => l.kds_status === 'READY').length} PRONTO(S)
+          </span>
+        )}
         <button onClick={() => setModal('customer')} className="h-9 px-3 bg-[#1565c0] text-white rounded text-sm font-bold flex items-center gap-1.5"><UserPlus size={15} />{(ticket as any)?.customer_name ? (ticket as any).customer_name : 'Cliente'}</button>
         <button onClick={() => lines.length && setModal('split')} className="h-9 px-3 bg-[#6a1b9a] text-white rounded text-sm font-bold flex items-center gap-1.5"><Split size={15} />Dividir</button>
         <button onClick={() => setModal('audit')} title="Histórico da mesa" className="h-9 px-2.5 bg-[#33415a] text-white rounded text-sm font-bold flex items-center gap-1.5"><History size={15} /></button>
+        <button onClick={() => selLine ? setModal('note') : alert('Selecione primeiro a linha (o artigo) na conta.')} title="Observação para a cozinha"
+          className="h-9 px-3 bg-[#6a1b9a] text-white rounded text-sm font-bold flex items-center gap-1.5">✎ Obs.</button>
+        <button onClick={() => lines.length && setModal('discount')} title="Aplicar desconto" className="h-9 px-3 bg-[#c9820a] text-white rounded text-sm font-bold flex items-center gap-1.5">%
+          {Number((ticket as any)?.discount_percent) > 0 ? ` ${Number((ticket as any).discount_percent)}%` : ' Desconto'}</button>
         <button onClick={() => lines.length && setReceipt({ mode: 'void' })} title="Anular venda (Nota de Crédito)" className="h-9 px-3 bg-[#a01818] text-white rounded text-sm font-bold flex items-center gap-1.5"><X size={15} />Anular</button>
         <div className="bg-[#111a26] border border-[#2a4a66] px-3 py-1.5 rounded text-white text-sm font-bold flex items-center gap-1.5"><MapPin size={14} className="text-[#c9a400]" />{destLabel}</div>
       </div>}>
@@ -315,7 +381,8 @@ export default function PosStation() {
             ))}
             {cat && cat !== 'MENUS' && (categories[cat] || []).map((c: any) => (
               <ProductTile key={c.id} name={c.item_name} price={c.effective_price} image={c.item_image}
-                color={c.button_color || catColor(cat)} emoji={catEmoji(cat)} onClick={() => addItem(c)} />
+                color={c.button_color || catColor(cat)} emoji={catEmoji(cat)} allergens={c.allergens || []}
+                onClick={() => addItem(c)} />
             ))}
           </div>
         </div>
@@ -323,13 +390,40 @@ export default function PosStation() {
         <div className="w-[400px] bg-[#0c141e] flex flex-col border-l border-[#1c2c3c]">
           <div className="grid grid-cols-[46px_1fr_84px] bg-[#17334d] text-white text-sm font-bold px-2 py-2"><span>Qtd</span><span>Descrição</span><span className="text-right">Total</span></div>
           <div className="flex-1 overflow-auto">
-            {lines.map((l: any) => (
-              <div key={l.id} onClick={() => setSelLine(l.id)} className={`grid grid-cols-[46px_1fr_84px] px-2 py-2 text-sm cursor-pointer border-b border-[#1c2c3c] ${selLine === l.id ? 'bg-[#17334d] text-white' : 'text-white/85'}`}>
+            {lines.map((l: any) => {
+              const st = l.kds_status;
+              const ready = st === 'READY';
+              const voided = !!l.is_void;
+              return (
+              <div key={l.id} onClick={() => !voided && setSelLine(l.id)}
+                className={`grid grid-cols-[46px_1fr_84px] px-2 py-2 text-sm border-b border-[#1c2c3c] ${voided ? 'bg-[#2b1414] text-white/45 line-through cursor-default' : `cursor-pointer ${selLine === l.id ? 'bg-[#17334d] text-white' : ready ? 'bg-[#123d1e] text-white' : 'text-white/85'}`}`}>
                 <span>{Number(l.quantity).toFixed(0)}</span>
-                <span className="truncate">{l.description}{l.note ? <em className="block text-[10px] text-[#e0a] not-italic">{l.note}</em> : null}</span>
+                <span className="truncate">
+                  {l.description}
+                  {l.note ? <em className="block text-[10px] text-[#e0a] not-italic">{l.note}</em> : null}
+                  {/* Estado da PRODUÇÃO — o empregado sabe quando pode servir */}
+                  {voided ? (
+                    <span className="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#a01818] text-white no-underline">
+                      ANULADO{l.void_reason ? ` · ${l.void_reason}` : ''} — {STATION_PT[l.kds_station] || 'produção'} avisada
+                    </span>
+                  ) : st && st !== 'NEW' && l.kds_station !== 'NONE' && (
+                    <span className={`inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      ready ? 'bg-[#2e7d32] text-white' : st === 'PREPARING' ? 'bg-[#1565c0] text-white'
+                      : st === 'SERVED' ? 'bg-[#33415a] text-white/70' : 'bg-[#c9820a] text-white'}`}>
+                      {ready ? '✓ PRONTO — servir' : `${STATION_PT[l.kds_station] || ''} · ${l.kds_status_display}`}
+                    </span>
+                  )}
+                  {/* Alergénios */}
+                  {(l.allergens || []).length > 0 && (
+                    <span className="inline-block ml-1 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#c0392b] text-white">
+                      ⚠ {l.allergens.join(', ')}
+                    </span>
+                  )}
+                </span>
                 <span className="text-right">{money(l.line_total)}</span>
               </div>
-            ))}
+              );
+            })}
             {lines.length === 0 && <div className="text-center text-white/40 py-12 text-sm">Toque num artigo para adicionar.</div>}
           </div>
           <div className="grid grid-cols-4 gap-px bg-[#1c2c3c]">
@@ -350,13 +444,32 @@ export default function PosStation() {
         </div>
       </div>
       {modal === 'pay' && <PayModal ticket={ticket} payments={payments} onClose={() => setModal('none')}
-        onPaid={async () => { setModal('none'); await printReceipt(ticketId!); setTicketId(undefined); setStep('service'); inval(); }}
-        onRoomCharged={(room: string) => { setModal('none'); setTicketId(undefined); setStep('service'); inval(); alert(`Consumo lançado na conta do Quarto ${room}. Fatura no check-out.`); }} inval={inval} />}
+        onPaid={async () => {
+          const tid = ticketId!;
+          setModal('none');
+          await closeTicketAndRefresh(tid);   // a mesa fica livre ANTES de imprimir
+          await printReceipt(tid);            // o recibo pode demorar; a sala já está certa
+        }}
+        onRoomCharged={async (room: string) => {
+          const tid = ticketId!;
+          setModal('none');
+          await closeTicketAndRefresh(tid);
+          notifyGuide({ title: 'Lançado na conta do quarto',
+            message: `O consumo foi lançado no Quarto ${room}. É faturado no check-out.`,
+            hint: 'A mesa ficou livre e a conta saiu da lista de contas abertas.' });
+        }} inval={inval} />}
       {modal === 'split' && <SplitModal ticket={ticket} payments={payments} tables={tables} onClose={() => setModal('none')}
-        onClosed={async () => { setModal('none'); await printReceipt(ticketId!); setTicketId(undefined); setStep('service'); inval(); }} inval={inval} />}
+        onClosed={async () => {
+          const tid = ticketId!;
+          setModal('none');
+          await closeTicketAndRefresh(tid);
+          await printReceipt(tid);
+        }} inval={inval} />}
       {modal === 'customer' && <CustomerModal ticket={ticket} onClose={() => setModal('none')} onSaved={() => { setModal('none'); inval(); }} />}
       {modal === 'audit' && <AuditModal ticketId={ticketId} ticketNo={ticket?.ticket_number} onClose={() => setModal('none')} />}
       {modal === 'cash' && <CashModal session={session} onClose={() => setModal('none')} onClosed={() => { setModal('none'); setStep('cash'); }} inval={inval} />}
+      {modal === 'discount' && <DiscountModal ticket={ticket} onClose={() => setModal('none')} onDone={() => { setModal('none'); inval(); }} />}
+      {modal === 'note' && <NoteModal line={lines.find((l: any) => l.id === selLine)} onClose={() => setModal('none')} onSaved={() => { setModal('none'); inval(); }} />}
       {receipt && <ThermalReceiptModal ticket={ticket} lines={lines} mode={receipt.mode} outletName={outletName} destLabel={destLabel}
         onCancel={() => setReceipt(null)} onConfirm={confirmReceipt} />}
     </Shell>
@@ -369,9 +482,9 @@ function TablePopup({ table, onClose, onConfirm }: { table: any; onClose: () => 
   const [kind, setKind] = useState<'WALKIN' | 'GUEST'>('WALKIN');
   const [room, setRoom] = useState('');
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60]" onClick={onClose}>
-      <div className="bg-[#16202e] border border-[#2a4a66] rounded-xl w-[420px] text-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="px-4 py-3 border-b border-[#2a4a66] flex items-center justify-between">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={onClose}>
+      <div className="bg-[#16202e] border border-[#2a4a66] rounded-xl w-[420px] max-h-[92vh] overflow-y-auto text-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="px-4 py-3 border-b border-[#2a4a66] flex items-center justify-between sticky top-0 bg-[#16202e] z-10">
           <span className="font-bold text-lg">Abrir Mesa {table?.table_number}</span>
           <button onClick={onClose} className="text-white/60 hover:text-white text-xl">×</button>
         </div>
@@ -409,6 +522,93 @@ function TablePopup({ table, onClose, onConfirm }: { table: any; onClose: () => 
   );
 }
 
+// ==================== Observação para a COZINHA (nota da linha) ====================
+const NOTE_PRESETS = ['Sem cebola', 'Sem sal', 'Sem glúten', 'Sem lactose', 'Bem passado', 'Mal passado', 'Ao ponto', 'Sem picante', 'Para partilhar', 'Sem gelo', 'Extra molho', 'Alergia — cuidado!'];
+
+function NoteModal({ line, onClose, onSaved }: { line: any; onClose: () => void; onSaved: () => void }) {
+  const [note, setNote] = useState(line?.note || '');
+  const [kb, setKb] = useState(false);
+  const save = async () => {
+    try { await apiClient.patch(`pos/ticket-lines/${line.id}/`, { note: note || null }); onSaved(); }
+    catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao guardar a observação'); }
+  };
+  return (
+    <div className="fixed inset-0 bg-black/65 flex items-center justify-center z-[60] p-4" onClick={onClose}>
+      <div className="bg-[#16202e] border border-[#2a4a66] rounded-xl w-[560px] max-h-[92vh] overflow-y-auto text-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="px-4 py-3 border-b border-[#2a4a66] flex items-center justify-between sticky top-0 bg-[#16202e] z-10">
+          <span className="font-bold text-lg">Observação para a cozinha</span>
+          <button onClick={onClose} className="text-white/60 hover:text-white text-xl">×</button>
+        </div>
+        <div className="p-4 space-y-3">
+          <div className="text-[13px] text-white/70">Artigo: <b className="text-white">{line?.description}</b></div>
+          <div className="flex gap-2">
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex.: sem cebola, bem passado…"
+              className="flex-1 h-12 bg-[#0c141e] text-white px-3 rounded-lg border border-[#2a4a66] outline-none" />
+            <button onClick={() => setKb((k) => !k)} className={`px-3 h-12 rounded-lg font-bold ${kb ? 'bg-[#c9a400] text-white' : 'bg-[#111a26] text-white/70 border border-[#2a4a66]'}`}>⌨</button>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            {NOTE_PRESETS.map((p) => (
+              <button key={p} onClick={() => setNote(note ? `${note}, ${p}` : p)}
+                className="h-10 rounded-lg bg-[#111a26] border border-[#2a4a66] text-[12px] font-bold hover:bg-[#1b2636]">{p}</button>
+            ))}
+          </div>
+          {kb && <div className="p-2 bg-[#0c141e] rounded-lg border border-[#2a4a66]"><TouchKeyboard value={note} onChange={setNote} /></div>}
+          <div className="flex gap-2">
+            <button onClick={() => setNote('')} className="flex-1 h-13 py-3 bg-[#33415a] text-white font-bold rounded-lg">Limpar</button>
+            <button onClick={save} className="flex-1 py-3 bg-gradient-to-b from-[#8ccf3a] to-[#5f9a1e] text-white font-bold rounded-lg text-lg">Enviar à cozinha</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== Desconto (com teclado tátil) ====================
+function DiscountModal({ ticket, onClose, onDone }: { ticket: any; onClose: () => void; onDone: () => void }) {
+  const [pct, setPct] = useState(String(Number(ticket?.discount_percent) || ''));
+  const [auth, setAuth] = useState('');
+  const total = Number(ticket?.grand_total || 0);
+  const sub = Number(ticket?.subtotal || 0);
+  const p = Number(pct) || 0;
+  const saved = (sub * p) / 100;
+  const apply = async (value: number) => {
+    try {
+      await apiClient.post(`pos/tickets/${ticket.id}/set_discount/`, { percent: value, authorized_by: auth || undefined });
+      onDone();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao aplicar desconto'); }
+  };
+  return (
+    <div className="fixed inset-0 bg-black/65 flex items-center justify-center z-[60] p-4" onClick={onClose}>
+      <div className="bg-[#16202e] border border-[#2a4a66] rounded-xl w-[420px] max-h-[92vh] flex flex-col text-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="px-4 py-2.5 border-b border-[#2a4a66] flex items-center justify-between flex-shrink-0">
+          <span className="font-bold">Desconto</span>
+          <button onClick={onClose} className="text-white/60 hover:text-white text-xl leading-none">×</button>
+        </div>
+        <div className="p-3 space-y-2 overflow-y-auto flex-1">
+          <div className="bg-[#0c141e] border border-[#2a4a66] rounded-lg p-2 text-center">
+            <div className="text-[34px] font-black leading-none text-[#c9a400]">{p}%</div>
+            <div className="text-[11px] text-white/60 mt-1">Poupança: {money(saved)} · Total atual: {money(total)}</div>
+          </div>
+          {/* Atalhos rápidos */}
+          <div className="grid grid-cols-5 gap-1.5">
+            {[5, 10, 15, 20, 50].map((v) => (
+              <button key={v} onClick={() => setPct(String(v))} className="h-9 rounded-lg bg-[#111a26] border border-[#2a4a66] font-bold text-sm">{v}%</button>
+            ))}
+          </div>
+          <TouchKeypad value={pct} onChange={(v) => { const n = Number(v); if (v === '' || (n >= 0 && n <= 100)) setPct(v); }} decimals={false} compact />
+          <input value={auth} onChange={(e) => setAuth(e.target.value)} placeholder="Autorizado por (supervisor)"
+            className="w-full h-10 bg-[#0c141e] text-white px-3 rounded-lg border border-[#2a4a66] outline-none text-sm" />
+        </div>
+        {/* Rodapé fixo: os botões de confirmação NUNCA ficam fora do ecrã */}
+        <div className="flex gap-2 p-3 border-t border-[#2a4a66] flex-shrink-0 bg-[#16202e] rounded-b-xl">
+          <button onClick={() => apply(0)} className="flex-1 h-12 bg-[#33415a] text-white font-bold rounded-lg text-sm">Remover desconto</button>
+          <button onClick={() => apply(p)} disabled={!p} className="flex-1 h-12 bg-gradient-to-b from-[#e5b95c] to-[#c9820a] text-white font-bold rounded-lg disabled:opacity-40">Aplicar {p}%</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ==================== Preview de talão térmico (80mm) — antes de imprimir/anular ====================
 function ThermalReceiptModal({ ticket, lines, mode, outletName, destLabel, onCancel, onConfirm }:
   { ticket: any; lines: any[]; mode: 'print' | 'void'; outletName: string; destLabel: string; onCancel: () => void; onConfirm: () => void }) {
@@ -420,10 +620,10 @@ function ThermalReceiptModal({ ticket, lines, mode, outletName, destLabel, onCan
   const total = Number(ticket?.grand_total ?? 0);
   const Sep = () => <div className="border-t border-dashed border-gray-400 my-1" />;
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[70]" onClick={onCancel}>
-      <div className="flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
-        {/* Talão 80mm */}
-        <div className="bg-white text-black shadow-2xl" style={{ width: 300, fontFamily: "'Courier New', monospace", fontSize: 12, padding: '14px 16px' }}>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[70] p-4" onClick={onCancel}>
+      <div className="flex flex-col items-center gap-3 max-h-[94vh]" onClick={(e) => e.stopPropagation()}>
+        {/* Talão 80mm (rola se a conta for longa; os botões ficam sempre visíveis) */}
+        <div className="bg-white text-black shadow-2xl overflow-y-auto" style={{ width: 300, maxHeight: 'calc(94vh - 80px)', fontFamily: "'Courier New', monospace", fontSize: 12, padding: '14px 16px' }}>
           <div className="text-center">
             <div className="font-bold text-[15px] uppercase leading-tight">{company}</div>
             <div className="text-[11px]">{outletName}</div>
@@ -459,9 +659,9 @@ function ThermalReceiptModal({ ticket, lines, mode, outletName, destLabel, onCan
           </div>
         </div>
         {/* Botões */}
-        <div className="flex gap-3 w-[300px]">
-          <button onClick={onCancel} className="flex-1 h-14 bg-[#33415a] text-white font-bold rounded-lg text-lg">Cancelar</button>
-          <button onClick={onConfirm} className={`flex-1 h-14 text-white font-bold rounded-lg text-lg ${isVoid ? 'bg-[#a01818]' : 'bg-gradient-to-b from-[#8ccf3a] to-[#5f9a1e]'}`}>
+        <div className="flex gap-3 w-[300px] flex-shrink-0">
+          <button onClick={onCancel} className="flex-1 h-12 bg-[#33415a] text-white font-bold rounded-lg">Cancelar</button>
+          <button onClick={onConfirm} className={`flex-1 h-12 text-white font-bold rounded-lg ${isVoid ? 'bg-[#a01818]' : 'bg-gradient-to-b from-[#8ccf3a] to-[#5f9a1e]'}`}>
             {isVoid ? 'Confirmar Anulação' : 'Imprimir'}
           </button>
         </div>
@@ -504,11 +704,12 @@ function shade(color: string, pct: number): string {
   const b = Math.max(0, Math.min(255, (n & 255) + pct));
   return `rgb(${r},${g},${b})`;
 }
-function ProductTile({ name, price, image, color = '#1f7a34', emoji = '🍽️', onClick }: any) {
+function ProductTile({ name, price, image, color = '#1f7a34', emoji = '🍽️', onClick, allergens = [] }: any) {
   const [broken, setBroken] = useState(false);
   const showImg = image && !broken;
   return (
     <button onClick={onClick}
+      title={allergens.length ? `⚠ Alergénios: ${allergens.join(', ')}` : undefined}
       className="group relative h-28 rounded-xl overflow-hidden shadow-lg active:scale-95 transition text-left"
       style={{ background: showImg ? '#0c141e' : `linear-gradient(145deg, ${color} 0%, ${shade(color, -24)} 100%)` }}>
       {showImg ? (
@@ -523,6 +724,12 @@ function ProductTile({ name, price, image, color = '#1f7a34', emoji = '🍽️',
         <span className="text-white text-[14px] font-bold leading-tight line-clamp-2 drop-shadow">{name}</span>
       </div>
       <span className="absolute top-2 right-2 bg-black/55 backdrop-blur-sm text-[#ffe08a] text-[12px] font-bold px-1.5 py-0.5 rounded">{money(price)}</span>
+      {/* Aviso de ALERGÉNIOS — o operador tem de os ver antes de vender */}
+      {allergens.length > 0 && (
+        <span onClick={(e) => { e.stopPropagation(); alert(`⚠ ALERGÉNIOS em "${name}":\n\n• ${allergens.join('\n• ')}`); }}
+          title={`Alergénios: ${allergens.join(', ')}`}
+          className="absolute top-2 left-2 bg-[#c0392b] text-white text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center border border-white/40 shadow">⚠</span>
+      )}
       <div className="absolute inset-0 ring-1 ring-white/10 rounded-xl group-hover:ring-[#c9a400]/50" />
     </button>
   );
@@ -738,8 +945,8 @@ function ReservationsPanel({ reservations, tables, onCreate, onSeat, onAction }:
 }
 
 function Overlay({ children, onClose }: any) {
-  return <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
-    <div className="bg-[#111a26] border border-[#2a4a66] rounded-xl p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>{children}</div>
+  return <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="bg-[#111a26] border border-[#2a4a66] rounded-xl p-4 shadow-2xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>{children}</div>
   </div>;
 }
 
@@ -902,6 +1109,7 @@ function CustomerModal({ ticket, onClose, onSaved }: any) {
     customer_id: undefined,
   });
   const [q, setQ] = useState('');
+  const [kb, setKb] = useState(false);           // teclado tátil no ecrã
   const [results, setResults] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
   const [picked, setPicked] = useState<any>(null);
@@ -926,7 +1134,10 @@ function CustomerModal({ ticket, onClose, onSaved }: any) {
         <div className="flex gap-2 mb-2">
           <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} placeholder="Pesquisar cliente (nome/NIF)…" className="flex-1 h-10 bg-[#0c141e] text-white px-2 rounded border border-[#2a4a66] outline-none text-sm" />
           <button onClick={search} className="px-3 h-10 bg-[#33415a] text-white rounded text-sm">Procurar</button>
+          <button onClick={() => setKb((k) => !k)} title="Teclado no ecrã" className={`px-3 h-10 rounded text-sm font-bold ${kb ? 'bg-[#c9a400] text-white' : 'bg-[#111a26] text-white/70 border border-[#2a4a66]'}`}>⌨</button>
         </div>
+        {/* Teclado tátil — escreve na pesquisa (ecrã sem teclado físico) */}
+        {kb && <div className="mb-3 p-2 bg-[#0c141e] rounded-lg border border-[#2a4a66]"><TouchKeyboard value={q} onChange={setQ} /></div>}
         {results.length > 0 && (
           <div className="max-h-32 overflow-auto bg-[#0c141e] rounded mb-3 border border-[#2a4a66]">
             {results.map((c: any) => (

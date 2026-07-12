@@ -28,15 +28,9 @@ class AGTConnectionViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def health(self, request, pk=None):
-        """Health check da ligação AGT (real quando o endpoint estiver configurado)."""
-        conn = self.get_object()
-        if not conn.url_health:
-            conn.last_health_status = 'NOT_CONFIGURED'
-        else:
-            conn.last_health_status = 'PENDING'  # integração HTTP real a ligar na certificação
-        conn.last_health_at = timezone.now()
-        conn.save(update_fields=['last_health_status', 'last_health_at'])
-        return Response({'status': conn.last_health_status, 'checked_at': conn.last_health_at})
+        """Health check REAL da ligação AGT (faz HTTP ao endpoint configurado)."""
+        from . import agt_client
+        return Response(agt_client.health(self.get_object()))
 
 
 class DigitalCertificateViewSet(viewsets.ModelViewSet):

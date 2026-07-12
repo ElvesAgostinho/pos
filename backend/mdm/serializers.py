@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tax, Brand, PaymentMethod, DocumentSeries, Currency, Country, Bank, Language, Customer
+from .models import Brand, PaymentMethod, DocumentSeries, Currency, Country, Bank, Language, Customer
 
 
 class CurrencySerializer(serializers.ModelSerializer):
@@ -33,9 +33,13 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 
 class TaxSerializer(serializers.ModelSerializer):
+    """Alias retrocompatível: /api/mdm/taxes/ serve agora a TAXA REAL do motor fiscal
+    (fiscal.TaxRate). Havia dois cadastros de imposto e só um era usado a sério —
+    o outro dava a ilusão de estar configurado e não entrava em fatura nenhuma."""
     class Meta:
-        model = Tax
-        fields = '__all__'
+        from fiscal.models import TaxRate as _T
+        model = _T
+        fields = ('id', 'code', 'name', 'percentage', 'is_default', 'is_exempt', 'is_active')
 
 
 class BrandSerializer(serializers.ModelSerializer):

@@ -17,6 +17,8 @@ from .serializers import (
     POSReservationSerializer, GiftCardSerializer, ServiceDestinationSerializer,
     POSTableGroupSerializer,
 )
+from core.tenancy import scope_qs
+from .params import P          # motor de parâmetros do POS
 from .audit import log_event
 from .consumption import consume_ticket_stock
 
@@ -43,7 +45,7 @@ class OutletViewSet(viewsets.ModelViewSet):
     serializer_class = OutletSerializer
 
     def get_queryset(self):
-        qs = Outlet.objects.select_related('hotel').all().order_by('name')
+        qs = scope_qs(self.request, Outlet.objects.select_related('hotel').all().order_by('name'))
         hotel = self.request.query_params.get('hotel')
         return qs.filter(hotel_id=hotel) if hotel else qs
 
@@ -78,9 +80,16 @@ class CashSessionViewSet(viewsets.ModelViewSet):
     serializer_class = CashSessionSerializer
 
     def get_queryset(self):
-        qs = CashSession.objects.select_related('outlet').prefetch_related('movements').all()
+        qs = scope_qs(self.request, CashSession.objects.select_related('outlet').prefetch_related('movements').all(), 'outlet__hotel')
         status_param = self.request.query_params.get('status')
         return qs.filter(status=status_param) if status_param else qs
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        # (8005) FECHO CEGO: o operador conta o dinheiro SEM ver o esperado.
+        # É assim que se deteta um desvio — se ele vir o valor esperado, escreve-o.
+        ctx['blind_close'] = P.text(8005, 'Modo Detalhado') != 'Modo Simples'
+        return ctx
 
     def perform_create(self, serializer):
         session = serializer.save()
@@ -152,7 +161,7 @@ class POSTableViewSet(viewsets.ModelViewSet):
     serializer_class = POSTableSerializer
 
     def get_queryset(self):
-        qs = POSTable.objects.select_related('outlet').all().order_by('table_number')
+        qs = scope_qs(self.request, POSTable.objects.select_related('outlet').all().order_by('table_number'), 'outlet__hotel')
         outlet = self.request.query_params.get('outlet')
         return qs.filter(outlet_id=outlet) if outlet else qs
 
@@ -267,8 +276,8 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     ordering_fields = ['opened_at', 'closed_at', 'grand_total']
 
     def get_queryset(self):
-        qs = (POSTicket.objects.select_related('outlet', 'table', 'cash_session')
-              .prefetch_related('lines__item', 'payments__payment_method').all())
+        qs = scope_qs(self.request, (POSTicket.objects.select_related('outlet', 'table', 'cash_session')
+              .prefetch_related('lines__item', 'payments__payment_method').all()), 'outlet__hotel')
         for f in ('outlet', 'status', 'cash_session'):
             v = self.request.query_params.get(f)
             if v:
@@ -294,7 +303,14 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         # Mantém a FK de Mesa para o mapa de sala quando o destino é Mesa.
         if kind == 'TABLE' and ref:
             ticket.table_id = ref
+            # ... e a mesa fica mesmo OCUPADA (não só "com ticket aberto").
+            from .models import POSTable
+            POSTable.objects.filter(pk=ref).exclude(status='OCCUPIED').update(status='OCCUPIED')
         else:
+            # Mudou de mesa para quarto/destino: a mesa anterior fica livre.
+            if ticket.table and not ticket.table.tickets.filter(status__in=['OPEN', 'SUSPENDED']).exclude(pk=ticket.pk).exists():
+                ticket.table.status = 'FREE'
+                ticket.table.save(update_fields=['status'])
             ticket.table = None
         # Pedidos com destino != Mesa entram no fluxo de entrega.
         if kind != 'TABLE' and ticket.delivery_status == 'NONE':
@@ -317,21 +333,63 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     def set_discount(self, request, pk=None):
         """Aplica desconto (%) — regista quem autorizou (auditoria)."""
         ticket = self.get_object()
-        try:
-            pct = Decimal(str(request.data.get('percent') or 0))
-        except Exception:
-            return Response({'detail': 'Percentagem inválida.'}, status=400)
+        from .models import PosDiscount, PosUser
+        from django.utils import timezone
+
+        disc = None
+        disc_id = request.data.get('discount')
+        if disc_id:
+            disc = PosDiscount.objects.filter(pk=disc_id).first()
+            if not disc:
+                return Response({'detail': 'Desconto inválido.'}, status=400)
+            # Um desconto tem PRAZO. Fora dele, não se aplica — nem por engano nem de propósito.
+            if not disc.is_valid_on(timezone.localdate()):
+                return Response({'detail': f'"{disc.name}" não está válido nesta data.'}, status=403)
+            if not disc.for_pos:
+                return Response({'detail': f'"{disc.name}" não é um desconto de POS.'}, status=403)
+            # QUEM o pode dar: só os grupos autorizados na ficha do desconto.
+            allowed = list(disc.user_groups.values_list('id', flat=True))
+            if allowed:
+                pu = PosUser.objects.filter(auth_user=request.user).first() if request.user.is_authenticated else None
+                grupo = (pu.pos_group_id or pu.group_id) if pu else None
+                if grupo not in allowed:
+                    return Response({
+                        'detail': f'O seu perfil não está autorizado a aplicar "{disc.name}". '
+                                  f'É preciso a autorização de um supervisor.',
+                        'requires_supervisor': True,
+                    }, status=403)
+            pct = disc.value if disc.base == 'PERCENT' else Decimal('0')
+        else:
+            try:
+                pct = Decimal(str(request.data.get('percent') or 0))
+            except Exception:
+                return Response({'detail': 'Percentagem inválida.'}, status=400)
+
         if pct < 0 or pct > 100:
             return Response({'detail': 'Desconto tem de estar entre 0 e 100%.'}, status=400)
+
+        # (8620) Desconto máximo sem supervisor: acima disto, exige-se autorização.
+        # Um desconto por CÓDIGO já vem autorizado pela ficha — a regra é para o manual.
+        limite = P.int(8620, 10)
+        autorizado = (request.data.get('authorized_by') or '').strip()
+        if not disc and pct > limite and not autorizado:
+            return Response({
+                'detail': f'Desconto de {pct}% excede o máximo permitido sem supervisor ({limite}%). '
+                          f'É preciso a autorização de um supervisor.',
+                'requires_supervisor': True, 'max_without_supervisor': limite,
+            }, status=403)
+
+        ticket.discount = disc
         ticket.discount_percent = pct
         ticket.discount_authorized_by = request.data.get('authorized_by') or (request.user.username if request.user.is_authenticated else 'POS')
-        if pct == 0:
+        if pct == 0 and not disc:
             ticket.discount_total = Decimal('0')
-        ticket.save(update_fields=['discount_percent', 'discount_authorized_by', 'discount_total'])
+        ticket.save(update_fields=['discount', 'discount_percent', 'discount_authorized_by', 'discount_total'])
         ticket.recompute(save=True)
-        log_event(request, 'PAYMENT', f'Desconto {pct}% autorizado por {ticket.discount_authorized_by}',
+        etiqueta = f'{disc.code} ({disc.name})' if disc else f'{pct}% (manual)'
+        log_event(request, 'PAYMENT', f'Desconto {etiqueta} autorizado por {ticket.discount_authorized_by}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet, reference=ticket.ticket_number,
-                  new_value=f'{pct}%')
+                  new_value=etiqueta, amount=ticket.discount_total)
         return Response(POSTicketSerializer(ticket).data)
 
     @action(detail=True, methods=['get'])
@@ -413,6 +471,12 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         data = serializer.validated_data
         num = data.get('ticket_number') or f"TCK-{uuid.uuid4().hex[:8].upper()}"
         ticket = serializer.save(ticket_number=num)
+        # A MESA PASSA A OCUPADA. Antes só a lista de contas abertas sabia disso — o
+        # estado real da mesa ficava FREE, e qualquer outro ecrã (mapa de sala, relatórios,
+        # outro terminal) mostrava a mesa livre com gente sentada lá.
+        if ticket.table and ticket.table.status != 'OCCUPIED':
+            ticket.table.status = 'OCCUPIED'
+            ticket.table.save(update_fields=['status'])
         log_event(self.request, 'TICKET_OPEN', f'Ticket aberto ({ticket.operator_name})',
                   operator_name=ticket.operator_name, outlet=ticket.outlet, reference=ticket.ticket_number)
 
@@ -427,6 +491,11 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             item = Item.objects.get(pk=request.data.get('item'))
         except Item.DoesNotExist:
             return Response({'detail': 'Artigo inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+        # (Artigo) "Ativo" — desmarcar tira mesmo o artigo da venda. Não é decoração:
+        # é assim que se retira um prato do menu sem apagar o histórico dele.
+        if not item.is_active:
+            return Response({'detail': f'"{item.name}" está inativo e não pode ser vendido.',
+                             'inactive_item': True}, status=status.HTTP_400_BAD_REQUEST)
         try:
             qty = Decimal(str(request.data.get('quantity', '1')))
         except Exception:
@@ -434,6 +503,11 @@ class POSTicketViewSet(viewsets.ModelViewSet):
 
         cfg = POSProductConfig.objects.filter(outlet=ticket.outlet, item=item).first()
         unit_price = request.data.get('unit_price')
+        # (Artigo) "Preço manual" — artigos de preço variável (peixe ao quilo, vinho a
+        # copo do dia): o terminal TEM de perguntar o preço; não se inventa um.
+        if unit_price in (None, '') and getattr(item, 'manual_price', False):
+            return Response({'detail': f'"{item.name}" é de preço manual — indique o preço.',
+                             'requires_price': True}, status=status.HTTP_400_BAD_REQUEST)
         if unit_price in (None, ''):
             # Prioridade: override do POS Product Config → Tabela de Preço da área → preço base.
             if cfg and cfg.pos_price is not None:
@@ -441,14 +515,37 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             else:
                 unit_price = ticket.outlet.price_for(item)
         unit_price = Decimal(str(unit_price))
+
+        # HAPPY HOUR — a grelha hora × dia manda no preço. Às 17h de quinta o gin passa
+        # ao Preço 2; às 20h volta ao normal, sozinho. É o que a grelha do ecrã define.
+        happy_note = None
+        from django.db import models as _m
+        from .models import HappyHour
+        from inventory.models import ItemPrice
+        hh = (HappyHour.objects.filter(is_active=True)
+              .filter(_m.Q(outlet=ticket.outlet) | _m.Q(outlet__isnull=True))
+              .order_by('outlet_id').first())
+        if hh:
+            v = hh.value_now()
+            if v:
+                if hh.kind == 'PRICE':
+                    p = ItemPrice.objects.filter(item=item, level=int(v)).first()
+                    if p and p.price:
+                        unit_price = Decimal(str(p.price))
+                        happy_note = f'Happy Hour: {hh.name} (Preço {v})'
+                else:
+                    desconto = unit_price * Decimal(str(v)) / Decimal('100')
+                    unit_price = unit_price - desconto
+                    happy_note = f'Happy Hour: {hh.name} (-{v}%)'
+
         # Commercial Center: aplica a melhor promoção/Happy Hour ativa ao artigo.
-        promo_note = None
+        promo_note = happy_note
         try:
             from commercial import pricing as _pricing
             discounted, promo, disc = _pricing.apply(ticket.outlet, item, unit_price)
             if promo and disc > 0:
                 unit_price = discounted
-                promo_note = f"Promo: {promo.name} (-{disc})"
+                promo_note = "; ".join([n for n in (happy_note, f"Promo: {promo.name} (-{disc})") if n])
         except ImportError:
             pass
         # Motor 4: modificadores/extras -> o delta soma ao preço unitário da linha.
@@ -521,6 +618,38 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if not OutletPaymentMethod.objects.filter(outlet=ticket.outlet, payment_method=pm, is_active=True).exists():
             return Response({'detail': f'Método "{pm.name}" não autorizado neste outlet.'}, status=status.HTTP_403_FORBIDDEN)
 
+        # (Modo de Pagamento) "Ativo" — desligado, sai do POS. É como se suspende o
+        # multibanco quando o TPA avaria, sem apagar o histórico de vendas por cartão.
+        if not pm.is_active:
+            return Response({'detail': f'"{pm.name}" está desativado.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not pm.for_pos:
+            return Response({'detail': f'"{pm.name}" não é um modo de pagamento de POS.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Modo de Pagamento) "Consumo interno" — o staff não paga, mas ALGUÉM tem de
+        # poder lançar. Cruza-se com a caixa "Consumo interno" da ficha do utilizador:
+        # quem não a tiver, não consegue usar este método.
+        if pm.internal_consumption:
+            from .models import PosUser
+            pu = PosUser.objects.filter(auth_user=request.user).first() if request.user.is_authenticated else None
+            if not (pu and pu.internal_consumption):
+                return Response({
+                    'detail': f'Não está autorizado a lançar consumo interno ("{pm.name}"). '
+                              f'É preciso a autorização de um supervisor.',
+                    'requires_supervisor': True,
+                }, status=status.HTTP_403_FORBIDDEN)
+
+        # (Modo de Pagamento) "Lançar em Quarto" — sem quarto, não há onde lançar.
+        if pm.charge_to_room and not (request.data.get('room') or request.data.get('folio')
+                                      or (ticket.dest_kind == 'ROOM' and ticket.dest_ref)):
+            return Response({'detail': f'"{pm.name}" lança no folio: indique o quarto.',
+                             'requires_room': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Modo de Pagamento) "Perguntar nº de documento" — cheque e transferência sem
+        # referência são dinheiro que ninguém consegue reconciliar no banco.
+        if pm.ask_document_number and not (request.data.get('document_number') or '').strip():
+            return Response({'detail': f'"{pm.name}" exige o nº do documento (cheque/transferência).',
+                             'requires_document_number': True}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             tendered = Decimal(str(request.data.get('amount')))
         except Exception:
@@ -529,7 +658,30 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket = POSTicket.objects.get(pk=ticket.pk)  # fresco: saldo/pagamentos atualizados
         due = ticket.balance_due
         applied = min(tendered, due)
-        change = (tendered - applied) if pm.method_type == 'CASH' else Decimal('0')
+        # (Modo de Pagamento) "Dá troco" — o dinheiro dá; o multibanco e a transferência
+        # não. Sem esta caixa, o caixa "devolvia" troco de um pagamento por cartão e a
+        # gaveta ficava sempre em falta ao fecho.
+        gives_change = getattr(pm, 'allows_change', pm.method_type == 'CASH')
+        if not gives_change and tendered > due:
+            return Response({
+                'detail': f'"{pm.name}" não dá troco. Cobre no máximo {due}.',
+                'no_change_allowed': True, 'max_amount': str(due),
+            }, status=status.HTTP_400_BAD_REQUEST)
+        change = (tendered - applied) if gives_change else Decimal('0')
+
+        # (Modo de Pagamento) "Converter troco para gratificação" — o cliente diz
+        # "fique com o troco". Sem isto, a gorjeta ficava dentro da gaveta e o fecho
+        # de caixa dava sobra todos os dias sem ninguém saber porquê.
+        tip = Decimal('0')
+        if pm.tip_from_change and change > 0 and request.data.get('tip_change'):
+            tip, change = change, Decimal('0')
+            if ticket.cash_session_id:
+                CashMovement.objects.create(
+                    session=ticket.cash_session, movement_type='ENTRADA', amount=tip,
+                    reason=f'Gratificação (troco de {ticket.ticket_number})',
+                    created_by=(request.user.username if request.user.is_authenticated else 'POS'),
+                )
+
         POSTicketPayment.objects.create(ticket=ticket, payment_method=pm, amount=applied, change_due=change)
 
         ticket = POSTicket.objects.get(pk=ticket.pk)  # recarrega com o novo pagamento
@@ -549,6 +701,11 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket = self.get_queryset().get(pk=ticket.pk)
         data = self.get_serializer(ticket).data
         data['change_returned'] = str(change)
+        data['tip'] = str(tip)
+        # O terminal obedece a estas: abre (ou não) a gaveta, imprime (ou não) o documento.
+        data['open_drawer'] = bool(pm.opens_drawer)
+        data['print_document'] = bool(pm.prints_document)
+        data['document_type'] = pm.document_type          # Fatura ou Talão
         return Response(data)
 
     @action(detail=True, methods=['post'])
@@ -564,15 +721,33 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket.lines.filter(kds_status='NEW').exclude(kds_station='NONE').update(
             kds_status='FIRED', fired_at=timezone.now())
         # Motor 8: gera uma comanda de impressão por estação.
+        from inventory.models import Printer
+        avisos = []
         for station, lines in by_station.items():
             content = "\n".join(f"{int(l.quantity)}x {l.description}" + (f"  » {l.note}" if l.note else "") for l in lines)
-            PrintJob.objects.create(
+            # A que IMPRESSORA vai esta estação, e a que APARELHO está ela ligada?
+            prt = (Printer.objects.filter(station=station, outlet=ticket.outlet, is_active=True).first()
+                   or Printer.objects.filter(station=station, is_active=True).first())
+            job = PrintJob.objects.create(
                 job_type=station if station in ('KITCHEN', 'BAR', 'PASTRY') else 'KITCHEN',
-                target=station, outlet=ticket.outlet,
+                target=(prt.device.name if (prt and prt.device_id) else station), outlet=ticket.outlet,
                 title=f"Comanda {ticket.table.table_number if ticket.table else ticket.ticket_number}",
                 content=content, reference=ticket.ticket_number)
+            # (Impressora) "Emitir Aviso" — sem aparelho, a comanda fica em fila e ninguém
+            # a vai buscar: o pedido NUNCA chega à cozinha. Mais vale o empregado saber já.
+            if not prt or not prt.device_id:
+                job.status = 'FAILED'
+                job.error = 'Sem aparelho de impressão configurado para esta estação.'
+                job.save(update_fields=['status', 'error'])
+                if not prt or prt.warn_on_failure:
+                    avisos.append(f'{station}: sem impressora configurada — a comanda não foi impressa.')
         log_event(request, 'KITCHEN_FIRE', f'{len(new_lines)} item(s) enviados para produção',
                   operator_name=ticket.operator_name, outlet=ticket.outlet, reference=ticket.ticket_number)
+        if avisos:
+            ticket = self.get_queryset().get(pk=ticket.pk)
+            data = self.get_serializer(ticket).data
+            data['print_warnings'] = avisos
+            return Response(data)
         ticket = self.get_queryset().get(pk=ticket.pk)
         return Response(self.get_serializer(ticket).data)
 
@@ -580,10 +755,21 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     def void(self, request, pk=None):
         ticket = self.get_object()
         old = ticket.status
+        reason = request.data.get('reason') or 'Conta anulada no POS'
+
+        # (8128) Emitir sempre nota de crédito ao anular fatura.
+        # Se o parâmetro está ligado e a venda já tem documento fiscal, a anulação
+        # TEM de passar pela emissão da NC — anular sem NC seria apagar uma fatura
+        # comunicada, e isso a AGT não perdoa.
+        if P.bool(8128, True) and ticket.status in ('PAID', 'CLOSED'):
+            return self.credit_note(request, pk)
+        # A produção em curso tem de saber: Cozinha/Bar/Pastelaria recebem a ANULAÇÃO.
+        cancelled = cancel_production(request, ticket, list(ticket.lines.all()), reason)
         ticket.status = 'VOID'
         ticket.closed_at = timezone.now()
         ticket.save(update_fields=['status', 'closed_at'])
-        log_event(request, 'TICKET_VOID', f'Ticket anulado ({ticket.ticket_number})',
+        log_event(request, 'TICKET_VOID',
+                  f'Ticket anulado ({ticket.ticket_number}) · {len(cancelled)} item(s) anulados na produção · Motivo: {reason}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet,
                   reference=ticket.ticket_number, old_value=old, new_value='VOID', amount=ticket.grand_total)
         return Response(self.get_serializer(ticket).data)
@@ -592,6 +778,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     def credit_note(self, request, pk=None):
         """Anula a venda emitindo a Nota de Crédito do documento fiscal associado (se houver)."""
         ticket = self.get_object()
+        reason = request.data.get('reason', 'Anulação de venda POS')
         nc_info = None
         try:
             from fiscal.models import FiscalDocument
@@ -599,18 +786,25 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             fd = (FiscalDocument.objects.filter(source_module='pos', source_ref=str(ticket.id))
                   .exclude(status='A').exclude(doc_type__is_rectifying=True).order_by('-id').first())
             if fd:
-                nc = fsvc.create_credit_note(fd.id, reason=request.data.get('reason', 'Anulação de venda POS'),
+                nc = fsvc.create_credit_note(fd.id, reason=reason,
                                              user=str(getattr(request.user, 'username', '') or ''))
                 nc_info = nc.invoice_no
         except Exception as e:  # noqa — a venda anula-se mesmo que o doc fiscal falhe
             nc_info = f'(NC não emitida: {str(e)[:80]})'
+        cancelled = cancel_production(request, ticket, list(ticket.lines.all()), reason)
         ticket.status = 'VOID'
         ticket.closed_at = timezone.now()
         ticket.save(update_fields=['status', 'closed_at'])
-        log_event(request, 'TICKET_VOID', f'Venda anulada ({ticket.ticket_number}) · NC: {nc_info or "s/ doc fiscal"}',
+        log_event(request, 'TICKET_VOID',
+                  f'Venda anulada ({ticket.ticket_number}) · NC: {nc_info or "s/ doc fiscal"} · '
+                  f'{len(cancelled)} item(s) anulados na produção · Motivo: {reason}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet,
                   reference=ticket.ticket_number, old_value='CLOSED', new_value='VOID', amount=ticket.grand_total)
-        return Response({**self.get_serializer(ticket).data, 'credit_note': nc_info})
+        stations = sorted({STATION_LABEL.get(l.kds_station, l.kds_station) for l in cancelled})
+        return Response({**self.get_serializer(ticket).data,
+                         'credit_note': nc_info,
+                         'cancelled_items': len(cancelled),
+                         'notified_stations': stations})
 
     # ------------------------------------------------------------------
     # MOTOR 3 (aprofundamento) — transferir / juntar mesas
@@ -761,34 +955,40 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     # ------------------------------------------------------------------
     @action(detail=True, methods=['post'])
     def refund(self, request, pk=None):
-        """Estorno de um ticket pago: emite nota de crédito (negativa) e marca REFUNDED."""
-        from django.db import transaction
-        from mdm.models import DocumentSeries
-        from .models import POSDocument
-        from .serializers import POSDocumentSerializer
+        """Estorno: emite a NOTA DE CRÉDITO no motor fiscal — assinada e encadeada.
+
+        Antes, isto numerava a NC numa série PARALELA (mdm.DocumentSeries): saía um
+        documento com número, mas sem assinatura, sem encadeamento de hash e fora do
+        SAF-T. Ou seja: um documento que a AGT não reconhece. Agora passa pelo mesmo
+        ponto único de emissão das faturas.
+        """
+        from fiscal.services import create_credit_note
+        from fiscal.integration import existing_for
         ticket = self.get_object()
         if ticket.status != 'PAID':
             return Response({'detail': 'Só tickets pagos podem ser estornados.'}, status=400)
-        with transaction.atomic():
-            series = (DocumentSeries.objects.select_for_update()
-                      .filter(document_type='CREDIT_NOTE', is_active=True).first()
-                      or DocumentSeries.objects.select_for_update().filter(is_active=True).first())
-            if not series:
-                return Response({'detail': 'Sem série ativa para nota de crédito.'}, status=400)
-            series.current_number += 1
-            series.save(update_fields=['current_number'])
-            full = f"{series.prefix}{series.year}/{series.current_number:04d}"
-            doc = POSDocument.objects.create(
-                document_type='CREDIT_NOTE', series=series, number=series.current_number, full_number=full,
-                ticket=ticket, customer_name=request.data.get('customer_name'),
-                subtotal=-ticket.subtotal, tax_total=-ticket.tax_total, grand_total=-ticket.grand_total,
-                notes=request.data.get('reason', 'Estorno'))
-            ticket.status = 'REFUNDED'
-            ticket.save(update_fields=['status'])
-        log_event(request, 'DOC_ISSUE', f'Estorno / Nota de crédito {full}',
-                  operator_name=ticket.operator_name, outlet=ticket.outlet, reference=full,
+
+        original = existing_for('pos', ticket.id)
+        if not original:
+            return Response({'detail': 'Este ticket não tem documento fiscal — não há o que estornar. '
+                                       'Verifique a configuração da série no Centro Fiscal.'}, status=400)
+        motivo = request.data.get('reason', 'Estorno')
+        try:
+            nc = create_credit_note(
+                original.id, reason=motivo,
+                user=(request.user.username if request.user.is_authenticated else None),
+                ip=request.META.get('REMOTE_ADDR'))
+        except ValueError as e:
+            return Response({'detail': str(e)}, status=400)
+
+        ticket.status = 'REFUNDED'
+        ticket.save(update_fields=['status'])
+        log_event(request, 'DOC_ISSUE', f'Estorno / Nota de crédito {nc.invoice_no}. Motivo: {motivo}',
+                  operator_name=ticket.operator_name, outlet=ticket.outlet, reference=nc.invoice_no,
                   old_value='PAID', new_value='REFUNDED', amount=-ticket.grand_total)
-        return Response(POSDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
+        return Response({'invoice_no': nc.invoice_no, 'hash': nc.doc_hash,
+                         'grand_total': str(nc.grand_total), 'ticket_status': 'REFUNDED'},
+                        status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
     def charge_to_room(self, request, pk=None):
@@ -1000,20 +1200,91 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         return Response({'synced': results})
 
 
+STATION_LABEL = {'KITCHEN': 'COZINHA', 'BAR': 'BAR', 'PASTRY': 'PASTELARIA'}
+
+
+def cancel_production(request, ticket, lines, reason='Anulado no POS'):
+    """Anula linhas JÁ ENVIADAS à produção.
+
+    Regras (nunca se apaga histórico):
+      1. a linha fica kds_status=CANCELLED + is_void (deixa de somar ao total);
+      2. cada estação afetada (Cozinha/Bar/Pastelaria) recebe uma comanda de ANULAÇÃO
+         e o item passa a aparecer a vermelho no seu ecrã até ser confirmado;
+      3. tudo fica registado na auditoria do POS.
+    """
+    from collections import defaultdict
+    from .models import PrintJob
+    targets = [l for l in lines if l.kds_station != 'NONE' and l.kds_status in ('FIRED', 'PREPARING', 'READY')]
+    if not targets:
+        return []
+    now = timezone.now()
+    by_station = defaultdict(list)
+    for l in targets:
+        l.kds_status = 'CANCELLED'
+        l.is_void = True
+        l.void_reason = reason
+        l.voided_at = now
+        l.kds_ack_at = None
+        l.save(update_fields=['kds_status', 'is_void', 'void_reason', 'voided_at', 'kds_ack_at'])
+        by_station[l.kds_station].append(l)
+
+    where = ticket.dest_label or (ticket.table.table_number if ticket.table else ticket.ticket_number)
+    for station, sl in by_station.items():
+        content = ("*** ANULAÇÃO — NÃO PREPARAR ***\n"
+                   + "\n".join(f"{int(l.quantity)}x {l.description}" for l in sl)
+                   + f"\nMotivo: {reason}")
+        PrintJob.objects.create(
+            job_type=station if station in ('KITCHEN', 'BAR', 'PASTRY') else 'KITCHEN',
+            target=station, outlet=ticket.outlet,
+            title=f"ANULAÇÃO — {where}", content=content, reference=ticket.ticket_number)
+        log_event(request, 'LINE_VOID',
+                  f'ANULAÇÃO enviada a {STATION_LABEL.get(station, station)}: '
+                  + ", ".join(f"{int(l.quantity)}x {l.description}" for l in sl),
+                  operator_name=ticket.operator_name, outlet=ticket.outlet,
+                  reference=ticket.ticket_number, old_value=station, new_value=reason,
+                  amount=sum((l.line_total for l in sl), Decimal('0')))
+    return targets
+
+
 class POSTicketLineViewSet(viewsets.ModelViewSet):
     serializer_class = POSTicketLineSerializer
     queryset = POSTicketLine.objects.all()
 
+    def destroy(self, request, *a, **kw):
+        # MOTIVO DE ANULAÇÃO — anular um artigo JÁ EM PRODUÇÃO sem dizer porquê é como
+        # deitar comida fora sem registo. Exige-se o motivo (da lista configurada).
+        from .models import VoidReason
+        instance = self.get_object()
+        motivo = request.query_params.get('reason') or request.data.get('reason')
+        if instance.kds_status in ('FIRED', 'PREPARING', 'READY') and not motivo:
+            return Response({
+                'detail': 'Este artigo já foi para a produção. Indique o motivo da anulação.',
+                'requires_reason': True,
+                'reasons': [{'code': r.code, 'label': r.key_label}
+                            for r in VoidReason.objects.filter(is_active=True)],
+            }, status=status.HTTP_400_BAD_REQUEST)
+        return super().destroy(request, *a, **kw)
+
     def perform_destroy(self, instance):
         ticket = instance.ticket
         desc = f'{instance.quantity}x {instance.description} @ {instance.unit_price}'
-        was_fired = instance.kds_status != 'NEW'  # já enviado à cozinha = cancelamento sensível
+        reason = (self.request.query_params.get('reason')
+                  or self.request.data.get('reason') or 'Anulado no POS')
+        # O talão que vai para a estação leva o texto de IMPRESSÃO do motivo (não o da tecla).
+        from .models import VoidReason
+        vr = VoidReason.objects.filter(key_label=reason).first() or VoidReason.objects.filter(code=reason).first()
+        if vr:
+            reason = vr.print_label
+        if instance.kds_status in ('FIRED', 'PREPARING', 'READY'):
+            # Já está em produção: NÃO se apaga. Anula-se, avisa-se a estação e fica no registo.
+            cancel_production(self.request, ticket, [instance], reason)
+            ticket.recompute(save=True)
+            return
         instance.delete()
         ticket.recompute(save=True)
-        log_event(self.request, 'LINE_VOID',
-                  f'Artigo cancelado: {desc}' + (' (já enviado à produção)' if was_fired else ''),
+        log_event(self.request, 'LINE_VOID', f'Artigo removido: {desc}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet,
-                  reference=ticket.ticket_number, old_value=desc)
+                  reference=ticket.ticket_number, old_value=desc, new_value=reason)
 
 
 class KDSViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1024,7 +1295,9 @@ class KDSViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         qs = (POSTicketLine.objects
               .select_related('ticket', 'ticket__table', 'ticket__outlet')
-              .filter(kds_status__in=['FIRED', 'PREPARING', 'READY'])
+              # CANCELLED entra na fila (a vermelho) até a estação confirmar que viu a anulação.
+              .filter(kds_status__in=['FIRED', 'PREPARING', 'READY', 'CANCELLED'])
+              .exclude(kds_status='CANCELLED', kds_ack_at__isnull=False)
               .order_by('fired_at'))
         station = self.request.query_params.get('station')
         return qs.filter(kds_station=station) if station else qs
@@ -1032,14 +1305,28 @@ class KDSViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=['post'])
     def advance(self, request, pk=None):
         line = self.get_object()
+        old = line.kds_status
+        if old == 'CANCELLED':      # estação confirma que viu a anulação → sai da fila
+            line.kds_ack_at = timezone.now()
+            line.save(update_fields=['kds_ack_at'])
+            log_event(request, 'KDS_ADVANCE',
+                      f'{STATION_LABEL.get(line.kds_station, line.kds_station)} confirmou a ANULAÇÃO de {line.description}',
+                      operator_name=line.ticket.operator_name, outlet=line.ticket.outlet,
+                      reference=line.ticket.ticket_number, old_value='CANCELLED', new_value='ACK')
+            return Response(self.get_serializer(line).data)
         flow = {'FIRED': 'PREPARING', 'PREPARING': 'READY', 'READY': 'SERVED'}
-        nxt = flow.get(line.kds_status)
+        nxt = flow.get(old)
         if not nxt:
             return Response({'detail': 'Sem próximo estado.'}, status=status.HTTP_400_BAD_REQUEST)
         line.kds_status = nxt
         if nxt == 'READY':
             line.ready_at = timezone.now()
         line.save(update_fields=['kds_status', 'ready_at'])
+        # Regista TODAS as passagens de estado (quem preparou, quando ficou pronto, quando serviu).
+        log_event(request, 'KDS_ADVANCE',
+                  f'{STATION_LABEL.get(line.kds_station, line.kds_station)}: {line.description} → {line.get_kds_status_display()}',
+                  operator_name=line.ticket.operator_name, outlet=line.ticket.outlet,
+                  reference=line.ticket.ticket_number, old_value=old, new_value=nxt)
         return Response(self.get_serializer(line).data)
 
 

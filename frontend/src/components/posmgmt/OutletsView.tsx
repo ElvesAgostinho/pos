@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
+import GridToggle from '../ui/GridToggle';
 import { Store, Plus, Trash2 } from 'lucide-react';
 import { useOutlets, useCreateOutlet, useDeleteOutlet } from '../../hooks/usePosMgmt';
 import { OUTLET_TYPES, posMgmtApi } from '../../api/posmgmt';
@@ -56,7 +57,9 @@ export default function OutletsView() {
                 <select value={r.warehouse || ''} onChange={(e) => setWarehouse(r.id, e.target.value)} className="border border-[#a0a0a0] p-0.5 bg-white text-[11px]">
                   <option value="">— nenhum —</option>{warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
                 </select>), width: '18%' },
-              { header: 'Ativo', accessor: (r: any) => (r.is_active ? '✓' : '—'), width: '6%' },
+              { header: 'Ativo', width: '6%',
+                accessor: (r: any) => <GridToggle endpoint="pos/outlets" id={r.id} field="is_active"
+                  value={!!r.is_active} invalidate="posmgmt" title="Desligar fecha este ponto de venda" /> },
               { header: '', accessor: (r: any) => <button onClick={() => { if (confirm(`Apagar o outlet ${r.name}?`)) del.mutate(r.id); }} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '10%' },
             ]}
           />

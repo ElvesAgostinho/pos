@@ -1,20 +1,20 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../api/client';
 import {
-  MODULES, VIEW_REGISTRY, ITEM_TITLES, moduleEnabled, moduleKeyOf, suiteIncludes, featureAllowed,
+  VIEW_REGISTRY, ITEM_TITLES, ITEM_MODULE_KEY, moduleEnabled, moduleKeyOf, featureAllowed,
 } from '../../config/navigation';
 import { getAppearance } from '../../config/appearance';
 import ErrorBoundary from './ErrorBoundary';
 import { exportDomTable } from '../../utils/exportData';
-import { WORKSPACES, centerInModule } from '../../config/workspace';
-import type { NavItem } from '../../config/navigation';
+import { WORKSPACES, MODULE_TREE } from '../../config/workspace';
 import { tokenStore, authApi } from '../../api/auth';
 import { useActiveModules, useFeatures, useMyAccess } from '../../hooks/useActiveModules';
 import {
   FilePlus2, Pencil, Save, Trash2, Copy, Search, RefreshCw, Printer, Download,
   Paperclip, History, ClipboardList, ChevronRight, ChevronDown, Folder, FolderOpen,
-  Power, Moon, Sun, Server, ShieldCheck, Monitor, Building2,
+  Power, Moon, Sun, Server, ShieldCheck, Monitor, Building2, Database, Wifi, Cpu,
 } from 'lucide-react';
 
 // ==========================================================================
@@ -22,6 +22,9 @@ import {
 // status bar. Visual clássico (Primavera/PHC/Office), sem cartões/animações.
 // Envolve TODOS os ecrãs (VIEW_REGISTRY) — muda o visual do sistema inteiro.
 // ==========================================================================
+
+// Ecrãs que trazem a sua própria janela completa (não entram na árvore + ribbon).
+const FULLSCREEN_VIEWS = ['posc_config'];
 
 const cmd = (name: string) => window.dispatchEvent(new CustomEvent('erp:cmd', { detail: name }));
 
@@ -42,7 +45,6 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   const screenAllowed = (id: string) => accFull || accScreens.length === 0 || accScreens.includes(id);
   const user = tokenStore.getUser();
   const [dark, setDark] = useState(() => localStorage.getItem('ui_theme') === 'dark');
-  const suite = 'all';   // suites geridas no Ambiente de Trabalho; aqui o clássico mostra tudo o licenciado
   const [menu, setMenu] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [treeQuery, setTreeQuery] = useState('');
@@ -50,29 +52,93 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   const [exportOpen, setExportOpen] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
 
+  // PROPRIEDADE ATIVA — em grupos com vários hotéis, tudo o que se vê é do hotel escolhido.
+  const { data: myHotels } = useQuery({
+    queryKey: ['auth', 'hotels'],
+    queryFn: async () => (await apiClient.get('auth/hotels/')).data,
+    staleTime: 5 * 60 * 1000,
+  });
+  const hotels: any[] = myHotels?.hotels || [];
+  const [hotelId, setHotelId] = useState(() => localStorage.getItem('erp_hotel') || '');
+  const hotelName = hotels.find((h) => String(h.id) === hotelId)?.name || hotels[0]?.name || '—';
+  const pickHotel = (id: string) => {
+    setHotelId(id);
+    if (id) localStorage.setItem('erp_hotel', id); else localStorage.removeItem('erp_hotel');
+    qc.invalidateQueries();   // tudo o que está em ecrã pertence ao hotel anterior
+  };
+
+  // Memória usada pela aplicação (barra de estado) — só nos browsers que o expõem.
+  const [mem, setMem] = useState('—');
+  useEffect(() => {
+    const read = () => {
+      const m = (performance as any).memory;
+      setMem(m ? `${Math.round(m.usedJSHeapSize / 1048576)} MB` : '—');
+    };
+    read(); const t = setInterval(read, 10000); return () => clearInterval(t);
+  }, []);
+
   useEffect(() => { const t = setInterval(() => setClock(new Date()), 15000); return () => clearInterval(t); }, []);
   useEffect(() => { document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'classic'); localStorage.setItem('ui_theme', dark ? 'dark' : 'classic'); }, [dark]);
 
-  // Segurança = LICENÇA (moduleEnabled): o não-comprado não existe.
-  // Organização = SEPARAÇÃO por módulo (centerInModule): cada módulo mostra só o que é
-  // dele; para ver outro módulo, volta-se ao Ambiente de Trabalho e troca-se lá.
-  const licensed = useMemo(
-    () => MODULES.filter((m) => moduleEnabled(m.key, lic?.active || []) && suiteIncludes(suite, m.key) && moduleAllowed(m.key) && centerInModule(m.key, module)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [lic, suite, access, module]);
   const bizModules = WORKSPACES.filter((w) => moduleEnabled(w.licenseModule, lic?.active || []));
+
+  // ÁRVORE POR TAREFA — pastas que qualquer pessoa percebe (Receção, Quartos, Cozinha,
+  // Caixa…) em vez dos "Centros" técnicos. Só entram ecrãs que EXISTEM, estão
+  // LICENCIADOS e que o utilizador tem PERMISSÃO para ver.
+  const tree = useMemo(() => {
+    const folders = (module && MODULE_TREE[module]) || [];
+    // DEDUPLICAÇÃO: o mesmo ecrã estava a aparecer com nomes diferentes em pastas
+    // diferentes (ex.: "Utilizadores" em Segurança e em Administração eram O MESMO
+    // ecrã). Um ecrã real só pode surgir UMA vez por módulo — a primeira pasta onde
+    // pertence fica com ele. Quando dois IDs deixarem de partilhar o componente
+    // (porque cada um passou a ter ecrã próprio), voltam ambos a aparecer sozinhos.
+    const seen = new Set<any>();
+    const seenName = new Set<string>();
+    return folders
+      .map((f) => ({
+        key: f.key,
+        title: f.title,
+        items: f.items
+          .filter((id) => !!VIEW_REGISTRY[id])
+          .filter((id) => moduleEnabled(ITEM_MODULE_KEY[id] || '', lic?.active || []))
+          .filter((id) => featureAllowed(id, activeFeatures))
+          .filter((id) => screenAllowed(id))
+          .filter((id) => {
+            const comp = VIEW_REGISTRY[id];
+            const name = (ITEM_TITLES[id] || id).toLowerCase();
+            if (seen.has(comp) || seenName.has(name)) return false;   // já existe neste módulo
+            seen.add(comp); seenName.add(name);
+            return true;
+          })
+          .map((id) => ({ id, name: ITEM_TITLES[id] || id })),
+      }))
+      .filter((f) => f.items.length > 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [module, lic, access, activeFeatures]);
+
+  const activeFolder = tree.find((f) => f.items.some((i) => i.id === activeView))?.key;
+  // Grupos do menu lateral (separadores de leitura, estilo Windows).
+  const groupOf = (key: string) => {
+    const k = key.split('_').slice(1).join('_');
+    if (['tesouraria', 'fiscal', 'contab'].includes(k)) return 'FINANCEIRO';
+    if (['relatorios'].includes(k)) return 'ANÁLISE';
+    if (['dados', 'estrutura', 'seguranca', 'sistema'].includes(k)) return 'SISTEMA';
+    return 'OPERAÇÃO';
+  };
+  const q = (items: { id: string; name: string }[]) =>
+    treeQuery ? items.filter((i) => i.name.toLowerCase().includes(treeQuery.toLowerCase())) : items;
   const activeModuleKey = moduleKeyOf(activeView);
 
   // Expande automaticamente o módulo ativo na árvore.
   useEffect(() => { if (activeModuleKey) setExpanded((e) => ({ ...e, [activeModuleKey]: true })); }, [activeModuleKey]);
 
-  // Ao mudar de módulo: se o ecrã atual não pertence ao módulo, aterra no 1º centro dele.
+  // Aterra no 1º ecrã do módulo APENAS se o ecrã atual não for um ecrã real
+  // (ex.: 'home:xxx'). Nunca empurrar para fora um ecrã aberto por um ícone válido.
   useEffect(() => {
-    if (licensed.length && !licensed.some((m) => m.key === activeModuleKey)) {
-      onOpen(`home:${licensed[0].key}`);
-    }
+    if (!tree.length) return;
+    if (!VIEW_REGISTRY[activeView]) onOpen(tree[0].items[0].id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [module]);
+  }, [module, tree.length]);
 
   // Atalhos de teclado tipo Windows.
   useEffect(() => {
@@ -193,10 +259,21 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
     }, 60);
   };
 
-  const treeItems = (items: NavItem[]) => {
-    const feats = items.filter((i) => featureAllowed(i.id, activeFeatures) && screenAllowed(i.id));
-    return treeQuery ? feats.filter((i) => i.name.toLowerCase().includes(treeQuery.toLowerCase())) : feats;
-  };
+
+  // ECRÃS DE ECRÃ INTEIRO — trazem a sua própria moldura (barra de menus, secções,
+  // barra de ferramentas). Mostrá-los DENTRO da árvore + ribbon do shell dava duas
+  // molduras sobrepostas e dois menus laterais. Estes tomam a janela toda.
+  if (FULLSCREEN_VIEWS.includes(activeView) && Active) {
+    return (
+      <div ref={shellRef} className="h-screen w-screen overflow-hidden font-sans select-none">
+        <ErrorBoundary viewKey={activeView}>
+          <Active onBack={() => onOpen(tree[0]?.items[0]?.id || 'posc_dashboard')}
+            onOpen={onOpen}
+            onDesktop={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }} />
+        </ErrorBoundary>
+      </div>
+    );
+  }
 
   return (
     <div ref={shellRef} className="h-screen w-screen flex flex-col overflow-hidden font-sans select-none" style={{ background: t.body }}>
@@ -220,6 +297,18 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
           </div>
         ))}
         <div className="flex-1" />
+        {/* PROPRIEDADE ATIVA — só aparece em grupos com mais do que um hotel. */}
+        {hotels.length > 1 && (
+          <div className="flex items-center gap-1.5 pr-2 mr-1 border-r" style={{ borderColor: t.line }}>
+            <Building2 size={13} className="opacity-70" />
+            <select value={hotelId || String(hotels[0].id)} onChange={(e) => pickHotel(e.target.value)}
+              title="Propriedade ativa — só vê os dados deste hotel"
+              className="h-[20px] text-[11px] font-bold px-1 border"
+              style={{ background: t.tree, color: t.treeText, borderColor: t.line }}>
+              {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
+            </select>
+          </div>
+        )}
         <button onClick={() => setDark((d) => !d)} title="Tema" className="px-2 h-[26px] hover:bg-black/10">{dark ? <Sun size={14} /> : <Moon size={14} />}</button>
       </div>
 
@@ -261,16 +350,6 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
       <div className="flex-1 flex overflow-hidden">
         {/* Árvore de navegação (Windows Explorer) */}
         <div className="w-[236px] flex-shrink-0 flex flex-col border-r overflow-hidden" style={{ background: t.tree, borderColor: t.line, color: t.treeText }}>
-          {/* Cabeçalho do módulo ativo — os outros módulos ficam ocultos. Regresso ao Ambiente para trocar. */}
-          {onDesktop && (() => { const w = bizModules.find((b) => b.key === module) || bizModules[0]; return (
-            <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop(); }} title="Voltar ao Ambiente de Trabalho para mudar de módulo"
-              className="flex items-center gap-2 px-3 py-2 border-b text-white text-[12px] font-bold"
-              style={{ borderColor: t.line, background: w ? `linear-gradient(to bottom, ${w.accent}, ${w.color})` : t.accent }}>
-              <span className="w-2.5 h-2.5 rounded-full" style={{ background: w?.glow || '#fff' }} />
-              {w?.name || 'Módulo'}
-              <span className="ml-auto text-[11px] font-normal opacity-90 flex items-center gap-1">🖥️ Ambiente</span>
-            </button>
-          ); })()}
           <div className="p-1.5 border-b" style={{ borderColor: t.line }}>
             <div className="flex items-center gap-1 px-1.5 py-1 border" style={{ borderColor: t.line, background: dark ? '#1a1a1a' : '#fff' }}>
               <Search size={12} className="opacity-50" />
@@ -279,28 +358,36 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
             </div>
           </div>
           <div className="flex-1 overflow-auto py-1">
-            {licensed.map((m) => {
-              const open = expanded[m.key] || (!!treeQuery && treeItems(m.items).length > 0);
-              const label = m.title.replace(/^\d+\s·\s/, '');
-              const its = treeItems(m.items);
+            {tree.map((f, idx) => {
+              const its = q(f.items);
               if (treeQuery && its.length === 0) return null;
+              const open = expanded[f.key] ?? (f.key === activeFolder || !!treeQuery);
+              const grp = groupOf(f.key);
+              const newGroup = idx === 0 || groupOf(tree[idx - 1].key) !== grp;
               return (
-                <div key={m.key}>
-                  <button onClick={() => setExpanded((e) => ({ ...e, [m.key]: !open }))}
-                    className="w-full flex items-center gap-1 px-2 py-1 text-[12px] font-semibold hover:bg-black/5"
-                    style={{ background: m.key === activeModuleKey ? t.hover : 'transparent' }}>
+                <div key={f.key}>
+                  {/* Separador de grupo (Operação / Financeiro / Análise / Sistema) */}
+                  {newGroup && !treeQuery && (
+                    <div className="flex items-center gap-2 px-2 pt-2.5 pb-1 select-none">
+                      <span className="text-[9px] font-bold tracking-widest opacity-45">{grp}</span>
+                      <span className="flex-1 h-px" style={{ background: dark ? '#3a3a3a' : '#c8d0da' }} />
+                    </div>
+                  )}
+                  <button onClick={() => setExpanded((e) => ({ ...e, [f.key]: !open }))}
+                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[12px] font-bold hover:bg-black/5 border-b"
+                    style={{ background: f.key === activeFolder ? t.hover : 'transparent', borderColor: dark ? '#2a2a2a' : '#eef1f5' }}>
                     {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                    {open ? <FolderOpen size={13} style={{ color: '#d8a30a' }} /> : <Folder size={13} style={{ color: '#d8a30a' }} />}
-                    <span className="truncate">{label}</span>
+                    {open ? <FolderOpen size={14} style={{ color: '#d8a30a' }} /> : <Folder size={14} style={{ color: '#d8a30a' }} />}
+                    <span className="truncate">{f.title}</span>
+                    <span className="ml-auto text-[10px] font-normal opacity-40">{f.items.length}</span>
                   </button>
                   {open && its.map((it) => {
-                    const real = !!VIEW_REGISTRY[it.id];
                     const sel = it.id === activeView;
                     return (
                       <button key={it.id} onClick={() => onOpen(it.id)}
-                        className="w-full flex items-center gap-1.5 pl-7 pr-2 py-[3px] text-[12px] hover:bg-black/10 text-left"
-                        style={{ background: sel ? t.accent : 'transparent', color: sel ? '#fff' : (real ? t.treeText : (dark ? '#777' : '#9aa')) }}>
-                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: real ? '#3aa655' : '#bbb' }} />
+                        className="w-full flex items-center gap-1.5 pl-8 pr-2 py-[4px] text-[12px] hover:bg-black/10 text-left"
+                        style={{ background: sel ? t.accent : 'transparent', color: sel ? '#fff' : t.treeText }}>
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: sel ? '#fff' : '#3aa655' }} />
                         <span className="truncate">{it.name}</span>
                       </button>
                     );
@@ -314,27 +401,37 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         {/* Área principal — renderiza o ecrã ativo (isolado por ErrorBoundary) */}
         <div id="erp-active-view" className="flex-1 overflow-hidden" style={{ background: t.body }}>
           <ErrorBoundary viewKey={activeView}>
-            {Active ? <Active /> : <WelcomePanel moduleTitle={MODULES.find((m) => m.key === activeModuleKey)?.title} onOpen={onOpen} activeModuleKey={activeModuleKey} dark={dark} />}
+            {Active ? <Active /> : <WelcomePanel tree={tree} moduleName={bizModules.find((b) => b.key === module)?.name} onOpen={onOpen} dark={dark} />}
           </ErrorBoundary>
         </div>
       </div>
 
       {/* ================= BARRA DE ESTADO ================= */}
-      <div className="h-[24px] flex items-center px-2 gap-3 text-[11px] flex-shrink-0" style={{ background: t.status, color: '#fff' }}>
+      <div className="h-[26px] flex items-center px-2 gap-2.5 text-[11px] flex-shrink-0 overflow-hidden"
+        style={{ background: t.status, color: '#fff', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)' }}>
         <span className="flex items-center gap-1"><Monitor size={12} /> {user?.username || 'operador'}</span>
-        <span className="opacity-40">|</span>
-        <span className="flex items-center gap-1"><Building2 size={12} /> {companyName || user?.name || 'System Mwana Lodge'}</span>
-        <span className="opacity-40">|</span>
-        <span className="flex items-center gap-1"><Server size={12} /> localhost:8000</span>
-        <span className="opacity-40">|</span>
+        <span className="opacity-30">|</span>
+        <span className="flex items-center gap-1"><Building2 size={12} /> {companyName || 'System Mwana Lodge'}</span>
+        <span className="opacity-30">|</span>
+        {/* Propriedade em que se está a trabalhar (evita lançar num hotel errado). */}
+        <span className="flex items-center gap-1 font-bold" title="Propriedade ativa">{hotelName}</span>
+        <span className="opacity-30">|</span>
+        <span className="flex items-center gap-1"><Server size={12} /> {window.location.hostname}:8000</span>
+        <span className="opacity-30">|</span>
+        <span className="flex items-center gap-1" title="Base de dados"><Database size={12} /> {lic ? 'SQL' : '—'}</span>
+        <span className="opacity-30">|</span>
         <span className="flex items-center gap-1 text-[#7CFC98]"><span className="w-2 h-2 rounded-full bg-[#3aa655]" /> Ligado</span>
-        <span className="opacity-40">|</span>
+        <span className="opacity-30">|</span>
+        <span className="flex items-center gap-1" title="VPN de suporte"><Wifi size={12} /> VPN</span>
+        <span className="opacity-30">|</span>
         <span className="flex items-center gap-1"><ShieldCheck size={12} /> Licença ativa</span>
+        <span className="opacity-30">|</span>
+        <span className="flex items-center gap-1" title="Memória usada pela aplicação"><Cpu size={12} /> {mem}</span>
         <div className="flex-1" />
-        <span>{ITEM_TITLES[activeView] || ''}</span>
-        <span className="opacity-40">|</span>
+        <span className="font-semibold">{ITEM_TITLES[activeView] || ''}</span>
+        <span className="opacity-30">|</span>
         <span>v1.0</span>
-        <span className="opacity-40">|</span>
+        <span className="opacity-30">|</span>
         <span>{clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
         <button onClick={logout} title="Terminar sessão" className="ml-1 hover:text-[#ffd1d1]"><Power size={13} /></button>
       </div>
@@ -342,31 +439,33 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   );
 }
 
-function WelcomePanel({ moduleTitle, onOpen, activeModuleKey, dark }: { moduleTitle?: string; onOpen: (id: string) => void; activeModuleKey: string; dark: boolean }) {
-  const mod = MODULES.find((m) => m.key === activeModuleKey);
-  const card = dark ? 'bg-[#252525] border-[#3a3a3a] text-[#dcdcdc]' : 'bg-white border-[#c8c8c8] text-[#1a2a3a]';
+// Página inicial do módulo — mostra as PASTAS por tarefa e os seus ecrãs.
+function WelcomePanel({ tree, moduleName, onOpen, dark }:
+  { tree: { key: string; title: string; items: { id: string; name: string }[] }[]; moduleName?: string; onOpen: (id: string) => void; dark: boolean }) {
+  const card = dark ? 'bg-[#252525] border-[#3a3a3a] text-[#dcdcdc]' : 'bg-white border-[#9aa6b6] text-[#1a2a3a]';
   return (
     <div className="h-full overflow-auto p-4">
-      <div className={`border ${card} shadow-sm`}>
-        <div className="px-4 py-2 border-b text-[13px] font-bold" style={{ borderColor: dark ? '#3a3a3a' : '#e0e0e0' }}>
-          {(moduleTitle || 'Plataforma').replace(/^\d+\s·\s/, '')}
-        </div>
-        <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-1">
-          {(mod?.items || []).map((it) => {
-            const real = !!VIEW_REGISTRY[it.id];
-            return (
-              <button key={it.id} onClick={() => onOpen(it.id)}
-                className="flex items-center gap-2 py-1 text-[12px] text-left hover:underline"
-                style={{ opacity: real ? 1 : 0.5 }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: real ? '#3aa655' : '#bbb' }} />
-                {it.name}
-              </button>
-            );
-          })}
-        </div>
+      <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#dcdcdc' : '#1e3f66' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        {tree.map((f) => (
+          <div key={f.key} className={`border ${card}`} style={{ boxShadow: 'inset 0 1px 0 #fff, 0 1px 3px rgba(0,0,0,0.12)' }}>
+            <div className="px-3 py-2 border-b text-[12px] font-bold" style={{ borderColor: dark ? '#3a3a3a' : '#dfe3e8', background: dark ? '#2a2a2a' : 'linear-gradient(to bottom,#f7f9fb,#e7ebef)' }}>
+              {f.title}
+            </div>
+            <div className="p-2">
+              {f.items.map((it) => (
+                <button key={it.id} onClick={() => onOpen(it.id)}
+                  className="w-full flex items-center gap-2 py-1 px-1 text-[12px] text-left hover:bg-[#e6f3ff] rounded">
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#3aa655' }} />
+                  {it.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
       <div className="mt-3 text-[11px] opacity-60" style={{ color: dark ? '#aaa' : '#555' }}>
-        Selecione um ecrã na árvore à esquerda ou na lista acima. Atalhos: F5 atualizar · Ctrl+P imprimir · Ctrl+N novo · Esc fechar menus.
+        Atalhos: F5 atualizar · Ctrl+P imprimir · Ctrl+N novo · Esc fechar menus.
       </div>
     </div>
   );

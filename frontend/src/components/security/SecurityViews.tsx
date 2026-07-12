@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../api/client';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
@@ -25,6 +27,17 @@ export function UsersView() {
   };
   const changePw = (id: number) => { const p = window.prompt('Nova palavra-passe:'); if (p) setPw.mutate({ id, password: p }); };
   const setProfile = (u: any, pid: string) => upd.mutate({ id: u.id, data: { profile_ids: pid ? [Number(pid)] : [] } });
+  // Propriedades: a que hotéis este utilizador tem acesso. Sem nenhum = vê todos
+  // (instalação de hotel único). Com hotéis marcados, SÓ vê os dados desses hotéis.
+  const { data: allHotels = [] } = useQuery({
+    queryKey: ['identity', 'hotels'],
+    queryFn: async () => { const r = await apiClient.get('org/hotels/'); return r.data?.results || r.data || []; },
+  });
+  const toggleHotel = (u: any, hid: number) => {
+    const cur: number[] = (u.hotels || []).map((h: any) => h.id);
+    const next = cur.includes(hid) ? cur.filter((x) => x !== hid) : [...cur, hid];
+    upd.mutate({ id: u.id, data: { hotel_ids: next } });
+  };
 
   return (
     <ClassicWindow title="Utilizadores & Acessos (Security)" icon={<ShieldCheck size={14} className="text-gray-300" />}
@@ -47,7 +60,22 @@ export function UsersView() {
               <select value={r.profiles?.[0]?.id || ''} onChange={(e) => setProfile(r, e.target.value)} className="border border-[#a0a0a0] p-0.5 bg-white text-[11px]">
                 <option value="">— sem perfil —</option>{profiles.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>), width: '22%' },
-            { header: 'Estado', accessor: (r: any) => <span className={r.is_active ? 'text-green-700 font-bold' : 'text-red-600'}>{r.is_active ? 'Ativo' : 'Inativo'}</span>, width: '10%' },
+            { header: 'Hotéis (o que pode ver)', accessor: (r: any) => (
+              r.is_superuser ? <span className="text-gray-500 italic">todos (dono)</span> : (
+                <div className="flex flex-wrap gap-1">
+                  {allHotels.map((h: any) => {
+                    const on = (r.hotels || []).some((x: any) => x.id === h.id);
+                    return (
+                      <button key={h.id} onClick={() => toggleHotel(r, h.id)} title={on ? 'Retirar acesso' : 'Dar acesso'}
+                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#1e3f66] text-white border-[#16304a]' : 'bg-white text-gray-500 border-[#c0c0c0]'}`}>
+                        {h.name}
+                      </button>
+                    );
+                  })}
+                  {(r.hotels || []).length === 0 && <span className="text-[10px] text-gray-400 italic">sem restrição</span>}
+                </div>
+              )), width: '22%' },
+            { header: 'Estado', accessor: (r: any) => <span className={r.is_active ? 'text-green-700 font-bold' : 'text-red-600'}>{r.is_active ? 'Ativo' : 'Inativo'}</span>, width: '8%' },
             { header: 'Admin', accessor: (r: any) => r.is_superuser ? 'Super' : (r.is_staff ? 'Staff' : '—'), width: '10%' },
             { header: 'Ações', accessor: (r: any) => (
               <div className="flex gap-2">

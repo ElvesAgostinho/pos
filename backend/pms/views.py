@@ -9,6 +9,7 @@ from .serializers import (
     GuestSerializer, RoomTypeSerializer, RoomSerializer,
     ReservationSerializer, FolioSerializer, FolioChargeSerializer,
 )
+from core.tenancy import HotelScopedMixin, default_hotel_id, allowed_hotel_ids, scope_qs
 
 
 def _next_number(qs, field, prefix):
@@ -46,17 +47,17 @@ class HotelDefaultMixin:
             serializer.save()
 
 
-class GuestViewSet(HotelDefaultMixin, viewsets.ModelViewSet):
+class GuestViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
     queryset = Guest.objects.all()
     serializer_class = GuestSerializer
 
 
-class RoomTypeViewSet(HotelDefaultMixin, viewsets.ModelViewSet):
+class RoomTypeViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
     queryset = RoomType.objects.all()
     serializer_class = RoomTypeSerializer
 
 
-class RoomViewSet(HotelDefaultMixin, viewsets.ModelViewSet):
+class RoomViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
     queryset = Room.objects.select_related('room_type').all()
     serializer_class = RoomSerializer
 
@@ -72,19 +73,67 @@ class RoomViewSet(HotelDefaultMixin, viewsets.ModelViewSet):
         return Response(self.get_serializer(room).data)
 
 
-class ReservationViewSet(viewsets.ModelViewSet):
+def room_conflict(room, check_in, check_out, exclude_id=None):
+    """Outra reserva viva ocupa este quarto nestas datas? (anti-overbooking)
+
+    Sobreposição real de estadias: começa antes de a outra acabar E acaba depois de
+    a outra começar. Reservas canceladas / com check-out feito não contam.
+    """
+    if not room:
+        return None
+    qs = (Reservation.objects
+          .filter(room=room, status__in=['BOOKED', 'CHECKED_IN'])
+          .filter(check_in__lt=check_out, check_out__gt=check_in))
+    if exclude_id:
+        qs = qs.exclude(pk=exclude_id)
+    return qs.first()
+
+
+class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
     queryset = Reservation.objects.select_related('guest', 'room_type', 'room').all()
     serializer_class = ReservationSerializer
+
+    def _guard_overbooking(self, data, instance=None):
+        room = data.get('room') or (instance.room if instance else None)
+        ci = data.get('check_in') or (instance.check_in if instance else None)
+        co = data.get('check_out') or (instance.check_out if instance else None)
+        if not (room and ci and co):
+            return None
+        clash = room_conflict(room, ci, co, exclude_id=instance.pk if instance else None)
+        if clash:
+            return Response({'detail': f'OVERBOOKING: o quarto {room.number} já está reservado de '
+                                       f'{clash.check_in} a {clash.check_out} ({clash.confirmation} · '
+                                       f'{clash.guest.full_name}). Escolha outro quarto ou outras datas.'},
+                            status=status.HTTP_409_CONFLICT)
+        return None
+
+    def create(self, request, *args, **kwargs):
+        ser = self.get_serializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        err = self._guard_overbooking(ser.validated_data)
+        if err:
+            return err
+        self.perform_create(ser)
+        return Response(ser.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        ser = self.get_serializer(instance, data=request.data, partial=kwargs.pop('partial', False))
+        ser.is_valid(raise_exception=True)
+        err = self._guard_overbooking(ser.validated_data, instance)
+        if err:
+            return err
+        self.perform_update(ser)
+        return Response(ser.data)
 
     def perform_create(self, serializer):
         if not serializer.validated_data.get('confirmation'):
             serializer.validated_data['confirmation'] = _next_number(
                 Reservation.objects, 'confirmation', 'RES')
-        if not serializer.validated_data.get('hotel'):
-            from identity.models import Hotel
-            serializer.save(hotel=Hotel.objects.first())
-        else:
-            serializer.save()
+        # O hotel é SEMPRE o hotel ativo do utilizador — nunca o que vier do cliente.
+        from identity.models import Hotel
+        hid = default_hotel_id(self.request)
+        serializer.save(hotel=Hotel.objects.get(pk=hid) if hid else None)
 
     @action(detail=True, methods=['post'])
     def check_in(self, request, pk=None):
@@ -102,6 +151,13 @@ class ReservationViewSet(viewsets.ModelViewSet):
                     return Response({'detail': 'Quarto não encontrado.'}, status=404)
                 if room.status == 'OCCUPIED':
                     return Response({'detail': 'Quarto já está ocupado.'}, status=409)
+                if room.status == 'OUT_OF_ORDER':
+                    return Response({'detail': f'Quarto {room.number} está fora de serviço.'}, status=409)
+                clash = room_conflict(room, res.check_in, res.check_out, exclude_id=res.pk)
+                if clash:
+                    return Response({'detail': f'OVERBOOKING: o quarto {room.number} está reservado para '
+                                               f'{clash.guest.full_name} ({clash.check_in} a {clash.check_out}).'},
+                                    status=409)
                 res.room = room
                 room.status = 'OCCUPIED'
                 room.save(update_fields=['status'])
@@ -113,13 +169,20 @@ class ReservationViewSet(viewsets.ModelViewSet):
                 reservation=res,
                 number=_next_number(Folio.objects, 'number', 'FOL'),
             )
-            # Lança a estadia (diária × noites) como charge de alojamento.
-            room_amount = (res.rate or res.room_type.base_rate) * res.nights
-            if room_amount:
+            # ALOJAMENTO: lança-se NOITE A NOITE, nunca a estadia toda de uma vez.
+            # (Antes lançava rate × noites aqui E o Night Audit voltava a lançar a diária
+            #  todas as noites → o hóspede era cobrado duas vezes. Além disso, com a estadia
+            #  toda pré-lançada, uma saída antecipada ou uma extensão davam contas erradas.)
+            # Aqui lança-se apenas a 1ª noite, com a mesma referência que o Night Audit usa,
+            # para que ele não a repita.
+            rate = res.rate or (res.room_type.base_rate if res.room_type else 0)
+            today = timezone.localdate()
+            if rate and res.nights > 0:
                 FolioCharge.objects.create(
                     folio=folio, charge_type='ROOM',
-                    description=f"Alojamento {res.nights} noite(s) @ {res.rate or res.room_type.base_rate}",
-                    amount=room_amount, posted_by=request.data.get('operator', 'reception'),
+                    description=f"Alojamento {today.isoformat()} · Quarto {res.room.number if res.room else '?'}",
+                    amount=rate, source_reference=f'ROOM-{today.isoformat()}',
+                    posted_by=request.data.get('operator', 'reception'),
                 )
         return Response(self.get_serializer(res).data)
 
@@ -129,11 +192,14 @@ class ReservationViewSet(viewsets.ModelViewSet):
         res = self.get_object()
         if res.status != 'CHECKED_IN':
             return Response({'detail': 'A reserva não está em check-in.'}, status=400)
-        folio = getattr(res, 'folio', None)
-        if folio and folio.balance != 0:
-            return Response({'detail': f'Folio com saldo em aberto: {folio.balance}. Liquide antes do check-out.'}, status=409)
+        # Com contas divididas, TODAS têm de estar saldadas — não só a principal.
+        open_folios = list(res.folios.filter(status='OPEN'))
+        devedoras = [f for f in open_folios if f.balance != 0]
+        if devedoras:
+            det = ' · '.join(f'{f.label}: {f.balance}' for f in devedoras)
+            return Response({'detail': f'Contas por liquidar antes do check-out — {det}'}, status=409)
         with transaction.atomic():
-            if folio:
+            for folio in open_folios:
                 folio.status = 'CLOSED'
                 folio.closed_at = timezone.now()
                 folio.save(update_fields=['status', 'closed_at'])
@@ -155,7 +221,9 @@ class ReservationViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(res).data)
 
 
-class FolioViewSet(viewsets.ModelViewSet):
+class FolioViewSet(HotelScopedMixin, viewsets.ModelViewSet):
+    hotel_path = 'reservation__hotel'
+    hotel_write_field = None
     queryset = Folio.objects.select_related('reservation__guest', 'reservation__room').prefetch_related('charges').all()
     serializer_class = FolioSerializer
 
@@ -192,6 +260,102 @@ class FolioViewSet(viewsets.ModelViewSet):
         )
         return Response(self.get_serializer(folio).data)
 
+    # ------------------------------------------------------------------
+    # FOLIO PROFISSIONAL — dividir, transferir, estornar.
+    # É aqui que se distingue um PMS de hotel de uma folha de cálculo.
+    # ------------------------------------------------------------------
+    @action(detail=True, methods=['post'])
+    def split(self, request, pk=None):
+        """Abre uma SEGUNDA conta na mesma reserva (ex.: A = empresa, B = extras do hóspede).
+
+        Caso típico: a empresa paga o alojamento; o hóspede paga o bar e o minibar.
+        No check-out, cada conta é faturada a quem deve pagar.
+        """
+        folio = self.get_object()
+        res = folio.reservation
+        n = res.folios.count()
+        letter = chr(ord('A') + n)
+        new = Folio.objects.create(
+            reservation=res,
+            number=_next_number(Folio.objects, 'number', 'FOL'),
+            label=request.data.get('label') or f'{letter} · Extras',
+            payer_type=request.data.get('payer_type', 'GUEST'),
+            payer_name=request.data.get('payer_name') or res.guest.full_name,
+            payer_nif=request.data.get('payer_nif'),
+            is_primary=False,
+        )
+        return Response(self.get_serializer(new).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def transfer_charge(self, request, pk=None):
+        """Move um lançamento para outra conta da MESMA reserva.
+
+        O bar foi lançado na conta da empresa quando devia ir para a do hóspede?
+        Transfere-se — e fica registado de onde veio (não se falsifica o histórico).
+        """
+        folio = self.get_object()
+        charge_id = request.data.get('charge')
+        target_id = request.data.get('target_folio')
+        charge = folio.charges.filter(pk=charge_id, is_void=False).first()
+        if not charge:
+            return Response({'detail': 'Lançamento não encontrado nesta conta.'}, status=404)
+        target = Folio.objects.filter(pk=target_id, reservation=folio.reservation).first()
+        if not target:
+            return Response({'detail': 'A conta de destino tem de pertencer à mesma reserva.'}, status=400)
+        if target.status != 'OPEN' or folio.status != 'OPEN':
+            return Response({'detail': 'Só se transferem lançamentos entre contas abertas.'}, status=400)
+
+        origin = folio.number
+        charge.folio = target
+        charge.transferred_from = origin
+        charge.transferred_at = timezone.now()
+        charge.save(update_fields=['folio', 'transferred_from', 'transferred_at'])
+        return Response({
+            'detail': f'"{charge.description}" transferido de {origin} para {target.number} ({target.label}).',
+            'charge': FolioChargeSerializer(charge).data,
+        })
+
+    @action(detail=True, methods=['post'])
+    def reverse_charge(self, request, pk=None):
+        """ESTORNO — anula um lançamento errado SEM o apagar.
+
+        Contabilisticamente não se apaga nada: marca-se o original como anulado e
+        cria-se um lançamento de sinal contrário. Os dois ficam visíveis na conta —
+        é isto que um auditor espera ver.
+        """
+        folio = self.get_object()
+        charge = folio.charges.filter(pk=request.data.get('charge')).first()
+        if not charge:
+            return Response({'detail': 'Lançamento não encontrado.'}, status=404)
+        if charge.is_void:
+            return Response({'detail': 'Este lançamento já foi estornado.'}, status=400)
+        if folio.status != 'OPEN':
+            return Response({'detail': 'A conta está fechada.'}, status=400)
+
+        reason = request.data.get('reason') or 'Estorno'
+        user = str(getattr(request.user, 'username', '') or 'reception')
+        now = timezone.now()
+
+        with transaction.atomic():
+            charge.is_void = True
+            charge.void_reason = reason
+            charge.voided_at = now
+            charge.voided_by = user
+            charge.save(update_fields=['is_void', 'void_reason', 'voided_at', 'voided_by'])
+            # Lançamento de sinal contrário (o estorno propriamente dito).
+            rev = FolioCharge.objects.create(
+                folio=folio, charge_type=charge.charge_type,
+                description=f'ESTORNO — {charge.description} ({reason})',
+                amount=-charge.amount, source_reference=charge.source_reference,
+                posted_by=user, is_void=True, reversal_of=charge,
+                void_reason=reason, voided_at=now, voided_by=user,
+            )
+        return Response({
+            'detail': f'Lançamento estornado ({charge.amount}). O original fica no histórico.',
+            'reversal': FolioChargeSerializer(rev).data,
+            'balance': folio.balance,
+        })
+
     @action(detail=True, methods=['post'])
     def generate_invoice(self, request, pk=None):
         """Gera a FATURA financeira do folio (Contas a Receber do hóspede). Idempotente."""
@@ -205,7 +369,8 @@ class FolioViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Módulo Financeiro não ativo.'}, status=409)
         from django.utils import timezone
         guest = folio.reservation.guest
-        charges = [c for c in folio.charges.all() if c.charge_type != 'PAYMENT']
+        # Só entra o que está vivo: os lançamentos estornados não se faturam.
+        charges = [c for c in folio.charges.all() if c.charge_type != 'PAYMENT' and not c.is_void]
         if not charges:
             return Response({'detail': 'Folio sem consumos a faturar.'}, status=400)
         n = Invoice.objects.count() + 1
@@ -213,15 +378,18 @@ class FolioViewSet(viewsets.ModelViewSet):
         while Invoice.objects.filter(number=number).exists():
             n += 1; number = f'FT-{n:06d}'
         inv = Invoice.objects.create(
-            number=number, hotel=Hotel.objects.first(),
-            customer_name=guest.full_name, customer_tax_id=getattr(guest, 'tax_id', None),
-            date=timezone.localdate(), status='DRAFT', notes=f'Folio {folio.number}')
+            number=number, hotel=folio.reservation.hotel,
+            customer_name=folio.payer_name or guest.full_name,
+            customer_tax_id=folio.payer_nif or getattr(guest, 'tax_id', None),
+            date=timezone.localdate(), status='DRAFT',
+            notes=f'Folio {folio.number} · {folio.label}')
         for c in charges:
             InvoiceLine.objects.create(invoice=inv, description=c.description, quantity=1,
                                        unit_price=c.amount, tax_percentage=0)
         inv.recompute(); inv.status = 'ISSUED'; inv.save(update_fields=['status'])
         folio.invoice_number = inv.number; folio.save(update_fields=['invoice_number'])
-        return Response({'invoice_number': inv.number, 'total': inv.total, 'customer': guest.full_name}, status=201)
+        return Response({'invoice_number': inv.number, 'total': inv.total,
+                         'customer': inv.customer_name, 'folio': folio.label}, status=201)
 
 
 from .models import HousekeepingTask, MaintenanceOrder, RatePlan
@@ -238,7 +406,7 @@ class HousekeepingTaskViewSet(viewsets.ModelViewSet):
     serializer_class = HousekeepingTaskSerializer
 
     def get_queryset(self):
-        qs = HousekeepingTask.objects.select_related('room').all()
+        qs = scope_qs(self.request, HousekeepingTask.objects.select_related('room').all(), 'room__hotel')
         for f in ('status', 'room', 'assigned_to'):
             v = self.request.query_params.get(f)
             if v:
@@ -280,7 +448,7 @@ class MaintenanceOrderViewSet(viewsets.ModelViewSet):
     search_fields = ['title', 'description', 'area']
 
     def get_queryset(self):
-        qs = MaintenanceOrder.objects.select_related('room').all()
+        qs = scope_qs(self.request, MaintenanceOrder.objects.select_related('room').all())
         for f in ('status', 'priority', 'room'):
             v = self.request.query_params.get(f)
             if v:
@@ -311,7 +479,7 @@ class RatePlanViewSet(viewsets.ModelViewSet):
     serializer_class = RatePlanSerializer
 
     def get_queryset(self):
-        qs = RatePlan.objects.select_related('room_type').all()
+        qs = scope_qs(self.request, RatePlan.objects.select_related('room_type').all())
         rt = self.request.query_params.get('room_type')
         return qs.filter(room_type_id=rt) if rt else qs
 
@@ -349,7 +517,7 @@ class LaundryOrderViewSet(viewsets.ModelViewSet):
     search_fields = ['guest_name', 'description']
 
     def get_queryset(self):
-        qs = LaundryOrder.objects.select_related('room').all()
+        qs = scope_qs(self.request, LaundryOrder.objects.select_related('room').all())
         v = self.request.query_params.get('status')
         return qs.filter(status=v) if v else qs
 
@@ -410,7 +578,7 @@ class SpaAppointmentViewSet(viewsets.ModelViewSet):
     search_fields = ['guest_name', 'service', 'therapist']
 
     def get_queryset(self):
-        qs = SpaAppointment.objects.select_related('room').all()
+        qs = scope_qs(self.request, SpaAppointment.objects.select_related('room').all())
         v = self.request.query_params.get('status')
         return qs.filter(status=v) if v else qs
 
@@ -443,7 +611,7 @@ class CorporateAccountViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'tax_id', 'contact_person']
 
     def get_queryset(self):
-        qs = CorporateAccount.objects.all()
+        qs = scope_qs(self.request, CorporateAccount.objects.all())
         k = self.request.query_params.get('kind')
         return qs.filter(kind=k) if k else qs
 

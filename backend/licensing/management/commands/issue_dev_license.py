@@ -25,6 +25,11 @@ class Command(BaseCommand):
             '--modules', nargs='*', default=None,
             help="Códigos de módulos opcionais a ativar (default: todos).",
         )
+        # O sistema vende-se POR PROPRIEDADE: é aqui que se define quantas foram vendidas.
+        parser.add_argument('--hotels', type=int, default=1,
+                            help='Propriedades licenciadas. UMA licença = UM hotel (default: 1).')
+        parser.add_argument('--pos', type=int, default=5, help='Terminais POS licenciados.')
+        parser.add_argument('--users', type=int, default=25, help='Utilizadores licenciados.')
 
     def handle(self, *args, **options):
         if not private_key_available():
@@ -47,7 +52,7 @@ class Command(BaseCommand):
             "modules": core_codes + optional_codes,
             "feature_flags": {},
             "valid_until": (date.today() + timedelta(days=3650)).isoformat(),
-            "limits": {"hotels": 99, "pos": 999, "users": 999},
+            "limits": {"hotels": options['hotels'], "pos": options['pos'], "users": options['users']},
         }
         payload["signature"] = sign_license({k: v for k, v in payload.items()})
         key = base64.b64encode(json.dumps(payload).encode('utf-8')).decode('utf-8')

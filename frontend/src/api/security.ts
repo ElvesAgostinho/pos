@@ -4,6 +4,8 @@ export interface SecUser {
   id?: number; username: string; email?: string; first_name?: string; last_name?: string;
   is_active?: boolean; is_staff?: boolean; is_superuser?: boolean; last_login?: string | null;
   password?: string; profile_ids?: number[]; profiles?: { id: number; code: string; name: string }[];
+  // Propriedades a que o utilizador tem acesso (vazio = sem restrição / hotel único).
+  hotel_ids?: number[]; hotels?: { id: number; name: string }[];
 }
 export interface Profile { id: number; code: string; name: string; category?: string; }
 export interface Session { id: number; user_name?: string | null; operator_name?: string | null; status: string; login_time: string; last_activity: string; logout_time?: string | null; }

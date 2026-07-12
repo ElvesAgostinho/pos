@@ -53,6 +53,36 @@ class FiscalConfig(models.Model):
         return obj or cls.objects.create()
 
 
+class CompanyBankAccount(models.Model):
+    """Contas bancárias da empresa — saem impressas no RODAPÉ da fatura.
+
+    É como o cliente paga. Uma fatura angolana leva tipicamente várias contas
+    (BFA, BAI, BIC…), cada uma com IBAN. Sem isto, o cliente recebe a fatura e
+    não sabe para onde transferir.
+    """
+    bank_name = models.CharField(max_length=120)                       # ex.: Banco BFA
+    branch = models.CharField(max_length=60, blank=True, null=True)    # balcão
+    account_number = models.CharField(max_length=60, blank=True, null=True)
+    nib = models.CharField(max_length=40, blank=True, null=True)
+    iban = models.CharField(max_length=60, blank=True, null=True)      # AO06 0000 ...
+    swift = models.CharField(max_length=20, blank=True, null=True)
+    bic = models.CharField(max_length=20, blank=True, null=True)
+    sepa = models.BooleanField(default=False)
+    is_default = models.BooleanField(default=False)
+    currency = models.CharField(max_length=10, default='AOA')
+    account_holder = models.CharField(max_length=200, blank=True, null=True)
+    show_on_invoice = models.BooleanField(default=True)                # sai no rodapé?
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'fis_bank_account'
+        ordering = ['sort_order', 'bank_name']
+
+    def __str__(self):
+        return f"{self.bank_name} · {self.iban or self.account_number or ''}"
+
+
 class TaxRate(models.Model):
     """Tax/IVA Engine — taxas de imposto parametrizáveis (não hardcoded)."""
     code = models.CharField(max_length=12, unique=True)     # IVA14, IVA7, IVA5, IVA0, ISE
@@ -62,6 +92,8 @@ class TaxRate(models.Model):
     is_default = models.BooleanField(default=False)
     is_exempt = models.BooleanField(default=False)          # taxa 0 por isenção
     is_active = models.BooleanField(default=True)
+    accounting_account = models.CharField(max_length=40, blank=True, null=True)  # Conta de Contabilidade
+    tax_class = models.CharField(max_length=20, blank=True, null=True)           # Classe IVA (SAF-T)
 
     class Meta:
         db_table = 'fis_tax_rate'
@@ -70,11 +102,44 @@ class TaxRate(models.Model):
     def __str__(self):
         return f"{self.code} ({self.percentage}%)"
 
+    def rate_on(self, day=None):
+        """A taxa EM VIGOR numa data.
+
+        O IVA muda por lei — e uma fatura de Março tem de continuar a ser
+        recalculada com a taxa de Março, não com a de hoje. É por isso que a taxa
+        tem versões com validade em vez de um número único que alguém reescreve.
+        """
+        from django.utils import timezone
+        day = day or timezone.localdate()
+        v = (self.versions.filter(valid_from__lte=day)
+             .filter(models.Q(valid_to__isnull=True) | models.Q(valid_to__gte=day))
+             .order_by('-valid_from').first())
+        return v.percentage if v else self.percentage
+
+
+class TaxRateVersion(models.Model):
+    """Uma versão da taxa: 'de 15 Jan 2024 até 1 Jan 2050 = 14%'."""
+    tax_rate = models.ForeignKey(TaxRate, on_delete=models.CASCADE, related_name='versions')
+    valid_from = models.DateField()
+    valid_to = models.DateField(blank=True, null=True)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'fis_tax_rate_version'
+        ordering = ['valid_from']
+
 
 class TaxExemptionReason(models.Model):
-    """Motivos de isenção (código + norma legal) — obrigatório em linhas isentas."""
-    code = models.CharField(max_length=12, unique=True)     # M01, M02...
-    description = models.CharField(max_length=200)
+    """MOTIVO DE ISENÇÃO — o código e a NORMA LEGAL que a fatura tem de imprimir.
+
+    Uma linha isenta sem motivo é uma fatura inválida. O `text` é o que sai
+    impresso ("Isento Artigo 9.º do CIVA"); a `description` é a norma completa
+    para consulta interna. Mexer aqui muda o que a AGT lê no SAF-T — por isso o
+    ecrã pede a password antes de deixar editar.
+    """
+    code = models.CharField(max_length=12, unique=True)     # M01, XM07...
+    text = models.CharField(max_length=200, blank=True, null=True)   # o que sai na fatura
+    description = models.CharField(max_length=400)                   # a norma completa
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -122,6 +187,22 @@ class FiscalSeries(models.Model):
     environment = models.CharField(max_length=4, default='TEST')
     is_active = models.BooleanField(default=True)             # descontinuada = inativa (nunca apagar)
 
+    # --- Ficha da série (ecrã Financeiro > Documentos) ---
+    name = models.CharField(max_length=100, blank=True, null=True)     # Descrição
+    is_closed = models.BooleanField(default=False)                     # Série fechada
+    recovery_series = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True,
+                                        related_name='recovers')       # Série de Recuperação
+    series_type = models.CharField(max_length=40, blank=True, null=True)      # Tipo das Séries
+    series_type_2 = models.CharField(max_length=40, blank=True, null=True)
+    document_class = models.CharField(max_length=40, blank=True, null=True)   # Classe do Documento
+    at_processing_mean = models.CharField(max_length=40, blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True)               # Data Início
+    validation_code = models.CharField(max_length=60, blank=True, null=True)  # Código de Validação (AGT)
+    einvoice = models.BooleanField(default=False)                      # Fatura Electrónica
+    einvoice_reference = models.CharField(max_length=60, blank=True, null=True)
+    # Texto das Vias: 1=Original, 2=2ª Via… é o que sai impresso em cada cópia.
+    copy_texts = models.JSONField(default=list, blank=True)
+
     class Meta:
         db_table = 'fis_series'
         unique_together = ('code', 'doc_type', 'year')
@@ -129,6 +210,33 @@ class FiscalSeries(models.Model):
 
     def __str__(self):
         return f"{self.doc_type.code} {self.code}/{self.year}"
+
+
+class DocPrintModel(models.Model):
+    """MODELO DE IMPRESSÃO de uma série — que talão/fatura sai, em quantas vias.
+
+    O mesmo documento imprime-se de maneiras diferentes: o talão da cozinha não é a
+    fatura do hóspede. Aqui diz-se qual o modelo, quantas vias saem por defeito e
+    quantas no máximo (o empregado não reimprime a fatura 20 vezes).
+    """
+    KINDS = [('RECEIPT', 'Talão'), ('INVOICE', 'Fatura'), ('REPORT', 'Relatório')]
+    series = models.ForeignKey(FiscalSeries, on_delete=models.CASCADE, related_name='print_models')
+    kind = models.CharField(max_length=10, choices=KINDS, default='RECEIPT')
+    code = models.CharField(max_length=20)
+    description = models.CharField(max_length=100, blank=True, null=True)
+    model_name = models.CharField(max_length=60, default='ML.INVOICE')   # o template
+    copies = models.PositiveSmallIntegerField(default=1)                 # Vias
+    max_copies = models.PositiveSmallIntegerField(default=3)             # Max. Vias
+    sort_order = models.PositiveSmallIntegerField(default=1)             # Ordem
+    is_default = models.BooleanField(default=False)                      # Modelo por defeito
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'fis_print_model'
+        ordering = ['sort_order', 'id']
+
+    def __str__(self):
+        return f'{self.series} · {self.model_name}'
 
 
 class FiscalDocument(models.Model):
@@ -213,14 +321,31 @@ class FiscalDocumentLine(models.Model):
 
 
 class SubmissionQueue(models.Model):
-    """Fila de submissão à AGT (store-and-forward). Nunca comunica diretamente — passa por aqui."""
-    STATUS = [('QUEUED', 'Em fila'), ('SENT', 'Enviado'), ('ACK', 'Aceite'), ('REJECTED', 'Rejeitado'), ('RETRY', 'A reenviar')]
+    """Fila de submissão à AGT (store-and-forward). Nunca comunica diretamente — passa por aqui.
+
+    Porquê uma fila e não um envio direto: se a Internet cair (ou a AGT estiver em baixo),
+    a venda NÃO pode parar. O documento é emitido, fica em fila, e é enviado assim que houver
+    linha. Cada documento tem uma chave de idempotência — reenviar nunca duplica na AGT.
+    """
+    STATUS = [
+        ('QUEUED', 'Em fila'), ('SENDING', 'A enviar'), ('SENT', 'Enviado'),
+        ('ACK', 'Aceite pela AGT'), ('REJECTED', 'Rejeitado'), ('RETRY', 'A reenviar'),
+        ('FAILED', 'Falhou (esgotou tentativas)'),
+    ]
     document = models.ForeignKey(FiscalDocument, on_delete=models.CASCADE, related_name='submissions')
     status = models.CharField(max_length=10, choices=STATUS, default='QUEUED')
     attempts = models.PositiveIntegerField(default=0)
     response = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     sent_at = models.DateTimeField(blank=True, null=True)
+    # --- Transmissão real ---
+    idempotency_key = models.CharField(max_length=80, unique=True, blank=True, null=True)
+    payload = models.TextField(blank=True, null=True)          # o que foi enviado (prova)
+    http_status = models.PositiveIntegerField(blank=True, null=True)
+    agt_reference = models.CharField(max_length=120, blank=True, null=True)   # nº de protocolo da AGT
+    error_message = models.TextField(blank=True, null=True)
+    next_attempt_at = models.DateTimeField(blank=True, null=True)  # backoff exponencial
+    acked_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = 'fis_submission'
@@ -393,3 +518,24 @@ class FiscalAuditLog(models.Model):
     class Meta:
         db_table = 'fis_audit'
         ordering = ['-created_at']
+
+
+class SaftExport(models.Model):
+    """Histórico de exportações SAF-T — prova de que e quando se exportou (auditoria)."""
+    profile = models.CharField(max_length=20)                 # faturacao/contabilidade/inventario/ativos
+    start_date = models.DateField()
+    end_date = models.DateField()
+    filename = models.CharField(max_length=160)
+    size_bytes = models.PositiveIntegerField(default=0)
+    sha256 = models.CharField(max_length=64, blank=True, null=True)   # impressão digital do ficheiro
+    is_valid = models.BooleanField(default=True)
+    problems = models.TextField(blank=True, null=True)
+    created_by = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'fis_saft_export'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.profile} {self.start_date}..{self.end_date}"

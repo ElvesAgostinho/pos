@@ -41,6 +41,11 @@ class HotelViewSet(viewsets.ModelViewSet):
         return qs.filter(company_id=c) if c else qs
 
     def perform_create(self, serializer):
+        # A PROPRIEDADE É A UNIDADE DE LICENÇA: o sistema vende-se por hotel.
+        # Registar um hotel a mais do que os licenciados é bloqueado aqui (e não só
+        # na interface) — os limites vêm na licença assinada, não são adulteráveis.
+        from licensing.limits import enforce
+        enforce('hotels')
         if not serializer.validated_data.get('company'):
             comp = _first(Company)
             if not comp:

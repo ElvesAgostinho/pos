@@ -74,10 +74,40 @@ export default function BookingEngineView() {
             <div className="text-[11px] text-gray-600 border-t border-[#eee] pt-2">
               <b>Ecossistema de reservas (tudo o que foi criado):</b> Site público ↑ · Área do cliente ↑ · <b>Channel Manager</b> (OTAs Booking/Expedia…) no Integration Center → "Channel Manager" · Reservas recebidas no <b>PMS → Reservas</b> · Pagamento online do adiantamento (acima).
             </div>
-            <div className="text-[11px] text-gray-500">Fluxo: Site → Booking Engine → <b>API (esta chave)</b> → PMS → SQL. Domínio próprio via CNAME (ex.: <i>reservas.hotelx.ao</i>).</div>
+            <div className="text-[11px] text-gray-500">Fluxo: Site → Booking Engine → <b>API (esta chave)</b> → PMS → SQL.</div>
           </div>
         ) : (
           <div className="bg-[#fff7e6] border border-[#e0c080] p-3 text-[11px] text-[#8a5a00]">Guarde a configuração acima para gerar o link do site público e a chave da API.</div>
+        )}
+
+        {/* ---- Como apontar o SEU domínio para o sistema (passo a passo) ---- */}
+        {settings && (
+          <div className="bg-white border border-[#c0c0c0] p-3 text-[12px]">
+            <div className="flex items-center gap-2 mb-2 text-[#1e3f66] font-bold"><Globe size={14} />Como usar o SEU domínio (ex.: reservas.hotelluanda.ao)</div>
+            <ol className="space-y-2 text-gray-700 list-decimal pl-5">
+              <li>
+                Vá ao painel do seu <b>registador de domínios</b> (onde comprou o domínio) e abra a <b>Gestão de DNS</b>.
+              </li>
+              <li>
+                Crie um registo com estes valores exatos:
+                <table className="mt-1 border-collapse w-full max-w-lg">
+                  <tbody className="text-[11px]">
+                    <tr><td className="border border-[#ddd] px-2 py-1 bg-[#f4f4f4] font-bold w-24">Tipo</td><td className="border border-[#ddd] px-2 py-1 font-mono">CNAME</td></tr>
+                    <tr><td className="border border-[#ddd] px-2 py-1 bg-[#f4f4f4] font-bold">Nome / Host</td><td className="border border-[#ddd] px-2 py-1 font-mono">reservas</td></tr>
+                    <tr><td className="border border-[#ddd] px-2 py-1 bg-[#f4f4f4] font-bold">Valor / Destino</td><td className="border border-[#ddd] px-2 py-1 font-mono">{window.location.hostname}</td></tr>
+                    <tr><td className="border border-[#ddd] px-2 py-1 bg-[#f4f4f4] font-bold">TTL</td><td className="border border-[#ddd] px-2 py-1 font-mono">3600</td></tr>
+                  </tbody>
+                </table>
+                <span className="text-[11px] text-gray-500">Se o sistema estiver num IP fixo, use antes um registo <b>A</b> a apontar para esse IP.</span>
+              </li>
+              <li>Escreva o domínio completo no campo <b>"Domínio personalizado (CNAME)"</b> acima e clique em <b>Guardar configuração</b>.</li>
+              <li>Aguarde a propagação do DNS (<b>15 min a 24 h</b>). Depois, <span className="font-mono">https://reservas.oseudominio.ao</span> abre o seu site de reservas.</li>
+              <li><b>HTTPS:</b> no servidor, emita o certificado gratuito (Let's Encrypt): <span className="font-mono bg-[#f4f4f4] px-1">certbot --nginx -d reservas.oseudominio.ao</span></li>
+            </ol>
+            <div className="mt-2 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#1e3f66]">
+              💡 Enquanto não tiver domínio próprio, o site funciona já no link acima. O domínio só troca o endereço — nada mais muda.
+            </div>
+          </div>
         )}
 
         {/* Testador de disponibilidade */}

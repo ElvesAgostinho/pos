@@ -184,3 +184,25 @@ class JournalEntryLine(models.Model):
             raise ValidationError('Uma linha não pode ter débito e crédito em simultâneo.')
         if not self.debit and not self.credit:
             raise ValidationError('Indique um valor a débito ou a crédito.')
+
+
+class AnalyticAccount(models.Model):
+    """CONTA ANALÍTICA (centro de custo) — RESTAURANTE, BAR, SPA, EVENTOS.
+
+    A contabilidade geral diz quanto o hotel vendeu. A analítica diz QUEM vendeu:
+    sem ela, a receita do bar e a do restaurante caem na mesma conta "Vendas" e o
+    dono nunca sabe qual dos dois lhe está a dar dinheiro.
+
+    Liga-se aos artigos (Conta Analítica de venda/compra). No fecho do POS, a receita
+    é repartida por estas contas — é o que aparece no `cost_center` do lançamento.
+    """
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'acc_analytic_account'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'

@@ -13,6 +13,7 @@ import BookingManage from './pages/BookingManage.tsx'
 
 // New Auth & Arch Components
 import Onboarding from './pages/Onboarding.tsx'
+import GuideDialog from './components/ui/GuideDialog.tsx'
 import PosLoginModern from './pages/PosLoginModern.tsx'
 import Launchpad from './pages/Launchpad.tsx'
 import { useLicenseStatus } from './hooks/useActiveModules'
@@ -36,12 +37,44 @@ const initialAuthState = {
 // Componente Intercetor (Verifica Licença)
 const RequireLicense = ({ children }: { children: JSX.Element }) => {
   // Validação REAL da licença (fonte: PCC/clm no admin, fallback license.key assinada).
-  const { data, isLoading, isError } = useLicenseStatus();
+  const { data, isLoading, isError, refetch } = useLicenseStatus();
   if (isLoading) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-black text-gray-300 text-sm">A validar licença…</div>;
+    return <div className="h-screen w-screen flex items-center justify-center bg-[#0e1622] text-gray-300 text-sm">A validar licença…</div>;
   }
-  if (isError || !data?.licensed) {
+  // Falha de REDE (servidor em baixo/a arrancar) NÃO é "sem licença" — não manda para o
+  // onboarding; mostra o erro com opção de repetir.
+  if (isError) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-[#0e1622]">
+        <div className="bg-white border border-[#8fa4bb] shadow-2xl w-[440px]">
+          <div className="px-4 py-2 bg-[#a01818] text-white font-bold text-sm">Sem ligação ao servidor</div>
+          <div className="p-4 text-[12px] text-gray-700 space-y-3">
+            <p>Não foi possível contactar o servidor da aplicação (<b>localhost:8000</b>). Verifique se o serviço está a correr.</p>
+            <div className="flex gap-2">
+              <button onClick={() => refetch()} className="px-3 py-1.5 bg-[#1e3f66] text-white text-[12px] font-semibold">Tentar novamente</button>
+              <button onClick={() => window.location.reload()} className="px-3 py-1.5 bg-[#f0f0f0] border border-[#a0a0a0] text-[12px]">Recarregar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  // Só vai para o onboarding se o servidor RESPONDER a dizer que não há licença.
+  if (!data?.licensed) {
     return <Navigate to="/onboarding" replace />;
+  }
+  return children;
+};
+
+// Se JÁ existe licença válida, o onboarding não faz sentido — entra direto no sistema.
+// (Evita ficar "preso" em /onboarding depois de a licença ser ativada.)
+const SkipOnboardingIfLicensed = ({ children }: { children: JSX.Element }) => {
+  const { data, isLoading } = useLicenseStatus();
+  if (isLoading) {
+    return <div className="h-screen w-screen flex items-center justify-center bg-[#0e1622] text-gray-300 text-sm">A validar licença…</div>;
+  }
+  if (data?.licensed) {
+    return <Navigate to="/backoffice/login" replace />;
   }
   return children;
 };
@@ -71,7 +104,7 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <Routes>
             {/* First Boot */}
-            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/onboarding" element={<SkipOnboardingIfLicensed><Onboarding /></SkipOnboardingIfLicensed>} />
             
             {/* Backoffice Portal (Nível 2) */}
             <Route path="/backoffice/login" element={<RequireLicense><CustomerLogin /></RequireLicense>} />
@@ -92,6 +125,8 @@ createRoot(document.getElementById('root')!).render(
             {/* NOTA: a consola de licenciamento (PCC) vive no projeto separado frontend_pcc/
                 (produto do FORNECEDOR). Nunca é servida no ERP do cliente. */}
           </Routes>
+          {/* Popup explicativo global: quando algo corre mal, orienta o utilizador. */}
+          <GuideDialog />
         </BrowserRouter>
       </AuthorizationProvider>
     </QueryClientProvider>

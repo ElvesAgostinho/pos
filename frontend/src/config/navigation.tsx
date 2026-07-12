@@ -60,6 +60,7 @@ import SupportCenterView from '../components/system/SupportCenterView';
 import ChannelManagerView from '../components/integration/ChannelManagerView';
 import ManagementDashboard from '../components/reporting/ManagementDashboard';
 import ReservationsView from '../components/pms/ReservationsView';
+import FrontDeskView from '../components/pms/FrontDeskView';
 import RoomsView from '../components/pms/RoomsView';
 import GuestsView from '../components/pms/GuestsView';
 import AccountsView from '../components/finance/AccountsView';
@@ -68,9 +69,16 @@ import PaymentsView from '../components/finance/PaymentsView';
 import InvoicesView from '../components/finance/InvoicesView';
 import PromotionsView from '../components/commercial/PromotionsView';
 import CombosView from '../components/commercial/CombosView';
-import { FiscalDashboardView, FiscalSeriesView, FiscalDocumentsView, CommercialDocumentsView, TaxEngineView, SaftCenterView, FiscalConnectivityView, FiscalAuditView, FiscalArchiveView } from '../components/fiscal/FiscalCenterViews';
+import { FiscalDashboardView, FiscalSeriesView, FiscalDocumentsView, CommercialDocumentsView, TaxEngineView, FiscalConnectivityView, FiscalAuditView, FiscalArchiveView } from '../components/fiscal/FiscalCenterViews';
+import AgtTransmitView from '../components/fiscal/AgtTransmitView';
+import HotelProfileView from '../components/org/HotelProfileView';
+import AuditTrailView from '../components/system/AuditTrailView';
+import PosConfigView from '../components/posconfig/PosConfigView';
 import AgtCertificationView from '../components/fiscal/AgtCertificationView';
+import SaftCenterViewNew from '../components/fiscal/SaftCenterView';
 import ProfileAccessView from '../components/security/ProfileAccessView';
+import AllergensView from '../components/production/AllergensView';
+import PosKeyboardDesigner from '../components/posmgmt/PosKeyboardDesigner';
 // F&B Operations Center (Centro 10)
 import FnbDashboardView from '../components/production/fnb/FnbDashboardView';
 import FnbOutletsView from '../components/production/fnb/FnbOutletsView';
@@ -161,6 +169,9 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   // 04 · Hotel Management
   hmc_dashboard: HmcDashboardView,
   hmc_hotels: HotelsView,
+  org_profile: HotelProfileView,   // Ficha do Hotel — dados da propriedade + fiscais
+  sys_trail: AuditTrailView,       // Repositório & Pesquisa Global (regista tudo)
+  posc_config: PosConfigView,      // CONFIGURAÇÃO POS — artigos, grupos, famílias, teclados…
   hmc_buildings: HmcBuildingsView,
   hmc_floors: HmcFloorsView,
   hmc_areas: AreasView,
@@ -248,7 +259,7 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
 
   // 11 · Front Office (PMS)
   pms_reservations: ReservationsView,
-  pms_checkin: ReservationsView,
+  pms_checkin: FrontDeskView,   // balcão de receção (chegadas/em casa/saídas) — NÃO é a lista de reservas
   pms_rooms: RoomsView,
   pms_housekeeping: HousekeepingView,
   pms_maintenance: MaintenanceView,
@@ -315,9 +326,10 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   fis_commercial: CommercialDocumentsView,
   fis_einvoice: FiscalDocumentsView,
   fis_tax: TaxEngineView,
-  fis_saft: SaftCenterView,
+  fis_saft: SaftCenterViewNew,
   fis_archive: FiscalArchiveView,
   fis_agt: FiscalConnectivityView,
+  fis_transmit: AgtTransmitView,      // Centro de Transmissão AGT (faturação eletrónica)
   fis_certification: AgtCertificationView,
   fis_audit: FiscalAuditView,
 
@@ -395,7 +407,8 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   // --- Últimos casos de fronteira ---
   md_families: CategoriesView,        // famílias de artigos = agrupamento de categorias
   md_doctypes: FiscalSeriesView,      // tipos de documento vivem no centro fiscal
-  posc_layouts: TableMapView,         // layout/mapa de mesas
+  posc_layouts: PosKeyboardDesigner,  // designer do teclado táctil do POS
+  hoc_allergens: AllergensView,       // alergénios (catálogo + atribuição a artigos)
   pfo_terminal: PosTerminalLauncher,  // lançador do terminal tátil
 
   // 22 · Contabilidade Geral (PGC-AO)
@@ -452,6 +465,7 @@ export const MODULES: NavModule[] = [
   {
     key: 'hotel', title: '04 · Hotel Management Center', items: [
       { id: 'hmc_dashboard', name: 'Dashboard' },
+      { id: 'org_profile', name: 'Ficha do Hotel' },
       { id: 'hmc_hotels', name: 'Hotéis' },
       { id: 'hmc_buildings', name: 'Blocos / Torres / Edifícios' },
       { id: 'hmc_floors', name: 'Pisos & Alas' },
@@ -556,6 +570,7 @@ export const MODULES: NavModule[] = [
       { id: 'hoc_bar_display', name: 'Bar / Beverage Display' },
       { id: 'hoc_pastry_display', name: 'Pastry Display' },
       { id: 'hoc_buffet_display', name: 'Buffet Display' },
+      { id: 'hoc_allergens', name: 'Alergénios' },
       { id: 'hoc_haccp', name: 'HACCP' },
       { id: 'hoc_waste', name: 'Desperdícios & Quebras' },
       { id: 'hoc_quality', name: 'Controlo de Qualidade' },
@@ -583,6 +598,7 @@ export const MODULES: NavModule[] = [
   },
   {
     key: 'posmgmt', title: '12 · POS Management Center', items: [
+      { id: 'posc_config', name: 'Configuração POS' },
       { id: 'posc_dashboard', name: 'Dashboard' },
       { id: 'posc_outlets', name: 'Outlets' },
       { id: 'posc_rooms', name: 'Salas & Mesas' },
@@ -630,6 +646,7 @@ export const MODULES: NavModule[] = [
       { id: 'fis_saft', name: 'SAF-T (AO)' },
       { id: 'fis_archive', name: 'Fiscal Archive' },
       { id: 'fis_agt', name: 'Fiscal Connectivity (AGT)' },
+      { id: 'fis_transmit', name: 'Transmissão AGT (e-Fatura)' },
       { id: 'fis_certification', name: 'Certificação AGT' },
       { id: 'fis_audit', name: 'Auditoria Fiscal' },
     ],

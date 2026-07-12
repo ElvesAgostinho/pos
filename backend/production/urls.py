@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
+    PosMessageViewSet,
     AllergenViewSet, ProductionAreaViewSet, KitchenEquipmentViewSet,
     ItemProductionProfileViewSet, RecipeViewSet, RecipeLineViewSet
 )
@@ -12,6 +13,7 @@ from .fnb import (
 
 router = DefaultRouter()
 router.register(r'allergens', AllergenViewSet, basename='prod-allergen')
+router.register(r'pos-messages', PosMessageViewSet, basename='prod-pos-message')
 router.register(r'areas', ProductionAreaViewSet, basename='prod-area')
 router.register(r'equipment', KitchenEquipmentViewSet, basename='prod-equipment')
 router.register(r'item-profiles', ItemProductionProfileViewSet, basename='prod-item-profile')

@@ -64,3 +64,20 @@ input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 2px
 @media print {
   body { background: #fff; }
 }
+
+/* ---------------------------------------------------------------------------
+   CAIXAS DE SELEÇÃO — verdes em TODO o sistema.
+   Onde há um visto, há uma caixa: e a caixa liga/desliga alguma coisa a sério.
+   Uma caixa desativada (só de leitura) fica verde mas apagada: o valor existe,
+   mas não é o cliente que o decide (ex.: "Licenciado" vem da licença assinada).
+--------------------------------------------------------------------------- */
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: #1f7a34;
+  cursor: pointer;
+}
+input[type='checkbox']:disabled,
+input[type='radio']:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}

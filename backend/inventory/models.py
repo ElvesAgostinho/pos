@@ -3,11 +3,40 @@ from identity.models import Hotel, Department
 from mdm.models import Brand
 
 class UnitOfMeasure(models.Model):
-    code = models.CharField(max_length=20, unique=True) # Ex: KG, L, UN, CX
+    """UNIDADE DE STOCK — Caixa de 12, Barril de 30L, Cápsula.
+
+    O `rounding` diz com quantas casas decimais se conta esta unidade: a cerveja
+    ao barril mede-se em litros com decimais; as cápsulas contam-se às unidades
+    (meia cápsula não existe). Sem isto, o inventário fica com 3,4 cápsulas.
+    """
+    code = models.CharField(max_length=20, unique=True)  # Ex: KG, L, UN, CX
     name = models.CharField(max_length=100)
-    
+    rounding = models.PositiveSmallIntegerField(default=0)   # casas decimais
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['code']
+
     def __str__(self):
         return f"{self.name} ({self.code})"
+
+
+class UomConversion(models.Model):
+    """FATOR DE CONVERSÃO — 1 Caixa = 12 Unidades.
+
+    É o que permite comprar à caixa e vender à unidade sem o stock endoidecer:
+    entra 1 caixa, saem 12 cervejas, e o saldo bate certo.
+    """
+    uom = models.ForeignKey(UnitOfMeasure, on_delete=models.CASCADE, related_name='conversions')
+    to_uom = models.ForeignKey(UnitOfMeasure, on_delete=models.CASCADE, related_name='converted_from')
+    factor = models.DecimalField(max_digits=14, decimal_places=4, default=1)
+
+    class Meta:
+        db_table = 'inv_uom_conversion'
+        unique_together = ('uom', 'to_uom')
+
+    def __str__(self):
+        return f'1 {self.uom.code} = {self.factor} {self.to_uom.code}'
 
 class ItemCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -52,9 +81,85 @@ class Item(models.Model):
     is_purchased = models.BooleanField(default=True)     # comprável a fornecedor
     allow_fraction = models.BooleanField(default=False)  # permite quantidade fracionada (ex: peso)
 
+    # ---------------- CONFIGURAÇÃO POS (separadores da ficha do artigo) ----------------
+    # Hierarquia comercial (Grupo → Família → Sub-Família). A sub-família chega ao resto.
+    subfamily = models.ForeignKey('ItemSubFamily', on_delete=models.SET_NULL, blank=True, null=True,
+                                  related_name='items')
+    report_definition = models.CharField(max_length=80, blank=True, null=True)  # Definição de relatório
+
+    # --- Geral: impostos (venda com 2 taxas + isenções, e taxa de compra própria) ---
+    tax_2_percentage = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    exemption_code_1 = models.CharField(max_length=12, blank=True, null=True)   # M99, M07…
+    exemption_code_2 = models.CharField(max_length=12, blank=True, null=True)
+    purchase_tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    purchase_exemption_code = models.CharField(max_length=12, blank=True, null=True)
+    allow_tax_change_on_purchase = models.BooleanField(default=False)
+
+    # --- Geral: o que o artigo É (determina onde aparece) ---
+    is_menu = models.BooleanField(default=False)             # é um menu/combo
+    has_recipe = models.BooleanField(default=False)          # tem ficha técnica
+    is_value_discount = models.BooleanField(default=False)   # artigo "desconto em valor"
+
+    # --- Geral: impressoras onde a comanda sai (uma cerveja pode sair no bar E na cozinha) ---
+    printers = models.ManyToManyField('Printer', blank=True, related_name='items')
+
+    # --- Geral: tipos de comentário sugeridos ao operador (TEMP, GELO, LIMÃO…) ---
+    comment_type_1 = models.CharField(max_length=40, blank=True, null=True)
+    comment_type_2 = models.CharField(max_length=40, blank=True, null=True)
+    comment_type_3 = models.CharField(max_length=40, blank=True, null=True)
+
+    # --- Outros ---
+    pms_reference = models.CharField(max_length=60, blank=True, null=True)   # encargo no folio do PMS
+    plu_code = models.CharField(max_length=20, blank=True, null=True)        # código PLU (balança/teclado)
+    scale_interface = models.BooleanField(default=False)       # artigo pesado na balança
+    free_text = models.BooleanField(default=False)             # descrição escrita à mão no POS
+    always_ask_quantity = models.BooleanField(default=False)   # POS pergunta sempre a quantidade
+    manual_price = models.BooleanField(default=False)          # preço introduzido no momento
+    no_discount = models.BooleanField(default=False)           # não aceita descontos
+    no_stock_movement = models.BooleanField(default=False)     # vender não mexe no stock
+    prep_time_minutes = models.PositiveIntegerField(default=0)  # tempo de preparação (KDS)
+    accounting_account = models.CharField(max_length=30, blank=True, null=True)   # conta do PGC-AO
+    analytic_account_purchase = models.CharField(max_length=30, blank=True, null=True)
+    analytic_account_sale = models.CharField(max_length=30, blank=True, null=True)
+
+    # --- Outros: nome do artigo noutras línguas (menu para estrangeiros) ---
+    name_lang_1 = models.CharField(max_length=255, blank=True, null=True)
+    name_lang_2 = models.CharField(max_length=255, blank=True, null=True)
+    name_lang_3 = models.CharField(max_length=255, blank=True, null=True)
+
+    # --- Notas ---
+    notes = models.TextField(blank=True, null=True)
+    recipe_notes = models.TextField(blank=True, null=True)     # notas da ficha técnica
+    key_image_url = models.CharField(max_length=300, blank=True, null=True)      # imagem da tecla
+    composition_image_url = models.CharField(max_length=300, blank=True, null=True)  # imagem do prato
+
+    # --- Unidades (compra ≠ stock ≠ venda: compra-se a caixa, vende-se a unidade) ---
+    purchase_uom = models.ForeignKey(UnitOfMeasure, on_delete=models.SET_NULL, blank=True, null=True,
+                                     related_name='items_purchase')
+    stock_uom = models.ForeignKey(UnitOfMeasure, on_delete=models.SET_NULL, blank=True, null=True,
+                                  related_name='items_stock')
+    sale_uom = models.ForeignKey(UnitOfMeasure, on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='items_sale')
+
+    # --- Descontos aplicáveis a este artigo ---
+    discounts = models.ManyToManyField('commercial.Promotion', blank=True, related_name='items')
+
+    # --- Código de barras: valor de medição base (peso/volume de referência) ---
+    base_measure_value = models.DecimalField(max_digits=12, decimal_places=3, default=0)
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.CharField(max_length=80, blank=True, null=True)
+    updated_by = models.CharField(max_length=80, blank=True, null=True)
+
+    @property
+    def family(self):
+        return self.subfamily.family if self.subfamily else None
+
+    @property
+    def group(self):
+        return self.subfamily.family.group if self.subfamily else None
 
     @property
     def margin_percentage(self):
@@ -335,3 +440,174 @@ class ItemUom(models.Model):
 
     def __str__(self):
         return f"{self.item.code}: 1 {self.uom.code} = {self.factor} {self.item.base_uom.code}"
+
+# ==========================================================================
+# CONFIGURAÇÃO POS — ARTIGOS (nível enterprise)
+# Hierarquia comercial: GRUPO → FAMÍLIA → SUB-FAMÍLIA → ARTIGO
+# (ex.: F&B → AGUAS → AGUAS LISAS → "Água Grande 150cl")
+# É esta árvore que organiza o catálogo, os relatórios e os teclados do POS.
+# ==========================================================================
+
+class ItemGroup(models.Model):
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=80)
+    # Conta do PGC-AO: o que este grupo/família vende cai nesta conta de proveitos.
+    accounting_account = models.CharField(max_length=30, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'inv_item_group'
+        ordering = ['sort_order', 'name']
+        verbose_name = 'Grupo de Artigos'
+        verbose_name_plural = 'Grupos de Artigos'
+
+    def __str__(self):
+        return self.name
+
+
+class ItemFamily(models.Model):
+    group = models.ForeignKey(ItemGroup, on_delete=models.CASCADE, related_name='families')
+    code = models.CharField(max_length=40)
+    name = models.CharField(max_length=80)
+    # Conta do PGC-AO: o que este grupo/família vende cai nesta conta de proveitos.
+    accounting_account = models.CharField(max_length=30, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'inv_item_family'
+        unique_together = ('group', 'code')
+        ordering = ['sort_order', 'name']
+        verbose_name = 'Família'
+        verbose_name_plural = 'Famílias'
+
+    def __str__(self):
+        return f'{self.group.name} → {self.name}'
+
+
+class ItemSubFamily(models.Model):
+    family = models.ForeignKey(ItemFamily, on_delete=models.CASCADE, related_name='subfamilies')
+    code = models.CharField(max_length=40)
+    name = models.CharField(max_length=80)
+    # Ordem por que esta sub-família sai impressa na comanda (as entradas antes dos pratos).
+    print_order = models.PositiveIntegerField(default=0)
+    # Conta do PGC-AO: o que este grupo/família vende cai nesta conta de proveitos.
+    accounting_account = models.CharField(max_length=30, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'inv_item_subfamily'
+        unique_together = ('family', 'code')
+        ordering = ['sort_order', 'name']
+        verbose_name = 'Sub-Família'
+        verbose_name_plural = 'Sub-Famílias'
+
+    def __str__(self):
+        return f'{self.family.name} → {self.name}'
+
+
+class Printer(models.Model):
+    """Impressora / posto de impressão (Restaurante, Bar Piscina, Cozinha…).
+
+    Um artigo pode imprimir em VÁRIAS: uma cerveja pedida à mesa sai no bar E na
+    cozinha, se o hotel assim o quiser. É esta a ligação que o POS usa nas comandas.
+    """
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=80)
+    station = models.CharField(max_length=10, default='KITCHEN',
+                               choices=[('KITCHEN', 'Cozinha'), ('BAR', 'Bar'),
+                                        ('PASTRY', 'Pastelaria'), ('CASHIER', 'Caixa')])
+    outlet = models.ForeignKey('pos.Outlet', on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='printers')
+    # O APARELHO físico (catálogo de Hardware). Sem ele, a comanda fica em fila e
+    # ninguém a vai buscar — o pedido nunca chega à cozinha.
+    device = models.ForeignKey('pos.PosHardware', on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='printers')
+    warn_on_failure = models.BooleanField(default=True)   # Emitir Aviso
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'inv_printer'
+        ordering = ['name']
+
+    def __str__(self):
+        return f'{self.name} ({self.code})'
+
+
+class ItemBarcode(models.Model):
+    """Um artigo pode ter vários códigos de barras (unidade, caixa, pack)."""
+    item = models.ForeignKey('Item', on_delete=models.CASCADE, related_name='barcodes')
+    barcode = models.CharField(max_length=64, db_index=True)
+    uom = models.ForeignKey(UnitOfMeasure, on_delete=models.SET_NULL, blank=True, null=True)
+    quantity = models.DecimalField(max_digits=12, decimal_places=3, default=1)   # 1 CX = 24 UNI
+    is_main = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'inv_item_barcode'
+        unique_together = ('item', 'barcode')
+
+    def __str__(self):
+        return self.barcode
+
+
+class ItemPrice(models.Model):
+    """Preços por NÍVEL. Cada terminal usa um nível — o mesmo artigo custa
+    1.000 no restaurante e 1.500 no bar da piscina, sem duplicar o artigo."""
+    item = models.ForeignKey('Item', on_delete=models.CASCADE, related_name='prices')
+    level = models.PositiveSmallIntegerField(default=1)     # 1..10
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'inv_item_price'
+        unique_together = ('item', 'level')
+        ordering = ['level']
+
+    def __str__(self):
+        return f'Nível {self.level}: {self.price}'
+
+
+class SubFamilyMapping(models.Model):
+    """MAPEAMENTO POR OUTLET de uma sub-família.
+
+    A mesma sub-família comporta-se de forma diferente em cada ponto de venda:
+      · ARMAZÉM — as polpas vendidas no Restaurante saem do armazém RESTAURANTE,
+        e as vendidas no Bar da Piscina saem do armazém BAR PISCINA;
+      · ENCARGO PMS — o que o hóspede consome é lançado no folio do quarto com o
+        código de encargo certo (REST_BEB_N, BAR_BEB_NA…), que leva a taxa correta.
+
+    Sem isto, ou o stock sai sempre do mesmo armazém (e as contagens nunca batem
+    certo), ou os consumos entram no quarto no encargo errado.
+    """
+    subfamily = models.ForeignKey(ItemSubFamily, on_delete=models.CASCADE, related_name='mappings')
+    outlet = models.ForeignKey('pos.Outlet', on_delete=models.CASCADE, related_name='subfamily_mappings')
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, blank=True, null=True,
+                                  related_name='subfamily_mappings')
+    pms_charge_code = models.CharField(max_length=40, blank=True, null=True)   # ex.: REST_BEB_N
+    pms_charge_tax = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
+    class Meta:
+        db_table = 'inv_subfamily_mapping'
+        unique_together = ('subfamily', 'outlet')
+
+    def __str__(self):
+        return f'{self.subfamily.name} @ {self.outlet.name}'
+
+
+class ReportDefinition(models.Model):
+    """DEFINIÇÃO DE RELATÓRIO — como um artigo é agrupado nos relatórios de vendas.
+
+    Serve para juntar artigos que interessam ao gestor mas que estão em famílias
+    diferentes (ex.: "Bebidas alcoólicas" junta cervejas, vinhos e espirituosas).
+    """
+    code = models.CharField(max_length=40, unique=True)
+    name = models.CharField(max_length=120)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'inv_report_definition'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} - {self.name}'

@@ -141,3 +141,47 @@ class QualityCheckSerializer(serializers.ModelSerializer):
     class Meta:
         model = QualityCheck
         fields = '__all__'
+
+
+from .models import PosMessage, PosMessageOption  # noqa: E402
+
+
+class PosMessageOptionSerializer(serializers.ModelSerializer):
+    printer_name = serializers.CharField(source='printer.name', read_only=True, default=None)
+
+    class Meta:
+        model = PosMessageOption
+        fields = ('id', 'message', 'key_label', 'print_label', 'sort_order',
+                  'printer', 'printer_name', 'on_emenu')
+        # O modelo é criado DENTRO da mensagem — não se pede o pai outra vez.
+        extra_kwargs = {'message': {'required': False}}
+
+
+class PosMessageSerializer(serializers.ModelSerializer):
+    """A mensagem e os seus modelos (respostas) — gravam-se de uma vez, como no ecrã."""
+    options = PosMessageOptionSerializer(many=True, required=False)
+
+    class Meta:
+        model = PosMessage
+        fields = '__all__'
+
+    def create(self, validated):
+        opts = validated.pop('options', [])
+        msg = PosMessage.objects.create(**validated)
+        self._sync(msg, opts)
+        return msg
+
+    def update(self, instance, validated):
+        opts = validated.pop('options', None)
+        for k, v in validated.items():
+            setattr(instance, k, v)
+        instance.save()
+        if opts is not None:
+            self._sync(instance, opts)
+        return instance
+
+    def _sync(self, msg, opts):
+        msg.options.all().delete()
+        for o in opts:
+            o.pop('message', None)
+            PosMessageOption.objects.create(message=msg, **o)

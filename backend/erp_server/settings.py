@@ -23,6 +23,11 @@ SECRET_KEY = os.environ.get(
     "django-insecure-4l&$gg!94(7^&^mxirtw)n3!qwfu4d6*i7&3)6e37&$g26tf4(",
 )
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("1", "true", "yes")
+
+# CHAVE DE FORNECEDOR — autoriza o provisionamento da certificação AGT (nº de certificado
+# + chave de assinatura) a partir do PCC/instalador. O cliente NUNCA a tem: sem ela, a
+# certificação do software não pode ser alterada de dentro do sistema do cliente.
+VENDOR_PROVISION_KEY = os.environ.get("VENDOR_PROVISION_KEY", "")
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
@@ -90,6 +95,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.audit_middleware.AuditMiddleware",   # trilho de auditoria universal
 ]
 
 # CORS: em dev permite tudo; em produção só as origens configuradas (DJANGO_CORS_ORIGINS).
@@ -238,3 +244,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'apikey')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@topconsultores.com')
+
+# Ficheiros carregados pelo cliente (logótipos, imagens de artigos, fotos de alergénios).
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

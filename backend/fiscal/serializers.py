@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import (FiscalConfig, FiscalDocType, FiscalSeries, FiscalDocument,
                      FiscalDocumentLine, SubmissionQueue, FiscalAuditLog,
-                     AGTConnection, DigitalCertificate, TaxRate, TaxExemptionReason)
+                     AGTConnection, DigitalCertificate, TaxRate, TaxExemptionReason, CompanyBankAccount
+)
 from . import secrets as fsecrets
 
 
@@ -41,10 +42,20 @@ class TaxExemptionReasonSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CompanyBankAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompanyBankAccount
+        fields = '__all__'
+
+
 class FiscalConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = FiscalConfig
         fields = '__all__'
+        # A certificação é do SOFTWARE (do fabricante), não do contribuinte: o cliente
+        # pode ver, nunca alterar. Só o provisionamento do fornecedor lhes toca.
+        # (Sem isto, bastava um PATCH em /api/fiscal/config/ para forjar o nº de certificado.)
+        read_only_fields = ('certificate_number', 'key_version', 'environment')
 
 
 class FiscalDocTypeSerializer(serializers.ModelSerializer):

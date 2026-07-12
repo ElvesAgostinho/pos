@@ -13,6 +13,7 @@ from .booking import (
     BookingPaymentInitiateView, BookingPaymentConfirmView, BookingPaymentWebhookView,
 )
 from .channels import ChannelViewSet, ChannelRoomMapViewSet, ChannelSyncLogViewSet
+from .frontdesk import FrontDeskView
 
 router = DefaultRouter()
 router.register(r'guests', GuestViewSet)
@@ -34,6 +35,7 @@ router.register(r'channel-sync-logs', ChannelSyncLogViewSet, basename='pms-chann
 
 urlpatterns = [
     path('dashboard/', PmsDashboardView.as_view()),
+    path('frontdesk/', FrontDeskView.as_view()),
     path('night-audit/', NightAuditView.as_view()),
     path('booking/config/', BookingConfigView.as_view()),
     path('booking/availability/', BookingAvailabilityView.as_view()),

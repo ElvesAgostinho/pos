@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
+import GridToggle from '../ui/GridToggle';
 import { CreditCard, Plus, Trash2, Save } from 'lucide-react';
 import { useMdPaymentMethods, useMdCreatePaymentMethod, useMdDeletePaymentMethod } from '../../hooks/useMasterData';
 import type { MdPaymentMethod } from '../../api/masterdata';
@@ -73,9 +74,16 @@ export default function PaymentMethodsView() {
           { header: 'Nome', accessor: 'name', width: '26%' },
           { header: 'Tipo', accessor: (r: MdPaymentMethod) => typeLabel(r.method_type), width: '18%' },
           { header: 'Moeda', accessor: 'currency', width: '10%' },
-          { header: 'Troco', accessor: (r: MdPaymentMethod) => (r.allows_change ? '✓' : '—'), width: '9%' },
-          { header: 'Estorno', accessor: (r: MdPaymentMethod) => (r.allows_refund ? '✓' : '—'), width: '9%' },
-          { header: 'Ativo', accessor: (r: MdPaymentMethod) => (r.is_active ? '✓' : '—'), width: '8%' },
+          { header: 'Troco', width: '9%',
+            accessor: (r: MdPaymentMethod) => <GridToggle endpoint="mdm/payment-methods" id={r.id} field="allows_change"
+              value={!!r.allows_change} invalidate="masterdata"
+              title="Dá troco — o dinheiro dá; o cartão e a transferência não (o POS recusa cobrar a mais)" /> },
+          { header: 'Estorno', width: '9%',
+            accessor: (r: MdPaymentMethod) => <GridToggle endpoint="mdm/payment-methods" id={r.id} field="allows_refund"
+              value={!!r.allows_refund} invalidate="masterdata" title="Permite devolver dinheiro por este meio" /> },
+          { header: 'Ativo', width: '8%',
+            accessor: (r: MdPaymentMethod) => <GridToggle endpoint="mdm/payment-methods" id={r.id} field="is_active"
+              value={!!r.is_active} invalidate="masterdata" title="Desligar tira este meio de pagamento do POS" /> },
           { header: '', accessor: (r: MdPaymentMethod) => <button onClick={() => del.mutate(r.id!)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '8%' },
         ]}
       />

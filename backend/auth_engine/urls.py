@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import BackofficeLoginView, PosLoginView, MeView, LogoutView, ChangePasswordView
-from .security_api import UserViewSet, UserSessionViewSet, AuthEventViewSet, MyAccessView
+from .security_api import UserViewSet, UserSessionViewSet, AuthEventViewSet, MyAccessView, MyHotelsView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='sec-user')
@@ -15,6 +15,7 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     path('me/', MeView.as_view(), name='me'),
     path('access/', MyAccessView.as_view(), name='my-access'),
+    path('hotels/', MyHotelsView.as_view(), name='my-hotels'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('', include(router.urls)),

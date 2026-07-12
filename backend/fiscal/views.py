@@ -22,6 +22,15 @@ from .serializers import CommercialDocumentSerializer, CommercialDocumentLineSer
 from . import commercial as commercial_svc
 
 
+def _bank_accounts():
+    """Contas bancárias que saem no rodapé da fatura (é como o cliente paga)."""
+    from .models import CompanyBankAccount
+    return [{
+        'bank_name': b.bank_name, 'iban': b.iban, 'account_number': b.account_number,
+        'swift': b.swift, 'currency': b.currency, 'account_holder': b.account_holder,
+    } for b in CompanyBankAccount.objects.filter(is_active=True, show_on_invoice=True)]
+
+
 class CommercialDocumentViewSet(viewsets.ModelViewSet):
     """Documentos comerciais (Orçamento/Proforma/Encomenda) — editáveis só em rascunho."""
     permission_classes = [IsAuthenticated]
@@ -117,7 +126,9 @@ class CommercialDocumentViewSet(viewsets.ModelViewSet):
                 'nif': cfg.company_nif, 'address': cfg.address_line, 'city': cfg.city,
                 'phone': cfg.phone, 'share_capital': cfg.share_capital, 'crc_number': cfg.crc_number,
                 'certificate_number': cfg.certificate_number,
+                'logo_url': cfg.logo_url,
             },
+            'bank_accounts': _bank_accounts(),
             'document': {
                 'invoice_no': doc.number, 'type_name': doc.get_kind_display(),
                 'copy_label': doc.get_state_display(), 'status': doc.get_state_display(),
@@ -306,6 +317,7 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
                 'share_capital': cfg.share_capital, 'crc_number': cfg.crc_number,
                 'logo_url': cfg.logo_url, 'certificate_number': cfg.certificate_number,
             },
+            'bank_accounts': _bank_accounts(),
             'document': {
                 'invoice_no': doc.invoice_no, 'type_name': doc.doc_type.name,
                 'copy_label': copy_label, 'status': doc.get_status_display(),
@@ -428,3 +440,12 @@ class SAFTExportView(APIView):
         resp = HttpResponse(xml, content_type='application/xml')
         resp['Content-Disposition'] = f'attachment; filename="SAFT_AO_{start}_{end}.xml"'
         return resp
+
+
+class CompanyBankAccountViewSet(viewsets.ModelViewSet):
+    """Contas bancárias da empresa — saem no rodapé da fatura (é como o cliente paga)."""
+    from .models import CompanyBankAccount as _M
+    from .serializers import CompanyBankAccountSerializer as _S
+    permission_classes = [IsAuthenticated]
+    queryset = _M.objects.filter(is_active=True)
+    serializer_class = _S

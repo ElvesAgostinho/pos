@@ -16,6 +16,10 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // PROPRIEDADE ATIVA: todos os pedidos dizem em que hotel se está a trabalhar.
+  // O servidor valida (um utilizador nunca vê um hotel a que não tem acesso).
+  const hotel = localStorage.getItem('erp_hotel');
+  if (hotel) config.headers['X-Hotel-Id'] = hotel;
   return config;
 });
 
