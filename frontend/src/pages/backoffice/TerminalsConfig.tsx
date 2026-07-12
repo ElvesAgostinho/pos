@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { MonitorSmartphone, Printer, Settings2, ShieldAlert, Save } from 'lucide-react';
+import { apiClient as axios } from '../../api/client';
+import { MonitorSmartphone, Settings2, Save } from 'lucide-react';
 import ClassicWindow from '../../components/ui/ClassicWindow';
 import ClassicGrid from '../../components/ui/ClassicGrid';
 import ClassicButton from '../../components/ui/ClassicButton';

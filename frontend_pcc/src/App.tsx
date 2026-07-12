@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Topbar from './components/Topbar';
 import TabsBar from './components/TabsBar';
 import Sidebar from './components/Sidebar';
@@ -8,31 +8,49 @@ import QuickNotes from './components/ui/QuickNotes';
 import Dashboard from './pages/Dashboard';
 import Wizard from './pages/Wizard';
 import ClientsList from './pages/ClientsList';
-import { Shield, Users, Database } from 'lucide-react';
+import AgtCertification from './pages/AgtCertification';
+import Login from './pages/Login';
+import ChangePassword from './pages/ChangePassword';
+import { pccAuth } from './api/auth';
+import { Shield, Users, Database, Stamp } from 'lucide-react';
 
 const VIEW_METADATA: Record<string, { title: string; icon: any }> = {
   'dashboard': { title: 'Dashboard PCC', icon: Database },
   'clients': { title: 'Gestão de Clientes', icon: Users },
   'provisioning': { title: 'Novo Provisionamento', icon: Shield },
+  'agt': { title: 'Certificação AGT', icon: Stamp },
 };
 
-function MainContent({ activeView, onClose }: { activeView: string; onClose: () => void }) {
+function MainContent({ activeView }: { activeView: string }) {
   return (
     <div className="flex-1 h-full overflow-hidden relative">
       <div className="h-full overflow-y-auto">
         {activeView === 'dashboard' && <Dashboard />}
         {activeView === 'clients' && <ClientsList />}
         {activeView === 'provisioning' && <Wizard />}
+        {activeView === 'agt' && <AgtCertification />}
       </div>
     </div>
   );
 }
 
 function App() {
+  const [authed, setAuthed] = useState(pccAuth.isAuthenticated());
   const [openTabs, setOpenTabs] = useState<string[]>(['dashboard']);
   const [activeView, setActiveView] = useState('dashboard');
   const [isLocked, setIsLocked] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const user = pccAuth.getUser();
+
+  const handleLogout = async () => {
+    await pccAuth.logout();
+    setAuthed(false);
+  };
+
+  if (!authed) {
+    return <Login onSuccess={() => setAuthed(true)} />;
+  }
 
   const handleSelectView = (view: string) => {
     if (!openTabs.includes(view)) {
@@ -56,7 +74,12 @@ function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#e0e0e0] font-sans">
-      <Topbar onSelectView={handleSelectView} />
+      <Topbar
+        onSelectView={handleSelectView}
+        userName={user?.name}
+        onChangePassword={() => setShowChangePassword(true)}
+        onLogout={handleLogout}
+      />
       <TabsBar 
         openTabs={openTabs} 
         activeView={activeView} 
@@ -69,11 +92,13 @@ function App() {
           setOpenTabs(['dashboard']);
           setActiveView('dashboard');
         }}
+        onLogout={handleLogout}
+        userName={user?.name}
       />
       <div className="flex-1 flex overflow-hidden">
         <Sidebar activeView={activeView} onSelectView={handleSelectView} />
         {activeView ? (
-          <MainContent activeView={activeView} onClose={() => handleCloseTab(activeView)} />
+          <MainContent activeView={activeView} />
         ) : (
           <div className="flex-1 flex flex-col bg-[#e6e6e6] items-center justify-center text-gray-400">
             <h2 className="text-xl font-bold mb-2 text-gray-500">Platform Control Center</h2>
@@ -89,6 +114,7 @@ function App() {
       />
       {isLocked && <LockScreen onUnlock={() => setIsLocked(false)} />}
       {showNotes && <QuickNotes onClose={() => setShowNotes(false)} />}
+      {showChangePassword && <ChangePassword onClose={() => setShowChangePassword(false)} />}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { apiClient as axios } from '../../../api/client';
 import { ShieldCheck, Plus, Trash2, Save } from 'lucide-react';
 import ClassicWindow from '../../../components/ui/ClassicWindow';
 import ClassicButton from '../../../components/ui/ClassicButton';

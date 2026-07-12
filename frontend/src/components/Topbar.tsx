@@ -1,106 +1,74 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { User } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { User, ChevronDown } from 'lucide-react';
+import { MODULES, moduleEnabled } from '../config/navigation';
+import { useActiveModules } from '../hooks/useActiveModules';
+
+// Marca do sistema: "ML" (M dourado, L branco).
+const Brand = ({ size = 'text-xl' }: { size?: string }) => (
+  <span className={`font-black tracking-tight ${size}`}><span className="text-[#c9a400]">M</span><span className="text-white">L</span></span>
+);
+
+// Cor por módulo (usada no ponto do dropdown).
+const MOD_COLOR: Record<string, string> = {
+  admin: '#9aa7b7', licensing: '#7f8c8d', security: '#e74c3c', hotel: '#27ae60', masterdata: '#3498db',
+  commercial: '#16a085', srm: '#9b59b6', procurement: '#e67e22', warehouse: '#a0522d', hospitality: '#f39c12',
+  pms: '#2980b9', posmgmt: '#c9a400', posfront: '#c9a400', financial: '#2ecc71', fiscal: '#c0392b',
+  reporting: '#34495e', workflow: '#8e44ad', documents: '#16a085', notifications: '#e84393',
+  integration: '#00838f', system: '#607d8b',
+};
+const colorOf = (k: string) => MOD_COLOR[k] || '#bbbbbb';
 
 interface TopbarProps {
   onSelectView?: (view: string) => void;
+  moduleKey?: string;
 }
 
-export default function Topbar({ onSelectView }: TopbarProps) {
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const topbarRef = useRef<HTMLDivElement>(null);
+export default function Topbar({ onSelectView, moduleKey = 'admin' }: TopbarProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const { data: lic } = useActiveModules();
+  const active = lic?.active || [];
+  const licensed = MODULES.filter((m) => moduleEnabled(m.key, active));
+  const current = MODULES.find((m) => m.key === moduleKey);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (topbarRef.current && !topbarRef.current.contains(event.target as Node)) {
-        setOpenDropdown(null);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  const handleMenuClick = (menu: string) => {
-    setOpenDropdown(openDropdown === menu ? null : menu);
-  };
-
-  const handleItemClick = (view: string) => {
-    if (onSelectView) {
-      onSelectView(view);
-    }
-    setOpenDropdown(null);
-  };
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+  const switchTo = (k: string) => { onSelectView && onSelectView(`home:${k}`); setOpen(false); };
 
   return (
-    <div ref={topbarRef} className="flex items-center justify-between bg-[#333333] text-white h-10 px-4 text-sm font-sans select-none relative z-50">
-      <div className="flex items-center space-x-6">
-        <div className="flex items-center text-white font-bold text-xl tracking-tight leading-none">
-          <div className="flex flex-col items-center">
-            <img src="/logo.png" alt="System Mwana Lodge" className="h-6 object-contain filter invert opacity-90" />
+    <div className="flex items-center justify-between bg-[#1b1b1b] text-white h-11 px-3 text-sm font-sans select-none relative z-50">
+      {/* Switcher escondido no NOME DO SISTEMA */}
+      <div ref={ref} className="relative">
+        <button onClick={() => licensed.length > 1 && setOpen((o) => !o)}
+          className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[#2a2a2a]">
+          <Brand />
+          <span className="text-gray-400 text-xs font-medium hidden sm:inline">{current?.title.replace(/^\d+\s·\s/, '')}</span>
+          {licensed.length > 1 && <ChevronDown size={15} className="text-gray-400" />}
+        </button>
+        {open && (
+          <div className="absolute left-0 top-11 bg-[#111] border border-[#333] min-w-[280px] shadow-2xl py-1 z-50 max-h-[70vh] overflow-auto">
+            <div className="px-3 py-1.5 flex items-center gap-2 border-b border-[#2a2a2a]"><Brand size="text-base" /><span className="text-[10px] uppercase tracking-widest text-gray-500">Os seus módulos</span></div>
+            {licensed.map((m) => (
+              <button key={m.key} onClick={() => switchTo(m.key)}
+                className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-[#222] ${m.key === moduleKey ? 'bg-[#1e1e1e]' : ''}`}>
+                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: colorOf(m.key) }} />
+                <span className="text-gray-200 text-sm text-left flex-1">{m.title.replace(/^\d+\s·\s/, '')}</span>
+                {m.key === moduleKey && <span className="w-2 h-2 rounded-full bg-[#3fd23f]" />}
+              </button>
+            ))}
           </div>
-        </div>
-        <div className="flex space-x-2 text-gray-300">
-          
-          {/* F&B Menu */}
-          <div className="relative">
-            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'FB' ? 'bg-[#555] text-white' : 'hover:bg-[#444]'}`} onClick={() => handleMenuClick('FB')}>
-              F&B <span className="text-[#f1c40f] text-[8px] ml-1.5">▼</span>
-            </div>
-            {openDropdown === 'FB' && (
-              <div className="absolute top-full left-0 mt-0 w-48 bg-[#f0f0f0] border border-[#a0a0a0] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('pos_terminal')}>Terminal POS (Frente de Loja)</div>
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('outlets')}>Gestão de Outlets</div>
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('operation_config')}>Motor de Operação</div>
-              </div>
-            )}
-          </div>
-
-          {/* Marketing Menu */}
-          <div className="relative">
-            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'MKT' ? 'bg-[#555] text-white' : 'hover:bg-[#444]'}`} onClick={() => handleMenuClick('MKT')}>
-              Marketing
-            </div>
-            {openDropdown === 'MKT' && (
-              <div className="absolute top-full left-0 mt-0 w-48 bg-[#f0f0f0] border border-[#a0a0a0] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
-                <div className="px-3 py-1.5 text-gray-500 italic">Módulo em Breve</div>
-              </div>
-            )}
-          </div>
-
-          {/* Reporting Menu */}
-          <div className="relative">
-            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'REP' ? 'bg-[#555] text-white' : 'hover:bg-[#444]'}`} onClick={() => handleMenuClick('REP')}>
-              Reporting <span className="text-[#f1c40f] text-[8px] ml-1.5">▼</span>
-            </div>
-            {openDropdown === 'REP' && (
-              <div className="absolute top-full left-0 mt-0 w-48 bg-[#f0f0f0] border border-[#a0a0a0] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('reports_sales')}>Vendas Diárias</div>
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('reports_stock')}>Stock Atual (WMS)</div>
-              </div>
-            )}
-          </div>
-
-          {/* Utilitários Menu */}
-          <div className="relative">
-            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'UTL' ? 'bg-[#555] text-white' : 'hover:bg-[#444]'}`} onClick={() => handleMenuClick('UTL')}>
-              Utilitários <span className="text-[#f1c40f] text-[8px] ml-1.5">▼</span>
-            </div>
-            {openDropdown === 'UTL' && (
-              <div className="absolute top-full left-0 mt-0 w-48 bg-[#f0f0f0] border border-[#a0a0a0] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('edc_inbox')}>EDC - Caixa de Entrada</div>
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('settings')}>Configurações do Sistema</div>
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer">Terminar Sessão</div>
-              </div>
-            )}
-          </div>
-
-        </div>
+        )}
       </div>
-      <div className="flex items-center space-x-3 text-gray-300 text-[11px]">
-        <span className="text-red-400 font-semibold">| Qui 10 Abr 2025 |</span>
-        <div className="flex items-center space-x-1">
-          <User size={12} />
-          <span>hhs</span>
-        </div>
+
+      <div className="flex items-center gap-3 text-gray-300 text-[11px]">
+        <span className="text-[#e05555] font-semibold">{dateStr}</span>
+        <div className="flex items-center gap-1"><User size={13} /><span>{lic ? 'online' : ''}</span></div>
       </div>
     </div>
   );

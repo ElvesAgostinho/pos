@@ -1,2 +1,8 @@
 from django.urls import path
-urlpatterns = []
+from .views import ActiveModulesView, LicenseStatusView, FeaturesView
+
+urlpatterns = [
+    path('active-modules/', ActiveModulesView.as_view(), name='active-modules'),
+    path('features/', FeaturesView.as_view(), name='features'),
+    path('status/', LicenseStatusView.as_view(), name='license-status'),
+]

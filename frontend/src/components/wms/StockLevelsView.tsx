@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicGrid from '../ui/ClassicGrid';
 import ClassicButton from '../ui/ClassicButton';

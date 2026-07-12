@@ -1,81 +1,52 @@
 import React from 'react';
-import DashboardMDMView from './views/DashboardMDMView';
-import ItemsView from './views/ItemsView';
-import TaxesView from './views/TaxesView';
-import CategoriesView from './views/CategoriesView';
-import SuppliersView from './views/SuppliersView';
-import WarehousesView from './wms/WarehousesView';
-import LocationsView from './wms/LocationsView';
-import OutletsView from './pos/OutletsView';
-import POSProductConfigView from './pos/POSProductConfigView';
-import TerminalsConfig from '../pages/backoffice/TerminalsConfig';
-import OperationConfigView from './pos/OperationConfigView';
-import BillOfMaterialsView from './wms/BillOfMaterialsView';
-import StockLevelsView from './wms/StockLevelsView';
-import StockMovementsView from './wms/StockMovementsView';
-import EdcInboxView from './views/EdcInboxView';
-import RolesView from './views/auth/RolesView';
-import PermissionsMatrixView from './views/auth/PermissionsMatrixView';
-import ContextRulesView from './views/auth/ContextRulesView';
-import CollaboratorsList from '../pages/backoffice/workforce/CollaboratorsList';
-import POSOperatorsView from '../pages/backoffice/workforce/POSOperatorsView';
-import ShiftsView from '../pages/backoffice/workforce/ShiftsView';
-import DepartmentsView from '../pages/backoffice/workforce/DepartmentsView';
+import { VIEW_REGISTRY, ITEM_TITLES, MODULE_OF } from '../config/navigation';
+import ClassicWindow from './ui/ClassicWindow';
+import ModuleDesktop from './ModuleDesktop';
+import { Construction } from 'lucide-react';
 
 export const TabContext = React.createContext<{ onClose?: () => void }>({});
 
 interface MainContentProps {
   activeView: string;
   onClose?: () => void;
+  onSelectView?: (id: string) => void;
 }
 
-export default function MainContent({ activeView, onClose }: MainContentProps) {
-  const renderView = () => {
-    switch (activeView) {
-      case 'dashboard': return <DashboardMDMView />;
-      case 'items': return <ItemsView />;
-      case 'categories': return <CategoriesView />;
-      case 'brands': return <div className="p-4">Marcas (Em Desenvolvimento)</div>;
-      case 'suppliers': return <SuppliersView />;
-      case 'taxes': return <TaxesView />;
-      case 'uoms': return <div className="p-4">Unidades de Medida (Em Desenvolvimento)</div>;
-      case 'warehouses': return <WarehousesView />;
-      case 'outlets': return <OutletsView />;
-      case 'pos_terminals': return <TerminalsConfig />;
-      case 'pos_product_config': return <POSProductConfigView />;
-      case 'operation_config': return <OperationConfigView />;
-      case 'locations':
-      case 'zones':
-      case 'aisles':
-      case 'racks':
-      case 'shelves':
-      case 'bins': return <LocationsView />;
-      case 'bom': return <BillOfMaterialsView />;
-      case 'stock_levels': return <StockLevelsView />;
-      case 'stock_movements': return <StockMovementsView />;
-      case 'inventory_dashboard': return <div className="p-4">Gestão de Inventário (Em Desenvolvimento)</div>;
-      case 'inventory_recipes': return <div className="p-4">Fichas Técnicas / Receitas (Em Desenvolvimento)</div>;
-      case 'inventory_stock': return <div className="p-4">Controlo de Stock (Em Desenvolvimento)</div>;
-      case 'procurement_suppliers': return <div className="p-4">Gestão de Fornecedores (Em Desenvolvimento)</div>;
-      case 'procurement_pos': return <div className="p-4">Gestão de Encomendas (Em Desenvolvimento)</div>;
-      case 'procurement_grns': return <div className="p-4">Receção de Mercadorias (Em Desenvolvimento)</div>;
-      case 'hr_collaborators': return <CollaboratorsList />;
-      case 'hr_pos_operators': return <POSOperatorsView />;
-      case 'hr_shifts': return <ShiftsView />;
-      case 'hr_departments': return <DepartmentsView />;
-      case 'edc_inbox': return <EdcInboxView onClose={onClose || (() => {})} />;
-      case 'auth_roles': return <RolesView />;
-      case 'auth_matrix': return <PermissionsMatrixView />;
-      case 'auth_abac': return <ContextRulesView />;
-      default: return (
-        <div className="flex items-center justify-center h-full text-gray-400">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">Em Construção</h2>
-            <p>O módulo selecionado ainda não está implementado.</p>
+function Placeholder({ id }: { id: string }) {
+  const title = ITEM_TITLES[id] || id;
+  const moduleTitle = MODULE_OF[id] || '';
+  return (
+    <ClassicWindow title={title}>
+      <div className="h-full w-full bg-[#e6e6e6] flex items-center justify-center p-6">
+        <div className="bg-[#f0f0f0] border-2 border-white border-b-[#a0a0a0] border-r-[#a0a0a0] p-8 max-w-lg text-center">
+          <div className="w-14 h-14 mx-auto mb-4 bg-white border border-[#c0c0c0] rounded-full flex items-center justify-center">
+            <Construction size={26} className="text-[#1e3f66]" />
           </div>
+          {moduleTitle && <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{moduleTitle}</div>}
+          <h2 className="text-lg font-bold text-[#1e3f66] mb-2">{title}</h2>
+          <div className="inline-block text-[10px] font-bold text-[#8a6d1a] bg-[#fff4d6] border border-[#e0c877] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
+          <p className="text-[12px] text-gray-600">
+            Não é um erro. Este ecrã está a ser construído — o módulo <b>está ativo na sua licença</b>,
+            mas esta função específica ainda vai ser disponibilizada.
+          </p>
+          <p className="text-[11px] text-gray-500 mt-2">
+            As funções já operacionais têm o ícone a cores/preto com ponto verde no ambiente de trabalho.
+          </p>
         </div>
-      );
+      </div>
+    </ClassicWindow>
+  );
+}
+
+export default function MainContent({ activeView, onClose, onSelectView }: MainContentProps) {
+  const renderView = () => {
+    // Ambiente de trabalho do módulo (ecrã inicial com atalhos).
+    if (activeView.startsWith('home:')) {
+      return <ModuleDesktop moduleKey={activeView.slice(5)} activeView={activeView} onOpen={(id) => onSelectView && onSelectView(id)} />;
     }
+    const Real = VIEW_REGISTRY[activeView];
+    if (Real) return <Real />;
+    return <Placeholder id={activeView} />;
   };
 
   return (

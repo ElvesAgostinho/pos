@@ -12,7 +12,7 @@ const LicensesView: React.FC = () => {
   ];
 
   const data = [
-    { client: 'Palmeiras Suite Hotel', plan: 'Plano Pro', rsa_status: 'Assinado ✓', validity: '2027-12-31' },
+    { client: 'System Mwana Lodge', plan: 'Plano Pro', rsa_status: 'Assinado ✓', validity: '2027-12-31' },
     { client: 'Restaurante O Marujo', plan: 'Plano Essential', rsa_status: 'Assinado ✓', validity: '2026-05-15' },
   ];
 

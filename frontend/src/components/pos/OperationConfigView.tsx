@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Save, LayoutGrid, CheckSquare, CreditCard, ShoppingBag, Plus, Trash2, Database } from 'lucide-react';
+import { Settings, Save, Plus, Trash2 } from 'lucide-react';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
-import { useOutlets, useOperationConfigs, useCreateOperationConfig, useUpdateOperationConfig, useDiningTables, useCreateDiningTable, useUpdateDiningTable, useDeleteDiningTable, usePaymentMethods, useCreatePaymentMethod, useUpdatePaymentMethod, useDeletePaymentMethod, useOrderTypes, useCreateOrderType, useUpdateOrderType, useDeleteOrderType } from '../../hooks/usePos';
-import type { POSOperationConfig, POSDiningTable, POSPaymentMethod, POSOrderType } from '../../api/pos';
+import { useOutlets, useOperationConfigs, useCreateOperationConfig, useUpdateOperationConfig, useDiningTables, useCreateDiningTable, useUpdateDiningTable, useDeleteDiningTable, usePaymentMethods, useCreatePaymentMethod, useDeletePaymentMethod, useOrderTypes, useCreateOrderType, useDeleteOrderType } from '../../hooks/usePos';
+import type { POSOperationConfig } from '../../api/pos';
 
 export default function OperationConfigView() {
   const [activeTab, setActiveTab] = useState('rules');
@@ -24,11 +24,9 @@ export default function OperationConfigView() {
   const deleteTable = useDeleteDiningTable();
 
   const createPayment = useCreatePaymentMethod();
-  const updatePayment = useUpdatePaymentMethod();
   const deletePayment = useDeletePaymentMethod();
 
   const createOrderType = useCreateOrderType();
-  const updateOrderType = useUpdateOrderType();
   const deleteOrderType = useDeleteOrderType();
 
   const [formData, setFormData] = useState<Partial<POSOperationConfig> | null>(null);
@@ -151,7 +149,7 @@ export default function OperationConfigView() {
   const [draggingTableId, setDraggingTableId] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  const handleMouseDown = (e: React.MouseEvent, tableId: number, currentX: number, currentY: number) => {
+  const handleMouseDown = (e: React.MouseEvent, tableId: number, _currentX: number, _currentY: number) => {
     if ((e.target as HTMLElement).closest('button')) return;
     setDraggingTableId(tableId);
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -182,7 +180,7 @@ export default function OperationConfigView() {
     }
   }, [draggingTableId, dragOffset]);
 
-  const handleMouseUp = useCallback(async (e: MouseEvent) => {
+  const handleMouseUp = useCallback(async (_e: MouseEvent) => {
     if (draggingTableId !== null) {
       const currentId = draggingTableId;
       setDraggingTableId(null);

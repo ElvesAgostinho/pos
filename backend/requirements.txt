@@ -1,9 +1,23 @@
 asgiref==3.11.1
+cffi==2.1.0
+cryptography==49.0.0
 Django==6.0.7
 django-cors-headers==4.9.0
 django-filter==25.2
 djangorestframework==3.17.1
 djangorestframework_simplejwt==5.5.1
+pycparser==3.0
 PyJWT==2.13.0
 sqlparse==0.5.5
 tzdata==2026.2
+# --- Produção (opcional; instalar no servidor de produção) ---
+psycopg[binary]==3.2.3   # PostgreSQL
+waitress==3.0.2          # servidor WSGI (Windows) — alternativa: gunicorn (Linux)
+whitenoise==6.8.2        # servir estáticos
+
+# --- Escala (alta carga / muitos utilizadores) ---
+gunicorn==23.0.0         # servidor WSGI multi-worker (Linux)
+uvicorn[standard]==0.34.0 # workers ASGI (async) para gunicorn -k uvicorn.workers.UvicornWorker
+redis==5.2.1             # cache/sessões/rate-limit partilhados (escala horizontal)
+celery==5.4.0            # tarefas assíncronas (SAF-T, relatórios, emails, sync OTA)
+# Opcional: django-tenants (multi-tenant), opensearch-py (pesquisa à escala), sentry-sdk (observabilidade)

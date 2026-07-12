@@ -9,7 +9,58 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #f3f4f6; /* Enterprise light gray background */
-  color: #333333;
+  /* Tipo de letra clássico empresarial (Windows/Primavera), não SaaS. */
+  font-family: "Segoe UI", Tahoma, Verdana, Geneva, sans-serif;
+  background-color: #dfe3e8;
+  color: #222;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   POLISH EMPRESARIAL — aparência "pesada"/robusta (estilo Windows)
+   Aplica-se a TODOS os ecrãs via os controlos nativos e classes clássicas.
+   ============================================================ */
+
+/* Campos AFUNDADOS (inset/beveled) — o clássico "3D sunken" do Windows.
+   Não mexe no fundo (fica para as classes; preserva os inputs escuros do POS). */
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
+select, textarea {
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.16), inset -1px -1px 0 rgba(255,255,255,0.55);
+  border-color: #7d8a9c;
+}
+select { background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(0,0,0,0.03)); }
+
+/* Molduras/painéis com relevo clássico (borda dupla clara/escura). */
+.erp-bevel { border: 1px solid #9aa6b6; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #b9c2ce, 0 1px 2px rgba(0,0,0,0.12); }
+
+/* ---- Scrollbars sólidas (mais largas/pesadas) ---- */
+* { scrollbar-width: auto; scrollbar-color: #97a2b2 #dfe3e8; }
+::-webkit-scrollbar { width: 15px; height: 15px; }
+::-webkit-scrollbar-track { background: #dfe3e8; border-left: 1px solid #c2cad6; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to right, #c0c8d4, #a3adbd);
+  border: 2px solid #dfe3e8; border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(to right, #a3adbd, #8b95a6); }
+::-webkit-scrollbar-corner { background: #dfe3e8; }
+::-webkit-scrollbar-button { display: block; height: 15px; background: linear-gradient(#eef1f5, #cfd6df); border: 1px solid #b3bcc8; }
+
+/* ---- Polish empresarial: scrollbars sólidas, foco e seleção ---- */
+* { scrollbar-width: thin; scrollbar-color: #b0b8c4 #eef1f5; }
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: #eef1f5; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #c2cad6, #a7b0be);
+  border: 2px solid #eef1f5; border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover { background: #8c96a6; }
+::-webkit-scrollbar-corner { background: #eef1f5; }
+
+/* Foco visível e consistente nos campos (aspeto enterprise) */
+input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 2px rgba(30,63,102,0.35); }
+::selection { background: #1e3f66; color: #fff; }
+
+/* Impressão: esconde a moldura/menus, imprime só o conteúdo */
+@media print {
+  body { background: #fff; }
 }

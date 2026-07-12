@@ -1,5 +1,4 @@
-import React from 'react';
-import { FileText, Settings, Settings2 } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 interface StatusBarProps {
   openTabs?: string[];
@@ -39,7 +38,7 @@ export default function StatusBar({ openTabs = [], activeView = '', onSelectTab,
       {/* Right side: System info */}
       <div className="flex items-center flex-shrink-0">
         <span>
-          HOST 10.0.2506092 | PCC Engine v1.0 | Platform Control Center | Top Consultores | 
+          System Mwana Lodge PCC v1.0 | Platform Control Center |
         </span>
         <span className="ml-1 bg-white text-black px-1 font-bold">HQ</span>
       </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Settings, Key, CheckCircle, X, Shield, Monitor } from 'lucide-react';
+import { apiClient as axios } from '../api/client';
+import { Settings, Key, CheckCircle, X, Monitor } from 'lucide-react';
 
 const ClientsList: React.FC = () => {
   const [clients, setClients] = useState<any[]>([]);

@@ -5,21 +5,22 @@ from clm.models import Client, CommercialData, License, AuditLogCLM
 import uuid
 import json
 import base64
-import hmac
-import hashlib
 from django.conf import settings
+
+from licensing.engine.crypto import sign_license
 
 class ProvisioningWorkflow:
     def __init__(self, admin_user):
         self.admin_user = admin_user
 
-    def execute(self, client_data, commercial_data, modules, feature_flags):
+    def execute(self, client_data, commercial_data, modules, feature_flags, limits=None):
         """
         Executes the full provisioning workflow for a new client.
         1. Creates Client and CommercialData.
         2. Generates License Key (offline-capable).
         3. Returns the package to be installed locally.
         """
+        limits = limits or {}
         
         # 1. Create Client
         client = Client.objects.create(
@@ -47,7 +48,10 @@ class ProvisioningWorkflow:
             modules=modules,
             feature_flags=feature_flags,
             valid_until=(timezone.now() + timedelta(days=365)).date(),
-            is_offline=True
+            is_offline=True,
+            max_hotels=limits.get('hotels', 1),
+            max_pos=limits.get('pos', 1),
+            max_users=limits.get('users', 5),
         )
         
         # 4. Generate Cryptographic Signature for Offline Validation
@@ -67,11 +71,9 @@ class ProvisioningWorkflow:
             "license_key": self._generate_license_key_string(license_obj)
         }
 
-    def _generate_signature(self, license_obj):
-        """
-        Generates an HMAC-SHA256 signature using the SECRET_KEY to prevent tampering.
-        """
-        payload = {
+    def _license_payload(self, license_obj):
+        """Payload canónico da licença (sem assinatura). Fonte única para assinar e para exportar."""
+        return {
             "license_number": license_obj.license_number,
             "client_code": license_obj.client.code,
             "modules": license_obj.modules,
@@ -80,34 +82,20 @@ class ProvisioningWorkflow:
             "limits": {
                 "hotels": license_obj.max_hotels,
                 "pos": license_obj.max_pos,
-                "users": license_obj.max_users
-            }
+                "users": license_obj.max_users,
+            },
         }
-        
-        payload_str = json.dumps(payload, sort_keys=True)
-        secret = settings.SECRET_KEY.encode('utf-8')
-        signature = hmac.new(secret, payload_str.encode('utf-8'), hashlib.sha256).hexdigest()
-        
-        return signature
-        
+
+    def _generate_signature(self, license_obj):
+        """Assina o payload da licença com a CHAVE PRIVADA RSA (só disponível no PCC)."""
+        return sign_license(self._license_payload(license_obj))
+
     def _generate_license_key_string(self, license_obj):
         """
-        Generates a base64 encoded string containing the license data and signature.
-        This is what the client inputs into their local ERP to activate offline.
+        Gera a string base64 (license.key) com o payload + assinatura RSA.
+        É isto que o cliente cola no ERP local para ativar offline; a validade é
+        garantida pela chave pública, sem contacto com o servidor.
         """
-        data = {
-            "license_number": license_obj.license_number,
-            "client_code": license_obj.client.code,
-            "modules": license_obj.modules,
-            "feature_flags": license_obj.feature_flags,
-            "valid_until": license_obj.valid_until.isoformat() if license_obj.valid_until else None,
-            "limits": {
-                "hotels": license_obj.max_hotels,
-                "pos": license_obj.max_pos,
-                "users": license_obj.max_users
-            },
-            "signature": license_obj.signature
-        }
-        
-        json_str = json.dumps(data)
-        return base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
+        data = self._license_payload(license_obj)
+        data["signature"] = license_obj.signature
+        return base64.b64encode(json.dumps(data).encode('utf-8')).decode('utf-8')

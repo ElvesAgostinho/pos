@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Pencil, Trash2 } from 'lucide-react';
+import { apiClient as axios } from '../api/client';
+import { Pencil } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const [clients, setClients] = useState<any[]>([]);

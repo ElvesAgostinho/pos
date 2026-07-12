@@ -110,7 +110,13 @@ class License(models.Model):
 
     # Cryptographic signature to ensure validity when offline
     signature = models.TextField(blank=True, null=True)
-    
+
+    # Certificação AGT (gerida pelo fornecedor no PCC; entregue ao cliente).
+    agt_certificate_number = models.CharField(max_length=40, blank=True, null=True)
+    agt_public_key = models.TextField(blank=True, null=True)     # PEM (entregue ao cliente)
+    agt_private_key = models.TextField(blank=True, null=True)    # PEM (privado do fornecedor)
+    agt_issued_at = models.DateTimeField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
@@ -142,7 +148,7 @@ class Equipment(models.Model):
 class AuditLogCLM(models.Model):
     action = models.CharField(max_length=100) # CREATE_CLIENT, RENEW_LICENSE, SUSPEND_CLIENT
     details = models.JSONField(blank=True, null=True)
-    user_identity = models.CharField(max_length=255) # Quem fez (Top Consultores agent)
+    user_identity = models.CharField(max_length=255) # Quem fez (operador do PCC)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

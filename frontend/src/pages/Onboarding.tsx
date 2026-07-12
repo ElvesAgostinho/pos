@@ -105,8 +105,8 @@ const Onboarding: React.FC = () => {
           </div>
           
           <div className="text-[10px] text-gray-500">
-            Enterprise Asset Engine<br/>
-            Powered by Top Consultores
+            System Mwana Lodge<br/>
+            Enterprise Management Suite
           </div>
         </div>
 

@@ -40,6 +40,7 @@ class ProvisioningRequestSerializer(serializers.Serializer):
     commercial_data = serializers.DictField()
     modules = serializers.ListField(child=serializers.CharField())
     feature_flags = serializers.DictField(required=False)
+    limits = serializers.DictField(required=False)
 
 class TerminalLicenseSerializer(serializers.ModelSerializer):
     class Meta:

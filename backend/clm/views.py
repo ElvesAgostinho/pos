@@ -1,7 +1,30 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny # Update to IsAuthenticated for prod
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAdminUser, AllowAny  # Consola do fornecedor: apenas staff
+
+from core.modules import all_modules, FEATURES
+
+
+class ModuleCatalogView(APIView):
+    """
+    Catálogo canónico de módulos, consumido pela consola PCC (Wizard de licenças).
+    Fonte única definida em core/modules.py — garante que ativar um módulo aqui
+    corresponde exatamente à app que arranca no ERP do cliente.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        return Response(all_modules())
+
+
+class FeatureCatalogView(APIView):
+    """Catálogo de FUNCIONALIDADES (feature flags) para o PCC selecionar por licença."""
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        return Response(FEATURES)
 
 from .models import Client, License, Installation, AuditLogCLM, TerminalLicense
 from .serializers import (
@@ -13,7 +36,7 @@ from .engine.provisioning import ProvisioningWorkflow
 class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all().order_by('-created_at')
     serializer_class = ClientSerializer
-    permission_classes = [AllowAny] # In PCC, this will be protected by internal auth
+    permission_classes = [IsAdminUser]
     
     @action(detail=False, methods=['post'])
     def provision(self, request):
@@ -28,7 +51,8 @@ class ClientViewSet(viewsets.ModelViewSet):
                     client_data=serializer.validated_data['client_data'],
                     commercial_data=serializer.validated_data['commercial_data'],
                     modules=serializer.validated_data['modules'],
-                    feature_flags=serializer.validated_data.get('feature_flags', {})
+                    feature_flags=serializer.validated_data.get('feature_flags', {}),
+                    limits=serializer.validated_data.get('limits', {})
                 )
                 return Response(result, status=status.HTTP_201_CREATED)
             except Exception as e:
@@ -55,27 +79,29 @@ class ClientViewSet(viewsets.ModelViewSet):
 class LicenseViewSet(viewsets.ModelViewSet):
     queryset = License.objects.all().order_by('-created_at')
     serializer_class = LicenseSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
 
 class InstallationViewSet(viewsets.ModelViewSet):
     queryset = Installation.objects.all()
     serializer_class = InstallationSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
 
 class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AuditLogCLM.objects.all().order_by('-timestamp')
     serializer_class = AuditLogCLMSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
 
 class TerminalLicenseViewSet(viewsets.ModelViewSet):
     queryset = TerminalLicense.objects.all().order_by('-created_at')
     serializer_class = TerminalLicenseSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
     
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def activate(self, request):
         """
         Activates a terminal. Receives terminal_id, activation_key, and fingerprint.
+        Público: autenticado pela própria activation key (ativação de dispositivo no ERP,
+        antes de qualquer login de utilizador).
         """
         terminal_id = request.data.get('terminal_id')
         activation_key = request.data.get('activation_key')

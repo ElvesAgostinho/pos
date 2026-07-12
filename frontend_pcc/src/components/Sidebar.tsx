@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Minus, Plus, Database, Settings } from 'lucide-react';
+import { useState } from 'react';
 
 interface SidebarProps {
   activeView?: string;
@@ -13,6 +12,7 @@ export default function Sidebar({ activeView = 'dashboard', onSelectView }: Side
     { name: 'Dashboard PCC', id: 'dashboard' },
     { name: 'Gestão de Clientes', id: 'clients' },
     { name: 'Novo Provisionamento', id: 'provisioning' },
+    { name: 'Certificação AGT', id: 'agt' },
   ];
 
   const renderSection = (title: string, items: {name: string, id: string}[], isOpen: boolean, setOpen: (v: boolean) => void) => (

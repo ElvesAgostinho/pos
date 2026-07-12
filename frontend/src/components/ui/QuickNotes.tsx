@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Save, FileText } from 'lucide-react';
 
 interface QuickNotesProps {

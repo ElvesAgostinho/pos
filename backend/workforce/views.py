@@ -1,9 +1,10 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
@@ -43,10 +44,11 @@ class WorkforceViewSet(viewsets.ViewSet):
         ws = Workstation.objects.all()
         return Response(WorkstationSerializer(ws, many=True).data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def activate_license(self, request):
         """
         Activates a PCC TerminalLicense via Activation Key and creates a local Workstation.
+        Autenticado pela própria activation key (device onboarding, antes de qualquer login).
         """
         activation_key = request.data.get('activation_key')
         if not activation_key:
@@ -98,10 +100,20 @@ class WorkforceViewSet(viewsets.ViewSet):
         try:
             with transaction.atomic():
                 # 1. Colaborador
+                # Normaliza FKs vazias ('' -> None) e deriva o hotel do departamento
+                # quando não é enviado explicitamente (o wizard só escolhe departamento).
+                department_id = data.get('department_id') or None
+                hotel_id = data.get('hotel_id') or None
+                if not hotel_id and department_id:
+                    hotel_id = (
+                        Department.objects.filter(id=department_id)
+                        .values_list('hotel_id', flat=True)
+                        .first()
+                    )
+
                 collaborator = Collaborator.objects.create(
-                    hotel_id=data.get('hotel_id', 1),
-                    department_id=data.get('department_id'),
-                    shift_id=data.get('shift_id'),
+                    hotel_id=hotel_id,
+                    department_id=department_id,
                     name=data.get('name'),
                     code=data.get('code'),
                     email=data.get('email'),
@@ -109,22 +121,26 @@ class WorkforceViewSet(viewsets.ViewSet):
                 )
                 
                 # 2. Utilizador Backoffice (opcional)
+                # Aceita ambas as convenções de nomes (wizard usa 'erp_*').
+                create_user = data.get('create_user') or data.get('create_erp_account')
+                username = data.get('username') or data.get('erp_username')
+                password = data.get('password') or data.get('erp_password')
                 user = None
-                if data.get('create_user') and data.get('username') and data.get('password'):
+                if create_user and username and password:
                     user = User.objects.create_user(
-                        username=data.get('username'),
+                        username=username,
                         email=data.get('email'),
-                        password=data.get('password'),
+                        password=password,
                         first_name=collaborator.name
                     )
                 
-                # 3. Operador POS
+                # 3. Operador POS (só se houver PIN, para não criar operador sem login válido)
                 pos_operator = None
-                if data.get('create_pos_operator'):
+                if data.get('create_pos_operator') and data.get('pos_pin'):
                     pos_operator = PosOperator.objects.create(
                         collaborator=collaborator,
                         name=data.get('pos_name') or collaborator.name,
-                        pin_code=data.get('pos_pin')
+                        pin_code=make_password(data.get('pos_pin'))  # PIN sempre hasheado
                     )
                 
                 # 4. Atribuir Perfil (Role)

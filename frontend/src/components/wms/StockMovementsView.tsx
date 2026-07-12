@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicGrid from '../ui/ClassicGrid';
@@ -12,7 +12,7 @@ const fetchItems = async () => (await apiClient.get('mdm/items/')).data;
 const fetchUoms = async () => (await apiClient.get('mdm/uoms/')).data;
 
 export default function StockMovementsView() {
-  const { data: transactions, refetch } = useTransactions();
+  const { data: transactions } = useTransactions();
   const { data: locations } = useLocations();
   const { data: items } = useQuery({ queryKey: ['mdm_items'], queryFn: fetchItems });
   const { data: uoms } = useQuery({ queryKey: ['mdm_uoms'], queryFn: fetchUoms });

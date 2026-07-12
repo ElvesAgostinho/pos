@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Plus, Trash2, Edit2, Save } from 'lucide-react';
+import { Package, Plus, Trash2, Save } from 'lucide-react';
 import { useWarehouses, useCreateWarehouse, useUpdateWarehouse, useDeleteWarehouse } from '../../hooks/useWms';
 import type { WMSWarehouse } from '../../api/wms';
 import ClassicWindow from '../ui/ClassicWindow';
@@ -7,7 +7,7 @@ import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 
 export default function WarehousesView() {
-  const { data: warehouses, isLoading } = useWarehouses();
+  const { data: warehouses } = useWarehouses();
   const createWarehouse = useCreateWarehouse();
   const updateWarehouse = useUpdateWarehouse();
   const deleteWarehouse = useDeleteWarehouse();

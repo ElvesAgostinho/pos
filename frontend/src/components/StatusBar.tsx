@@ -1,5 +1,4 @@
-import React from 'react';
-import { FileText, Settings, Settings2 } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 interface StatusBarProps {
   openTabs?: string[];
@@ -39,9 +38,9 @@ export default function StatusBar({ openTabs = [], activeView = '', onSelectTab,
       {/* Right side: System info */}
       <div className="flex items-center flex-shrink-0">
         <span>
-          HOST 10.0.2506092 RGPD | Service Pack F:26/S:77 | Programa certificado nº 44/AGT/2019/AGT/2019 | Licenciado a Palmeiras Suite Hotel | 
+          System Mwana Lodge v1.0 | RGPD | Programa certificado nº 0000/AGT/2026 | Licenciado a System Mwana Lodge |
         </span>
-        <span className="ml-1 bg-white text-black px-1 font-bold">Pal</span>
+        <span className="ml-1 bg-white text-black px-1 font-bold">ML</span>
       </div>
     </div>
   );

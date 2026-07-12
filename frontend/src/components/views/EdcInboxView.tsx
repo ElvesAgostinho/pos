@@ -1,181 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
-import ClassicButton from '../ui/ClassicButton';
+import ClassicGrid from '../ui/ClassicGrid';
+import { Inbox, CheckCircle, FileText } from 'lucide-react';
+import { apiClient } from '../../api/client';
 
-// Types for EDC Inbox
-interface Document {
-    document_id: string;
-    title: string;
-    doc_type: string;
-    status: string;
-    version: number;
-    created_at: string;
-    author: {
-        username: string;
-        first_name: string;
-        last_name: string;
-    };
+interface Props { onClose?: () => void }
+
+/**
+ * Inbox Documental — "o que precisa da minha atenção agora":
+ * (1) tarefas/aprovações pendentes (Workflow) e (2) documentos recentes de todas as áreas.
+ * O arquivo completo e pesquisável está no Reporting Center.
+ */
+export default function EdcInboxView(_props: Props) {
+  const qc = useQueryClient();
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['inbox', 'tasks'],
+    queryFn: async () => (await apiClient.get('platform/workflow-tasks/', { params: { status: 'PENDING' } })).data,
+  });
+  const { data: docs } = useQuery({
+    queryKey: ['inbox', 'docs'],
+    queryFn: async () => (await apiClient.get('documents/center/', { params: { limit: 15 } })).data,
+  });
+  const complete = useMutation({
+    mutationFn: (id: number) => apiClient.patch(`platform/workflow-tasks/${id}/`, { status: 'DONE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['inbox'] }),
+  });
+
+  const recent = docs?.results ?? [];
+  const AREA: Record<string, string> = { FATURACAO: 'Faturação', POS: 'POS', PMS: 'PMS', COMPRAS: 'Compras', STOCK: 'Stock', TESOURARIA: 'Tesouraria', CONTABILIDADE: 'Contabilidade' };
+
+  return (
+    <ClassicWindow title="Inbox Documental — Pendentes & Recentes" icon={<Inbox size={14} className="text-gray-300" />}
+      footer={<div className="text-gray-600">{tasks.length} pendente(s) · {recent.length} documento(s) recente(s) · arquivo completo no Reporting Center</div>}>
+      <div className="flex flex-col h-full">
+        <div className="bg-[#eef4fb] border-b border-[#a0a0a0] px-3 py-1.5 text-[11px] text-gray-700">
+          Aqui aparece o que precisa da sua atenção: <b>tarefas/aprovações pendentes</b> e os <b>documentos mais recentes</b> de todas as áreas.
+        </div>
+        {/* Tarefas pendentes */}
+        <div className="border-b border-[#a0a0a0]">
+          <div className="bg-[#f0f0f0] px-3 py-1.5 text-[11px] font-bold flex items-center gap-1"><CheckCircle size={12} /> Tarefas / Aprovações pendentes</div>
+          <div className="max-h-52 overflow-auto">
+            <ClassicGrid rowKey="id" data={tasks} columns={[
+              { header: 'Tarefa', accessor: 'title', width: '34%' },
+              { header: 'Fluxo', accessor: (r: any) => r.flow_name || '—', width: '20%' },
+              { header: 'Responsável', accessor: (r: any) => r.assignee || '—', width: '18%' },
+              { header: 'Prioridade', accessor: (r: any) => <span className={r.priority === 'URGENT' ? 'text-red-600 font-bold' : r.priority === 'HIGH' ? 'text-amber-700' : ''}>{r.priority_display}</span>, width: '14%' },
+              { header: '', accessor: (r: any) => <button onClick={() => complete.mutate(r.id)} title="Concluir" className="text-green-700 hover:text-green-900 flex items-center gap-1 text-[11px]"><CheckCircle size={12} /> Concluir</button>, width: '14%' },
+            ]} />
+            {tasks.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3">Sem tarefas pendentes ✓</div>}
+          </div>
+        </div>
+        {/* Documentos recentes */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="bg-[#f0f0f0] px-3 py-1.5 text-[11px] font-bold flex items-center gap-1"><FileText size={12} /> Documentos recentes</div>
+          <div className="flex-1 overflow-auto">
+            <ClassicGrid rowKey="ref" data={recent.map((r: any, i: number) => ({ ...r, _k: i }))} columns={[
+              { header: 'Área', accessor: (r: any) => AREA[r.category] || r.category, width: '15%' },
+              { header: 'Tipo', accessor: 'doc_type', width: '22%' },
+              { header: 'Número', accessor: 'number', width: '18%' },
+              { header: 'Data', accessor: (r: any) => r.date || '—', width: '13%' },
+              { header: 'Entidade', accessor: (r: any) => r.party || '—', width: '20%' },
+              { header: 'Estado', accessor: 'status', width: '12%' },
+            ]} />
+          </div>
+        </div>
+      </div>
+    </ClassicWindow>
+  );
 }
-
-interface Workflow {
-    workflow_id: string;
-    status: string;
-    document: Document;
-}
-
-interface WorkflowTask {
-    task_id: string;
-    workflow: Workflow;
-    action_required: string;
-    status: string;
-    created_at: string;
-}
-
-interface EdcInboxViewProps {
-    onClose: () => void;
-}
-
-const EdcInboxView: React.FC<EdcInboxViewProps> = ({ onClose }) => {
-    const [tasks, setTasks] = useState<WorkflowTask[]>([]);
-    const [selectedTask, setSelectedTask] = useState<WorkflowTask | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    // Mock fetching tasks
-    useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                const response = await fetch('http://localhost:8001/api/edc/inbox/');
-                if (response.ok) {
-                    const data = await response.json();
-                    setTasks(data);
-                } else {
-                    console.error('Failed to fetch tasks');
-                }
-            } catch (error) {
-                console.error('Error fetching tasks:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchTasks();
-    }, []);
-
-    const handleAction = async (action: 'approve' | 'reject') => {
-        if (!selectedTask) return;
-
-        try {
-            const response = await fetch(`http://localhost:8001/api/edc/inbox/${selectedTask.task_id}/${action}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ comments: `Automated ${action} via UI` })
-            });
-
-            if (response.ok) {
-                // Remove from list
-                setTasks(tasks.filter(t => t.task_id !== selectedTask.task_id));
-                setSelectedTask(null);
-            } else {
-                alert(`Error: Could not ${action} document.`);
-            }
-        } catch (error) {
-            console.error(`Error during ${action}:`, error);
-        }
-    };
-
-    return (
-        <ClassicWindow 
-            title="Enterprise Document Center - Inbox" 
-            onClose={onClose}
-        >
-            <div style={{ display: 'flex', height: '100%', borderTop: '1px solid #fff', borderLeft: '1px solid #fff', borderRight: '1px solid #808080', borderBottom: '1px solid #808080' }}>
-                {/* Left Panel: Inbox List */}
-                <div style={{ flex: '0 0 40%', borderRight: '2px groove #fff', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ backgroundColor: '#000080', color: '#fff', padding: '2px 5px', fontWeight: 'bold' }}>
-                        Minhas Tarefas (Pendentes)
-                    </div>
-                    
-                    {loading ? (
-                        <div style={{ padding: '10px' }}>A carregar...</div>
-                    ) : tasks.length === 0 ? (
-                        <div style={{ padding: '10px' }}>Não existem documentos pendentes para aprovação.</div>
-                    ) : (
-                        <div style={{ overflowY: 'auto', flexGrow: 1 }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                                <thead>
-                                    <tr style={{ backgroundColor: '#c0c0c0', borderBottom: '1px solid #808080' }}>
-                                        <th style={{ textAlign: 'left', padding: '4px', borderRight: '1px solid #808080' }}>Documento</th>
-                                        <th style={{ textAlign: 'left', padding: '4px', borderRight: '1px solid #808080' }}>Tipo</th>
-                                        <th style={{ textAlign: 'left', padding: '4px' }}>Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {tasks.map((task) => (
-                                        <tr 
-                                            key={task.task_id}
-                                            onClick={() => setSelectedTask(task)}
-                                            style={{ 
-                                                cursor: 'pointer',
-                                                backgroundColor: selectedTask?.task_id === task.task_id ? '#000080' : 'transparent',
-                                                color: selectedTask?.task_id === task.task_id ? '#fff' : '#000'
-                                            }}
-                                        >
-                                            <td style={{ padding: '4px', borderBottom: '1px solid #eee' }}>{task.workflow.document.title}</td>
-                                            <td style={{ padding: '4px', borderBottom: '1px solid #eee' }}>{task.workflow.document.doc_type}</td>
-                                            <td style={{ padding: '4px', borderBottom: '1px solid #eee' }}>{new Date(task.created_at).toLocaleDateString()}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                {/* Right Panel: Document Preview & Actions */}
-                <div style={{ flex: '1', backgroundColor: '#e0dfdb', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ backgroundColor: '#000080', color: '#fff', padding: '2px 5px', fontWeight: 'bold' }}>
-                        Pré-visualização do Documento
-                    </div>
-                    
-                    {selectedTask ? (
-                        <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-                            <div style={{ marginBottom: '10px', backgroundColor: '#fff', border: '1px inset #fff', padding: '10px' }}>
-                                <h3 style={{ margin: '0 0 10px 0' }}>Detalhes do Workflow</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '5px', fontSize: '13px' }}>
-                                    <strong>Documento ID:</strong> <span>{selectedTask.workflow.document.document_id}</span>
-                                    <strong>Título:</strong> <span>{selectedTask.workflow.document.title}</span>
-                                    <strong>Autor:</strong> <span>{selectedTask.workflow.document.author?.first_name} {selectedTask.workflow.document.author?.last_name}</span>
-                                    <strong>Ação Requerida:</strong> <span>{selectedTask.action_required}</span>
-                                </div>
-                            </div>
-
-                            {/* Mock Document PDF Viewer */}
-                            <div style={{ flexGrow: 1, backgroundColor: '#808080', border: '2px inset #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                                [ PREVIEW PDF/IMAGEM RENDERIZADO AQUI ]
-                                <br />
-                                Ficheiro: {selectedTask.workflow.document.title} (v{selectedTask.workflow.document.version})
-                            </div>
-
-                            <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'flex-end', padding: '10px', borderTop: '2px groove #fff' }}>
-                                <ClassicButton onClick={() => handleAction('approve')} style={{ width: '120px', fontWeight: 'bold' }}>
-                                    Aprovar
-                                </ClassicButton>
-                                <ClassicButton onClick={() => handleAction('reject')} style={{ width: '120px' }}>
-                                    Rejeitar
-                                </ClassicButton>
-                            </div>
-                        </div>
-                    ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#808080' }}>
-                            Selecione um documento à esquerda para visualizar.
-                        </div>
-                    )}
-                </div>
-            </div>
-        </ClassicWindow>
-    );
-};
-
-export default EdcInboxView;

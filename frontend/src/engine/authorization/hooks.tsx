@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext } from 'react';
 import type { Action, AuthContext, Policy } from './types';
 import { authorize } from './evaluator';
 

@@ -16,6 +16,11 @@ class Profile(models.Model):
     icon = models.CharField(max_length=50, blank=True, null=True)
     priority = models.IntegerField(default=0)
     is_global = models.BooleanField(default=True)
+    # Acessos: se full_access, o perfil vê tudo; senão, só os módulos (centros) listados.
+    # O que não está autorizado é OCULTADO por completo na árvore (como se não existisse).
+    full_access = models.BooleanField(default=True)
+    allowed_modules = models.JSONField(default=list, blank=True)   # chaves de centros (ex: ['posmgmt','pms'])
+    allowed_screens = models.JSONField(default=list, blank=True)   # ids de ecrãs (opcional, controlo fino)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, related_name='eae_profiles')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
     notes = models.TextField(blank=True, null=True)

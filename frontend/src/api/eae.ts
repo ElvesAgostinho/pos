@@ -1,5 +1,4 @@
 import { apiClient } from './client';
-import type { Role, Policy } from '../engine/authorization/types';
 
 export interface EaeProfile {
   id: number;

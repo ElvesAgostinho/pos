@@ -28,6 +28,76 @@ class Hotel(models.Model):
     def __str__(self):
         return self.name
 
+class Building(models.Model):
+    """Bloco/torre/edifício de um hotel (estrutura física)."""
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='buildings')
+    code = models.CharField(max_length=20)
+    name = models.CharField(max_length=120)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'org_building'
+        unique_together = ('hotel', 'code')
+        ordering = ['hotel', 'code']
+
+    def __str__(self):
+        return f"{self.name} ({self.hotel.name})"
+
+
+class Floor(models.Model):
+    """Piso/ala de um edifício."""
+    building = models.ForeignKey(Building, on_delete=models.CASCADE, related_name='floors')
+    number = models.IntegerField(default=0)                 # 0 = R/C
+    name = models.CharField(max_length=80, blank=True, null=True)   # "Ala Nascente"
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'org_floor'
+        ordering = ['building', 'number']
+
+    def __str__(self):
+        return f"Piso {self.number} · {self.building.name}"
+
+
+class ProfitCenter(models.Model):
+    """Centro de lucro (dimensão de gestão) — agrupa receita por área de negócio."""
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='profit_centers')
+    code = models.CharField(max_length=20)
+    name = models.CharField(max_length=120)
+    manager = models.CharField(max_length=120, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'org_profit_center'
+        unique_together = ('hotel', 'code')
+        ordering = ['hotel', 'code']
+
+    def __str__(self):
+        return f"[{self.code}] {self.name}"
+
+
+class HotelResource(models.Model):
+    """Recurso/equipamento do hotel (ativo operacional: viaturas, AVAC, IT, mobiliário)."""
+    RES_TYPES = [('EQUIPMENT', 'Equipamento'), ('VEHICLE', 'Viatura'), ('IT', 'Informática'),
+                 ('FURNITURE', 'Mobiliário'), ('HVAC', 'AVAC/Climatização'), ('OTHER', 'Outro')]
+    STATUS = [('ACTIVE', 'Operacional'), ('MAINTENANCE', 'Em manutenção'), ('RETIRED', 'Abatido')]
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='resources')
+    code = models.CharField(max_length=30)
+    name = models.CharField(max_length=140)
+    resource_type = models.CharField(max_length=12, choices=RES_TYPES, default='EQUIPMENT')
+    location = models.CharField(max_length=120, blank=True, null=True)
+    status = models.CharField(max_length=12, choices=STATUS, default='ACTIVE')
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'org_resource'
+        ordering = ['hotel', 'name']
+
+    def __str__(self):
+        return f"[{self.code}] {self.name}"
+
+
 class Department(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='departments')
     name = models.CharField(max_length=255)

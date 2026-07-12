@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { apiClient as axios } from '../../api/client';
 import { Monitor, Key, ShieldCheck, CheckCircle, RefreshCcw } from 'lucide-react';
 
 interface OnboardingScreenProps {
@@ -104,7 +104,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSuccess }) => {
 
           <div className="mt-12 pt-6 border-t border-white/10 text-center">
             <p className="text-xs text-cyan-200/50">
-              Top Consultores &copy; 2026 - Gestão de Licenciamento Centralizada
+              System Mwana Lodge &copy; 2026 - Gestão de Licenciamento Centralizada
             </p>
           </div>
         </div>
