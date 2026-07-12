@@ -61,10 +61,10 @@ export const WORKSPACES: Workspace[] = [
     wallpaper: wp('#1f7a34', '#0a2a14'),
     licenseModule: 'posfront',
     icons: [
-      { label: 'Abrir Terminal POS', icon: 'terminal', launch: '/pos', quick: true },   // frontoffice em janela separada
-      { label: 'Vendas', icon: 'cart', screen: 'pfo_sales', quick: true },
-      { label: 'Clientes', icon: 'user', screen: 'md_customers', quick: true },
-      { label: 'Relatórios', icon: 'report', screen: 'rep_pos' },
+      // O POS é UM ecrã. Clicar aqui entra logo nele (ocupa a janela toda, com o
+      // seu próprio menu lateral) — sem shell, sem árvore, sem ribbon por cima.
+      { label: 'POS', icon: 'gear', screen: 'posc_config', quick: true },
+      { label: 'Abrir Terminal POS', icon: 'terminal', launch: '/pos', quick: true },   // frontoffice, janela separada
     ],
   },
 ];
@@ -164,17 +164,9 @@ export const MODULE_TREE: Record<string, TreeFolder[]> = {
   ],
 
   pos: [
-    // O MÓDULO POS É A CONFIGURAÇÃO POS. Os ecrãs soltos antigos (Outlets, Terminais,
-    // Operadores, Turnos, Impressoras, Product Config…) foram ELIMINADOS: tudo isso
-    // vive agora dentro da Configuração POS, num só sítio e com CRUD real.
-    { key: 'pos_config', title: 'Configuração POS', items: ['posc_config'] },
-    { key: 'pos_terminal', title: 'Terminal', items: ['pfo_terminal', 'pfo_sales'] },
-    { key: 'pos_promo', title: 'Promoções & Fidelização', items: ['com_dashboard', 'com_promotions', 'com_happyhour', 'com_combos', 'com_menus', 'com_discounts', 'com_giftcards', 'com_vouchers', 'com_loyalty', 'com_campaigns'] },
-    { key: 'pos_fiscal', title: 'Faturação & Fiscal', items: F_FISCAL },
-    { key: 'pos_clientes', title: 'Clientes', items: ['md_customers'] },
-    { key: 'pos_contab', title: 'Contabilidade', items: F_CONTAB },
-    { key: 'pos_relatorios', title: 'Relatórios & Documentos', items: ['rep_pos', 'rep_finance', ...F_DOCS] },
-    { key: 'pos_seguranca', title: 'Utilizadores & Segurança', items: F_SEGURANCA },
-    { key: 'pos_sistema', title: 'Sistema & Administração', items: F_SISTEMA },
+    // O MÓDULO POS É A CONFIGURAÇÃO POS — e mais nada.
+    // Não há árvore, não há pastas, não há ecrãs soltos: entrar no POS é entrar
+    // já no ecrã (que ocupa a janela toda e tem o seu próprio menu lateral).
+    { key: 'pos_config', title: 'POS', items: ['posc_config'] },
   ],
 };

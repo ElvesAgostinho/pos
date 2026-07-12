@@ -34,6 +34,7 @@ import KdsMonitorEditor from './KdsMonitorEditor';
 import CardTypeEditor from './CardTypeEditor';
 import MemberCardEditor from './MemberCardEditor';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
+import { irParaModulo } from '../../App';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -163,11 +164,47 @@ export default function PosConfigView({ onDesktop, onOpen }: {
     <div className="h-full flex flex-col" style={{ background: '#f0f0f0', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* ---------- BARRA DE MENUS (topo escuro) ---------- */}
       <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#2b2b2b', height: 56 }}>
-        <button onClick={onDesktop} title="Voltar ao Ambiente de Trabalho"
-          className="flex items-end gap-1 pr-5 mr-2 leading-none">
-          <span className="text-[30px] font-black tracking-tight"><span className="text-[#c9a400]">M</span><span className="text-white">L</span></span>
-          <span className="text-[10px] text-[#9a9a9a] pb-1">Mwana Lodge</span>
-        </button>
+        {/* ML — é aqui que se troca de módulo (como o logótipo do original). */}
+        <div className="relative pr-4 mr-2">
+          <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')}
+            title="Trocar de módulo"
+            className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+            <span className="text-[30px] font-black tracking-tight select-none"
+              style={{
+                // "3D": relevo por sombras, sem imagem nenhuma.
+                background: 'linear-gradient(180deg,#ffd75e 0%,#c9a400 55%,#8a6f00 100%)',
+                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+                textShadow: '0 1px 0 rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.55)',
+                filter: 'drop-shadow(0 2px 1px rgba(0,0,0,.6))',
+              }}>
+              ML
+            </span>
+            <span className="text-[10px] text-[#9a9a9a] pb-1">Mwana Lodge ▾</span>
+          </button>
+
+          {menu === '__ml' && (
+            <>
+              <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
+              <div className="absolute left-0 top-full z-[61] min-w-[230px] py-1 shadow-2xl"
+                style={{ background: '#2b2b2b', border: '1px solid #444' }}>
+                <div className="px-4 py-1.5 text-[10px] uppercase tracking-widest text-[#888]">Módulos</div>
+                {[['pms', 'PMS — Hotel', 'pms_dashboard'],
+                  ['restauracao', 'Restauração', 'hoc_dashboard']].map(([k, l, ecra]) => (
+                  <button key={k}
+                    onClick={() => irParaModulo(k, ecra)}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
+                    <span className="w-5 text-center opacity-80">📁</span>{l}
+                  </button>
+                ))}
+                <div className="my-1 border-t border-[#444]" />
+                <button onClick={() => { setMenu(null); onDesktop?.(); }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
+                  <span className="w-5 text-center opacity-80">🖥</span>Ambiente de Trabalho
+                </button>
+              </div>
+            </>
+          )}
+        </div>
         {MENUS.map((m) => (
           <div key={m.title} className="relative">
             <button onClick={() => setMenu(menu === m.title ? null : m.title)}
