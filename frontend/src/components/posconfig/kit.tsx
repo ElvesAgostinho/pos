@@ -71,7 +71,15 @@ export const SECTIONS = [
     { key: 'm_selcodes', label: 'Códigos de seleção' },
   ] },
   { key: 'events', title: 'Eventos', items: [
-    { key: 'e_events', label: 'Eventos & Banquetes' },
+    { key: 'e_params', label: 'Parâmetros' },
+    { key: 'e_states', label: 'Estado da Reserva' },
+    { key: 'e_addstates', label: 'Estado Adicional' },
+    { key: 'e_cancel', label: 'Motivos de Cancelamento' },
+    { key: 'e_types', label: 'Tipos de eventos/serviços' },
+    { key: 'e_spacetypes', label: 'Tipo de Espaço' },
+    { key: 'e_spaceavail', label: 'Disp. Espaço' },
+    { key: 'e_planning', label: 'Opções do Planning' },
+    { key: 'e_packages', label: 'Packages' },
   ] },
   { key: 'fnb', title: 'Gestão de F&B', items: [
     { key: 'g_outlets', label: 'Outlets' },

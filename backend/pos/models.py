@@ -1944,3 +1944,67 @@ class SelectionCode(models.Model):
 
     def __str__(self):
         return f'{self.group.code} · {self.name}'
+
+
+# ==========================================================================
+# EVENTOS
+# ==========================================================================
+class EventReservationState(models.Model):
+    """ESTADO DA RESERVA DE EVENTO — Opção, Lista de Espera, Confirmado, Cancelado…
+
+    A COR não é enfeite: é o que o comercial vê no planning. Um salão a azul está
+    reservado à experiência (Opção) e ainda se pode vender; a vermelho está perdido.
+    Sem cores, ninguém lê um planning com 40 salas.
+
+    O ESTADO EQUIVALENTE diz ao sistema como tratar um estado inventado pelo hotel:
+    "Pré-reserva do casamento" equivale a Opção — logo, não bloqueia o espaço.
+
+    Os estados de SISTEMA não se apagam: o motor de eventos precisa deles (um
+    cancelamento tem de continuar a poder ser cancelamento).
+    """
+    EQUIV = [('', 'Nenhum'), ('NORMAL', 'Normal'), ('OPTION', 'Opção'),
+             ('WAITLIST', 'Lista de Espera'), ('PENDING', 'Pendente'),
+             ('CANCELLED', 'Cancelamento'), ('NOSHOW', 'No-show'),
+             ('CHECKIN', 'Check-in'), ('CHECKOUT', 'Check-out')]
+
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=60)
+    equivalent = models.CharField(max_length=10, choices=EQUIV, blank=True, null=True)
+    text_key = models.CharField(max_length=40, blank=True, null=True)   # Chave do Texto
+    bg_color = models.CharField(max_length=20, default='#ffffff')
+    text_color = models.CharField(max_length=20, default='#333333')
+
+    is_system = models.BooleanField(default=False)        # do motor — não se apaga
+    is_auto_reservation = models.BooleanField(default=False)  # usado nas reservas automáticas
+    sort_order = models.PositiveIntegerField(default=0)
+    notes = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_reservation_state'
+        ordering = ['sort_order', 'code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+    @property
+    def blocks_space(self):
+        """Este estado TIRA o espaço do mercado? A Opção não tira (4078)."""
+        return self.equivalent in ('NORMAL', 'CHECKIN', 'PENDING')
+
+
+class EventAdditionalState(models.Model):
+    """ESTADO ADICIONAL — a etiqueta que se junta ao estado principal (Prioritário,
+    VIP, A aguardar sinal). Um evento pode estar Confirmado E Prioritário."""
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=60)
+    for_pms = models.BooleanField(default=True)
+    for_ems = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_additional_state'
+        ordering = ['code']
+
+    def __str__(self):
+        return self.name

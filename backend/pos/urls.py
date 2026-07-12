@@ -20,7 +20,8 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          CustomerTypeViewSet, CustomFieldViewSet, CardTypeViewSet,
                          MemberCardViewSet, LanguageViewSet, EmailTemplateViewSet,
                          AttachmentViewSet, VariableViewSet,
-                         SelectionCodeGroupViewSet, SelectionCodeViewSet)
+                         SelectionCodeGroupViewSet, SelectionCodeViewSet,
+                         EventStateViewSet, EventAddStateViewSet)
 
 router = DefaultRouter()
 router.register(r'config/modules', PosModuleViewSet, basename='pos-cfg-module')
@@ -60,6 +61,8 @@ router.register(r'config/attachments', AttachmentViewSet, basename='pos-cfg-atta
 router.register(r'config/variables', VariableViewSet, basename='pos-cfg-variable')
 router.register(r'config/selection-groups', SelectionCodeGroupViewSet, basename='pos-cfg-selgroup')
 router.register(r'config/selection-codes', SelectionCodeViewSet, basename='pos-cfg-selcode')
+router.register(r'config/event-states', EventStateViewSet, basename='pos-cfg-evstate')
+router.register(r'config/event-add-states', EventAddStateViewSet, basename='pos-cfg-evaddstate')
 router.register(r'outlets', OutletViewSet, basename='pos-outlet')
 router.register(r'product-configs', POSProductConfigViewSet, basename='pos-product-config')
 router.register(r'outlet-payment-methods', OutletPaymentMethodViewSet, basename='pos-outlet-payment')

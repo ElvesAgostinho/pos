@@ -1923,3 +1923,50 @@ class SelectionCodeViewSet(viewsets.ModelViewSet):
         qs = SelectionCode.objects.select_related('group')
         g = self.request.query_params.get('group')
         return qs.filter(group_id=g) if g else qs
+
+
+# ==========================================================================
+# EVENTOS — estados
+# ==========================================================================
+class EventStateSerializer(serializers.ModelSerializer):
+    equivalent_display = serializers.CharField(source='get_equivalent_display', read_only=True)
+    blocks_space = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        from .models import EventReservationState as _S
+        model = _S
+        fields = '__all__'
+
+
+class EventStateViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EventStateSerializer
+
+    def get_queryset(self):
+        from .models import EventReservationState
+        return EventReservationState.objects.all()
+
+    def destroy(self, request, *a, **kw):
+        # Um estado DE SISTEMA não se apaga: o motor de eventos precisa dele. Sem o
+        # "Cancelamento", um cancelamento deixava de poder ser cancelado.
+        obj = self.get_object()
+        if obj.is_system:
+            return Response({'detail': f'"{obj.name}" é um estado do sistema — não pode ser apagado. '
+                                       f'Desative-o se não o quiser usar.'}, status=409)
+        return super().destroy(request, *a, **kw)
+
+
+class EventAddStateSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import EventAdditionalState as _A
+        model = _A
+        fields = '__all__'
+
+
+class EventAddStateViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EventAddStateSerializer
+
+    def get_queryset(self):
+        from .models import EventAdditionalState
+        return EventAdditionalState.objects.all()

@@ -63,7 +63,8 @@ export default function Parameters({ group }: { group?: string } = {}) {
   };
 
   const shown = groups
-    .filter((g: any) => !group || g.group === group)
+    // 'Eventos' apanha também 'Eventos · Lançamentos' e 'Eventos · Reporting'.
+    .filter((g: any) => !group || g.group === group || g.group.startsWith(group + ' ·'))
     .map((g: any) => ({
       ...g,
       params: g.params.filter((p: any) =>

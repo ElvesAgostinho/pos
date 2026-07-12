@@ -35,6 +35,7 @@ import CardTypeEditor from './CardTypeEditor';
 import MemberCardEditor from './MemberCardEditor';
 import EmailTemplateEditor from './EmailTemplateEditor';
 import SelectionCodesSection from './SelectionCodesSection';
+import EventStateEditor from './EventStateEditor';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
 import { irParaModulo } from '../../App';
 
@@ -941,6 +942,41 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ]} />
           ) : section === 'm_selcodes' ? (
             <SelectionCodesSection />
+          ) : section === 'e_params' ? (
+            <Parameters group="Eventos" />
+          ) : section === 'e_states' ? (
+            <SimpleSection title="Estado da Reserva" queryKey="evstates" endpoint="pos/config/event-states/"
+              columns={[
+                { key: 'code', label: 'Código', width: '14%' },
+                { key: 'name', label: 'Descrição', width: '20%',
+                  render: (r: any) => (
+                    <span className="inline-block px-4 py-1 text-[12px] font-bold rounded-sm"
+                      style={{ background: r.bg_color, color: r.text_color }}>{r.name}</span>
+                  ) },
+                { key: 'equivalent_display', label: 'Estado equivalente', width: '16%' },
+                { key: 'blocks_space', label: 'Bloqueia o espaço', width: '12%', readOnlyCheck: true },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+                { key: 'is_system', label: 'Sistema', width: '10%', readOnlyCheck: true },
+                { key: 'is_auto_reservation', label: 'Reservas Automáticas', width: '14%', toggle: true },
+              ]}
+              fields={[]}
+              renderEditor={(row, close) => <EventStateEditor row={row} onClose={close} />} />
+          ) : section === 'e_addstates' ? (
+            <SimpleSection title="Estado Adicional" queryKey="evaddstates" endpoint="pos/config/event-add-states/"
+              columns={[
+                { key: 'code', label: 'Código', width: '24%' },
+                { key: 'name', label: 'Descrição', width: '46%' },
+                { key: 'for_pms', label: 'PMS', width: '10%', toggle: true },
+                { key: 'for_ems', label: 'Eventos', width: '10%', toggle: true },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'for_pms', label: 'PMS', type: 'checkbox' },
+                { key: 'for_ems', label: 'Eventos', type: 'checkbox' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
           ) : section === 'p_printers' ? (
             <SimpleSection title="Impressora" queryKey="printers" endpoint="inventory/pos/printers/"
               columns={[
