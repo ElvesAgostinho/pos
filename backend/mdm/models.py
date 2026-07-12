@@ -238,9 +238,29 @@ class Bank(models.Model):
 
 
 class Language(models.Model):
-    code = models.CharField(max_length=10, unique=True)         # pt-PT, en
+    """LÍNGUA — e o CÓDIGO DE CULTURA, que é o que manda a sério.
+
+    "Português" não chega: pt-PT e pt-BR escrevem as datas e os números de maneira
+    diferente. É o código de cultura que decide como sai "13 de julho de 2026" e
+    se o milhar leva ponto ou vírgula numa fatura.
+
+    A língua por omissão é a do sistema; a de mailing é a dos e-mails ao hóspede
+    quando não se sabe a língua dele.
+    """
+    code = models.CharField(max_length=10, unique=True)         # POR, ENG, FRA
     name = models.CharField(max_length=60)
+    culture_code = models.CharField(max_length=10, blank=True, null=True)   # pt-PT, en-US
+    is_default = models.BooleanField(default=False)
+    is_mailing_default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        # Só pode haver UMA por omissão de cada tipo — senão o sistema não sabe qual usar.
+        if self.is_default:
+            Language.objects.exclude(pk=self.pk).update(is_default=False)
+        if self.is_mailing_default:
+            Language.objects.exclude(pk=self.pk).update(is_mailing_default=False)
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'mdm_language'

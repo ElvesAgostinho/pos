@@ -16,7 +16,9 @@ const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
  *
  * O NÚMERO é a referência estável — é por ele que o suporte fala consigo.
  */
-export default function Parameters() {
+export default function Parameters({ group }: { group?: string } = {}) {
+  // `group` filtra o catálogo: o ecrã de Marketing só mostra os parâmetros de
+  // Marketing, em vez de despejar os 87 do sistema todo.
   const qc = useQueryClient();
   const [q, setQ] = useState('');
   const [vals, setVals] = useState<Record<number, any>>({});
@@ -61,6 +63,7 @@ export default function Parameters() {
   };
 
   const shown = groups
+    .filter((g: any) => !group || g.group === group)
     .map((g: any) => ({
       ...g,
       params: g.params.filter((p: any) =>

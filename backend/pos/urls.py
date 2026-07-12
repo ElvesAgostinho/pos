@@ -18,7 +18,9 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          StockErpLinkViewSet, UomViewSet, HappyHourViewSet, VoidReasonViewSet,
                          PosHardwareViewSet, KdsMonitorViewSet, SmartCashViewSet,
                          CustomerTypeViewSet, CustomFieldViewSet, CardTypeViewSet,
-                         MemberCardViewSet)
+                         MemberCardViewSet, LanguageViewSet, EmailTemplateViewSet,
+                         AttachmentViewSet, VariableViewSet,
+                         SelectionCodeGroupViewSet, SelectionCodeViewSet)
 
 router = DefaultRouter()
 router.register(r'config/modules', PosModuleViewSet, basename='pos-cfg-module')
@@ -52,6 +54,12 @@ router.register(r'config/customer-types', CustomerTypeViewSet, basename='pos-cfg
 router.register(r'config/custom-fields', CustomFieldViewSet, basename='pos-cfg-customfield')
 router.register(r'config/card-types', CardTypeViewSet, basename='pos-cfg-cardtype')
 router.register(r'config/member-cards', MemberCardViewSet, basename='pos-cfg-membercard')
+router.register(r'config/languages', LanguageViewSet, basename='pos-cfg-language')
+router.register(r'config/email-templates', EmailTemplateViewSet, basename='pos-cfg-emailtpl')
+router.register(r'config/attachments', AttachmentViewSet, basename='pos-cfg-attachment')
+router.register(r'config/variables', VariableViewSet, basename='pos-cfg-variable')
+router.register(r'config/selection-groups', SelectionCodeGroupViewSet, basename='pos-cfg-selgroup')
+router.register(r'config/selection-codes', SelectionCodeViewSet, basename='pos-cfg-selcode')
 router.register(r'outlets', OutletViewSet, basename='pos-outlet')
 router.register(r'product-configs', POSProductConfigViewSet, basename='pos-product-config')
 router.register(r'outlet-payment-methods', OutletPaymentMethodViewSet, basename='pos-outlet-payment')

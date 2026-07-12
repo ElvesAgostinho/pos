@@ -1765,3 +1765,182 @@ class MemberCardDiscount(models.Model):
 
     class Meta:
         db_table = 'pos_member_card_discount'
+
+
+# ==========================================================================
+# MARKETING — modelos de e-mail, anexos, variáveis e códigos de seleção
+# ==========================================================================
+class EmailTemplate(models.Model):
+    """MODELO DE E-MAIL — a mensagem que o hotel envia sozinho.
+
+    Confirmação de reserva, cancelamento, fatura, pedido do e-menu. Cada uma tem
+    uma FONTE DE DADOS (de onde saem as variáveis: Reservas, Faturas, Pedidos) e um
+    texto POR LÍNGUA — o hóspede alemão recebe em alemão.
+
+    Um SUB-MODELO não se envia sozinho: é um pedaço (a assinatura, a lista de extras)
+    que os outros modelos incluem. Sem isto, a assinatura do hotel estava copiada em
+    quinze modelos e mudar o telefone obrigava a mexer nos quinze.
+    """
+    SOURCES = [
+        ('Reservations', 'Reservas'), ('Invoices', 'Faturas'), ('FixedCharges', 'Encargos'),
+        ('HotelInfo', 'Dados do Hotel'), ('EMenuOrders', 'Pedidos e-Menu'),
+        ('Events', 'Eventos'), ('PosTickets', 'Contas POS'),
+    ]
+    RES_STATES = [('', '—'), ('NORMAL', 'Normal'), ('PENDING', 'Pendente'),
+                  ('CONFIRMED', 'Confirmada'), ('CANCELLED', 'Cancelada')]
+
+    code = models.CharField(max_length=40, unique=True)
+    name = models.CharField(max_length=200)
+    is_sms = models.BooleanField(default=False)
+    sms_pair = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='sms_of')   # SMS enviado ao mesmo tempo
+
+    sender = models.CharField(max_length=200, blank=True, null=True)      # Remetente
+    send_to = models.CharField(max_length=200, blank=True, null=True)     # @Model[0].GuestEmail
+    cc = models.CharField(max_length=200, blank=True, null=True)
+    bcc = models.CharField(max_length=200, blank=True, null=True)
+
+    reservation_state = models.CharField(max_length=12, choices=RES_STATES, blank=True, null=True)
+    section = models.CharField(max_length=60, blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    booking_priority = models.BooleanField(default=False)   # prioritário para o Booking Engine
+
+    data_source = models.CharField(max_length=20, choices=SOURCES, default='Reservations')
+    is_sub_template = models.BooleanField(default=False)    # Sub-Modelo
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'mkt_email_template'
+        ordering = ['sort_order', 'code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+    def missing_translations(self):
+        """Línguas ativas em que este modelo AINDA NÃO tem texto.
+
+        É a coluna vermelha da grelha: um hóspede francês receberia o e-mail em
+        inglês (ou nada) e ninguém dava por isso até ele reclamar.
+        """
+        from mdm.models import Language
+        tem = set(self.texts.values_list('culture', flat=True))
+        todas = Language.objects.filter(is_active=True).exclude(culture_code='').values_list('culture_code', flat=True)
+        return [c for c in todas if c and c not in tem]
+
+
+class EmailTemplateText(models.Model):
+    """O texto do modelo NUMA língua."""
+    template = models.ForeignKey(EmailTemplate, on_delete=models.CASCADE, related_name='texts')
+    culture = models.CharField(max_length=10)          # pt-PT, en-US, fr-FR
+    subject = models.CharField(max_length=300, blank=True, null=True)
+    body = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'mkt_email_text'
+        unique_together = ('template', 'culture')
+
+
+class TemplateAttachment(models.Model):
+    """ANEXO — o que vai agarrado ao e-mail: um ficheiro (as condições gerais em Word)
+    ou um RELATÓRIO gerado pelo sistema (o orçamento do evento, em PDF, com os dados
+    daquele cliente)."""
+    CONTEXTS = [('Events', 'Eventos'), ('Reservations', 'Reservas'),
+                ('Invoices', 'Faturas'), ('Pos', 'POS')]
+
+    name = models.CharField(max_length=200)
+    culture = models.CharField(max_length=10, default='pt-PT')
+    context = models.CharField(max_length=20, choices=CONTEXTS, default='Events')
+    sort_order = models.PositiveIntegerField(default=100)
+
+    file_url = models.CharField(max_length=300, blank=True, null=True)
+    file_name = models.CharField(max_length=200, blank=True, null=True)
+
+    is_report = models.BooleanField(default=False)      # Relatório (gerado pelo sistema)
+    report_path = models.CharField(max_length=200, blank=True, null=True)   # /Reports/Quote
+    detailed = models.BooleanField(default=False)
+    report_criteria = models.CharField(max_length=300, blank=True, null=True)
+
+    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'mkt_attachment'
+        ordering = ['sort_order']
+
+    def __str__(self):
+        return self.name
+
+
+class TemplateVariable(models.Model):
+    """VARIÁVEL — o pedaço de dados que entra no e-mail (@Model[0].HotelAddress1).
+
+    Cada variável sabe ONDE ir buscar o valor. Aqui é uma consulta parametrizada e
+    SÓ DE LEITURA: o `query` é validado — nada que altere ou apague dados passa.
+    Sem essa trava, um modelo de e-mail podia apagar a base de dados.
+    """
+    CONTEXTS = [('Reservations', 'Reservas'), ('Events', 'Eventos'),
+                ('Invoices', 'Faturas'), ('Pos', 'POS')]
+
+    context = models.CharField(max_length=20, choices=CONTEXTS, default='Reservations')
+    culture = models.CharField(max_length=10, default='pt-PT')
+    field = models.CharField(max_length=80)                 # HO_HotelAddress1
+    name = models.CharField(max_length=140)                 # Address - 1st Line
+    group = models.CharField(max_length=60, blank=True, null=True)         # HOTEL
+    group_name = models.CharField(max_length=100, blank=True, null=True)   # Hotel Details
+    subgroup = models.CharField(max_length=60, blank=True, null=True)      # HO_CONTACT
+    subgroup_name = models.CharField(max_length=100, blank=True, null=True)  # Contacts
+
+    query = models.TextField(blank=True, null=True)
+    date_format = models.CharField(max_length=40, blank=True, null=True)
+
+    is_table = models.BooleanField(default=False)
+    table_style = models.CharField(max_length=200, blank=True, null=True)
+    header_style = models.CharField(max_length=200, blank=True, null=True)
+    text_before = models.CharField(max_length=200, blank=True, null=True)
+    text_style = models.CharField(max_length=200, blank=True, null=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'mkt_variable'
+        ordering = ['group', 'subgroup', 'name']
+        unique_together = ('context', 'culture', 'field')
+
+    def __str__(self):
+        return f'{self.field} · {self.name}'
+
+
+class SelectionCodeGroup(models.Model):
+    """GRUPO DE CÓDIGOS DE SELEÇÃO — as gavetas do marketing (Interesses, Origem,
+    Motivo da viagem). É o que permite dizer "manda a newsletter do spa só a quem
+    marcou 'Bem-estar'"."""
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=40, unique=True)
+    name = models.CharField(max_length=140)
+    translations = models.JSONField(default=dict, blank=True)   # {'en-US': 'Interests'}
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'mkt_selcode_group'
+        ordering = ['number', 'code']
+
+    def __str__(self):
+        return self.name
+
+
+class SelectionCode(models.Model):
+    """O código dentro da gaveta: Interesses → Golfe, Spa, Negócios."""
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=40)
+    name = models.CharField(max_length=140)
+    group = models.ForeignKey(SelectionCodeGroup, on_delete=models.CASCADE, related_name='codes')
+    translations = models.JSONField(default=dict, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'mkt_selcode'
+        ordering = ['group', 'number', 'code']
+        unique_together = ('group', 'code')
+
+    def __str__(self):
+        return f'{self.group.code} · {self.name}'

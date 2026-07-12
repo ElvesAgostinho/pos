@@ -33,6 +33,8 @@ import PrinterSection from './PrinterSection';
 import KdsMonitorEditor from './KdsMonitorEditor';
 import CardTypeEditor from './CardTypeEditor';
 import MemberCardEditor from './MemberCardEditor';
+import EmailTemplateEditor from './EmailTemplateEditor';
+import SelectionCodesSection from './SelectionCodesSection';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
 import { irParaModulo } from '../../App';
 
@@ -822,6 +824,123 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ]}
               fields={[]}
               renderEditor={(row, close) => <MemberCardEditor row={row} onClose={close} />} />
+          ) : section === 'm_params' ? (
+            <Parameters group="Marketing" />
+          ) : section === 'm_languages' ? (
+            <SimpleSection title="Língua" queryKey="languages" endpoint="pos/config/languages/"
+              columns={[
+                { key: 'code', label: 'Código', width: '14%' },
+                { key: 'name', label: 'Descrição', width: '24%' },
+                { key: 'culture_code', label: 'Código de Cultura', width: '20%' },
+                { key: 'is_default', label: 'Língua (Por omissão)', width: '16%', toggle: true },
+                { key: 'is_mailing_default', label: 'Língua mailing (Por omissão)', width: '18%', toggle: true },
+                { key: 'is_active', label: 'Ativo', width: '8%', toggle: true },
+              ]}
+              fields={[
+                { key: 'code', label: 'Código:', required: true, width: 'w-[200px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[440px]' },
+                { key: 'culture_code', label: 'Código de Cultura:', required: true, width: 'w-[200px]',
+                  help: 'pt-PT, en-US, fr-FR — é ele que decide como saem as datas e os números.' },
+                { key: 'is_default', label: 'Língua por omissão', type: 'checkbox' },
+                { key: 'is_mailing_default', label: 'Língua de mailing por omissão', type: 'checkbox' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'm_templates' ? (
+            <SimpleSection title="Modelo de E-mail" queryKey="emailtpl" endpoint="pos/config/email-templates/"
+              columns={[
+                { key: 'code', label: 'Código', width: '18%' },
+                { key: 'name', label: 'Descrição', width: '30%' },
+                { key: 'source_display', label: 'Fonte de dados', width: '16%' },
+                { key: 'is_sub_template', label: 'Sub-Modelo', width: '10%', toggle: true },
+                { key: 'is_active', label: 'Ativo', width: '8%', toggle: true },
+                { key: 'missing', label: 'Tradução em falta', width: '18%',
+                  render: (r: any) => r.missing
+                    ? <span className="text-[#c0392b] font-bold">{r.missing}</span>
+                    : <span className="text-[#999]">—</span> },
+              ]}
+              fields={[]}
+              renderEditor={(row, close) => <EmailTemplateEditor row={row} onClose={close} />} />
+          ) : section === 'm_attachments' ? (
+            <SimpleSection title="Anexo" queryKey="attachments" endpoint="pos/config/attachments/"
+              columns={[
+                { key: 'is_active', label: 'Ativo', width: '7%', toggle: true },
+                { key: 'sort_order', label: 'Ordem', width: '8%' },
+                { key: 'context_display', label: 'Contexto', width: '12%' },
+                { key: 'name', label: 'Descrição', width: '25%' },
+                { key: 'file_name', label: 'Nome do ficheiro', width: '20%' },
+                { key: 'report_path', label: 'Relatório', width: '18%' },
+                { key: 'culture', label: 'Código de Cultura', width: '10%' },
+              ]}
+              fields={[
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[560px]' },
+                { key: 'culture', label: 'Código de Cultura:', required: true, width: 'w-[200px]' },
+                { key: 'context', label: 'Contexto:', type: 'select', required: true, width: 'w-[240px]',
+                  options: [
+                    { value: 'Events', label: 'Eventos' }, { value: 'Reservations', label: 'Reservas' },
+                    { value: 'Invoices', label: 'Faturas' }, { value: 'Pos', label: 'POS' },
+                  ] },
+                { key: 'sort_order', label: 'Ordem:', type: 'number', width: 'w-[140px]' },
+                { key: 'file_url', label: 'Ficheiro (URL):', width: 'w-[560px]',
+                  help: 'Um ficheiro fixo — ex.: as condições gerais em Word.' },
+                { key: 'file_name', label: 'Nome do ficheiro:', width: 'w-[440px]' },
+                { key: 'is_report', label: 'Relatório', type: 'checkbox',
+                  help: 'Gerado pelo sistema com os dados daquele cliente.' },
+                { key: 'report_path', label: 'Localização:', width: 'w-[440px]', help: '/Reports/Quote' },
+                { key: 'detailed', label: 'Detalhado', type: 'checkbox' },
+                { key: 'report_criteria', label: 'Critérios do relatório:', width: 'w-[560px]',
+                  help: 'Entity=guestid,Events=eventid,Detailed=detailed' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'm_variables' ? (
+            <SimpleSection title="Variável" queryKey="variables" endpoint="pos/config/variables/"
+              columns={[
+                { key: 'name', label: 'Descrição', width: '22%' },
+                { key: 'field', label: 'Campo', width: '18%' },
+                { key: 'culture', label: 'Código de Cultura', width: '12%' },
+                { key: 'context_display', label: 'Contexto', width: '14%' },
+                { key: 'group_name', label: 'Grupo', width: '14%' },
+                { key: 'subgroup_name', label: 'Sub Grupo', width: '12%' },
+                { key: 'is_table', label: 'Tabela', width: '8%', toggle: true },
+              ]}
+              fields={[
+                { key: 'context', label: 'Contexto:', type: 'select', required: true, width: 'w-[240px]',
+                  options: [
+                    { value: 'Reservations', label: 'Reservas' }, { value: 'Events', label: 'Eventos' },
+                    { value: 'Invoices', label: 'Faturas' }, { value: 'Pos', label: 'POS' },
+                  ] },
+                { key: 'culture', label: 'Código de Cultura:', required: true, width: 'w-[200px]' },
+                { key: 'field', label: 'Campo:', required: true, width: 'w-[360px]', help: 'HO_HotelAddress1' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[560px]' },
+                { key: 'group', label: 'Grupo:', width: 'w-[240px]' },
+                { key: 'group_name', label: 'Grupo (descrição):', width: 'w-[360px]' },
+                { key: 'subgroup', label: 'Sub Grupo:', width: 'w-[240px]' },
+                { key: 'subgroup_name', label: 'Sub Grupo (descrição):', width: 'w-[360px]' },
+                { key: 'query', label: 'Query:', type: 'textarea', width: 'w-[720px]',
+                  help: 'Só SELECT — o servidor recusa tudo o que escreva ou apague dados.' },
+                { key: 'date_format', label: 'Formato Data:', width: 'w-[240px]', help: 'ex: ddd dd MMM yyyy' },
+                { key: 'is_table', label: 'Tabela', type: 'checkbox' },
+                { key: 'table_style', label: 'Tabela - Estilo:', width: 'w-[560px]',
+                  help: 'font=Arial; fontsize=10; fontcolor=black; bold=true' },
+                { key: 'header_style', label: 'Cabeçalho - Estilo:', width: 'w-[560px]' },
+                { key: 'text_before', label: 'Texto - Antes:', width: 'w-[560px]' },
+                { key: 'text_style', label: 'Texto - Estilo:', width: 'w-[560px]' },
+              ]} />
+          ) : section === 'm_selgroups' ? (
+            <SimpleSection title="Grupo de Códigos" queryKey="selgroups" endpoint="pos/config/selection-groups/"
+              columns={[
+                { key: 'number', label: 'Nr', width: '10%' },
+                { key: 'code', label: 'Código', width: '30%' },
+                { key: 'name', label: 'Descrição', width: '50%' },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[
+                { key: 'number', label: 'Nr:', type: 'number', width: 'w-[140px]' },
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'm_selcodes' ? (
+            <SelectionCodesSection />
           ) : section === 'p_printers' ? (
             <SimpleSection title="Impressora" queryKey="printers" endpoint="inventory/pos/printers/"
               columns={[

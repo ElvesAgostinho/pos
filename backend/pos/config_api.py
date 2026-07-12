@@ -1715,3 +1715,211 @@ class MemberCardViewSet(viewsets.ModelViewSet):
             'in_package': incluido, 'discount_percent': str(desc),
             'happy_hour_now': happy, 'detail': porque,
         })
+
+
+# ==========================================================================
+# MARKETING
+# ==========================================================================
+class LanguageSerializer(serializers.ModelSerializer):
+    class Meta:
+        from mdm.models import Language as _L
+        model = _L
+        fields = ('id', 'code', 'name', 'culture_code', 'is_default',
+                  'is_mailing_default', 'is_active')
+
+
+class LanguageViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LanguageSerializer
+
+    def get_queryset(self):
+        from mdm.models import Language
+        return Language.objects.all()
+
+
+class EmailTextSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import EmailTemplateText as _T
+        model = _T
+        fields = ('id', 'culture', 'subject', 'body')
+
+
+class EmailTemplateSerializer(serializers.ModelSerializer):
+    texts = EmailTextSerializer(many=True, required=False)
+    source_display = serializers.CharField(source='get_data_source_display', read_only=True)
+    missing = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import EmailTemplate as _E
+        model = _E
+        fields = '__all__'
+
+    def get_missing(self, o):
+        return ', '.join(o.missing_translations())
+
+    def _sync(self, obj, textos):
+        from .models import EmailTemplateText
+        if textos is None:
+            return
+        obj.texts.all().delete()
+        for t in textos:
+            t.pop('template', None)
+            EmailTemplateText.objects.create(template=obj, **t)
+
+    def create(self, validated):
+        from .models import EmailTemplate
+        ts = validated.pop('texts', [])
+        obj = EmailTemplate.objects.create(**validated)
+        self._sync(obj, ts)
+        return obj
+
+    def update(self, instance, validated):
+        ts = validated.pop('texts', None)
+        for k, v in validated.items():
+            setattr(instance, k, v)
+        instance.save()
+        self._sync(instance, ts)
+        return instance
+
+
+class EmailTemplateViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EmailTemplateSerializer
+
+    def get_queryset(self):
+        from .models import EmailTemplate
+        return EmailTemplate.objects.prefetch_related('texts')
+
+    @action(detail=True, methods=['post'])
+    def preview(self, request, pk=None):
+        """PRÉ-VISUALIZAR — mostra o e-mail com as variáveis substituídas.
+
+        As variáveis por preencher aparecem marcadas: é assim que se apanha o
+        @Model[0].GuestNam (com um 'e' a menos) ANTES de o hóspede o receber.
+        """
+        import re
+        from .models import TemplateVariable
+        t = self.get_object()
+        cultura = request.data.get('culture') or 'pt-PT'
+        texto = t.texts.filter(culture=cultura).first()
+        if not texto:
+            return Response({'detail': f'Este modelo não tem texto em {cultura}.'}, status=400)
+
+        conhecidas = set(TemplateVariable.objects.values_list('field', flat=True))
+        exemplo = {
+            'HotelName': 'Mwana Lodge', 'GuestName': 'Ana Salvador',
+            'ReservationNumber': 'RES-2026-0042', 'HotelNameWebsite': 'Mwana Lodge',
+            'GuestEmail': 'ana@exemplo.ao', 'CheckIn': '20-07-2026', 'CheckOut': '24-07-2026',
+        }
+        desconhecidas = []
+
+        def troca(m):
+            campo = m.group(1)
+            if campo in exemplo:
+                return exemplo[campo]
+            if campo in conhecidas:
+                return f'«{campo}»'
+            desconhecidas.append(campo)
+            return f'⚠{campo}⚠'
+
+        padrao = re.compile(r'@Model\[\d+\]\.(\w+)')
+        assunto = padrao.sub(troca, texto.subject or '')
+        corpo = padrao.sub(troca, texto.body or '')
+        return Response({
+            'subject': assunto, 'body': corpo,
+            'unknown': sorted(set(desconhecidas)),
+            'detail': ('Há variáveis que o sistema não conhece: ' + ', '.join(sorted(set(desconhecidas))))
+                      if desconhecidas else 'Todas as variáveis são válidas.',
+        })
+
+
+class AttachmentSerializer(serializers.ModelSerializer):
+    context_display = serializers.CharField(source='get_context_display', read_only=True)
+
+    class Meta:
+        from .models import TemplateAttachment as _A
+        model = _A
+        fields = '__all__'
+
+
+class AttachmentViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AttachmentSerializer
+
+    def get_queryset(self):
+        from .models import TemplateAttachment
+        return TemplateAttachment.objects.all()
+
+
+class VariableSerializer(serializers.ModelSerializer):
+    context_display = serializers.CharField(source='get_context_display', read_only=True)
+
+    class Meta:
+        from .models import TemplateVariable as _V
+        model = _V
+        fields = '__all__'
+
+    def validate_query(self, v):
+        """SÓ LEITURA. Uma variável de e-mail que pudesse escrever na base de dados
+        era uma porta aberta: bastava alguém pôr um DELETE aqui e o modelo,
+        ao ser enviado, apagava os dados."""
+        if not v:
+            return v
+        proibidas = ('insert', 'update', 'delete', 'drop', 'alter', 'truncate',
+                     'create', 'grant', 'exec', 'attach', ';--')
+        baixo = v.lower()
+        if not baixo.strip().startswith('select'):
+            raise serializers.ValidationError('A consulta tem de começar por SELECT — as variáveis só LEEM dados.')
+        for p in proibidas:
+            if p in baixo:
+                raise serializers.ValidationError(f'Palavra proibida na consulta: "{p}". As variáveis só LEEM dados.')
+        return v
+
+
+class VariableViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = VariableSerializer
+
+    def get_queryset(self):
+        from .models import TemplateVariable
+        qs = TemplateVariable.objects.all()
+        ctx = self.request.query_params.get('context')
+        return qs.filter(context=ctx) if ctx else qs
+
+
+class SelectionCodeSerializer(serializers.ModelSerializer):
+    group_name = serializers.CharField(source='group.name', read_only=True)
+
+    class Meta:
+        from .models import SelectionCode as _C
+        model = _C
+        fields = '__all__'
+
+
+class SelectionCodeGroupSerializer(serializers.ModelSerializer):
+    codes = SelectionCodeSerializer(many=True, read_only=True)
+
+    class Meta:
+        from .models import SelectionCodeGroup as _G
+        model = _G
+        fields = '__all__'
+
+
+class SelectionCodeGroupViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SelectionCodeGroupSerializer
+
+    def get_queryset(self):
+        from .models import SelectionCodeGroup
+        return SelectionCodeGroup.objects.prefetch_related('codes')
+
+
+class SelectionCodeViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SelectionCodeSerializer
+
+    def get_queryset(self):
+        from .models import SelectionCode
+        qs = SelectionCode.objects.select_related('group')
+        g = self.request.query_params.get('group')
+        return qs.filter(group_id=g) if g else qs

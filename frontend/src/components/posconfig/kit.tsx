@@ -62,9 +62,13 @@ export const SECTIONS = [
     { key: 'c_members', label: 'Cartões de membro' },
   ] },
   { key: 'marketing', title: 'Marketing', items: [
-    { key: 'm_promotions', label: 'Promoções' },
-    { key: 'm_happyhour', label: 'Happy Hour' },
-    { key: 'm_combos', label: 'Combos & Menus' },
+    { key: 'm_params', label: 'Parâmetros' },
+    { key: 'm_languages', label: 'Línguas' },
+    { key: 'm_templates', label: 'Modelos de E-mail', icon: '✉' },
+    { key: 'm_attachments', label: 'Modelos - Anexos' },
+    { key: 'm_variables', label: 'Modelos - Variáveis' },
+    { key: 'm_selgroups', label: 'Grupos de códigos de selecção' },
+    { key: 'm_selcodes', label: 'Códigos de seleção' },
   ] },
   { key: 'events', title: 'Eventos', items: [
     { key: 'e_events', label: 'Eventos & Banquetes' },

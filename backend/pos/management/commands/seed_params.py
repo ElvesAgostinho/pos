@@ -120,6 +120,16 @@ PARAMS = [
     (8009, 'Artigos', 'Número de dígitos do código', I, [], '4', ''),
     (8011, 'Artigos', 'Utilizar código da sub-família como prefixo', B, [], 'true', ''),
     (8235, 'Artigos', 'Usar o código do artigo como código de barras se não estiver preenchido', B, [], 'true', ''),
+    # ---------------- Marketing ----------------
+    (4079, 'Marketing', 'Pedidos de eventos - Enviar e-mail', B, [], 'true',
+     'Avisa a equipa de eventos assim que entra um pedido pelo site.'),
+    (4179, 'Marketing', 'Pedidos de eventos - E-mails sep ";"', T, [], '',
+     'Para quem vai o aviso. Vários endereços separados por ";".'),
+    (4080, 'Marketing', 'Newsletter - Enviar e-mail', B, [], 'false',
+     'Envia a newsletter aos hóspedes que a autorizaram.'),
+    (4180, 'Marketing', 'Newsletter - E-mails sep ";"', T, [], '', ''),
+    (8201, 'Marketing', 'Newsletter - Interesses', T, [], '',
+     'Códigos de seleção que filtram quem recebe (ex.: SPA;GOLFE).'),
 ]
 
 
