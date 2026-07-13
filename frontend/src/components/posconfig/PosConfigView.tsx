@@ -36,6 +36,10 @@ import MemberCardEditor from './MemberCardEditor';
 import EmailTemplateEditor from './EmailTemplateEditor';
 import SelectionCodesSection from './SelectionCodesSection';
 import EventStateEditor from './EventStateEditor';
+import PackageEditor from './PackageEditor';
+import PlanningOptions from './PlanningOptions';
+import CancelReasonSection from './CancelReasonSection';
+import SubSegmentSection from './SubSegmentSection';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
 import { irParaModulo } from '../../App';
 
@@ -975,6 +979,122 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
                 { key: 'for_pms', label: 'PMS', type: 'checkbox' },
                 { key: 'for_ems', label: 'Eventos', type: 'checkbox' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'e_cancel' ? (
+            <CancelReasonSection />
+          ) : section === 'e_types' ? (
+            <SimpleSection title="Tipo de Evento/Serviço" queryKey="eventtypes" endpoint="pos/config/event-types/"
+              columns={[
+                { key: 'code', label: 'Código', width: '14%' },
+                { key: 'name', label: 'Descrição', width: '26%' },
+                { key: 'manager_name', label: 'Gestor Ev.', width: '18%',
+                  render: (r: any) => r.manager_name || <span className="text-[#999]">(nenhum)</span> },
+                { key: 'is_event_type', label: 'Tipo de Evento', width: '14%', toggle: true },
+                { key: 'is_service_type', label: 'Tipo de Serviço', width: '14%', toggle: true },
+                { key: 'is_active', label: 'Ativo', width: '8%', toggle: true },
+              ]}
+              fields={[
+                { key: 'number', label: 'Nr:', type: 'number', width: 'w-[140px]' },
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'notes', label: 'Observações:', type: 'textarea', width: 'w-[620px]' },
+                { key: 'default_start', label: 'Hora de Início:', width: 'w-[160px]', help: 'hh:mm' },
+                { key: 'default_end', label: 'Hora de Fim:', width: 'w-[160px]' },
+                { key: 'name_lang_1', label: 'Língua 1:', width: 'w-[620px]' },
+                { key: 'name_lang_2', label: 'Língua 2:', width: 'w-[620px]' },
+                { key: 'name_lang_3', label: 'Língua 3:', width: 'w-[620px]' },
+                { key: 'is_event_type', label: 'Tipo de Evento', type: 'checkbox',
+                  help: 'O cliente reserva isto (Casamento, Congresso).' },
+                { key: 'is_service_type', label: 'Tipo de Serviço', type: 'checkbox',
+                  help: 'Acontece dentro do evento (Coffee Break, Almoço).' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'e_spacetypes' ? (
+            <SimpleSection title="Tipo de Espaço" queryKey="spacetypes" endpoint="pos/config/space-types/"
+              columns={[
+                { key: 'code', label: 'Código', width: '22%' },
+                { key: 'name', label: 'Descrição', width: '44%' },
+                { key: 'is_public', label: 'Espaço Público', width: '18%', toggle: true },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[
+                { key: 'number', label: 'Nr:', type: 'number', width: 'w-[140px]' },
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'notes', label: 'Observações:', type: 'textarea', width: 'w-[620px]' },
+                { key: 'is_public', label: 'Espaço Público', type: 'checkbox',
+                  help: 'Um evento no Bar não fecha o Bar. Uma sala, sim.' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'e_spaceavail' ? (
+            <SimpleSection title="Disposição do Espaço" queryKey="spacelayouts" endpoint="pos/config/space-layouts/"
+              columns={[
+                { key: 'code', label: 'Código', width: '18%' },
+                { key: 'name', label: 'Descrição', width: '36%' },
+                { key: 'image_url', label: 'Imagem', width: '36%',
+                  render: (r: any) => r.image_url
+                    ? <img src={r.image_url} alt="" className="h-8" />
+                    : <span className="text-[#999]">—</span> },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[
+                { key: 'number', label: 'Nr:', type: 'number', width: 'w-[140px]' },
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'notes', label: 'Observações:', type: 'textarea', width: 'w-[620px]' },
+                { key: 'image_url', label: 'Imagem (URL):', width: 'w-[620px]',
+                  help: 'É o que o comercial mostra ao cliente. Evite imagens acima de 200 KB.' },
+                { key: 'name_lang_1', label: 'Língua 1:', width: 'w-[620px]' },
+                { key: 'name_lang_2', label: 'Língua 2:', width: 'w-[620px]' },
+                { key: 'name_lang_3', label: 'Língua 3:', width: 'w-[620px]' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'e_planning' ? (
+            <PlanningOptions />
+          ) : section === 'e_packages' ? (
+            <SimpleSection title="Package" queryKey="packages" endpoint="pos/config/packages/" copyable
+              columns={[
+                { key: 'code', label: 'Código', width: '20%' },
+                { key: 'name', label: 'Descrição', width: '40%' },
+                { key: 'total', label: 'Total', width: '20%',
+                  render: (r: any) => money(r.total) },
+                { key: 'is_active', label: 'Ativo', width: '12%', toggle: true },
+              ]}
+              fields={[]}
+              renderEditor={(row, close) => <PackageEditor row={row} onClose={close} />} />
+          ) : section === 'e_segments' ? (
+            <SimpleSection title="Segmento" queryKey="segments" endpoint="pos/config/segments/"
+              columns={[
+                { key: 'code', label: 'Código', width: '24%' },
+                { key: 'name', label: 'Descrição', width: '46%' },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[
+                { key: 'number', label: 'Nr:', type: 'number', width: 'w-[140px]' },
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'for_pms', label: 'PMS', type: 'checkbox' },
+                { key: 'for_ems', label: 'Eventos', type: 'checkbox' },
+                { key: 'for_pos', label: 'POS', type: 'checkbox' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'e_subsegments' ? (
+            <SubSegmentSection />
+          ) : section === 'e_channels' ? (
+            <SimpleSection title="Canal de Distribuição" queryKey="channels" endpoint="pos/config/channels/"
+              columns={[
+                { key: 'code', label: 'Código', width: '24%' },
+                { key: 'name', label: 'Descrição', width: '46%' },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[
+                { key: 'number', label: 'Nr:', type: 'number', width: 'w-[140px]' },
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'for_pms', label: 'PMS', type: 'checkbox' },
+                { key: 'for_ems', label: 'Eventos', type: 'checkbox' },
+                { key: 'for_pos', label: 'POS', type: 'checkbox' },
                 { key: 'is_active', label: 'Ativo', type: 'checkbox' },
               ]} />
           ) : section === 'p_printers' ? (

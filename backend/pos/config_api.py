@@ -1970,3 +1970,163 @@ class EventAddStateViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         from .models import EventAdditionalState
         return EventAdditionalState.objects.all()
+
+
+# ==========================================================================
+# EVENTOS — motivos, tipos, espaços, packages, segmentos, canais
+# ==========================================================================
+def _simples(modelo, extra_fields=None):
+    """Fábrica de ViewSets simples (código/descrição/módulos/ativo).
+
+    Repetir dez vezes o mesmo serializer só para mudar o modelo é código a mais
+    para manter — e um sítio a mais onde alguém se esquece de uma validação.
+    """
+    class _S(serializers.ModelSerializer):
+        class Meta:
+            model = modelo
+            fields = '__all__'
+
+    class _V(viewsets.ModelViewSet):
+        permission_classes = [IsAuthenticated]
+        serializer_class = _S
+        queryset = modelo.objects.all()
+
+    return _S, _V
+
+
+from .models import (EventCancelReason, EventType, SpaceType, SpaceLayout,
+                     PlanningOption, EventPackage, EventPackageLine,
+                     Segment, SubSegment, DistributionChannel)
+
+
+class CancelReasonSerializer(serializers.ModelSerializer):
+    charge_name = serializers.CharField(source='charge_item.name', read_only=True, default=None)
+
+    class Meta:
+        model = EventCancelReason
+        fields = '__all__'
+
+
+class CancelReasonViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CancelReasonSerializer
+    queryset = EventCancelReason.objects.select_related('charge_item')
+
+
+class EventTypeSerializer(serializers.ModelSerializer):
+    manager_name = serializers.CharField(source='manager.full_name', read_only=True, default=None)
+
+    class Meta:
+        model = EventType
+        fields = '__all__'
+
+
+class EventTypeViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EventTypeSerializer
+    queryset = EventType.objects.select_related('manager')
+
+
+SpaceTypeSerializer, SpaceTypeViewSet = _simples(SpaceType)
+SpaceLayoutSerializer, SpaceLayoutViewSet = _simples(SpaceLayout)
+SegmentSerializer, SegmentViewSet = _simples(Segment)
+ChannelSerializer, ChannelViewSet = _simples(DistributionChannel)
+
+
+class SubSegmentSerializer(serializers.ModelSerializer):
+    segment_name = serializers.CharField(source='segment.name', read_only=True, default=None)
+
+    class Meta:
+        model = SubSegment
+        fields = '__all__'
+
+
+class SubSegmentViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SubSegmentSerializer
+    queryset = SubSegment.objects.select_related('segment')
+
+
+class PackageLineSerializer(serializers.ModelSerializer):
+    item_name = serializers.CharField(source='item.name', read_only=True)
+    item_code = serializers.CharField(source='item.code', read_only=True)
+    line_total = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = EventPackageLine
+        fields = ('id', 'item', 'item_code', 'item_name', 'quantity', 'unit_price', 'line_total')
+
+
+class PackageSerializer(serializers.ModelSerializer):
+    lines = PackageLineSerializer(many=True, required=False)
+    sector_name = serializers.CharField(source='sector.name', read_only=True, default=None)
+    total = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = EventPackage
+        fields = '__all__'
+
+    def _sync(self, obj, linhas):
+        if linhas is None:
+            return
+        obj.lines.all().delete()
+        for l in linhas:
+            l.pop('package', None)
+            EventPackageLine.objects.create(package=obj, **l)
+
+    def create(self, validated):
+        ls = validated.pop('lines', [])
+        obj = EventPackage.objects.create(**validated)
+        self._sync(obj, ls)
+        return obj
+
+    def update(self, instance, validated):
+        ls = validated.pop('lines', None)
+        for k, v in validated.items():
+            setattr(instance, k, v)
+        instance.save()
+        self._sync(instance, ls)
+        return instance
+
+
+class PackageViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PackageSerializer
+    queryset = EventPackage.objects.select_related('sector').prefetch_related('lines__item')
+
+    @action(detail=True, methods=['post'])
+    def duplicate(self, request, pk=None):
+        src = self.get_object()
+        novo = EventPackage.objects.create(
+            code=f'{src.code}-C'[:30], name=f'{src.name} (cópia)', sector=src.sector,
+            is_active=src.is_active)
+        for l in src.lines.all():
+            EventPackageLine.objects.create(package=novo, item=l.item,
+                                            quantity=l.quantity, unit_price=l.unit_price)
+        return Response(PackageSerializer(novo).data, status=201)
+
+
+class PlanningOptionView(APIView):
+    """OPÇÕES DO PLANNING — ordem e cores dos espaços no mapa do comercial."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        linhas = []
+        for s in PosSector.objects.filter(is_active=True):
+            o = PlanningOption.objects.filter(space=s).first()
+            linhas.append({
+                'space': s.id, 'name': s.name,
+                'sort_order': o.sort_order if o else 0,
+                'bg_color': o.bg_color if o else '#ffffff',
+                'text_color': o.text_color if o else '#333333',
+            })
+        linhas.sort(key=lambda x: x['sort_order'])
+        return Response(linhas)
+
+    def post(self, request):
+        for i, l in enumerate(request.data.get('rows', [])):
+            PlanningOption.objects.update_or_create(
+                space_id=l['space'],
+                defaults={'sort_order': i, 'bg_color': l.get('bg_color') or '#ffffff',
+                          'text_color': l.get('text_color') or '#333333'})
+        return Response({'saved': len(request.data.get('rows', []))})

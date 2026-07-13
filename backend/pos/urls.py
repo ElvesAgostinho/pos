@@ -21,7 +21,10 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          MemberCardViewSet, LanguageViewSet, EmailTemplateViewSet,
                          AttachmentViewSet, VariableViewSet,
                          SelectionCodeGroupViewSet, SelectionCodeViewSet,
-                         EventStateViewSet, EventAddStateViewSet)
+                         EventStateViewSet, EventAddStateViewSet, CancelReasonViewSet,
+                         EventTypeViewSet, SpaceTypeViewSet, SpaceLayoutViewSet,
+                         SegmentViewSet, SubSegmentViewSet, ChannelViewSet,
+                         PackageViewSet, PlanningOptionView)
 
 router = DefaultRouter()
 router.register(r'config/modules', PosModuleViewSet, basename='pos-cfg-module')
@@ -63,6 +66,14 @@ router.register(r'config/selection-groups', SelectionCodeGroupViewSet, basename=
 router.register(r'config/selection-codes', SelectionCodeViewSet, basename='pos-cfg-selcode')
 router.register(r'config/event-states', EventStateViewSet, basename='pos-cfg-evstate')
 router.register(r'config/event-add-states', EventAddStateViewSet, basename='pos-cfg-evaddstate')
+router.register(r'config/cancel-reasons', CancelReasonViewSet, basename='pos-cfg-cancelreason')
+router.register(r'config/event-types', EventTypeViewSet, basename='pos-cfg-eventtype')
+router.register(r'config/space-types', SpaceTypeViewSet, basename='pos-cfg-spacetype')
+router.register(r'config/space-layouts', SpaceLayoutViewSet, basename='pos-cfg-spacelayout')
+router.register(r'config/segments', SegmentViewSet, basename='pos-cfg-segment')
+router.register(r'config/subsegments', SubSegmentViewSet, basename='pos-cfg-subsegment')
+router.register(r'config/channels', ChannelViewSet, basename='pos-cfg-channel')
+router.register(r'config/packages', PackageViewSet, basename='pos-cfg-package')
 router.register(r'outlets', OutletViewSet, basename='pos-outlet')
 router.register(r'product-configs', POSProductConfigViewSet, basename='pos-product-config')
 router.register(r'outlet-payment-methods', OutletPaymentMethodViewSet, basename='pos-outlet-payment')
@@ -83,5 +94,6 @@ router.register(r'table-groups', POSTableGroupViewSet, basename='pos-table-group
 urlpatterns = [
     path('config/params/', GlobalParamsView.as_view()),
     path('config/pms-mappings/', PmsMappingView.as_view()),
+    path('config/planning-options/', PlanningOptionView.as_view()),
     path('', include(router.urls)),
 ]

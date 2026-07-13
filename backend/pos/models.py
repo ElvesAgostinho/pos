@@ -2008,3 +2008,254 @@ class EventAdditionalState(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class EventCancelReason(models.Model):
+    """MOTIVO DE CANCELAMENTO — porque é que o evento caiu.
+
+    "Cancelamento pela Meteorologia" não é o mesmo que "Cancelamento Cliente": um é
+    azar, o outro é comercial. Sem motivos, o relatório de cancelamentos é uma coluna
+    de números e o hotel nunca sabe se está a perder eventos por preço, por serviço
+    ou por chuva.
+
+    O ENCARGO é o artigo que se cobra ao cancelar (a taxa de cancelamento). Sem ele,
+    o hotel perde o salão E não cobra nada.
+    """
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    charge_item = models.ForeignKey('inventory.Item', on_delete=models.SET_NULL, blank=True, null=True,
+                                    related_name='cancel_reasons')
+    for_pms = models.BooleanField(default=True)
+    for_ems = models.BooleanField(default=True)
+    default_auto_cancel = models.BooleanField(default=False)   # por omissão nos cancelamentos automáticos
+    default_abandon = models.BooleanField(default=False)       # por omissão nos abandonos
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_cancel_reason'
+        ordering = ['number', 'code']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        # Só UM por omissão de cada tipo: senão o sistema não saberia qual escolher
+        # quando cancela sozinho.
+        if self.default_auto_cancel:
+            EventCancelReason.objects.exclude(pk=self.pk).update(default_auto_cancel=False)
+        if self.default_abandon:
+            EventCancelReason.objects.exclude(pk=self.pk).update(default_abandon=False)
+        super().save(*args, **kwargs)
+
+
+class EventType(models.Model):
+    """TIPO DE EVENTO / SERVIÇO — Casamento, Congresso, Coffee Break.
+
+    A mesma tabela serve as duas coisas e as caixas dizem qual é qual: um Casamento
+    é um EVENTO (o cliente reserva); um Coffee Break é um SERVIÇO (acontece dentro
+    do evento). Um "Cocktail" pode ser os dois.
+
+    As HORAS por defeito poupam trabalho: um coffee break não começa às 00:00.
+    """
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    notes = models.TextField(blank=True, null=True)
+
+    is_event_type = models.BooleanField(default=True)     # Tipo de Evento
+    is_service_type = models.BooleanField(default=True)   # Tipo de Serviço
+    manager = models.ForeignKey('PosUser', on_delete=models.SET_NULL, blank=True, null=True,
+                                related_name='event_types')   # Gestor de eventos
+
+    default_start = models.TimeField(blank=True, null=True)
+    default_end = models.TimeField(blank=True, null=True)
+
+    name_lang_1 = models.CharField(max_length=120, blank=True, null=True)
+    name_lang_2 = models.CharField(max_length=120, blank=True, null=True)
+    name_lang_3 = models.CharField(max_length=120, blank=True, null=True)
+
+    for_ems = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_event_type'
+        ordering = ['code']
+
+    def __str__(self):
+        return self.name
+
+
+class SpaceType(models.Model):
+    """TIPO DE ESPAÇO — Salas, Restaurante, Bar, Esplanada.
+
+    ESPAÇO PÚBLICO quer dizer que o sítio continua aberto ao hotel: um evento no
+    Bar não fecha o Bar. Uma Sala, não — quem a reserva, fecha-a.
+    """
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    notes = models.TextField(blank=True, null=True)
+    is_public = models.BooleanField(default=False)   # Espaço Público
+    for_ems = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_space_type'
+        ordering = ['code']
+
+    def __str__(self):
+        return self.name
+
+
+class SpaceLayout(models.Model):
+    """DISPOSIÇÃO DO ESPAÇO — Plateia, Escola, Em U, Cocktail, Banquetes.
+
+    A mesma sala leva 200 pessoas em plateia e 80 em banquete. É a disposição que
+    decide a lotação — e vender 200 lugares numa sala montada em banquete é a
+    maneira mais rápida de arruinar um casamento.
+
+    A IMAGEM é o que o comercial mostra ao cliente.
+    """
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    notes = models.TextField(blank=True, null=True)
+    image_url = models.CharField(max_length=300, blank=True, null=True)
+
+    name_lang_1 = models.CharField(max_length=120, blank=True, null=True)
+    name_lang_2 = models.CharField(max_length=120, blank=True, null=True)
+    name_lang_3 = models.CharField(max_length=120, blank=True, null=True)
+
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_space_layout'
+        ordering = ['number', 'code']
+
+    def __str__(self):
+        return self.name
+
+
+class PlanningOption(models.Model):
+    """OPÇÕES DO PLANNING — a ORDEM e as CORES com que os espaços aparecem no mapa.
+
+    O planning é o ecrã onde o comercial vive. Se as salas aparecerem por ordem
+    alfabética em vez da ordem física do hotel (piso 0, piso 1, jardim), ele perde
+    tempo a procurar — e é aí que se vendem duas vezes as mesmas salas.
+    """
+    space = models.ForeignKey('PosSector', on_delete=models.CASCADE, related_name='planning_options')
+    sort_order = models.PositiveIntegerField(default=0)
+    bg_color = models.CharField(max_length=20, default='#ffffff')
+    text_color = models.CharField(max_length=20, default='#333333')
+
+    class Meta:
+        db_table = 'ev_planning_option'
+        ordering = ['sort_order']
+
+
+class EventPackage(models.Model):
+    """PACKAGE — o preço fechado (o "Menu de Casamento a 25.000/pessoa").
+
+    Junta artigos com quantidades num só preço. O cliente compra UMA coisa; o hotel
+    lança as dez que a compõem — e o stock sai de todas. Sem isto, o comercial
+    escreve o pacote à mão em cada proposta e esquece-se sempre de um item.
+    """
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    sector = models.ForeignKey('PosSector', on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='packages')
+    name_lang_1 = models.CharField(max_length=120, blank=True, null=True)
+    name_lang_2 = models.CharField(max_length=120, blank=True, null=True)
+    name_lang_3 = models.CharField(max_length=120, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_package'
+        ordering = ['code']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def total(self):
+        from decimal import Decimal
+        return sum((l.quantity * l.unit_price for l in self.lines.all()), Decimal('0'))
+
+
+class EventPackageLine(models.Model):
+    package = models.ForeignKey(EventPackage, on_delete=models.CASCADE, related_name='lines')
+    item = models.ForeignKey('inventory.Item', on_delete=models.CASCADE, related_name='package_lines')
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'ev_package_line'
+
+    @property
+    def line_total(self):
+        return self.quantity * self.unit_price
+
+
+class Segment(models.Model):
+    """SEGMENTO — de onde vem o negócio (Individuais, Corporate, MICE, Institucional).
+
+    É a pergunta que o dono faz todos os meses: "o que é que nos dá mais dinheiro?".
+    Sem segmento, a resposta é um total sem explicação.
+    """
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    for_pms = models.BooleanField(default=True)
+    for_ems = models.BooleanField(default=True)
+    for_pos = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_segment'
+        ordering = ['number', 'code']
+
+    def __str__(self):
+        return self.name
+
+
+class SubSegment(models.Model):
+    """SUB-SEGMENTO — o setor de atividade do cliente (Petrolífera, Banca, Saúde…)."""
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    segment = models.ForeignKey(Segment, on_delete=models.SET_NULL, blank=True, null=True,
+                                related_name='subsegments')
+    for_pms = models.BooleanField(default=True)
+    for_ems = models.BooleanField(default=True)
+    for_pos = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_subsegment'
+        ordering = ['number', 'code']
+
+    def __str__(self):
+        return self.name
+
+
+class DistributionChannel(models.Model):
+    """CANAL DE DISTRIBUIÇÃO — por onde entrou (Direto, Online, OTAs, Agências).
+
+    É o que diz quanto do negócio vem por canais que cobram comissão. Um hotel que
+    não separa "Direto" de "OTA" não sabe quanto está a pagar à Booking.
+    """
+    number = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    for_pms = models.BooleanField(default=True)
+    for_ems = models.BooleanField(default=True)
+    for_pos = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'ev_channel'
+        ordering = ['number', 'code']
+
+    def __str__(self):
+        return self.name

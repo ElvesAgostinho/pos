@@ -79,7 +79,10 @@ export const SECTIONS = [
     { key: 'e_spacetypes', label: 'Tipo de Espaço' },
     { key: 'e_spaceavail', label: 'Disp. Espaço' },
     { key: 'e_planning', label: 'Opções do Planning' },
-    { key: 'e_packages', label: 'Packages' },
+    { key: 'e_packages', label: 'Packages', icon: '📦' },
+    { key: 'e_segments', label: 'Segmento' },
+    { key: 'e_subsegments', label: 'Sub-Segmento' },
+    { key: 'e_channels', label: 'Canal Distrib.' },
   ] },
   { key: 'fnb', title: 'Gestão de F&B', items: [
     { key: 'g_outlets', label: 'Outlets' },
