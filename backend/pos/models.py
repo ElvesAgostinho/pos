@@ -2259,3 +2259,140 @@ class DistributionChannel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# ==========================================================================
+# GESTÃO DE F&B
+# ==========================================================================
+class StockDocStatus(models.Model):
+    """ESTADO DE UM DOCUMENTO DE STOCK — Pendente, Aprovado, Cumprido, Recusado.
+
+    É o circuito de aprovação: uma requisição da cozinha passa por Pendente →
+    Aprovado → Cumprido. Sem estados, qualquer pessoa tira o que quer do armazém
+    e ninguém aprova nada — que é como o stock desaparece.
+
+    A COR é a que o economato vê na lista. Os estados de SISTEMA não se apagam.
+    """
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=60)
+    equivalent = models.CharField(max_length=20, blank=True, null=True)
+    text_key = models.CharField(max_length=40, blank=True, null=True)
+    bg_color = models.CharField(max_length=20, default='#ffffff')
+    text_color = models.CharField(max_length=20, default='#333333')
+    sort_order = models.PositiveIntegerField(default=0)
+    is_system = models.BooleanField(default=False)
+    notes = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'fnb_doc_status'
+        ordering = ['sort_order', 'code']
+
+    def __str__(self):
+        return self.name
+
+
+class StockDocSeries(models.Model):
+    """DOCUMENTO DE STOCK — a série de cada tipo de movimento do armazém.
+
+    Requisição, Transferência, Inventário, Quebras, Encomenda ao fornecedor, Fatura
+    de fornecedor. Cada um numera à parte, e cada um mexe (ou não) no stock e no
+    custo médio — é isso que as caixas do separador Stocks decidem.
+    """
+    KINDS = [('STOCK', 'Stocks'), ('SALES_STOCK', 'Stock de Vendas'), ('REQUEST', 'Requisição'),
+             ('TRANSFER', 'Transferência'), ('INVENTORY', 'Inventário'), ('ORDER', 'Encomenda'),
+             ('INVOICE', 'Faturação'), ('DELIVERY', 'Guia')]
+    NATURE = [('RECEIVABLE', 'Documento a receber'), ('PAYABLE', 'Documento a pagar')]
+    DUP = [('IGNORE', 'Ignorar duplicação'), ('WARN', 'Informar sobre duplicação'),
+           ('BLOCK', 'Não permite duplicação')]
+
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    kind = models.CharField(max_length=12, choices=KINDS, default='STOCK')
+    series_number = models.CharField(max_length=20, default='1')
+    year = models.PositiveIntegerField(default=0)
+    current_number = models.PositiveIntegerField(default=0)
+    last_doc_date = models.DateField(blank=True, null=True)
+    is_closed = models.BooleanField(default=False)
+
+    # --- Geral ---
+    links_stock = models.BooleanField(default=True)          # Ligação aos stocks
+    links_current_account = models.BooleanField(default=False)  # Ligação a contas correntes
+    convertible = models.BooleanField(default=False)         # Sujeito a conversão
+    allow_future = models.BooleanField(default=False)        # Permite lançamentos futuros
+    notes_required = models.BooleanField(default=False)      # Observações obrigatórias
+    nature = models.CharField(max_length=12, choices=NATURE, blank=True, null=True)
+    external_dup = models.CharField(max_length=8, choices=DUP, default='IGNORE')
+    external_required = models.BooleanField(default=False)
+
+    # --- Stocks (o que este documento faz ao custo) ---
+    updates_avg_cost = models.BooleanField(default=True)     # Atualiza custo médio
+    updates_last_price = models.BooleanField(default=True)   # Atualiza último preço
+    updates_last_entry_date = models.BooleanField(default=False)
+
+    statuses = models.ManyToManyField(StockDocStatus, blank=True, related_name='doc_series')
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'fnb_doc_series'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'
+
+
+class StockPrintModel(models.Model):
+    """Modelo de impressão de um documento de stock."""
+    series = models.ForeignKey(StockDocSeries, on_delete=models.CASCADE, related_name='print_models')
+    kind = models.CharField(max_length=40, default='Normal')
+    code = models.CharField(max_length=20, default='1')
+    description = models.CharField(max_length=120, blank=True, null=True)
+    model_path = models.CharField(max_length=250, blank=True, null=True)
+    sort_order = models.PositiveSmallIntegerField(default=1)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'fnb_print_model'
+        ordering = ['sort_order']
+
+
+class PaymentTerm(models.Model):
+    """CONDIÇÃO DE PAGAMENTO — a quantos DIAS se paga ao fornecedor.
+
+    "Crédito 30 Dias" não é uma etiqueta: é o que faz a fatura aparecer no mapa de
+    pagamentos no dia certo. Sem isto, ou se paga adiantado (e perde-se tesouraria)
+    ou se paga tarde (e perde-se o desconto — e o fornecedor).
+
+    O DESCONTO de pronto pagamento é dinheiro que se ganha por pagar já.
+    """
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    days = models.PositiveIntegerField(default=0)
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'fnb_payment_term'
+        ordering = ['code']
+
+    def __str__(self):
+        return self.name
+
+
+class CostCenter(models.Model):
+    """CENTRO DE CUSTO — onde o gasto foi feito (Cozinha, Lavandaria, Manutenção).
+
+    Difere da conta analítica: a analítica diz onde entrou a RECEITA; o centro de
+    custo diz onde saiu a DESPESA. Juntos respondem à única pergunta que interessa:
+    o restaurante dá lucro?
+    """
+    code = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=120)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'fnb_cost_center'
+        ordering = ['code']
+
+    def __str__(self):
+        return f'{self.code} · {self.name}'

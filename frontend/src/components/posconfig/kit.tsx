@@ -85,9 +85,15 @@ export const SECTIONS = [
     { key: 'e_channels', label: 'Canal Distrib.' },
   ] },
   { key: 'fnb', title: 'Gestão de F&B', items: [
-    { key: 'g_outlets', label: 'Outlets' },
-    { key: 'g_tables', label: 'Salas & Mesas' },
-    { key: 'g_kds', label: 'Ecrãs de Produção (KDS)' },
+    { key: 'g_utils', label: 'Utilitários' },
+    { key: 'g_params', label: 'Parâmetros' },
+    { key: 'g_docs', label: 'Documentos' },
+    { key: 'g_docstatus', label: 'Status dos documentos' },
+    { key: 'g_payterms', label: 'Condições de pagamento' },
+    { key: 'g_uoms', label: 'Unidades de Stock' },
+    { key: 'g_warehouses', label: 'Armazéns' },
+    { key: 'g_mapping', label: 'Mapeamentos Setor/Armazéns' },
+    { key: 'g_costcenters', label: 'Centro de Custo' },
   ] },
 ];
 

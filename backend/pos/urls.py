@@ -24,7 +24,9 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          EventStateViewSet, EventAddStateViewSet, CancelReasonViewSet,
                          EventTypeViewSet, SpaceTypeViewSet, SpaceLayoutViewSet,
                          SegmentViewSet, SubSegmentViewSet, ChannelViewSet,
-                         PackageViewSet, PlanningOptionView)
+                         PackageViewSet, PlanningOptionView, DocStatusViewSet,
+                         StockDocSeriesViewSet, PaymentTermViewSet, CostCenterViewSet,
+                         WarehouseViewSet, StockRecalcView, SectorWarehouseMapView)
 
 router = DefaultRouter()
 router.register(r'config/modules', PosModuleViewSet, basename='pos-cfg-module')
@@ -74,6 +76,11 @@ router.register(r'config/segments', SegmentViewSet, basename='pos-cfg-segment')
 router.register(r'config/subsegments', SubSegmentViewSet, basename='pos-cfg-subsegment')
 router.register(r'config/channels', ChannelViewSet, basename='pos-cfg-channel')
 router.register(r'config/packages', PackageViewSet, basename='pos-cfg-package')
+router.register(r'config/doc-status', DocStatusViewSet, basename='pos-cfg-docstatus')
+router.register(r'config/stock-docs', StockDocSeriesViewSet, basename='pos-cfg-stockdoc')
+router.register(r'config/payment-terms', PaymentTermViewSet, basename='pos-cfg-payterm')
+router.register(r'config/cost-centers', CostCenterViewSet, basename='pos-cfg-costcenter')
+router.register(r'config/warehouses', WarehouseViewSet, basename='pos-cfg-warehouse')
 router.register(r'outlets', OutletViewSet, basename='pos-outlet')
 router.register(r'product-configs', POSProductConfigViewSet, basename='pos-product-config')
 router.register(r'outlet-payment-methods', OutletPaymentMethodViewSet, basename='pos-outlet-payment')
@@ -95,5 +102,7 @@ urlpatterns = [
     path('config/params/', GlobalParamsView.as_view()),
     path('config/pms-mappings/', PmsMappingView.as_view()),
     path('config/planning-options/', PlanningOptionView.as_view()),
+    path('config/stock-recalc/', StockRecalcView.as_view()),
+    path('config/sector-warehouses/', SectorWarehouseMapView.as_view()),
     path('', include(router.urls)),
 ]

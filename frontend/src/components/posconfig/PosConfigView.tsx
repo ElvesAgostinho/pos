@@ -40,6 +40,10 @@ import PackageEditor from './PackageEditor';
 import PlanningOptions from './PlanningOptions';
 import CancelReasonSection from './CancelReasonSection';
 import SubSegmentSection from './SubSegmentSection';
+import FnbUtilities from './FnbUtilities';
+import StockDocEditor from './StockDocEditor';
+import SectorWarehouseMap from './SectorWarehouseMap';
+import WarehouseSection from './WarehouseSection';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
 import { irParaModulo } from '../../App';
 
@@ -1095,6 +1099,94 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'for_pms', label: 'PMS', type: 'checkbox' },
                 { key: 'for_ems', label: 'Eventos', type: 'checkbox' },
                 { key: 'for_pos', label: 'POS', type: 'checkbox' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'g_utils' ? (
+            <FnbUtilities />
+          ) : section === 'g_params' ? (
+            <Parameters group="F&B" />
+          ) : section === 'g_docs' ? (
+            <SimpleSection title="Documento" queryKey="stockdocs" endpoint="pos/config/stock-docs/" copyable
+              columns={[
+                { key: 'code', label: 'Código', width: '18%' },
+                { key: 'name', label: 'Descrição', width: '30%' },
+                { key: 'kind_display', label: 'Tipo', width: '16%' },
+                { key: 'series_number', label: 'Nº Série', width: '10%' },
+                { key: 'current_number', label: 'Número', width: '10%' },
+                { key: 'is_closed', label: 'Série fechada', width: '10%', toggle: true },
+              ]}
+              fields={[]}
+              renderEditor={(row, close) => <StockDocEditor row={row} onClose={close} />} />
+          ) : section === 'g_docstatus' ? (
+            <SimpleSection title="Status do Documento" queryKey="docstatus" endpoint="pos/config/doc-status/"
+              columns={[
+                { key: 'code', label: 'Código', width: '16%' },
+                { key: 'name', label: 'Descrição', width: '24%',
+                  render: (r: any) => (
+                    <span className="inline-block px-6 py-1 text-[12px] font-bold rounded-sm"
+                      style={{ background: r.bg_color, color: r.text_color }}>{r.name}</span>
+                  ) },
+                { key: 'equivalent', label: 'Estado equivalente', width: '18%',
+                  render: (r: any) => r.equivalent || <span className="text-[#999]">Nenhum</span> },
+                { key: 'sort_order', label: 'Ordem', width: '10%' },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+                { key: 'is_system', label: 'Sistema', width: '10%', readOnlyCheck: true },
+              ]}
+              fields={[
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'equivalent', label: 'Estado equivalente:', width: 'w-[240px]' },
+                { key: 'text_key', label: 'Chave do Texto:', width: 'w-[440px]' },
+                { key: 'bg_color', label: 'Cor de Fundo:', width: 'w-[200px]', help: '#808080' },
+                { key: 'text_color', label: 'Cor do texto:', width: 'w-[200px]', help: '#FF0000' },
+                { key: 'sort_order', label: 'Ordenar:', type: 'number', width: 'w-[140px]' },
+                { key: 'notes', label: 'Observações:', type: 'textarea', width: 'w-[620px]' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'g_payterms' ? (
+            <SimpleSection title="Condição de Pagamento" queryKey="payterms" endpoint="pos/config/payment-terms/" copyable
+              columns={[
+                { key: 'code', label: 'Código', width: '20%' },
+                { key: 'name', label: 'Descrição', width: '38%' },
+                { key: 'days', label: 'Dias', width: '14%' },
+                { key: 'discount_percent', label: 'Desconto', width: '16%',
+                  render: (r: any) => Number(r.discount_percent) ? `${Number(r.discount_percent)}%` : <span className="text-[#999]">(nenhum)</span> },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
+                { key: 'days', label: 'Dias:', type: 'number', width: 'w-[160px]',
+                  help: 'A quantos dias se paga. É o que põe a fatura no mapa de pagamentos no dia certo.' },
+                { key: 'discount_percent', label: 'Desconto:', type: 'number', width: 'w-[160px]',
+                  help: 'Desconto de pronto pagamento — dinheiro que se ganha por pagar já.' },
+                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
+              ]} />
+          ) : section === 'g_uoms' ? (
+            <SimpleSection title="Unidade de Stock" queryKey="uoms" endpoint="pos/config/uoms/"
+              columns={[
+                { key: 'code', label: 'Código', width: '24%' },
+                { key: 'name', label: 'Descrição', width: '44%' },
+                { key: 'rounding', label: 'Arredondar', width: '14%' },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[]}
+              renderEditor={(row, close) => <UomEditor row={row} onClose={close} />} />
+          ) : section === 'g_warehouses' ? (
+            <WarehouseSection />
+          ) : section === 'g_mapping' ? (
+            <SectorWarehouseMap />
+          ) : section === 'g_costcenters' ? (
+            <SimpleSection title="Centro de Custo" queryKey="costcenters" endpoint="pos/config/cost-centers/"
+              columns={[
+                { key: 'code', label: 'Código', width: '30%' },
+                { key: 'name', label: 'Descrição', width: '58%' },
+                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
+              ]}
+              fields={[
+                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]',
+                  help: 'Onde saiu a DESPESA (Cozinha, Lavandaria). A conta analítica diz onde entrou a receita.' },
                 { key: 'is_active', label: 'Ativo', type: 'checkbox' },
               ]} />
           ) : section === 'p_printers' ? (

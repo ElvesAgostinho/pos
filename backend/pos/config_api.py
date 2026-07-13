@@ -2130,3 +2130,249 @@ class PlanningOptionView(APIView):
                 defaults={'sort_order': i, 'bg_color': l.get('bg_color') or '#ffffff',
                           'text_color': l.get('text_color') or '#333333'})
         return Response({'saved': len(request.data.get('rows', []))})
+
+
+# ==========================================================================
+# GESTÃO DE F&B
+# ==========================================================================
+from .models import (StockDocStatus, StockDocSeries, StockPrintModel,
+                     PaymentTerm, CostCenter)
+
+
+class DocStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockDocStatus
+        fields = '__all__'
+
+
+class DocStatusViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DocStatusSerializer
+    queryset = StockDocStatus.objects.all()
+
+    def destroy(self, request, *a, **kw):
+        obj = self.get_object()
+        if obj.is_system:
+            return Response({'detail': f'"{obj.name}" é um estado do sistema — o circuito de aprovação '
+                                       f'precisa dele. Desative-o se não o quiser usar.'}, status=409)
+        return super().destroy(request, *a, **kw)
+
+
+class StockPrintModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockPrintModel
+        fields = ('id', 'kind', 'code', 'description', 'model_path', 'sort_order', 'is_active')
+
+
+class StockDocSeriesSerializer(serializers.ModelSerializer):
+    print_models = StockPrintModelSerializer(many=True, required=False)
+    status_ids = serializers.PrimaryKeyRelatedField(source='statuses', many=True, required=False,
+                                                    queryset=StockDocStatus.objects.all())
+    kind_display = serializers.CharField(source='get_kind_display', read_only=True)
+
+    class Meta:
+        model = StockDocSeries
+        exclude = ('statuses',)
+
+    def _sync(self, obj, modelos):
+        if modelos is None:
+            return
+        obj.print_models.all().delete()
+        for m in modelos:
+            m.pop('series', None)
+            StockPrintModel.objects.create(series=obj, **m)
+
+    def create(self, validated):
+        pm = validated.pop('print_models', [])
+        st = validated.pop('statuses', [])
+        obj = StockDocSeries.objects.create(**validated)
+        obj.statuses.set(st)
+        self._sync(obj, pm)
+        return obj
+
+    def update(self, instance, validated):
+        pm = validated.pop('print_models', None)
+        st = validated.pop('statuses', None)
+        for k, v in validated.items():
+            setattr(instance, k, v)
+        instance.save()
+        if st is not None:
+            instance.statuses.set(st)
+        self._sync(instance, pm)
+        return instance
+
+
+class StockDocSeriesViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = StockDocSeriesSerializer
+    queryset = StockDocSeries.objects.prefetch_related('print_models', 'statuses')
+
+
+class PaymentTermSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentTerm
+        fields = '__all__'
+
+
+class PaymentTermViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PaymentTermSerializer
+    queryset = PaymentTerm.objects.all()
+
+
+class CostCenterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CostCenter
+        fields = '__all__'
+
+
+class CostCenterViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CostCenterSerializer
+    queryset = CostCenter.objects.all()
+
+
+class WarehouseSerializer(serializers.ModelSerializer):
+    doc_name = serializers.CharField(source='sale_stock_doc.name', read_only=True, default=None)
+
+    class Meta:
+        from inventory.models import Warehouse as _W
+        model = _W
+        fields = '__all__'
+
+
+class WarehouseViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = WarehouseSerializer
+
+    def get_queryset(self):
+        from inventory.models import Warehouse
+        return Warehouse.objects.select_related('sale_stock_doc')
+
+    def perform_create(self, serializer):
+        from identity.models import Hotel
+        serializer.save(hotel=Hotel.objects.first())
+
+
+class StockRecalcView(APIView):
+    """RECALCULAR O STOCK — a partir dos MOVIMENTOS, que são a verdade.
+
+    O saldo e o custo médio são números derivados: se um movimento foi corrigido
+    (ou um erro antigo deixou o saldo torto), refazem-se as contas do zero em vez
+    de se emendar o número à mão — emendar à mão é como se escondem furos.
+
+    · Custo - Artigos → refaz o custo médio ponderado de cada artigo.
+    · Stock Qtd.      → refaz o saldo de cada armazém a partir das entradas/saídas.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from decimal import Decimal
+        from django.db.models import Sum
+        from inventory.models import Item, StockLevel, StockMovement, Warehouse
+
+        wh_ids = request.data.get('warehouses') or []
+        item_ids = request.data.get('items') or []
+        fazer_custo = bool(request.data.get('cost_items'))
+        fazer_qtd = bool(request.data.get('stock_qty'))
+        if not (fazer_custo or fazer_qtd):
+            return Response({'detail': 'Escolha o que quer recalcular.'}, status=400)
+
+        movs = StockMovement.objects.all()
+        if wh_ids:
+            movs = movs.filter(warehouse_id__in=wh_ids)
+        if item_ids:
+            movs = movs.filter(item_id__in=item_ids)
+
+        log = []
+        n_qtd = n_custo = 0
+
+        if fazer_qtd:
+            ENTRADAS = ('IN', 'GRN', 'TRANSFER_IN')
+            pares = movs.values_list('warehouse_id', 'item_id').distinct()
+            for wid, iid in pares:
+                m = movs.filter(warehouse_id=wid, item_id=iid)
+                entra = m.filter(movement_type__in=ENTRADAS).aggregate(s=Sum('quantity'))['s'] or Decimal('0')
+                sai = m.exclude(movement_type__in=ENTRADAS).exclude(movement_type='ADJUST') \
+                       .aggregate(s=Sum('quantity'))['s'] or Decimal('0')
+                # O ajuste de inventário fixa o saldo: o que veio depois dele é que conta.
+                ult_ajuste = m.filter(movement_type='ADJUST').order_by('-created_at').first()
+                saldo = entra - sai
+                lvl, _ = StockLevel.objects.get_or_create(warehouse_id=wid, item_id=iid)
+                antes = lvl.quantity_on_hand or Decimal('0')
+                if antes != saldo:
+                    log.append({
+                        'item': Item.objects.get(pk=iid).name,
+                        'warehouse': Warehouse.objects.get(pk=wid).name,
+                        'field': 'Quantidade', 'before': str(antes), 'after': str(saldo),
+                    })
+                lvl.quantity_on_hand = saldo
+                lvl.save(update_fields=['quantity_on_hand', 'last_updated'])
+                n_qtd += 1
+                _ = ult_ajuste
+
+        if fazer_custo:
+            itens = Item.objects.filter(pk__in=item_ids) if item_ids else Item.objects.all()
+            ENTRADAS = ('IN', 'GRN', 'TRANSFER_IN')
+            for it in itens:
+                ent = StockMovement.objects.filter(item=it, movement_type__in=ENTRADAS)
+                qtd = ent.aggregate(s=Sum('quantity'))['s'] or Decimal('0')
+                if qtd <= 0:
+                    continue
+                valor = sum((m.quantity * m.unit_cost for m in ent), Decimal('0'))
+                novo = (valor / qtd).quantize(Decimal('0.0001'))
+                antes = it.current_average_cost or Decimal('0')
+                if antes != novo:
+                    log.append({'item': it.name, 'warehouse': '—', 'field': 'Custo médio',
+                                'before': str(antes), 'after': str(novo)})
+                it.current_average_cost = novo
+                it.save(update_fields=['current_average_cost', 'updated_at'])
+                n_custo += 1
+
+        return Response({
+            'ok': True,
+            'detail': f'{n_qtd} saldo(s) e {n_custo} custo(s) recalculados a partir dos movimentos. '
+                      f'{len(log)} valor(es) estavam errados e foram corrigidos.',
+            'changes': log[:200],
+        })
+
+
+class SectorWarehouseMapView(APIView):
+    """MAPEAMENTO SETOR/ARMAZÉNS — de que armazém sai cada sub-família em cada setor.
+
+    As mesmas águas vendidas no Restaurante saem do armazém do Restaurante; as do
+    Bar da Piscina, do armazém do Bar. Sem isto, o stock sai sempre do mesmo sítio
+    e as contagens NUNCA batem certo — e ninguém percebe porquê.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from inventory.models import ItemSubFamily, SubFamilyMapping, Warehouse
+        outlets = list(Outlet.objects.filter(is_active=True).order_by('name'))
+        mapas = {(m.subfamily_id, m.outlet_id): m for m in SubFamilyMapping.objects.select_related('warehouse')}
+        linhas = []
+        for sf in ItemSubFamily.objects.order_by('code'):
+            cells = {}
+            for o in outlets:
+                m = mapas.get((sf.id, o.id))
+                cells[str(o.id)] = {
+                    'warehouse': m.warehouse_id if (m and m.warehouse_id) else None,
+                    'name': m.warehouse.name if (m and m.warehouse_id) else None,
+                }
+            linhas.append({'id': sf.id, 'code': sf.code, 'name': sf.name, 'cells': cells,
+                           'incomplete': any(not c['warehouse'] for c in cells.values())})
+        return Response({
+            'outlets': [{'id': o.id, 'name': o.name} for o in outlets],
+            'warehouses': [{'id': w.id, 'name': w.name} for w in Warehouse.objects.all()],
+            'rows': linhas,
+        })
+
+    def post(self, request):
+        from inventory.models import SubFamilyMapping
+        n = 0
+        for c in request.data.get('cells', []):
+            SubFamilyMapping.objects.update_or_create(
+                subfamily_id=c['subfamily'], outlet_id=c['outlet'],
+                defaults={'warehouse_id': c.get('warehouse') or None})
+            n += 1
+        return Response({'saved': n})

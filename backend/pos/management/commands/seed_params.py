@@ -193,6 +193,29 @@ PARAMS = [
     (12520, 'Eventos · Reporting', 'Pró-forma — excluir depósitos', B, [], 'false', ''),
     (4041, 'Eventos · Reporting', 'Talão (modelo)', T, [], '', ''),
     (4093, 'Eventos · Reporting', 'Artigo de Banquetes', T, [], '', ''),
+    # ---------------- Gestão de F&B · Geral ----------------
+    (8210, 'F&B', 'Casas decimais na quantidade', I, [], '3', ''),
+    (8211, 'F&B', 'Casas decimais no preço', I, [], '3', ''),
+    (8229, 'F&B', 'Bloquear compras para armazéns que estão em contagem', B, [], 'true',
+     'Durante o inventário ninguém entra mercadoria — senão a contagem nunca fecha.'),
+    (8230, 'F&B', 'Avisar quando o preço é alterado', B, [], 'true',
+     'O fornecedor subiu o preço e ninguém deu por isso: é assim que a margem desaparece.'),
+    (8231, 'F&B', 'Avisar quando o preço é alterado (percentagem)', I, [], '5',
+     'A partir de quantos %% se avisa.'),
+    (8238, 'F&B', 'Endereço de e-mail de resposta', T, [], '', ''),
+    (8277, 'F&B', 'Bloquear movimento de stock com quantidade negativa na origem', B, [], 'false',
+     'Impede tirar do armazém o que lá não está — o stock negativo é sempre um erro escondido.'),
+
+    # ---------------- Gestão de F&B · Exportação ----------------
+    (8274, 'F&B · Exportação', 'Dias', I, [], '0', ''),
+    (8275, 'F&B · Exportação', 'Nome do ficheiro', T, [], 'CT{F:yyyyMMdd}_{T:yyyyMMdd}.txt', ''),
+    (8276, 'F&B · Exportação', 'Pasta de exportação', T, [], '', ''),
+    (8273, 'F&B · Exportação', 'Decimais', I, [], '4', ''),
+
+    # ---------------- Gestão de F&B · Contas a pagar / Contabilidade ----------------
+    (10537, 'F&B · Contas a pagar', 'Recibo de pagamento (relatório)', T, [], '', ''),
+    (8335, 'F&B · Contabilidade', 'Conta analítica', C, ['Escondido', 'Visível', 'Obrigatório'], 'Escondido', ''),
+    (8337, 'F&B · Contabilidade', 'Centro de Custo', C, ['Escondido', 'Visível', 'Obrigatório'], 'Escondido', ''),
 ]
 
 
