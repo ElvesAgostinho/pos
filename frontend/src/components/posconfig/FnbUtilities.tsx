@@ -148,23 +148,69 @@ export default function FnbUtilities() {
             </div>
           </>
         ) : (
-          <div className="flex-1 p-4">
-            <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] mb-3">
-              SAF-T — Comunicação de Inventário
-            </div>
-            <div className="text-[12px] text-[#333] max-w-[700px] space-y-2">
-              <p>
-                A AGT exige a comunicação anual do inventário. O ficheiro sai do
-                <b> Centro Fiscal → SAF-T</b>, onde já existe o gerador com a estrutura
-                oficial e a assinatura.
-              </p>
-              <div className="text-[11px] text-[#8a6100] bg-[#fff7e6] border border-[#e0c080] px-3 py-2">
-                Não dupliquei o gerador aqui: um SAF-T gerado por dois sítios diferentes
-                acaba sempre com duas versões da verdade.
-              </div>
-            </div>
+          <InventarioAgt />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * COMUNICAÇÃO DE INVENTÁRIO À AGT — o ficheiro das existências, gerado AQUI.
+ *
+ * O POS é o dono do stock (armazéns + custo médio): o ficheiro StockFile nasce do
+ * mesmo motor que os armazéns usam — código, descrição, unidade, quantidade e valor
+ * de fecho por artigo. Escolhe-se o ano, vê-se o resumo, descarrega-se o XML e
+ * carrega-se no portal da AGT.
+ */
+function InventarioAgt() {
+  const [ano, setAno] = useState(new Date().getFullYear());
+  const { data: meta } = useQuery({
+    queryKey: ['fnb', 'inv-saft', ano],
+    queryFn: async () => (await apiClient.get('pos/fnb/stock-saft/', { params: { year: ano, meta: 1 } })).data,
+  });
+
+  const descarregar = async () => {
+    try {
+      const r = await apiClient.get('pos/fnb/stock-saft/', { params: { year: ano }, responseType: 'blob' });
+      const url = URL.createObjectURL(r.data);
+      const a = document.createElement('a');
+      a.href = url; a.download = `inventario_${ano}.xml`; a.click();
+      URL.revokeObjectURL(url);
+      notifyGuide({ title: 'Inventário gerado', message: `Ficheiro do ano ${ano} descarregado — carregue-o no portal da AGT.` });
+    } catch (e: any) { notifyError(e); }
+  };
+
+  return (
+    <div className="flex-1 p-4">
+      <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] mb-3">
+        SAF-T — Comunicação de Inventário (AGT)
+      </div>
+      <div className="max-w-[700px] space-y-3 text-[12px] text-[#333]">
+        <p>A AGT exige a comunicação anual das existências. O ficheiro sai <b>daqui</b>,
+          do stock real dos armazéns, valorizado ao custo médio.</p>
+        <div className="flex items-end gap-3">
+          <label className="flex flex-col gap-1">
+            <span className="text-[#666]">Ano fiscal</span>
+            <input type="number" value={ano} onChange={(e) => setAno(Number(e.target.value))}
+              className="h-8 w-[110px] px-2 border border-[#8c8c8c]" style={inputStyle} />
+          </label>
+          <button onClick={descarregar}
+            className="h-8 px-5 text-[13px] font-bold bg-[#dbe8ff] border border-[#8c8c8c] hover:bg-[#e8f0ff]">
+            ⬇ Gerar e descarregar o XML
+          </button>
+        </div>
+        {meta && (
+          <div className="border border-[#d0d0d0] bg-white p-3 grid grid-cols-3 gap-2 text-[12px]">
+            <div><span className="text-[#666]">Artigos com existência</span><br /><b>{meta.items}</b></div>
+            <div><span className="text-[#666]">Valor total (custo médio)</span><br /><b>{Number(meta.total_value).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} Kz</b></div>
+            <div><span className="text-[#666]">Empresa / NIF</span><br /><b>{meta.company}</b> · {meta.nif}</div>
           </div>
         )}
+        <div className="text-[11px] text-[#666]">
+          O SAF-T de <b>vendas</b> continua a sair em Utilitários › SAFT-AO — são dois
+          ficheiros diferentes que a AGT pede: um é o que se vendeu, este é o que ficou.
+        </div>
       </div>
     </div>
   );

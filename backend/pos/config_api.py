@@ -2707,6 +2707,72 @@ class PosSaftView(APIView):
         return resp
 
 
+class PosStockSaftView(APIView):
+    """COMUNICAÇÃO DE INVENTÁRIO À AGT — as existências valorizadas, EM FICHEIRO.
+
+    A AGT exige a comunicação anual do inventário (o que a casa TEM em armazém a
+    31/12, valorizado). O POS é dono do stock (StockLevel + custo médio) — o ficheiro
+    nasce AQUI, do mesmo motor que os armazéns usam, no formato StockFile:
+      ProductCategory · ProductCode · ProductDescription · UnitOfMeasure ·
+      ClosingStockQuantity · ClosingStockValue
+    Sem isto, o separador apontava para fora e ninguém comunicava nada.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from django.http import HttpResponse
+        from fiscal.models import FiscalConfig
+        from inventory.models import StockLevel
+        from decimal import Decimal
+        from django.db.models import Sum
+
+        ano = int(request.query_params.get('year') or timezone.localdate().year)
+        cfg = FiscalConfig.get()
+
+        # existências por artigo (soma dos armazéns), valorizadas ao custo médio
+        linhas = []
+        total = Decimal('0')
+        por_item = (StockLevel.objects.select_related('item', 'item__base_uom')
+                    .values('item__code', 'item__name', 'item__base_uom__code',
+                            'item__current_average_cost')
+                    .annotate(qtd=Sum('quantity_on_hand')).order_by('item__code'))
+        for r in por_item:
+            qtd = r['qtd'] or Decimal('0')
+            if qtd <= 0:
+                continue          # a AGT quer o que EXISTE; negativos são erro a corrigir
+            custo = Decimal(str(r['item__current_average_cost'] or 0))
+            valor = (qtd * custo).quantize(Decimal('0.01'))
+            total += valor
+            linhas.append(
+                f'  <Stock>\n'
+                f'    <ProductCategory>M</ProductCategory>\n'
+                f'    <ProductCode>{r["item__code"]}</ProductCode>\n'
+                f'    <ProductDescription>{(r["item__name"] or "")[:100]}</ProductDescription>\n'
+                f'    <UnitOfMeasure>{r["item__base_uom__code"] or "UN"}</UnitOfMeasure>\n'
+                f'    <ClosingStockQuantity>{qtd:.4f}</ClosingStockQuantity>\n'
+                f'    <ClosingStockValue>{valor}</ClosingStockValue>\n'
+                f'  </Stock>')
+
+        xml = (f'<?xml version="1.0" encoding="UTF-8"?>\n'
+               f'<StockFile>\n'
+               f'  <StockHeader>\n'
+               f'    <FiscalYear>{ano}</FiscalYear>\n'
+               f'    <EndDate>{ano}-12-31</EndDate>\n'
+               f'    <TaxRegistrationNumber>{cfg.company_nif or ""}</TaxRegistrationNumber>\n'
+               f'    <CompanyName>{cfg.company_name or ""}</CompanyName>\n'
+               f'    <NoStock>{0 if linhas else 1}</NoStock>\n'
+               f'  </StockHeader>\n'
+               + '\n'.join(linhas) + ('\n' if linhas else '')
+               + f'</StockFile>\n')
+
+        if request.query_params.get('meta'):
+            return Response({'year': ano, 'items': len(linhas), 'total_value': str(total),
+                             'company': cfg.company_name, 'nif': cfg.company_nif})
+        resp = HttpResponse(xml, content_type='application/xml')
+        resp['Content-Disposition'] = f'attachment; filename=\"inventario_{ano}_{cfg.company_nif or "nif"}.xml\"'
+        return resp
+
+
 class PosSendLogsView(APIView):
     """ENVIAR OS LOGS AO SUPORTE — o botão do Diagnóstico para pedir assistência.
 
