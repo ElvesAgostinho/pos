@@ -41,11 +41,20 @@ def current_usage():
     from identity.models import Hotel
     from django.contrib.auth.models import User
     usage = {'hotels': Hotel.objects.count(), 'users': User.objects.filter(is_active=True).count()}
+    # TERMINAIS POS: conta os terminais REAIS (pos.PosTerminal — os que a Configuração
+    # POS cria) e também os postos legados (identity.Workstation). Contava só os
+    # legados: criavam-se terminais sem limite nenhum — a licença não valia nada.
+    usage['pos'] = 0
     try:
-        from identity.models import Workstation      # postos de trabalho = terminais POS
-        usage['pos'] = Workstation.objects.count()
+        from pos.models import PosTerminal
+        usage['pos'] += PosTerminal.objects.filter(is_active=True).count()
     except Exception:
-        usage['pos'] = 0
+        pass
+    try:
+        from identity.models import Workstation
+        usage['pos'] += Workstation.objects.count()
+    except Exception:
+        pass
     return usage
 
 
