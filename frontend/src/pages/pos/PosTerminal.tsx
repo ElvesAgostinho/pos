@@ -14,6 +14,7 @@ import AccountsPanel from './AccountsPanel';
 import PinChange from './PinChange';
 import TicketPreview from './TicketPreview';
 import DayClose from './DayClose';
+import CashClose from './CashClose';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -179,6 +180,8 @@ export default function PosTerminal() {
   // lista as contas que travam, e cada uma cobra-se ou anula-se ali mesmo.
   const [fechoAberto, setFechoAberto] = useState(false);
   const fecharDia = () => setFechoAberto(true);
+  // FECHO DE CAIXA do operador: contagem (cega, 8005) + sangria/reforço.
+  const [fechoCaixa, setFechoCaixa] = useState(false);
 
   const sair = () => {
     localStorage.removeItem('pos_operator_token');
@@ -222,6 +225,8 @@ export default function PosTerminal() {
     { label: 'Info.Hósp.', icon: '👤', act: () => setJanela('GUESTS'), on: true },
     { label: 'Setor', icon: '🖵', act: () => setEtapa('SECTOR'), on: true },
     { label: 'Contas Correntes', icon: '≣', act: () => setJanela('CC'), on: true },
+    // FECHO DE CAIXA: o operador conta a gaveta e presta contas (8005 fecho cego).
+    { label: 'Fecho de Caixa', icon: '🧮', act: () => setFechoCaixa(true), on: !!sessao },
     // (Parâmetro 8062) o fecho do dia só aparece se o backoffice o permitir aqui.
     ...(cfg?.allow_day_close
       ? [{ label: 'Fecho do Dia', icon: '🔒', act: fecharDia, on: true }]
@@ -371,6 +376,13 @@ export default function PosTerminal() {
                 else setEtapa('MAP');
               }}
               onBack={() => setEtapa('SECTOR')} />
+          )}
+
+          {/* Fecho de Caixa do operador (contagem cega + sangria/reforço) */}
+          {fechoCaixa && sessao && (
+            <CashClose sessao={sessao}
+              onClosed={() => { setFechoCaixa(false); setSessao(null); setTicket(null); setEtapa('CASH'); inval(); }}
+              onClose={() => setFechoCaixa(false)} />
           )}
 
           {/* Fecho do Dia: as contas que travam cobram-se ou anulam-se AQUI. */}

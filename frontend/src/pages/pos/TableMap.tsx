@@ -74,7 +74,9 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
     queryKey: ['pos-open-tickets'],
     queryFn: async () => {
       const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } });
-      return ((r.data?.results || r.data || []) as any[]).filter((t) => t.status === 'OPEN');
+      // as SUSPENSAS também aparecem — a mesa continua ocupada; tocar RETOMA a conta
+      return ((r.data?.results || r.data || []) as any[])
+        .filter((t) => t.status === 'OPEN' || t.status === 'SUSPENDED');
     },
     refetchInterval: refrescar,
   });
@@ -113,7 +115,16 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
       if (!conta) return alert(`A mesa ${m.table_number} está livre — não há nada a cobrar.`);
       return onPayTicket?.(conta);
     }
-    if (conta) return onOpenTicket(conta.id);          // retoma a conta que já existe
+    if (conta) {
+      // conta SUSPENSA: reabre-se primeiro (o motor só deixa lançar em contas abertas)
+      if (conta.status === 'SUSPENDED') {
+        apiClient.post(`pos/tickets/${conta.id}/reopen/`, {})
+          .then(() => onOpenTicket(conta.id))
+          .catch((e) => alert(e?.response?.data?.detail || 'Não foi possível reabrir.'));
+        return;
+      }
+      return onOpenTicket(conta.id);                   // retoma a conta que já existe
+    }
     if (['BLOCKED', 'MAINTENANCE'].includes(m.status)) {
       return alert(`A mesa ${m.table_number} está ${m.status === 'BLOCKED' ? 'bloqueada' : 'em manutenção'}.`);
     }

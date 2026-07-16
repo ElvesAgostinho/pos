@@ -131,6 +131,47 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
     } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao anular.'); }
   };
 
+  // DESCONTO — os códigos do backoffice primeiro (validade + grupos autorizados no
+  // servidor); sem código, manual em % (acima do 8620, o servidor exige supervisor).
+  const aplicarDesconto = async () => {
+    try {
+      const r = await apiClient.get('pos/config/discounts/');
+      const codigos = ((r.data?.results || r.data || []) as any[])
+        .filter((d) => d.is_active !== false && d.for_pos !== false);
+      const lista = codigos.map((d, i) => `${i + 1}. ${d.code} — ${d.name} (${Number(d.value)}${d.base === 'PERCENT' ? '%' : ' Kz'})`).join('\n');
+      const escolha = window.prompt(
+        `DESCONTO DA CONTA\n\n${lista || '(sem descontos configurados)'}\n\n` +
+        'Escreva o Nº do desconto, ou uma percentagem (ex.: 10):');
+      if (!escolha) return;
+      const n = Number(escolha.trim());
+      // um número pequeno dentro da lista = escolher o CÓDIGO; senão é percentagem manual
+      const body: any = (Number.isInteger(n) && n >= 1 && n <= codigos.length && !escolha.includes('%'))
+        ? { discount: codigos[n - 1].id }
+        : { percent: escolha.replace('%', '').trim() };
+      try {
+        await apiClient.post(`pos/tickets/${tid}/set_discount/`, body);
+      } catch (e: any) {
+        if (e?.response?.data?.requires_supervisor) {
+          const sup = window.prompt(e.response.data.detail + '\n\nNome do supervisor que autoriza:');
+          if (!sup) return;
+          await apiClient.post(`pos/tickets/${tid}/set_discount/`, { ...body, authorized_by: sup });
+        } else { throw e; }
+      }
+      inval();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || 'Não foi possível aplicar o desconto.');
+    }
+  };
+
+  // SUSPENDER a conta (o grupo que sai e volta) — retoma-se tocando na mesa.
+  const suspender = async () => {
+    try {
+      await apiClient.post(`pos/tickets/${tid}/suspend/`, {});
+      inval();
+      onClose();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível suspender.'); }
+  };
+
   const enviarCozinha = async () => {
     try {
       const r = await apiClient.post(`pos/tickets/${tid}/fire_kitchen/`, {});
@@ -156,6 +197,15 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
             {{ PASSANTE: 'Passante', HOTEL: 'Hóspede', INTERNO: 'Consumo Interno' }[conta?.guest_type as string] || ''}
             {conta?.customer_name ? ` · ${conta.customer_name}` : ''}
           </span>
+          {/* DESCONTO da conta: os descontos por CÓDIGO do backoffice (com validade e
+              grupos autorizados) ou manual — acima do teto 8620 exige supervisor. */}
+          <button onClick={aplicarDesconto}
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">
+            % {Number(conta?.discount_percent) > 0 ? `${Number(conta.discount_percent)}%` : 'Desc.'}
+          </button>
+          {/* SUSPENDER: a conta fica de lado (grupo que sai e volta) — retoma-se no mapa. */}
+          <button onClick={suspender}
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">⏸ Suspender</button>
           {/* consultas SEM sair da venda — artigos, hóspedes e documentos (a junção) */}
           <button onClick={() => setProcurar(true)}
             className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🔍 Artigos</button>

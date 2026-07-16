@@ -188,13 +188,27 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         </div>
 
         {/* ações */}
-        <div className="grid grid-cols-3 gap-1 p-1 bg-black">
+        <div className="grid grid-cols-4 gap-1 p-1 bg-black">
           <button onClick={() => setEscolherEntidade(true)}
             className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Entidade (quem leva a fatura)">
             👤+ <span className="text-[14px] align-middle ml-1">
               {entidade ? entidade.name.slice(0, 12) : 'Venda Direta'}
             </span>
           </button>
+          <button onClick={async () => {
+            // GIFT CARD: o saldo do cartão abate à conta (motor redeem_gift — o saldo
+            // vive no servidor; aqui só se lê o código).
+            const codigo = window.prompt('GIFT CARD — leia ou escreva o código:');
+            if (!codigo) return;
+            try {
+              const r = await apiClient.post(`pos/tickets/${ticket.id}/redeem_gift/`, { code: codigo.trim() });
+              const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
+              setConta(tk);
+              if (Number(tk.balance_due ?? 0) <= 0) onPaid();
+              else alert(`Gift aplicado. Falta: ${money(tk.balance_due)} Kz`);
+            } catch (e: any) { alert(e?.response?.data?.detail || 'Gift card inválido.'); }
+          }}
+            className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Gift card">🎁</button>
           <button onClick={() => setTeclado(!teclado)}
             className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Escrever o valor entregue">✎</button>
           <button onClick={() => { setValor(''); setModoCartao(''); }}
