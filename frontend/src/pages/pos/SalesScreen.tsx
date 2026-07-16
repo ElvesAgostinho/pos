@@ -46,6 +46,9 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   // HOTEL pede o hóspede do PMS; INTERNO pede o colaborador (RH); PASSANTE é opcional.
   const [formCliente, setFormCliente] = useState(false);
   const [pedirHospede, setPedirHospede] = useState(false);
+  const [verCombos, setVerCombos] = useState(false);     // combos do Commercial
+  const [verHistorico, setVerHistorico] = useState(false); // auditoria da conta
+  const [verDestinos, setVerDestinos] = useState(false);  // Quarto/Piscina/Praia…
   const [jaPediu, setJaPediu] = useState<number[]>([]);   // 1 pergunta por conta, não em loop
 
   // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
@@ -205,7 +208,16 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
           </button>
           {/* SUSPENDER: a conta fica de lado (grupo que sai e volta) — retoma-se no mapa. */}
           <button onClick={suspender}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">⏸ Suspender</button>
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">⏸</button>
+          {/* COMBOS do Commercial: o menu lança os componentes e acerta o preço. */}
+          <button onClick={() => setVerCombos(true)}
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🧺 Combos</button>
+          {/* DESTINO: a conta vai para o Quarto/Piscina/Praia — entra na fila de Entregas. */}
+          <button onClick={() => setVerDestinos(true)}
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🛎</button>
+          {/* HISTÓRICO da conta: quem lançou/anulou/pagou, quando, de que IP. */}
+          <button onClick={() => setVerHistorico(true)}
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">≡</button>
           {/* consultas SEM sair da venda — artigos, hóspedes e documentos (a junção) */}
           <button onClick={() => setProcurar(true)}
             className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🔍 Artigos</button>
@@ -381,6 +393,17 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
           onClose={() => setFormCliente(false)} />
       )}
 
+      {/* COMBOS do Commercial: lançar o menu inteiro com um toque */}
+      {verCombos && <ComboWindow tid={tid} onDone={() => { setVerCombos(false); inval(); }}
+        onClose={() => setVerCombos(false)} />}
+
+      {/* DESTINO: manda a conta para a fila de Entregas (Quarto/Piscina/…) */}
+      {verDestinos && <DestWindow tid={tid} onDone={() => { setVerDestinos(false); inval(); }}
+        onClose={() => setVerDestinos(false)} />}
+
+      {/* HISTÓRICO (auditoria) desta conta */}
+      {verHistorico && <AuditWindow tid={tid} onClose={() => setVerHistorico(false)} />}
+
       {/* consulta de artigo: procura no catálogo INTEIRO e lança com um toque */}
       {procurar && (
         <ArticleSearch
@@ -401,5 +424,106 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
           onPaid={() => { setPagar(false); onClose(); }} />
       )}
     </div>
+  );
+}
+
+// ─── COMBOS (Commercial): o menu lança os componentes e acerta o preço ───────
+function ComboWindow({ tid, onDone, onClose }: { tid: number; onDone: () => void; onClose: () => void }) {
+  const { data: combos = [] } = useQuery({
+    queryKey: ['pos-combos'],
+    queryFn: async () => {
+      const r = await apiClient.get('commercial/combos/');
+      return ((r.data?.results || r.data || []) as any[]).filter((c) => c.is_active !== false);
+    },
+  });
+  const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
+  const lancarCombo = async (c: any) => {
+    try {
+      await apiClient.post(`pos/tickets/${tid}/add_combo/`, { combo: c.id });
+      onDone();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível lançar o combo.'); }
+  };
+  return (
+    <Window title="Combos / Menus" width={560} onClose={onClose} tone="#8a6100">
+      <div className="p-3 bg-[#1a1a1a] grid grid-cols-2 gap-2 max-h-[56vh] overflow-auto">
+        {combos.map((c: any) => (
+          <button key={c.id} onClick={() => lancarCombo(c)}
+            className="h-[86px] bg-[#8a6100] text-white rounded-md font-bold text-[16px] px-2
+              leading-tight active:scale-95">
+            {c.name}
+            <span className="block text-[14px] font-normal opacity-90">{money(c.combo_price ?? c.price)} Kz</span>
+          </button>
+        ))}
+        {combos.length === 0 && (
+          <div className="col-span-2 text-white/50 text-center py-8 text-[14px]">
+            Sem combos ativos — criam-se no Commercial (Promoções/Combos).
+          </div>
+        )}
+      </div>
+    </Window>
+  );
+}
+
+// ─── DESTINO: Quarto/Piscina/Praia… — a conta entra na fila de Entregas ──────
+function DestWindow({ tid, onDone, onClose }: { tid: number; onDone: () => void; onClose: () => void }) {
+  const { data: destinos = [] } = useQuery({
+    queryKey: ['pos-dests'],
+    queryFn: async () => {
+      const r = await apiClient.get('pos/service-destinations/');
+      return ((r.data?.results || r.data || []) as any[]).filter((d) => d.is_active !== false);
+    },
+  });
+  const escolher = async (d: any) => {
+    const nota = window.prompt(`Destino: ${d.name}\n\nObservações para a entrega (opcional):`) || '';
+    try {
+      await apiClient.post(`pos/tickets/${tid}/set_destination/`, {
+        dest_kind: 'DESTINATION', dest_ref: d.id, dest_note: nota || null,
+      });
+      onDone();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível definir o destino.'); }
+  };
+  return (
+    <Window title="Destino do pedido (entra nas Entregas)" width={520} onClose={onClose} tone="#1a4f8a">
+      <div className="p-3 bg-[#1a1a1a] grid grid-cols-3 gap-2 max-h-[52vh] overflow-auto">
+        {destinos.map((d: any) => (
+          <button key={d.id} onClick={() => escolher(d)}
+            className="h-[76px] bg-[#1a4f8a] text-white rounded-md font-bold text-[15px] px-2
+              leading-tight active:scale-95">
+            {d.name}
+          </button>
+        ))}
+        {destinos.length === 0 && (
+          <div className="col-span-3 text-white/50 text-center py-8 text-[14px]">
+            Sem destinos configurados — criam-se em Configuração POS › Destinos de Serviço.
+          </div>
+        )}
+      </div>
+    </Window>
+  );
+}
+
+// ─── HISTÓRICO da conta: quem fez o quê, quando, de que IP (auditoria) ───────
+function AuditWindow({ tid, onClose }: { tid: number; onClose: () => void }) {
+  const { data: eventos = [] } = useQuery({
+    queryKey: ['pos-audit', tid],
+    queryFn: async () => (await apiClient.get(`pos/tickets/${tid}/audit/`)).data as any[],
+  });
+  return (
+    <Window title="Histórico da conta (auditoria)" width={720} onClose={onClose} tone="#3a3a3a">
+      <div className="bg-[#1a1a1a] overflow-auto" style={{ maxHeight: '60vh' }}>
+        {eventos.map((e: any, i: number) => (
+          <div key={i} className="px-4 py-2 border-b border-black/30 text-[13px]">
+            <span className="text-white/40">{new Date(e.at).toLocaleString('pt-PT',
+              { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+            <span className="text-[#f0c000] font-bold mx-2">{e.event_display}</span>
+            <span className="text-white">{e.description}</span>
+            <span className="text-white/40"> — {e.operator || e.user || ''}{e.ip ? ` · ${e.ip}` : ''}</span>
+          </div>
+        ))}
+        {eventos.length === 0 && (
+          <div className="text-white/50 text-center py-8 text-[14px]">Sem eventos registados.</div>
+        )}
+      </div>
+    </Window>
   );
 }

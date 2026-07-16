@@ -15,6 +15,8 @@ import PinChange from './PinChange';
 import TicketPreview from './TicketPreview';
 import DayClose from './DayClose';
 import CashClose from './CashClose';
+import ReservationsPanel from './ReservationsPanel';
+import DeliveriesPanel from './DeliveriesPanel';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -45,7 +47,7 @@ export default function PosTerminal() {
   const [aConsultar, setAConsultar] = useState<any | null>(null);
   // As janelas da barra da esquerda. Uma de cada vez — o empregado não faz duas coisas
   // ao mesmo tempo com uma mesa à espera.
-  const [janela, setJanela] = useState<'' | 'SPLIT' | 'TRANSFER' | 'DOCS' | 'GUESTS' | 'MEALS' | 'CC'>('');
+  const [janela, setJanela] = useState<'' | 'SPLIT' | 'TRANSFER' | 'DOCS' | 'GUESTS' | 'MEALS' | 'CC' | 'RESERVAS' | 'ENTREGAS'>('');
   const [contaAtual, setContaAtual] = useState<any | null>(null);
   // Modo de escolha de mesa: para as parciais e as transferências é preciso saber QUAL.
   const [escolher, setEscolher] = useState<'' | 'SPLIT' | 'TRANSFER'>('');
@@ -220,6 +222,9 @@ export default function PosTerminal() {
       ? [{ label: 'Transferências', icon: '⇄', ativo: emTransfer,
           act: () => alternar('PAY', 'TRANSFER', emTransfer), on: !!sessao }]
       : []),
+    // RESERVAS de mesa (motor POSReservation) e ENTREGAS por destino (dispatch/deliver)
+    { label: 'Reservas', icon: '📅', act: () => setJanela('RESERVAS'), on: !!setor },
+    { label: 'Entregas', icon: '🛎', act: () => setJanela('ENTREGAS'), on: true },
     { label: 'Documentos', icon: '🗎', act: () => setJanela('DOCS'), on: true },
     { label: 'Mapa de Refeições', icon: '🍸', act: () => setJanela('MEALS'), on: true },
     { label: 'Info.Hósp.', icon: '👤', act: () => setJanela('GUESTS'), on: true },
@@ -360,6 +365,12 @@ export default function PosTerminal() {
           {janela === 'GUESTS' && <GuestsPanel aba="GUESTS" onClose={() => setJanela('')} />}
           {janela === 'MEALS' && <GuestsPanel aba="MEALS" onClose={() => setJanela('')} />}
           {janela === 'CC' && <AccountsPanel onClose={() => setJanela('')} />}
+          {janela === 'RESERVAS' && setor && (
+            <ReservationsPanel setor={setor}
+              onOpenTicket={(id) => { setTicket(id); setEtapa('SALES'); }}
+              onClose={() => setJanela('')} />
+          )}
+          {janela === 'ENTREGAS' && <DeliveriesPanel onClose={() => setJanela('')} />}
 
           {/* Consulta de Mesa: o talão de conferência (documento CM da AGT), sem venda. */}
           {aConsultar && (
