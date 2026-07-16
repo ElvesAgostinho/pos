@@ -117,11 +117,22 @@ class LicenseViewSet(viewsets.ModelViewSet):
             details={'client': code, 'license': lic.license_number,
                      'presented': data.get('license_number')},
             user_identity='remote-sync')
-        return Response({
+        resp = {
             'license_number': lic.license_number,
             'valid_until': str(lic.valid_until) if lic.valid_until else None,
             'license_key': wf._generate_license_key_string(lic),
-        })
+        }
+        # CERTIFICAÇÃO AGT AUTOMÁTICA: se o PCC tem as credenciais desta licença
+        # (geradas em CLM › AGT), seguem no MESMO canal autenticado — o cliente
+        # ativa e as faturas saem logo com o nº de certificação, sem instalador
+        # a copiar ficheiros à mão. É tudo do FORNECEDOR: o cliente só recebe.
+        if getattr(lic, 'agt_certificate_number', None) and getattr(lic, 'agt_private_key', None):
+            resp['agt'] = {
+                'certificate_number': lic.agt_certificate_number,
+                'private_key': lic.agt_private_key,
+                'public_key': lic.agt_public_key,
+            }
+        return Response(resp)
 
 class InstallationViewSet(viewsets.ModelViewSet):
     queryset = Installation.objects.all()

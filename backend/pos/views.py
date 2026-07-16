@@ -83,21 +83,41 @@ def _print_document(ticket, doc, copia=False):
     sem_nif = P.text(8148, 'Consumidor Final')
     rodape = P.text(8256, 'Obrigado pela sua visita.')
     corte = '\n' * max(0, min(10, P.int(8207, 2)))
-    return PrintJob.objects.create(
-        job_type='INVOICE', outlet=ticket.outlet,
-        title=f"{'2ª VIA · ' if copia else ''}{doc.invoice_no}",
-        content=(f"{cfg.company_name or ''}\n"
-                 f"NIF: {cfg.company_nif or ''}\n"
-                 f"{'*** 2ª VIA ***' if copia else 'ORIGINAL'}\n"
-                 f"{doc.invoice_no}   {doc.doc_date:%d/%m/%Y}\n"
-                 f"Cliente: {doc.customer_name or sem_nif}\n"
-                 f"NIF cliente: {doc.customer_tax_id or sem_nif}\n"
-                 f"{'-' * 34}\n{linhas}\n{'-' * 34}\n"
-                 f"{iva}\n"
-                 f"TOTAL: {fmt(doc.gross_total)} Kz\n"
-                 f"Valor por extenso: {doc.amount_in_words or ''}\n"
-                 f"{'-' * 34}\n{mencao}\n{rodape}{corte}"),
-        reference=doc.invoice_no, copies=1)
+
+    def _corpo(texto_via):
+        return (f"{cfg.company_name or ''}\n"
+                f"NIF: {cfg.company_nif or ''}\n"
+                f"*** {texto_via.upper()} ***\n"
+                f"{doc.invoice_no}   {doc.doc_date:%d/%m/%Y}\n"
+                f"Cliente: {doc.customer_name or sem_nif}\n"
+                f"NIF cliente: {doc.customer_tax_id or sem_nif}\n"
+                f"{'-' * 34}\n{linhas}\n{'-' * 34}\n"
+                f"{iva}\n"
+                f"TOTAL: {fmt(doc.gross_total)} Kz\n"
+                f"Valor por extenso: {doc.amount_in_words or ''}\n"
+                f"{'-' * 34}\n{mencao}\n{rodape}{corte}")
+
+    # AS VIAS DA SÉRIE (caixa "Textos das cópias" do backoffice): a 1ª via é o
+    # ORIGINAL (a do cliente); as outras saem com o texto delas — arquivo,
+    # contabilidade. Cada via é um trabalho próprio na fila, com o texto impresso.
+    vias = [v for v in (getattr(doc.series, 'copy_texts', None) or []) if str(v).strip()] \
+        or ['Original']
+    if copia:
+        # REIMPRESSÃO: não é uma via nova — é a 2ª via do Original, e diz-lo.
+        return PrintJob.objects.create(
+            job_type='INVOICE', outlet=ticket.outlet,
+            title=f'2ª VIA · {doc.invoice_no}',
+            content=_corpo(f'2ª VIA · {vias[0]}'),
+            reference=doc.invoice_no, copies=1)
+    primeiro = None
+    for via in vias:
+        job = PrintJob.objects.create(
+            job_type='INVOICE', outlet=ticket.outlet,
+            title=f'{doc.invoice_no} · {via}',
+            content=_corpo(via),
+            reference=doc.invoice_no, copies=1)
+        primeiro = primeiro or job
+    return primeiro
 
 def _safe_fiscalize(ticket, request, credito=False, customer=None):
     """Emite o documento fiscal (AGT) do ticket pago. Nunca quebra o pagamento.
@@ -1171,6 +1191,16 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             # Conta corrente: o documento é uma FATURA (por receber), não uma fatura-recibo.
             _safe_fiscalize(ticket, request, credito=bool(pm.current_account),
                             customer=entidade)
+            # O TALÃO SAI AO COBRAR — todas as VIAS da série (Original p/ o cliente,
+            # as outras p/ arquivo e contabilidade) entram na fila; o print_agent
+            # despacha-as para a térmica. Antes só saía pelo botão manual.
+            try:
+                from fiscal.integration import existing_for
+                doc = existing_for('pos', ticket.id)
+                if doc:
+                    _print_document(ticket, doc)
+            except Exception:
+                pass   # a impressora nunca trava a cobrança (fila + reimprimir tratam)
 
         log_event(request, 'PAYMENT', f'Pagamento {pm.name}: {applied} (troco {change})',
                   operator_name=ticket.operator_name, outlet=ticket.outlet,

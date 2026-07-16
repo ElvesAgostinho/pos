@@ -103,7 +103,27 @@ class LicenseSyncView(APIView):
         with open(caminho, 'w') as f:
             f.write(nova_raw)
 
+        # CERTIFICAÇÃO AGT AUTOMÁTICA: se o PCC mandou credenciais e o nº de
+        # certificado é DIFERENTE do instalado, aplica-as (chaves de assinatura +
+        # número nas faturas). Igual = não se mexe — trocar a chave sem motivo
+        # partia a verificação dos documentos antigos.
+        agt = r.json().get('agt') or {}
+        agt_aplicada = False
+        if agt.get('certificate_number'):
+            try:
+                from fiscal.models import FiscalConfig
+                from fiscal.certification import apply_certification
+                if FiscalConfig.get().certificate_number != agt['certificate_number']:
+                    apply_certification(cert=agt['certificate_number'],
+                                        private_key=agt.get('private_key'),
+                                        public_key=agt.get('public_key'))
+                    agt_aplicada = True
+            except Exception as e:
+                return Response({'detail': f'Licença gravada, mas a certificação AGT falhou: {e}'},
+                                status=502)
+
         return Response({
+            'agt_applied': agt_aplicada,
             'detail': 'Licença sincronizada com o PCC.',
             'license_number': nova.get('license_number'),
             'valid_until': nova.get('valid_until'),
