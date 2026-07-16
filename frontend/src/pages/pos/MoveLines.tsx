@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
 import PayPanel from './PayPanel';
+import SubcontaBar from './SubcontaBar';
 
 /**
  * MOVER ARTIGOS ENTRE CONTAS — serve as duas funções, porque o motor é o mesmo:
@@ -106,13 +107,22 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     }
   };
 
+  // JUNTAR AS CONTAS — o inverso de separar: a conta da direita entra na da esquerda
+  // (linhas e pagamentos), e a de origem anula-se. É o `merge` do motor de tickets.
+  const juntar = async () => {
+    if (!esqId || !dirId) return alert('Escolha as duas contas a juntar.');
+    if (!window.confirm('Juntar a conta da direita à da esquerda?\n\nAs linhas e os pagamentos passam todos; a conta da direita deixa de existir.')) return;
+    try {
+      await apiClient.post(`pos/tickets/${esqId}/merge/`, { source: dirId });
+      setDirId(null);
+      await refrescar();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || 'Não foi possível juntar as contas.');
+    }
+  };
+
   // ── uma conta (painel) ────────────────────────────────────────────────────
   const Painel = ({ conta, id, setId, sel, setSel, lado }: any) => {
-    // As subcontas desta mesa — carrossel (não cabem todas no ecrã).
-    const mesaId = conta?.table;
-    const irmas = abertas.filter((t: any) => t.table && t.table === mesaId);
-    const faixa = useRef<HTMLDivElement>(null);
-
     return (
       <div className="flex-1 flex flex-col min-w-0">
         <div className="h-[44px] bg-[#3a3a3a] flex items-center px-3 gap-2">
@@ -155,30 +165,9 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
           )}
         </div>
 
-        {/* CARROSSEL das subcontas — rodam, não são fixas */}
-        <div className="flex items-stretch bg-black">
-          <button onClick={() => faixa.current?.scrollBy({ left: -180, behavior: 'smooth' })}
-            className="w-[34px] bg-[#1f1f1f] text-white">‹</button>
-          <div ref={faixa} className="flex-1 flex gap-1 overflow-x-auto scroll-smooth"
-            style={{ scrollbarWidth: 'none' }}>
-            {irmas.map((t: any, i: number) => (
-              <button key={t.id} onClick={() => setId(t.id)}
-                className={`min-w-[80px] h-[46px] text-[16px] font-bold rounded-sm
-                  ${id === t.id
-                    ? 'bg-[#8a0f0f] text-white ring-2 ring-[#c9a400]'
-                    : 'bg-[#1f1f1f] text-white/80'}`}>
-                {i + 1}
-              </button>
-            ))}
-            {irmas.length === 0 && (
-              <div className="flex-1 h-[58px] flex items-center justify-center text-white/30 text-[13px]">
-                sem subcontas
-              </div>
-            )}
-          </div>
-          <button onClick={() => faixa.current?.scrollBy({ left: 180, behavior: 'smooth' })}
-            className="w-[34px] bg-[#1f1f1f] text-white">›</button>
-        </div>
+        {/* AS PESSOAS DA MESA — o mesmo carrossel da venda: tocar num número troca a
+            subconta; tocar no seguinte ACRESCENTA uma pessoa. */}
+        <SubcontaBar conta={conta} onSwitch={(nid) => { setId(nid); setSel([]); }} />
 
         <div className="h-[52px] bg-[#8a8a8a] flex items-center justify-end px-3">
           <span className="text-white text-[28px] font-bold">{money(conta?.grand_total)}</span>
@@ -207,6 +196,9 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
               className="w-full h-[52px] bg-[#3a3a3a] text-white text-[20px] rounded disabled:opacity-30" title="Trazer o escolhido">«</button>
             <button onClick={() => mover(false, true)} disabled={!dirId}
               className="w-full h-[52px] bg-[#3a3a3a] text-white text-[20px] rounded disabled:opacity-30" title="Trazer tudo">««</button>
+            <button onClick={juntar} disabled={!dirId}
+              className="w-full h-[52px] bg-[#0f8b8d] text-white text-[13px] font-bold rounded disabled:opacity-30"
+              title="Juntar: a conta da direita entra na da esquerda">Juntar</button>
 
             <div className="flex flex-col gap-1 w-full mt-2">
               <button onClick={() => setQtd(qtd + 1)}

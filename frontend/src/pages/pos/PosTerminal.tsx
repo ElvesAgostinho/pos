@@ -224,23 +224,22 @@ export default function PosTerminal() {
             Na VENDA a barra desaparece: o balcão é teclado + comanda, a ecrã inteiro.
             As funções da barra são funções de SALA (consultar, cobrar, transferir) —
             dentro da venda não têm lugar, e o espaço delas é dos artigos. */}
-        {/* os botões REPARTEM a altura do ecrã — todos visíveis, sem scroll. Um botão
-            que só se encontra a rolar é um botão que o empregado não usa. */}
+        {/* botões de altura CONFORTÁVEL (dedo, não rato) e a lista ROLA — pedido do dono. */}
         {etapa !== 'SALES' && (
-        <div className="w-[176px] bg-black flex flex-col flex-shrink-0">
+        <div className="w-[176px] bg-black flex flex-col flex-shrink-0 overflow-y-auto">
           {MENU.map((m) => (
             <button key={m.label} onClick={() => m.on !== false && m.act()}
               disabled={m.on === false}
-              className="flex-1 min-h-0 border-b border-[#2a2a2a] flex flex-col items-center justify-center gap-0.5
-                text-white text-[14px] font-semibold leading-tight px-2 text-center
+              className="h-[104px] flex-shrink-0 border-b border-[#2a2a2a] flex flex-col items-center justify-center gap-1
+                text-white text-[15px] font-semibold leading-tight px-2 text-center
                 disabled:text-white/25 hover:bg-[#1f1f1f] disabled:hover:bg-transparent">
-              <span className="text-[24px]">{m.icon}</span>
+              <span className="text-[28px]">{m.icon}</span>
               {m.label}
             </button>
           ))}
           <button onClick={sair}
-            className="flex-1 min-h-0 bg-[#c0140f] text-white flex flex-col items-center justify-center gap-0.5 font-bold text-[14px]">
-            <span className="text-[24px]">✕</span> Sair
+            className="h-[104px] flex-shrink-0 bg-[#c0140f] text-white flex flex-col items-center justify-center gap-1 font-bold text-[15px]">
+            <span className="text-[28px]">✕</span> Sair
           </button>
         </div>
         )}

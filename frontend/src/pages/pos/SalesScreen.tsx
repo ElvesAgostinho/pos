@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client';
 import { comPerguntas } from '../posPrompt';
 import EntityPicker from './EntityPicker';
 import PayPanel from './PayPanel';
+import SubcontaBar from './SubcontaBar';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -23,6 +24,8 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   ticketId: number; setor: any; cfg?: any; onClose: () => void;
 }) {
   const qc = useQueryClient();
+  // A subconta ATIVA: numa mesa com várias pessoas, o carrossel troca-a sem sair da venda.
+  const [tid, setTid] = useState(ticketId);
   const [caminho, setCaminho] = useState<any[]>([]);
   const [qtd, setQtd] = useState(1);
   const [entidade, setEntidade] = useState<any | null>(null);
@@ -40,13 +43,13 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
       { params: operId ? { operator: operId } : undefined })).data,
   });
   const { data: conta } = useQuery({
-    queryKey: ['pos-ticket', ticketId],
-    queryFn: async () => (await apiClient.get(`pos/tickets/${ticketId}/`)).data,
+    queryKey: ["pos-ticket", tid],
+    queryFn: async () => (await apiClient.get(`pos/tickets/${tid}/`)).data,
     refetchInterval: 5000,
   });
 
   const inval = () => {
-    qc.invalidateQueries({ queryKey: ['pos-ticket', ticketId] });
+    qc.invalidateQueries({ queryKey: ["pos-ticket", tid] });
     qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
   };
 
@@ -58,7 +61,7 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   const lancar = async (k: any) => {
     if (k.available === false) return;
     try {
-      await comPerguntas(`pos/tickets/${ticketId}/add_line/`,
+      await comPerguntas(`pos/tickets/${tid}/add_line/`,
         { item: k.item, quantity: qtd },
         async (label, detalhe) => window.prompt(`${detalhe}\n\n${label}:`));
       setQtd(1);
@@ -66,7 +69,7 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
       // segue LOGO para a produção — não fica à espera do botão. É o modo dos bares
       // rápidos, onde o pedido não se acumula.
       if (cfg?.auto_fire_kitchen) {
-        try { await apiClient.post(`pos/tickets/${ticketId}/fire_kitchen/`, {}); } catch { /* sem produção configurada */ }
+        try { await apiClient.post(`pos/tickets/${tid}/fire_kitchen/`, {}); } catch { /* sem produção configurada */ }
       }
       inval();
     } catch (e: any) {
@@ -96,7 +99,7 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
 
   const enviarCozinha = async () => {
     try {
-      const r = await apiClient.post(`pos/tickets/${ticketId}/fire_kitchen/`, {});
+      const r = await apiClient.post(`pos/tickets/${tid}/fire_kitchen/`, {});
       if (r.data?.print_warnings?.length) alert(r.data.print_warnings.join('\n'));
       inval();
     } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao enviar para a cozinha.'); }
@@ -154,6 +157,8 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
 
       {/* ───────── comanda ───────── */}
       <div className="w-[520px] bg-[#3a3a3a] flex flex-col border-l-4 border-black">
+        {/* AS PESSOAS DA MESA: cada número é uma subconta; o seguinte acrescenta. */}
+        {conta?.table && <SubcontaBar conta={conta} onSwitch={(id) => { setTid(id); setQtd(1); }} />}
         {/* quem paga */}
         <button onClick={() => setEscolherEntidade(true)}
           className="h-[54px] bg-[#2b2b2b] text-white flex items-center justify-between px-4 border-b border-black">

@@ -1154,7 +1154,9 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                                 status=status.HTTP_400_BAD_REQUEST)
         if not destino:
             # A subconta nasce na MESMA mesa: continua a ser a mesma mesa a ser servida.
+            import uuid
             destino = POSTicket.objects.create(
+                ticket_number=f"TCK-{uuid.uuid4().hex[:8].upper()}",
                 outlet=origem.outlet, table=origem.table,
                 cash_session=origem.cash_session,
                 operator_name=origem.operator_name,
@@ -1190,7 +1192,10 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             resto = linha.quantity - qtd
             if resto > 0:
                 linha.quantity = resto
-                linha.save(update_fields=['quantity'])
+                # save() COMPLETO: o line_total recalcula-se no save do modelo — com
+                # update_fields=['quantity'] ficava o total antigo numa linha mais pequena,
+                # e a conta de origem não descia depois de separar.
+                linha.save()
             else:
                 linha.delete()
             movidas += 1
@@ -1427,32 +1432,10 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket.save(update_fields=['status'])
         return Response(self.get_serializer(self.get_queryset().get(pk=ticket.pk)).data)
 
-    @action(detail=True, methods=['post'])
-    def split(self, request, pk=None):
-        """Divide a conta: move as linhas indicadas para um novo ticket aberto."""
-        import uuid
-        ticket = self.get_object()
-        if ticket.status != 'OPEN':
-            return Response({'detail': 'Só tickets abertos podem ser divididos.'}, status=400)
-        line_ids = request.data.get('line_ids') or []
-        lines = ticket.lines.filter(pk__in=line_ids)
-        if not lines.exists():
-            return Response({'detail': 'Indique as linhas a mover (line_ids).'}, status=400)
-        if lines.count() >= ticket.lines.count():
-            return Response({'detail': 'Não é possível mover todas as linhas — deixe pelo menos uma.'}, status=400)
-        new_ticket = POSTicket.objects.create(
-            ticket_number=f"TCK-{uuid.uuid4().hex[:8].upper()}", outlet=ticket.outlet,
-            table=ticket.table, cash_session=ticket.cash_session, operator_name=ticket.operator_name)
-        lines.update(ticket=new_ticket)
-        POSTicket.objects.get(pk=ticket.pk).recompute(save=True)
-        POSTicket.objects.get(pk=new_ticket.pk).recompute(save=True)
-        log_event(request, 'TICKET_OPEN', f'Conta dividida -> {new_ticket.ticket_number}',
-                  operator_name=ticket.operator_name, outlet=ticket.outlet, reference=ticket.ticket_number,
-                  new_value=new_ticket.ticket_number)
-        return Response({
-            'source': self.get_serializer(self.get_queryset().get(pk=ticket.pk)).data,
-            'new_ticket': self.get_serializer(self.get_queryset().get(pk=new_ticket.pk)).data,
-        }, status=status.HTTP_201_CREATED)
+    # NOTA: havia aqui um SEGUNDO `split` (por line_ids, linha inteira) que, por vir
+    # depois no corpo da classe, ESCONDIA o split verdadeiro das Funções Parciais
+    # (por quantidades, com destino opcional — definido mais acima). Removido: era
+    # um duplicado a fazer o motor dizer uma coisa e o terminal receber outra.
 
     @action(detail=True, methods=['post'])
     def transfer_lines(self, request, pk=None):
