@@ -310,6 +310,41 @@ class Customer(models.Model):
     is_vip = models.BooleanField(default=False)
     vip_discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     credit_limit = models.DecimalField(max_digits=16, decimal_places=2, default=0)
+    # ── FICHA COMPLETA (clone HOST "Nova entidade") ──────────────────────────
+    title = models.CharField(max_length=30, blank=True, null=True)            # Sr./Dra./…
+    gender = models.CharField(max_length=12, blank=True, null=True)
+    birth_place = models.CharField(max_length=120, blank=True, null=True)
+    language = models.CharField(max_length=10, default='pt-PT')
+    is_supplier = models.BooleanField(default=False)                          # É fornecedor
+    # documento de identificação
+    doc_type = models.CharField(max_length=30, blank=True, null=True)
+    doc_issue_date = models.DateField(blank=True, null=True)
+    doc_valid_until = models.DateField(blank=True, null=True)
+    doc_issue_place = models.CharField(max_length=120, blank=True, null=True)
+    doc_issued_by = models.CharField(max_length=120, blank=True, null=True)
+    # moradas e contactos extra
+    address2 = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=120, blank=True, null=True)
+    postal_code = models.CharField(max_length=30, blank=True, null=True)
+    billing_address = models.CharField(max_length=255, blank=True, null=True) # Morada de Faturação
+    phone2 = models.CharField(max_length=40, blank=True, null=True)
+    mobile = models.CharField(max_length=40, blank=True, null=True)
+    fax = models.CharField(max_length=40, blank=True, null=True)
+    site = models.CharField(max_length=200, blank=True, null=True)
+    email2 = models.EmailField(blank=True, null=True)
+    # outra informação / comercial
+    iata = models.CharField(max_length=30, blank=True, null=True)
+    account_number = models.CharField(max_length=40, blank=True, null=True)
+    position = models.CharField(max_length=80, blank=True, null=True)         # Cargo
+    only_cash = models.BooleanField(default=False)                            # Apenas cash
+    credit_days = models.PositiveIntegerField(default=0)                      # Cond. crédito (dias)
+    segment = models.ForeignKey('pos.Segment', on_delete=models.SET_NULL, blank=True, null=True,
+                                related_name='customers')
+    sub_segment = models.ForeignKey('pos.SubSegment', on_delete=models.SET_NULL, blank=True, null=True,
+                                    related_name='customers')
+    channel = models.ForeignKey('pos.DistributionChannel', on_delete=models.SET_NULL, blank=True,
+                                null=True, related_name='customers')
+    signature_url = models.CharField(max_length=300, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -318,3 +353,28 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"[{self.code}] {self.name}"
+
+
+
+class CustomerRecord(models.Model):
+    """OS SATÉLITES da ficha da entidade — o que no HOST são as listas das abas.
+
+    Notas, ligações, redes sociais, documentos anexos, acordos, instruções de
+    faturação, comissões, consentimentos RGPD, crianças, journey. UM modelo com o
+    TIPO e os dados (JSON): a mesma grelha Adicionar/Editar/Apagar serve todas as
+    abas, e um tipo novo não pede migração.
+    """
+    KINDS = [('NOTE', 'Nota'), ('SOCIAL', 'Rede social'), ('DOC', 'Documento'),
+             ('LINK', 'Ligação'), ('AGREEMENT', 'Acordo'), ('BILLING', 'Instrução de faturação'),
+             ('COMMISSION', 'Comissão'), ('CONSENT', 'Consentimento'), ('CHILD', 'Criança'),
+             ('JOURNEY', 'Guest journey'), ('CUSTOM', 'Campo personalizado'), ('INFO', 'Informação de secção')]
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='records')
+    kind = models.CharField(max_length=12, choices=KINDS)
+    data = models.JSONField(default=dict)
+    created_by = models.CharField(max_length=60, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'mdm_customer_record'
+        ordering = ['-created_at']

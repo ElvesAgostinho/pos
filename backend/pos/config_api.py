@@ -3366,6 +3366,82 @@ class EntityViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = EntitySerializer
 
+    # ── OS SATÉLITES da ficha (abas do "Nova entidade"): notas, ligações, redes
+    # sociais, documentos, acordos, consentimentos, crianças… Uma grelha, um motor.
+    @action(detail=True, methods=['get', 'post'])
+    def records(self, request, pk=None):
+        from mdm.models import CustomerRecord
+        cliente = self.get_object()
+        if request.method == 'GET':
+            qs = cliente.records.all()
+            if request.query_params.get('kind'):
+                qs = qs.filter(kind=request.query_params['kind'])
+            return Response([{'id': r.id, 'kind': r.kind, 'data': r.data,
+                              'by': r.created_by, 'at': r.created_at.isoformat()} for r in qs])
+        r = CustomerRecord.objects.create(
+            customer=cliente, kind=request.data.get('kind'),
+            data=request.data.get('data') or {},
+            created_by=(request.user.username if request.user.is_authenticated else None))
+        return Response({'id': r.id, 'kind': r.kind, 'data': r.data}, status=201)
+
+    @action(detail=True, methods=['post'], url_path='records/(?P<rid>[0-9]+)/delete')
+    def record_delete(self, request, pk=None, rid=None):
+        self.get_object().records.filter(pk=rid).delete()
+        return Response({'detail': 'Removido.'})
+
+    @action(detail=True, methods=['get'])
+    def export(self, request, pk=None):
+        """PORTABILIDADE DE DADOS (RGPD): tudo o que a casa tem sobre a entidade."""
+        c = self.get_object()
+        dados = {f.name: str(getattr(c, f.name, '') or '') for f in c._meta.fields}
+        dados['records'] = [{'kind': r.kind, 'data': r.data, 'at': r.created_at.isoformat()}
+                            for r in c.records.all()]
+        from django.http import JsonResponse
+        resp = JsonResponse(dados, json_dumps_params={'ensure_ascii': False, 'indent': 1})
+        resp['Content-Disposition'] = f'attachment; filename="entidade_{c.code}.json"'
+        return resp
+
+    @action(detail=True, methods=['post'])
+    def anonymize(self, request, pk=None):
+        """REMOVER ENTIDADE (RGPD): os dados pessoais apagam-se; o nome vira um código
+        anónimo. IRREVERSÍVEL — e os documentos fiscais NÃO se tocam (a AGT exige-os;
+        ficam com o código anónimo como referência)."""
+        c = self.get_object()
+        codigo = f'ANON-{c.id:06d}'
+        pessoais = ('name', 'last_name', 'other_names', 'tax_id', 'email', 'email2', 'phone',
+                    'phone2', 'mobile', 'fax', 'address', 'address2', 'billing_address', 'city',
+                    'postal_code', 'id_number', 'nationality', 'birth_place', 'site', 'notes',
+                    'photo_url', 'signature_url', 'doc_type', 'doc_issue_place', 'doc_issued_by')
+        for f in pessoais:
+            if hasattr(c, f):
+                setattr(c, f, codigo if f == 'name' else None)
+        c.birth_date = None; c.doc_issue_date = None; c.doc_valid_until = None
+        c.is_active = False
+        c.save()
+        c.records.all().delete()
+        return Response({'detail': f'Entidade removida (RGPD). Referência anónima: {codigo}.',
+                         'anonymous_code': codigo})
+
+    @action(detail=True, methods=['get'])
+    def history(self, request, pk=None):
+        """HISTÓRICO: reservas (PMS, se existir) + faturação POS desta entidade."""
+        c = self.get_object()
+        reservas = []
+        try:
+            from pms.models import Reservation
+            for r in Reservation.objects.filter(guest__full_name__iexact=c.name)[:100]:
+                reservas.append({'number': r.id, 'status': r.status,
+                                 'check_in': str(getattr(r, 'check_in', '')),
+                                 'check_out': str(getattr(r, 'check_out', '')),
+                                 'room': getattr(getattr(r, 'room', None), 'number', None)})
+        except Exception:
+            pass
+        from fiscal.models import FiscalDocument
+        docs = [{'number': d.invoice_no, 'date': str(d.doc_date), 'total': str(d.gross_total),
+                 'type': d.doc_type.code, 'voided': d.status == 'A'}
+                for d in FiscalDocument.objects.filter(customer_name=c.name)[:200]]
+        return Response({'reservations': reservas, 'invoices': docs})
+
     def perform_create(self, serializer):
         # (8143) "Formato do Nome da Entidade": quem cria só com Apelido/Outros nomes
         # fica com o nome montado pelo formato da casa — {name1}=apelido, {name2}=resto.

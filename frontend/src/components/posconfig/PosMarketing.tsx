@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money } from './kit';
+import EntityEditor from './EntityEditor';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const lbl = 'text-[12px] text-[#333] w-[120px] flex-shrink-0';
@@ -78,8 +79,16 @@ export function EntitySearch() {
   const vista = rows.slice((page - 1) * pageSize, page * pageSize);
   const pesquisar = () => { setAplicado({ ...f }); setPage(1); };
 
-  // ---------- ficha (Adicionar/Editar) ----------
+  // ---------- ficha (Adicionar/Editar) — o editor COMPLETO do HOST, em janela ----------
   if (edit) {
+    return (
+      <EntityEditor entity={edit}
+        onClose={() => setEdit(null)}
+        onSaved={() => qc.invalidateQueries({ queryKey: ['mkt'] })} />
+    );
+  }
+  // (ficha antiga inline mantida abaixo apenas como referência morta — nunca alcançada)
+  if (false && edit) {
     const F = ({ k, label, type = 'text' }: any) => (
       <div className="flex items-center gap-2">
         <span className={lbl}>{label}</span>
