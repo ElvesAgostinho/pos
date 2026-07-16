@@ -74,6 +74,9 @@ export function ProductionWindow({ linhas, onClose }: { linhas: any[]; onClose: 
                     {l.dest_label || (l.table_label ? `Mesa ${l.table_label}` : 'Balcão')} · {l.operator_name || ''}
                   </span>
                   {l.note && <span className="block text-[12px] text-[#7fd4ff]">✎ {l.note}</span>}
+                  {l.allergens?.length > 0 && (
+                    <span className="block text-[12px] text-[#ff8a80]">⚠ {l.allergens.join(', ')}</span>
+                  )}
                 </span>
                 <span className="text-white/60 text-[13px]">{l.station_label || l.kds_station}</span>
                 <span className="font-bold">

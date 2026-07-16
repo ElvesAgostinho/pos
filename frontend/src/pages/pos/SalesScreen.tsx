@@ -11,6 +11,9 @@ import DocsPanel from './DocsPanel';
 import TicketPreview from './TicketPreview';
 import GuestPick from './GuestPick';
 import CustomerForm from './CustomerForm';
+// SEM este import, o <Window> das janelas em baixo resolvia para o Window DO BROWSER
+// (o DOM global) — React fazia `new Window()` e rebentava com "Illegal constructor".
+import Window from './Window';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -314,6 +317,11 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
               <span className="truncate">
                 {l.description}
                 {l.note && <span className="block text-[11px] text-[#7fd4ff]">✎ {l.note}</span>}
+                {/* ALERGÉNIOS da ficha do artigo (backoffice) — o empregado avisa o
+                    cliente ANTES de o prato sair, não depois. */}
+                {l.allergens?.length > 0 && (
+                  <span className="block text-[11px] text-[#ff8a80]">⚠ {l.allergens.join(', ')}</span>
+                )}
                 {['FIRED', 'PREPARING', 'READY'].includes(l.kds_status) && (
                   <span className="ml-1 text-[11px] text-[#f0c000]">• na cozinha</span>
                 )}
