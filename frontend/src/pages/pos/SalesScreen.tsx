@@ -8,6 +8,7 @@ import SubcontaBar from './SubcontaBar';
 import ArticleSearch from './ArticleSearch';
 import GuestsPanel from './GuestsPanel';
 import DocsPanel from './DocsPanel';
+import TicketPreview from './TicketPreview';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -38,6 +39,7 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   // A VENDA CONSULTA TUDO sem sair: artigos, hóspedes e documentos — os mesmos
   // painéis do backoffice, abertos por cima do teclado (a "junção").
   const [painel, setPainel] = useState<'' | 'GUESTS' | 'DOCS'>('');
+  const [verTalao, setVerTalao] = useState(false);   // Consulta de Mesa desta conta
 
   // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
   // muda os preços que as teclas mostram (staff/consumo interno vê o custo).
@@ -139,7 +141,9 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
             {{ PASSANTE: 'Passante', HOTEL: 'Hóspede', INTERNO: 'Consumo Interno' }[conta?.guest_type as string] || ''}
             {conta?.customer_name ? ` · ${conta.customer_name}` : ''}
           </span>
-          {/* consultas SEM sair da venda — hóspedes e documentos (a junção) */}
+          {/* consultas SEM sair da venda — artigos, hóspedes e documentos (a junção) */}
+          <button onClick={() => setProcurar(true)}
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🔍 Artigos</button>
           <button onClick={() => setPainel('GUESTS')}
             className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">👤 Hóspedes</button>
           <button onClick={() => setPainel('DOCS')}
@@ -244,9 +248,11 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
         </div>
 
         <div className="grid grid-cols-6 gap-px bg-black">
-          <button onClick={() => setProcurar(true)}
-            title="Consulta de artigo (catálogo inteiro)"
-            className="h-[76px] bg-[#2b2b2b] text-white text-[30px]">🔍</button>
+          {/* CONSULTA DE MESA — o talão de conferência DESTA conta (documento CM da
+              AGT), sem sair da venda. O cliente pergunta "quanto vai?" e mostra-se. */}
+          <button onClick={() => setVerTalao(true)} disabled={!linhas.length}
+            title="Consulta de Mesa (talão de conferência)"
+            className="h-[76px] bg-[#2b2b2b] text-white text-[30px] disabled:opacity-30">🖨</button>
           {/* ANULAR A CONTA INTEIRA — a mesa aberta por engano, o cliente que se foi
               embora. Obriga a motivo (fica na auditoria) e liberta a mesa. É o mesmo
               `void` do motor que o backoffice e o Fecho do Dia usam. */}
@@ -278,6 +284,11 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
       {/* hóspedes e documentos — os painéis do backoffice, dentro da venda */}
       {painel === 'GUESTS' && <GuestsPanel aba="GUESTS" onClose={() => setPainel('')} />}
       {painel === 'DOCS' && <DocsPanel onClose={() => setPainel('')} />}
+
+      {/* Consulta de Mesa desta conta: emite o CM e mostra o talão térmico */}
+      {verTalao && conta && (
+        <TicketPreview ticket={conta} onClose={() => setVerTalao(false)} />
+      )}
 
       {/* consulta de artigo: procura no catálogo INTEIRO e lança com um toque */}
       {procurar && (

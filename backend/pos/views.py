@@ -1044,6 +1044,29 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                                            f'({pontos * valor_ponto} Kz) — precisa de {precisa:.2f}.',
                                  'card_points': str(pontos)}, status=status.HTTP_400_BAD_REQUEST)
 
+        # (Modo de Pagamento) "Lançar em Quarto" — pagar em CONTA QUARTO é lançar o
+        # consumo no FOLIO do hóspede. Antes, o pay validava o quarto mas não lançava
+        # nada: o POS fechava a conta e o hotel perdia o dinheiro no check-out.
+        # O encargo entra ANTES do pagamento se gravar — sem folio aberto, não se cobra.
+        if pm.charge_to_room or pm.method_type == 'ROOM':
+            try:
+                from pms.models import Room, Folio, FolioCharge
+            except ImportError:
+                return Response({'detail': 'Módulo PMS não está ativo nesta licença.'}, status=409)
+            room_number = (request.data.get('room') or '').strip()
+            room = Room.objects.filter(number=room_number).first()
+            folio = (Folio.objects.filter(reservation__room=room, status='OPEN').first()
+                     if room else None)
+            if not folio:
+                return Response({'detail': f'Sem folio aberto para o quarto "{room_number}" — '
+                                           f'não se lança consumo num quarto sem conta.',
+                                 'requires_room': True}, status=status.HTTP_400_BAD_REQUEST)
+            FolioCharge.objects.create(
+                folio=folio, charge_type='FNB',
+                description=f'POS {ticket.ticket_number} ({ticket.outlet.name})',
+                amount=applied, source_reference=ticket.ticket_number,
+                posted_by=ticket.operator_name)
+
         POSTicketPayment.objects.create(ticket=ticket, payment_method=pm, amount=applied,
                                         change_due=change)
 

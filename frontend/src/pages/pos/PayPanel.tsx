@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client';
 import Window from './Window';
 import { comPerguntas } from '../posPrompt';
 import EntityPicker from './EntityPicker';
+import GuestPick from './GuestPick';
 
 /**
  * PAGAMENTOS — o momento em que o dinheiro entra.
@@ -55,9 +56,14 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
   const pago = Number(conta.grand_total || 0) - Number(conta.balance_due ?? conta.grand_total ?? 0);
   const falta = Number(conta.balance_due ?? conta.grand_total ?? 0);
 
-  const cobrar = async (m: any) => {
+  // CONTA QUARTO: o quarto escolhe-se da LISTA DO PMS (parâmetros 8035/8064 mandam),
+  // não se escreve à mão — é assim que o jantar não vai parar ao quarto errado.
+  const [pedirQuarto, setPedirQuarto] = useState<any | null>(null);
+
+  const cobrar = async (m: any, extra: any = {}) => {
     // Com o 8310 ligado não há cobrança sem entidade — a escolha volta a abrir-se.
     if (exigirEntidade && !entidade) { setEscolherEntidade(true); return; }
+    if (m.method_type_code === 'ROOM' && !extra.room) { setPedirQuarto(m); return; }
     setBusy(true);
     try {
       const r = await comPerguntas(`pos/tickets/${ticket.id}/pay/`, {
@@ -66,6 +72,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         amount: valor || falta,
         ...(entidade ? { customer: entidade.id } : {}),
         ...(modoCartao ? { card_mode: modoCartao } : {}),
+        ...extra,
       }, async (label, detalhe) => window.prompt(`${detalhe}\n\n${label}:`));
 
       if (r?.pickup_alert) alert(r.pickup_alert);
@@ -217,6 +224,13 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
       {escolherEntidade && (
         <EntityPicker onPick={(e) => { setEntidade(e); setEscolherEntidade(false); }}
           onCancel={() => setEscolherEntidade(false)} />
+      )}
+
+      {/* Conta Quarto: o quarto vem da lista do PMS, com um toque */}
+      {pedirQuarto && (
+        <GuestPick titulo="Lançar no quarto de…"
+          onPick={(g) => { const m = pedirQuarto; setPedirQuarto(null); cobrar(m, { room: g.room }); }}
+          onClose={() => setPedirQuarto(null)} />
       )}
     </Window>
   );

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '../../api/client';
 import GuestsDialog from './GuestsDialog';
+import GuestPick from './GuestPick';
 
 /**
  * MAPA DE MESAS — a planta da sala, não uma grelha de botões.
@@ -54,6 +55,8 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   const qc = useQueryClient();
   // A mesa que se acabou de tocar e ainda não tem conta: falta perguntar quantos são.
   const [aSentar, setASentar] = useState<any | null>(null);
+  // Mesa de HÓSPEDE acabada de abrir: falta dizer QUEM (a lista do PMS, não à mão).
+  const [escolherHospede, setEscolherHospede] = useState<number | null>(null);
 
   const { data: mesas = [], isLoading } = useQuery({
     queryKey: ['pos-tables', setor?.id],
@@ -89,7 +92,11 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
     onSuccess: (t) => {
       setASentar(null);
       qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
-      onOpenTicket(t.id);
+      // HÓSPEDE: antes de lançar, diz-se QUEM é — a conta leva o nome do PMS
+      // (parâmetros 8035/8064/8147 mandam na lista). Sem isto, "Hotel" era só
+      // uma etiqueta e a fatura saía Consumidor Final.
+      if (t.guest_type === 'HOTEL') setEscolherHospede(t.id);
+      else onOpenTicket(t.id);
     },
     onError: (e: any) => alert(e?.response?.data?.detail || 'Não foi possível abrir a conta.'),
   });
@@ -154,6 +161,20 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
             </button>
           );
         })}
+
+        {/* HÓSPEDE: escolher da lista do PMS e agarrar o nome à conta */}
+        {escolherHospede && (
+          <GuestPick titulo="Que hóspede está nesta mesa?"
+            onPick={async (g) => {
+              try {
+                await apiClient.post(`pos/tickets/${escolherHospede}/set_customer/`, {
+                  customer_name: g.guest, company_name: g.room ? `Quarto ${g.room}` : null,
+                });
+              } catch { /* sem PMS/nome, a conta segue na mesma */ }
+              const id = escolherHospede; setEscolherHospede(null); onOpenTicket(id);
+            }}
+            onClose={() => { const id = escolherHospede; setEscolherHospede(null); onOpenTicket(id); }} />
+        )}
 
         {aSentar && (
           <GuestsDialog mesa={aSentar} perguntarTipo={perguntarTipo}
