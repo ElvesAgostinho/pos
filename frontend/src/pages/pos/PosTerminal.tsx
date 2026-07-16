@@ -11,8 +11,8 @@ import MoveLines from './MoveLines';
 import DocsPanel from './DocsPanel';
 import GuestsPanel from './GuestsPanel';
 import AccountsPanel from './AccountsPanel';
-import GuestsDialog from './GuestsDialog';
 import PinChange from './PinChange';
+import TicketPreview from './TicketPreview';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -37,9 +37,10 @@ export default function PosTerminal() {
   const [setor, setSetor] = useState<any | null>(null);
   const [sessao, setSessao] = useState<any | null>(null);
   const [ticket, setTicket] = useState<number | null>(null);
-  // Modo do mapa: lançar artigos, ou cobrar. É o botão "Pagamentos" da barra que muda isto.
-  const [modoMapa, setModoMapa] = useState<'ORDER' | 'PAY'>('ORDER');
+  // Modo do mapa: lançar artigos, cobrar, ou CONSULTAR (mostrar o talão sem abrir a venda).
+  const [modoMapa, setModoMapa] = useState<'ORDER' | 'PAY' | 'VIEW'>('ORDER');
   const [aCobrar, setACobrar] = useState<any | null>(null);
+  const [aConsultar, setAConsultar] = useState<any | null>(null);
   // As janelas da barra da esquerda. Uma de cada vez — o empregado não faz duas coisas
   // ao mesmo tempo com uma mesa à espera.
   const [janela, setJanela] = useState<'' | 'SPLIT' | 'TRANSFER' | 'DOCS' | 'GUESTS' | 'MEALS' | 'CC'>('');
@@ -99,12 +100,6 @@ export default function PosTerminal() {
     })();
   }, [cfg, setor]);
 
-  // VENDA DIRETA — a conta de balcão, sem mesa. É o take-away, o bar de praia, o café
-  // ao balcão. Antes de abrir, pergunta-se o mesmo que numa mesa (quantos são, e se é
-  // passante/hóspede/interno) — se o parâmetro 8175 o mandar. Escolher "Passante" e
-  // confirmar É abrir a venda direta.
-  const [aVenderDireto, setAVenderDireto] = useState(false);
-
   const abrirVendaDireta = async (pax: number, tipo: string) => {
     if (!setor) return;
     try {
@@ -114,7 +109,6 @@ export default function PosTerminal() {
         guests: pax,
         guest_type: tipo,
       });
-      setAVenderDireto(false);
       setTicket(r.data.id);
       setEtapa('SALES');
     } catch (e: any) {
@@ -122,11 +116,11 @@ export default function PosTerminal() {
     }
   };
 
+  // VENDA DIRETA — a conta de balcão, sem mesa. NÃO tem popup nenhum: quem toca no ícone
+  // da venda (ou em "Passante") quer vender JÁ. Perguntas são para as mesas.
   const vendaDireta = () => {
     if (!setor) return;
-    // Com o parâmetro ligado pergunta-se; desligado, abre logo como passante de 1.
-    if (cfg?.ask_guest_type !== false) setAVenderDireto(true);
-    else abrirVendaDireta(1, 'PASSANTE');
+    abrirVendaDireta(1, 'PASSANTE');
   };
 
   const inval = () => qc.invalidateQueries();
@@ -162,7 +156,8 @@ export default function PosTerminal() {
     ...(cfg?.direct_sale
       ? [{ label: 'Venda Direta', icon: '🛒', act: vendaDireta, on: !!setor }]
       : []),
-    { label: 'Consulta de Mesa', icon: '🖨', act: () => { setModoMapa('ORDER'); setEtapa('MAP'); },
+    // CONSULTA: toca-se na mesa e vê-se o talão — sem passar pela página de venda.
+    { label: 'Consulta de Mesa', icon: '🖨', act: () => { setModoMapa('VIEW'); setEtapa('MAP'); },
       on: !!sessao || !cfg?.require_cash_open },
     { label: 'Pagamentos', icon: '💰', act: () => { setModoMapa('PAY'); setEtapa('MAP'); }, on: !!sessao },
     // Parciais e transferências precisam de uma mesa COM conta: escolhe-se no mapa.
@@ -248,18 +243,21 @@ export default function PosTerminal() {
           style={{ background: etapa === 'SALES' ? '#2b2b2b' : (setor?.map_bg_color || '#c9c3c1') }}>
           {etapa === 'MAP' && setor && (
             <>
-              {modoMapa === 'PAY' && (
+              {modoMapa !== 'ORDER' && (
                 <div className="absolute top-0 inset-x-0 h-[34px] bg-[#0f8b8d] text-white
                   flex items-center justify-center font-bold z-10">
-                  {escolher === 'SPLIT' ? 'Funções Parciais — escolha a mesa'
-                    : escolher === 'TRANSFER' ? 'Transferências — escolha a mesa de origem'
-                      : 'Pagamentos — escolha a mesa a cobrar'}
+                  {modoMapa === 'VIEW' ? 'Consulta de Mesa — toque na mesa para ver o consumo'
+                    : escolher === 'SPLIT' ? 'Funções Parciais — escolha a mesa'
+                      : escolher === 'TRANSFER' ? 'Transferências — escolha a mesa de origem'
+                        : 'Pagamentos — escolha a mesa a cobrar'}
                 </div>
               )}
               <TableMap setor={setor} modo={modoMapa}
                 perguntarTipo={cfg?.ask_guest_type !== false}
                 refrescar={(cfg?.tables_refresh_seconds || 8) * 1000}
                 onOpenTicket={(id) => { setTicket(id); setEtapa('SALES'); }}
+                onViewTicket={(t) => setAConsultar(t)}
+                onDirectSale={vendaDireta}
                 onPayTicket={(t) => {
                   if (escolher) { setContaAtual(t); setJanela(escolher); setEscolher(''); setModoMapa('ORDER'); }
                   else setACobrar(t);
@@ -299,13 +297,10 @@ export default function PosTerminal() {
           {janela === 'MEALS' && <GuestsPanel aba="MEALS" onClose={() => setJanela('')} />}
           {janela === 'CC' && <AccountsPanel onClose={() => setJanela('')} />}
 
-          {/* Venda Direta: a mesma pergunta de sempre (quantos, e de que tipo) — mas o
-              "sítio" é o balcão, não uma mesa. */}
-          {aVenderDireto && (
-            <GuestsDialog mesa={{ table_number: 'Balcão (Venda Direta)' }}
-              perguntarTipo={cfg?.ask_guest_type !== false}
-              onConfirm={(pax, tipo) => abrirVendaDireta(pax, tipo)}
-              onCancel={() => setAVenderDireto(false)} />
+          {/* Consulta de Mesa: o talão de conferência (documento CM da AGT), sem venda. */}
+          {aConsultar && (
+            <TicketPreview ticket={aConsultar}
+              onClose={() => { setAConsultar(null); setModoMapa('ORDER'); }} />
           )}
 
           {etapa === 'CASH' && setor && (

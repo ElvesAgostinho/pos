@@ -13,15 +13,19 @@ import Window from './Window';
  * fatura.
  *
  * (Este ecrã só aparece se o parâmetro 8175 "Perguntar tipo de cliente" estiver ligado.)
+ *
+ * PASSANTE é um ATALHO, não uma escolha: quem passa não senta mesa — tocar em "Passante"
+ * vai LOGO para a venda de balcão (venda direta), sem número de clientes nem "abrir mesa".
  */
-export default function GuestsDialog({ mesa, perguntarTipo = true, onConfirm, onCancel }: {
+export default function GuestsDialog({ mesa, perguntarTipo = true, onConfirm, onPassante, onCancel }: {
   mesa: any;
   perguntarTipo?: boolean;
   onConfirm: (pax: number, tipo: string) => void;
+  onPassante?: () => void;
   onCancel: () => void;
 }) {
   const [valor, setValor] = useState('');
-  const [tipo, setTipo] = useState('PASSANTE');
+  const [tipo, setTipo] = useState(onPassante ? 'HOTEL' : 'PASSANTE');
   const pax = Number(valor || 0);
 
   const tecla = (t: string) => {
@@ -65,7 +69,8 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, onConfirm, on
             <div className="text-white/50 text-[13px] mt-3 mb-1">Tipo de cliente</div>
             <div className="grid grid-cols-3 gap-2">
               {[['PASSANTE', 'Passante'], ['HOTEL', 'Hotel'], ['INTERNO', 'Consumo\nInterno']].map(([k, l]) => (
-                <button key={k} onClick={() => setTipo(k)}
+                <button key={k}
+                  onClick={() => (k === 'PASSANTE' && onPassante ? onPassante() : setTipo(k))}
                   className={`h-[50px] rounded-md text-[14px] font-bold whitespace-pre-line transition ${tipo === k
                     ? 'bg-[#0f8b8d] text-white ring-2 ring-white/70' : 'bg-[#1f1f1f] text-white/80'}`}>
                   {l}

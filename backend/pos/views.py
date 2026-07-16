@@ -1738,6 +1738,33 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
+    def consult(self, request, pk=None):
+        """CONSULTA DE MESA — o talão de conferência, SEM fechar a conta.
+
+        Não é o ecrã da venda nem é a fatura: emite o documento CM da AGT (Rules
+        Engine — WorkingDocument, assinado, numerado, vai no SAF-T), põe o talão na
+        fila de impressão e devolve o MESMO texto ao terminal para mostrar no ecrã.
+        Um único renderizador (_print_document): o que o cliente vê no ecrã é
+        exatamente o papel que sai da térmica.
+        """
+        from fiscal.integration import emit_table_consult
+        ticket = self.get_object()
+        if not ticket.lines.filter(is_void=False).exists():
+            return Response({'detail': 'A conta ainda não tem consumo para consultar.'}, status=400)
+        doc = emit_table_consult(ticket,
+                                 user=request.user.username if request.user.is_authenticated else None,
+                                 ip=request.META.get('REMOTE_ADDR'))
+        if not doc:
+            return Response({'detail': 'Não há série de Consulta de Mesa (CM) ativa — '
+                                       'configure-a em Fiscal › Séries.'}, status=400)
+        job = _print_document(ticket, doc)
+        log_event(request, 'DOC_ISSUE', f'Consulta de Mesa {doc.invoice_no}',
+                  operator_name=ticket.operator_name, outlet=ticket.outlet, reference=doc.invoice_no)
+        return Response({'invoice_no': doc.invoice_no, 'print_job': job.id if job else None,
+                         'content': job.content if job else None,
+                         'grand_total': str(doc.gross_total)})
+
+    @action(detail=True, methods=['post'])
     def reprint(self, request, pk=None):
         """REIMPRIMIR — volta a pôr o documento JÁ EMITIDO na fila de impressão.
 

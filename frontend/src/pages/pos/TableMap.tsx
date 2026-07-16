@@ -30,7 +30,7 @@ const PONTO: Record<string, string> = {
 };
 
 export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTicket,
-  perguntarTipo = true, refrescar = 8000 }: {
+  onViewTicket, onDirectSale, perguntarTipo = true, refrescar = 8000 }: {
   setor: any;
   onOpenTicket: (ticketId: number) => void;
   // Vêm dos PARÂMETROS do backoffice (8175 e 8063): perguntar o tipo de cliente, e de
@@ -39,9 +39,13 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   refrescar?: number;
   // MODO: o que acontece ao tocar numa mesa.
   //   ORDER — abre (ou retoma) a conta para lançar artigos;
-  //   PAY   — vai direto a Pagamentos (o empregado que vem cobrar não quer o teclado).
-  modo?: 'ORDER' | 'PAY';
+  //   PAY   — vai direto a Pagamentos (o empregado que vem cobrar não quer o teclado);
+  //   VIEW  — Consulta de Mesa: mostra o talão de conferência, sem abrir a venda.
+  modo?: 'ORDER' | 'PAY' | 'VIEW';
   onPayTicket?: (ticket: any) => void;
+  onViewTicket?: (ticket: any) => void;
+  // "Passante" no diálogo da mesa NÃO abre a mesa: vai direto à venda de balcão.
+  onDirectSale?: () => void;
 }) {
   const qc = useQueryClient();
   // A mesa que se acabou de tocar e ainda não tem conta: falta perguntar quantos são.
@@ -87,6 +91,11 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
 
   const tocar = (m: any) => {
     const conta = contaDa(m.id);
+    if (modo === 'VIEW') {
+      // Consulta: só mostra — nunca abre o teclado. Mesa livre não tem o que consultar.
+      if (!conta) return alert(`A mesa ${m.table_number} está livre — sem consumo.`);
+      return onViewTicket?.(conta);
+    }
     if (modo === 'PAY') {
       // A cobrar: só interessam as mesas COM conta. Uma mesa livre não tem o que pagar.
       if (!conta) return alert(`A mesa ${m.table_number} está livre — não há nada a cobrar.`);
@@ -138,6 +147,7 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
         {aSentar && (
           <GuestsDialog mesa={aSentar} perguntarTipo={perguntarTipo}
             onConfirm={(pax, tipo) => abrir.mutate({ mesa: aSentar, pax, tipo })}
+            onPassante={onDirectSale ? () => { setASentar(null); onDirectSale(); } : undefined}
             onCancel={() => setASentar(null)} />
         )}
 

@@ -81,6 +81,46 @@ def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None
     )
 
 
+def emit_table_consult(ticket, user=None, ip=None):
+    """CONSULTA DE MESA (CM) — o documento de conferência que se leva à mesa.
+
+    NÃO é fatura: é um WorkingDocument da AGT (tipo CM do Rules Engine), assinado e com
+    número próprio, que mostra ao cliente quanto vai a conta ANTES de fechar. A AGT
+    exige-o no SAF-T como qualquer outro: um talão de conferência "por fora" era
+    exatamente o buraco por onde as casas vendiam sem faturar.
+
+    Ao contrário da fatura, a MESMA mesa pode pedir várias consultas (o cliente pergunta
+    duas vezes) — por isso não é idempotente por ticket.
+    """
+    series = _resolve_series('CM')
+    if not series:
+        return None            # sem série CM configurada -> a consulta mostra-se sem documento
+    from decimal import Decimal
+    factor = Decimal('1')
+    if getattr(ticket, 'discount_percent', 0):
+        factor = Decimal('1') - (Decimal(str(ticket.discount_percent)) / Decimal('100'))
+    lines = [{
+        'description': l.description,
+        'quantity': l.quantity,
+        'unit_price': Decimal(str(l.unit_price)) * factor,
+        'tax_percentage': l.tax_percentage,
+    } for l in ticket.lines.filter(is_void=False)]
+    if not lines:
+        return None
+    place = getattr(ticket, 'dest_label', None)
+    if not place and getattr(ticket, 'table', None):
+        place = getattr(ticket.table, 'table_number', None) or str(ticket.table)
+    return services.issue_document(
+        series_id=series.id,
+        customer_name=getattr(ticket, 'customer_name', None),
+        customer_tax_id=getattr(ticket, 'customer_tax_id', None),
+        lines=lines, user=user, ip=ip,
+        source_module='pos', source_ref=f'CM-{ticket.id}-{ticket.lines.count()}',
+        operator_name=ticket.operator_name, place_ref=place,
+        discount_total=ticket.discount_total,
+    )
+
+
 def emit_for_finance_invoice(invoice, user=None, ip=None):
     """Emite uma Factura fiscal a partir de uma fatura do Financeiro (AR)."""
     cfg = FiscalConfig.get()
