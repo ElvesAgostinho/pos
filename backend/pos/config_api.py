@@ -1816,6 +1816,73 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
         return EmailTemplate.objects.prefetch_related('texts')
 
     @action(detail=True, methods=['post'])
+    def send(self, request, pk=None):
+        """ENVIAR o modelo — o motor de e-mail a sério (fica sempre no outbox).
+
+        body: {to: "a@b;c@d" | [..], culture, context: {Campo: valor}, reply_to}
+        Sem SMTP configurado (dev), o envio é SIMULADO e registado na mesma.
+        """
+        from . import mailer
+        from .params import P
+        t = self.get_object()
+        to = request.data.get('to') or ''
+        if not to:
+            return Response({'detail': 'Indique os destinatários (to).'}, status=400)
+        reg = mailer.send_template(
+            t, to, ctx=request.data.get('context') or {},
+            culture=request.data.get('culture') or 'pt-PT',
+            reply_to=request.data.get('reply_to') or (P.text(8238, '') or None),
+            context_ref=request.data.get('context_ref'))
+        return Response({'status': reg.status, 'outbox_id': reg.id, 'error': reg.error,
+                         'detail': {'SENT': 'E-mail enviado.',
+                                    'SIMULATED': 'Sem SMTP configurado — envio SIMULADO (registado no outbox).',
+                                    'FAILED': f'Falhou: {reg.error}'}.get(reg.status, reg.status)})
+
+    @action(detail=False, methods=['post'])
+    def newsletter(self, request):
+        """NEWSLETTER (4080/4180) — envia um modelo a TODOS os clientes com e-mail.
+
+        Gate: o parâmetro 4080 tem de estar ligado. Os endereços do 4180 recebem
+        cópia (a equipa vê o que saiu). Cada destinatário fica no outbox.
+        """
+        from . import mailer
+        from .params import P
+        if not P.bool(4080, False):
+            return Response({'detail': 'A newsletter está desligada nos parâmetros (4080).'},
+                            status=403)
+        from .models import EmailTemplate
+        t = EmailTemplate.objects.filter(pk=request.data.get('template')).first()
+        if not t:
+            return Response({'detail': 'Indique o modelo (template).'}, status=400)
+        from mdm.models import Customer
+        clientes = Customer.objects.filter(is_active=True).exclude(email__isnull=True).exclude(email='')
+        enviados = []
+        for c in clientes:
+            reg = mailer.send_template(t, c.email, ctx={'GuestName': c.name},
+                                       culture=request.data.get('culture') or 'pt-PT',
+                                       context_ref=f'NEWSLETTER-{c.code}')
+            enviados.append(reg.status)
+        extra = P.text(4180, '')
+        if extra:
+            mailer.send_template(t, extra, ctx={'GuestName': 'Equipa'},
+                                 context_ref='NEWSLETTER-COPIA')
+        return Response({'recipients': len(enviados),
+                         'sent': enviados.count('SENT'),
+                         'simulated': enviados.count('SIMULATED'),
+                         'failed': enviados.count('FAILED')})
+
+    @action(detail=False, methods=['get'])
+    def outbox(self, request):
+        """O LIVRO DE REGISTO — todos os e-mails que o sistema enviou (ou tentou)."""
+        from .models import EmailOutbox
+        regs = EmailOutbox.objects.select_related('template')[:200]
+        return Response([{
+            'id': r.id, 'to': r.to, 'subject': r.subject, 'status': r.status,
+            'error': r.error, 'template': r.template.name if r.template_id else None,
+            'ref': r.context_ref, 'at': r.created_at.isoformat(),
+        } for r in regs])
+
+    @action(detail=True, methods=['post'])
     def preview(self, request, pk=None):
         """PRÉ-VISUALIZAR — mostra o e-mail com as variáveis substituídas.
 
@@ -3024,6 +3091,22 @@ class EventRequestViewSet(viewsets.ModelViewSet):
                                           if self.request.user.is_authenticated else None),
                               **extras)
         self._check_conflict(obj)
+        # (4079/4179) AVISO À EQUIPA DE EVENTOS: entrou um pedido novo — quem responde
+        # primeiro fecha o negócio. O destino são os e-mails do parâmetro 4179 (";").
+        from .params import P
+        if P.bool(4079, True) and P.text(4179, ''):
+            try:
+                from . import mailer
+                mailer.send(
+                    P.text(4179, ''),
+                    f'Novo pedido de evento: {obj.number} — {obj.title}',
+                    (f'<b>{obj.title}</b><br>Tipo: {obj.event_type.name}<br>'
+                     f'Espaço: {obj.space.name}<br>Pax: {obj.pax}<br>'
+                     f'De {obj.start_at:%d/%m/%Y %H:%M} a {obj.end_at:%d/%m/%Y %H:%M}<br>'
+                     f'Contacto: {obj.contact_name or "—"} · {obj.phone or ""} {obj.email or ""}'),
+                    context_ref=obj.number)
+            except Exception:
+                pass   # o aviso nunca trava a gravação do pedido
 
     @transaction.atomic
     def perform_update(self, serializer):

@@ -2939,3 +2939,32 @@ class MemberCardMovement(models.Model):
         ganhos = m.filter(kind='EARN').aggregate(s=Sum('points'))['s'] or Decimal('0')
         usados = m.filter(kind='REDEEM').aggregate(s=Sum('points'))['s'] or Decimal('0')
         return ganhos - usados
+
+
+class EmailOutbox(models.Model):
+    """A CAIXA DE SAÍDA — todo o e-mail que o sistema envia fica registado aqui.
+
+    Enviado, simulado (ambiente sem SMTP) ou falhado COM o erro. Um e-mail "que se
+    perdeu" sem rasto é uma reserva perdida sem culpado. É o motor que faltava aos
+    modelos de e-mail do Marketing — os modelos, as línguas, as variáveis e os anexos
+    já existiam; isto é só o carteiro e o livro de registo.
+    """
+    STATUS = [('QUEUED', 'Em fila'), ('SENT', 'Enviado'),
+              ('SIMULATED', 'Simulado (sem SMTP)'), ('FAILED', 'Falhou')]
+
+    to = models.CharField(max_length=500)
+    subject = models.CharField(max_length=300)
+    body = models.TextField(blank=True, null=True)
+    template = models.ForeignKey('EmailTemplate', on_delete=models.SET_NULL,
+                                 blank=True, null=True, related_name='sent_emails')
+    context_ref = models.CharField(max_length=120, blank=True, null=True)   # EV00012, FT A/7…
+    status = models.CharField(max_length=10, choices=STATUS, default='QUEUED')
+    error = models.CharField(max_length=500, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'mkt_email_outbox'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'[{self.status}] {self.subject} -> {self.to}'
