@@ -3437,7 +3437,7 @@ class EntityViewSet(viewsets.ModelViewSet):
         except Exception:
             pass
         from fiscal.models import FiscalDocument
-        docs = [{'number': d.invoice_no, 'date': str(d.doc_date), 'total': str(d.gross_total),
+        docs = [{'id': d.id, 'number': d.invoice_no, 'date': str(d.doc_date), 'total': str(d.gross_total),
                  'type': d.doc_type.code, 'voided': d.status == 'A'}
                 for d in FiscalDocument.objects.filter(customer_name=c.name)[:200]]
         return Response({'reservations': reservas, 'invoices': docs})

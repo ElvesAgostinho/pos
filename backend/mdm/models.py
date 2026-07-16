@@ -331,6 +331,9 @@ class Customer(models.Model):
     mobile = models.CharField(max_length=40, blank=True, null=True)
     fax = models.CharField(max_length=40, blank=True, null=True)
     site = models.CharField(max_length=200, blank=True, null=True)
+    site2 = models.CharField(max_length=200, blank=True, null=True)
+    fax2 = models.CharField(max_length=40, blank=True, null=True)
+    mobile2 = models.CharField(max_length=40, blank=True, null=True)
     email2 = models.EmailField(blank=True, null=True)
     # outra informação / comercial
     iata = models.CharField(max_length=30, blank=True, null=True)
@@ -345,6 +348,72 @@ class Customer(models.Model):
     channel = models.ForeignKey('pos.DistributionChannel', on_delete=models.SET_NULL, blank=True,
                                 null=True, related_name='customers')
     signature_url = models.CharField(max_length=300, blank=True, null=True)
+    # ── O RESTO DA FICHA HOST — colunas A SÉRIO, campo a campo ──────────────
+    internal_id = models.CharField(max_length=30, blank=True, null=True)      # Id Interno
+    long_title = models.CharField(max_length=60, blank=True, null=True)       # Tít. longo
+    short_title = models.CharField(max_length=30, blank=True, null=True)      # Título curto
+    prefix = models.CharField(max_length=30, blank=True, null=True)
+    mailing_language = models.CharField(max_length=10, blank=True, null=True)
+    stat_aggregator = models.CharField(max_length=60, blank=True, null=True)  # Agregador Estatístico
+    planning_color = models.CharField(max_length=20, blank=True, null=True)
+    online_checkin_pct = models.PositiveIntegerField(default=0)
+    sync_enabled = models.BooleanField(default=False)                          # Sincronizar
+    address3 = models.CharField(max_length=255, blank=True, null=True)
+    phone_prefix = models.CharField(max_length=10, blank=True, null=True)
+    region = models.CharField(max_length=80, blank=True, null=True)
+    district = models.CharField(max_length=80, blank=True, null=True)
+    billing_address2 = models.CharField(max_length=255, blank=True, null=True)
+    billing_postal = models.CharField(max_length=30, blank=True, null=True)
+    billing_city = models.CharField(max_length=120, blank=True, null=True)
+    billing_country = models.CharField(max_length=80, blank=True, null=True)
+    # Outra informação
+    other_number = models.CharField(max_length=30, blank=True, null=True)      # Número
+    portal_password = models.CharField(max_length=128, blank=True, null=True)  # Password (portal)
+    internal_status = models.CharField(max_length=40, blank=True, null=True)
+    plate = models.CharField(max_length=30, blank=True, null=True)              # Matrícula
+    brand = models.CharField(max_length=60, blank=True, null=True)              # Marca
+    # Reserva — preferências do hóspede
+    pref_complex = models.CharField(max_length=60, blank=True, null=True)
+    pref_category = models.CharField(max_length=60, blank=True, null=True)
+    pref_price_list = models.CharField(max_length=60, blank=True, null=True)
+    pref_package = models.CharField(max_length=60, blank=True, null=True)
+    pref_meals = models.CharField(max_length=60, blank=True, null=True)
+    pref_pos_price = models.PositiveIntegerField(default=0)
+    pref_rest_table = models.CharField(max_length=30, blank=True, null=True)
+    pref_meal_type = models.CharField(max_length=40, blank=True, null=True)
+    pref_room = models.CharField(max_length=30, blank=True, null=True)
+    pref_discount = models.CharField(max_length=40, blank=True, null=True)
+    pref_discount_rule = models.CharField(max_length=60, blank=True, null=True)
+    suggest_on_reservation = models.BooleanField(default=False)
+    suggestion_text = models.TextField(blank=True, null=True)
+    # Aviso / Bloqueio
+    has_warnings = models.BooleanField(default=False)
+    warning_text = models.TextField(blank=True, null=True)
+    block_mode = models.CharField(max_length=10, blank=True, null=True)        # AVISO/BLOQUEIO
+    block_from = models.DateField(blank=True, null=True)
+    block_to = models.DateField(blank=True, null=True)
+    # Interfaces externas
+    pay_tv = models.CharField(max_length=40, blank=True, null=True)
+    video = models.CharField(max_length=40, blank=True, null=True)
+    minibar = models.CharField(max_length=40, blank=True, null=True)
+    # Pagamentos / Permissões
+    allow_cc_checkout = models.BooleanField(default=False)
+    cc_by = models.CharField(max_length=120, blank=True, null=True)
+    financial_number = models.CharField(max_length=30, blank=True, null=True)
+    credit_limit_mode = models.CharField(max_length=30, default='Sem restrições')
+    credit_limit_pos_enabled = models.BooleanField(default=False)
+    credit_limit_pos = models.DecimalField(max_digits=16, decimal_places=2, default=0)
+    einvoice_mode = models.CharField(max_length=40, blank=True, null=True)     # Fatura Electrónica
+    withholding_tax = models.CharField(max_length=40, blank=True, null=True)   # Imposto Retido
+    # Sales & Marketing
+    include_mailings = models.BooleanField(default=False)
+    mailing_general = models.BooleanField(default=False)
+    mailing_events = models.BooleanField(default=False)
+    mailing_birthday = models.BooleanField(default=False)
+    vip_code = models.CharField(max_length=40, blank=True, null=True)
+    distinction_program = models.BooleanField(default=False)
+    commission_code = models.CharField(max_length=40, blank=True, null=True)
+    commission_pct = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -367,7 +436,8 @@ class CustomerRecord(models.Model):
     KINDS = [('NOTE', 'Nota'), ('SOCIAL', 'Rede social'), ('DOC', 'Documento'),
              ('LINK', 'Ligação'), ('AGREEMENT', 'Acordo'), ('BILLING', 'Instrução de faturação'),
              ('COMMISSION', 'Comissão'), ('CONSENT', 'Consentimento'), ('CHILD', 'Criança'),
-             ('JOURNEY', 'Guest journey'), ('CUSTOM', 'Campo personalizado'), ('INFO', 'Informação de secção')]
+             ('JOURNEY', 'Guest journey'), ('CUSTOM', 'Campo personalizado'), ('INFO', 'Informação de secção'),
+             ('CARD', 'Cartão de membro'), ('SELCODE', 'Código de seleção'), ('LOG', 'Log RGPD')]
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='records')
     kind = models.CharField(max_length=12, choices=KINDS)
     data = models.JSONField(default=dict)
