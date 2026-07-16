@@ -17,6 +17,7 @@ import DayClose from './DayClose';
 import CashClose from './CashClose';
 import ReservationsPanel from './ReservationsPanel';
 import DeliveriesPanel from './DeliveriesPanel';
+import GroupTables from './GroupTables';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -47,7 +48,7 @@ export default function PosTerminal() {
   const [aConsultar, setAConsultar] = useState<any | null>(null);
   // As janelas da barra da esquerda. Uma de cada vez — o empregado não faz duas coisas
   // ao mesmo tempo com uma mesa à espera.
-  const [janela, setJanela] = useState<'' | 'SPLIT' | 'TRANSFER' | 'DOCS' | 'GUESTS' | 'MEALS' | 'CC' | 'RESERVAS' | 'ENTREGAS'>('');
+  const [janela, setJanela] = useState<'' | 'SPLIT' | 'TRANSFER' | 'DOCS' | 'GUESTS' | 'MEALS' | 'CC' | 'RESERVAS' | 'ENTREGAS' | 'GRUPOS'>('');
   const [contaAtual, setContaAtual] = useState<any | null>(null);
   // Modo de escolha de mesa: para as parciais e as transferências é preciso saber QUAL.
   const [escolher, setEscolher] = useState<'' | 'SPLIT' | 'TRANSFER'>('');
@@ -224,6 +225,7 @@ export default function PosTerminal() {
       : []),
     // RESERVAS de mesa (motor POSReservation) e ENTREGAS por destino (dispatch/deliver)
     { label: 'Reservas', icon: '📅', act: () => setJanela('RESERVAS'), on: !!setor },
+    { label: 'Agrupar Mesas', icon: '⛓', act: () => setJanela('GRUPOS'), on: !!setor },
     { label: 'Entregas', icon: '🛎', act: () => setJanela('ENTREGAS'), on: true },
     { label: 'Documentos', icon: '🗎', act: () => setJanela('DOCS'), on: true },
     { label: 'Mapa de Refeições', icon: '🍸', act: () => setJanela('MEALS'), on: true },
@@ -371,6 +373,11 @@ export default function PosTerminal() {
               onClose={() => setJanela('')} />
           )}
           {janela === 'ENTREGAS' && <DeliveriesPanel onClose={() => setJanela('')} />}
+          {janela === 'GRUPOS' && setor && (
+            <GroupTables setor={setor}
+              onOpenTicket={(id) => { setTicket(id); setEtapa('SALES'); }}
+              onClose={() => setJanela('')} />
+          )}
 
           {/* Consulta de Mesa: o talão de conferência (documento CM da AGT), sem venda. */}
           {aConsultar && (

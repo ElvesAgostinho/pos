@@ -29,8 +29,10 @@ export default function ReservationsPanel({ setor, onOpenTicket, onClose }: {
   });
   const { data: mesas = [] } = useQuery({
     queryKey: ['pos-tables', setor?.id],
-    queryFn: async () => (await apiClient.get('pos/tables/', { params: { sector: setor.id } }))
-      .data?.results || [],
+    queryFn: async () => {
+      const r = await apiClient.get('pos/tables/', { params: { sector: setor.id } });
+      return (r.data?.results || r.data || []) as any[];
+    },
     enabled: !!sentar,
   });
 

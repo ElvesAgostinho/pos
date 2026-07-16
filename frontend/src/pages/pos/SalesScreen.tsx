@@ -119,6 +119,24 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
     setCaminho([...caminho, k]);
   };
 
+  // NOTA PARA A COZINHA ("sem cebola", "bem passado") — um toque na linha. As
+  // MENSAGENS DE PRODUÇÃO do backoffice aparecem numeradas; ou escreve-se livre.
+  const notaLinha = async (l: any) => {
+    try {
+      const r = await apiClient.get('production/pos-messages/');
+      const msgs = ((r.data?.results || r.data || []) as any[]).filter((m) => m.is_active !== false);
+      const lista = msgs.map((m, i) => `${i + 1}. ${m.name}`).join('\n');
+      const escolha = window.prompt(
+        `NOTA PARA A COZINHA — ${l.description}\n\n${lista || '(sem mensagens configuradas)'}\n\n` +
+        'Escreva o Nº da mensagem, ou texto livre:', l.note || '');
+      if (escolha === null) return;
+      const n = Number(escolha.trim());
+      const nota = (Number.isInteger(n) && n >= 1 && n <= msgs.length) ? msgs[n - 1].name : escolha.trim();
+      await apiClient.patch(`pos/ticket-lines/${l.id}/`, { note: nota || null });
+      inval();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar a nota.'); }
+  };
+
   const apagarLinha = async (l: any) => {
     const emProducao = ['FIRED', 'PREPARING', 'READY'].includes(l.kds_status);
     let motivo: string | null = null;
@@ -289,11 +307,13 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
 
         <div className="flex-1 overflow-auto bg-[#8a8a8a]/20">
           {linhas.map((l) => (
-            <div key={l.id} onDoubleClick={() => apagarLinha(l)}
-              className="grid grid-cols-[64px_1fr_120px] px-2 py-2 text-white border-b border-black/20 text-[15px]">
+            <div key={l.id} onClick={() => notaLinha(l)} onDoubleClick={() => apagarLinha(l)}
+              title="1 toque: nota p/ cozinha · 2 toques: anular a linha"
+              className="grid grid-cols-[64px_1fr_120px] px-2 py-2 text-white border-b border-black/20 text-[15px] cursor-pointer">
               <span>{Number(l.quantity)}</span>
               <span className="truncate">
                 {l.description}
+                {l.note && <span className="block text-[11px] text-[#7fd4ff]">✎ {l.note}</span>}
                 {['FIRED', 'PREPARING', 'READY'].includes(l.kds_status) && (
                   <span className="ml-1 text-[11px] text-[#f0c000]">• na cozinha</span>
                 )}

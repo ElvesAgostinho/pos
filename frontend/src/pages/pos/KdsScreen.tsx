@@ -80,6 +80,8 @@ export default function KdsScreen() {
                 <div className="text-white/60 text-[13px] mt-1">
                   {l.dest_label || (l.table_label ? `Mesa ${l.table_label}` : 'Balcão')} · {l.operator_name || ''}
                 </div>
+                {/* a NOTA do empregado ("sem cebola") — é para a cozinha que ela existe */}
+                {l.note && <div className="text-[#7fd4ff] text-[13px] mt-1 font-bold">✎ {l.note}</div>}
                 {l.allergens?.length > 0 && (
                   <div className="text-[#ff8a80] text-[12px] mt-1">⚠ {l.allergens.join(', ')}</div>
                 )}

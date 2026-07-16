@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import CustomerLogin from './pages/CustomerLogin.tsx'
 import PosStation from './pages/pos/PosTerminal';
 import KdsScreen from './pages/pos/KdsScreen';
+import ErrorBoundary from './components/shell/ErrorBoundary';
 import BookingSite from './pages/BookingSite.tsx'
 import BookingManage from './pages/BookingManage.tsx'
 
@@ -114,9 +115,10 @@ createRoot(document.getElementById('root')!).render(
 
             {/* Frontoffice Launcher (Nível 3) */}
             <Route path="/pos/login" element={<RequireLicense><PosLoginModern /></RequireLicense>} />
-            <Route path="/pos/terminal" element={<RequireLicense><RequirePosOperator><PosStation /></RequirePosOperator></RequireLicense>} />
+            {/* ErrorBoundary: um botão que rebente mostra O ERRO — nunca página em branco */}
+            <Route path="/pos/terminal" element={<RequireLicense><RequirePosOperator><ErrorBoundary viewKey="pos-terminal"><PosStation /></ErrorBoundary></RequirePosOperator></RequireLicense>} />
             {/* KDS: o monitor da cozinha/bar — mesmo login de operador do terminal */}
-            <Route path="/pos/kds" element={<RequireLicense><RequirePosOperator><KdsScreen /></RequirePosOperator></RequireLicense>} />
+            <Route path="/pos/kds" element={<RequireLicense><RequirePosOperator><ErrorBoundary viewKey="pos-kds"><KdsScreen /></ErrorBoundary></RequirePosOperator></RequireLicense>} />
             
             {/* Site PÚBLICO do motor de reservas (multi-tenant por slug, sem login).
                 Servido separadamente em produção (cloud), mas partilha a API do PMS. */}
