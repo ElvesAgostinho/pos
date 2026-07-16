@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -30,13 +31,70 @@ def _safe_consume(ticket, request):
         pass  # o consumo de stock nunca deve quebrar o pagamento
 
 
-def _safe_fiscalize(ticket, request):
-    """Emite o documento fiscal (AGT) do ticket pago. Nunca quebra o pagamento."""
+def _print_document(ticket, doc, copia=False):
+    """Põe o documento fiscal na fila de impressão (1ª via ou 2ª via).
+
+    O talão que sai TEM de ser uma fatura aceite pela AGT. Faltavam-lhe quatro coisas
+    sem as quais o documento não é válido em Angola:
+      · o NIF da empresa e o do cliente (senão não é fatura, é papel);
+      · o RESUMO DE IVA por taxa (incidência e imposto liquidado);
+      · o VALOR POR EXTENSO (obrigatório — já era calculado e não era impresso);
+      · a MENÇÃO legal com o nº de certificação e os 4 caracteres da assinatura.
+    """
+    from .models import PrintJob
+    from fiscal.models import FiscalConfig
+    from fiscal.services import summarize_by_rate
+    from decimal import Decimal
+
+    cfg = FiscalConfig.get()
+    linhas = "\n".join(
+        f"{l.quantity.normalize():f}x {l.description} .... {l.line_total + l.tax_amount}"
+        for l in doc.lines.all())
+
+    # Resumo de IVA por taxa (é o que a AGT confere).
+    resumo = summarize_by_rate([(Decimal(str(l.tax_percentage or 0)),
+                                 Decimal(str(l.line_total)) + Decimal(str(l.tax_amount)))
+                                for l in doc.lines.all()])
+    iva = "\n".join(f"IVA {r['rate']:g}%  base {r['base']}  imposto {r['tax']}" for r in resumo)
+
+    # Menção legal: nº de certificação + 4 caracteres da assinatura (posições 1,11,21,31).
+    h = doc.doc_hash or ''
+    quatro = ''.join(h[i] for i in (0, 10, 20, 30) if len(h) > i)
+    # (Tipo de documento) "Imprime menção" — um documento de conferência não a leva;
+    # uma fatura leva sempre. É a caixa do Rules Engine a mandar no papel.
+    # (O nº já vem "147/AGT/2026" — não se lhe cola outro "/AGT".)
+    mencao = ''
+    if h and h != '0' and getattr(doc.doc_type, 'prints_mention', True):
+        mencao = (f"{quatro}-Processado por programa validado n.º "
+                  f"{cfg.certificate_number or 'S/N'}")
+
+    return PrintJob.objects.create(
+        job_type='INVOICE', outlet=ticket.outlet,
+        title=f"{'2ª VIA · ' if copia else ''}{doc.invoice_no}",
+        content=(f"{cfg.company_name or ''}\n"
+                 f"NIF: {cfg.company_nif or ''}\n"
+                 f"{'*** 2ª VIA ***' if copia else 'ORIGINAL'}\n"
+                 f"{doc.invoice_no}   {doc.doc_date:%d/%m/%Y}\n"
+                 f"Cliente: {doc.customer_name or 'Consumidor Final'}\n"
+                 f"NIF cliente: {doc.customer_tax_id or 'Consumidor Final'}\n"
+                 f"{'-' * 34}\n{linhas}\n{'-' * 34}\n"
+                 f"{iva}\n"
+                 f"TOTAL: {doc.gross_total} Kz\n"
+                 f"Valor por extenso: {doc.amount_in_words or ''}\n"
+                 f"{'-' * 34}\n{mencao}"),
+        reference=doc.invoice_no, copies=1)
+
+def _safe_fiscalize(ticket, request, credito=False, customer=None):
+    """Emite o documento fiscal (AGT) do ticket pago. Nunca quebra o pagamento.
+
+    `credito` = pago em CONTA CORRENTE: o documento nasce POR RECEBER (fatura), não
+    fatura-recibo. Dizer à AGT que se recebeu dinheiro que não entrou é declarar falso.
+    """
     try:
         from fiscal.integration import emit_for_pos_ticket
         user = request.user.username if request.user.is_authenticated else None
         ip = request.META.get('REMOTE_ADDR')
-        emit_for_pos_ticket(ticket, user=user, ip=ip)
+        emit_for_pos_ticket(ticket, user=user, ip=ip, credito=credito, customer=customer)
     except Exception:
         pass  # fiscalização assíncrona/tolerante: fila e reemissão tratam falhas
 
@@ -496,16 +554,60 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if not item.is_active:
             return Response({'detail': f'"{item.name}" está inativo e não pode ser vendido.',
                              'inactive_item': True}, status=status.HTTP_400_BAD_REQUEST)
+        # (Artigo) "Pergunta sempre a quantidade" — o cliente pede "três cafés", não "um
+        # café" três vezes. Sem esta caixa, o empregado carrega três vezes na tecla e
+        # engana-se numa; com ela, o terminal PERGUNTA e só aceita com resposta.
+        crua = request.data.get('quantity')
+        if getattr(item, 'always_ask_quantity', False) and crua in (None, ''):
+            return Response({'detail': f'"{item.name}" exige que se indique a quantidade.',
+                             'requires_quantity': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Artigo) "Interface de balança" — o peixe ao quilo não se conta, pesa-se. A
+        # quantidade tem de vir da balança (ou ser escrita à mão, se ela avariou), e é
+        # sempre fracionada.
+        if getattr(item, 'scale_interface', False) and crua in (None, ''):
+            return Response({'detail': f'"{item.name}" é pesado na balança: falta o peso.',
+                             'requires_weight': True}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            qty = Decimal(str(request.data.get('quantity', '1')))
+            qty = Decimal(str(crua if crua not in (None, '') else '1'))
         except Exception:
             qty = Decimal('1')
 
+        # (Artigo) "Permite fração" — meia dose, 0,350 kg de picanha. Um artigo que NÃO
+        # a permite não se vende às metades: 1,5 cervejas não existe, e uma quantidade
+        # partida numa cerveja é sempre um erro de dedo no teclado.
+        if qty != qty.to_integral_value():
+            if not (getattr(item, 'allow_fraction', False)
+                    or getattr(item, 'scale_interface', False)):
+                return Response({'detail': f'"{item.name}" não se vende em frações. '
+                                           f'Indique uma quantidade inteira.',
+                                 'no_fraction': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Artigo) "Texto livre" — o artigo genérico ("Diversos", "Prato do dia"). O que sai
+        # na conta e na fatura é o que o empregado escreve; sem isso, o cliente recebe uma
+        # fatura a dizer "Diversos" e não sabe o que pagou.
+        descricao = (request.data.get('description') or '').strip()
+        if getattr(item, 'free_text', False) and not descricao:
+            return Response({'detail': f'"{item.name}" é de texto livre: escreva o que está a vender.',
+                             'requires_description': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (POS Product Config) "Disponível" — o artigo existe no catálogo mas hoje acabou.
+        # É como se risca um prato do menu ao almoço sem o apagar do sistema.
         cfg = POSProductConfig.objects.filter(outlet=ticket.outlet, item=item).first()
+        if cfg and not cfg.is_available:
+            return Response({'detail': f'"{item.name}" está indisponível neste ponto de venda '
+                                       f'(esgotado ou fora do menu de hoje).',
+                             'unavailable': True}, status=status.HTTP_400_BAD_REQUEST)
         unit_price = request.data.get('unit_price')
-        # (Artigo) "Preço manual" — artigos de preço variável (peixe ao quilo, vinho a
-        # copo do dia): o terminal TEM de perguntar o preço; não se inventa um.
-        if unit_price in (None, '') and getattr(item, 'manual_price', False):
+        # O PREÇO É DO SERVIDOR. Só os artigos marcados como "Preço manual" (peixe ao
+        # quilo, vinho a copo do dia) aceitam um preço vindo do terminal. Nos outros, um
+        # preço enviado pelo cliente é IGNORADO — senão bastava forjar um pedido para
+        # vender o whisky a 1 Kz, e a fatura saía assinada com esse valor.
+        if not getattr(item, 'manual_price', False):
+            unit_price = None
+        # (Artigo) "Preço manual" — o terminal TEM de perguntar o preço; não se inventa um.
+        elif unit_price in (None, ''):
             return Response({'detail': f'"{item.name}" é de preço manual — indique o preço.',
                              'requires_price': True}, status=status.HTTP_400_BAD_REQUEST)
         if unit_price in (None, ''):
@@ -554,7 +656,11 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         base_note = request.data.get('note')
         note = '; '.join([n for n in (base_note, promo_note) if n]) or None
         line = POSTicketLine.objects.create(
-            ticket=ticket, item=item, description=item.name, quantity=qty,
+            ticket=ticket, item=item,
+            # "Texto livre": o que sai na conta é o que o empregado escreveu.
+            description=(descricao if (getattr(item, 'free_text', False) and descricao)
+                         else item.name),
+            quantity=qty,
             unit_price=unit_price + mod_delta, tax_percentage=item.tax_percentage or 0,
             note=note, kds_station=(cfg.kds_station if cfg else 'KITCHEN'),
         )
@@ -603,11 +709,24 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(self.get_queryset().get(pk=ticket.pk)).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def pay(self, request, pk=None):
-        """Pagamento: exige método AUTORIZADO no outlet; calcula troco (dinheiro); fecha se saldado."""
-        ticket = self.get_object()
+        """Pagamento: exige método AUTORIZADO no outlet; calcula troco (dinheiro); fecha se saldado.
+
+        TRANCA O TICKET (select_for_update) e corre tudo numa só transação.
+
+        Sem isto, dois pagamentos ao mesmo tempo — dois terminais, ou o empregado a
+        carregar duas vezes porque o ecrã demorou — liam ambos "falta pagar 1000",
+        e ambos cobravam 1000. O cliente pagava a dobrar e a caixa fechava com uma
+        sobra que ninguém sabia explicar. O segundo pagamento espera aqui pelo
+        primeiro e vê a conta já saldada.
+        """
+        # A tranca é sobre a LINHA do ticket na base de dados, não sobre o objeto.
+        ticket = (POSTicket.objects.select_for_update()
+                  .select_related('outlet', 'table', 'cash_session').get(pk=pk))
         if ticket.status != 'OPEN':
-            return Response({'detail': 'Ticket não está aberto.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Esta conta já não está aberta (pode ter sido paga noutro terminal).'},
+                            status=status.HTTP_400_BAD_REQUEST)
         from mdm.models import PaymentMethod
         try:
             pm = PaymentMethod.objects.get(pk=request.data.get('payment_method'))
@@ -617,6 +736,14 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         # REGRA: só métodos autorizados neste outlet (consome a config do 07).
         if not OutletPaymentMethod.objects.filter(outlet=ticket.outlet, payment_method=pm, is_active=True).exists():
             return Response({'detail': f'Método "{pm.name}" não autorizado neste outlet.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # A CONTA TEM DE ESTAR NUMA CAIXA ABERTA. Sem isto, uma venda entrava numa
+        # sessão já fechada — o dinheiro existia mas não aparecia em fecho nenhum, e
+        # a diferença só se descobria no cofre.
+        if ticket.cash_session_id and ticket.cash_session.status != 'OPEN':
+            return Response({'detail': 'A caixa desta conta já foi fechada. '
+                                       'Abra uma nova sessão de caixa para cobrar.',
+                             'cash_session_closed': True}, status=status.HTTP_400_BAD_REQUEST)
 
         # (Modo de Pagamento) "Ativo" — desligado, sai do POS. É como se suspende o
         # multibanco quando o TPA avaria, sem apagar o histórico de vendas por cartão.
@@ -650,6 +777,91 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             return Response({'detail': f'"{pm.name}" exige o nº do documento (cheque/transferência).',
                              'requires_document_number': True}, status=status.HTTP_400_BAD_REQUEST)
 
+        # (Modo de Pagamento) "F&B" — há métodos que só servem para pagar FORNECEDORES
+        # (transferência do economato). Deixá-los no ecrã da caixa é convidar o empregado
+        # a cobrar um jantar por um meio que a tesouraria não reconhece.
+        if pm.for_fnb and not pm.for_pos:
+            return Response({'detail': f'"{pm.name}" é um meio de pagamento a fornecedores, '
+                                       f'não de cobrança ao cliente.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # (Modo de Pagamento) "Transferência bancária" — sem o banco e a referência, o
+        # dinheiro entra na conta e ninguém sabe de que venda é. A reconciliação bancária
+        # faz-se com estes dois campos ou não se faz.
+        if pm.bank_transfer and not (request.data.get('bank_reference')
+                                     or request.data.get('document_number')):
+            return Response({'detail': f'"{pm.name}" é uma transferência: indique a referência bancária.',
+                             'requires_bank_reference': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Modo de Pagamento) "Interface externa" (TPA) — o terminal de cartões TEM de
+        # devolver o código de autorização. Sem ele, não há prova de que o banco aceitou:
+        # o cliente sai, o pagamento é recusado à noite, e a casa perde a refeição.
+        if pm.external_interface and not (request.data.get('auth_code')
+                                          or request.data.get('external_ref')):
+            return Response({'detail': f'"{pm.name}" usa o TPA "{pm.external_device or "externo"}": '
+                                       f'falta o código de autorização do terminal.',
+                             'requires_auth_code': True,
+                             'device': pm.external_device}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Modo de Pagamento) "Conta corrente" — a conta fica em nome de uma ENTIDADE e
+        # o dinheiro só entra depois. Sem entidade, é uma dívida de ninguém.
+        entidade = None
+        if pm.current_account:
+            from mdm.models import Customer as _Cust
+            cid = request.data.get('customer') or getattr(ticket, 'customer_id', None)
+            entidade = _Cust.objects.filter(pk=cid).first() if cid else None
+            if not entidade:
+                return Response({'detail': f'"{pm.name}" lança em conta corrente: indique a entidade.',
+                                 'requires_entity': True}, status=status.HTTP_400_BAD_REQUEST)
+            # Entidade BLOQUEADA não leva mais fiado — foi para isso que se bloqueou.
+            if entidade.is_blocked:
+                return Response({'detail': f'"{entidade.name}" está bloqueada'
+                                           f'{" — " + entidade.block_reason if entidade.block_reason else ""}. '
+                                           f'Não se vende a crédito; cobre a conta.',
+                                 'entity_blocked': True}, status=status.HTTP_400_BAD_REQUEST)
+            # LIMITE DE CRÉDITO — deixar passar é como emprestar dinheiro sem o decidir.
+            if entidade.credit_limit:
+                from fiscal.models import FiscalDocument as _FD
+                em_divida = sum((d.gross_total for d in _FD.objects.filter(
+                    customer=entidade, settled=False).select_related('doc_type')
+                    if not d.doc_type.is_rectifying), Decimal('0'))
+                try:
+                    pedido = Decimal(str(request.data.get('amount') or '0'))
+                except Exception:
+                    pedido = Decimal('0')
+                if em_divida + pedido > entidade.credit_limit:
+                    return Response({
+                        'detail': f'"{entidade.name}" ultrapassa o limite de crédito '
+                                  f'({entidade.credit_limit} Kz). Já deve {em_divida} Kz.',
+                        'credit_limit_exceeded': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ── CARTÃO DE MEMBRO ─────────────────────────────────────────────────────
+        # As três caixas do cartão decidem o que ele pode fazer. Um cartão que só dá
+        # desconto não paga; um pré-pago (all-inclusive) paga com o saldo que tem; um de
+        # sócio acumula dívida; um de fidelização paga com pontos.
+        from .models import MemberCard, MemberCardMovement
+        cartao = None
+        cartao_dono = None
+        modo_cartao = (request.data.get('card_mode') or '').upper()   # CREDIT | DEBIT | POINTS
+        if modo_cartao:
+            from mdm.models import Customer as _C
+            cid = request.data.get('customer') or getattr(ticket, 'customer_id', None)
+            cartao_dono = _C.objects.filter(pk=cid).select_related('member_card').first() if cid else None
+            if not cartao_dono or not cartao_dono.member_card_id:
+                return Response({'detail': 'Indique o titular do cartão de membro.',
+                                 'requires_entity': True}, status=status.HTTP_400_BAD_REQUEST)
+            cartao = cartao_dono.member_card
+            if not cartao.is_active:
+                return Response({'detail': f'O cartão "{cartao.name}" está inativo.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            capaz = {'CREDIT': cartao.has_credit, 'DEBIT': cartao.has_debit,
+                     'POINTS': cartao.has_points}.get(modo_cartao)
+            if not capaz:
+                return Response({
+                    'detail': f'O cartão "{cartao.name}" não permite pagar por '
+                              f'{"crédito" if modo_cartao == "CREDIT" else "débito" if modo_cartao == "DEBIT" else "pontos"}.',
+                    'card_not_capable': True}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             tendered = Decimal(str(request.data.get('amount')))
         except Exception:
@@ -657,11 +869,61 @@ class POSTicketViewSet(viewsets.ModelViewSet):
 
         ticket = POSTicket.objects.get(pk=ticket.pk)  # fresco: saldo/pagamentos atualizados
         due = ticket.balance_due
+
+        # (Modo de Pagamento) "Permite multi-moeda" — o turista paga em euros. O valor
+        # entregue vem NA MOEDA DO MÉTODO e converte-se pela taxa da tabela de moedas.
+        # Sem isto, 100 € entravam como 100 Kz e a caixa fechava com um buraco.
+        moeda = (request.data.get('currency') or '').strip().upper()
+        taxa = Decimal('1')
+        if moeda and moeda != 'AOA':
+            if not pm.allows_multicurrency:
+                return Response({'detail': f'"{pm.name}" só aceita kwanzas.',
+                                 'no_multicurrency': True}, status=status.HTTP_400_BAD_REQUEST)
+            from mdm.models import Currency as _Cur
+            cur = _Cur.objects.filter(code=moeda, is_active=True).first()
+            if not cur:
+                return Response({'detail': f'Moeda "{moeda}" não existe ou está inativa.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            # (Moeda) "Excluída do balcão de câmbio" — há divisas que o hotel não aceita.
+            if cur.excluded:
+                return Response({'detail': f'A casa não aceita {cur.name} ao balcão.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            # A taxa de COMPRA é a que se usa a receber: o hotel COMPRA a divisa ao cliente.
+            # (A de venda é mais alta — a diferença é a margem do câmbio.)
+            taxa = Decimal(str(cur.buy_rate or cur.rate_to_base or 0))
+            if taxa <= 0:
+                return Response({'detail': f'Moeda "{moeda}" sem taxa de câmbio definida. '
+                                           f'Defina a taxa de compra em Financeiro › Moedas.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            tendered = (tendered * taxa).quantize(Decimal('0.01'))
+
+        # (Modo de Pagamento) "Permite pagamento misto" — dois meios na mesma conta
+        # (metade em dinheiro, metade no cartão). Um método que NÃO o permite tem de ser
+        # o único da conta: senão o fecho de caixa nunca bate com o talão.
+        ja_pago = ticket.payments.exclude(payment_method=pm).exists()
+        if ja_pago and not pm.allows_mixed:
+            return Response({'detail': f'"{pm.name}" não pode ser misturado com outros meios '
+                                       f'de pagamento nesta conta.',
+                             'no_mixed': True}, status=status.HTTP_400_BAD_REQUEST)
+
         applied = min(tendered, due)
+
+        # (Modo de Pagamento) "Permite pagamento parcial" — pagar uma parte e deixar o
+        # resto para depois. Se a caixa está desligada, ou paga tudo, ou não paga nada:
+        # é o que evita a conta que fica meia paga e ninguém sabe quanto falta.
+        if not pm.allows_partial and applied < due:
+            return Response({'detail': f'"{pm.name}" não aceita pagamentos parciais. '
+                                       f'Faltam {due} Kz.',
+                             'no_partial': True, 'due': str(due)},
+                            status=status.HTTP_400_BAD_REQUEST)
         # (Modo de Pagamento) "Dá troco" — o dinheiro dá; o multibanco e a transferência
         # não. Sem esta caixa, o caixa "devolvia" troco de um pagamento por cartão e a
         # gaveta ficava sempre em falta ao fecho.
+        # (Modo de Pagamento) "Pagamento direto" — o valor entra exato, sem troco e sem
+        # gaveta (transferência, MB Way, voucher). É o oposto do dinheiro.
         gives_change = getattr(pm, 'allows_change', pm.method_type == 'CASH')
+        if pm.direct_payment:
+            gives_change = False
         if not gives_change and tendered > due:
             return Response({
                 'detail': f'"{pm.name}" não dá troco. Cobre no máximo {due}.',
@@ -682,9 +944,92 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                     created_by=(request.user.username if request.user.is_authenticated else 'POS'),
                 )
 
-        POSTicketPayment.objects.create(ticket=ticket, payment_method=pm, amount=applied, change_due=change)
+        # (Cartão) "Crédito" — o pré-pago paga com o que tem. Deixar passar sem saldo é
+        # oferecer o jantar: o cartão fica negativo e ninguém o vai cobrar.
+        if modo_cartao == 'CREDIT':
+            saldo = MemberCardMovement.credit_of(cartao_dono)
+            if saldo < applied:
+                return Response({'detail': f'O cartão de {cartao_dono.name} tem {saldo} Kz — '
+                                           f'não chega para {applied} Kz.',
+                                 'card_balance': str(saldo)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Cartão) "Débito" — o sócio leva fiado, mas até um teto. Sem teto, um cartão de
+        # débito é crédito ilimitado a quem nunca mais aparece.
+        if modo_cartao == 'DEBIT' and cartao.credit_limit:
+            divida = MemberCardMovement.debt_of(cartao_dono)
+            if divida + applied > cartao.credit_limit:
+                return Response({'detail': f'{cartao_dono.name} já deve {divida} Kz e o cartão '
+                                           f'"{cartao.name}" só permite {cartao.credit_limit} Kz.',
+                                 'card_limit_exceeded': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Cartão) "Pontos" — os pontos valem dinheiro (1 ponto = X Kz, definido no cartão).
+        if modo_cartao == 'POINTS':
+            valor_ponto = cartao.point_value or Decimal('1')
+            pontos = MemberCardMovement.points_of(cartao_dono)
+            precisa = (applied / valor_ponto) if valor_ponto else Decimal('0')
+            if pontos < precisa:
+                return Response({'detail': f'{cartao_dono.name} tem {pontos} pontos '
+                                           f'({pontos * valor_ponto} Kz) — precisa de {precisa:.2f}.',
+                                 'card_points': str(pontos)}, status=status.HTTP_400_BAD_REQUEST)
+
+        POSTicketPayment.objects.create(ticket=ticket, payment_method=pm, amount=applied,
+                                        change_due=change)
+
+        # O movimento do cartão fica escrito. O saldo é sempre a soma do livro.
+        if modo_cartao:
+            quem = request.user.username if request.user.is_authenticated else 'POS'
+            if modo_cartao == 'CREDIT':
+                MemberCardMovement.objects.create(
+                    customer=cartao_dono, card=cartao, kind='SPEND', amount=applied,
+                    ticket=ticket, created_by=quem, reason=f'Consumo {ticket.ticket_number}')
+            elif modo_cartao == 'DEBIT':
+                MemberCardMovement.objects.create(
+                    customer=cartao_dono, card=cartao, kind='DEBIT', amount=applied,
+                    ticket=ticket, created_by=quem, reason=f'Conta {ticket.ticket_number}')
+            elif modo_cartao == 'POINTS':
+                valor_ponto = cartao.point_value or Decimal('1')
+                MemberCardMovement.objects.create(
+                    customer=cartao_dono, card=cartao, kind='REDEEM',
+                    points=(applied / valor_ponto), amount=applied,
+                    ticket=ticket, created_by=quem, reason=f'Pontos usados em {ticket.ticket_number}')
+
+        # (Modo de Pagamento) "Conta corrente" — a conta fica em nome da entidade e o
+        # documento nasce POR RECEBER (fatura, não fatura-recibo). É o crédito a sério.
+        if pm.current_account and entidade:
+            ticket.customer_name = entidade.name
+            ticket.customer_tax_id = entidade.tax_id
+            ticket.save(update_fields=['customer_name', 'customer_tax_id'])
+
+        # (Modo de Pagamento) "Permite levantamento" (sangria no ato) — acima de um valor,
+        # o dinheiro não fica na gaveta: avisa-se quem tem de o vir buscar. Uma gaveta com
+        # 2 milhões ao balcão é um convite.
+        pickup = None
+        if pm.allow_pickup and pm.pickup_alert_amount:
+            from django.db.models import Sum as _S
+            # Conta o que está acumulado NESTA caixa; se a conta não tem sessão (venda
+            # avulsa), conta o que se cobrou hoje neste ponto de venda por este meio.
+            base = POSTicketPayment.objects.filter(payment_method=pm)
+            if ticket.cash_session_id:
+                base = base.filter(ticket__cash_session=ticket.cash_session)
+            else:
+                base = base.filter(ticket__outlet=ticket.outlet,
+                                   ticket__opened_at__date=timezone.localdate())
+            em_caixa = base.aggregate(t=_S('amount'))['t'] or Decimal('0')
+            if em_caixa >= pm.pickup_alert_amount:
+                pickup = (f'A caixa já tem {em_caixa} Kz em {pm.name} — acima do limite de '
+                          f'{pm.pickup_alert_amount}. Faça uma sangria.')
 
         ticket = POSTicket.objects.get(pk=ticket.pk)  # recarrega com o novo pagamento
+
+        # (Modo de Pagamento) "Só fecha com saldo zero" — não deixa a conta fechar com um
+        # cêntimo por pagar. Sem isto, ficavam contas "quase pagas" que nunca mais fechavam.
+        if pm.close_only_zero_balance and ticket.balance_due > 0:
+            return Response({'detail': f'"{pm.name}" só fecha a conta com saldo zero. '
+                                       f'Faltam {ticket.balance_due} Kz.',
+                             'balance_due': str(ticket.balance_due),
+                             'requires_zero_balance': True},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         if ticket.balance_due <= 0:
             ticket.status = 'PAID'
             ticket.closed_at = timezone.now()
@@ -692,8 +1037,35 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 ticket.table.status = 'FREE'
                 ticket.table.save(update_fields=['status'])
             ticket.save(update_fields=['status', 'closed_at'])
+            # (Cartão) "Pontos" — ganham-se a CADA venda ao titular, não só quando ele
+            # paga com o cartão. É a fidelização: consome, acumula, volta.
+            try:
+                from mdm.models import Customer as _C3
+                titular = cartao_dono
+                if not titular:
+                    # O titular pode vir do pedido (o empregado encostou o cartão ao leitor)
+                    # ou da conta (o cliente já estava associado à mesa).
+                    cid3 = request.data.get('customer') or getattr(ticket, 'customer_id', None)
+                    if cid3:
+                        titular = _C3.objects.filter(pk=cid3).select_related('member_card').first()
+                    elif ticket.customer_name:
+                        titular = _C3.objects.filter(name=ticket.customer_name).select_related('member_card').first()
+                if (titular and titular.member_card_id and titular.member_card.has_points
+                        and titular.member_card.is_active and modo_cartao != 'POINTS'):
+                    c = titular.member_card
+                    ganhos = (ticket.grand_total / Decimal('100')) * (c.points_per_100 or Decimal('0'))
+                    if ganhos > 0:
+                        MemberCardMovement.objects.create(
+                            customer=titular, card=c, kind='EARN', points=ganhos,
+                            amount=ticket.grand_total, ticket=ticket,
+                            reason=f'Pontos de {ticket.ticket_number}')
+            except Exception:
+                pass   # a fidelização NUNCA pode partir uma venda
+
             _safe_consume(ticket, request)   # saída de stock (ficha técnica/artigo)
-            _safe_fiscalize(ticket, request)  # documento fiscal AGT
+            # Conta corrente: o documento é uma FATURA (por receber), não uma fatura-recibo.
+            _safe_fiscalize(ticket, request, credito=bool(pm.current_account),
+                            customer=entidade)
 
         log_event(request, 'PAYMENT', f'Pagamento {pm.name}: {applied} (troco {change})',
                   operator_name=ticket.operator_name, outlet=ticket.outlet,
@@ -703,10 +1075,146 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         data['change_returned'] = str(change)
         data['tip'] = str(tip)
         # O terminal obedece a estas: abre (ou não) a gaveta, imprime (ou não) o documento.
-        data['open_drawer'] = bool(pm.opens_drawer)
+        # "Pagamento direto" não abre gaveta: não entra dinheiro físico nenhum.
+        data['open_drawer'] = bool(pm.opens_drawer) and not pm.direct_payment
         data['print_document'] = bool(pm.prints_document)
         data['document_type'] = pm.document_type          # Fatura ou Talão
+        if cartao_dono:
+            data['card'] = {
+                'name': cartao.name,
+                'credit': str(MemberCardMovement.credit_of(cartao_dono)),
+                'debt': str(MemberCardMovement.debt_of(cartao_dono)),
+                'points': str(MemberCardMovement.points_of(cartao_dono)),
+            }
+        data['currency'] = moeda or 'AOA'
+        data['exchange_rate'] = str(taxa)
+        # (Moeda) "Imprimir contravalor no talão" — o cliente que paga em dólares quer ver
+        # no papel quanto é que aquilo deu em kwanzas, e a que câmbio.
+        if moeda and moeda != 'AOA':
+            from mdm.models import Currency as _C2
+            c2 = _C2.objects.filter(code=moeda).first()
+            if c2 and c2.print_on_pos_docs:
+                data['print_counter_value'] = (f'{request.data.get("amount")} {moeda} '
+                                               f'@ {taxa} = {applied} AOA')
+        if pickup:
+            data['pickup_alert'] = pickup
+        # (Modo de Pagamento) "Cross-selling" — é o momento em que o cliente ainda está à
+        # frente do caixa e com a carteira na mão. Sugerir aqui é a venda mais barata que
+        # existe; sugerir depois é perseguir o cliente à porta.
+        if pm.cross_selling:
+            from inventory.models import Item as _It
+            vendidos = set(ticket.lines.values_list('item_id', flat=True))
+            sug = (_It.objects.filter(is_active=True, cross_sell=True)
+                   .exclude(id__in=vendidos)[:4]
+                   if hasattr(_It, 'cross_sell') else
+                   _It.objects.filter(is_active=True).exclude(id__in=vendidos)
+                   .order_by('-sale_price')[:4])
+            data['cross_sell'] = [{'id': i.id, 'name': i.name, 'price': str(i.sale_price or 0)}
+                                  for i in sug]
         return Response(data)
+
+    @action(detail=True, methods=['post'])
+    @transaction.atomic
+    def split(self, request, pk=None):
+        """FUNÇÕES PARCIAIS — dividir a conta.
+
+        Quatro amigos jantam e um deles paga só o que comeu. Sem isto, o empregado faz
+        contas de cabeça no guardanapo, cobra a mais a um e a menos a outro, e o fecho de
+        caixa nunca bate.
+
+        Move-se a QUANTIDADE, não a linha: metade de uma garrafa de vinho vai para uma
+        conta e metade para a outra. A linha de origem fica com o que sobrou; se ficar a
+        zero, desaparece.
+
+        `lines`: [{'line': <id>, 'quantity': <qtd a mover>}]
+        `to`:    id da conta de destino (opcional — sem ela, cria-se uma nova na mesma mesa)
+        """
+        origem = POSTicket.objects.select_for_update().get(pk=pk)
+        if origem.status != 'OPEN':
+            return Response({'detail': 'Só se divide uma conta aberta.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        pedidas = request.data.get('lines') or []
+        if not pedidas:
+            return Response({'detail': 'Escolha o que passa para a outra conta.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        destino = None
+        if request.data.get('to'):
+            destino = POSTicket.objects.select_for_update().filter(
+                pk=request.data['to'], status='OPEN').first()
+            if not destino:
+                return Response({'detail': 'Conta de destino inválida.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        if not destino:
+            # A subconta nasce na MESMA mesa: continua a ser a mesma mesa a ser servida.
+            destino = POSTicket.objects.create(
+                outlet=origem.outlet, table=origem.table,
+                cash_session=origem.cash_session,
+                operator_name=origem.operator_name,
+                guests=max(1, request.data.get('guests') or 1),
+                guest_type=origem.guest_type,
+                dest_kind=origem.dest_kind, dest_ref=origem.dest_ref,
+                dest_label=origem.dest_label,
+            )
+
+        movidas = 0
+        for p in pedidas:
+            linha = origem.lines.filter(pk=p.get('line'), is_void=False).first()
+            if not linha:
+                continue
+            try:
+                qtd = Decimal(str(p.get('quantity') or linha.quantity))
+            except Exception:
+                qtd = linha.quantity
+            qtd = min(qtd, linha.quantity)
+            if qtd <= 0:
+                continue
+
+            # A linha nova nasce na conta de destino com o MESMO preço e o mesmo estado de
+            # produção: um prato que já está na cozinha não volta a ser pedido só porque
+            # mudou de conta.
+            POSTicketLine.objects.create(
+                ticket=destino, item=linha.item, description=linha.description,
+                quantity=qtd, unit_price=linha.unit_price,
+                tax_percentage=linha.tax_percentage, note=linha.note,
+                kds_station=linha.kds_station, kds_status=linha.kds_status,
+                fired_at=linha.fired_at,
+            )
+            resto = linha.quantity - qtd
+            if resto > 0:
+                linha.quantity = resto
+                linha.save(update_fields=['quantity'])
+            else:
+                linha.delete()
+            movidas += 1
+
+        POSTicket.objects.get(pk=origem.pk).recompute(save=True)
+        POSTicket.objects.get(pk=destino.pk).recompute(save=True)
+
+        # A mesa continua ocupada — agora com duas contas.
+        log_event(request, 'TICKET_OPEN',
+                  f'Conta dividida: {movidas} artigo(s) para {destino.ticket_number}',
+                  operator_name=origem.operator_name, outlet=origem.outlet,
+                  reference=origem.ticket_number, new_value=destino.ticket_number)
+
+        origem = self.get_queryset().get(pk=origem.pk)
+        destino = self.get_queryset().get(pk=destino.pk)
+        return Response({
+            'moved': movidas,
+            'source': self.get_serializer(origem).data,
+            'target': self.get_serializer(destino).data,
+        })
+
+    @action(detail=True, methods=['get'])
+    def siblings(self, request, pk=None):
+        """As OUTRAS contas abertas da mesma mesa (as subcontas que já se dividiram)."""
+        t = self.get_object()
+        if not t.table_id:
+            return Response([])
+        outras = (self.get_queryset().filter(table=t.table, status='OPEN')
+                  .exclude(pk=t.pk))
+        return Response(self.get_serializer(outras, many=True).data)
 
     @action(detail=True, methods=['post'])
     def fire_kitchen(self, request, pk=None):
@@ -810,24 +1318,56 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     # MOTOR 3 (aprofundamento) — transferir / juntar mesas
     # ------------------------------------------------------------------
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def transfer_table(self, request, pk=None):
-        """Transfere o ticket para outra mesa (liberta a origem, ocupa o destino)."""
-        ticket = self.get_object()
+        """Transfere a conta para outra mesa (liberta a origem, ocupa o destino).
+
+        A conta é a mesma: mesmo número, mesmos artigos, mesma comanda já na cozinha.
+        Só muda o sítio onde o cliente está sentado.
+
+        Três coisas que faltavam aqui:
+          · TRANCA a conta — duas transferências ao mesmo tempo deixavam a mesa antiga
+            ocupada e a nova livre (ou as duas ocupadas);
+          · RECUSA uma mesa que já tem conta aberta — senão ficavam duas contas na
+            mesma mesa e o empregado cobrava a errada;
+          · ATUALIZA O DESTINO — sem isso, a comanda da cozinha e a fatura continuavam
+            a dizer "Mesa 4" depois de o cliente se mudar para a 9.
+        """
+        ticket = POSTicket.objects.select_for_update().select_related('table', 'outlet').get(pk=pk)
         if ticket.status not in ('OPEN', 'SUSPENDED'):
-            return Response({'detail': 'Só tickets abertos/suspensos podem ser transferidos.'}, status=400)
+            return Response({'detail': 'Só contas abertas ou suspensas podem mudar de mesa.'}, status=400)
         try:
-            dest = POSTable.objects.get(pk=request.data.get('table'), outlet=ticket.outlet)
+            dest = POSTable.objects.select_for_update().get(
+                pk=request.data.get('table'), outlet=ticket.outlet)
         except POSTable.DoesNotExist:
             return Response({'detail': 'Mesa de destino inválida.'}, status=404)
+
+        ocupada = (POSTicket.objects.filter(table=dest, status__in=['OPEN', 'SUSPENDED'])
+                   .exclude(pk=ticket.pk).exists())
+        if ocupada:
+            return Response({'detail': f'A mesa {dest.table_number} já tem uma conta aberta. '
+                                       f'Junte as contas (merge) em vez de transferir.',
+                             'table_busy': True}, status=409)
+
         old_table = ticket.table
-        if old_table and old_table.pk != dest.pk and not old_table.tickets.filter(status__in=['OPEN', 'SUSPENDED']).exclude(pk=ticket.pk).exists():
+        if old_table and old_table.pk != dest.pk and not old_table.tickets.filter(
+                status__in=['OPEN', 'SUSPENDED']).exclude(pk=ticket.pk).exists():
             old_table.status = 'FREE'
             old_table.save(update_fields=['status'])
+
         ticket.table = dest
-        ticket.save(update_fields=['table'])
+        # O DESTINO é o que sai na comanda e na fatura — tem de mudar com a mesa.
+        ticket.dest_kind = 'TABLE'
+        ticket.dest_ref = str(dest.id)
+        ticket.dest_label = f'Mesa {dest.table_number}'
+        ticket.save(update_fields=['table', 'dest_kind', 'dest_ref', 'dest_label'])
+
         dest.status = 'OCCUPIED'
         dest.save(update_fields=['status'])
-        log_event(request, 'TICKET_OPEN', f'Transferência de mesa -> {dest.table_number}',
+
+        log_event(request, 'TABLE_CHANGE',
+                  f'Conta transferida da mesa {old_table.table_number if old_table else "—"} '
+                  f'para a {dest.table_number}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet, reference=ticket.ticket_number,
                   old_value=old_table.table_number if old_table else None, new_value=dest.table_number)
         return Response(self.get_serializer(self.get_queryset().get(pk=ticket.pk)).data)
@@ -954,19 +1494,36 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     # MOTOR 6 (aprofundamento) — estorno, cobrança no quarto (PMS), gift card
     # ------------------------------------------------------------------
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def refund(self, request, pk=None):
+        """(Modo de pagamento) "Permite estorno" verificada cá dentro."""
         """Estorno: emite a NOTA DE CRÉDITO no motor fiscal — assinada e encadeada.
 
         Antes, isto numerava a NC numa série PARALELA (mdm.DocumentSeries): saía um
         documento com número, mas sem assinatura, sem encadeamento de hash e fora do
         SAF-T. Ou seja: um documento que a AGT não reconhece. Agora passa pelo mesmo
         ponto único de emissão das faturas.
+
+        TRANCA o ticket e corre numa transação: se alguma coisa falhar a meio, NADA
+        fica gravado. Antes, um erro depois de emitir a NC deixava-a criada e o ticket
+        já estornado — o caixa via um erro, carregava outra vez, e saía uma SEGUNDA
+        nota de crédito da mesma venda.
         """
         from fiscal.services import create_credit_note
         from fiscal.integration import existing_for
-        ticket = self.get_object()
+        ticket = POSTicket.objects.select_for_update().get(pk=pk)
+        # (Modo de pagamento) "Permite estorno" — um voucher não se devolve em dinheiro.
+        # Se ALGUM pagamento da conta foi feito num método que não permite estorno,
+        # a devolução é recusada e resolve-se ao balcão (troca, crédito em conta).
+        bloqueados = [p.payment_method.name for p in ticket.payments.select_related('payment_method')
+                      if p.payment_method and not getattr(p.payment_method, 'allows_refund', True)]
+        if bloqueados:
+            return Response({'detail': f'Não se estorna: {", ".join(set(bloqueados))} não '
+                                       f'permite devolução (caixa "Permite estorno").',
+                             'no_refund': True}, status=400)
         if ticket.status != 'PAID':
-            return Response({'detail': 'Só tickets pagos podem ser estornados.'}, status=400)
+            return Response({'detail': 'Só contas pagas podem ser estornadas '
+                                       '(esta pode já ter sido estornada noutro terminal).'}, status=400)
 
         original = existing_for('pos', ticket.id)
         if not original:
@@ -987,7 +1544,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                   operator_name=ticket.operator_name, outlet=ticket.outlet, reference=nc.invoice_no,
                   old_value='PAID', new_value='REFUNDED', amount=-ticket.grand_total)
         return Response({'invoice_no': nc.invoice_no, 'hash': nc.doc_hash,
-                         'grand_total': str(nc.grand_total), 'ticket_status': 'REFUNDED'},
+                         'grand_total': str(nc.gross_total), 'ticket_status': 'REFUNDED'},
                         status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
@@ -1000,6 +1557,17 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             from pms.models import Room, Folio, FolioCharge
         except ImportError:
             return Response({'detail': 'Módulo PMS não está ativo nesta licença.'}, status=409)
+
+        # (Interface PMS) "Fidedigno" — só se lança no folio de um hotel LIGADO E
+        # MARCADO como fidedigno. Um link de testes desmarcado não pode pôr consumos
+        # nas contas dos hóspedes a sério.
+        from .models import PmsHotelLink
+        links = PmsHotelLink.objects.filter(is_active=True) if hasattr(PmsHotelLink, 'is_active') \
+            else PmsHotelLink.objects.all()
+        if links.exists() and not links.filter(trusted=True).exists():
+            return Response({'detail': 'A ligação ao PMS não está marcada como fidedigna '
+                                       '(Interface PMS › caixa "Fidedigno"). Não se lança '
+                                       'no folio por uma ligação de testes.'}, status=409)
         room_number = request.data.get('room')
         room = Room.objects.filter(number=room_number).first()
         folio = None
@@ -1063,43 +1631,130 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(self.get_queryset().get(pk=ticket.pk)).data)
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def issue_document(self, request, pk=None):
-        """Emite um documento (Pré-conta/Fatura/...) com numeração sequencial atómica da série."""
-        from django.db import transaction
-        from mdm.models import DocumentSeries
-        from .models import POSDocument
-        from .serializers import POSDocumentSerializer
-        ticket = self.get_object()
-        doc_type = request.data.get('document_type', 'INVOICE')
-        series_id = request.data.get('series')
-        with transaction.atomic():
-            if series_id:
-                series = DocumentSeries.objects.select_for_update().filter(pk=series_id).first()
-            else:
-                series = DocumentSeries.objects.select_for_update().filter(document_type=doc_type, is_active=True).first()
-            if not series:
-                return Response({'detail': f'Sem série ativa para "{doc_type}". Crie em Master Data → Séries.'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            series.current_number += 1
-            series.save(update_fields=['current_number'])
-            full = f"{series.prefix}{series.year}/{series.current_number:04d}"
-            doc = POSDocument.objects.create(
-                document_type=series.document_type, series=series, number=series.current_number, full_number=full,
-                ticket=ticket, customer_name=request.data.get('customer_name'),
-                customer_tax_id=request.data.get('customer_tax_id'),
-                subtotal=ticket.subtotal, tax_total=ticket.tax_total, grand_total=ticket.grand_total,
+        """Emite um documento pelo MOTOR FISCAL — o único que numera nesta casa.
+
+        Antes, isto numerava numa série PARALELA (mdm.DocumentSeries) e criava um
+        POSDocument: um papel com número, mas SEM assinatura, SEM encadeamento de
+        hash e FORA do SAF-T. Ou seja, um documento que a AGT não reconhece — e um
+        segundo motor de faturação a correr ao lado do verdadeiro.
+
+        Agora há um só caminho: fiscal.services.issue_document. O mesmo que assina,
+        encadeia e exporta.
+        """
+        from fiscal.services import issue_document as fiscal_issue
+        from fiscal.models import FiscalDocType, FiscalSeries
+        from fiscal.integration import existing_for
+
+        ticket = POSTicket.objects.select_for_update().get(pk=pk)
+        if not ticket.lines.filter(is_void=False).exists():
+            return Response({'detail': 'Conta sem artigos — não há o que faturar.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Já foi faturada? Devolve-se a MESMA fatura (idempotente): carregar duas
+        # vezes no botão não pode dar dois documentos fiscais da mesma venda.
+        ja = existing_for('pos', ticket.id)
+        if ja:
+            return Response({'invoice_no': ja.invoice_no, 'hash': ja.doc_hash,
+                             'grand_total': str(ja.gross_total), 'reissued': True,
+                             'detail': 'Esta conta já tinha fatura — é esta.'},
+                            status=status.HTTP_200_OK)
+
+        codigo = request.data.get('doc_type') or 'FR'      # FR = Fatura-Recibo
+        # UMA FATURA-RECIBO DIZ QUE O DINHEIRO ENTROU. Emiti-la numa conta que ainda
+        # não foi cobrada é declarar à AGT um recebimento que não existe — e a conta
+        # fica paga no papel e aberta na caixa. Quem quer faturar para receber depois
+        # (empresas, contas correntes) emite FATURA (FT), não fatura-recibo.
+        if codigo == 'FR' and ticket.status != 'PAID':
+            return Response({'detail': 'Esta conta ainda não foi cobrada. Cobre-a primeiro, ou emita '
+                                       'uma Fatura (FT) se o cliente vai pagar mais tarde.',
+                             'requires_payment': True}, status=status.HTTP_400_BAD_REQUEST)
+        tipo = FiscalDocType.objects.filter(code=codigo, is_active=True).first()
+        if not tipo:
+            return Response({'detail': f'Tipo de documento "{codigo}" não está configurado no Centro Fiscal.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serie = (FiscalSeries.objects.filter(doc_type=tipo, is_active=True, is_closed=False)
+                 .order_by('-year').first())
+        if not serie:
+            return Response({'detail': f'Sem série ativa para "{codigo}". '
+                                       f'Crie-a em Configuração POS → Financeiro → Documentos.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # O desconto do ticket reduz proporcionalmente as linhas (como na fatura automática).
+        fator = Decimal('1')
+        if ticket.discount_total and ticket.grand_total:
+            bruto = ticket.grand_total + ticket.discount_total
+            if bruto > 0:
+                fator = ticket.grand_total / bruto
+        linhas = [{
+            'description': l.description,
+            'quantity': l.quantity,
+            'unit_price': Decimal(str(l.unit_price)) * fator,
+            'tax_percentage': l.tax_percentage,
+        } for l in ticket.lines.filter(is_void=False).select_related('item')]
+
+        # A ENTIDADE — quem leva a fatura. Vem do pedido ou da conta. Sem a LIGAÇÃO ao
+        # cadastro (e não só o nome escrito à mão), a fatura de uma empresa nunca
+        # aparecia na conta corrente dela.
+        from mdm.models import Customer
+        cliente = None
+        cid = request.data.get('customer') or getattr(ticket, 'customer_id', None)
+        if cid:
+            cliente = Customer.objects.filter(pk=cid).first()
+        nome = request.data.get('customer_name') or (cliente.name if cliente else None) \
+            or ticket.customer_name
+        nif = request.data.get('customer_tax_id') or (cliente.tax_id if cliente else None) \
+            or ticket.customer_tax_id
+        # BLOQUEIO da entidade: quem não pagou da última vez não volta a levar fiado.
+        if cliente and cliente.is_blocked and codigo == 'FT':
+            return Response({'detail': f'"{cliente.name}" está bloqueada'
+                                       f'{" — " + cliente.block_reason if cliente.block_reason else ""}. '
+                                       f'Não se emite fatura a crédito; cobre a conta.',
+                             'entity_blocked': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            doc = fiscal_issue(
+                serie.id,
+                customer=cliente,
+                customer_name=nome,
+                customer_tax_id=nif,
+                lines=linhas,
+                user=(request.user.username if request.user.is_authenticated else None),
+                ip=request.META.get('REMOTE_ADDR'),
+                source_module='pos', source_ref=str(ticket.id),
+                operator_name=ticket.operator_name,
+                place_ref=getattr(ticket, 'dest_label', None),
             )
-        # Motor 8: coloca o documento na fila de impressão.
-        from .models import PrintJob
-        PrintJob.objects.create(
-            job_type='INVOICE' if doc.document_type in ('INVOICE', 'SIMPLIFIED') else 'RECEIPT',
-            outlet=ticket.outlet, title=f"{doc.document_type} {doc.full_number}",
-            content=f"{doc.full_number}\nCliente: {doc.customer_name or 'Consumidor Final'}\nTotal: {doc.grand_total}",
-            reference=doc.full_number)
-        log_event(request, 'DOC_ISSUE', f'{doc.document_type}: {doc.full_number}',
+        except ValueError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        _print_document(ticket, doc)
+        log_event(request, 'DOC_ISSUE', f'{tipo.code}: {doc.invoice_no}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet,
-                  reference=doc.full_number, new_value=doc.document_type, amount=doc.grand_total)
-        return Response(POSDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
+                  reference=doc.invoice_no, new_value=tipo.code, amount=doc.gross_total)
+        return Response({'invoice_no': doc.invoice_no, 'hash': doc.doc_hash,
+                         'grand_total': str(doc.gross_total), 'doc_type': tipo.code},
+                        status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def reprint(self, request, pk=None):
+        """REIMPRIMIR — volta a pôr o documento JÁ EMITIDO na fila de impressão.
+
+        Reimprimir não é reemitir: o número, o hash e a assinatura são os mesmos.
+        Sem este botão, o empregado a quem falha a impressora carrega outra vez em
+        "faturar" — e é assim que saem duas faturas da mesma venda.
+        """
+        from fiscal.integration import existing_for
+        ticket = self.get_object()
+        doc = existing_for('pos', ticket.id)
+        if not doc:
+            return Response({'detail': 'Esta conta ainda não tem documento fiscal.'}, status=400)
+        job = _print_document(ticket, doc, copia=True)
+        log_event(request, 'DOC_ISSUE', f'Reimpressão de {doc.invoice_no}',
+                  operator_name=ticket.operator_name, outlet=ticket.outlet, reference=doc.invoice_no)
+        return Response({'invoice_no': doc.invoice_no, 'print_job': job.id if job else None,
+                         'detail': 'Documento reenviado para a impressora (2ª via — o número é o mesmo).'})
 
     @action(detail=False, methods=['get'])
     def summary(self, request):
@@ -1248,7 +1903,32 @@ def cancel_production(request, ticket, lines, reason='Anulado no POS'):
 
 class POSTicketLineViewSet(viewsets.ModelViewSet):
     serializer_class = POSTicketLineSerializer
-    queryset = POSTicketLine.objects.all()
+
+    def get_queryset(self):
+        # ISOLAMENTO POR HOTEL: só as linhas das contas DESTE hotel. Sem isto, o
+        # Hotel A conseguia ler — e apagar — as linhas das contas do Hotel B.
+        return scope_qs(self.request,
+                        POSTicketLine.objects.select_related('ticket', 'item').all(),
+                        'ticket__outlet__hotel')
+
+    def create(self, request, *a, **kw):
+        """LANÇAR UM ARTIGO — passa SEMPRE pelo motor de preços do POS.
+
+        Este caminho aceitava o `unit_price` que o cliente enviasse: bastava um pedido
+        forjado para vender um whisky a 1 Kz e a fatura sair assinada com esse valor.
+        Agora há UM só sítio onde o preço se decide (POS Product Config → tabela de
+        preços do sector → preço base, com Happy Hour e promoções por cima) — o mesmo
+        que o terminal usa. Preço manual só nos artigos marcados como tal.
+        """
+        ticket_id = request.data.get('ticket')
+        ticket = self.get_queryset().model.ticket.field.related_model.objects.filter(pk=ticket_id).first()
+        if not ticket:
+            return Response({'detail': 'Conta inválida.'}, status=status.HTTP_400_BAD_REQUEST)
+        motor = POSTicketViewSet()
+        motor.request = request
+        motor.kwargs = {'pk': ticket.pk}
+        motor.format_kwarg = None
+        return motor.add_line(request, pk=ticket.pk)
 
     def destroy(self, request, *a, **kw):
         # MOTIVO DE ANULAÇÃO — anular um artigo JÁ EM PRODUÇÃO sem dizer porquê é como
@@ -1337,6 +2017,7 @@ class POSDocumentViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         from .models import POSDocument
+        # (isolamento por hotel abaixo)
         qs = POSDocument.objects.select_related('series', 'ticket').all()
         for f in ('ticket', 'document_type', 'status'):
             v = self.request.query_params.get(f)
@@ -1359,7 +2040,7 @@ class POSAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         from .models import POSAuditLog
-        qs = POSAuditLog.objects.select_related('outlet').all()
+        qs = scope_qs(self.request, POSAuditLog.objects.select_related('outlet').all(), 'outlet__hotel')
         for f in ('event_type', 'reference', 'outlet'):
             v = self.request.query_params.get(f)
             if v:
@@ -1374,7 +2055,7 @@ class PrintJobViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         from .models import PrintJob
-        qs = PrintJob.objects.select_related('outlet').all()
+        qs = scope_qs(self.request, PrintJob.objects.select_related('outlet').all(), 'outlet__hotel')
         for f in ('status', 'job_type', 'target'):
             v = self.request.query_params.get(f)
             if v:
@@ -1399,12 +2080,29 @@ class PrintJobViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(job).data)
 
 
+    @action(detail=False, methods=['post'])
+    def retry_failed(self, request):
+        """REPROCESSAR as comandas que falharam.
+
+        Uma comanda em FAILED é um pedido que a cozinha NUNCA viu: ficava na fila
+        para sempre e o cliente esperava por um prato que ninguém estava a fazer.
+        Aqui voltam para a fila.
+        """
+        from .models import PrintJob
+        falhadas = scope_qs(self.request, PrintJob.objects.filter(status='FAILED'), 'outlet__hotel')
+        n = falhadas.count()
+        falhadas.update(status='QUEUED', error=None)
+        return Response({'requeued': n,
+                         'detail': f'{n} comanda(s) voltaram para a fila de impressão.'})
+
 class POSReservationViewSet(viewsets.ModelViewSet):
     """Motor 3 — reservas de mesa. Sentar liga a reserva a uma mesa (OCCUPIED)."""
     serializer_class = POSReservationSerializer
 
     def get_queryset(self):
-        qs = POSReservation.objects.select_related('outlet', 'table').all()
+        qs = scope_qs(self.request,
+                      POSReservation.objects.select_related('outlet', 'table').all(),
+                      'outlet__hotel')
         for f in ('outlet', 'status'):
             v = self.request.query_params.get(f)
             if v:

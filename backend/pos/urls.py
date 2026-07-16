@@ -26,7 +26,16 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          SegmentViewSet, SubSegmentViewSet, ChannelViewSet,
                          PackageViewSet, PlanningOptionView, DocStatusViewSet,
                          StockDocSeriesViewSet, PaymentTermViewSet, CostCenterViewSet,
-                         WarehouseViewSet, StockRecalcView, SectorWarehouseMapView)
+                         WarehouseViewSet, StockRecalcView, SectorWarehouseMapView,
+                         PosDayCloseView, PosSaftView, PosDiagnosticsView,
+                         PosCurrentAccountsView, PosEntityAccountView, EventRequestViewSet, EntityViewSet, EntityFieldRuleViewSet,
+                         StockDocViewSet, PosStockLevelsView, PosPayablesView,
+                         PosReportCatalogView, PosReportRunView, PosOnlineInfoView,
+                         PosDocSearchView, PosDocDetailView, PosAlertsView,
+                         MemberCardAccountView, PosTerminalKeyboardView,
+                         PosGuestsView, PosMealPlanView, PosTerminalConfigView,
+                         PosTerminalChangePinView,
+                         PosBootstrapView)
 
 router = DefaultRouter()
 router.register(r'config/modules', PosModuleViewSet, basename='pos-cfg-module')
@@ -81,6 +90,10 @@ router.register(r'config/stock-docs', StockDocSeriesViewSet, basename='pos-cfg-s
 router.register(r'config/payment-terms', PaymentTermViewSet, basename='pos-cfg-payterm')
 router.register(r'config/cost-centers', CostCenterViewSet, basename='pos-cfg-costcenter')
 router.register(r'config/warehouses', WarehouseViewSet, basename='pos-cfg-warehouse')
+router.register(r'events/requests', EventRequestViewSet, basename='pos-event-request')
+router.register(r'fnb/documents', StockDocViewSet, basename='pos-stockdoc')
+router.register(r'marketing/entities', EntityViewSet, basename='pos-entity')
+router.register(r'marketing/entity-rules', EntityFieldRuleViewSet, basename='pos-entity-rule')
 router.register(r'outlets', OutletViewSet, basename='pos-outlet')
 router.register(r'product-configs', POSProductConfigViewSet, basename='pos-product-config')
 router.register(r'outlet-payment-methods', OutletPaymentMethodViewSet, basename='pos-outlet-payment')
@@ -104,5 +117,26 @@ urlpatterns = [
     path('config/planning-options/', PlanningOptionView.as_view()),
     path('config/stock-recalc/', StockRecalcView.as_view()),
     path('config/sector-warehouses/', SectorWarehouseMapView.as_view()),
+    # Utilitários do POS (independentes — não chamam ecrãs de outros módulos)
+    path('ops/day-close/', PosDayCloseView.as_view()),
+    path('ops/saft/', PosSaftView.as_view()),
+    path('ops/diagnostics/', PosDiagnosticsView.as_view()),
+    path('ops/current-accounts/', PosCurrentAccountsView.as_view()),
+    path('ops/current-accounts/<int:pk>/', PosEntityAccountView.as_view()),
+    path('fnb/stock-levels/', PosStockLevelsView.as_view()),
+    path('fnb/payables/', PosPayablesView.as_view()),
+    path('reports/catalog/', PosReportCatalogView.as_view()),
+    path('reports/run/', PosReportRunView.as_view()),
+    path('reports/online/', PosOnlineInfoView.as_view()),
+    path('reports/alerts/', PosAlertsView.as_view()),
+    path('cards/account/<int:pk>/', MemberCardAccountView.as_view()),
+    path('terminal/keyboard/', PosTerminalKeyboardView.as_view()),
+    path('terminal/config/', PosTerminalConfigView.as_view()),
+    path('terminal/bootstrap/', PosBootstrapView.as_view()),
+    path('terminal/change-pin/', PosTerminalChangePinView.as_view()),
+    path('terminal/guests/', PosGuestsView.as_view()),
+    path('terminal/meals/', PosMealPlanView.as_view()),
+    path('reports/documents/', PosDocSearchView.as_view()),
+    path('reports/documents/<int:pk>/', PosDocDetailView.as_view()),
     path('', include(router.urls)),
 ]

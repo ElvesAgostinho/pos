@@ -1,7 +1,8 @@
 """
 Configuração POS — Módulos, Terminais e Parâmetros.
 """
-from django.db import models
+from decimal import Decimal
+from django.db import models, transaction
 from rest_framework import viewsets, serializers
 from rest_framework.views import APIView
 from rest_framework.decorators import action
@@ -38,6 +39,21 @@ class PosModuleViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = PosModule.objects.all()
     serializer_class = PosModuleSerializer
+
+
+class CustomFieldRules:
+    """(Campo personalizado) "É lista" — o valor por defeito tem de ser uma das opções."""
+
+    @staticmethod
+    def validar(data, instance=None):
+        is_list = data.get('is_list', getattr(instance, 'is_list', False))
+        default = data.get('default_value', getattr(instance, 'default_value', None))
+        opcoes = data.get('options', getattr(instance, 'options', None))
+        if is_list and default:
+            lista = [o.strip() for o in str(opcoes or '').replace(';', ',').split(',') if o.strip()]
+            if lista and default not in lista:
+                raise serializers.ValidationError(
+                    {'default_value': [f'"{default}" não é uma das opções da lista.']})
 
 
 class PosParameterSerializer(serializers.ModelSerializer):
@@ -1139,6 +1155,15 @@ class PmsHotelLinkViewSet(viewsets.ModelViewSet):
     serializer_class = PmsHotelLinkSerializer
     queryset = PmsHotelLink.objects.all()
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # (Recurso humano) "Utilizador Front Office" — só os marcados aparecem nas
+        # listas do terminal (escalas, comissões de sala). O contabilista não é
+        # empregado de mesa.
+        if self.request.query_params.get('front_office') in ('1', 'true'):
+            qs = qs.filter(is_front_office_user=True)
+        return qs
+
     @action(detail=True, methods=['post'])
     def test(self, request, pk=None):
         from django.utils import timezone
@@ -2022,9 +2047,22 @@ class EventTypeSerializer(serializers.ModelSerializer):
 
 
 class EventTypeViewSet(viewsets.ModelViewSet):
+    """(Tipo de evento) as caixas "Tipo de Evento"/"Tipo de Serviço" filtram as listas:
+    ?events=1 devolve só os que se reservam; ?services=1 só os que acontecem dentro
+    de um evento (coffee breaks). Um Cocktail pode aparecer nas duas."""
+
     permission_classes = [IsAuthenticated]
     serializer_class = EventTypeSerializer
     queryset = EventType.objects.select_related('manager')
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        if p.get('events') in ('1', 'true'):
+            qs = qs.filter(is_event_type=True)
+        if p.get('services') in ('1', 'true'):
+            qs = qs.filter(is_service_type=True)
+        return qs
 
 
 SpaceTypeSerializer, SpaceTypeViewSet = _simples(SpaceType)
@@ -2376,3 +2414,1844 @@ class SectorWarehouseMapView(APIView):
                 defaults={'warehouse_id': c.get('warehouse') or None})
             n += 1
         return Response({'saved': n})
+
+
+# ==========================================================================
+# UTILITÁRIOS DO POS — Fecho do Dia, SAF-T, Diagnóstico, Contas Correntes
+# (o POS é independente: não chama ecrãs do PMS nem de outro módulo)
+# ==========================================================================
+class PosDayCloseView(APIView):
+    """FECHO DO DIA DO POS — fechar os terminais e as caixas.
+
+    Não é o Night Audit do hotel (esse lança o alojamento nos folios). Este fecha o
+    DIA DE VENDAS: nenhum terminal pode ficar aberto de um dia para o outro, senão
+    as vendas de amanhã entram na caixa de hoje e o fecho nunca bate certo.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from django.utils import timezone
+        from .models import PosTerminal, CashSession, POSTicket, POSTable
+        hoje = timezone.localdate()
+
+        terminais = []
+        for t in PosTerminal.objects.filter(is_active=True).select_related('outlet'):
+            # O terminal está "aberto" se o ponto de venda dele tem caixa aberta.
+            sess = (CashSession.objects.filter(status='OPEN', outlet=t.outlet).first()
+                    if t.outlet_id else None)
+            terminais.append({
+                'id': t.id, 'code': t.code, 'name': t.name,
+                'outlet': t.outlet.name if t.outlet_id else None,
+                'open': bool(sess),
+                'session': sess.id if sess else None,
+            })
+
+        caixas = [{
+            'id': s.id, 'outlet': s.outlet.name if s.outlet_id else '—', 'operator': s.operator_name,
+            'opened_at': s.opened_at, 'opening_float': str(s.opening_float),
+        } for s in CashSession.objects.filter(status='OPEN').select_related('outlet')]
+
+        abertas = (POSTicket.objects.filter(status='OPEN')
+                   .select_related('outlet', 'table'))
+        contas = [{
+            'id': t.id, 'ticket': t.ticket_number, 'outlet': t.outlet.name if t.outlet_id else '—',
+            'where': t.dest_label or (f'Mesa {t.table.table_number}' if t.table_id else '—'),
+            'total': str(t.grand_total), 'operator': t.operator_name,
+        } for t in abertas]
+
+        vendas = POSTicket.objects.filter(status='PAID', closed_at__date=hoje)
+        total = sum((t.grand_total for t in vendas), Decimal('0'))
+
+        return Response({
+            'date': hoje,
+            'terminals': terminais,
+            'open_cash_sessions': caixas,
+            'open_tickets': contas,
+            'sales_today': {'count': vendas.count(), 'total': str(total)},
+            # Enquanto houver contas abertas, NÃO se fecha o dia: seriam vendas
+            # servidas e não cobradas — comida que sai e dinheiro que não entra.
+            'can_close': len(contas) == 0,
+            'blocker': (f'{len(contas)} conta(s) ainda abertas — cobre-as ou anule-as antes de fechar.'
+                        if contas else None),
+        })
+
+    @transaction.atomic
+    def post(self, request):
+        from django.utils import timezone
+        from .models import CashSession, POSTicket
+        from .audit import log_event
+
+        abertas = POSTicket.objects.filter(status='OPEN').count()
+        if abertas and not request.data.get('force'):
+            return Response({'detail': f'{abertas} conta(s) ainda abertas. Não se fecha o dia com contas '
+                                       f'por cobrar — é comida servida sem dinheiro a entrar.',
+                             'open_tickets': abertas}, status=409)
+
+        sessoes = list(CashSession.objects.select_for_update().filter(status='OPEN'))
+        for s in sessoes:
+            s.status = 'CLOSED'
+            s.closed_at = timezone.now()
+            s.closed_by = request.user.username if request.user.is_authenticated else 'POS'
+            s.save(update_fields=['status', 'closed_at', 'closed_by'])
+            log_event(request, 'CASH_CLOSE',
+                      f'Fecho do dia — caixa {s.id} ({s.outlet.name if s.outlet_id else "—"})',
+                      outlet=s.outlet, operator_name=s.operator_name)
+
+        return Response({'closed_sessions': len(sessoes),
+                         'detail': f'{len(sessoes)} caixa(s) fechada(s). O dia de vendas do POS está fechado.'})
+
+
+class PosSaftView(APIView):
+    """SAF-T DO POS — só os documentos emitidos PELO POS.
+
+    O ficheiro é o mesmo que a AGT espera; o que muda é o âmbito. Um hotel que só
+    comunica o POS não deve mandar as faturas do alojamento no mesmo ficheiro.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from fiscal.models import FiscalConfig, FiscalDocument
+        cfg = FiscalConfig.get()
+        docs = FiscalDocument.objects.filter(source_module='pos')
+        return Response({
+            'version': '1.01_01',
+            'company': cfg.company_name,
+            'tax_id': cfg.company_nif,
+            'application': 'POS',
+            'documents': docs.count(),
+            'first': docs.order_by('doc_date').values_list('doc_date', flat=True).first(),
+            'last': docs.order_by('-doc_date').values_list('doc_date', flat=True).first(),
+        })
+
+    def post(self, request):
+        """Cria o ficheiro. Sem documentos, não se inventa um SAF-T vazio."""
+        import datetime
+        from django.http import HttpResponse
+        from fiscal.saft import generate_saft
+        from fiscal.models import FiscalDocument
+
+        ano = int(request.data.get('year') or datetime.date.today().year)
+        mes = request.data.get('month')
+        if mes:
+            mes = int(mes)
+            ini = datetime.date(ano, mes, 1)
+            fim = (datetime.date(ano + (mes == 12), (mes % 12) + 1, 1) - datetime.timedelta(days=1))
+        else:
+            ini, fim = datetime.date(ano, 1, 1), datetime.date(ano, 12, 31)
+
+        n = FiscalDocument.objects.filter(source_module='pos', doc_date__gte=ini, doc_date__lte=fim).count()
+        if not n:
+            return Response({'detail': f'Não há documentos do POS entre {ini} e {fim}. '
+                                       f'Um SAF-T vazio não se entrega.'}, status=400)
+
+        xml = generate_saft(ini, fim, module='pos')
+
+        # O REGISTO da exportação fica guardado com o resultado da validação — é o
+        # histórico de tudo o que saiu para a AGT, e a caixa "Válido" é ESCRITA pelo
+        # validador, não marcada à mão.
+        try:
+            import xml.etree.ElementTree as _ET
+            from fiscal.models import SaftExport
+            valido = True
+            try:
+                _ET.fromstring(xml)
+            except Exception:
+                valido = False
+            import hashlib
+            SaftExport.objects.create(
+                profile='faturacao', start_date=ini, end_date=fim,
+                filename=f'SAFT_POS_{ano}{f"{mes:02d}" if mes else ""}.xml',
+                size_bytes=len(xml.encode('utf-8')),
+                sha256=hashlib.sha256(xml.encode('utf-8')).hexdigest(),
+                is_valid=valido,
+                problems=None if valido else 'XML mal formado — não entregar.',
+                created_by=(request.user.username if request.user.is_authenticated else ''),
+            )
+        except Exception:
+            pass
+        resp = HttpResponse(xml, content_type='application/xml')
+        resp['Content-Disposition'] = f'attachment; filename="SAFT_POS_{ano}{f"{mes:02d}" if mes else ""}.xml"'
+        return resp
+
+
+class PosDiagnosticsView(APIView):
+    """DIAGNÓSTICO DO POS — o estado real, agora. É o que o suporte pergunta ao telefone."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from django.conf import settings
+        from django.db import connection
+        from django.utils import timezone
+        from .models import PrintJob, PosTerminal, CashSession, POSTicket
+        from fiscal.models import FiscalDocument, FiscalConfig, FiscalSeries
+        from licensing.offline_validator import get_active_modules
+
+        # Base de dados: responde? em quanto tempo?
+        t0 = timezone.now()
+        try:
+            with connection.cursor() as cur:
+                cur.execute('SELECT 1')
+            ms = (timezone.now() - t0).total_seconds() * 1000
+            bd = {'ok': True, 'engine': connection.vendor, 'ms': round(ms, 1)}
+        except Exception as e:
+            bd = {'ok': False, 'error': str(e)}
+
+        cfg = FiscalConfig.get()
+        falhadas = PrintJob.objects.filter(status='FAILED').count()
+        fila = PrintJob.objects.filter(status='QUEUED').count()
+
+        # Uma comanda parada há muito tempo é um pedido que a cozinha nunca viu.
+        antiga = PrintJob.objects.filter(status='QUEUED').order_by('created_at').first()
+        parada = None
+        if antiga:
+            mins = int((timezone.now() - antiga.created_at).total_seconds() / 60)
+            if mins > 5:
+                parada = f'A comanda mais antiga está na fila há {mins} minutos — o agente de impressão não a está a consumir.'
+
+        return Response({
+            'database': bd,
+            'license': {'modules': get_active_modules(settings.BASE_DIR, settings.SECRET_KEY)},
+            'fiscal': {
+                'certified': bool(cfg.certificate_number),
+                'certificate': cfg.certificate_number,
+                'environment': cfg.environment,
+                'documents': FiscalDocument.objects.count(),
+                'series': FiscalSeries.objects.filter(is_active=True).count(),
+            },
+            'print': {'queued': fila, 'failed': falhadas, 'warning': parada},
+            'terminals': PosTerminal.objects.filter(is_active=True).count(),
+            'open_cash': CashSession.objects.filter(status='OPEN').count(),
+            'open_tickets': POSTicket.objects.filter(status='OPEN').count(),
+            'server_time': timezone.now(),
+        })
+
+
+class PosCurrentAccountsView(APIView):
+    """CONTAS CORRENTES — quem deve, quanto deve, e quanto ja deixou adiantado.
+
+    Dois saldos, e sao coisas diferentes:
+      · SALDO (CONTA CORRENTE) — o que a entidade CONSUMIU e ainda nao pagou. Sao as
+        faturas (FT) emitidas e nao liquidadas, menos as notas de credito.
+      · SALDO (CASH ADVANCE)   — o que a entidade JA DEIXOU a cabeca (deposito/sinal).
+        E dinheiro dela que esta na nossa caixa.
+
+    Uma empresa pode ter as duas coisas ao mesmo tempo: deve 300.000 do mes passado e
+    tem 100.000 de sinal do evento de sabado.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from mdm.models import Customer
+        from fiscal.models import FiscalDocument
+        from .models import EntityDeposit
+
+        p = request.query_params
+        qs = Customer.objects.select_related('entity_type').all()
+        if p.get('q'):
+            t = p['q']
+            qs = qs.filter(models.Q(name__icontains=t) | models.Q(code__icontains=t)
+                           | models.Q(tax_id__icontains=t) | models.Q(phone__icontains=t)
+                           | models.Q(address__icontains=t) | models.Q(email__icontains=t))
+        for campo in ('name', 'address'):
+            if p.get(campo):
+                qs = qs.filter(**{campo + '__icontains': p[campo]})
+        if p.get('tax_id'):
+            qs = qs.filter(tax_id__icontains=p['tax_id'])
+        if p.get('phone'):
+            qs = qs.filter(phone__icontains=p['phone'])
+        if p.get('id'):
+            qs = qs.filter(models.Q(code__icontains=p['id']) | models.Q(id=p['id'] if str(p['id']).isdigit() else 0))
+        if p.get('entity_type'):
+            qs = qs.filter(entity_type_id=p['entity_type'])
+
+        so_cc = p.get('scope', 'CC') == 'CC'          # Clientes (Conta Corrente) vs (Todos)
+        so_dep = p.get('only_deposits') in ('1', 'true')
+
+        linhas = []
+        for c in qs[:400]:
+            docs = FiscalDocument.objects.filter(customer=c).select_related('doc_type')
+            devido = sum((d.gross_total for d in docs
+                          if not d.doc_type.is_rectifying and not d.settled), Decimal('0'))
+            credito = sum((d.gross_total for d in docs if d.doc_type.is_rectifying), Decimal('0'))
+            saldo_cc = devido - credito
+            adiantado = EntityDeposit.balance_of(c)
+
+            if so_cc and not (saldo_cc or adiantado or docs.exists()):
+                continue
+            if so_dep and not adiantado:
+                continue
+
+            linhas.append({
+                'id': c.id, 'code': c.code, 'name': c.name,
+                'entity_type': c.entity_type.name if c.entity_type_id else None,
+                'address': c.address, 'contact': c.phone or c.email,
+                'other': c.tax_id, 'blocked': c.is_blocked,
+                'documents': docs.count(),
+                'cc_balance': str(saldo_cc),
+                'advance_balance': str(adiantado),
+            })
+        linhas.sort(key=lambda x: Decimal(x['cc_balance']), reverse=True)
+        return Response({
+            'rows': linhas,
+            'total_due': str(sum((Decimal(l['cc_balance']) for l in linhas), Decimal('0'))),
+            'total_advance': str(sum((Decimal(l['advance_balance']) for l in linhas), Decimal('0'))),
+        })
+
+
+class PosEntityAccountView(APIView):
+    """A CONTA de UMA entidade: os documentos por liquidar e os depositos.
+
+    E aqui que se recebe (liquida uma fatura) e que se lanca um adiantamento.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        from mdm.models import Customer
+        from fiscal.models import FiscalDocument
+        from .models import EntityDeposit
+        c = Customer.objects.filter(pk=pk).first()
+        if not c:
+            return Response({'detail': 'Entidade nao encontrada.'}, status=404)
+        docs = FiscalDocument.objects.filter(customer=c).select_related('doc_type').order_by('-doc_date')
+        return Response({
+            'entity': {'id': c.id, 'code': c.code, 'name': c.name, 'tax_id': c.tax_id,
+                       'blocked': c.is_blocked, 'block_reason': c.block_reason},
+            'documents': [{
+                'id': d.id, 'invoice_no': d.invoice_no, 'type': d.doc_type.code,
+                'date': d.doc_date, 'total': str(d.gross_total),
+                'settled': d.settled, 'settled_at': d.settled_at,
+                'rectifying': d.doc_type.is_rectifying,
+            } for d in docs],
+            'deposits': [{
+                'id': x.id, 'kind': x.kind, 'kind_display': x.get_kind_display(),
+                'amount': str(x.amount), 'reason': x.reason,
+                'created_at': x.created_at, 'created_by': x.created_by,
+            } for x in EntityDeposit.objects.filter(customer=c)],
+            'advance_balance': str(EntityDeposit.balance_of(c)),
+        })
+
+    @transaction.atomic
+    def post(self, request, pk):
+        """Duas operacoes: RECEBER (liquidar um documento) e DEPOSITAR (cash advance)."""
+        from django.utils import timezone
+        from mdm.models import Customer
+        from fiscal.models import FiscalDocument
+        from .models import EntityDeposit
+        from .audit import log_event
+
+        c = Customer.objects.filter(pk=pk).first()
+        if not c:
+            return Response({'detail': 'Entidade nao encontrada.'}, status=404)
+        acao = request.data.get('action')
+        quem = request.user.username if request.user.is_authenticated else 'POS'
+
+        if acao == 'settle':
+            d = FiscalDocument.objects.select_for_update().filter(
+                pk=request.data.get('document'), customer=c).first()
+            if not d:
+                return Response({'detail': 'Documento nao encontrado nesta conta.'}, status=404)
+            if d.settled:
+                return Response({'detail': f'{d.invoice_no} ja estava liquidado.'}, status=400)
+            usar_deposito = request.data.get('from_deposit')
+            if usar_deposito:
+                # Pagar com o adiantamento que a entidade ja deixou.
+                if EntityDeposit.balance_of(c) < d.gross_total:
+                    return Response({'detail': 'O adiantamento nao chega para liquidar este documento.'},
+                                    status=400)
+                EntityDeposit.objects.create(customer=c, kind='USE', amount=d.gross_total,
+                                             document=d, created_by=quem,
+                                             reason=f'Liquidacao de {d.invoice_no}')
+            d.settled = True
+            d.settled_at = timezone.now()
+            d.save(update_fields=['settled', 'settled_at'])
+            log_event(request, 'DOC_ISSUE', f'Liquidacao de {d.invoice_no} ({c.name})',
+                      reference=d.invoice_no, amount=d.gross_total)
+            return Response({'detail': f'{d.invoice_no} liquidado.', 'settled': True})
+
+        if acao == 'deposit':
+            try:
+                valor = Decimal(str(request.data.get('amount') or '0'))
+            except Exception:
+                valor = Decimal('0')
+            if valor <= 0:
+                return Response({'detail': 'Indique o valor do deposito.'}, status=400)
+            tipo = request.data.get('kind') or 'IN'
+            if tipo != 'IN' and EntityDeposit.balance_of(c) < valor:
+                return Response({'detail': 'Nao ha adiantamento suficiente para devolver.'}, status=400)
+            EntityDeposit.objects.create(customer=c, kind=tipo, amount=valor, created_by=quem,
+                                         reason=request.data.get('reason'))
+            return Response({'detail': 'Movimento registado.',
+                             'advance_balance': str(EntityDeposit.balance_of(c))})
+
+        return Response({'detail': 'Acao invalida.'}, status=400)
+
+
+class EventRequestSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source='customer.name', read_only=True, default=None)
+    event_type_name = serializers.CharField(source='event_type.name', read_only=True, default=None)
+    space_name = serializers.CharField(source='space.name', read_only=True, default=None)
+    layout_name = serializers.CharField(source='layout.name', read_only=True, default=None)
+    state_name = serializers.CharField(source='state.name', read_only=True, default=None)
+    state_bg = serializers.CharField(source='state.bg_color', read_only=True, default=None)
+    state_fg = serializers.CharField(source='state.text_color', read_only=True, default=None)
+    segment_name = serializers.CharField(source='segment.name', read_only=True, default=None)
+    channel_name = serializers.CharField(source='channel.name', read_only=True, default=None)
+    package_name = serializers.CharField(source='package.name', read_only=True, default=None)
+    total = serializers.SerializerMethodField()
+    blocks_space = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        from .models import EventRequest as _E
+        model = _E
+        fields = '__all__'
+        read_only_fields = ['number', 'created_at']
+
+    def get_total(self, o):
+        return str(o.total)
+
+    def validate(self, data):
+        ini = data.get('start_at') or (self.instance.start_at if self.instance else None)
+        fim = data.get('end_at') or (self.instance.end_at if self.instance else None)
+        if ini and fim and fim <= ini:
+            raise serializers.ValidationError({'end_at': 'O evento nao pode acabar antes de comecar.'})
+        # (Tipo de evento) "Tipo de Evento" vs "Tipo de Serviço" — um Coffee Break é um
+        # SERVIÇO (acontece dentro do evento); não se reserva uma sala para ele. A caixa
+        # da ficha decide o que aparece onde.
+        tipo = data.get('event_type') or (self.instance.event_type if self.instance else None)
+        if tipo and not getattr(tipo, 'is_event_type', True):
+            raise serializers.ValidationError(
+                {'event_type': [f'"{tipo.name}" é um tipo de SERVIÇO, não de evento — '
+                                f'não se reserva um espaço para ele.']})
+        return data
+
+
+class EventRequestViewSet(viewsets.ModelViewSet):
+    """PEDIDOS DE EVENTOS — o funil comercial dos saloes.
+
+    A gravacao RECUSA um choque de espaco: um evento confirmado nao entra por cima
+    de outro confirmado na mesma sala a mesma hora. E a unica coisa que impede o
+    hotel de vender o mesmo salao a dois casamentos.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = EventRequestSerializer
+
+    def get_queryset(self):
+        from .models import EventRequest
+        qs = (EventRequest.objects.select_related('customer', 'event_type', 'space', 'layout',
+                                                  'state', 'segment', 'channel', 'package'))
+        p = self.request.query_params
+        if p.get('q'):
+            qs = qs.filter(models.Q(title__icontains=p['q']) | models.Q(number__icontains=p['q'])
+                           | models.Q(customer__name__icontains=p['q'])
+                           | models.Q(contact_name__icontains=p['q']))
+        if p.get('state'):
+            qs = qs.filter(state_id=p['state'])
+        if p.get('space'):
+            qs = qs.filter(space_id=p['space'])
+        if p.get('from'):
+            qs = qs.filter(end_at__gte=p['from'])
+        if p.get('to'):
+            qs = qs.filter(start_at__lte=p['to'])
+        # O filtro do ecra: Todos / Nao Respondido / Respondido.
+        if p.get('answered') in ('0', 'false'):
+            qs = qs.filter(answered=False)
+        elif p.get('answered') in ('1', 'true'):
+            qs = qs.filter(answered=True)
+        return qs
+
+    def _check_conflict(self, obj):
+        choques = obj.conflicts()
+        if choques:
+            c = choques[0]
+            raise serializers.ValidationError({
+                'detail': f'O espaco "{obj.space.name}" ja esta ocupado por {c.number} — {c.title} '
+                          f'({c.start_at:%d/%m %H:%M} a {c.end_at:%d/%m %H:%M}). '
+                          f'Mude a sala, a hora, ou ponha este pedido em Opcao.',
+                'conflict_with': c.number,
+            })
+
+    def _exige_gestor(self):
+        """(Utilizador POS) "Gestor de eventos" — sem a caixa, não cria nem mexe.
+
+        Um evento é um contrato: datas, sala, preço. Não é para qualquer operador de
+        caixa o alterar. O dono e os administradores passam sempre.
+        """
+        from .models import PosUser
+        u = self.request.user
+        if not u.is_authenticated or u.is_superuser or u.is_staff:
+            return
+        pu = PosUser.objects.filter(auth_user=u).first()
+        if pu and not pu.is_event_manager:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('Só um gestor de eventos pode alterar pedidos de eventos '
+                                   '(caixa "Gestor de eventos" na ficha do utilizador).')
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        self._exige_gestor()
+        # (Estado da reserva) "Reserva automática" — os pedidos que chegam SEM estado
+        # (do site, de integrações) entram no estado marcado com esta caixa. Sem ela,
+        # entravam Confirmados e bloqueavam a sala sem ninguém ter confirmado nada.
+        extras = {}
+        if not serializer.validated_data.get('state'):
+            from .models import EventReservationState
+            auto = EventReservationState.objects.filter(
+                is_auto_reservation=True, is_active=True).first()
+            if auto:
+                extras['state'] = auto
+        obj = serializer.save(created_by=(self.request.user.username
+                                          if self.request.user.is_authenticated else None),
+                              **extras)
+        self._check_conflict(obj)
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        self._exige_gestor()
+        obj = serializer.save()
+        self._check_conflict(obj)
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        """CANCELAR — exige um motivo. "Caiu" nao e um relatorio."""
+        from django.utils import timezone
+        from .models import EventCancelReason, EventReservationState
+        obj = self.get_object()
+        motivo = request.data.get('cancel_reason')
+        if not motivo:
+            return Response({'detail': 'Indique o motivo do cancelamento — sem motivo, o hotel nunca '
+                                       'sabe se esta a perder eventos por preco, servico ou chuva.'},
+                            status=400)
+        try:
+            obj.cancel_reason = EventCancelReason.objects.get(pk=motivo)
+        except EventCancelReason.DoesNotExist:
+            return Response({'detail': 'Motivo invalido.'}, status=400)
+        cancelado = EventReservationState.objects.filter(equivalent='CANCELLED', is_active=True).first()
+        if cancelado:
+            obj.state = cancelado           # liberta o espaco no planning
+        obj.cancelled_at = timezone.now()
+        obj.save()
+        return Response(self.get_serializer(obj).data)
+
+    @action(detail=False, methods=['get'])
+    def planning(self, request):
+        """O PLANNING — os espacos pela ordem e cores definidas em Opcoes do Planning."""
+        from .models import PlanningOption
+        espacos = []
+        for po in PlanningOption.objects.select_related('space').order_by('sort_order'):
+            espacos.append({'id': po.space_id, 'name': po.space.name,
+                            'bg_color': po.bg_color, 'text_color': po.text_color})
+        if not espacos:
+            espacos = [{'id': s.id, 'name': s.name, 'bg_color': '#ffffff', 'text_color': '#333333'}
+                       for s in PosSector.objects.filter(is_active=True)]
+        return Response({'spaces': espacos,
+                         'requests': self.get_serializer(self.get_queryset(), many=True).data})
+
+
+class EntitySerializer(serializers.ModelSerializer):
+    """A ENTIDADE — a MESMA ficha que a faturacao usa (mdm.Customer).
+
+    Nao ha um cadastro de clientes do Marketing e outro da faturacao. E o mesmo: o que
+    o comercial cria aqui e o que sai no NIF da fatura, e o consumo que aparece na
+    coluna "gasto" vem dos documentos fiscais reais do POS.
+    """
+    entity_type_name = serializers.CharField(source='entity_type.name', read_only=True, default=None)
+    card_name = serializers.CharField(source='member_card.name', read_only=True, default=None)
+    contact = serializers.SerializerMethodField()
+    spent = serializers.SerializerMethodField()
+    documents = serializers.SerializerMethodField()
+    events = serializers.SerializerMethodField()
+
+    class Meta:
+        from mdm.models import Customer as _C
+        model = _C
+        fields = '__all__'
+
+    def get_contact(self, o):
+        return o.phone or o.email or None
+
+    def _docs(self, o):
+        from fiscal.models import FiscalDocument
+        return FiscalDocument.objects.filter(customer_name=o.name, source_module='pos')
+
+    def get_documents(self, o):
+        return self._docs(o).count()
+
+    def get_spent(self, o):
+        return str(sum((d.gross_total for d in self._docs(o) if not d.doc_type.is_rectifying),
+                       Decimal('0')))
+
+    def get_events(self, o):
+        from .models import EventRequest
+        return EventRequest.objects.filter(customer=o).count()
+
+    def validate(self, data):
+        """CAMPOS OBRIGATORIOS — as caixas do botao "Campos obrigatorios" mandam aqui.
+
+        O servidor RECUSA. Nao e um aviso que se fecha: e assim que um hotel garante
+        que ninguem cria um cliente sem contribuinte e so descobre na hora de faturar.
+        """
+        from .models import EntityFieldRule
+        obrig = EntityFieldRule.objects.filter(is_required=True).values_list('field', flat=True)
+        faltam = {}
+        for f in obrig:
+            v = data.get(f, getattr(self.instance, f, None) if self.instance else None)
+            if v in (None, ''):
+                faltam[f] = ['Obrigatorio (definido em Campos obrigatorios).']
+        if faltam:
+            raise serializers.ValidationError(faltam)
+        return data
+
+
+class EntityViewSet(viewsets.ModelViewSet):
+    """PESQUISA DE ENTIDADES — o cadastro unico de clientes, visto pelo POS.
+
+    (Campos personalizados) "Mostrar na pesquisa": as definições marcadas vêm na
+    resposta da lista — o ecrã acrescenta-as como colunas. "É lista": o valor tem de
+    ser uma das opções definidas, não texto livre.
+    """
+
+    def list(self, request, *args, **kwargs):
+        resp = super().list(request, *args, **kwargs)
+        from .models import CustomFieldDef
+        defs = CustomFieldDef.objects.filter(is_active=True, show_in_search=True,
+                                             location='ENTITY')
+        # As colunas extra que o ecrã deve desenhar — vêm da configuração, não do código.
+        if isinstance(resp.data, dict):
+            resp.data['custom_columns'] = [{'key': d.code, 'label': d.name} for d in defs]
+        return resp
+    permission_classes = [IsAuthenticated]
+    serializer_class = EntitySerializer
+
+    def get_queryset(self):
+        from mdm.models import Customer
+        qs = Customer.objects.select_related('entity_type', 'member_card').all()
+        p = self.request.query_params
+        if p.get('q'):
+            t = p['q']
+            qs = qs.filter(models.Q(name__icontains=t) | models.Q(last_name__icontains=t)
+                           | models.Q(other_names__icontains=t) | models.Q(code__icontains=t)
+                           | models.Q(tax_id__icontains=t) | models.Q(email__icontains=t)
+                           | models.Q(phone__icontains=t) | models.Q(id_number__icontains=t))
+        if p.get('entity_type'):
+            qs = qs.filter(entity_type_id=p['entity_type'])
+        if p.get('member_card'):
+            qs = qs.filter(member_card_id=p['member_card'])
+        if p.get('card_number'):
+            qs = qs.filter(member_card_number__icontains=p['card_number'])
+        for campo in ('code', 'tax_id', 'id_number'):
+            if p.get(campo):
+                qs = qs.filter(**{campo + '__icontains': p[campo]})
+        for campo in ('last_name', 'name', 'other_names', 'address', 'nationality', 'country'):
+            if p.get(campo):
+                qs = qs.filter(**{campo + '__icontains': p[campo]})
+        if p.get('contact'):
+            qs = qs.filter(models.Q(email__icontains=p['contact']) | models.Q(phone__icontains=p['contact']))
+        if p.get('blocked') in ('1', 'true'):
+            qs = qs.filter(is_blocked=True)
+        elif p.get('blocked') in ('0', 'false'):
+            qs = qs.filter(is_blocked=False)
+        return qs
+
+    @action(detail=False, methods=['get'])
+    def duplicates(self, request):
+        """CONTROLO DE DUPLICACAO — a mesma pessoa criada tres vezes da tres contas
+        correntes e um saldo que nunca fecha. Aqui apanham-se antes de doer."""
+        from mdm.models import Customer
+        grupos = []
+        for chave, campo in (('tax_id', 'Nr. contribuinte'), ('id_number', 'Nr. de identificacao'),
+                             ('email', 'E-mail'), ('phone', 'Telefone')):
+            vistos = {}
+            for c in Customer.objects.exclude(**{chave: None}).exclude(**{chave: ''}):
+                vistos.setdefault(str(getattr(c, chave)).strip().lower(), []).append(c)
+            for valor, lista in vistos.items():
+                if len(lista) > 1:
+                    grupos.append({'field': campo, 'value': valor,
+                                   'entities': [{'id': x.id, 'code': x.code, 'name': x.name}
+                                                for x in lista]})
+        return Response({'groups': grupos, 'count': len(grupos)})
+
+
+class EntityFieldRuleSerializer(serializers.ModelSerializer):
+    label = serializers.CharField(source='get_field_display', read_only=True)
+
+    class Meta:
+        from .models import EntityFieldRule as _R
+        model = _R
+        fields = '__all__'
+
+
+class EntityFieldRuleViewSet(viewsets.ModelViewSet):
+    """CAMPOS OBRIGATORIOS — cada caixa marcada passa a ser exigida ao gravar a ficha."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = EntityFieldRuleSerializer
+
+    def get_queryset(self):
+        from .models import EntityFieldRule
+        # A lista e fixa (sao os campos da ficha): garante uma linha por campo.
+        existentes = set(EntityFieldRule.objects.values_list('field', flat=True))
+        for code, _ in EntityFieldRule.FIELDS:
+            if code not in existentes:
+                EntityFieldRule.objects.create(field=code, is_required=(code == 'name'))
+        return EntityFieldRule.objects.all()
+
+
+
+# ==========================================================================
+# F&B — COMPRAS, DOCUMENTOS INTERNOS, INVENTÁRIO, EXISTÊNCIAS, CONTAS A PAGAR
+# Tudo o mesmo documento de stock: o que muda é a SÉRIE (e as caixas dela).
+# ==========================================================================
+class StockDocLineSerializer(serializers.ModelSerializer):
+    item_code = serializers.CharField(source='item.code', read_only=True)
+    item_name = serializers.CharField(source='item.name', read_only=True)
+    warehouse_name = serializers.CharField(source='warehouse.name', read_only=True, default=None)
+    stock_qty = serializers.SerializerMethodField()
+    line_total = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import StockDocLine as _L
+        model = _L
+        fields = '__all__'
+        read_only_fields = ['doc']
+
+    def get_stock_qty(self, o):
+        """Stock Qtd. — o que HÁ no armazém agora. É a coluna que evita pedir 40 caixas
+        de um artigo de que já há 60 paradas no economato."""
+        from inventory.models import StockLevel
+        wh = o.warehouse_id or (o.doc.warehouse_id if o.doc_id else None)
+        n = StockLevel.objects.filter(item=o.item, warehouse_id=wh).first()
+        return str(n.quantity_on_hand) if n else '0'
+
+    def get_line_total(self, o):
+        return str(o.line_total)
+
+
+class StockDocSerializer(serializers.ModelSerializer):
+    lines = StockDocLineSerializer(many=True, required=False)
+    series_name = serializers.CharField(source='series.name', read_only=True)
+    series_kind = serializers.CharField(source='series.kind', read_only=True)
+    status_name = serializers.CharField(source='status.name', read_only=True, default=None)
+    status_bg = serializers.CharField(source='status.bg_color', read_only=True, default=None)
+    status_fg = serializers.CharField(source='status.text_color', read_only=True, default=None)
+    entity_name = serializers.CharField(source='entity.name', read_only=True, default=None)
+    warehouse_name = serializers.CharField(source='warehouse.name', read_only=True, default=None)
+    warehouse_from_name = serializers.CharField(source='warehouse_from.name', read_only=True, default=None)
+    original_number = serializers.CharField(source='original.number', read_only=True, default=None)
+    subtotal = serializers.SerializerMethodField()
+    tax_total = serializers.SerializerMethodField()
+    discount_total = serializers.SerializerMethodField()
+    line_discount_total = serializers.SerializerMethodField()
+    total = serializers.SerializerMethodField()
+    is_payable = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        from .models import StockDoc as _D
+        model = _D
+        fields = '__all__'
+        read_only_fields = ['number', 'posted', 'posted_at', 'paid_at', 'created_at']
+
+    def get_subtotal(self, o):
+        return str(o.subtotal)
+
+    def get_tax_total(self, o):
+        return str(o.tax_total)
+
+    def get_discount_total(self, o):
+        return str(o.discount_total)
+
+    def get_line_discount_total(self, o):
+        return str(o.line_discount_total)
+
+    def get_total(self, o):
+        return str(o.total)
+
+    def _regras_da_serie(self, validated, instance=None):
+        """As CAIXAS da série mandam no documento — é para isso que lá estão."""
+        import datetime
+        serie = validated.get('series') or (instance.series if instance else None)
+        if not serie:
+            return
+        # "Observações obrigatórias" — um ajuste de stock sem explicação é um número
+        # que ninguém consegue defender numa auditoria.
+        notas = validated.get('notes', instance.notes if instance else None)
+        if serie.notes_required and not (notas or '').strip():
+            raise serializers.ValidationError(
+                {'notes': ['Esta série exige observações — explique o documento.']})
+        # "Nº externo obrigatório" — a fatura do fornecedor tem um número; sem ele não
+        # há reconciliação com a conta corrente do fornecedor.
+        ext = validated.get('external_ref', instance.external_ref if instance else None)
+        if serie.external_required and not (ext or '').strip():
+            raise serializers.ValidationError(
+                {'external_ref': ['Esta série exige o nº do documento do fornecedor.']})
+        # "Permite lançamentos futuros" — desmarcada, não se compra amanhã. Datas no
+        # futuro são a forma clássica de empurrar custos para o mês seguinte.
+        data = validated.get('doc_date', instance.doc_date if instance else None)
+        if data and not serie.allow_future and data > datetime.date.today():
+            raise serializers.ValidationError(
+                {'doc_date': ['Esta série não permite datas futuras.']})
+        # "Ligação a contas correntes" — o documento fica na conta de ALGUÉM. Sem
+        # entidade, é uma dívida de ninguém, e as Contas a Pagar nunca batem.
+        ent = validated.get('entity', instance.entity if instance else None)
+        if serie.links_current_account and not ent:
+            raise serializers.ValidationError(
+                {'entity': ['Esta série liga a contas correntes: indique a entidade.']})
+        # "Duplicação do nº externo" — Avisar não trava; Bloquear trava.
+        if ext and serie.external_dup == 'BLOCK':
+            from .models import StockDoc as _SD
+            q = _SD.objects.filter(series=serie, external_ref=ext)
+            if instance:
+                q = q.exclude(pk=instance.pk)
+            if q.exists():
+                raise serializers.ValidationError(
+                    {'external_ref': [f'Já existe um documento desta série com o nº "{ext}" '
+                                      f'— seria pagar a mesma fatura duas vezes.']})
+
+    def create(self, validated):
+        linhas = validated.pop('lines', [])
+        self._regras_da_serie(validated)
+        doc = super().create(validated)
+        self._linhas(doc, linhas)
+        return doc
+
+    def update(self, instance, validated):
+        linhas = validated.pop('lines', None)
+        # Um documento JÁ LANÇADO não se edita: o stock já se mexeu com estes números.
+        # Quem se enganou, anula e faz outro — é assim que o histórico continua a bater.
+        if instance.posted and linhas is not None:
+            raise serializers.ValidationError(
+                {'detail': 'Este documento já foi lançado no stock. Anule-o e faça um novo — '
+                           'mexer nas linhas agora deixava o stock a mentir.'})
+        doc = super().update(instance, validated)
+        if linhas is not None:
+            doc.lines.all().delete()
+            self._linhas(doc, linhas)
+        return doc
+
+    def _linhas(self, doc, linhas):
+        from .models import StockDocLine
+        for l in linhas:
+            l.pop('doc', None)
+            item = l.get('item')
+            # (Artigo) "Permite alterar o IVA na compra" — normalmente a taxa é a da ficha
+            # do artigo e não se mexe. Há artigos (importados, isentos na origem) em que o
+            # fornecedor fatura com outra taxa: só ESSES aceitam a taxa que vem no documento.
+            if item is not None and l.get('tax_percentage') is not None:
+                taxa_ficha = Decimal(str(item.tax_percentage or 0))
+                taxa_doc = Decimal(str(l['tax_percentage'] or 0))
+                if taxa_doc != taxa_ficha and not getattr(item, 'allow_tax_change_on_purchase', False):
+                    l['tax_percentage'] = taxa_ficha
+            StockDocLine.objects.create(doc=doc, **l)
+
+
+class StockDocViewSet(viewsets.ModelViewSet):
+    """COMPRAS / DOCUMENTOS INTERNOS / INVENTÁRIO — o mesmo documento, séries diferentes."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = StockDocSerializer
+
+    def get_queryset(self):
+        from .models import StockDoc
+        qs = (StockDoc.objects.select_related('series', 'status', 'entity', 'warehouse',
+                                              'warehouse_from', 'original')
+              .prefetch_related('lines__item'))
+        p = self.request.query_params
+        if p.get('kinds'):                      # ex.: ORDER,INVOICE  |  REQUEST,TRANSFER
+            qs = qs.filter(series__kind__in=p['kinds'].split(','))
+        if p.get('series'):
+            qs = qs.filter(series_id=p['series'])
+        if p.get('status'):
+            qs = qs.filter(status_id=p['status'])
+        if p.get('number'):
+            qs = qs.filter(number__icontains=p['number'])
+        if p.get('entity'):
+            qs = qs.filter(models.Q(entity__name__icontains=p['entity'])
+                           | models.Q(external_ref__icontains=p['entity']))
+        if p.get('from'):
+            qs = qs.filter(doc_date__gte=p['from'])
+        if p.get('to'):
+            qs = qs.filter(doc_date__lte=p['to'])
+        if p.get('warehouse_from'):
+            qs = qs.filter(warehouse_from_id=p['warehouse_from'])
+        if p.get('warehouse'):
+            qs = qs.filter(warehouse_id=p['warehouse'])
+        if p.get('unpaid') in ('1', 'true'):    # Contas a Pagar
+            qs = qs.filter(series__nature='PAYABLE', paid=False, voided=False)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=(self.request.user.username
+                                    if self.request.user.is_authenticated else None))
+
+    def _exige_fnb(self, request):
+        """(Utilizador POS) "Utilizador F&B" — mexer no stock não é para toda a gente.
+
+        Lançar uma compra muda o custo médio de TODOS os artigos envolvidos. Quem não é
+        do economato não devia poder fazê-lo por engano.
+        """
+        from .models import PosUser
+        u = request.user
+        if not u.is_authenticated or u.is_superuser or u.is_staff:
+            return
+        pu = PosUser.objects.filter(auth_user=u).first()
+        if pu and not pu.is_fnb_user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('Só um utilizador F&B pode mexer nos documentos de stock '
+                                   '(caixa "Utilizador F&B" na ficha do utilizador).')
+
+    @action(detail=True, methods=['post'])
+    @transaction.atomic
+    def post_stock(self, request, pk=None):
+        """LANÇAR no stock. É aqui que a mercadoria entra (ou sai) a sério."""
+        self._exige_fnb(request)
+        doc = self.get_queryset().select_for_update().get(pk=pk)
+        if doc.voided:
+            return Response({'detail': 'Documento anulado.'}, status=400)
+        if doc.posted:
+            return Response({'detail': f'{doc.number} já foi lançado. Lançar duas vezes '
+                                       f'duplicava o stock.'}, status=400)
+        if not doc.lines.exists():
+            return Response({'detail': 'Documento sem artigos.'}, status=400)
+        n = doc.post(user=(request.user.username if request.user.is_authenticated else None))
+        return Response({'detail': f'{doc.number} lançado — {n} movimento(s) de stock.',
+                         'movements': n, 'document': self.get_serializer(doc).data})
+
+    @action(detail=True, methods=['post'])
+    @transaction.atomic
+    def void(self, request, pk=None):
+        """ANULAR — se já tinha mexido no stock, os movimentos são REVERTIDOS.
+
+        Anular sem devolver o stock era a maneira mais silenciosa de ter 200 garrafas
+        no sistema e 0 no armazém.
+        """
+        doc = self.get_queryset().select_for_update().get(pk=pk)
+        if doc.voided:
+            return Response({'detail': 'Já estava anulado.'}, status=400)
+        revertidos = 0
+        if doc.posted:
+            from inventory.models import StockMovement, StockLevel
+            for mv in StockMovement.objects.filter(reference=doc.number):
+                sinal = -1 if mv.movement_type in ('GRN', 'IN', 'TRANSFER_IN') else 1
+                if mv.movement_type == 'ADJUST':
+                    sinal = -1
+                nivel = StockLevel.objects.filter(item=mv.item, warehouse=mv.warehouse).first()
+                if nivel:
+                    nivel.quantity_on_hand = (nivel.quantity_on_hand or 0) + sinal * mv.quantity
+                    nivel.save(update_fields=['quantity_on_hand'])
+                revertidos += 1
+            StockMovement.objects.filter(reference=doc.number).delete()
+        doc.voided = True
+        doc.posted = False
+        doc.save(update_fields=['voided', 'posted'])
+        return Response({'detail': f'{doc.number} anulado. {revertidos} movimento(s) revertido(s).'})
+
+    @action(detail=True, methods=['post'])
+    def pay(self, request, pk=None):
+        """PAGAR — sai das Contas a Pagar."""
+        from django.utils import timezone
+        doc = self.get_object()
+        if not doc.is_payable:
+            return Response({'detail': 'Este documento não é de contas a pagar.'}, status=400)
+        if doc.paid:
+            return Response({'detail': 'Já estava pago.'}, status=400)
+        doc.paid = True
+        doc.paid_at = timezone.now()
+        doc.save(update_fields=['paid', 'paid_at'])
+        return Response({'detail': f'{doc.number} marcado como pago.'})
+
+    @action(detail=True, methods=['post'])
+    @transaction.atomic
+    def duplicate(self, request, pk=None):
+        """COPIAR — o mesmo documento, por lançar. A compra do mês repete-se.
+
+        (Série) "Sujeito a conversão" — desmarcada, esta série não gera cópias nem
+        conversões: um inventário não se "repete", conta-se de novo.
+        """
+        if not self.get_object().series.convertible:
+            return Response({'detail': 'Esta série não permite copiar/converter documentos '
+                                       '(caixa "Sujeito a conversão" desligada).'}, status=400)
+        from .models import StockDocLine
+        velho = self.get_object()
+        linhas = list(velho.lines.all())
+        velho.pk = None
+        velho.number = ''
+        velho.posted = velho.paid = velho.voided = False
+        velho.posted_at = velho.paid_at = None
+        velho.save()
+        for l in linhas:
+            l.pk = None
+            l.doc = velho
+            l.save()
+        return Response(self.get_serializer(velho).data, status=201)
+
+    @action(detail=False, methods=['post'])
+    def sheet(self, request):
+        """FOLHA DE CONTAGEM do inventário — gera as linhas com o STOCK TEÓRICO.
+
+        É o botão "Atualizar" do ecrã: traz os artigos do armazém, com o que o sistema
+        JULGA ter (quantidade e custo médio). O que o economato escreve por cima é a
+        contagem física. A diferença entre os dois é o que desapareceu.
+
+        As caixas dos filtros mandam mesmo:
+          · incluir existências a NEGATIVO — um stock negativo é sempre um erro; se se
+            esconder, nunca se corrige;
+          · incluir artigos a ZERO — para poder lançar o que apareceu e não devia existir;
+          · excluir INATIVOS — não se conta o que já não se vende;
+          · iniciar a contagem a ZERO — obriga a contar tudo à mão (o modo honesto); sem
+            ela, a folha vem pré-preenchida com o teórico e o contador limita-se a assinar.
+        """
+        from decimal import Decimal
+        from inventory.models import StockLevel, Item
+
+        wid = request.data.get('warehouse')
+        if not wid:
+            return Response({'detail': 'Escolha o armazém a contar.'}, status=400)
+
+        incl_neg = request.data.get('include_negative', True)
+        incl_zero = request.data.get('include_zero', True)
+        excl_inativos = request.data.get('exclude_inactive', True)
+        zerar = request.data.get('start_zero', False)
+        familia = request.data.get('family')
+        subfamilia = request.data.get('subfamily')
+
+        niveis = {n.item_id: n for n in StockLevel.objects.filter(warehouse_id=wid)}
+        artigos = Item.objects.all()
+        if excl_inativos:
+            artigos = artigos.filter(is_active=True)
+        if subfamilia:
+            artigos = artigos.filter(subfamily_id=subfamilia)
+        elif familia:
+            artigos = artigos.filter(subfamily__family_id=familia)
+
+        linhas = []
+        for a in artigos.select_related('subfamily'):
+            n = niveis.get(a.id)
+            qtd = (n.quantity_on_hand if n else Decimal('0')) or Decimal('0')
+            custo = a.current_average_cost or Decimal('0')
+            if qtd < 0 and not incl_neg:
+                continue
+            if qtd == 0 and not incl_zero:
+                continue
+            # O stock guarda 4 casas; o documento aceita 3. Sem este arredondamento, a
+            # folha de contagem vinha com números que o próprio sistema recusava gravar.
+            q3 = qtd.quantize(Decimal('0.001'))
+            c4 = custo.quantize(Decimal('0.0001'))
+            linhas.append({
+                'item': a.id, 'code': a.code, 'name': a.name,
+                'unit': getattr(a, 'unit', None) or 'UN',
+                'theoretical_qty': str(q3), 'theoretical_cost': str(c4),
+                'quantity': '0.000' if zerar else str(q3),      # contagem física
+                'unit_cost': str(c4),
+            })
+        return Response({'lines': linhas, 'count': len(linhas)})
+
+
+class PosStockLevelsView(APIView):
+    """EXISTÊNCIAS DE STOCK — o que há, onde está, e quanto vale.
+
+    Vem do ledger de movimentos (a fonte única). O valor é a quantidade ao custo médio:
+    é o dinheiro que está parado dentro do armazém.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from inventory.models import StockLevel
+        p = request.query_params
+        qs = StockLevel.objects.select_related('item', 'warehouse')
+        if p.get('warehouse'):
+            qs = qs.filter(warehouse_id=p['warehouse'])
+        if p.get('q'):
+            qs = qs.filter(models.Q(item__name__icontains=p['q'])
+                           | models.Q(item__code__icontains=p['q']))
+        if p.get('family'):
+            qs = qs.filter(item__subfamily__family_id=p['family'])
+        if p.get('subfamily'):
+            qs = qs.filter(item__subfamily_id=p['subfamily'])
+
+        linhas, total = [], Decimal('0')
+        for n in qs:
+            qtd = n.quantity_on_hand or Decimal('0')
+            custo = n.item.current_average_cost or Decimal('0')
+            valor = qtd * custo
+            total += valor
+            minimo = n.min_stock_alert or Decimal('0')
+            linhas.append({
+                'id': n.id, 'item': n.item_id, 'code': n.item.code, 'name': n.item.name,
+                'warehouse': n.warehouse.name, 'warehouse_id': n.warehouse_id,
+                'quantity': str(qtd), 'average_cost': str(custo), 'value': str(valor),
+                'min_stock': str(minimo), 'below_min': qtd <= minimo,
+            })
+        linhas.sort(key=lambda x: Decimal(x['value']), reverse=True)
+        return Response({'rows': linhas, 'total_value': str(total), 'count': len(linhas)})
+
+
+class PosPayablesView(APIView):
+    """CONTAS A PAGAR — a quem devemos, e quanto.
+
+    O saldo de cada fornecedor são as faturas de compra LANÇADAS e ainda não pagas. Só
+    entram as séries marcadas como "Documento a pagar" (`nature=PAYABLE`) — é a caixa da
+    série que decide, não uma regra escondida no código.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .models import StockDoc
+        p = request.query_params
+        docs = (StockDoc.objects.filter(series__nature='PAYABLE', paid=False, voided=False)
+                .select_related('entity', 'series'))
+
+        contas = {}
+        for d in docs:
+            e = d.entity
+            chave = e.id if e else 0
+            c = contas.setdefault(chave, {
+                'id': chave,
+                'name': e.name if e else '(sem entidade)',
+                'address': e.address if e else None,
+                'contact': (e.phone or e.email) if e else None,
+                'other': e.tax_id if e else None,
+                'phone': e.phone if e else None,
+                'tax_id': e.tax_id if e else None,
+                'balance': Decimal('0'), 'documents': [],
+            })
+            c['balance'] += d.total
+            c['documents'].append({
+                'id': d.id, 'number': d.number, 'date': d.doc_date,
+                'due_date': d.due_date, 'total': str(d.total),
+                'external_ref': d.external_ref, 'posted': d.posted,
+            })
+
+        linhas = list(contas.values())
+        # Filtros do ecrã
+        def bate(c):
+            if p.get('name') and p['name'].lower() not in (c['name'] or '').lower():
+                return False
+            if p.get('tax_id') and p['tax_id'] not in (c['tax_id'] or ''):
+                return False
+            if p.get('phone') and p['phone'] not in (c['phone'] or ''):
+                return False
+            if p.get('address') and p['address'].lower() not in (c['address'] or '').lower():
+                return False
+            if p.get('id') and str(p['id']) != str(c['id']):
+                return False
+            if p.get('q'):
+                t = p['q'].lower()
+                alvo = ' '.join(str(c.get(k) or '') for k in ('name', 'address', 'tax_id', 'phone')).lower()
+                if t not in alvo:
+                    return False
+            return True
+
+        linhas = [c for c in linhas if bate(c)]
+        linhas.sort(key=lambda x: x['balance'], reverse=True)
+        total = sum((c['balance'] for c in linhas), Decimal('0'))
+        for c in linhas:
+            c['balance'] = str(c['balance'])
+        return Response({'rows': linhas, 'total_due': str(total)})
+
+
+# ==========================================================================
+# REPORTING — Relatórios por pastas, Informação Online, Pesquisar Documentos
+# ==========================================================================
+class PosReportCatalogView(APIView):
+    """AS PASTAS. Um sistema com 40 relatórios numa lista é um sistema onde ninguém
+    encontra nada — as pastas são as do negócio, não as da base de dados."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from . import reports
+        # O catálogo leva também os METADADOS do filtro universal (dias da semana,
+        # agrupamentos, atalhos de período) — para o ecrã não os ter escritos à mão.
+        return Response({'folders': reports.catalog(), 'filters': reports.FILTER_META})
+
+
+class PosReportRunView(APIView):
+    """CORRER um relatório com os seus parâmetros. Devolve colunas + linhas + totais."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from . import reports
+        from fiscal.models import FiscalConfig
+        code = request.data.get('code')
+        params = request.data.get('params') or {}
+        try:
+            dados = reports.run(code, params)
+        except KeyError:
+            return Response({'detail': f'Relatório desconhecido: {code}'}, status=404)
+        cfg = FiscalConfig.get()
+        dados['company'] = cfg.company_name
+        dados['tax_id'] = cfg.company_nif
+        dados['user'] = request.user.username if request.user.is_authenticated else ''
+        return Response(dados)
+
+
+class PosOnlineInfoView(APIView):
+    """INFORMAÇÃO ONLINE — o que está a acontecer AGORA. Não é um relatório: é o pulso
+    do serviço (contas abertas, vendas do dia, mesas, cozinha)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from django.db.models import Sum, Count
+        from django.utils import timezone
+        from .models import POSTicket, POSTable, PrintJob, CashSession, POSTicketLine
+        hoje = timezone.localdate()
+
+        pagas = POSTicket.objects.filter(status='PAID', closed_at__date=hoje)
+        total = pagas.aggregate(t=Sum('grand_total'))['t'] or Decimal('0')
+        n = pagas.count()
+
+        abertas = POSTicket.objects.filter(status='OPEN').select_related('outlet', 'table')
+        mesas = POSTable.objects.values('status').annotate(n=Count('id'))
+
+        top = (POSTicketLine.objects
+               .filter(ticket__status='PAID', ticket__closed_at__date=hoje, is_void=False)
+               .values('item__name').annotate(q=Sum('quantity'), t=Sum('line_total'))
+               .order_by('-q')[:8])
+
+        por_sector = (pagas.values('outlet__name')
+                      .annotate(n=Count('id'), t=Sum('grand_total')).order_by('-t'))
+
+        return Response({
+            'now': timezone.now(),
+            'today': {'tickets': n, 'total': str(total),
+                      'avg': str(round(total / n, 2)) if n else '0'},
+            'open_tickets': [{
+                'ticket': t.ticket_number, 'outlet': t.outlet.name if t.outlet_id else '',
+                'where': t.dest_label or (f'Mesa {t.table.table_number}' if t.table_id else '—'),
+                'operator': t.operator_name, 'total': str(t.grand_total),
+                'minutes': int((timezone.now() - t.opened_at).total_seconds() / 60),
+            } for t in abertas],
+            'tables': {m['status']: m['n'] for m in mesas},
+            'top_items': [{'name': x['item__name'], 'qty': str(x['q']), 'total': str(x['t'])}
+                          for x in top],
+            'by_outlet': [{'outlet': x['outlet__name'], 'tickets': x['n'], 'total': str(x['t'])}
+                          for x in por_sector],
+            'kitchen_queue': PrintJob.objects.filter(status='QUEUED').count(),
+            'open_cash': CashSession.objects.filter(status='OPEN').count(),
+        })
+
+
+class PosDocSearchView(APIView):
+    """PESQUISAR DOCUMENTOS — encontrar a fatura que o cliente traz na mão.
+
+    Procura por tipo, número, entidade/NIF, quarto, operador, modo de pagamento e datas.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from fiscal.models import FiscalDocument
+        p = request.query_params
+        qs = (FiscalDocument.objects.filter(source_module='pos')
+              .select_related('doc_type', 'series').order_by('-doc_date', '-number'))
+        if p.get('doc_type'):
+            qs = qs.filter(doc_type__code=p['doc_type'])
+        if p.get('number'):
+            qs = qs.filter(invoice_no__icontains=p['number'])
+        if p.get('entity'):
+            qs = qs.filter(models.Q(customer_name__icontains=p['entity'])
+                           | models.Q(customer_tax_id__icontains=p['entity']))
+        if p.get('room'):
+            qs = qs.filter(room_ref__icontains=p['room'])
+        if p.get('payment'):
+            qs = qs.filter(payment_method__icontains=p['payment'])
+        if p.get('operator'):
+            qs = qs.filter(operator_name__icontains=p['operator'])
+        if p.get('from'):
+            qs = qs.filter(doc_date__gte=p['from'])
+        if p.get('to'):
+            qs = qs.filter(doc_date__lte=p['to'])
+
+        linhas = [{
+            'id': d.id, 'name': d.doc_type.name, 'type': d.doc_type.code,
+            'number': d.invoice_no, 'date': str(d.doc_date),
+            'total': str(d.gross_total), 'tax_id': d.customer_tax_id or '',
+            'entity': d.customer_name or 'Consumidor Final',
+            'operator': d.operator_name or '', 'place': d.place_ref or '',
+            'payment': d.payment_method or '',
+            'voided': d.status == 'A', 'settled': d.settled,
+        } for d in qs[:500]]
+        return Response({
+            'rows': linhas,
+            'total': str(sum((Decimal(l['total']) for l in linhas if not l['voided']),
+                             Decimal('0'))),
+            'count': len(linhas),
+        })
+
+
+class PosDocDetailView(APIView):
+    """PRÉ-VISUALIZAR / IMPRIMIR 2ª VIA / ANULAR (nota de crédito)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        from fiscal.models import FiscalDocument, FiscalConfig
+        d = FiscalDocument.objects.filter(pk=pk).select_related('doc_type').first()
+        if not d:
+            return Response({'detail': 'Documento não encontrado.'}, status=404)
+        cfg = FiscalConfig.get()
+        # (Conta bancária) "Mostrar na fatura" — as contas marcadas saem no rodapé do
+        # documento: é assim que o cliente sabe para onde transferir.
+        bancos = []
+        try:
+            from fiscal.models import CompanyBankAccount
+            bancos = [{'bank': b.bank_name, 'iban': b.iban}
+                      for b in CompanyBankAccount.objects.filter(show_on_invoice=True)]
+        except Exception:
+            pass
+        return Response({
+            'company': cfg.company_name, 'company_tax_id': cfg.company_nif,
+            'certificate': cfg.certificate_number,
+            'bank_accounts': bancos,
+            'invoice_no': d.invoice_no, 'type': d.doc_type.name, 'date': str(d.doc_date),
+            'customer': d.customer_name, 'customer_tax_id': d.customer_tax_id,
+            'operator': d.operator_name, 'place': d.place_ref, 'payment': d.payment_method,
+            'lines': [{'description': l.description, 'quantity': str(l.quantity),
+                       'unit_price': str(l.unit_price), 'tax': str(l.tax_percentage),
+                       'total': str(l.line_total + l.tax_amount)} for l in d.lines.all()],
+            'net': str(d.net_total), 'tax': str(d.tax_total), 'gross': str(d.gross_total),
+            'amount_in_words': d.amount_in_words,
+            'hash': d.doc_hash, 'voided': d.status == 'A',
+            'print_count': d.print_count,
+        })
+
+    def post(self, request, pk):
+        from fiscal.models import FiscalDocument
+        from fiscal import services as fs
+        d = FiscalDocument.objects.filter(pk=pk).first()
+        if not d:
+            return Response({'detail': 'Documento não encontrado.'}, status=404)
+        acao = request.data.get('action')
+
+        if acao == 'print':
+            # 2ª VIA — o original imprime-se uma vez; as seguintes dizem "2ª via". Duas
+            # vias iguais a circular é o princípio de uma fatura paga duas vezes.
+            d.print_count = (d.print_count or 0) + 1
+            d.save(update_fields=['print_count'])
+            return Response({'detail': f'{d.invoice_no} — via nº {d.print_count}.',
+                             'copy': d.print_count > 1})
+
+        if acao == 'void':
+            # Um documento fiscal NÃO se apaga: anula-se com nota de crédito, também
+            # assinada e encadeada. É o que a AGT exige — e o que impede que uma venda
+            # desapareça sem rasto.
+            motivo = request.data.get('reason')
+            if not motivo:
+                return Response({'detail': 'Indique o motivo da anulação.'}, status=400)
+            try:
+                nc = fs.create_credit_note(
+                    d, reason=motivo,
+                    user=(request.user.username if request.user.is_authenticated else None))
+            except Exception as e:
+                return Response({'detail': str(e)}, status=400)
+            return Response({'detail': f'Nota de crédito {nc.invoice_no} emitida.',
+                             'credit_note': nc.invoice_no}, status=201)
+
+        return Response({'detail': 'Ação inválida.'}, status=400)
+
+
+class PosAlertsView(APIView):
+    """CENTRO DE ALERTAS — o sistema procura os problemas; o dono não tem de os procurar.
+
+    Cada alerta diz O QUE se passa, PORQUE é grave e O QUE fazer. Um alerta que não diz
+    o que fazer é ruído — e ruído ensina-se a ignorar.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from . import alerts
+        return Response(alerts.run_all())
+
+
+class MemberCardAccountView(APIView):
+    """A CONTA DO CARTÃO — carregar, ver o saldo, liquidar a dívida, ver os pontos.
+
+    O crédito de um cartão pré-pago tem de ENTRAR por algum lado: é aqui. E a dívida de
+    um cartão de débito tem de se poder pagar — senão o sócio acumula para sempre.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        from mdm.models import Customer
+        from .models import MemberCardMovement
+        c = Customer.objects.select_related('member_card').filter(pk=pk).first()
+        if not c:
+            return Response({'detail': 'Entidade não encontrada.'}, status=404)
+        if not c.member_card_id:
+            return Response({'detail': 'Esta entidade não tem cartão de membro.'}, status=400)
+        card = c.member_card
+        return Response({
+            'entity': {'id': c.id, 'name': c.name},
+            'card': {'code': card.code, 'name': card.name, 'number': c.member_card_number,
+                     'has_credit': card.has_credit, 'has_debit': card.has_debit,
+                     'has_points': card.has_points, 'has_discount': card.has_discount,
+                     'points_per_100': str(card.points_per_100),
+                     'point_value': str(card.point_value),
+                     'credit_limit': str(card.credit_limit)},
+            'credit': str(MemberCardMovement.credit_of(c)),
+            'debt': str(MemberCardMovement.debt_of(c)),
+            'points': str(MemberCardMovement.points_of(c)),
+            'points_value': str(MemberCardMovement.points_of(c) * (card.point_value or 0)),
+            'movements': [{
+                'id': m.id, 'kind': m.kind, 'kind_display': m.get_kind_display(),
+                'amount': str(m.amount), 'points': str(m.points),
+                'reason': m.reason, 'at': m.created_at, 'by': m.created_by,
+            } for m in MemberCardMovement.objects.filter(customer=c)[:100]],
+        })
+
+    @transaction.atomic
+    def post(self, request, pk):
+        from mdm.models import Customer
+        from .models import MemberCardMovement
+        c = Customer.objects.select_related('member_card').filter(pk=pk).first()
+        if not c or not c.member_card_id:
+            return Response({'detail': 'Entidade sem cartão de membro.'}, status=400)
+        card = c.member_card
+        acao = request.data.get('action')
+        try:
+            valor = Decimal(str(request.data.get('amount') or '0'))
+        except Exception:
+            valor = Decimal('0')
+        quem = request.user.username if request.user.is_authenticated else 'POS'
+
+        if acao == 'load':
+            # (Cartão) "Crédito" — carregar. Um cartão sem esta caixa não tem saldo nenhum
+            # para carregar: seria dinheiro a entrar numa conta que não existe.
+            if not card.has_credit:
+                return Response({'detail': f'O cartão "{card.name}" não tem crédito '
+                                           f'(a caixa "Crédito" está desligada).'}, status=400)
+            if valor <= 0:
+                return Response({'detail': 'Indique o valor a carregar.'}, status=400)
+            MemberCardMovement.objects.create(customer=c, card=card, kind='LOAD', amount=valor,
+                                              created_by=quem, reason=request.data.get('reason'))
+            return Response({'detail': f'Carregados {valor} Kz.',
+                             'credit': str(MemberCardMovement.credit_of(c))})
+
+        if acao == 'settle':
+            if not card.has_debit:
+                return Response({'detail': f'O cartão "{card.name}" não é de débito.'}, status=400)
+            divida = MemberCardMovement.debt_of(c)
+            if valor <= 0 or valor > divida:
+                return Response({'detail': f'{c.name} deve {divida} Kz.'}, status=400)
+            MemberCardMovement.objects.create(customer=c, card=card, kind='SETTLE', amount=valor,
+                                              created_by=quem, reason='Liquidação da dívida')
+            return Response({'detail': f'Liquidados {valor} Kz.',
+                             'debt': str(MemberCardMovement.debt_of(c))})
+
+        return Response({'detail': 'Ação inválida (load | settle).'}, status=400)
+
+
+class PosTerminalKeyboardView(APIView):
+    """O TECLADO QUE O TERMINAL DESENHA — a árvore de teclas, tal como foi configurada.
+
+    Até aqui o terminal mostrava os artigos por categoria e ignorava o teclado: quem
+    configurava as páginas, as pastas, as cores e o número de colunas não via nada mudar
+    no ecrã do empregado. Um teclado que ninguém vê é trabalho deitado fora.
+
+    O terminal desenha o que vier daqui:
+      · as PÁGINAS (a fila de cima: COMIDAS, BEBIDAS…);
+      · dentro de cada uma, as PASTAS (SNACKS, PETISCOS…) e os ARTIGOS;
+      · as CORES e o nº de colunas/linhas;
+      · e as caixas "Visualizar Códigos" e "Visualizar Preços", que decidem o que sai
+        escrito dentro da tecla.
+
+    O NÍVEL DE PREÇO do teclado também manda: o mesmo artigo custa um preço na esplanada
+    e outro no bar do piso 8 — é o mesmo teclado com outro nível.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .models import PosKeyboard, PosKeyboardKey, PosTerminal
+        from inventory.models import ItemPrice
+
+        kb = None
+        # O teclado pode vir pedido à mão, ou ser o do TERMINAL que está a perguntar.
+        if request.query_params.get('keyboard'):
+            kb = PosKeyboard.objects.filter(pk=request.query_params['keyboard'],
+                                            is_active=True).first()
+        if not kb and request.query_params.get('terminal'):
+            t = PosTerminal.objects.filter(pk=request.query_params['terminal']).first()
+            kb = getattr(t, 'keyboard', None) if t else None
+        if not kb:
+            kb = PosKeyboard.objects.filter(is_active=True).order_by('number').first()
+        if not kb:
+            return Response({'detail': 'Não há teclados configurados.',
+                             'keyboard': None, 'pages': []})
+
+        chaves = list(PosKeyboardKey.objects.filter(keyboard=kb)
+                      .select_related('item').order_by('sort_order', 'id'))
+        precos = {}
+        if kb.price_level and kb.price_level > 1:
+            precos = {p.item_id: p.price for p in ItemPrice.objects.filter(level=kb.price_level)}
+
+        # (Utilizador POS) "Usa preço de custo" — o staff autorizado vê o CUSTO na tecla,
+        # não o preço de venda. É a ficha do operador a mandar no ecrã.
+        custo_op = False
+        if request.query_params.get('operator'):
+            from .models import PosUser
+            op = PosUser.objects.filter(pk=request.query_params['operator']).first()
+            custo_op = bool(op and getattr(op, 'use_cost_price', False))
+
+        def preco(it):
+            if not it:
+                return None
+            if custo_op:
+                return str(it.current_average_cost or 0)
+            # O nível de preço do teclado ganha ao preço base — é para isso que existe.
+            return str(precos.get(it.id, it.sale_price or 0))
+
+        def desenha(k):
+            d = {
+                'id': k.id, 'kind': k.kind, 'label': k.label,
+                'color': k.color, 'text_color': k.text_color, 'span': k.span,
+                'item': k.item_id,
+                # As duas caixas do teclado decidem o que sai ESCRITO na tecla.
+                'code': (k.item.code if (k.item and kb.show_codes) else None),
+                'price': (preco(k.item) if (k.item and kb.show_prices) else None),
+                'available': True,
+            }
+            # Um artigo inativo não se vende — a tecla fica lá, mas apagada. Tirá-la do
+            # ecrã mudava o mapa que o empregado tem na cabeça (e ele carregava na errada).
+            if k.item and not k.item.is_active:
+                d['available'] = False
+            filhos = [x for x in chaves if x.parent_id == k.id]
+            if filhos:
+                d['children'] = [desenha(f) for f in filhos]
+            return d
+
+        paginas = [desenha(k) for k in chaves if k.parent_id is None]
+        return Response({
+            'keyboard': {'id': kb.id, 'number': kb.number, 'name': kb.name,
+                         'cols': kb.cols, 'rows': kb.rows,
+                         'show_codes': kb.show_codes, 'show_prices': kb.show_prices,
+                         'price_level': kb.price_level},
+            'pages': paginas,
+        })
+
+
+def _board_da_reserva(r):
+    """O REGIME (RO/BB/HB/FB/AI) do hóspede.
+
+    A reserva não o guarda — quem o tem é a TARIFA do tipo de quarto (pms.RatePlan.board).
+    Lê-se de lá. Sem tarifa ativa para aquele tipo de quarto, assume-se "só dormida" (RO):
+    é o regime que NÃO oferece refeições — na dúvida, cobra-se, não se oferece.
+    """
+    try:
+        from pms.models import RatePlan
+        rp = (RatePlan.objects.filter(room_type=r.room_type_id, is_active=True)
+              .order_by('-valid_from').first())
+        return (rp.board if rp else 'RO').upper()
+    except Exception:
+        return 'RO'
+
+
+class PosGuestsView(APIView):
+    """INFO. HÓSPEDE — quem está em casa, agora.
+
+    É o que o empregado precisa para lançar um consumo no quarto: o quarto, o hóspede, a
+    conta (folio), o regime e o saldo. Sem isto, ele pergunta o nome ao cliente e escreve
+    o quarto que o cliente disser — e é assim que o jantar do 302 vai parar ao 203.
+
+    O POS vende-se SOZINHO: um restaurante sem hotel não tem PMS. Nesse caso este ecrã
+    diz-lo com todas as letras, em vez de rebentar.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            from pms.models import Reservation
+        except (ImportError, ModuleNotFoundError):
+            return Response({'available': False, 'rows': [],
+                             'detail': 'Este sistema não tem o módulo de alojamento (PMS). '
+                                       'A informação de hóspedes só existe com hotel.'})
+
+        q = (request.query_params.get('q') or '').strip()
+        rs = (Reservation.objects.filter(status='CHECKED_IN')
+              .select_related('room', 'guest', 'room_type'))
+        linhas = []
+        for r in rs:
+            nome = getattr(r.guest, 'full_name', None) or str(getattr(r, 'guest', '') or '')
+            quarto = getattr(r.room, 'number', None) or ''
+            if q and q.lower() not in f'{nome} {quarto}'.lower():
+                continue
+            folio = None
+            saldo = Decimal('0')
+            try:
+                from pms.models import Folio
+                folio = Folio.objects.filter(reservation=r, status='OPEN').first()
+                if folio:
+                    saldo = sum((c.amount for c in folio.charges.all()), Decimal('0'))
+            except Exception:
+                pass
+            linhas.append({
+                'room': quarto,
+                'folio': folio.id if folio else None,
+                'guest': nome,
+                'entity': getattr(getattr(r, 'company', None), 'name', None) or '',
+                'checkout': str(getattr(r, 'check_out', '') or ''),
+                # O REGIME não está na reserva: está na TARIFA do tipo de quarto (RatePlan).
+                # É o que o PMS tem — não se inventa um campo novo para o POS.
+                'board': _board_da_reserva(r),
+                'balance': str(saldo),
+                'reservation': r.id,
+            })
+        return Response({'available': True, 'rows': linhas})
+
+
+class PosMealPlanView(APIView):
+    """MAPA DE REFEIÇÕES — que hóspedes têm direito a que refeição, hoje.
+
+    O REGIME diz tudo: BB só tem pequeno-almoço; HB tem mais uma refeição; AI tem tudo.
+    Servir um almoço a quem só tem BB e não o cobrar é oferecer o almoço — e ninguém dá
+    por isso porque "o cliente é do hotel".
+
+    Verde = incluído no regime. Proibido = não está incluído (cobra-se).
+    """
+    permission_classes = [IsAuthenticated]
+
+    # O que cada regime inclui. É a tabela do ofício.
+    REGIMES = {
+        'RO': [],                                   # só dormida
+        'BB': ['PA'],                                # dormida + pequeno-almoço
+        'HB': ['PA', 'ALM'],                         # meia pensão
+        'FB': ['PA', 'ALM', 'JANT'],                 # pensão completa
+        'AI': ['PA', 'CB', 'ALM', 'LANCHE', 'JANT'],  # tudo incluído
+    }
+    REFEICOES = [('PA', 'Pequeno Almoço'), ('CB', 'Coffee Break Manhã'),
+                 ('ALM', 'Almoço'), ('LANCHE', 'Lanche'), ('JANT', 'Jantar')]
+
+    def get(self, request):
+        try:
+            from pms.models import Reservation
+        except (ImportError, ModuleNotFoundError):
+            return Response({'available': False, 'rows': [],
+                             'meals': [{'code': c, 'label': l} for c, l in self.REFEICOES],
+                             'detail': 'Sem módulo de alojamento (PMS): não há hóspedes nem regimes.'})
+
+        rs = (Reservation.objects.filter(status='CHECKED_IN')
+              .select_related('room', 'guest', 'room_type'))
+        linhas = []
+        for r in rs:
+            regime = _board_da_reserva(r)
+            incluidas = self.REGIMES.get(regime, [])
+            linhas.append({
+                'room': getattr(r.room, 'number', ''),
+                'reservation': r.id,
+                'guest': getattr(r.guest, 'full_name', None) or str(getattr(r, 'guest', '')),
+                'entity': getattr(getattr(r, 'company', None), 'name', None) or '',
+                'board': regime,
+                'pax': getattr(r, 'adults', 1) or 1,
+                'meals': {c: (c in incluidas) for c, _ in self.REFEICOES},
+            })
+        return Response({
+            'available': True,
+            'meals': [{'code': c, 'label': l} for c, l in self.REFEICOES],
+            'rows': linhas,
+        })
+
+
+class _SectorAccess:
+    """(Utilizador POS) "Todos os setores" — desmarcada, o operador só vê os SEUS.
+
+    Sem isto, o empregado do Lounge abria o Rooftop, vendia ao preço errado e mexia em
+    mesas que não eram dele. A lista de setores do terminal passa por aqui.
+    """
+
+    @staticmethod
+    def sectors_for(operator_id):
+        from .models import PosUser, PosSector
+        qs = PosSector.objects.filter(is_active=True)
+        if not operator_id:
+            return qs
+        op = PosUser.objects.filter(pk=operator_id).first()
+        if not op or getattr(op, 'all_sectors', True):
+            return qs
+        ids = list(op.sectors.values_list('id', flat=True))
+        return qs.filter(id__in=ids) if ids else qs.none()
+
+
+class EmailTemplateRules:
+    """As caixas dos MODELOS DE E-MAIL:
+
+    · "É SMS" — 160 caracteres e SEM anexos. Um SMS com anexo não existe; deixar
+      gravar era prometer ao hotel uma coisa que a rede nunca ia entregar.
+    · "Sub-modelo" — é um pedaço (cabeçalho, rodapé) usado DENTRO de outros; não se
+      envia sozinho, por isso não aparece na lista de envio.
+    · "Prioridade booking" — nos e-mails automáticos de reservas, é este que ganha
+      quando há vários modelos para o mesmo evento.
+    """
+
+    @staticmethod
+    def valida_sms(template, body=None):
+        corpo = body if body is not None else (getattr(template, 'body', '') or '')
+        if getattr(template, 'is_sms', False) and len(corpo) > 160:
+            raise serializers.ValidationError(
+                {'body': [f'Um SMS tem 160 caracteres — este tem {len(corpo)}.']})
+
+    @staticmethod
+    def valida_anexo(template):
+        if getattr(template, 'is_sms', False):
+            raise serializers.ValidationError(
+                {'template': ['Um SMS não leva anexos.']})
+
+    @staticmethod
+    def para_envio(qs):
+        # sub-modelos ficam de fora da lista de envio; prioridade booking primeiro
+        return qs.filter(is_sub_template=False).order_by('-booking_priority', 'id')
+
+
+class PosTerminalConfigView(APIView):
+    """O QUE O TERMINAL FAZ — decidido no backoffice, não no código do terminal.
+
+    O terminal não tem opinião própria: pergunta ao servidor como se comporta. Os
+    PARÂMETROS (Configuração POS › Parâmetros) mandam:
+
+      · Venda Direta (8300) — vender ao balcão, sem passar pelas mesas;
+      · Escolher o setor ao entrar (8302);
+      · Exigir abertura de caixa (8304);
+      · Perguntar tipo de cliente (8175) — Passante / Hotel / Consumo Interno;
+      · Enviar para a cozinha automaticamente (8308);
+      · Pedir a entidade antes de cobrar (8310);
+      · Tempo para refrescar o mapa de mesas (8063);
+      · Transferências de mesas (8124) — Total / Parcial / Não permitir;
+      · Permitir fechar o dia no Front Office (8062).
+
+    Mudar a caixa no backoffice muda o terminal no recarregamento seguinte. Não há uma
+    segunda lista de opções escondida no código do ecrã — havia, e era assim que o
+    sistema dizia uma coisa e fazia outra.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .params import P
+        operador = request.query_params.get('operator')
+        setores = [{'id': s.id, 'name': s.name, 'outlet': s.outlet_id,
+                    'price_level': s.price_level, 'map_bg_color': s.map_bg_color}
+                   for s in _SectorAccess.sectors_for(operador)]
+        return Response({
+            # os SETORES que ESTE operador pode servir ("Todos os setores" da ficha dele)
+            'sectors': setores,
+            'direct_sale': P.bool(8300, False),
+            'ask_sector': P.bool(8302, True),
+            'require_cash_open': P.bool(8304, True),
+            'ask_guest_type': P.bool(8175, True),
+            'auto_fire_kitchen': P.bool(8308, False),
+            'ask_entity_before_pay': P.bool(8310, False),
+            'tables_refresh_seconds': P.int(8063, 8),
+            'transfers': P.text(8124, 'Parcial'),
+            'allow_day_close': P.bool(8062, False),
+        })
+
+
+class PosTerminalChangePinView(APIView):
+    """(Utilizador POS) "Obrigar a mudar o PIN" — a troca feita NO TERMINAL.
+
+    O gestor entrega o operador novo com um PIN provisório e a caixa marcada; ao primeiro
+    login o terminal força esta troca antes de deixar vender. Ao mudar, a caixa
+    desliga-se sozinha — como a da password no backoffice. O PIN novo é recusado se já
+    pertencer a outro operador (senão o login ficava ambíguo para os dois).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from django.contrib.auth.hashers import check_password, make_password
+        user = PosUser.objects.filter(pk=request.data.get('operator')).first()
+        atual = str(request.data.get('current_pin') or '')
+        novo = str(request.data.get('new_pin') or '')
+        if not user or not user.pos_pin or not check_password(atual, user.pos_pin):
+            return Response({'detail': 'PIN atual incorreto.'}, status=400)
+        if not novo.isdigit() or len(novo) < 4:
+            return Response({'detail': 'O novo PIN deve ter pelo menos 4 dígitos.'}, status=400)
+        if novo == atual:
+            return Response({'detail': 'O novo PIN tem de ser diferente do atual.'}, status=400)
+        for outro in PosUser.objects.filter(is_active=True).exclude(pk=user.pk):
+            if outro.pos_pin and check_password(novo, outro.pos_pin):
+                return Response({'detail': 'Esse PIN já está em uso por outro operador. Escolha outro.'},
+                                status=400)
+        user.pos_pin = make_password(novo)
+        user.pos_must_change_pin = False
+        user.save(update_fields=['pos_pin', 'pos_must_change_pin'])
+        return Response({'detail': 'PIN alterado com sucesso.'})
+
+
+class PosBootstrapView(APIView):
+    """CONFIGURATION ENGINE — o objeto ÚNICO com que o Front Office arranca.
+
+    Em vez de o terminal fazer dez chamadas e cada ecrã verificar as suas opções à mão,
+    recebe UM objeto: empresa, licença, parâmetros, setores permitidos, teclado, meios
+    de pagamento, moedas, impostos, módulos e as caixas do operador. O terminal apenas
+    INTERPRETA — não decide nada.
+
+    É assim que o backoffice passa a ser a única fonte de verdade: muda-se a caixa lá,
+    e o terminal muda no arranque seguinte, sem uma linha de código nova.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from django.conf import settings
+        from .params import P
+        from .models import PosModule, PosUser
+        from mdm.models import PaymentMethod, Currency
+        from fiscal.models import FiscalConfig, TaxRate
+        from licensing.offline_validator import get_active_modules
+
+        operador_id = request.query_params.get('operator')
+        operador = PosUser.objects.filter(pk=operador_id).first() if operador_id else None
+
+        cfg = FiscalConfig.get()
+
+        # ── módulos: as CINCO caixas de cada um mandam em como (e se) aparece ──
+        modulos = [{
+            'module_id': m.module_id, 'name': m.name, 'menu': m.menu,
+            'sort_order': m.sort_order, 'right_id': m.right_id,
+            # "Mostrar no menu" / "no ambiente de trabalho": onde a entrada aparece.
+            'show_in_menu': m.show_in_menu,
+            'show_on_desktop': m.show_on_desktop,
+            # COMO abre: embebido (iframe), como widget, ou numa janela à parte.
+            'open_as': ('external' if getattr(m, 'is_external_window', False)
+                        else 'iframe' if m.is_iframe
+                        else 'widget' if getattr(m, 'is_widget', False)
+                        else 'screen'),
+        } for m in PosModule.objects.filter(is_active=True).order_by('sort_order')]
+
+        return Response({
+            'company': {'name': cfg.company_name, 'tax_id': cfg.company_nif,
+                        'certificate': cfg.certificate_number,
+                        'environment': cfg.environment},
+            'license': {'modules': get_active_modules(settings.BASE_DIR, settings.SECRET_KEY)},
+            'modules': modulos,
+            # os setores que ESTE operador pode servir (caixa "Todos os setores")
+            'sectors': [{'id': s.id, 'name': s.name, 'outlet': s.outlet_id,
+                         'price_level': s.price_level, 'map_bg_color': s.map_bg_color}
+                        for s in _SectorAccess.sectors_for(operador_id)],
+            'operator': (None if not operador else {
+                'id': operador.id,
+                'name': getattr(operador, 'name', None) or getattr(operador, 'full_name', None) or operador.code,
+                'all_sectors': operador.all_sectors,
+                'must_change_pin': operador.pos_must_change_pin,
+                'use_cost_price': operador.use_cost_price,
+                'internal_consumption': operador.internal_consumption,
+                'is_event_manager': operador.is_event_manager,
+                'is_fnb_user': operador.is_fnb_user,
+            }),
+            'payment_methods': [{
+                'id': m.id, 'code': m.code, 'name': m.name, 'type': m.method_type,
+                'allows_change': m.allows_change, 'allows_partial': m.allows_partial,
+                'allows_mixed': m.allows_mixed, 'opens_drawer': m.opens_drawer,
+                'ask_document_number': m.ask_document_number,
+            } for m in PaymentMethod.objects.filter(is_active=True, for_pos=True)],
+            'currencies': [{
+                'code': c.code, 'symbol': c.symbol_unicode or c.symbol,
+                'is_local': c.is_local, 'buy_rate': str(c.buy_rate),
+                'print_on_pos_docs': c.print_on_pos_docs,
+            } for c in Currency.objects.filter(is_active=True, excluded=False)],
+            'taxes': [{'code': t.code, 'name': t.name, 'percentage': str(t.percentage),
+                       'is_default': t.is_default}
+                      for t in TaxRate.objects.filter(is_active=True)],
+            # os parâmetros que mandam no comportamento do terminal
+            'terminal': {
+                'direct_sale': P.bool(8300, False),
+                'ask_sector': P.bool(8302, True),
+                'require_cash_open': P.bool(8304, True),
+                'ask_guest_type': P.bool(8175, True),
+                'auto_fire_kitchen': P.bool(8308, False),
+                'ask_entity_before_pay': P.bool(8310, False),
+                'tables_refresh_seconds': P.int(8063, 8),
+                'transfers': P.text(8124, 'Parcial'),
+                'allow_day_close': P.bool(8062, False),
+            },
+        })

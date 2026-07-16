@@ -22,15 +22,21 @@ def existing_for(source_module, source_ref):
                                          source_ref=str(source_ref)).first()
 
 
-def emit_for_pos_ticket(ticket, user=None, ip=None):
-    """Emite um documento fiscal (Factura-Recibo por defeito) a partir de um ticket POS pago."""
+def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None):
+    """Emite um documento fiscal (Factura-Recibo por defeito) a partir de um ticket POS pago.
+
+    CRÉDITO (conta corrente): o documento é uma FATURA (FT), que nasce POR RECEBER —
+    não uma fatura-recibo. Dizer à AGT que se recebeu dinheiro que ainda não entrou é
+    declarar um recebimento falso, e deixa a conta corrente do cliente a zero quando
+    ele ainda deve tudo.
+    """
     cfg = FiscalConfig.get()
     if not cfg.auto_emit_pos:
         return None
     existing = existing_for('pos', ticket.id)
     if existing:
         return existing
-    series = _resolve_series(cfg.pos_doc_type)
+    series = _resolve_series('FT' if credito else cfg.pos_doc_type)
     if not series:
         return None  # sem série configurada -> não bloqueia a venda
     # Desconto (VIP/manual) reduz proporcionalmente os preços das linhas na fatura.
@@ -71,6 +77,7 @@ def emit_for_pos_ticket(ticket, user=None, ip=None):
         source_module='pos', source_ref=ticket.id,
         operator_name=ticket.operator_name, place_ref=place, room_ref=room,
         payment_method=pay, discount_total=ticket.discount_total,
+        customer=customer, settled=(not credito),
     )
 
 

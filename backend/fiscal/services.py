@@ -118,7 +118,8 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
                    doc_date=None, reference_doc=None, user=None, ip=None,
                    source_module='manual', source_ref=None, customer_address=None,
                    operator_name=None, place_ref=None, room_ref=None,
-                   payment_method=None, discount_total=0, tax_inclusive=None):
+                   payment_method=None, discount_total=0, tax_inclusive=None,
+                   customer=None, settled=None):
     """Emite um documento fiscal assinado e encadeado. Ponto único de emissão."""
     from .num2words_pt import amount_to_words
     cfg = FiscalConfig.get()
@@ -162,8 +163,14 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
     doc = FiscalDocument.objects.create(
         series=series, doc_type=doc_type, number=number, invoice_no=invoice_no,
         doc_date=d, system_entry_date=system_entry,
+        customer=customer,
         customer_name=customer_name, customer_tax_id=customer_tax_id,
         customer_address=customer_address,
+        # Uma FATURA (FT) nasce POR RECEBER; uma FATURA-RECIBO (FR/FS) nasce paga.
+        # É esta linha que faz a conta corrente existir.
+        settled=(settled if settled is not None else doc_type.code not in ('FT', 'ND')),
+        settled_at=(system_entry if (settled if settled is not None
+                                     else doc_type.code not in ('FT', 'ND')) else None),
         operator_name=operator_name, place_ref=place_ref, room_ref=room_ref,
         payment_method=payment_method, tax_inclusive=tax_inclusive,
         net_total=net, tax_total=tax, discount_total=disc, gross_total=gross,
@@ -190,7 +197,10 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
 
     # COMUNICAÇÃO À AGT: o documento entra na fila assim que é emitido (store-and-forward).
     # A venda nunca espera pela AGT — se a linha estiver em baixo, sai daqui a pouco.
-    if doc_type.signable:
+    # (Série) "Documento eletrónico" — desmarcada, o documento NÃO entra sozinho na
+    # fila da AGT (fica para submissão manual no ecrã de Documentos). Uma série de
+    # testes ou de rascunhos não deve comunicar nada ao Estado.
+    if doc_type.signable and getattr(series, 'einvoice', True):
         try:
             from . import agt_client
             agt_client.enqueue(doc)

@@ -13,6 +13,23 @@ B, I, T, C = 'BOOL', 'INT', 'TEXT', 'CHOICE'
 
 # (nº, grupo, nome, tipo, opções, valor por omissão, ajuda)
 PARAMS = [
+    # ---------------- Front Office (o que o TERMINAL faz) ----------------
+    # Estes decidem o caminho do empregado. Não são preferências de ecrã: mudam o ofício.
+    (8300, 'Front Office', 'Venda Direta (vender sem passar pelas mesas)', B, [], 'false',
+     'LIGADO: o terminal abre logo numa conta de balcão, sem seletor de mesa. É o bar de '
+     'praia e o take-away — quem serve ao balcão não tem mesas para escolher.'),
+    (8302, 'Front Office', 'Escolher o setor ao entrar', B, [], 'true',
+     'DESLIGADO: o terminal usa sempre o setor que tem configurado. Um terminal que só '
+     'serve o Lounge não deve perguntar todos os dias qual é o setor.'),
+    (8304, 'Front Office', 'Exigir abertura de caixa', B, [], 'true',
+     'DESLIGADO: vende-se sem declarar o fundo de maneio. Só faz sentido em terminais que '
+     'não recebem dinheiro (só lançam no quarto).'),
+    (8308, 'Front Office', 'Enviar para a cozinha automaticamente ao lançar', B, [], 'false',
+     'LIGADO: cada artigo lançado vai logo para a produção. Serve o bar (a cerveja sai já); '
+     'não serve o restaurante (a mesa ainda está a escolher).'),
+    (8310, 'Front Office', 'Pedir a entidade antes de cobrar', B, [], 'false',
+     'LIGADO: o terminal pergunta sempre quem leva a fatura. Evita o "afinal queria com '
+     'contribuinte" depois do documento emitido — que já não se pode mudar.'),
     # ---------------- Geral ----------------
     (8183, 'Geral', 'Fazer backup no fecho do dia', B, [], 'false', 'Ativar só quando não existe PMS.'),
     (8176, 'Geral', 'Configuração de teclado por', C, ['Setor', 'Terminal', 'Operador'], 'Setor', ''),

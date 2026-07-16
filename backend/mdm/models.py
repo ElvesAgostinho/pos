@@ -280,6 +280,32 @@ class Customer(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True)
     country = models.CharField(max_length=80, blank=True, null=True)
     is_active = models.BooleanField(default=True)
+
+    # FICHA DE ENTIDADE (Pesquisa de Entidades do POS). Uma entidade não é só um nome:
+    # o comercial procura pelo apelido, o rececionista pelo nº de identificação e o
+    # fiscal pelo contribuinte. Sem estes campos, procura-se às cegas.
+    last_name = models.CharField(max_length=120, blank=True, null=True)       # Apelido
+    other_names = models.CharField(max_length=200, blank=True, null=True)     # Outros nomes
+    entity_type = models.ForeignKey('pos.CustomerType', on_delete=models.SET_NULL, blank=True, null=True,
+                                    related_name='customers')                # Tipo de entidade
+    id_number = models.CharField(max_length=50, blank=True, null=True)       # Nr. de identificação (BI/Passaporte)
+    nationality = models.CharField(max_length=80, blank=True, null=True)
+    birth_date = models.DateField(blank=True, null=True)
+    photo_url = models.CharField(max_length=300, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)                          # Informações
+
+    # CARTÃO DE MEMBRO — qual dos cartões configurados no POS esta entidade tem, e com
+    # que número. É o que faz o all-inclusive e os descontos de sócio funcionarem: o
+    # cartão já existe no POS; faltava dizer QUEM o tem.
+    member_card = models.ForeignKey('pos.MemberCard', on_delete=models.SET_NULL, blank=True, null=True,
+                                    related_name='holders')
+    member_card_number = models.CharField(max_length=40, blank=True, null=True)
+
+    # BLOQUEIO — a entidade existe mas não se vende a crédito nem se aceita reserva.
+    # É a lista negra: quem não pagou da última vez não volta a levar fiado.
+    is_blocked = models.BooleanField(default=False)
+    block_reason = models.CharField(max_length=200, blank=True, null=True)
+
     # Cliente VIP: desconto automático + limite de crédito (contas a receber).
     is_vip = models.BooleanField(default=False)
     vip_discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)

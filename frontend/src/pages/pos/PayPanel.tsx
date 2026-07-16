@@ -1,0 +1,199 @@
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../api/client';
+import Window from './Window';
+import { comPerguntas } from '../posPrompt';
+import EntityPicker from './EntityPicker';
+
+/**
+ * PAGAMENTOS — o momento em que o dinheiro entra.
+ *
+ * As caixas do modo de pagamento mandam, e quem manda é o SERVIDOR: parcial, misto,
+ * multi-moeda, troco, gaveta, TPA, conta corrente, cartão de membro. O terminal não
+ * reimplementa nenhuma dessas regras — pede, e se faltar alguma coisa, o servidor diz o
+ * quê e o terminal pergunta (posPrompt.ts). Duas cópias da mesma regra divergem sempre.
+ *
+ * PAGO e A PAGAR estão sempre à vista: é a única forma de o empregado saber se ainda
+ * falta receber. Um pagamento misto (metade em dinheiro, metade no cartão) faz-se aqui
+ * tocando duas vezes, e o "A pagar" desce.
+ */
+export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEntidade, onClose, onPaid }: {
+  ticket: any; entidade?: any | null; exigirEntidade?: boolean;
+  onClose: () => void; onPaid: () => void;
+}) {
+  const [entidade, setEntidade] = useState<any | null>(entidadeInicial || null);
+  // (Parâmetro 8310) "Pedir a entidade antes de cobrar": o painel abre já a perguntar
+  // QUEM paga — casas que faturam sempre com NIF não deixam cobrar ao "consumidor final".
+  const [escolherEntidade, setEscolherEntidade] = useState(!!exigirEntidade && !entidadeInicial);
+  const [valor, setValor] = useState('');
+  const [teclado, setTeclado] = useState(false);
+  const [modoCartao, setModoCartao] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [conta, setConta] = useState(ticket);
+
+  const { data: metodos = [] } = useQuery({
+    queryKey: ['pos-payments', ticket.outlet],
+    queryFn: async () => {
+      const r = await apiClient.get('pos/outlet-payment-methods/', { params: { outlet: ticket.outlet } });
+      return ((r.data?.results || r.data || []) as any[]).filter((m) => m.is_active);
+    },
+  });
+  const { data: cartao } = useQuery({
+    queryKey: ['pos-card', entidade?.id],
+    queryFn: async () => (await apiClient.get(`pos/cards/account/${entidade.id}/`)).data,
+    enabled: !!entidade?.id && !!entidade?.member_card,
+  });
+
+  const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
+  const pago = Number(conta.grand_total || 0) - Number(conta.balance_due ?? conta.grand_total ?? 0);
+  const falta = Number(conta.balance_due ?? conta.grand_total ?? 0);
+
+  const cobrar = async (m: any) => {
+    // Com o 8310 ligado não há cobrança sem entidade — a escolha volta a abrir-se.
+    if (exigirEntidade && !entidade) { setEscolherEntidade(true); return; }
+    setBusy(true);
+    try {
+      const r = await comPerguntas(`pos/tickets/${ticket.id}/pay/`, {
+        payment_method: m.payment_method,
+        // Sem valor escrito, cobra-se o que falta — que é o que acontece em 9 de 10 contas.
+        amount: valor || falta,
+        ...(entidade ? { customer: entidade.id } : {}),
+        ...(modoCartao ? { card_mode: modoCartao } : {}),
+      }, async (label, detalhe) => window.prompt(`${detalhe}\n\n${label}:`));
+
+      if (r?.pickup_alert) alert(r.pickup_alert);
+      if (r?.print_counter_value) alert(`Contravalor: ${r.print_counter_value}`);
+      if (r?.change_returned && Number(r.change_returned) > 0) {
+        alert(`TROCO: ${money(r.change_returned)} Kz`);
+      }
+
+      const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
+      setConta(tk);
+      setValor('');
+      setModoCartao('');
+      if (Number(tk.balance_due ?? 0) <= 0) onPaid();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || 'Não foi possível cobrar.');
+    } finally { setBusy(false); }
+  };
+
+  const tecla = (t: string) => {
+    if (t === 'C') return setValor('');
+    if (t === '⌫') return setValor(valor.slice(0, -1));
+    setValor(valor + t);
+  };
+
+  return (
+    <Window title="Pagamentos" width={820} tone="#0f8b8d" onClose={onClose}>
+      <div>
+
+        {/* o valor a entregar (vazio = cobra o que falta) */}
+        <button onClick={() => setTeclado(!teclado)}
+          className="w-full h-[62px] bg-[#3a3a3a] flex items-center justify-between px-4 border-b border-black">
+          <span className="text-white text-[22px] font-bold">Kz</span>
+          <span className="text-white text-[26px] font-bold">{valor || money(falta)}</span>
+        </button>
+
+        {teclado && (
+          <div className="grid grid-cols-3 gap-1 p-2 bg-[#1f1f1f]">
+            {['7', '8', '9', '4', '5', '6', '1', '2', '3', 'C', '0', '⌫'].map((t) => (
+              <button key={t} onClick={() => tecla(t)}
+                className={`h-[46px] text-[19px] font-bold rounded ${t === 'C'
+                  ? 'bg-[#c0140f] text-white' : 'bg-[#3a3a3a] text-white'}`}>{t}</button>
+            ))}
+          </div>
+        )}
+
+        {/* os meios de pagamento AUTORIZADOS neste ponto de venda */}
+        <div className="p-3 bg-[#2b2b2b]">
+          <div className="grid grid-cols-5 gap-2">
+            {metodos.map((m: any) => (
+              <button key={m.id} onClick={() => !busy && cobrar(m)} disabled={busy || falta <= 0}
+                className="h-[86px] bg-[#0f8b8d] text-white text-[15px] font-bold rounded-sm
+                  px-2 leading-tight active:scale-95 disabled:opacity-40">
+                {m.payment_method_name}
+              </button>
+            ))}
+            {metodos.length === 0 && (
+              <div className="col-span-5 text-white/50 text-center py-12">
+                Nenhum meio de pagamento autorizado neste ponto de venda.
+              </div>
+            )}
+          </div>
+
+          {/* cartão de membro da entidade escolhida */}
+          {cartao && (
+            <div className="mt-3 border border-[#4a4a4a] p-2">
+              <div className="text-white/70 text-[13px] mb-2">
+                {entidade.name} · crédito <b className="text-white">{money(cartao.credit)}</b> ·
+                dívida <b className="text-white">{money(cartao.debt)}</b> ·
+                pontos <b className="text-white">{cartao.points}</b> ({money(cartao.points_value)} Kz)
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {cartao.card.has_credit && (
+                  <button onClick={() => setModoCartao(modoCartao === 'CREDIT' ? '' : 'CREDIT')}
+                    className={`h-[50px] rounded text-[15px] font-bold ${modoCartao === 'CREDIT'
+                      ? 'bg-[#1f7a34] text-white' : 'bg-[#3a3a3a] text-white/80'}`}>Usar crédito</button>
+                )}
+                {cartao.card.has_debit && (
+                  <button onClick={() => setModoCartao(modoCartao === 'DEBIT' ? '' : 'DEBIT')}
+                    className={`h-[50px] rounded text-[15px] font-bold ${modoCartao === 'DEBIT'
+                      ? 'bg-[#8a6100] text-white' : 'bg-[#3a3a3a] text-white/80'}`}>Fica a dever</button>
+                )}
+                {cartao.card.has_points && (
+                  <button onClick={() => setModoCartao(modoCartao === 'POINTS' ? '' : 'POINTS')}
+                    className={`h-[50px] rounded text-[15px] font-bold ${modoCartao === 'POINTS'
+                      ? 'bg-[#1a4f8a] text-white' : 'bg-[#3a3a3a] text-white/80'}`}>Pagar com pontos</button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* pago / a pagar */}
+        <div className="h-[54px] bg-[#3a3a3a] flex items-center px-4 text-white text-[20px] font-semibold">
+          <span>Pago: {money(pago)}</span>
+          <span className="ml-auto">A pagar: {money(falta)}</span>
+        </div>
+
+        {/* ações */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-black">
+          <button onClick={() => setEscolherEntidade(true)}
+            className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Entidade (quem leva a fatura)">
+            👤+ <span className="text-[14px] align-middle ml-1">
+              {entidade ? entidade.name.slice(0, 12) : 'Venda Direta'}
+            </span>
+          </button>
+          <button onClick={() => setTeclado(!teclado)}
+            className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Escrever o valor entregue">✎</button>
+          <button onClick={() => { setValor(''); setModoCartao(''); }}
+            className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Limpar">⌫</button>
+        </div>
+        <div className="grid grid-cols-3 gap-1 p-1 pt-0 bg-black">
+          <button onClick={onPaid} disabled={falta > 0}
+            className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px] disabled:opacity-30"
+            title="Fechar a conta">✔</button>
+          <button onClick={async () => {
+            try {
+              const r = await apiClient.post(`pos/tickets/${ticket.id}/issue_document/`, {
+                doc_type: falta > 0 ? 'FT' : 'FR',
+                ...(entidade ? { customer: entidade.id } : {}),
+              });
+              alert(`Documento emitido: ${r.data.invoice_no}`);
+            } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao faturar.'); }
+          }}
+            className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[22px]" title="Emitir documento e fechar">
+            🗎 ✔
+          </button>
+          <button onClick={onClose}
+            className="h-[56px] bg-[#1f1f1f] text-[#e02020] text-[26px]">✖</button>
+        </div>
+      </div>
+
+      {escolherEntidade && (
+        <EntityPicker onPick={(e) => { setEntidade(e); setEscolherEntidade(false); }}
+          onCancel={() => setEscolherEntidade(false)} />
+      )}
+    </Window>
+  );
+}

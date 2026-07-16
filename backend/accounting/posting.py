@@ -36,9 +36,19 @@ def _mapping():
 
 
 def _acc(key, mp=None):
+    """(Conta) "É de movimento" — só contas de movimento recebem lançamentos.
+
+    Lançar na agregadora (a "31" em vez da "31.1.2") faz o balancete somar o mesmo
+    valor duas vezes. Se a conta mapeada for agregadora, o lançamento é recusado já
+    aqui — não à meia-noite, no fecho, quando ninguém sabe porquê.
+    """
     mp = mp or _mapping()
     code = mp.get(key)
-    return Account.objects.filter(code=code).first() if code else None
+    conta = Account.objects.filter(code=code).first() if code else None
+    if conta is not None and hasattr(conta, 'is_movement') and not conta.is_movement:
+        raise ValueError(f'A conta {conta.code} é agregadora — o mapeamento tem de '
+                         f'apontar para uma conta de movimento.')
+    return conta
 
 
 def _journal(jtype):

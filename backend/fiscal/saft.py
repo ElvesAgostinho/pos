@@ -67,12 +67,69 @@ def _customers(docs):
     return ''.join(out)
 
 
+def _products(docs):
+    """PRODUTOS (2.4) — a AGT exige a lista dos artigos vendidos no ficheiro.
+
+    Sem esta secção o SAF-T é recusado: a AGT quer poder ligar cada linha de fatura a
+    um produto do catálogo. O código do produto é o do artigo; quando a linha não tem
+    artigo (ex.: serviço avulso), usa-se a própria descrição como código.
+    """
+    seen, out = {}, []
+    for d in docs:
+        for ln in d.lines.all():
+            code = (ln.description or 'ART')[:60]
+            if code in seen:
+                continue
+            seen[code] = True
+            out.append(
+                "<Product>"
+                + _e('ProductType', 'P')          # P=produto, S=serviço
+                + _e('ProductCode', code)
+                + _e('ProductDescription', ln.description or code)
+                + _e('ProductNumberCode', code)
+                + "</Product>"
+            )
+    return ''.join(out)
+
+
+def _tax_table(docs):
+    """TAXTABLE (2.5) — as taxas de IVA usadas no ficheiro.
+
+    Cada percentagem que aparece nas linhas tem de estar declarada aqui, com o motivo
+    de isenção quando a taxa é zero. É o que permite à AGT conferir o imposto liquidado.
+    """
+    from .models import TaxRate
+    taxas, out = {}, []
+    for d in docs:
+        for ln in d.lines.all():
+            taxas.setdefault(Decimal(str(ln.tax_percentage or 0)), ln.exemption_reason)
+    if not taxas:
+        return ''
+    for pct, isencao in sorted(taxas.items()):
+        tr = TaxRate.objects.filter(percentage=pct).first()
+        code = tr.code if tr else (f'IVA{int(pct)}' if pct else 'ISE')
+        out.append(
+            "<TaxTableEntry>"
+            + _e('TaxType', 'IVA')
+            + _e('TaxCountryRegion', 'AO')
+            + _e('TaxCode', code)
+            + _e('Description', tr.name if tr else (f'IVA {pct}%' if pct else 'Isento'))
+            + (_e('TaxPercentage', pct) if pct else _e('TaxPercentage', '0.00'))
+            + "</TaxTableEntry>"
+        )
+    # As entradas vivem DENTRO de <TaxTable> — sem o invólucro, a AGT rejeita o ficheiro.
+    return "<TaxTable>" + ''.join(out) + "</TaxTable>"
+
+
 def _lines_xml(doc):
     parts = []
     for i, ln in enumerate(doc.lines.all(), 1):
         parts.append(
             "<Line>"
             + _e('LineNumber', i)
+            # Sem ProductCode, a AGT não consegue ligar a linha ao produto do MasterFile.
+            + _e('ProductCode', (ln.description or 'ART')[:60])
+            + _e('ProductDescription', ln.description or 'ART')
             + _e('Description', ln.description)
             + _e('Quantity', ln.quantity)
             + _e('UnitOfMeasure', 'UN')
@@ -144,16 +201,24 @@ def document_xml(doc):
     return xml
 
 
-def generate_saft(start, end):
+def generate_saft(start, end, module=None):
+    """SAF-T do período. `module` restringe à origem (ex.: 'pos').
+
+    Um restaurante que só comunica o POS não pode mandar no mesmo ficheiro as faturas
+    do alojamento — e um hotel que vende só o POS nem sequer as tem.
+    """
     cfg = FiscalConfig.get()
-    docs = list(FiscalDocument.objects.filter(doc_date__gte=start, doc_date__lte=end)
-                .select_related('doc_type', 'series').prefetch_related('lines')
+    qs = FiscalDocument.objects.filter(doc_date__gte=start, doc_date__lte=end)
+    if module:
+        qs = qs.filter(source_module=module)
+    docs = list(qs.select_related('doc_type', 'series').prefetch_related('lines')
                 .order_by('number'))
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         f'<AuditFile xmlns="{NS}">'
         + _header(cfg, start, end)
-        + "<MasterFiles>" + _customers(docs) + "</MasterFiles>"
+        + "<MasterFiles>" + _customers(docs) + _products(docs) + _tax_table(docs)
+        + "</MasterFiles>"
         + "<SourceDocuments>"
         + _sales_invoices(docs)
         + _working_documents(docs)

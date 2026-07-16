@@ -79,32 +79,42 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   // Utilitários). Antes eram outros (Favoritos/Recentes/Relatórios/Ferramentas): o
   // sistema tinha dois vocabulários para as mesmas coisas, e quem aprendia um não
   // reconhecia o outro.
+  // Abre uma SECÇÃO do POS. Estes menus são os do POS: Compras, Inventário, Stock,
+  // Contas a Pagar, Relatórios — tudo isso vive DENTRO do POS. Mandá-los para o
+  // Procurement ou para o Warehouse era abrir outro módulo com outro vocabulário
+  // para a mesma coisa (e um cliente que só comprou o POS nem sequer os tem).
+  const abrirPos = (seccao: string) => {
+    localStorage.setItem('posc_section', seccao);
+    open('posc_config', 'Configuração POS');
+  };
+
   const MENUS: Record<string, { label: string; screen?: string; act?: () => void }[]> = {
     'F&B': [
-      { label: 'Compras', screen: 'proc_po' },
-      { label: 'Documentos Internos', screen: 'doc_center' },
-      { label: 'Inventário', screen: 'wh_inventory' },
-      { label: 'Existências Stock', screen: 'wh_stock' },
-      { label: 'Contas a pagar', screen: 'fin_ledger' },
-      { label: 'Artigos', screen: 'posc_config' },
+      { label: 'Compras', act: () => abrirPos('x_purchases') },
+      { label: 'Documentos Internos', act: () => abrirPos('x_internal') },
+      { label: 'Inventário', act: () => abrirPos('x_inventory') },
+      { label: 'Existências Stock', act: () => abrirPos('x_stock') },
+      { label: 'Contas a pagar', act: () => abrirPos('x_payables') },
+      { label: 'Artigos', act: () => abrirPos('articles') },
     ],
     Marketing: [
-      { label: 'Promoções', screen: 'com_promotions' },
-      { label: 'Campanhas', screen: 'com_campaigns' },
-      { label: 'Fidelização', screen: 'com_loyalty' },
+      { label: 'Pesquisa de Entidades', act: () => abrirPos('x_entities') },
+      { label: 'Pedidos de eventos', act: () => abrirPos('x_events') },
+      { label: 'Modelos de E-mail', act: () => abrirPos('m_templates') },
+      { label: 'Códigos de Seleção', act: () => abrirPos('m_selcodes') },
     ],
     Reporting: [
-      { label: 'Relatórios', screen: ws.key === 'pms' ? 'rep_hotel' : ws.key === 'restauracao' ? 'rep_fnb' : 'rep_pos' },
-      { label: 'Informação Online', screen: 'ops_dashboard' },
-      { label: 'Pesquisar Documentos', screen: 'doc_center' },
+      { label: 'Relatórios', act: () => abrirPos('x_reports') },
+      { label: 'Informação Online', act: () => abrirPos('x_online') },
+      { label: 'Pesquisar Documentos', act: () => abrirPos('x_docsearch') },
     ],
     Utilitários: [
       { label: 'POS Front Office', act: () => window.open('/pos/terminal', '_blank', 'noopener') },
-      { label: 'Fecho do Dia', screen: 'pms_nightaudit' },
-      { label: 'Contas Correntes', screen: 'fin_cash' },
-      { label: 'SAFT-AO', screen: 'fis_saft' },
-      { label: 'Configuração POS', screen: 'posc_config' },
-      { label: 'Diagnóstico', screen: 'sys_diagnostics' },
+      { label: 'Fecho do Dia', act: () => abrirPos('x_dayclose') },
+      { label: 'Contas Correntes', act: () => abrirPos('x_accounts') },
+      { label: 'SAFT-AO', act: () => abrirPos('x_saft') },
+      { label: 'Configuração POS', act: () => abrirPos('articles') },
+      { label: 'Diagnóstico', act: () => abrirPos('x_diag') },
       { label: 'Terminar sessão', act: logout },
     ],
   };

@@ -7,7 +7,7 @@ import App from './App.tsx'
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import CustomerLogin from './pages/CustomerLogin.tsx'
-import PosStation from './pages/PosStation.tsx'
+import PosStation from './pages/pos/PosTerminal';
 import BookingSite from './pages/BookingSite.tsx'
 import BookingManage from './pages/BookingManage.tsx'
 
@@ -120,8 +120,10 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/book/:slug" element={<BookingSite />} />
             <Route path="/reserva/:slug" element={<BookingManage />} />
 
-            {/* Default Route (No Selector) */}
-            <Route path="/" element={<Navigate to="/pos/login" replace />} />
+            {/* A raiz abre o BACKOFFICE. Mandava para o login do terminal tátil (/pos/login),
+                que é o ecrã do empregado de mesa — não o de quem vai gerir o sistema. Quem
+                quer o terminal abre-o de propósito, em Utilitários › POS Front Office. */}
+            <Route path="/" element={<Navigate to="/backoffice/login" replace />} />
             {/* NOTA: a consola de licenciamento (PCC) vive no projeto separado frontend_pcc/
                 (produto do FORNECEDOR). Nunca é servida no ERP do cliente. */}
           </Routes>

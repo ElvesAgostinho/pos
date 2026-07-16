@@ -44,6 +44,17 @@ import FnbUtilities from './FnbUtilities';
 import StockDocEditor from './StockDocEditor';
 import SectorWarehouseMap from './SectorWarehouseMap';
 import WarehouseSection from './WarehouseSection';
+import { PosDayClose, PosSaft, PosDiagnostics } from './PosOps';
+import PosCurrentAccounts from './PosCurrentAccounts';
+import FnbDocs from './FnbDocs';
+import FnbStock from './FnbStock';
+import FnbInventory from './FnbInventory';
+import FnbPayables from './FnbPayables';
+import PosReports from './PosReports';
+import PosOnline from './PosOnline';
+import PosDocSearch from './PosDocSearch';
+import PosAlerts from './PosAlerts';
+import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
 import { irParaModulo } from '../../App';
 
@@ -53,35 +64,68 @@ import { irParaModulo } from '../../App';
  *  · `view`    — abre outro centro do ERP (o shell trata da navegação);
  *  · `url`     — abre o terminal tátil, que corre fora da shell.
  */
+/** Os ecrãs que não são configuração têm o seu próprio título de janela. */
+const TITULOS: Record<string, [string, string]> = {
+  x_dayclose: ['🌙', 'Fecho do Dia — POS'],
+  x_saft: ['🧾', 'SAFT-AO — POS'],
+  x_diag: ['⚙', 'Diagnóstico do POS'],
+  x_accounts: ['💰', 'Contas Correntes — POS'],
+  x_entities: ['🔎', 'Pesquisa de Entidades'],
+  x_events: ['🎉', 'Pedidos de Eventos'],
+  x_purchases: ['🛒', 'Compras'],
+  x_internal: ['📄', 'Documentos Internos'],
+  x_inventory: ['📋', 'Inventário'],
+  x_stock: ['📦', 'Existências Stock'],
+  x_payables: ['💸', 'Contas a pagar'],
+  x_reports: ['🖨', 'Relatórios'],
+  x_online: ['📈', 'Informação Online'],
+  x_docsearch: ['🔎', 'Pesquisar Documentos'],
+  x_alerts: ['⚠', 'Centro de Alertas'],
+};
+
+/** Ecrãs que ocupam a janela toda — sem a árvore de secções à esquerda. */
+const SEM_ARVORE = ['x_reports', 'x_online', 'x_alerts'];
+
 const MENUS: any[] = [
   {
     title: 'F&B', items: [
-      { icon: '🛒', label: 'Compras', view: 'proc_po' },
-      { icon: '📄', label: 'Documentos Internos', view: 'doc_center' },
-      { icon: '📋', label: 'Inventário', view: 'wh_inventory' },
-      { icon: '📦', label: 'Existências Stock', view: 'wh_stock' },
-      { icon: '💸', label: 'Contas a pagar', view: 'fin_ledger' },
+      { icon: '🛒', label: 'Compras', section: 'x_purchases' },
+      { icon: '📄', label: 'Documentos Internos', section: 'x_internal' },
+      { icon: '📋', label: 'Inventário', section: 'x_inventory' },
+      { icon: '📦', label: 'Existências Stock', section: 'x_stock' },
+      { icon: '💸', label: 'Contas a pagar', section: 'x_payables' },
       { sep: true },
       { icon: '📑', label: 'Artigos', section: 'articles' },
     ],
   },
   {
+    title: 'Marketing', items: [
+      { icon: '🔎', label: 'Pesquisa de Entidades', section: 'x_entities' },
+      { icon: '🎉', label: 'Pedidos de eventos', section: 'x_events' },
+      { sep: true },
+      { icon: '✉', label: 'Modelos de E-mail', section: 'm_templates' },
+      { icon: '🗂', label: 'Códigos de Seleção', section: 'm_selcodes' },
+    ],
+  },
+  {
     title: 'Reporting', items: [
-      { icon: '🖨', label: 'Relatórios', view: 'rep_pos' },
-      { icon: '📈', label: 'Informação Online', view: 'ops_dashboard' },
-      { icon: '🔎', label: 'Pesquisar Documentos', view: 'doc_center' },
+      { icon: '⚠', label: 'Centro de Alertas', section: 'x_alerts' },
+      { sep: true },
+      { icon: '🖨', label: 'Relatórios', section: 'x_reports' },
+      { icon: '📈', label: 'Informação Online', section: 'x_online' },
+      { icon: '🔎', label: 'Pesquisar Documentos', section: 'x_docsearch' },
     ],
   },
   {
     title: 'Utilitários', items: [
       { icon: '🖥', label: 'POS Front Office', url: '/pos/terminal' },
       { sep: true },
-      { icon: '🌙', label: 'Fecho do Dia', view: 'pms_nightaudit' },
-      { icon: '💰', label: 'Contas Correntes', view: 'fin_cash' },
-      { icon: '🧾', label: 'SAFT-AO', view: 'fis_saft' },
+      { icon: '🌙', label: 'Fecho do Dia', section: 'x_dayclose' },
+      { icon: '💰', label: 'Contas Correntes', section: 'x_accounts' },
+      { icon: '🧾', label: 'SAFT-AO', section: 'x_saft' },
       { icon: '🔧', label: 'Configuração POS', section: 'articles' },
       { sep: true },
-      { icon: '⚙', label: 'Diagnóstico', view: 'sys_diagnostics' },
+      { icon: '⚙', label: 'Diagnóstico', section: 'x_diag' },
       { icon: '♥', label: 'Adicionar aos favoritos…', fav: true },
     ],
   },
@@ -103,7 +147,13 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   onBack?: () => void; onDesktop?: () => void; onOpen?: (id: string) => void;
 }) {
   const qc = useQueryClient();
-  const [section, setSection] = useState('articles');
+  // A secção com que se abre: quem manda abrir o POS (o Desktop, um atalho) deixa-a
+  // aqui. Sem isto, clicar em "Compras" no Desktop abria sempre a lista de Artigos.
+  const [section, setSection] = useState(() => {
+    const pedida = localStorage.getItem('posc_section');
+    if (pedida) localStorage.removeItem('posc_section');
+    return pedida || 'articles';
+  });
   const [menu, setMenu] = useState<string | null>(null);
   // FAVORITOS — as secções que este utilizador usa todos os dias (ficam no browser dele).
   const [favs, setFavs] = useState<any[]>(() => JSON.parse(localStorage.getItem('posc_favs') || '[]'));
@@ -275,11 +325,16 @@ export default function PosConfigView({ onDesktop, onOpen }: {
       {/* Título da janela */}
       <div className="flex items-center gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
         style={{ background: '#3c3c3c' }}>
-        <span className="text-[#c9a400]">🔧</span> Configuração POS
+        <span className="text-[#c9a400]">{TITULOS[section] ? TITULOS[section][0] : '🔧'}</span>{' '}
+        {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* ---------- SECÇÕES ---------- */}
+        {/* ---------- SECÇÕES ----------
+            Os ecrãs de ecrã-inteiro (Relatórios, Informação Online) escondem a árvore:
+            um relatório com uma lista de configurações ao lado não é um relatório —
+            é um formulário espremido. */}
+        {!SEM_ARVORE.includes(section) && (
         <div className="w-[236px] flex-shrink-0 border-r border-[#c0c0c0] bg-white overflow-auto">
           {favs.length > 0 && (
             <div>
@@ -320,10 +375,41 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             </div>
           ))}
         </div>
+        )}
 
         {/* ---------- CONTEÚDO ---------- */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {section === 'groups' ? (
+          {section === 'x_alerts' ? (
+            <PosAlerts onOpen={(s) => setSection(s)} />
+          ) : section === 'x_reports' ? (
+            <PosReports />
+          ) : section === 'x_online' ? (
+            <PosOnline />
+          ) : section === 'x_docsearch' ? (
+            <PosDocSearch />
+          ) : section === 'x_purchases' ? (
+            <FnbDocs mode="PURCHASE" />
+          ) : section === 'x_internal' ? (
+            <FnbDocs mode="INTERNAL" />
+          ) : section === 'x_inventory' ? (
+            <FnbInventory />
+          ) : section === 'x_stock' ? (
+            <FnbStock />
+          ) : section === 'x_payables' ? (
+            <FnbPayables />
+          ) : section === 'x_dayclose' ? (
+            <PosDayClose />
+          ) : section === 'x_saft' ? (
+            <PosSaft />
+          ) : section === 'x_diag' ? (
+            <PosDiagnostics />
+          ) : section === 'x_accounts' ? (
+            <PosCurrentAccounts />
+          ) : section === 'x_entities' ? (
+            <EntitySearch />
+          ) : section === 'x_events' ? (
+            <EventRequests />
+          ) : section === 'groups' ? (
             <SimpleSection title="Grupo" queryKey="groups" endpoint="inventory/pos/groups/"
               columns={[{ key: 'code', label: 'Código', width: '30%' }, { key: 'name', label: 'Nome' }]}
               fields={[

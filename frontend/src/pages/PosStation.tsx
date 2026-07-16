@@ -7,6 +7,8 @@ import {
   LogOut, CreditCard, Banknote, Waves, Split, Users, ArrowRightLeft, CalendarClock, Plus, LogIn, UserPlus, History,
 } from 'lucide-react';
 import { tokenStore } from '../api/auth';
+import { comPerguntas } from './posPrompt';
+import PosKeypad from './PosKeypad';
 import { posMgmtApi } from '../api/posmgmt';
 import { apiClient } from '../api/client';
 import { useCombos } from '../hooks/useCommercial';
@@ -138,7 +140,25 @@ export default function PosStation() {
       inval(); goOrder(tk.id!);
     } catch (e: any) { alert(JSON.stringify(e?.response?.data)); }
   };
-  const addItem = async (c: any) => { try { await posMgmtApi.addTicketLine(ticketId!, { item: c.item, quantity: qty }); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
+  // Lançar um artigo. As CAIXAS do artigo mandam: preço manual, "pergunta sempre a
+  // quantidade", balança, texto livre, fração, indisponível. O servidor diz o que falta
+  // e o terminal pergunta — as regras não estão escritas duas vezes.
+  // Há teclado montado? Se sim, é ele que o terminal desenha.
+  const { data: teclado } = useQuery({
+    queryKey: ['pos-keypad-check'],
+    queryFn: async () => (await apiClient.get('pos/terminal/keyboard/')).data,
+  });
+  const usaTeclado = !!teclado?.keyboard && (teclado.pages || []).length > 0;
+
+  const addItem = async (c: any) => {
+    try {
+      await comPerguntas(`pos/tickets/${ticketId}/add_line/`, { item: c.item, quantity: qty },
+        async (label, detalhe) => window.prompt(`${detalhe}
+
+${label}:`));
+      inval();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); }
+  };
   const addComboFn = async (cb: any) => { try { await posMgmtApi.addCombo(ticketId!, cb.id); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro no combo'); } };
   // Remover artigo: se já foi enviado à produção, NÃO se apaga — anula-se e a área é avisada.
   const delLine = async (id: number) => {
@@ -356,7 +376,16 @@ export default function PosStation() {
         <div className="bg-[#111a26] border border-[#2a4a66] px-3 py-1.5 rounded text-white text-sm font-bold flex items-center gap-1.5"><MapPin size={14} className="text-[#c9a400]" />{destLabel}</div>
       </div>}>
       <div className="flex flex-1 overflow-hidden">
-        {/* Catálogo */}
+        {/* TECLADO configurado — é o que o empregado toca. Se houver um teclado montado em
+            Configuração POS › Teclados, é ELE que manda: páginas, pastas, cores, colunas,
+            códigos e preços. Sem teclado configurado, cai no catálogo por categorias (o
+            terminal nunca fica sem forma de vender). */}
+        {usaTeclado ? (
+          <div className="flex-1 flex flex-col overflow-hidden"
+            style={{ background: 'radial-gradient(120% 120% at 0% 0%, #101a28 0%, #0b111b 60%)' }}>
+            <PosKeypad onPick={(k) => addItem({ item: k.item })} />
+          </div>
+        ) : (
         <div className="flex-1 p-4 overflow-auto" style={{ background: 'radial-gradient(120% 120% at 0% 0%, #101a28 0%, #0b111b 60%)' }}>
           {cat && <div className="flex items-center gap-2 mb-3"><span className="w-1 h-6 rounded" style={{ background: catColor(cat) }} /><span className="text-white font-bold text-lg tracking-tight">{cat}</span><span className="text-white/40 text-sm">· toque para adicionar {qty > 1 ? `(×${qty})` : ''}</span></div>}
           <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
@@ -386,6 +415,7 @@ export default function PosStation() {
             ))}
           </div>
         </div>
+        )}
         {/* Comanda */}
         <div className="w-[400px] bg-[#0c141e] flex flex-col border-l border-[#1c2c3c]">
           <div className="grid grid-cols-[46px_1fr_84px] bg-[#17334d] text-white text-sm font-bold px-2 py-2"><span>Qtd</span><span>Descrição</span><span className="text-right">Total</span></div>
@@ -963,7 +993,15 @@ function PayModal({ ticket, payments, onClose, onPaid, onRoomCharged, inval }: a
   const pay = async () => {
     if (!method) return; setBusy(true);
     try {
-      await posMgmtApi.payTicket(ticket.id, method, amount || bal);
+      // As CAIXAS do modo de pagamento mandam: nº do documento, referência bancária,
+      // código do TPA, entidade da conta corrente… O servidor pede, o terminal pergunta.
+      const res = await comPerguntas(`pos/tickets/${ticket.id}/pay/`,
+        { payment_method: method, amount: amount || bal },
+        async (label, detalhe) => window.prompt(`${detalhe}
+
+${label}:`));
+      if (res?.pickup_alert) alert(res.pickup_alert);
+      if (res?.print_counter_value) alert(`Contravalor: ${res.print_counter_value}`);
       const tk = await posMgmtApi.getTicket(ticket.id); inval();
       if (Number(tk.balance_due ?? 0) <= 0) onPaid(); else { setAmount(String(tk.balance_due)); alert('Pagamento parcial registado. Saldo: ' + money(tk.balance_due)); }
     } catch (e: any) { alert(e?.response?.data?.detail || 'Erro no pagamento'); }

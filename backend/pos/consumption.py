@@ -9,11 +9,34 @@ from decimal import Decimal
 
 
 def _active_recipe(item):
-    from production.models import Recipe
+    # O POS vende-se SOZINHO. Um cliente que só compra o POS não tem o motor de
+    # Produção — e, sem ficha técnica, um hambúrguer sai do stock como hambúrguer
+    # (revenda), não como pão+carne. O que não pode é a venda rebentar por causa
+    # de um módulo que ele não comprou.
+    try:
+        from production.models import Recipe
+    except (ImportError, ModuleNotFoundError):
+        return None
     # A ficha técnica em vigor: prioriza a Aprovada, depois a versão mais recente.
     return (Recipe.objects.filter(final_item=item, is_active=True)
             .prefetch_related('lines__component_item')
             .order_by('-status', '-version', '-id').first())
+
+
+def _stock_control_on(outlet):
+    """(Interface Stock) "Controlo de stock" — desmarcada, a venda NÃO consome stock.
+
+    Há casas que só usam o POS para faturar e gerem o stock noutro sistema. Consumir
+    aqui também era abater duas vezes.
+    """
+    try:
+        from .models import StockErpLink
+        link = StockErpLink.objects.first()
+        if link is not None and hasattr(link, 'stock_control'):
+            return bool(link.stock_control)
+    except Exception:
+        pass
+    return True
 
 
 def _warehouse_for(item, outlet):
@@ -32,6 +55,10 @@ def _warehouse_for(item, outlet):
 
 
 def consume_ticket_stock(ticket, by=None):
+    # (Interface Stock) 'Controlo de stock' desligado: a venda fatura, o stock
+    # vive noutro sistema. Consumir aqui também era abater duas vezes.
+    if not _stock_control_on(getattr(ticket, 'outlet', None)):
+        return 0
     if ticket.stock_consumed:
         return
     from inventory import stock as stock_engine

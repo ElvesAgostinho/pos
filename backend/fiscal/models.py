@@ -82,6 +82,17 @@ class CompanyBankAccount(models.Model):
     def __str__(self):
         return f"{self.bank_name} · {self.iban or self.account_number or ''}"
 
+    def save(self, *args, **kwargs):
+        # (Conta bancária) "SEPA" — uma conta SEPA sem IBAN válido não recebe
+        # transferências europeias. Valida-se AO GRAVAR, não quando a primeira
+        # transferência falha e ninguém percebe porquê.
+        if getattr(self, 'sepa', False):
+            iban = (self.iban or '').replace(' ', '').upper()
+            if len(iban) < 15 or not iban[:2].isalpha() or not iban[2:4].isdigit():
+                from django.core.exceptions import ValidationError
+                raise ValidationError({'iban': 'Conta SEPA exige um IBAN válido (ex.: AO06...).'})
+        super().save(*args, **kwargs)
+
 
 class TaxRate(models.Model):
     """Tax/IVA Engine — taxas de imposto parametrizáveis (não hardcoded)."""
@@ -248,9 +259,16 @@ class FiscalDocument(models.Model):
     invoice_no = models.CharField(max_length=60, unique=True)   # ex: "FT A/1"
     doc_date = models.DateField()
     system_entry_date = models.DateTimeField()                  # data/hora de gravação (imutável)
+    # O NOME fica gravado (o documento e imutavel: o nome que saiu na fatura e este,
+    # mesmo que a ficha do cliente mude amanha). A LIGACAO ao cliente serve a conta
+    # corrente — sem ela, so se podia procurar por nome, e "Sonangol" nunca casava
+    # com "SONANGOL EP". Era por isso que a conta corrente aparecia vazia.
+    customer = models.ForeignKey('mdm.Customer', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='fiscal_documents')
     customer_name = models.CharField(max_length=200, blank=True, null=True)
     customer_tax_id = models.CharField(max_length=30, blank=True, null=True)
     customer_address = models.CharField(max_length=250, blank=True, null=True)
+
     # Contexto operacional (aparece na fatura: Mesa, Utilizador, Quarto).
     operator_name = models.CharField(max_length=120, blank=True, null=True)
     place_ref = models.CharField(max_length=80, blank=True, null=True)   # Mesa/destino
@@ -276,7 +294,10 @@ class FiscalDocument(models.Model):
     status = models.CharField(max_length=1, choices=STATUS, default='N')
     # Ciclo de vida (Documents Center): estados após emissão/assinatura.
     agt_status = models.CharField(max_length=10, default='PENDING')  # PENDING/SENT/ACCEPTED/REJECTED
+    # LIQUIDADO — uma Fatura-Recibo (FR) nasce PAGA; uma Fatura (FT) nasce POR RECEBER.
+    # É esta a diferença entre vender e receber — e é a conta corrente inteira.
     settled = models.BooleanField(default=False)                     # pago
+    settled_at = models.DateTimeField(blank=True, null=True)
     is_archived = models.BooleanField(default=False)                 # arquivo fiscal
     created_by = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

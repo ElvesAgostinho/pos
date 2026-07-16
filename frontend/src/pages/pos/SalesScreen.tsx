@@ -1,0 +1,231 @@
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '../../api/client';
+import { comPerguntas } from '../posPrompt';
+import EntityPicker from './EntityPicker';
+import PayPanel from './PayPanel';
+
+/**
+ * A VENDA — o teclado e a comanda, lado a lado.
+ *
+ * O TECLADO é o que foi configurado (páginas, pastas, cores, colunas, códigos, preços,
+ * nível de preço). Não é uma lista de artigos inventada aqui: é o mapa que o dono montou,
+ * e é o mapa que o empregado tem na cabeça.
+ *
+ * A COMANDA à direita é a conta a nascer. A QUANTIDADE (1,2,3,4…) aplica-se à próxima
+ * tecla que se tocar — é assim que se lançam "três cafés" com dois toques em vez de seis.
+ *
+ * As caixas do artigo mandam aqui: preço manual, "pergunta sempre a quantidade", balança,
+ * texto livre. O servidor diz o que falta; o terminal pergunta (ver posPrompt.ts). As
+ * regras vivem num sítio só.
+ */
+export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
+  ticketId: number; setor: any; cfg?: any; onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const [caminho, setCaminho] = useState<any[]>([]);
+  const [qtd, setQtd] = useState(1);
+  const [entidade, setEntidade] = useState<any | null>(null);
+  const [escolherEntidade, setEscolherEntidade] = useState(false);
+  const [pagar, setPagar] = useState(false);
+
+  // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
+  // muda os preços que as teclas mostram (staff/consumo interno vê o custo).
+  const operId = (() => {
+    try { return JSON.parse(localStorage.getItem('pos_operator') || '{}')?.id; } catch { return undefined; }
+  })();
+  const { data: teclado } = useQuery({
+    queryKey: ['pos-keypad', operId],
+    queryFn: async () => (await apiClient.get('pos/terminal/keyboard/',
+      { params: operId ? { operator: operId } : undefined })).data,
+  });
+  const { data: conta } = useQuery({
+    queryKey: ['pos-ticket', ticketId],
+    queryFn: async () => (await apiClient.get(`pos/tickets/${ticketId}/`)).data,
+    refetchInterval: 5000,
+  });
+
+  const inval = () => {
+    qc.invalidateQueries({ queryKey: ['pos-ticket', ticketId] });
+    qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
+  };
+
+  const kb = teclado?.keyboard;
+  const nivel: any[] = caminho.length
+    ? (caminho[caminho.length - 1].children || [])
+    : (teclado?.pages || []);
+
+  const lancar = async (k: any) => {
+    if (k.available === false) return;
+    try {
+      await comPerguntas(`pos/tickets/${ticketId}/add_line/`,
+        { item: k.item, quantity: qtd },
+        async (label, detalhe) => window.prompt(`${detalhe}\n\n${label}:`));
+      setQtd(1);
+      // (Parâmetro 8308) "Enviar para a cozinha automaticamente": cada artigo lançado
+      // segue LOGO para a produção — não fica à espera do botão. É o modo dos bares
+      // rápidos, onde o pedido não se acumula.
+      if (cfg?.auto_fire_kitchen) {
+        try { await apiClient.post(`pos/tickets/${ticketId}/fire_kitchen/`, {}); } catch { /* sem produção configurada */ }
+      }
+      inval();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || 'Não foi possível lançar o artigo.');
+    }
+  };
+
+  const tocar = (k: any) => {
+    if (k.kind === 'ITEM' && k.item) return lancar(k);
+    setCaminho([...caminho, k]);
+  };
+
+  const apagarLinha = async (l: any) => {
+    const emProducao = ['FIRED', 'PREPARING', 'READY'].includes(l.kds_status);
+    let motivo: string | null = null;
+    if (emProducao) {
+      motivo = window.prompt(
+        `"${l.description}" já foi para a produção.\n\nAnular obriga a um motivo (a cozinha é avisada e fica registado).\n\nMotivo:`);
+      if (!motivo) return;
+    }
+    try {
+      await apiClient.delete(`pos/ticket-lines/${l.id}/`,
+        { params: motivo ? { reason: motivo } : undefined });
+      inval();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao anular.'); }
+  };
+
+  const enviarCozinha = async () => {
+    try {
+      const r = await apiClient.post(`pos/tickets/${ticketId}/fire_kitchen/`, {});
+      if (r.data?.print_warnings?.length) alert(r.data.print_warnings.join('\n'));
+      inval();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao enviar para a cozinha.'); }
+  };
+
+  const linhas: any[] = conta?.lines || [];
+  const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
+
+  return (
+    <div className="absolute inset-0 flex">
+      {/* ───────── teclado ───────── */}
+      <div className="flex-1 flex flex-col overflow-hidden p-2">
+        <div className="grid gap-2 mb-2" style={{ gridTemplateColumns: 'repeat(4, minmax(0,1fr))' }}>
+          <button onClick={() => (caminho.length ? setCaminho(caminho.slice(0, -1)) : onClose())}
+            className="h-[76px] bg-[#3a3a3a] text-[#f0c000] text-[34px] font-bold rounded active:scale-95">
+            ⬅
+          </button>
+          {(teclado?.pages || []).map((p: any) => (
+            <button key={p.id} onClick={() => setCaminho([p])}
+              style={{ background: p.color, color: p.text_color }}
+              className={`h-[76px] rounded font-bold text-[17px] active:scale-95
+                ${caminho[0]?.id === p.id ? 'ring-4 ring-white/70' : ''}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-auto">
+          <div className="grid gap-2"
+            style={{ gridTemplateColumns: `repeat(${kb?.cols || 4}, minmax(0,1fr))` }}>
+            {caminho.length > 0 && nivel.map((k: any) => (
+              <button key={k.id} onClick={() => tocar(k)} disabled={k.available === false}
+                style={{
+                  background: k.available === false ? '#4a4a4a' : k.color,
+                  color: k.available === false ? '#8a8a8a' : k.text_color,
+                  gridColumn: k.span > 1 ? `span ${k.span}` : undefined,
+                }}
+                className="h-[92px] rounded font-bold text-[16px] flex flex-col items-center justify-center
+                  text-center px-2 leading-tight active:scale-95 disabled:cursor-not-allowed">
+                <span>{k.label}</span>
+                {/* Só saem se as caixas "Visualizar Códigos/Preços" estiverem ligadas. */}
+                {k.code && <span className="text-[11px] font-normal opacity-80">{k.code}</span>}
+                {k.price && <span className="text-[14px] opacity-95">{money(k.price)}</span>}
+                {k.available === false && <span className="text-[10px]">indisponível</span>}
+              </button>
+            ))}
+            {caminho.length === 0 && (
+              <div className="col-span-full text-white/40 text-center py-16 text-[15px]">
+                Escolha uma página em cima.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ───────── comanda ───────── */}
+      <div className="w-[520px] bg-[#3a3a3a] flex flex-col border-l-4 border-black">
+        {/* quem paga */}
+        <button onClick={() => setEscolherEntidade(true)}
+          className="h-[54px] bg-[#2b2b2b] text-white flex items-center justify-between px-4 border-b border-black">
+          <span className="text-[15px] text-white/60">Entidade</span>
+          <span className="font-bold">{entidade ? entidade.name : 'Venda Direta'} 👤+</span>
+        </button>
+
+        <div className="grid grid-cols-[64px_1fr_120px] bg-[#2b2b2b] text-white text-[16px] font-bold px-2 py-2">
+          <span>Qtd</span><span>Descrição</span><span className="text-right">Total</span>
+        </div>
+
+        <div className="flex-1 overflow-auto bg-[#8a8a8a]/20">
+          {linhas.map((l) => (
+            <div key={l.id} onDoubleClick={() => apagarLinha(l)}
+              className="grid grid-cols-[64px_1fr_120px] px-2 py-2 text-white border-b border-black/20 text-[15px]">
+              <span>{Number(l.quantity)}</span>
+              <span className="truncate">
+                {l.description}
+                {['FIRED', 'PREPARING', 'READY'].includes(l.kds_status) && (
+                  <span className="ml-1 text-[11px] text-[#f0c000]">• na cozinha</span>
+                )}
+              </span>
+              <span className="text-right">{money(l.line_total)}</span>
+            </div>
+          ))}
+          {linhas.length === 0 && (
+            <div className="text-white/50 text-center py-10 text-[14px]">
+              A conta está vazia. Toque numa tecla para lançar.
+            </div>
+          )}
+        </div>
+
+        {/* quantidade para a próxima tecla */}
+        <div className="grid grid-cols-4 gap-px bg-black">
+          {[1, 2, 3, 4].map((n) => (
+            <button key={n} onClick={() => setQtd(n)}
+              className={`h-[62px] text-[22px] font-bold ${qtd === n
+                ? 'bg-[#1a1a1a] text-white ring-2 ring-[#f0c000]' : 'bg-[#2b2b2b] text-white/80'}`}>
+              {n}
+            </button>
+          ))}
+        </div>
+
+        <div className="h-[74px] bg-[#8a8a8a] flex items-center justify-end px-4">
+          <span className="text-[40px] font-bold text-white">{money(conta?.grand_total)}</span>
+        </div>
+
+        <div className="grid grid-cols-4 gap-px bg-black">
+          <button onClick={() => linhas.length && apagarLinha(linhas[linhas.length - 1])}
+            className="h-[76px] bg-[#2b2b2b] text-[#e02020] text-[30px]">🗑</button>
+          <button onClick={enviarCozinha}
+            title="Enviar para a cozinha"
+            className="h-[76px] bg-[#2b2b2b] text-white text-[30px]">🖨</button>
+          <button onClick={() => setPagar(true)} disabled={!linhas.length}
+            className="h-[76px] bg-[#2b2b2b] text-[#f0c000] text-[30px] disabled:opacity-30">💰</button>
+          <button onClick={onClose}
+            className="h-[76px] bg-[#2b2b2b] text-[#2ecc40] text-[34px]">✔</button>
+        </div>
+      </div>
+
+      {escolherEntidade && (
+        <EntityPicker
+          onPick={(e) => { setEntidade(e); setEscolherEntidade(false); }}
+          onCancel={() => setEscolherEntidade(false)} />
+      )}
+
+      {pagar && conta && (
+        <PayPanel ticket={conta} entidade={entidade}
+          exigirEntidade={!!cfg?.ask_entity_before_pay}
+          onClose={() => setPagar(false)}
+          onPaid={() => { setPagar(false); onClose(); }} />
+      )}
+    </div>
+  );
+}

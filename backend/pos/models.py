@@ -293,6 +293,14 @@ class POSTicket(models.Model):
     cash_session = models.ForeignKey(CashSession, on_delete=models.SET_NULL, blank=True, null=True, related_name='tickets')
     operator_name = models.CharField(max_length=100)
     guests = models.PositiveIntegerField(default=1)
+    # TIPO DE CLIENTE da mesa — perguntado ao abrir a conta, e muda o que acontece a seguir:
+    #   PASSANTE — cliente de rua: paga no fim, em dinheiro ou cartão.
+    #   HOTEL    — hóspede: o consumo pode ir para o folio do quarto.
+    #   INTERNO  — consumo do pessoal: não é venda, é custo, e exige autorização.
+    # Sem esta pergunta, tudo entra como venda de rua e o consumo do staff desaparece
+    # dentro da receita — que é como um restaurante "vende" 30% mais do que fatura.
+    GUEST_TYPES = [('PASSANTE', 'Passante'), ('HOTEL', 'Hotel'), ('INTERNO', 'Consumo Interno')]
+    guest_type = models.CharField(max_length=10, choices=GUEST_TYPES, default='PASSANTE')
     # Associação de cliente/hóspede à mesa (aparece na comanda e na fatura).
     customer_name = models.CharField(max_length=200, blank=True, null=True)
     customer_tax_id = models.CharField(max_length=30, blank=True, null=True)   # NIF -> fatura com contribuinte
@@ -352,8 +360,15 @@ class POSTicket(models.Model):
         if self.discount_id:
             ids = list(self.discount.items.values_list('id', flat=True))
             scope_ids = set(ids) if ids else None
+        desconto_artigos = Decimal('0')   # artigos que SÃO um desconto ("Desconto em valor")
         for l in self.lines.filter(is_void=False).select_related('item'):   # anuladas não somam (mas ficam no registo)
             line_gross = l.line_total  # qty * unit_price = preço com IVA incluído
+            # (Artigo) "Desconto em valor" — o artigo não é um produto: É um desconto.
+            # O gerente lança "Desconto 500" como se lançasse um prato, e a conta baixa
+            # 500. Sem isto, o artigo somava 500 em vez de tirar, e o total ia para cima.
+            if l.item and getattr(l.item, 'is_value_discount', False):
+                desconto_artigos += abs(line_gross)
+                continue
             rate = l.tax_percentage or Decimal('0')
             line_net = q(line_gross / (Decimal('1') + rate / Decimal('100'))) if rate > 0 else line_gross
             net += line_net
@@ -374,6 +389,8 @@ class POSTicket(models.Model):
             self.discount_total = q(min(self.discount.value, discountable))
         elif self.discount_percent:
             self.discount_total = q(discountable * self.discount_percent / Decimal('100'))
+        # O desconto lançado como ARTIGO soma-se ao desconto da conta.
+        self.discount_total = q(self.discount_total + desconto_artigos)
         self.grand_total = q(gross) - self.discount_total
         if save:
             self.save(update_fields=['subtotal', 'tax_total', 'discount_total', 'grand_total'])
@@ -518,6 +535,9 @@ class POSAuditLog(models.Model):
         ('DOC_ISSUE', 'Documento emitido'),
         ('DOC_VOID', 'Documento anulado'),
         ('TICKET_VOID', 'Ticket anulado'),
+        # Uma conta que "muda de mesa" sem rasto é a forma mais simples de a fazer
+        # desaparecer. A transferência tem de ficar registada com quem a fez.
+        ('TABLE_CHANGE', 'Transferência de mesa'),
         ('CASH_OPEN', 'Abertura de caixa'),
         ('CASH_MOVE', 'Movimento de caixa'),
         ('CASH_CLOSE', 'Fecho de caixa'),
@@ -746,6 +766,11 @@ class PosTerminal(models.Model):
     terminal_type = models.CharField(max_length=10, choices=TYPES, default='NORMAL')
     outlet = models.ForeignKey('Outlet', on_delete=models.SET_NULL, blank=True, null=True,
                                related_name='terminals')
+    # O TECLADO deste posto: é o que o empregado vê e toca. O mesmo hotel tem um teclado
+    # para o restaurante e outro para o bar da piscina — e o nível de preço do teclado faz
+    # o mesmo artigo custar preços diferentes nos dois sítios.
+    keyboard = models.ForeignKey('PosKeyboard', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='terminals')
     # Parâmetros do posto (o quadro "Geral": nº do parâmetro → valor).
     params = models.JSONField(default=dict, blank=True)
     is_active = models.BooleanField(default=True)
@@ -1601,6 +1626,8 @@ class CustomerType(models.Model):
 
 
 class CustomFieldDef(models.Model):
+    # NOTA: "É lista" (is_list) valida em clean(): o valor por defeito tem de ser uma
+    # das opções — texto livre num campo de lista é como escrever à mão num dropdown.
     """CAMPO PERSONALIZADO — o campo que ESTE hotel precisa e mais nenhum.
 
     Um resort quer guardar o nº do voo; um hotel de cidade, a taxa turística pré-paga.
@@ -1728,6 +1755,12 @@ class MemberCard(models.Model):
     has_debit = models.BooleanField(default=False)
     has_points = models.BooleanField(default=False)
     has_discount = models.BooleanField(default=False)
+
+    # Regras dos PONTOS. Sem elas, "acumula pontos" não quer dizer nada: quantos pontos
+    # por cada quanto, e quanto vale um ponto quando se paga com ele.
+    points_per_100 = models.DecimalField(max_digits=8, decimal_places=2, default=1)   # pontos por 100 Kz
+    point_value = models.DecimalField(max_digits=8, decimal_places=2, default=1)      # 1 ponto = X Kz
+    credit_limit = models.DecimalField(max_digits=14, decimal_places=2, default=0)    # teto do débito
 
     # Pacotes: os artigos que o cartão INCLUI (all-inclusive).
     packages = models.ManyToManyField('inventory.Item', blank=True, related_name='member_cards')
@@ -2396,3 +2429,496 @@ class CostCenter(models.Model):
 
     def __str__(self):
         return f'{self.code} · {self.name}'
+
+
+class EventRequest(models.Model):
+    """PEDIDO DE EVENTO — o negócio de eventos, do telefonema à fatura.
+
+    É aqui que os parâmetros de Eventos deixam de ser tabelas e passam a ser dinheiro:
+    o pedido tem um TIPO (casamento), um ESPAÇO com uma DISPOSIÇÃO (que decide a
+    lotação), um ESTADO (que decide se o espaço fica ou não bloqueado), um SEGMENTO e
+    um CANAL (que dizem de onde veio o negócio) e um PACKAGE (que dá o preço).
+
+    A regra que evita o desastre: dois eventos CONFIRMADOS não podem ocupar o mesmo
+    espaço à mesma hora. Uma OPÇÃO pode sobrepor-se — é essa a diferença entre "estou
+    a pensar" e "vou casar aqui". Ver `EventReservationState.blocks_space`.
+    """
+    number = models.CharField(max_length=20, unique=True, blank=True)
+    title = models.CharField(max_length=160)
+
+    # Quem
+    customer = models.ForeignKey('mdm.Customer', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='event_requests')
+    contact_name = models.CharField(max_length=120, blank=True, null=True)
+    phone = models.CharField(max_length=40, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+
+    # O quê
+    event_type = models.ForeignKey(EventType, on_delete=models.PROTECT, related_name='requests')
+    pax = models.PositiveIntegerField(default=0)
+    notes = models.TextField(blank=True, null=True)
+
+    # Onde
+    space = models.ForeignKey(PosSector, on_delete=models.PROTECT, related_name='event_requests')
+    space_type = models.ForeignKey(SpaceType, on_delete=models.SET_NULL, blank=True, null=True,
+                                   related_name='requests')
+    layout = models.ForeignKey(SpaceLayout, on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='requests')
+
+    # Quando
+    start_at = models.DateTimeField()
+    end_at = models.DateTimeField()
+
+    # Como está
+    state = models.ForeignKey(EventReservationState, on_delete=models.PROTECT, related_name='requests')
+    additional_state = models.ForeignKey(EventAdditionalState, on_delete=models.SET_NULL, blank=True, null=True,
+                                         related_name='requests')
+    cancel_reason = models.ForeignKey(EventCancelReason, on_delete=models.SET_NULL, blank=True, null=True,
+                                      related_name='requests')
+    cancelled_at = models.DateTimeField(blank=True, null=True)
+
+    # De onde veio
+    segment = models.ForeignKey(Segment, on_delete=models.SET_NULL, blank=True, null=True,
+                                related_name='event_requests')
+    sub_segment = models.ForeignKey(SubSegment, on_delete=models.SET_NULL, blank=True, null=True,
+                                    related_name='event_requests')
+    channel = models.ForeignKey(DistributionChannel, on_delete=models.SET_NULL, blank=True, null=True,
+                                related_name='event_requests')
+
+    # Quanto
+    package = models.ForeignKey(EventPackage, on_delete=models.SET_NULL, blank=True, null=True,
+                                related_name='requests')
+    price_per_pax = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    extra_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # RESPONDIDO — um pedido de evento que chega do site e fica sem resposta é um
+    # casamento que foi para o hotel do lado. A caixa marca-se quando alguem responde,
+    # e o filtro "Nao Respondido" e a lista de trabalho do comercial.
+    answered = models.BooleanField(default=False)
+    answered_at = models.DateTimeField(blank=True, null=True)
+    answered_by = models.CharField(max_length=60, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=60, blank=True, null=True)
+
+    class Meta:
+        db_table = 'ev_request'
+        ordering = ['-start_at']
+
+    def __str__(self):
+        return f'{self.number} · {self.title}'
+
+    @property
+    def total(self):
+        from decimal import Decimal
+        base = (self.price_per_pax or Decimal('0')) * self.pax
+        if not self.price_per_pax and self.package_id:
+            base = self.package.total * self.pax
+        return base + (self.extra_total or Decimal('0'))
+
+    @property
+    def blocks_space(self):
+        return bool(self.state_id and self.state.blocks_space and not self.cancelled_at)
+
+    def conflicts(self):
+        """Outros pedidos que BLOQUEIAM o mesmo espaço nas mesmas horas.
+
+        Só conflitua o que bloqueia: duas Opções na mesma sala convivem (o comercial
+        vende a primeira que fechar). Um Confirmado sobre um Confirmado, não.
+        """
+        if not self.blocks_space:
+            return EventRequest.objects.none()
+        # (Tipo de espaço) "Espaço público" — o Bar continua aberto ao hotel mesmo com
+        # um evento lá dentro. Só os espaços FECHÁVEIS (salas) entram em conflito.
+        if self.space_type_id and getattr(self.space_type, 'is_public', False):
+            return []
+        qs = (EventRequest.objects.filter(space=self.space, cancelled_at__isnull=True,
+                                          start_at__lt=self.end_at, end_at__gt=self.start_at)
+              .exclude(pk=self.pk).select_related('state'))
+        return [r for r in qs if r.state.blocks_space]
+
+    def save(self, *args, **kwargs):
+        if not self.number:
+            ult = EventRequest.objects.order_by('-id').first()
+            self.number = f'EV{(ult.id + 1 if ult else 1):05d}'
+        super().save(*args, **kwargs)
+
+
+class EntityFieldRule(models.Model):
+    """CAMPOS OBRIGATÓRIOS da ficha de entidade — o botão do rodapé da Pesquisa de Entidades.
+
+    Cada caixa aqui marcada passa a ser EXIGIDA quando se grava uma entidade. Não é um
+    aviso no ecrã: o servidor recusa. É assim que um hotel garante que ninguém cria um
+    cliente sem contribuinte — e depois descobre na altura de faturar que não o tem.
+    """
+    FIELDS = [
+        ('name', 'Nome'), ('last_name', 'Apelido'), ('other_names', 'Outros nomes'),
+        ('tax_id', 'Nr. contribuinte'), ('id_number', 'Nr. de identificação'),
+        ('email', 'E-mail'), ('phone', 'Telefone'), ('address', 'Morada'),
+        ('country', 'País'), ('nationality', 'Nacionalidade'),
+        ('birth_date', 'Data de nascimento'), ('entity_type', 'Tipo de entidade'),
+    ]
+    field = models.CharField(max_length=30, unique=True, choices=FIELDS)
+    is_required = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'mkt_entity_field_rule'
+        ordering = ['field']
+
+    def __str__(self):
+        return f'{self.get_field_display()} {"(obrigatorio)" if self.is_required else ""}'
+
+
+class EntityDeposit(models.Model):
+    """CASH ADVANCE — o adiantamento que a entidade deixou (o "depósito").
+
+    O cliente deixa dinheiro à cabeça (uma empresa que abre conta, o casamento que
+    paga sinal) e vai consumindo contra esse saldo. Sem isto, o dinheiro entrava na
+    caixa mas não pertencia a ninguém — e no fim ninguém sabia quanto ainda se devia
+    ao cliente.
+
+    ENTRADA soma ao saldo; UTILIZAÇÃO/DEVOLUÇÃO subtrai. O saldo nunca fica negativo:
+    não se gasta um adiantamento que não existe.
+    """
+    KIND = [('IN', 'Entrada (depósito)'), ('USE', 'Utilização'), ('OUT', 'Devolução')]
+
+    customer = models.ForeignKey('mdm.Customer', on_delete=models.PROTECT, related_name='deposits')
+    kind = models.CharField(max_length=4, choices=KIND, default='IN')
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    reason = models.CharField(max_length=200, blank=True, null=True)
+    document = models.ForeignKey('fiscal.FiscalDocument', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='deposit_uses')
+    cash_session = models.ForeignKey('CashSession', on_delete=models.SET_NULL, blank=True, null=True,
+                                     related_name='deposits')
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=60, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_entity_deposit'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.customer.name} {self.get_kind_display()} {self.amount}'
+
+    @staticmethod
+    def balance_of(customer):
+        from decimal import Decimal
+        from django.db.models import Sum
+        d = EntityDeposit.objects.filter(customer=customer)
+        entradas = d.filter(kind='IN').aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        saidas = d.exclude(kind='IN').aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        return entradas - saidas
+
+
+
+class StockDoc(models.Model):
+    """DOCUMENTO DE COMPRA / STOCK — a fatura do fornecedor, a requisição, a transferência.
+
+    O POS já tinha o MOTOR (movimentos de stock, custo médio, armazéns) e já tinha a
+    CONFIGURAÇÃO (séries, estados, condições de pagamento, centros de custo). Faltava
+    o documento que os usa: era como ter o livro de talões configurado e não haver talões.
+
+    A SÉRIE manda. As caixas dela decidem o que este documento faz:
+      · `links_stock`      — mexe (ou não) no stock;
+      · `updates_avg_cost` — recalcula o custo médio ponderado;
+      · `nature=PAYABLE`   — é um documento A PAGAR, e vai para Contas a Pagar.
+
+    Enquanto está por lançar, não mexe em nada. Ao LANÇAR, o stock move-se — e lançar
+    duas vezes não duplica.
+    """
+    series = models.ForeignKey(StockDocSeries, on_delete=models.PROTECT, related_name='documents')
+    number = models.CharField(max_length=30, blank=True)
+    doc_date = models.DateField()
+    status = models.ForeignKey(StockDocStatus, on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='documents')
+
+    # Doc. Original — quando este documento vem da conversão de outro (encomenda -> fatura).
+    original = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='conversions')
+
+    # A ENTIDADE é a mesma do cadastro (o fornecedor é uma entidade como as outras).
+    entity = models.ForeignKey('mdm.Customer', on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='stock_docs')
+    external_ref = models.CharField(max_length=60, blank=True, null=True)   # Referência (nº do fornecedor)
+
+    warehouse = models.ForeignKey('inventory.Warehouse', on_delete=models.PROTECT,
+                                  related_name='stock_docs')                # destino
+    warehouse_from = models.ForeignKey('inventory.Warehouse', on_delete=models.SET_NULL, blank=True,
+                                       null=True, related_name='stock_docs_out')   # origem
+    cost_center = models.ForeignKey(CostCenter, on_delete=models.SET_NULL, blank=True, null=True,
+                                    related_name='stock_docs')
+    payment_term = models.ForeignKey(PaymentTerm, on_delete=models.SET_NULL, blank=True, null=True,
+                                     related_name='stock_docs')
+    due_date = models.DateField(blank=True, null=True)
+
+    tax_included = models.BooleanField(default=False)      # "IVA incluído" nos valores das linhas
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # desconto global
+    notes = models.TextField(blank=True, null=True)
+
+    posted = models.BooleanField(default=False)            # já mexeu no stock
+    posted_at = models.DateTimeField(blank=True, null=True)
+    voided = models.BooleanField(default=False)            # anulado
+    paid = models.BooleanField(default=False)              # contas a pagar
+    paid_at = models.DateTimeField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=60, blank=True, null=True)
+
+    class Meta:
+        db_table = 'fnb_stock_doc'
+        ordering = ['-doc_date', '-id']
+
+    def __str__(self):
+        return f'{self.number} · {self.series.name}'
+
+    # --- Totais (é o painel do canto superior direito do ecrã) ---
+    @property
+    def subtotal(self):
+        from decimal import Decimal
+        return sum((l.gross for l in self.lines.all()), Decimal('0'))
+
+    @property
+    def line_discount_total(self):
+        from decimal import Decimal
+        return sum((l.discount_value for l in self.lines.all()), Decimal('0'))
+
+    @property
+    def discount_total(self):
+        from decimal import Decimal
+        base = self.subtotal - self.line_discount_total
+        return (base * (self.discount_percent or Decimal('0')) / Decimal('100'))
+
+    @property
+    def tax_total(self):
+        from decimal import Decimal
+        t = Decimal('0')
+        for l in self.lines.all():
+            liq = l.gross - l.discount_value
+            if self.tax_included:
+                base = liq / (Decimal('1') + (l.tax_percentage or Decimal('0')) / Decimal('100'))
+                t += liq - base
+            else:
+                t += liq * (l.tax_percentage or Decimal('0')) / Decimal('100')
+        return t
+
+    @property
+    def total(self):
+        from decimal import Decimal
+        liq = self.subtotal - self.line_discount_total - self.discount_total
+        return liq if self.tax_included else liq + self.tax_total
+
+    @property
+    def is_payable(self):
+        return self.series.nature == 'PAYABLE'
+
+    def save(self, *args, **kwargs):
+        if not self.number:
+            n = self.series.current_number + 1
+            self.series.current_number = n
+            self.series.save(update_fields=['current_number'])
+            self.number = f'{self.series.code}/{n}'
+        super().save(*args, **kwargs)
+
+    def post(self, user=None):
+        """LANÇAR — é aqui que o stock se mexe. Uma só vez (idempotente).
+
+        Lançar duas vezes o mesmo documento duplicava as entradas, e o custo médio
+        ficava errado para sempre.
+        """
+        from decimal import Decimal
+        from django.utils import timezone
+        from inventory.models import StockLevel
+
+        if self.posted or self.voided:
+            return 0
+        if not self.series.links_stock:
+            # A série diz que este documento NÃO mexe no stock (ex.: uma encomenda).
+            self.posted = True
+            self.posted_at = timezone.now()
+            self.save(update_fields=['posted', 'posted_at'])
+            return 0
+
+        kind = self.series.kind
+        n = 0
+        for l in self.lines.select_related('item'):
+            destino = l.warehouse or self.warehouse
+            if kind == 'TRANSFER' and self.warehouse_from_id:
+                self._move(l, self.warehouse_from, 'TRANSFER_OUT', -l.quantity, user)
+                self._move(l, destino, 'TRANSFER_IN', l.quantity, user)
+                n += 2
+            elif kind == 'INVENTORY':
+                # A quantidade da linha é a CONTAGEM real. O movimento é a DIFERENÇA para
+                # o que o sistema julgava ter — é aqui que se descobre o que desapareceu.
+                nivel = StockLevel.objects.filter(item=l.item, warehouse=destino).first()
+                atual = nivel.quantity_on_hand if nivel else Decimal('0')
+                dif = l.quantity - atual
+                if dif:
+                    self._move(l, destino, 'ADJUST', dif, user)
+                    n += 1
+            elif kind == 'REQUEST':
+                self._move(l, self.warehouse_from or destino, 'OUT', -l.quantity, user)
+                n += 1
+            else:                                  # compra / entrada de mercadoria
+                self._move(l, destino, 'GRN', l.quantity, user)
+                n += 1
+
+        self.posted = True
+        self.posted_at = timezone.now()
+        self.save(update_fields=['posted', 'posted_at'])
+        return n
+
+    def _move(self, line, warehouse, tipo, delta, user):
+        """Um movimento + o saldo do armazém + o custo médio (se a série o mandar)."""
+        from decimal import Decimal
+        from inventory.models import StockMovement, StockLevel
+
+        StockMovement.objects.create(
+            warehouse=warehouse, item=line.item, movement_type=tipo,
+            quantity=abs(delta), unit_cost=line.unit_cost,
+            reference=self.number, note=self.series.name, created_by=user)
+
+        nivel, _ = StockLevel.objects.get_or_create(
+            item=line.item, warehouse=warehouse,
+            defaults={'quantity_on_hand': Decimal('0')})
+
+        antes = nivel.quantity_on_hand or Decimal('0')
+        depois = antes + delta
+
+        # CUSTO MÉDIO PONDERADO — vive no ARTIGO (Item.current_average_cost), que é onde o
+        # motor de stock já o guarda. Só se recalcula nas ENTRADAS e só se a série o mandar:
+        # uma saída não muda o custo do que ficou; uma entrada mais cara, sim.
+        if delta > 0 and self.series.updates_avg_cost and line.unit_cost:
+            it = line.item
+            total_antes = sum(
+                (x.quantity_on_hand or Decimal('0'))
+                for x in StockLevel.objects.filter(item=it))
+            custo_antes = it.current_average_cost or Decimal('0')
+            novo_total = total_antes + delta
+            if novo_total > 0:
+                it.current_average_cost = (
+                    (total_antes * custo_antes) + (delta * line.unit_cost)) / novo_total
+            else:
+                it.current_average_cost = line.unit_cost
+            it.save(update_fields=['current_average_cost'])
+
+        nivel.quantity_on_hand = depois
+        nivel.save()
+
+        if delta > 0:
+            campos = []
+            # (Série) "Atualiza último preço" — o preço de compra da ficha do artigo
+            # passa a ser o desta entrada. É o que alimenta a margem.
+            if self.series.updates_last_price and line.unit_cost:
+                line.item.purchase_price = line.unit_cost
+                campos.append('purchase_price')
+            if campos:
+                try:
+                    line.item.save(update_fields=campos)
+                except Exception:
+                    pass
+
+
+class StockDocLine(models.Model):
+    doc = models.ForeignKey(StockDoc, on_delete=models.CASCADE, related_name='lines')
+    item = models.ForeignKey('inventory.Item', on_delete=models.PROTECT, related_name='stock_doc_lines')
+    warehouse = models.ForeignKey('inventory.Warehouse', on_delete=models.SET_NULL, blank=True, null=True,
+                                  related_name='doc_lines')
+    quantity = models.DecimalField(max_digits=14, decimal_places=3, default=0)
+    unit_cost = models.DecimalField(max_digits=14, decimal_places=4, default=0)   # Valor
+    tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    unit = models.CharField(max_length=20, blank=True, null=True)
+    lot = models.CharField(max_length=40, blank=True, null=True)          # Lote
+    expiry = models.DateField(blank=True, null=True)                      # Data de validade
+    note = models.CharField(max_length=200, blank=True, null=True)
+
+    # INVENTÁRIO — o STOCK TEÓRICO no momento em que a folha de contagem foi gerada.
+    # Guarda-se porque é contra ESTE número que a contagem é comparada: se se comparasse
+    # com o stock de agora, uma venda feita durante a contagem falseava a diferença.
+    theoretical_qty = models.DecimalField(max_digits=14, decimal_places=3, default=0)
+    theoretical_cost = models.DecimalField(max_digits=14, decimal_places=4, default=0)
+
+    class Meta:
+        db_table = 'fnb_stock_doc_line'
+
+    @property
+    def gross(self):
+        return self.quantity * self.unit_cost
+
+    @property
+    def discount_value(self):
+        from decimal import Decimal
+        return self.gross * (self.discount_percent or Decimal('0')) / Decimal('100')
+
+    @property
+    def line_total(self):
+        return self.gross - self.discount_value
+
+
+class MemberCardMovement(models.Model):
+    """O LIVRO DO CARTÃO DE MEMBRO — carregamentos, consumos, dívida e pontos.
+
+    Sem um livro, o saldo de um cartão é uma opinião: alguém escreve um número numa
+    ficha e ninguém sabe de onde veio. Aqui, o saldo é sempre a soma dos movimentos —
+    e cada movimento diz de que conta veio.
+
+    As três caixas do cartão decidem o que ele pode fazer:
+      · CRÉDITO  — o cartão tem saldo e paga (pré-pago, all-inclusive);
+      · DÉBITO   — acumula dívida para pagar no fim (conta do sócio);
+      · PONTOS   — acumula pontos por consumo (fidelização), e os pontos pagam.
+    """
+    KIND = [
+        ('LOAD', 'Carregamento (crédito)'),
+        ('SPEND', 'Consumo do crédito'),
+        ('DEBIT', 'Dívida (débito)'),
+        ('SETTLE', 'Liquidação da dívida'),
+        ('EARN', 'Pontos ganhos'),
+        ('REDEEM', 'Pontos usados'),
+    ]
+
+    customer = models.ForeignKey('mdm.Customer', on_delete=models.PROTECT,
+                                 related_name='card_movements')
+    card = models.ForeignKey(MemberCard, on_delete=models.PROTECT, related_name='movements')
+    kind = models.CharField(max_length=8, choices=KIND)
+    amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)   # Kz
+    points = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    ticket = models.ForeignKey('POSTicket', on_delete=models.SET_NULL, blank=True, null=True,
+                               related_name='card_movements')
+    reason = models.CharField(max_length=200, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=60, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_member_card_movement'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.customer.name} · {self.get_kind_display()} {self.amount or self.points}'
+
+    # --- Saldos: são SEMPRE a soma do livro, nunca um campo guardado à parte ---
+    @staticmethod
+    def credit_of(customer):
+        from decimal import Decimal
+        from django.db.models import Sum
+        m = MemberCardMovement.objects.filter(customer=customer)
+        carregado = m.filter(kind='LOAD').aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        gasto = m.filter(kind='SPEND').aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        return carregado - gasto
+
+    @staticmethod
+    def debt_of(customer):
+        from decimal import Decimal
+        from django.db.models import Sum
+        m = MemberCardMovement.objects.filter(customer=customer)
+        divida = m.filter(kind='DEBIT').aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        pago = m.filter(kind='SETTLE').aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        return divida - pago
+
+    @staticmethod
+    def points_of(customer):
+        from decimal import Decimal
+        from django.db.models import Sum
+        m = MemberCardMovement.objects.filter(customer=customer)
+        ganhos = m.filter(kind='EARN').aggregate(s=Sum('points'))['s'] or Decimal('0')
+        usados = m.filter(kind='REDEEM').aggregate(s=Sum('points'))['s'] or Decimal('0')
+        return ganhos - usados

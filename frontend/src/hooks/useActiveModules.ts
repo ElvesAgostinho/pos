@@ -7,7 +7,16 @@ export interface LicenseStatus { licensed: boolean; client?: string; license_num
 export const useLicenseStatus = () =>
   useQuery({
     queryKey: ['licensing', 'status'],
-    queryFn: async (): Promise<LicenseStatus> => (await apiClient.get('licensing/status/')).data,
+    // Pedido LIMPO, fora do apiClient: a licença valida-se ANTES do login, e o
+    // interceptor do apiClient cola sempre o token guardado no browser. Um token velho
+    // fazia o DRF responder 401 e o ecrã lia isso como "servidor em baixo" — o servidor
+    // estava de pé; o token é que estava podre.
+    queryFn: async (): Promise<LicenseStatus> => {
+      const base = (apiClient.defaults.baseURL || '/api/').replace(/\/?$/, '/');
+      const r = await fetch(`${base}licensing/status/`);
+      if (!r.ok) throw new Error(`licenca: ${r.status}`);
+      return r.json();
+    },
     staleTime: 60 * 1000,
     retry: false,
   });
