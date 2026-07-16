@@ -220,8 +220,8 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                 <textarea value={d.notes ?? ''} onChange={(e) => set('notes', e.target.value)} rows={3}
                   className="flex-1 border border-[#7f9db9] text-[12px] p-1" style={inputStyle} />
               </Row>
-              <RecGrid eid={eid} kind="INFO" titulo="Informação para secção (Administração | Front Office | Governanta | F&B | TECH_SUPP | Finance)"
-                cols={[['seccao', 'Secção'], ['texto', 'Informação']]} />
+              {/* Informação para secção — a LISTA clicável do HOST, com texto por secção */}
+              <InfoSeccoes eid={eid} />
               <RecGrid eid={eid} kind="NOTE" titulo="Notas"
                 cols={[['categoria', 'Categoria'], ['ordem', 'Ordem'], ['assunto', 'Assunto'],
                        ['nota', 'Nota'], ['visivel', 'Visível p/ hóspede (s/n)']]} />
@@ -368,6 +368,45 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
           <div className="flex-1" />
           <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white text-[11px] flex items-center justify-center">✔</span> Gravar</button>
           <button onClick={onClose} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#c0140f] text-white text-[11px] flex items-center justify-center">✕</span> Fechar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** INFORMAÇÃO PARA SECÇÃO — a lista do HOST: cada secção da casa tem o seu texto. */
+function InfoSeccoes({ eid }: { eid: number }) {
+  const qc = useQueryClient();
+  const SECS = ['Administração | Direcção', 'Front Office | Back Office', 'Governanta | Manutenção',
+    'Food & Beverage', 'TECH_SUPP', 'Finance'];
+  const [ativa, setAtiva] = useState(SECS[0]);
+  const [texto, setTexto] = useState('');
+  const { data: rows = [] } = useQuery({
+    queryKey: ['ent-rec', eid, 'INFO'],
+    queryFn: async () => (await apiClient.get(`pos/marketing/entities/${eid}/records/`, { params: { kind: 'INFO' } })).data,
+    enabled: !!eid,
+  });
+  const atual = (rows as any[]).find((r) => r.data?.seccao === ativa);
+  const gravar = async () => {
+    if (atual) await apiClient.post(`pos/marketing/entities/${eid}/records/${atual.id}/delete/`, {});
+    await apiClient.post(`pos/marketing/entities/${eid}/records/`, { kind: 'INFO', data: { seccao: ativa, texto } });
+    qc.invalidateQueries({ queryKey: ['ent-rec', eid, 'INFO'] });
+  };
+  if (!eid) return <div className="text-[12px] text-[#888] p-2">Grave a ficha para escrever informação por secção.</div>;
+  return (
+    <div className="border border-[#d0d0d0]">
+      <div className="px-2 py-1 bg-[#e9e9e9] text-[12px] font-bold">Informação para secção</div>
+      <div className="flex" style={{ minHeight: 120 }}>
+        <div className="w-[220px] border-r border-[#d0d0d0] bg-white">
+          {SECS.map((s) => (
+            <button key={s} onClick={() => { setAtiva(s); setTexto(((rows as any[]).find((r) => r.data?.seccao === s)?.data?.texto) || ''); }}
+              className={`w-full text-left px-2 py-1.5 text-[12px] border-b border-[#eee] ${ativa === s ? 'bg-[#dce9f7] font-bold' : ''}`}>{s}</button>
+          ))}
+        </div>
+        <div className="flex-1 p-2 flex flex-col gap-1">
+          <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={5}
+            className="flex-1 border border-[#7f9db9] text-[12px] p-1" />
+          <button onClick={gravar} className="self-end h-7 px-4 text-[12px] font-bold bg-[#dbe8ff] border border-[#8c8c8c]">Gravar secção</button>
         </div>
       </div>
     </div>
