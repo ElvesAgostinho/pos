@@ -15,7 +15,7 @@ def _active_recipe(item):
     # de um módulo que ele não comprou.
     try:
         from production.models import Recipe
-    except (ImportError, ModuleNotFoundError):
+    except Exception:
         return None
     # A ficha técnica em vigor: prioriza a Aprovada, depois a versão mais recente.
     return (Recipe.objects.filter(final_item=item, is_active=True)

@@ -1071,7 +1071,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if pm.charge_to_room or pm.method_type == 'ROOM':
             try:
                 from pms.models import Room, Folio, FolioCharge
-            except ImportError:
+            except Exception:
                 return Response({'detail': 'Módulo PMS não está ativo nesta licença.'}, status=409)
             room_number = (request.data.get('room') or '').strip()
             room = Room.objects.filter(number=room_number).first()
@@ -1668,7 +1668,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                         return Response({'detail': 'Este talão foi lançado no quarto e a conta '
                                                    'PMS já está fechada — não se anula '
                                                    '(parâmetro 8174). Resolva no PMS.'}, status=400)
-                except (ImportError, ModuleNotFoundError):
+                except Exception:
                     pass
 
         if ticket.status != 'PAID':
@@ -1709,7 +1709,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                             status=403)
         try:
             from pms.models import Room, Folio, FolioCharge
-        except ImportError:
+        except Exception:
             return Response({'detail': 'Módulo PMS não está ativo nesta licença.'}, status=409)
 
         # (Interface PMS) "Fidedigno" — só se lança no folio de um hotel LIGADO E

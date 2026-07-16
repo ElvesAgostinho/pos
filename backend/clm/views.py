@@ -132,6 +132,10 @@ class LicenseViewSet(viewsets.ModelViewSet):
                 'private_key': lic.agt_private_key,
                 'public_key': lic.agt_public_key,
             }
+        # A LIGAÇÃO AGT (fatura eletrónica): endpoints + credenciais do contribuinte,
+        # configurados NO PCC e entregues pelo mesmo canal — o cliente não escreve URLs.
+        if getattr(lic, 'agt_connection', None):
+            resp.setdefault('agt', {})['connection'] = lic.agt_connection
         return Response(resp)
 
 class InstallationViewSet(viewsets.ModelViewSet):

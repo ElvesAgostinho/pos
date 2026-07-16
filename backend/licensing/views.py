@@ -122,8 +122,34 @@ class LicenseSyncView(APIView):
                 return Response({'detail': f'Licença gravada, mas a certificação AGT falhou: {e}'},
                                 status=502)
 
+        # A LIGAÇÃO da fatura eletrónica (endpoints + credenciais do contribuinte)
+        # também vem do PCC: escreve-se no AGTConnection do motor fiscal e o
+        # agt_worker sai do modo simulação sozinho. O cliente nunca digita URLs.
+        conexao_aplicada = False
+        if agt.get('connection'):
+            try:
+                from fiscal.models import AGTConnection
+                con = agt['connection']
+                obj, _ = AGTConnection.objects.get_or_create(name='AGT')
+                for campo in ('url_auth', 'url_submit', 'url_query', 'url_cancel',
+                              'url_download', 'url_saft', 'url_health',
+                              'client_id', 'environment'):
+                    if con.get(campo) is not None:
+                        setattr(obj, campo, con[campo])
+                # o segredo guarda-se ENCRIPTADO (fiscal.secrets) — nunca em claro
+                if con.get('client_secret'):
+                    from fiscal.secrets import encrypt
+                    obj.client_secret_enc = encrypt(con['client_secret'])
+                obj.is_active = True
+                obj.save()
+                conexao_aplicada = True
+            except Exception as e:
+                return Response({'detail': f'Licença gravada, mas a ligação AGT falhou: {e}'},
+                                status=502)
+
         return Response({
             'agt_applied': agt_aplicada,
+            'agt_connection_applied': conexao_aplicada,
             'detail': 'Licença sincronizada com o PCC.',
             'license_number': nova.get('license_number'),
             'valid_until': nova.get('valid_until'),

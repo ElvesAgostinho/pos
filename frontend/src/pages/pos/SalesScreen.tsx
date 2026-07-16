@@ -126,8 +126,13 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   // MENSAGENS DE PRODUÇÃO do backoffice aparecem numeradas; ou escreve-se livre.
   const notaLinha = async (l: any) => {
     try {
-      const r = await apiClient.get('production/pos-messages/');
-      const msgs = ((r.data?.results || r.data || []) as any[]).filter((m) => m.is_active !== false);
+      // sem o módulo de Produção licenciado, não há mensagens pré-definidas —
+      // a nota escreve-se livre na mesma (o motor da linha aceita texto).
+      let msgs: any[] = [];
+      try {
+        const r = await apiClient.get('production/pos-messages/');
+        msgs = ((r.data?.results || r.data || []) as any[]).filter((m) => m.is_active !== false);
+      } catch { /* módulo ausente: segue com texto livre */ }
       const lista = msgs.map((m, i) => `${i + 1}. ${m.name}`).join('\n');
       const escolha = window.prompt(
         `NOTA PARA A COZINHA — ${l.description}\n\n${lista || '(sem mensagens configuradas)'}\n\n` +

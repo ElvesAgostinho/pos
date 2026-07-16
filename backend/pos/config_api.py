@@ -4420,7 +4420,7 @@ class PosGuestsView(APIView):
                                        '(8035/8064).'})
         try:
             from pms.models import Reservation
-        except (ImportError, ModuleNotFoundError):
+        except Exception:
             return Response({'available': False, 'rows': [],
                              'detail': 'Este sistema não tem o módulo de alojamento (PMS). '
                                        'A informação de hóspedes só existe com hotel.'})
@@ -4491,7 +4491,7 @@ class PosMealPlanView(APIView):
                              'detail': 'A interface com o PMS está desligada nos parâmetros (8035).'})
         try:
             from pms.models import Reservation
-        except (ImportError, ModuleNotFoundError):
+        except Exception:
             return Response({'available': False, 'rows': [],
                              'meals': [{'code': c, 'label': l} for c, l in self.REFEICOES],
                              'detail': 'Sem módulo de alojamento (PMS): não há hóspedes nem regimes.'})

@@ -56,6 +56,7 @@ import PosDocSearch from './PosDocSearch';
 import PosAlerts from './PosAlerts';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
+import { useActiveModules } from '../../hooks/useActiveModules';
 import { irParaModulo } from '../../App';
 
 /**
@@ -147,6 +148,9 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   onBack?: () => void; onDesktop?: () => void; onOpen?: (id: string) => void;
 }) {
   const qc = useQueryClient();
+  // os módulos da LICENÇA — a árvore esconde o que não está licenciado
+  const { data: licData } = useActiveModules();
+  const licActive: string[] = licData?.active || [];
   // A secção com que se abre: quem manda abrir o POS (o Desktop, um atalho) deixa-a
   // aqui. Sem isto, clicar em "Compras" no Desktop abria sempre a lista de Artigos.
   const [section, setSection] = useState(() => {
@@ -356,7 +360,14 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ))}
             </div>
           )}
-          {SECTIONS.map((grp) => (
+          {SECTIONS.map((g0) => {
+            // A LICENÇA manda na árvore: sem o módulo de Produção (Restauração),
+            // Alergénios e Mensagens não existem — escondem-se, não rebentam.
+            const semProducao = !(licActive || []).includes('production');
+            const grp = semProducao
+              ? { ...g0, items: g0.items.filter((i: any) => !['allergens', 'messages'].includes(i.key)) }
+              : g0;
+            return (
             <div key={grp.key}>
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
                 className="w-full flex items-center justify-between px-3 py-2 text-[13px] font-semibold text-[#333] border-b border-[#e0e0e0] hover:bg-[#f5f5f5]">
@@ -373,7 +384,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 </button>
               ))}
             </div>
-          ))}
+            );
+          })}
         </div>
         )}
 

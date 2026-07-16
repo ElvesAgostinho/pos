@@ -115,6 +115,9 @@ class License(models.Model):
     agt_certificate_number = models.CharField(max_length=40, blank=True, null=True)
     agt_public_key = models.TextField(blank=True, null=True)     # PEM (entregue ao cliente)
     agt_private_key = models.TextField(blank=True, null=True)    # PEM (privado do fornecedor)
+    # LIGAÇÃO À AGT (endpoints + credenciais do contribuinte) — configurada no PCC
+    # e entregue ao cliente pelo canal de sincronização, como as chaves.
+    agt_connection = models.JSONField(default=dict, blank=True)
     agt_issued_at = models.DateTimeField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
