@@ -279,13 +279,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <div className="flex gap-4"><C k="is_vip" l="É VIP" /><C k="distinction_program" l="Incluído no programa de distinção" /></div>
             </div>)}
 
-            {sec === 'comissoes' && (<>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 mb-2">
-                <T k="commission_code" l="Cód. Comissão:" /> <T k="commission_pct" l="Percent. comissão:" tipo="number" />
-              </div>
-              <RecGrid eid={eid} kind="COMMISSION" titulo="Outras Comissões"
-                cols={[['codigo', 'Cód. comissão'], ['de', 'De data'], ['ate', 'Até à data'], ['ativo', 'Ativo (s/n)']]} />
-            </>)}
+            {sec === 'comissoes' && <Comissoes eid={eid} d={d} T={T} />}
 
             {sec === 'pagperm' && (<div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
               <div className="col-span-2 text-[12px] font-bold">Contas correntes</div>
@@ -411,4 +405,62 @@ function InfoSeccoes({ eid }: { eid: number }) {
       </div>
     </div>
   );
+}
+
+/** COMISSÕES — como no HOST: cabeçalho (código+%) e janela "Add Comission" com datas. */
+function Comissoes({ eid, d, T }: any) {
+  const qc = useQueryClient();
+  const [add, setAdd] = useState<any | null>(null);
+  const { data: rows = [] } = useQuery({
+    queryKey: ['ent-rec', eid, 'COMMISSION'],
+    queryFn: async () => (await apiClient.get(`pos/marketing/entities/${eid}/records/`, { params: { kind: 'COMMISSION' } })).data,
+    enabled: !!eid,
+  });
+  const inval = () => qc.invalidateQueries({ queryKey: ['ent-rec', eid, 'COMMISSION'] });
+  const gravar = async () => {
+    await apiClient.post(`pos/marketing/entities/${eid}/records/`, { kind: 'COMMISSION', data: add });
+    setAdd(null); inval();
+  };
+  const del = async (r: any) => {
+    if (!window.confirm('Apagar esta comissão?')) return;
+    await apiClient.post(`pos/marketing/entities/${eid}/records/${r.id}/delete/`, {}); inval();
+  };
+  return (<>
+    <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 mb-2">
+      <T k="commission_code" l="Cód. Comissão:" /> <T k="commission_pct" l="Percent. comissão:" tipo="number" />
+    </div>
+    <div className="border border-[#d0d0d0]">
+      <div className="px-2 py-1 bg-[#e9e9e9] text-[12px] font-bold flex justify-between">
+        <span>Outras Comissões</span>
+        <button onClick={() => eid ? setAdd({ ativo: true }) : alert('Grave primeiro a ficha.')} className="text-[#1a4f8a]">⊕ Adicionar</button>
+      </div>
+      <table className="w-full text-[12px]"><thead><tr className="bg-[#f4f4f4]">
+        {['Cód. Comissão', 'De data', 'Até à data', 'Ativo', ''].map((h, i) => <th key={i} className="text-left font-normal px-2 py-1 border-b border-[#d0d0d0]">{h}</th>)}</tr></thead>
+        <tbody>{(rows as any[]).map((r) => (
+          <tr key={r.id} className="border-b border-[#eee]">
+            <td className="px-2 py-1">{r.data?.codigo}</td><td className="px-2 py-1">{r.data?.de}</td>
+            <td className="px-2 py-1">{r.data?.ate}</td><td className="px-2 py-1">{r.data?.ativo ? '✔' : ''}</td>
+            <td className="px-2 py-1 text-center"><button onClick={() => del(r)} className="text-[#c0392b]">✖</button></td></tr>))}
+          {!rows.length && <tr><td colSpan={5} className="text-center text-[#999] py-4">Não foram encontrados dados.</td></tr>}
+        </tbody></table>
+    </div>
+    {add && (
+      <div className="fixed inset-0 bg-black/40 z-[400] flex items-center justify-center" onClick={() => setAdd(null)}>
+        <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#f0f0f0] border border-[#333] shadow-2xl">
+          <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold bg-[#3c3c3c]">
+            <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#c0140f]">✕</button></div>
+          <div className="p-4 space-y-2">
+            <Row l="Cód. Comissão:" w={110}><input value={add.codigo || ''} onChange={(e) => setAdd({ ...add, codigo: e.target.value })} className={inp} /></Row>
+            <Row l="De data:" w={110}><input type="date" value={add.de || ''} onChange={(e) => setAdd({ ...add, de: e.target.value })} className={inp} /></Row>
+            <Row l="Até à data:" w={110}><input type="date" value={add.ate || ''} onChange={(e) => setAdd({ ...add, ate: e.target.value })} className={inp} /></Row>
+            <label className="flex items-center gap-1.5 text-[12px] pl-[118px]"><input type="checkbox" checked={!!add.ativo} onChange={(e) => setAdd({ ...add, ativo: e.target.checked })} className="w-4 h-4" />Ativo</label>
+          </div>
+          <div className="h-11 flex items-center justify-between px-4 bg-[#e4e4e4] border-t border-[#c0c0c0] text-[13px]">
+            <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white text-[11px] flex items-center justify-center">✔</span> Gravar</button>
+            <button onClick={() => setAdd(null)} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#c0140f] text-white text-[11px] flex items-center justify-center">✕</span> Fechar</button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>);
 }
