@@ -224,9 +224,9 @@ export default function PosTerminal() {
             Na VENDA a barra desaparece: o balcão é teclado + comanda, a ecrã inteiro.
             As funções da barra são funções de SALA (consultar, cobrar, transferir) —
             dentro da venda não têm lugar, e o espaço delas é dos artigos. */}
-        {etapa !== 'SALES' && (
         {/* os botões REPARTEM a altura do ecrã — todos visíveis, sem scroll. Um botão
             que só se encontra a rolar é um botão que o empregado não usa. */}
+        {etapa !== 'SALES' && (
         <div className="w-[176px] bg-black flex flex-col flex-shrink-0">
           {MENU.map((m) => (
             <button key={m.label} onClick={() => m.on !== false && m.act()}

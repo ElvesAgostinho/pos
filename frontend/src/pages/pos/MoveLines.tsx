@@ -62,9 +62,9 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
   const { data: mesas = [] } = useQuery({
     queryKey: ['ml-tables', setor?.id],
     queryFn: async () => {
-      const r = await apiClient.get('pos/tables/');
-      const todas = (r.data?.results || r.data || []) as any[];
-      return todas.filter((m) => (m.sector ? m.sector === setor.id : m.outlet === setor.outlet));
+      // As mesas do setor vêm do servidor — as mesmas da planta do backoffice.
+      const r = await apiClient.get('pos/tables/', { params: { sector: setor.id } });
+      return (r.data?.results || r.data || []) as any[];
     },
   });
 

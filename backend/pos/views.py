@@ -221,6 +221,12 @@ class POSTableViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = scope_qs(self.request, POSTable.objects.select_related('outlet').all().order_by('table_number'), 'outlet__hotel')
         outlet = self.request.query_params.get('outlet')
+        # O terminal pede as mesas DO SETOR — exatamente as que o backoffice desenhou na
+        # planta desse setor (Configuração POS › Setores). Sem fallbacks: uma mesa que o
+        # backoffice não vê não pode aparecer no terminal.
+        sector = self.request.query_params.get('sector')
+        if sector:
+            return qs.filter(sector_id=sector)
         return qs.filter(outlet_id=outlet) if outlet else qs
 
     def perform_create(self, serializer):

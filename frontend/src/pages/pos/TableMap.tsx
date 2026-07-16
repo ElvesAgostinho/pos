@@ -54,10 +54,11 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   const { data: mesas = [], isLoading } = useQuery({
     queryKey: ['pos-tables', setor?.id],
     queryFn: async () => {
-      const r = await apiClient.get('pos/tables/');
-      const todas = (r.data?.results || r.data || []) as any[];
-      // As mesas deste setor (ou, se não tiverem setor, as do mesmo ponto de venda).
-      return todas.filter((m) => (m.sector ? m.sector === setor.id : m.outlet === setor.outlet));
+      // O SERVIDOR diz que mesas tem este setor — as mesmas da planta do backoffice
+      // (Configuração POS › Setores). Apagar lá é desaparecer aqui. Sem fallbacks:
+      // era um fallback por outlet que fazia aparecer mesas "fantasma" já removidas.
+      const r = await apiClient.get('pos/tables/', { params: { sector: setor.id } });
+      return (r.data?.results || r.data || []) as any[];
     },
     refetchInterval: refrescar,   // outro empregado abriu uma conta: o mapa tem de saber
   });
