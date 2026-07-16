@@ -14,7 +14,7 @@ Quem quiser mais hotéis, compra mais hotéis.
 from django.conf import settings
 from rest_framework.exceptions import PermissionDenied
 
-from .offline_validator import get_license
+from .offline_validator import get_license, _expired
 
 # Uma licença = UM hotel. É assim que o sistema se vende.
 DEFAULTS = {'hotels': 1, 'pos': 1, 'users': 5}
@@ -29,7 +29,9 @@ LABEL = {
 def get_limits():
     lic = get_license(settings.BASE_DIR) or {}
     limits = dict(DEFAULTS)
-    limits.update(lic.get('limits') or {})
+    # Uma licença EXPIRADA não dá limites alargados: volta ao mínimo até renovar.
+    if not _expired(lic):
+        limits.update(lic.get('limits') or {})
     return limits
 
 

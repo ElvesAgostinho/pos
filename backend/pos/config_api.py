@@ -2722,7 +2722,16 @@ class PosSendLogsView(APIView):
         from .params import P
         from . import mailer
         from .models import POSAuditLog
-        destino = P.text(8510, 'suporte@mwanalodge.ao')
+        # O DESTINO DO SUPORTE vem da LICENÇA assinada (PCC) quando lá estiver —
+        # o cliente não redireciona os logs por engano; o parâmetro 8510 é o fallback.
+        destino = None
+        try:
+            from django.conf import settings as _s
+            from licensing.offline_validator import get_license
+            destino = (get_license(_s.BASE_DIR) or {}).get('support_email')
+        except Exception:
+            pass
+        destino = destino or P.text(8510, 'suporte@mwanalodge.ao')
         if not destino:
             return Response({'detail': 'Configure o e-mail do suporte (parâmetro 8510).'}, status=400)
 

@@ -1,8 +1,23 @@
 import os
 import json
 import base64
+import datetime
 
 from licensing.engine.crypto import verify_license
+
+
+def _expired(payload):
+    """A VALIDADE é imposta AQUI, não no ecrã. `valid_until` vem assinado do PCC —
+    passado o dia, os módulos desligam-se sozinhos (fica o núcleo, para se ver a
+    mensagem e renovar). Sem isto, a data era decoração: uma licença de demonstração
+    de 30 dias valia para sempre."""
+    v = (payload or {}).get('valid_until')
+    if not v:
+        return False
+    try:
+        return datetime.date.fromisoformat(str(v)) < datetime.date.today()
+    except Exception:
+        return False
 
 
 def get_license(base_dir):
@@ -47,6 +62,11 @@ def get_active_modules(base_dir, secret_key=None):
 
         # O que resta (license_data sem 'signature') é exatamente o payload assinado.
         if verify_license(license_data, signature):
+            if _expired(license_data):
+                # Licença EXPIRADA: o sistema arranca só com o núcleo (login + gestor
+                # de licenças) — vê-se o aviso e renova-se; não se trabalha.
+                print("WARNING: Licença expirada em", license_data.get('valid_until'))
+                return []
             return license_data.get('modules', [])
 
         print("WARNING: Assinatura de licença inválida!")
