@@ -20,8 +20,9 @@ export default function AccountsPanel({ onPick, onClose }: {
   const [busca, setBusca] = useState('');
   const [sel, setSel] = useState<any | null>(null);
   // NOVA ENTIDADE sem sair do terminal: a ficha é a MESMA do backoffice
-  // (pos/marketing/entities → mdm.Customer) — cria-se aqui o essencial e o
-  // resto completa-se na Configuração POS quando houver calma.
+  // (pos/marketing/entities → mdm.Customer) — e os CAMPOS OBRIGATÓRIOS vêm das
+  // regras do backoffice (Pesquisa de Entidades › Campos obrigatórios). O terminal
+  // pergunta o que o backoffice exige; o servidor continua a ser quem recusa.
   const [nova, setNova] = useState<any | null>(null);
 
   const { data, refetch } = useQuery({
@@ -30,17 +31,50 @@ export default function AccountsPanel({ onPick, onClose }: {
       { params: { scope: 'ALL', q: busca || undefined } })).data,
   });
 
+  // as regras (que campos são obrigatórios) e os tipos de entidade — do backoffice
+  const { data: regras = [] } = useQuery({
+    queryKey: ['pos-entity-rules'],
+    queryFn: async () => {
+      const r = await apiClient.get('pos/marketing/entity-rules/');
+      return (r.data?.results || r.data || []) as any[];
+    },
+    enabled: !!nova,
+  });
+  const { data: tiposEnt = [] } = useQuery({
+    queryKey: ['pos-entity-types'],
+    queryFn: async () => {
+      const r = await apiClient.get('pos/config/customer-types/');
+      return (r.data?.results || r.data || []) as any[];
+    },
+    enabled: !!nova,
+  });
+  const obrig = new Set(regras.filter((r: any) => r.is_required).map((r: any) => r.field));
+  // o catálogo dos campos — o MESMO do backoffice (EntityFieldRule.FIELDS)
+  const CAMPOS: [string, string, string][] = [
+    ['name', 'Nome', 'text'], ['last_name', 'Apelido', 'text'],
+    ['other_names', 'Outros nomes', 'text'], ['tax_id', 'Nr. contribuinte', 'text'],
+    ['id_number', 'Nr. de identificação', 'text'], ['email', 'E-mail', 'text'],
+    ['phone', 'Telefone', 'text'], ['address', 'Morada', 'text'],
+    ['country', 'País', 'text'], ['nationality', 'Nacionalidade', 'text'],
+    ['birth_date', 'Data de nascimento', 'date'], ['entity_type', 'Tipo de entidade', 'select'],
+  ];
+  // mostram-se: os essenciais de sempre + TUDO o que o backoffice marcou obrigatório
+  const BASE = new Set(['name', 'tax_id', 'phone', 'email']);
+  const camposVisiveis = CAMPOS.filter(([k]) => BASE.has(k) || obrig.has(k));
+
   const gravarNova = async () => {
-    if (!nova?.name?.trim()) return alert('O nome é obrigatório.');
+    // valida ANTES de enviar o que o backoffice marcou obrigatório — o servidor
+    // recusaria na mesma; aqui o caixa vê logo O QUE falta, campo a campo.
+    const faltam = camposVisiveis
+      .filter(([k]) => (k === 'name' || obrig.has(k)) && !String(nova?.[k] ?? '').trim())
+      .map(([, label]) => label);
+    if (faltam.length) return alert('Campos obrigatórios em falta (regras do backoffice):\n· ' + faltam.join('\n· '));
     try {
-      const r = await apiClient.post('pos/marketing/entities/', {
-        code: nova.code?.trim() || `CL${Date.now().toString().slice(-8)}`,
-        name: nova.name.trim(),
-        tax_id: nova.tax_id?.trim() || null,
-        phone: nova.phone?.trim() || null,
-        email: nova.email?.trim() || null,
-        is_active: true,
-      });
+      const body: any = { code: nova.code?.trim() || `CL${Date.now().toString().slice(-8)}`, is_active: true };
+      for (const [k] of CAMPOS) {
+        if (nova?.[k] !== undefined && String(nova[k]).trim() !== '') body[k] = nova[k];
+      }
+      const r = await apiClient.post('pos/marketing/entities/', body);
       setNova(null);
       await refetch();
       alert(`Entidade criada: ${r.data.name} (${r.data.code})`);
@@ -103,20 +137,40 @@ export default function AccountsPanel({ onPick, onClose }: {
         </div>
       </div>
 
-      {/* NOVA ENTIDADE — a mesma ficha do backoffice, o essencial sem sair do terminal */}
+      {/* NOVA ENTIDADE — a ficha do backoffice, com os CAMPOS OBRIGATÓRIOS das regras.
+          Marcar "Nacionalidade obrigatória" no backoffice faz o campo aparecer AQUI
+          com a estrela — o terminal pergunta o que o backoffice exige. */}
       {nova && (
-        <Window title="Nova Entidade" width={460} onClose={() => setNova(null)} tone="#0f8b8d">
-          <div className="p-3 bg-[#1a1a1a] flex flex-col gap-2">
-            {[['name', 'Nome *'], ['tax_id', 'NIF'], ['phone', 'Telefone'], ['email', 'E-mail'],
-              ['code', 'Nr. cliente (vazio = automático)']].map(([k, label]) => (
+        <Window title="Nova Entidade" width={480} onClose={() => setNova(null)} tone="#0f8b8d">
+          <div className="p-3 bg-[#1a1a1a] flex flex-col gap-2 max-h-[70vh] overflow-auto">
+            {camposVisiveis.map(([k, label, tipo]) => (
               <label key={k} className="flex flex-col gap-1">
-                <span className="text-white/60 text-[13px]">{label}</span>
-                <input value={nova[k] || ''}
-                  onChange={(e) => setNova({ ...nova, [k]: e.target.value })}
-                  className="h-[44px] bg-[#2b2b2b] text-white px-3 rounded border border-[#3a3a3a]
-                    focus:border-[#0f8b8d] outline-none text-[16px]" />
+                <span className="text-white/60 text-[13px]">
+                  {label}{(k === 'name' || obrig.has(k)) && <span className="text-[#f0c000]"> *</span>}
+                </span>
+                {tipo === 'select' ? (
+                  <select value={nova[k] || ''}
+                    onChange={(e) => setNova({ ...nova, [k]: e.target.value })}
+                    className="h-[44px] bg-[#2b2b2b] text-white px-3 rounded border border-[#3a3a3a]
+                      focus:border-[#0f8b8d] outline-none text-[16px]">
+                    <option value="">—</option>
+                    {tiposEnt.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                ) : (
+                  <input type={tipo} value={nova[k] || ''}
+                    onChange={(e) => setNova({ ...nova, [k]: e.target.value })}
+                    className="h-[44px] bg-[#2b2b2b] text-white px-3 rounded border border-[#3a3a3a]
+                      focus:border-[#0f8b8d] outline-none text-[16px]" />
+                )}
               </label>
             ))}
+            <label className="flex flex-col gap-1">
+              <span className="text-white/60 text-[13px]">Nr. cliente (vazio = automático)</span>
+              <input value={nova.code || ''}
+                onChange={(e) => setNova({ ...nova, code: e.target.value })}
+                className="h-[44px] bg-[#2b2b2b] text-white px-3 rounded border border-[#3a3a3a]
+                  focus:border-[#0f8b8d] outline-none text-[16px]" />
+            </label>
             <div className="grid grid-cols-2 gap-1 mt-1">
               <button onClick={gravarNova}
                 className="h-[52px] bg-[#1f7a34] text-white font-bold rounded">✔ Criar</button>
