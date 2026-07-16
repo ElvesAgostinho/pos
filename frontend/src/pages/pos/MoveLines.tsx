@@ -121,6 +121,25 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     }
   };
 
+  // CONTA CONJUNTA — a mesa inteira volta a ser UMA conta: todas as subcontas entram
+  // na da esquerda ("afinal paga tudo o senhor"). É o mesmo `merge`, pessoa a pessoa.
+  const contaConjunta = async () => {
+    if (!esqId) return;
+    try {
+      const r = await apiClient.get(`pos/tickets/${esqId}/siblings/`);
+      const irmas = (r.data || []) as any[];
+      if (!irmas.length) return alert('A mesa já só tem uma conta.');
+      if (!window.confirm(`Conta conjunta: juntar ${irmas.length} subconta(s) nesta?\n\nA mesa fica com UMA conta única — paga-se tudo junto.`)) return;
+      for (const t of irmas) {
+        await apiClient.post(`pos/tickets/${esqId}/merge/`, { source: t.id });
+      }
+      setDirId(null);
+      await refrescar();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || 'Não foi possível juntar a mesa.');
+    }
+  };
+
   // ── uma conta (painel) ────────────────────────────────────────────────────
   const Painel = ({ conta, id, setId, sel, setSel, lado }: any) => {
     return (
@@ -166,8 +185,13 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
         </div>
 
         {/* AS PESSOAS DA MESA — o mesmo carrossel da venda: tocar num número troca a
-            subconta; tocar no seguinte ACRESCENTA uma pessoa. */}
-        <SubcontaBar conta={conta} onSwitch={(nid) => { setId(nid); setSel([]); }} />
+            subconta (consulta-se qualquer conta da mesa); um número vazio ACRESCENTA
+            uma pessoa. Nas PARCIAIS o painel direito, mesmo vazio, mostra as pessoas
+            da MESMA mesa — é assim que se escolhe para QUEM vai o artigo. */}
+        <SubcontaBar conta={conta}
+          mesa={modo === 'SPLIT' ? esq?.table : conta?.table}
+          outlet={modo === 'SPLIT' ? esq?.outlet : conta?.outlet}
+          onSwitch={(nid) => { setId(nid); setSel([]); }} />
 
         <div className="h-[52px] bg-[#8a8a8a] flex items-center justify-end px-3">
           <span className="text-white text-[28px] font-bold">{money(conta?.grand_total)}</span>
@@ -199,6 +223,11 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
             <button onClick={juntar} disabled={!dirId}
               className="w-full h-[52px] bg-[#0f8b8d] text-white text-[13px] font-bold rounded disabled:opacity-30"
               title="Juntar: a conta da direita entra na da esquerda">Juntar</button>
+            {modo === 'SPLIT' && (
+              <button onClick={contaConjunta}
+                className="w-full h-[52px] bg-[#8a6100] text-white text-[12px] font-bold rounded leading-tight"
+                title="Toda a mesa numa só conta — paga-se tudo junto">Conta{'\n'}Conjunta</button>
+            )}
 
             <div className="flex flex-col gap-1 w-full mt-2">
               <button onClick={() => setQtd(qtd + 1)}
