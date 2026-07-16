@@ -223,10 +223,14 @@ class GlobalParamsView(APIView):
         from collections import OrderedDict
         rows = PosParameter.objects.filter(scope='GLOBAL').order_by('group', 'number')
         groups = OrderedDict()
+        SEGREDOS = {8503}          # a password SMTP NUNCA volta pela API — só se escreve
         for p in rows:
+            valor = p.value if p.value not in (None, '') else p.default
+            if p.number in SEGREDOS and valor:
+                valor = '••••••••'
             groups.setdefault(p.group, []).append({
                 'number': p.number, 'name': p.name, 'kind': p.kind, 'choices': p.choices,
-                'value': p.value if p.value not in (None, '') else p.default,
+                'value': valor,
                 'default': p.default, 'help_text': p.help_text,
             })
         return Response([{'group': g, 'params': ps} for g, ps in groups.items()])
@@ -237,6 +241,8 @@ class GlobalParamsView(APIView):
         changed = 0
         for num, val in values.items():
             v = 'true' if val is True else ('false' if val is False else ('' if val is None else str(val)))
+            if v == '••••••••':
+                continue          # a máscara da password não é um valor — ignora-se
             if PosParameter.objects.filter(number=int(num)).exclude(value=v).update(value=v):
                 changed += 1
         pengine.invalidate()      # sem isto, o sistema continuava a usar os valores antigos
@@ -2701,6 +2707,55 @@ class PosSaftView(APIView):
         return resp
 
 
+class PosSendLogsView(APIView):
+    """ENVIAR OS LOGS AO SUPORTE — o botão do Diagnóstico para pedir assistência.
+
+    Junta o retrato do sistema (diagnóstico + alertas + últimos eventos de auditoria e
+    de autenticação) num único e-mail para o endereço do parâmetro 8510 (a empresa que
+    dá suporte). O cliente não copia ficheiros nem sabe onde eles moram: carrega no
+    botão e o suporte recebe tudo. Fica no outbox como qualquer outro e-mail.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from django.utils import timezone
+        from .params import P
+        from . import mailer
+        from .models import POSAuditLog
+        destino = P.text(8510, 'suporte@mwanalodge.ao')
+        if not destino:
+            return Response({'detail': 'Configure o e-mail do suporte (parâmetro 8510).'}, status=400)
+
+        # o retrato: alertas + últimos 100 eventos de auditoria + últimos 50 logins
+        partes = [f'<h3>Envio de logs — {timezone.localtime():%d/%m/%Y %H:%M}</h3>',
+                  f'<p>Nota do cliente: {request.data.get("note") or "—"}</p>']
+        try:
+            from .alerts import run_all
+            alertas = run_all()
+            partes.append('<h4>Alertas ativos</h4>' + '<br>'.join(
+                f"[{a['severity']}] {a['title']} — {a['detail']}" for a in alertas) or 'nenhum')
+        except Exception as e:
+            partes.append(f'<p>alertas indisponíveis: {e}</p>')
+        partes.append('<h4>Últimos eventos (auditoria POS)</h4>' + '<br>'.join(
+            f"{l.created_at:%d/%m %H:%M} [{l.event_type}] {l.description} ({l.operator_name or l.user or '—'})"
+            for l in POSAuditLog.objects.all()[:100]))
+        try:
+            from auth_engine.models import AuthEventLog
+            partes.append('<h4>Últimos acessos</h4>' + '<br>'.join(
+                f"{l.timestamp:%d/%m %H:%M} [{l.event_type}] {l.identity_attempt} {l.ip_address or ''}"
+                for l in AuthEventLog.objects.order_by('-id')[:50]))
+        except Exception:
+            pass
+
+        reg = mailer.send(destino, f'Logs do sistema — pedido de assistência',
+                          '<br>'.join(partes), context_ref='SUPORTE-LOGS')
+        return Response({'status': reg.status, 'outbox_id': reg.id,
+                         'detail': {'SENT': f'Logs enviados para {destino}.',
+                                    'SIMULATED': f'SMTP por configurar — o envio ficou SIMULADO no outbox '
+                                                 f'(destino: {destino}).',
+                                    'FAILED': f'Falhou: {reg.error}'}.get(reg.status, reg.status)})
+
+
 class PosDiagnosticsView(APIView):
     """DIAGNÓSTICO DO POS — o estado real, agora. É o que o suporte pergunta ao telefone."""
     permission_classes = [IsAuthenticated]
@@ -4146,6 +4201,7 @@ class PosTerminalKeyboardView(APIView):
 
     def get(self, request):
         from .models import PosKeyboard, PosKeyboardKey, PosTerminal
+        from .params import P
         from inventory.models import ItemPrice
 
         kb = None
@@ -4157,13 +4213,16 @@ class PosTerminalKeyboardView(APIView):
             t = PosTerminal.objects.filter(pk=request.query_params['terminal']).first()
             kb = getattr(t, 'keyboard', None) if t else None
         # (8176) "Configuração de teclado por": Setor usa o teclado ligado ao setor
-        # pedido; Terminal já foi tratado acima; Operador cai no primeiro ativo (a
-        # ficha do operador não tem teclado próprio — não se inventa o campo).
+        # pedido (a ficha do setor guarda o NOME do teclado); Terminal já foi tratado
+        # acima; Operador cai no primeiro ativo (a ficha dele não tem teclado próprio).
         if not kb and P.text(8176, 'Setor') == 'Setor' and request.query_params.get('sector'):
             try:
                 from .models import PosSector
                 s = PosSector.objects.filter(pk=request.query_params['sector']).first()
-                kb = getattr(s, 'keyboard', None) if s else None
+                nome_kb = getattr(s, 'keyboard', None) if s else None
+                if nome_kb:
+                    kb = PosKeyboard.objects.filter(name__iexact=str(nome_kb),
+                                                    is_active=True).first()
             except Exception:
                 kb = None
         if not kb:
@@ -4172,11 +4231,28 @@ class PosTerminalKeyboardView(APIView):
             return Response({'detail': 'Não há teclados configurados.',
                              'keyboard': None, 'pages': []})
 
+        # A JUNÇÃO DOS TECLADOS: o ecrã de venda mostra as páginas de TODOS os teclados
+        # ativos (o principal primeiro) — é assim que o teclado de artigos, o de funções
+        # e o de balcão configurados no backoffice aparecem lado a lado no terminal.
+        outros = list(PosKeyboard.objects.filter(is_active=True)
+                      .exclude(pk=kb.pk).order_by('number'))
+
         chaves = list(PosKeyboardKey.objects.filter(keyboard=kb)
                       .select_related('item').order_by('sort_order', 'id'))
         precos = {}
-        if kb.price_level and kb.price_level > 1:
-            precos = {p.item_id: p.price for p in ItemPrice.objects.filter(level=kb.price_level)}
+        # O NÍVEL DE PREÇO do SETOR manda (o mesmo artigo custa mais no Rooftop);
+        # sem setor, vale o nível configurado no próprio teclado.
+        nivel = kb.price_level or 1
+        if request.query_params.get('sector'):
+            try:
+                from .models import PosSector
+                s = PosSector.objects.filter(pk=request.query_params['sector']).first()
+                if s and s.price_level and s.price_level > 1:
+                    nivel = s.price_level
+            except Exception:
+                pass
+        if nivel and nivel > 1:
+            precos = {p.item_id: p.price for p in ItemPrice.objects.filter(level=nivel)}
 
         # (Utilizador POS) "Usa preço de custo" — o staff autorizado vê o CUSTO na tecla,
         # não o preço de venda. É a ficha do operador a mandar no ecrã.
@@ -4214,6 +4290,13 @@ class PosTerminalKeyboardView(APIView):
             return d
 
         paginas = [desenha(k) for k in chaves if k.parent_id is None]
+
+        # ...e as páginas dos OUTROS teclados ativos, a seguir (a junção).
+        for outro in outros:
+            chaves = list(PosKeyboardKey.objects.filter(keyboard=outro)
+                          .select_related('item').order_by('sort_order'))
+            paginas += [desenha(k) for k in chaves if k.parent_id is None]
+
         return Response({
             'keyboard': {'id': kb.id, 'number': kb.number, 'name': kb.name,
                          'cols': kb.cols, 'rows': kb.rows,

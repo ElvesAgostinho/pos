@@ -250,6 +250,18 @@ export function PosDiagnostics() {
     onError: notifyError,
   });
 
+  // ENVIAR OS LOGS AO SUPORTE — o cliente pede assistência com um botão: o retrato
+  // do sistema (alertas + auditoria + acessos) segue por e-mail para a empresa de
+  // suporte (parâmetro 8510). O SMTP configura-se em Parâmetros › E-mail (SMTP).
+  const enviarLogs = useMutation({
+    mutationFn: () => {
+      const nota = window.prompt('Descreva o problema (vai junto com os logs):') || '';
+      return apiClient.post('pos/ops/diagnostics/send-logs/', { note: nota });
+    },
+    onSuccess: (r: any) => notifyGuide({ title: 'Logs enviados', message: r.data.detail }),
+    onError: notifyError,
+  });
+
   if (!d) return <div className="flex-1 flex items-center justify-center text-[#999]">A carregar…</div>;
 
   const Card = ({ title, ok, children }: any) => (

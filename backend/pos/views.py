@@ -663,6 +663,23 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 unit_price = ticket.outlet.price_for(item)
         unit_price = Decimal(str(unit_price))
 
+        # (Utilizador POS) "Usa preço de custo" — a caixa da FICHA DO OPERADOR (backoffice)
+        # decide: quem a tem lança ao CUSTO médio (staff, consumo interno), não ao preço
+        # de venda. O terminal manda o operador; a regra vive na ficha dele.
+        op_id = request.data.get('operator')
+        if op_id:
+            from .models import PosUser
+            op = PosUser.objects.filter(pk=op_id).first()
+            if op and op.use_cost_price:
+                unit_price = Decimal(str(item.current_average_cost or 0))
+            # (Utilizador POS) "Consumo interno" — sem a caixa, o operador não lança
+            # numa conta de CONSUMO INTERNO. É custo da casa: não é para qualquer caixa.
+            if (getattr(ticket, 'guest_type', '') == 'INTERNO'
+                    and op and not op.internal_consumption):
+                return Response({'detail': 'Não está autorizado a lançar consumo interno '
+                                           '(caixa "Consumo interno" na ficha do utilizador).',
+                                 'requires_supervisor': True}, status=status.HTTP_403_FORBIDDEN)
+
         # HAPPY HOUR — a grelha hora × dia manda no preço. Às 17h de quinta o gin passa
         # ao Preço 2; às 20h volta ao normal, sozinho. É o que a grelha do ecrã define.
         happy_note = None

@@ -70,6 +70,19 @@ PARAMS = [
     (8620, 'Geral', 'Desconto máximo sem supervisor (%)', I, [], '10',
      'Acima deste valor, o POS exige a autorização de um supervisor.'),
 
+    # ---------------- E-mail (SMTP) ----------------
+    # A EMPRESA configura aqui o SEU servidor de envio (e-mails a clientes/parceiros).
+    # Sem password preenchida, o motor SIMULA (regista no outbox sem enviar) — o vendedor
+    # entrega o sistema a funcionar e o cliente liga o SMTP quando tiver conta.
+    (8500, 'E-mail (SMTP)', 'Servidor SMTP', T, [], '', 'Ex.: smtp.sendgrid.net, smtp.office365.com'),
+    (8501, 'E-mail (SMTP)', 'Porta', I, [], '587', ''),
+    (8502, 'E-mail (SMTP)', 'Utilizador', T, [], '', ''),
+    (8503, 'E-mail (SMTP)', 'Password', T, [], '', 'Guardada no servidor; nunca aparece nos ecrãs.'),
+    (8504, 'E-mail (SMTP)', 'Remetente (From)', T, [], '', 'Ex.: noreply@oseuhotel.ao'),
+    (8505, 'E-mail (SMTP)', 'Usar TLS', B, [], 'true', ''),
+    (8510, 'E-mail (SMTP)', 'E-mail do suporte (envio de logs)', T, [], 'suporte@mwanalodge.ao',
+     'Para onde o Diagnóstico envia os logs do sistema quando o cliente pede assistência.'),
+
     # ---------------- Reporting ----------------
     (1363, 'Reporting', 'Servidor de Relatórios (URL)', T, [], '', 'Windows Reporting Services (SSRS).'),
     (1360, 'Reporting', 'Gestor de Relatórios (URL)', T, [], '', ''),

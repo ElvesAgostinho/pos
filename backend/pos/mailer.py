@@ -67,16 +67,29 @@ def send(to, subject, body, reply_to=None, template=None, context_ref=None):
         reg.save(update_fields=['status', 'error'])
         return reg
 
-    if not getattr(settings, 'EMAIL_HOST_PASSWORD', ''):
-        # ambiente sem SMTP: o fluxo funciona, o envio é simulado e fica no registo
+    # O SMTP DA CASA vem dos PARÂMETROS (E-mail (SMTP), 8500-8505) — é lá que o
+    # cliente o configura no backoffice. Sem parâmetros, vale o ambiente (settings).
+    from .params import P
+    host = P.text(8500, '') or getattr(settings, 'EMAIL_HOST', '')
+    password = P.text(8503, '') or getattr(settings, 'EMAIL_HOST_PASSWORD', '')
+    if not (host and password):
+        # sem SMTP configurado: o fluxo funciona, o envio é simulado e fica no registo
         reg.status = 'SIMULATED'
         reg.save(update_fields=['status'])
         return reg
 
     try:
-        from django.core.mail import EmailMessage
+        from django.core.mail import EmailMessage, get_connection
+        conn = get_connection(
+            host=host,
+            port=P.int(8501, 0) or getattr(settings, 'EMAIL_PORT', 587),
+            username=P.text(8502, '') or getattr(settings, 'EMAIL_HOST_USER', ''),
+            password=password,
+            use_tls=P.bool(8505, True),
+        )
+        remetente = (P.text(8504, '') or getattr(settings, 'DEFAULT_FROM_EMAIL', None))
         msg = EmailMessage(subject=subject, body=body,
-                           from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', None),
+                           from_email=remetente, connection=conn,
                            to=to, reply_to=[reply_to] if reply_to else None)
         msg.content_subtype = 'html'
         msg.send(fail_silently=False)

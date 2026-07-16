@@ -36,15 +36,37 @@ const CustomerLogin: React.FC = () => {
     return () => { alive = false; };
   }, []);
 
+  // TROCA FORÇADA: a caixa "Obrigar a mudar a password" da ficha do utilizador viaja
+  // no login — o ecrã PARA aqui até ele a mudar. É assim que se entrega um utilizador
+  // novo com password provisória sem ela ficar a viver para sempre.
+  const [trocar, setTrocar] = useState(false);
+  const [novaPw, setNovaPw] = useState('');
+  const [confirmaPw, setConfirmaPw] = useState('');
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      await authApi.backofficeLogin(username, password);
+      const resp = await authApi.backofficeLogin(username, password);
       if (remember) localStorage.setItem('ui_last_user', username); else localStorage.removeItem('ui_last_user');
+      if ((resp as any)?.must_change_password) { setTrocar(true); return; }
       navigate('/backoffice');
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Não foi possível iniciar sessão. Verifique as credenciais.');
+    } finally { setLoading(false); }
+  };
+
+  const handleTrocarPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (novaPw !== confirmaPw) return setError('A nova palavra-passe e a confirmação não coincidem.');
+    setLoading(true);
+    try {
+      await apiClient.post('auth/change-password/', { current_password: password, new_password: novaPw });
+      navigate('/backoffice');
+    } catch (err: any) {
+      const d = err?.response?.data;
+      setError(d?.detail || 'Não foi possível alterar a palavra-passe.');
     } finally { setLoading(false); }
   };
 
@@ -78,6 +100,39 @@ const CustomerLogin: React.FC = () => {
 
           {/* Formulário (direita) */}
           <div className="flex-1 p-6">
+            {trocar ? (
+              /* TROCA OBRIGATÓRIA: o gestor marcou "Obrigar a mudar a password" — não
+                 se entra sem a trocar. A caixa desliga-se sozinha ao gravar. */
+              <form onSubmit={handleTrocarPassword} className="space-y-3">
+                <div className="text-[13px] font-bold text-gray-800 mb-1">Mudança de palavra-passe obrigatória</div>
+                <div className="text-[12px] text-gray-600 mb-3">
+                  A sua conta foi entregue com uma palavra-passe provisória. Defina a sua antes de continuar.
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+                  <label className="text-[13px] text-gray-700 text-right">Nova palavra-passe:</label>
+                  <div className="flex items-center gap-1.5 bg-white border border-[#7f9db9] h-9 px-2">
+                    <Lock size={14} className="text-gray-500" />
+                    <input type="password" autoFocus value={novaPw} onChange={(e) => setNovaPw(e.target.value)}
+                      className="flex-1 outline-none text-[13px]" />
+                  </div>
+                  <label className="text-[13px] text-gray-700 text-right">Confirmar:</label>
+                  <div className="flex items-center gap-1.5 bg-white border border-[#7f9db9] h-9 px-2">
+                    <Lock size={14} className="text-gray-500" />
+                    <input type="password" value={confirmaPw} onChange={(e) => setConfirmaPw(e.target.value)}
+                      className="flex-1 outline-none text-[13px]" />
+                  </div>
+                </div>
+                {error && <div className="ml-[158px] text-[12px] text-red-700 bg-red-50 border border-red-200 px-2 py-1">{error}</div>}
+                <div className="flex justify-end gap-2 pt-1">
+                  <button type="submit" disabled={loading || novaPw.length < 6}
+                    className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#dbe8ff' }}>
+                    {loading ? 'A gravar…' : 'Gravar e entrar'}
+                  </button>
+                </div>
+                <div className="text-[11px] text-gray-500">Mínimo 6 caracteres, diferente da atual.</div>
+              </form>
+            ) : (
+            <>
             <div className="text-[13px] text-gray-600 mb-4">{welcome}</div>
             <form onSubmit={handleLogin} className="space-y-3">
               <div className="grid grid-cols-[110px_1fr] items-center gap-2">
@@ -117,6 +172,8 @@ const CustomerLogin: React.FC = () => {
                 </button>
               </div>
             </form>
+            </>
+            )}
           </div>
         </div>
 

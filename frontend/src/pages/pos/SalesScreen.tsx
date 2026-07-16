@@ -6,6 +6,8 @@ import EntityPicker from './EntityPicker';
 import PayPanel from './PayPanel';
 import SubcontaBar from './SubcontaBar';
 import ArticleSearch from './ArticleSearch';
+import GuestsPanel from './GuestsPanel';
+import DocsPanel from './DocsPanel';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -33,6 +35,9 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   const [escolherEntidade, setEscolherEntidade] = useState(false);
   const [pagar, setPagar] = useState(false);
   const [procurar, setProcurar] = useState(false);   // consulta de artigo (catálogo inteiro)
+  // A VENDA CONSULTA TUDO sem sair: artigos, hóspedes e documentos — os mesmos
+  // painéis do backoffice, abertos por cima do teclado (a "junção").
+  const [painel, setPainel] = useState<'' | 'GUESTS' | 'DOCS'>('');
 
   // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
   // muda os preços que as teclas mostram (staff/consumo interno vê o custo).
@@ -40,9 +45,11 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
     try { return JSON.parse(localStorage.getItem('pos_operator') || '{}')?.id; } catch { return undefined; }
   })();
   const { data: teclado } = useQuery({
-    queryKey: ['pos-keypad', operId],
-    queryFn: async () => (await apiClient.get('pos/terminal/keyboard/',
-      { params: operId ? { operator: operId } : undefined })).data,
+    queryKey: ['pos-keypad', operId, setor?.id],
+    queryFn: async () => (await apiClient.get('pos/terminal/keyboard/', {
+      // o SETOR escolhe o teclado (parâmetro 8176) e o NÍVEL DE PREÇO dele
+      params: { ...(operId ? { operator: operId } : {}), ...(setor?.id ? { sector: setor.id } : {}) },
+    })).data,
   });
   const { data: conta } = useQuery({
     queryKey: ["pos-ticket", tid],
@@ -70,7 +77,9 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
     if (k.available === false) return;
     try {
       await comPerguntas(`pos/tickets/${tid}/add_line/`,
-        { item: k.item, quantity: qtd },
+        // o OPERADOR segue no pedido: as caixas da ficha dele (preço de custo,
+        // consumo interno) decidem o preço e a autorização — no servidor.
+        { item: k.item, quantity: qtd, operator: operId },
         async (label, detalhe) => window.prompt(`${detalhe}\n\n${label}:`));
       setQtd(1);
       // (Parâmetro 8308) "Enviar para a cozinha automaticamente": cada artigo lançado
@@ -120,6 +129,22 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
     <div className="absolute inset-0 flex">
       {/* ───────── teclado ───────── */}
       <div className="flex-1 flex flex-col overflow-hidden p-2">
+        {/* ONDE ESTOU: a mesa (ou balcão) que está a ser atendida — sempre à vista. */}
+        <div className="h-[40px] mb-2 bg-black rounded flex items-center px-3 gap-3 text-white flex-shrink-0">
+          <span className="text-[18px] font-bold text-[#f0c000]">
+            {conta?.table_label ? `Mesa ${conta.table_label}` : (conta?.dest_label || 'Balcão · Venda Direta')}
+          </span>
+          <span className="text-white/50 text-[13px]">{conta?.ticket_number}</span>
+          <span className="ml-auto text-[13px] text-white/60">
+            {{ PASSANTE: 'Passante', HOTEL: 'Hóspede', INTERNO: 'Consumo Interno' }[conta?.guest_type as string] || ''}
+            {conta?.customer_name ? ` · ${conta.customer_name}` : ''}
+          </span>
+          {/* consultas SEM sair da venda — hóspedes e documentos (a junção) */}
+          <button onClick={() => setPainel('GUESTS')}
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">👤 Hóspedes</button>
+          <button onClick={() => setPainel('DOCS')}
+            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🗎 Docs</button>
+        </div>
         <div className="grid gap-2 mb-2" style={{ gridTemplateColumns: 'repeat(4, minmax(0,1fr))' }}>
           <button onClick={() => (caminho.length ? setCaminho(caminho.slice(0, -1)) : onClose())}
             className="h-[76px] bg-[#3a3a3a] text-[#f0c000] text-[34px] font-bold rounded active:scale-95">
@@ -233,6 +258,10 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
             className="h-[76px] bg-[#2b2b2b] text-[#2ecc40] text-[34px]">✔</button>
         </div>
       </div>
+
+      {/* hóspedes e documentos — os painéis do backoffice, dentro da venda */}
+      {painel === 'GUESTS' && <GuestsPanel aba="GUESTS" onClose={() => setPainel('')} />}
+      {painel === 'DOCS' && <DocsPanel onClose={() => setPainel('')} />}
 
       {/* consulta de artigo: procura no catálogo INTEIRO e lança com um toque */}
       {procurar && (

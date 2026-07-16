@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    Table, Order, OrderLine, Payment, Outlet, POSProductConfig, OutletPaymentMethod,
+    Outlet, POSProductConfig, OutletPaymentMethod,
     CashSession, CashMovement, POSTable, POSTicket, POSTicketLine, POSTicketPayment, POSDocument,
     POSAuditLog, PrintJob, POSReservation, POSLineModifier, GiftCard,
 )
@@ -77,39 +77,6 @@ class POSProductConfigAdmin(admin.ModelAdmin):
 class OutletPaymentMethodAdmin(admin.ModelAdmin):
     list_display = ('payment_method', 'outlet', 'is_active', 'sort_order')
     list_filter = ('outlet', 'is_active')
-
-
-@admin.register(Table)
-class TableAdmin(admin.ModelAdmin):
-    list_display = ('name', 'area', 'seats', 'is_active')
-    list_filter = ('is_active', 'area')
-    search_fields = ('name',)
-
-
-class OrderLineInline(admin.TabularInline):
-    model = OrderLine
-    extra = 0
-    autocomplete_fields = ('item',)
-
-
-class PaymentInline(admin.TabularInline):
-    model = Payment
-    extra = 0
-
-
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ('receipt_number', 'status', 'operator', 'table', 'grand_total', 'opened_at', 'closed_at')
-    list_filter = ('status', 'hotel')
-    search_fields = ('receipt_number',)
-    date_hierarchy = 'opened_at'
-    inlines = [OrderLineInline, PaymentInline]
-
-
-@admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('order', 'payment_method', 'amount_applied', 'change_due', 'processed_at')
-    list_filter = ('payment_method',)
 
 
 @admin.register(PrintJob)

@@ -68,14 +68,27 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, onConfirm, on
           <>
             <div className="text-white/50 text-[13px] mt-3 mb-1">Tipo de cliente</div>
             <div className="grid grid-cols-3 gap-2">
-              {[['PASSANTE', 'Passante'], ['HOTEL', 'Hotel'], ['INTERNO', 'Consumo\nInterno']].map(([k, l]) => (
-                <button key={k}
-                  onClick={() => (k === 'PASSANTE' && onPassante ? onPassante() : setTipo(k))}
-                  className={`h-[50px] rounded-md text-[14px] font-bold whitespace-pre-line transition ${tipo === k
-                    ? 'bg-[#0f8b8d] text-white ring-2 ring-white/70' : 'bg-[#1f1f1f] text-white/80'}`}>
-                  {l}
-                </button>
-              ))}
+              {[['PASSANTE', 'Passante'], ['HOTEL', 'Hotel'], ['INTERNO', 'Consumo\nInterno']].map(([k, l]) => {
+                // (Utilizador POS) "Consumo interno" — sem a caixa na ficha do operador
+                // (backoffice), o botão fica apagado: o custo da casa não é para todos.
+                const podeInterno = (() => {
+                  try {
+                    return !!JSON.parse(localStorage.getItem('pos_operator') || '{}')
+                      ?.flags?.internal_consumption;
+                  } catch { return false; }
+                })();
+                const bloqueado = k === 'INTERNO' && !podeInterno;
+                return (
+                  <button key={k} disabled={bloqueado}
+                    title={bloqueado ? 'Sem autorização de consumo interno (ficha do utilizador)' : ''}
+                    onClick={() => (k === 'PASSANTE' && onPassante ? onPassante() : setTipo(k))}
+                    className={`h-[50px] rounded-md text-[14px] font-bold whitespace-pre-line transition
+                      disabled:opacity-30 ${tipo === k
+                      ? 'bg-[#0f8b8d] text-white ring-2 ring-white/70' : 'bg-[#1f1f1f] text-white/80'}`}>
+                    {l}
+                  </button>
+                );
+              })}
             </div>
           </>
         )}

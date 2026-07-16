@@ -4,6 +4,8 @@ import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
 import type { DeskIcon } from '../../config/workspace';
 import { getAppearance } from '../../config/appearance';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
 import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
@@ -74,6 +76,41 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   const closeAll = () => { setModMenu(false); setTopMenu(null); setStart(false); };
 
   const quick = ws.icons.filter((i) => i.quick);   // atalhos do ambiente de trabalho
+
+  // MÓDULOS CONFIGURADOS (Configuração POS › Módulo): os que têm "Mostrar no Desktop"
+  // aparecem aqui como atalhos, e as caixas "iframe / janela externa / widget" decidem
+  // COMO abrem. Era configuração gravada que o Desktop ignorava.
+  const { data: modulos = [] } = useQuery({
+    queryKey: ['desk-modules'],
+    queryFn: async () => {
+      const r = await apiClient.get('pos/config/modules/');
+      return ((r.data?.results || r.data || []) as any[])
+        .filter((m) => m.is_active && m.show_on_desktop);
+    },
+  });
+  // janela embebida (iframe) ou widget — abertos por cima do ambiente de trabalho
+  const [embutido, setEmbutido] = useState<{ title: string; url: string; widget?: boolean } | null>(null);
+
+  const MOD_ROTA: Record<string, { url?: string; sec?: string }> = {
+    'mwana-pos-front': { url: '/pos/terminal' },
+    'mwana-pos-config': { sec: 'articles' },
+    'mwana-reporting': { sec: 'x_reports' },
+    'mwana-search': { sec: 'x_entities' },
+    'mwana-stock': { sec: 'x_stock' },
+    'mwana-fiscal': { sec: 'x_saft' },
+  };
+  const abrirModulo = (m: any) => {
+    const rota = MOD_ROTA[m.module_id] || {};
+    const comoAbre = m.is_external_window ? 'external' : m.is_iframe ? 'iframe'
+      : m.is_widget ? 'widget' : 'screen';
+    if (rota.sec) localStorage.setItem('posc_section', rota.sec);
+    const url = rota.url || '/backoffice#posc_config';
+    if (comoAbre === 'external') return window.open(url, '_blank', 'noopener');
+    if (comoAbre === 'iframe') return setEmbutido({ title: m.name, url });
+    if (comoAbre === 'widget') return setEmbutido({ title: m.name, url, widget: true });
+    if (rota.url) return window.open(rota.url, '_blank', 'noopener');   // ecrãs fora do backoffice
+    open('posc_config', m.name);
+  };
 
   // Dropdowns REAIS da barra de cima — OS MESMOS DO POS (F&B, Marketing, Reporting,
   // Utilitários). Antes eram outros (Favoritos/Recentes/Relatórios/Ferramentas): o
@@ -198,7 +235,28 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           {quick.map((ic, i) => (
             <DesktopIcon key={i} ic={ic} accent={ws.accent} glow={ws.glow} onOpen={() => openIcon(ic)} />
           ))}
+          {/* MÓDULOS com "Mostrar no Desktop" — abrem como a ficha manda (open_as) */}
+          {modulos.map((m: any) => (
+            <DesktopIcon key={m.module_id}
+              ic={{ label: m.name, icon: 'app' } as any}
+              accent={ws.accent} glow={ws.glow} onOpen={() => abrirModulo(m)} />
+          ))}
         </div>
+
+        {/* JANELA EMBEBIDA (iframe) ou WIDGET — a caixa da ficha do módulo decide */}
+        {embutido && (
+          <div className={embutido.widget
+            ? 'absolute bottom-14 right-5 w-[460px] h-[340px] z-[90] shadow-2xl border border-white/30 rounded overflow-hidden bg-black'
+            : 'absolute inset-6 z-[90] shadow-2xl border border-white/30 rounded overflow-hidden bg-black'}>
+            <div className="h-[34px] flex items-center justify-between px-3 text-white text-[13px] font-bold"
+              style={{ background: ws.colorDark }}>
+              <span>{embutido.title}{embutido.widget ? ' (widget)' : ''}</span>
+              <button onClick={() => setEmbutido(null)} className="hover:bg-white/20 px-2">✕</button>
+            </div>
+            <iframe src={embutido.url} title={embutido.title}
+              className="w-full bg-white" style={{ height: 'calc(100% - 34px)', border: 0 }} />
+          </div>
+        )}
 
         {/* Painel direito — só consultas rápidas */}
         <div className="absolute top-5 right-5 w-[220px] flex flex-col gap-2.5">
