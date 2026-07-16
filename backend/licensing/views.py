@@ -48,6 +48,72 @@ def _real_license():
     return {'licensed': False, 'modules': [], 'source': None}
 
 
+class LicenseSyncView(APIView):
+    """SINCRONIZAR COM O PCC — o botão do Gestor de licenças.
+
+    O cliente apresenta a licença que TEM ao PCC (HTTPS); o PCC devolve a mais
+    recente desse cliente. ANTES de gravar, valida-se localmente a assinatura e
+    que o client_code é o mesmo — o PCC podia estar comprometido, o ficheiro no
+    disco não fica à mercê dele. A antiga fica em license.key.bak.
+
+    Sem internet, nada muda: o sistema continua com a licença que tem (offline
+    é o desenho, não a falha).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        import os, json, base64, shutil
+        import requests as http
+        from django.conf import settings
+        from licensing.engine.crypto import verify_license
+
+        pcc = os.environ.get('PCC_URL', getattr(settings, 'PCC_URL', 'http://127.0.0.1:8000'))
+        caminho = os.path.join(settings.BASE_DIR, 'license.key')
+        atual_raw = open(caminho).read().strip() if os.path.exists(caminho) else ''
+        if not atual_raw:
+            return Response({'detail': 'Não há licença instalada — a primeira instala-se '
+                                       'com o ficheiro do PCC, não por sincronização.'}, status=400)
+        try:
+            r = http.post(f'{pcc.rstrip("/")}/api/clm/licenses/latest/',
+                          json={'license_key': atual_raw}, timeout=20)
+        except Exception as e:
+            return Response({'detail': f'Sem ligação ao PCC ({pcc}): {e}'}, status=502)
+        if r.status_code != 200:
+            try:
+                return Response(r.json(), status=r.status_code)
+            except Exception:
+                return Response({'detail': f'PCC respondeu {r.status_code}.'}, status=502)
+
+        nova_raw = (r.json().get('license_key') or '').strip()
+        try:
+            nova = json.loads(base64.b64decode(nova_raw).decode('utf-8'))
+            sig = nova.pop('signature', None)
+            if not (sig and verify_license(nova, sig)):
+                return Response({'detail': 'O PCC devolveu uma licença com assinatura '
+                                           'inválida — nada foi alterado.'}, status=502)
+            antiga = json.loads(base64.b64decode(atual_raw).decode('utf-8'))
+            if nova.get('client_code') != antiga.get('client_code'):
+                return Response({'detail': 'A licença devolvida é de OUTRO cliente — '
+                                           'nada foi alterado.'}, status=502)
+        except Exception:
+            return Response({'detail': 'Licença devolvida ilegível — nada foi alterado.'}, status=502)
+
+        mudou_modulos = set(nova.get('modules') or []) != set(antiga.get('modules') or [])
+        shutil.copyfile(caminho, caminho + '.bak')
+        with open(caminho, 'w') as f:
+            f.write(nova_raw)
+
+        return Response({
+            'detail': 'Licença sincronizada com o PCC.',
+            'license_number': nova.get('license_number'),
+            'valid_until': nova.get('valid_until'),
+            'limits': nova.get('limits'),
+            'modules': len(nova.get('modules') or []),
+            # módulos novos só entram quando o serviço reinicia (INSTALLED_APPS)
+            'restart_needed': mudou_modulos,
+        })
+
+
 class LicenseStatusView(APIView):
     """Estado da licença real (on-premises). Sem licença válida = sem acesso à plataforma."""
     permission_classes = [AllowAny]

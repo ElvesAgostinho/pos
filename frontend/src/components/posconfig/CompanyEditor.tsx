@@ -238,10 +238,26 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 </div>
                 <div className="col-span-2 flex items-center gap-2 text-[11px] text-[#666] border-t border-[#eee] pt-2">
                   <span className="w-6 h-6 rounded-full bg-[#3c3c3c] text-white flex items-center justify-center">🔑</span>
-                  <span>
+                  <span className="flex-1">
                     <b>Gestor de licenças</b> — os campos a cinzento vêm do ficheiro de licença assinado pelo fornecedor
                     e não são editáveis. Para alargar módulos, terminais ou validade, contacte o fornecedor.
                   </span>
+                  {/* O PCC liga/desliga remotamente: este botão pede a licença mais
+                      recente (autenticado pela posse da atual) e valida-a localmente. */}
+                  <button onClick={async () => {
+                    try {
+                      const r = await apiClient.post('licensing/sync/', {});
+                      const d2 = r.data;
+                      alert(`${d2.detail}\n\nLicença: ${d2.license_number}\nVálida até: ${d2.valid_until}`
+                        + (d2.restart_needed ? '\n\n⚠ Os módulos mudaram — reinicie o serviço para entrarem.' : ''));
+                      window.location.reload();
+                    } catch (e: any) {
+                      alert(e?.response?.data?.detail || 'Não foi possível sincronizar com o PCC.');
+                    }
+                  }}
+                    className="h-8 px-4 text-[12px] font-bold bg-[#dbe8ff] border border-[#8c8c8c] hover:bg-[#e8f0ff]">
+                    ⟳ Sincronizar com o PCC
+                  </button>
                 </div>
               </div>
             );

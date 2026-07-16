@@ -81,6 +81,48 @@ class LicenseViewSet(viewsets.ModelViewSet):
     serializer_class = LicenseSerializer
     permission_classes = [IsAdminUser]
 
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def latest(self, request):
+        """SINCRONIZAÇÃO: o backoffice do cliente pede a licença MAIS RECENTE.
+
+        Autenticação por PROVA DE POSSE: o cliente apresenta a licença que TEM
+        (assinada pelo PCC). Verificamos a assinatura — quem tem uma licença
+        legítima pode pedir a renovação dela; quem não tem, não recebe nada.
+        Uma licença EXPIRADA continua a autenticar (renovar é exatamente o caso).
+        """
+        import json, base64
+        from licensing.engine.crypto import verify_license
+        raw = (request.data.get('license_key') or '').strip()
+        try:
+            data = json.loads(base64.b64decode(raw).decode('utf-8'))
+            sig = data.pop('signature', None)
+            if not (sig and verify_license(data, sig)):
+                return Response({'detail': 'A licença apresentada não é válida.'}, status=403)
+        except Exception:
+            return Response({'detail': 'Licença apresentada ilegível.'}, status=400)
+
+        code = data.get('client_code')
+        lic = (License.objects.filter(client__code=code)
+               .order_by('-created_at').first())
+        if not lic:
+            return Response({'detail': f'Cliente "{code}" desconhecido no PCC.'}, status=404)
+        if lic.client.status in ('SUSPENDED', 'CANCELED'):
+            return Response({'detail': 'A conta deste cliente está suspensa no PCC. '
+                                       'Contacte o fornecedor.'}, status=403)
+
+        from clm.engine.provisioning import ProvisioningWorkflow
+        wf = ProvisioningWorkflow(admin_user='remote-sync')
+        AuditLogCLM.objects.create(
+            action='LICENSE_SYNC_PULL',
+            details={'client': code, 'license': lic.license_number,
+                     'presented': data.get('license_number')},
+            user_identity='remote-sync')
+        return Response({
+            'license_number': lic.license_number,
+            'valid_until': str(lic.valid_until) if lic.valid_until else None,
+            'license_key': wf._generate_license_key_string(lic),
+        })
+
 class InstallationViewSet(viewsets.ModelViewSet):
     queryset = Installation.objects.all()
     serializer_class = InstallationSerializer
