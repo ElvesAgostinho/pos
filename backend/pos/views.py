@@ -42,20 +42,29 @@ def _print_document(ticket, doc, copia=False):
       · a MENÇÃO legal com o nº de certificação e os 4 caracteres da assinatura.
     """
     from .models import PrintJob
+    from .params import P
     from fiscal.models import FiscalConfig
     from fiscal.services import summarize_by_rate
     from decimal import Decimal
 
     cfg = FiscalConfig.get()
+    # (8364) casas decimais nos valores do talão; (8149) artigos a 0 não se imprimem
+    # (couvert incluído, oferta do pacote) — o papel fica mais curto e mais claro.
+    casas = max(0, min(4, P.int(8364, 2)))
+    def fmt(v):
+        return f"{Decimal(str(v)):.{casas}f}"
+    linhas_doc = doc.lines.all()
+    if P.bool(8149, False):
+        linhas_doc = [l for l in linhas_doc if (l.line_total + l.tax_amount) != 0]
     linhas = "\n".join(
-        f"{l.quantity.normalize():f}x {l.description} .... {l.line_total + l.tax_amount}"
-        for l in doc.lines.all())
+        f"{l.quantity.normalize():f}x {l.description} .... {fmt(l.line_total + l.tax_amount)}"
+        for l in linhas_doc)
 
     # Resumo de IVA por taxa (é o que a AGT confere).
     resumo = summarize_by_rate([(Decimal(str(l.tax_percentage or 0)),
                                  Decimal(str(l.line_total)) + Decimal(str(l.tax_amount)))
                                 for l in doc.lines.all()])
-    iva = "\n".join(f"IVA {r['rate']:g}%  base {r['base']}  imposto {r['tax']}" for r in resumo)
+    iva = "\n".join(f"IVA {r['rate']:g}%  base {fmt(r['base'])}  imposto {fmt(r['tax'])}" for r in resumo)
 
     # Menção legal: nº de certificação + 4 caracteres da assinatura (posições 1,11,21,31).
     h = doc.doc_hash or ''
@@ -68,6 +77,12 @@ def _print_document(ticket, doc, copia=False):
         mencao = (f"{quatro}-Processado por programa validado n.º "
                   f"{cfg.certificate_number or 'S/N'}")
 
+    # (8148) o nome por defeito do "sem contribuinte" é parametrizável (há casas que
+    # imprimem "Cliente Final"); (8256) a mensagem de despedida é da casa, não do código;
+    # (8207) linhas em branco antes da guilhotina — sem elas o corte leva o total.
+    sem_nif = P.text(8148, 'Consumidor Final')
+    rodape = P.text(8256, 'Obrigado pela sua visita.')
+    corte = '\n' * max(0, min(10, P.int(8207, 2)))
     return PrintJob.objects.create(
         job_type='INVOICE', outlet=ticket.outlet,
         title=f"{'2ª VIA · ' if copia else ''}{doc.invoice_no}",
@@ -75,13 +90,13 @@ def _print_document(ticket, doc, copia=False):
                  f"NIF: {cfg.company_nif or ''}\n"
                  f"{'*** 2ª VIA ***' if copia else 'ORIGINAL'}\n"
                  f"{doc.invoice_no}   {doc.doc_date:%d/%m/%Y}\n"
-                 f"Cliente: {doc.customer_name or 'Consumidor Final'}\n"
-                 f"NIF cliente: {doc.customer_tax_id or 'Consumidor Final'}\n"
+                 f"Cliente: {doc.customer_name or sem_nif}\n"
+                 f"NIF cliente: {doc.customer_tax_id or sem_nif}\n"
                  f"{'-' * 34}\n{linhas}\n{'-' * 34}\n"
                  f"{iva}\n"
-                 f"TOTAL: {doc.gross_total} Kz\n"
+                 f"TOTAL: {fmt(doc.gross_total)} Kz\n"
                  f"Valor por extenso: {doc.amount_in_words or ''}\n"
-                 f"{'-' * 34}\n{mencao}"),
+                 f"{'-' * 34}\n{mencao}\n{rodape}{corte}"),
         reference=doc.invoice_no, copies=1)
 
 def _safe_fiscalize(ticket, request, credito=False, customer=None):
@@ -498,6 +513,24 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                         ticket.discount_authorized_by = f'VIP ({cust.name})'
                         ticket.save(update_fields=['discount_percent', 'discount_authorized_by'])
                         ticket.recompute(save=True)
+                    # (8075-8081) DESCONTO POR TIPO DE ENTIDADE: Hóspede, Empresa,
+                    # Agência, Grupo, Proprietário — cada tipo tem o seu desconto de
+                    # casa nos parâmetros. O VIP (da ficha) tem prioridade.
+                    elif not ticket.discount_percent and cust.entity_type_id:
+                        POR_TIPO = {'HÓSPEDE': 8075, 'HOSPEDE': 8075, 'EMPRESA': 8076,
+                                    'AGÊNCIA': 8077, 'AGENCIA': 8077, 'GRUPO': 8079,
+                                    'PROPRIETÁRIO': 8081, 'PROPRIETARIO': 8081}
+                        num = POR_TIPO.get((cust.entity_type.name or '').strip().upper())
+                        if num:
+                            try:
+                                pct = Decimal(str(P.text(num, '') or '0').replace('%', '').replace(',', '.'))
+                            except Exception:
+                                pct = Decimal('0')
+                            if 0 < pct <= 100:
+                                ticket.discount_percent = pct
+                                ticket.discount_authorized_by = f'Tipo {cust.entity_type.name} (parâmetro {num})'
+                                ticket.save(update_fields=['discount_percent', 'discount_authorized_by'])
+                                ticket.recompute(save=True)
             except Exception:
                 pass
         log_event(request, 'TICKET_OPEN', f'Cliente associado: {ticket.customer_name or "—"}',
@@ -533,6 +566,12 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         import uuid
         data = serializer.validated_data
+        # (8333) "Tipo de Hóspede é obrigatório": sem saber se é passante, hóspede ou
+        # consumo interno, a receita mistura-se com o custo do staff e o mapa mente.
+        if P.bool(8333, True) and not data.get('guest_type'):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'guest_type': ['O tipo de cliente é obrigatório (parâmetro '
+                                                  '8333): Passante, Hotel ou Consumo Interno.']})
         num = data.get('ticket_number') or f"TCK-{uuid.uuid4().hex[:8].upper()}"
         ticket = serializer.save(ticket_number=num)
         # A MESA PASSA A OCUPADA. Antes só a lista de contas abertas sabia disso — o
@@ -1034,6 +1073,16 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             if em_caixa >= pm.pickup_alert_amount:
                 pickup = (f'A caixa já tem {em_caixa} Kz em {pm.name} — acima do limite de '
                           f'{pm.pickup_alert_amount}. Faça uma sangria.')
+                # (8222) o talão da sangria sai em N VIAS: uma vai com o dinheiro,
+                # outra fica na gaveta — é assim que as duas pontas se conferem.
+                from .models import PrintJob
+                PrintJob.objects.create(
+                    job_type='RECEIPT', outlet=ticket.outlet,
+                    title=f'CASH PICKUP · {pm.name}',
+                    content=(f'CASH PICKUP (sangria)\n{pm.name}\n'
+                             f'Em caixa: {em_caixa} Kz\nLimite: {pm.pickup_alert_amount} Kz\n'
+                             f'Operador: {ticket.operator_name}\n'),
+                    reference=ticket.ticket_number, copies=max(1, P.int(8222, 2)))
 
         ticket = POSTicket.objects.get(pk=ticket.pk)  # recarrega com o novo pagamento
 
@@ -1520,6 +1569,26 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             return Response({'detail': f'Não se estorna: {", ".join(set(bloqueados))} não '
                                        f'permite devolução (caixa "Permite estorno").',
                              'no_refund': True}, status=400)
+
+        # (8174) TALÃO DE QUARTO: só se anula enquanto a conta PMS (folio) estiver
+        # ABERTA. Depois do check-out, o hóspede já pagou o folio — devolver aqui era
+        # devolver dinheiro que o hotel já recebeu e conferiu.
+        if P.bool(8174, True):
+            de_quarto = [p for p in ticket.payments.select_related('payment_method')
+                         if p.payment_method and p.payment_method.method_type == 'ROOM']
+            if de_quarto:
+                try:
+                    from pms.models import Folio
+                    folio_aberto = Folio.objects.filter(
+                        charges__description__icontains=ticket.ticket_number,
+                        status='OPEN').exists()
+                    if not folio_aberto:
+                        return Response({'detail': 'Este talão foi lançado no quarto e a conta '
+                                                   'PMS já está fechada — não se anula '
+                                                   '(parâmetro 8174). Resolva no PMS.'}, status=400)
+                except (ImportError, ModuleNotFoundError):
+                    pass
+
         if ticket.status != 'PAID':
             return Response({'detail': 'Só contas pagas podem ser estornadas '
                                        '(esta pode já ter sido estornada noutro terminal).'}, status=400)
@@ -1552,6 +1621,10 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket = self.get_object()
         if ticket.status != 'OPEN':
             return Response({'detail': 'Ticket não está aberto.'}, status=400)
+        # (8035) Interface com PMS desligada: NADA se lança no quarto — nem por engano.
+        if not P.bool(8035, True):
+            return Response({'detail': 'A interface com o PMS está desligada nos parâmetros (8035).'},
+                            status=403)
         try:
             from pms.models import Room, Folio, FolioCharge
         except ImportError:

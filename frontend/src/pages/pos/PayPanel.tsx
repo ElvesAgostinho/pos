@@ -35,7 +35,14 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
     queryKey: ['pos-payments', ticket.outlet],
     queryFn: async () => {
       const r = await apiClient.get('pos/outlet-payment-methods/', { params: { outlet: ticket.outlet } });
-      return ((r.data?.results || r.data || []) as any[]).filter((m) => m.is_active);
+      const lista = ((r.data?.results || r.data || []) as any[]).filter((m) => m.is_active);
+      // (8012) o MEIO DE PAGAMENTO BASE aparece primeiro — é o que a mão procura.
+      try {
+        const base = (JSON.parse(localStorage.getItem('pos_cfg') || '{}').base_payment_mode || 'Cash');
+        const tipo = { Cash: 'CASH', 'Cartão': 'CARD', 'Transferência': 'OTHER' }[base as string] || 'CASH';
+        lista.sort((a, b) => (a.method_type_code === tipo ? -1 : 0) - (b.method_type_code === tipo ? -1 : 0));
+      } catch { /* sem configuração ainda */ }
+      return lista;
     },
   });
   const { data: cartao } = useQuery({

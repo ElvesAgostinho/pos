@@ -2518,7 +2518,17 @@ class EventRequest(models.Model):
 
     @property
     def blocks_space(self):
-        return bool(self.state_id and self.state.blocks_space and not self.cancelled_at)
+        if not (self.state_id and self.state.blocks_space and not self.cancelled_at):
+            return False
+        # (4078) "Não bloquear espaço com o estado Opcional": mesmo que a ficha do
+        # estado diga que bloqueia, a Opção não tira o salão do mercado.
+        try:
+            from .params import P
+            if P.bool(4078, True) and 'op' in (self.state.name or '').lower()[:4]:
+                return False
+        except Exception:
+            pass
+        return True
 
     def conflicts(self):
         """Outros pedidos que BLOQUEIAM o mesmo espaço nas mesmas horas.
@@ -2539,8 +2549,15 @@ class EventRequest(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.number:
+            # (2023) o PREFIXO do número do evento é parametrizável — "EV", "BQ", o que
+            # a casa usar nos contratos.
+            try:
+                from .params import P
+                prefixo = P.text(2023, 'EV')
+            except Exception:
+                prefixo = 'EV'
             ult = EventRequest.objects.order_by('-id').first()
-            self.number = f'EV{(ult.id + 1 if ult else 1):05d}'
+            self.number = f'{prefixo}{(ult.id + 1 if ult else 1):05d}'
         super().save(*args, **kwargs)
 
 

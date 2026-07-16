@@ -258,6 +258,31 @@ def a_por_pagar():
         total, 'x_payables')]
 
 
+# ─────────────────────────────────────────── FECHO DO DIA
+def a_fecho_do_dia():
+    """(8089) Passada a hora do parâmetro, se ainda há caixas de ONTEM abertas, avisa.
+
+    O dia de vendas tem de fechar todos os dias — uma caixa que atravessa a meia-noite
+    mistura as vendas de hoje com as de ontem e o fecho nunca mais bate.
+    """
+    from .params import P
+    from .models import CashSession
+    agora = timezone.localtime()
+    if agora.hour < P.int(8089, 5):
+        return []
+    ontem = CashSession.objects.filter(status='OPEN',
+                                       opened_at__date__lt=timezone.localdate()).count()
+    if not ontem:
+        return []
+    return [_alerta(
+        'DAY_NOT_CLOSED', 'CRITICO',
+        f'{ontem} caixa(s) de dias anteriores ainda abertas',
+        f'Já passa das {P.int(8089, 5)}h (parâmetro 8089) e o dia anterior não fechou.',
+        'Vendas de hoje a cair na caixa de ontem: o fecho nunca mais bate certo.',
+        'Feche o dia em Operações › Fecho do Dia.',
+        None, 'x_ops')]
+
+
 # ─────────────────────────────────────────── FISCAL
 def a_fiscal():
     from fiscal.models import FiscalConfig, FiscalSeries, FiscalDocument
@@ -286,7 +311,7 @@ REGRAS = [
     a_anulacoes_operador, a_logins_falhados, a_descontos,
     a_contas_abertas, a_caixas_abertas, a_impressao,
     a_stock_negativo, a_margem_negativa, a_quebras, a_por_pagar,
-    a_fiscal,
+    a_fiscal, a_fecho_do_dia,
 ]
 
 ORDEM = {'CRITICO': 0, 'AVISO': 1, 'INFO': 2}

@@ -7,11 +7,25 @@ import { useState } from 'react';
  * lista é que interessa: ele procura o hóspede, não as letras. Toca-se na caixa (ou no
  * ícone do teclado) e ele sobe; escolhe-se e ele desce.
  */
-const LINHAS = [
-  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '7', '8', '9'],
-  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç', '4', '5', '6'],
-  ['z', 'x', 'c', 'v', 'b', 'n', 'm', '-', '@', ',', '1', '2', '3'],
-];
+// (Parâmetro 8001) O LAYOUT vem do backoffice: QWERTY para Angola/Portugal, AZERTY
+// para equipas francófonas, Numérico para quem só procura por código.
+const LAYOUTS: Record<string, string[][]> = {
+  'QWERTY (Português)': [
+    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '7', '8', '9'],
+    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ç', '4', '5', '6'],
+    ['z', 'x', 'c', 'v', 'b', 'n', 'm', '-', '@', ',', '1', '2', '3'],
+  ],
+  AZERTY: [
+    ['a', 'z', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '7', '8', '9'],
+    ['q', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', '4', '5', '6'],
+    ['w', 'x', 'c', 'v', 'b', 'n', '-', '@', "'", ',', '1', '2', '3'],
+  ],
+  'Numérico': [
+    ['7', '8', '9'],
+    ['4', '5', '6'],
+    ['1', '2', '3'],
+  ],
+};
 
 export default function TouchKeyboard({ valor, setValor, onOk }: {
   valor: string;
@@ -20,6 +34,12 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
 }) {
   const [aberto, setAberto] = useState(false);
   const [maiusc, setMaiusc] = useState(false);
+  const LINHAS = (() => {
+    try {
+      const cfg = JSON.parse(localStorage.getItem('pos_cfg') || '{}');
+      return LAYOUTS[cfg.keyboard_layout] || LAYOUTS['QWERTY (Português)'];
+    } catch { return LAYOUTS['QWERTY (Português)']; }
+  })();
 
   return (
     <div className="bg-[#1f1f1f] p-2 flex-shrink-0 border-t border-black">

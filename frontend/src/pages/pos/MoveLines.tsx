@@ -92,6 +92,18 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     const linhas = (de.lines || []).filter((l: any) => (tudo ? true : seleccao.includes(l.id)));
     if (!linhas.length) return alert('Escolha os artigos a passar.');
 
+    // (8197) Dividir MUITA quantidade de uma vez merece uma segunda pergunta — em
+    // geral é um dedo a mais no teclado, não uma mesa de 40 pessoas.
+    try {
+      const limite = Number(JSON.parse(localStorage.getItem('pos_cfg') || '{}').split_warn_qty || 10);
+      const totalQtd = linhas.reduce((s: number, l: any) =>
+        s + (tudo ? Number(l.quantity) : Math.min(qtd, Number(l.quantity))), 0);
+      if (limite > 0 && totalQtd > limite
+          && !window.confirm(`Vai mover ${totalQtd} unidades de uma vez (aviso a partir de ${limite}).\n\nContinuar?`)) {
+        return;
+      }
+    } catch { /* sem configuração ainda */ }
+
     try {
       const r = await apiClient.post(`pos/tickets/${deId}/split/`, {
         lines: linhas.map((l: any) => ({
@@ -276,6 +288,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
                       try {
                         const r = await apiClient.post('pos/tickets/', {
                           outlet: m.outlet, table: m.id, guests: 1,
+                          guest_type: esq?.guest_type || 'PASSANTE',
                           operator_name: esq?.operator_name || 'Operador',
                         });
                         setDirId(r.data.id);

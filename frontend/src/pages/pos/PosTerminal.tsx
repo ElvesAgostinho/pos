@@ -83,6 +83,34 @@ export default function PosTerminal() {
     return () => clearInterval(t);
   }, []);
 
+  // (8088) INATIVIDADE: passado o tempo do parâmetro sem ninguém tocar no ecrã, a
+  // sessão do operador termina sozinha — um terminal aberto e abandonado é um
+  // terminal onde qualquer um vende em nome de outro. (8138 fecha mais tarde ainda.)
+  useEffect(() => {
+    if (!cfg?.session_timeout_minutes) return;
+    let ultimo = Date.now();
+    const mexeu = () => { ultimo = Date.now(); };
+    window.addEventListener('pointerdown', mexeu);
+    window.addEventListener('keydown', mexeu);
+    const t = setInterval(() => {
+      const min = (Date.now() - ultimo) / 60000;
+      if (min >= (cfg.app_close_minutes || 120) || min >= cfg.session_timeout_minutes) {
+        localStorage.removeItem('pos_operator_token');
+        nav('/pos/login');
+      }
+    }, 30000);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener('pointerdown', mexeu);
+      window.removeEventListener('keydown', mexeu);
+    };
+  }, [cfg?.session_timeout_minutes, cfg?.app_close_minutes]);
+
+  // o resto do terminal (teclado tátil, painéis) lê a configuração daqui
+  useEffect(() => {
+    if (cfg) localStorage.setItem('pos_cfg', JSON.stringify(cfg));
+  }, [cfg]);
+
   // O ARRANQUE obedece aos parâmetros:
   //   · "Escolher o setor ao entrar" desligado -> usa o primeiro setor e não pergunta;
   //   · "Exigir abertura de caixa" desligado   -> salta a caixa (terminais que não recebem
@@ -284,12 +312,18 @@ export default function PosTerminal() {
 
         {/* ───── o palco ───── */}
         <div className="flex-1 relative overflow-hidden"
-          style={{ background: etapa === 'SALES' ? '#2b2b2b' : (setor?.map_bg_color || '#c9c3c1') }}>
+          style={{
+            // (8271) Imagem/cor de fundo do mapa: desligada, o palco fica neutro.
+            background: etapa === 'SALES' ? '#2b2b2b'
+              : (cfg?.map_background !== false ? (setor?.map_bg_color || '#c9c3c1') : '#c9c3c1'),
+          }}>
           {etapa === 'MAP' && setor && (
             <>
               {/* SEM faixas por cima do mapa: o modo vê-se no botão aceso da barra. */}
               <TableMap setor={setor} modo={modoMapa}
                 perguntarTipo={cfg?.ask_guest_type !== false}
+                mostrarPagamento={!!cfg?.show_payment_status}
+                fundo={cfg?.map_background !== false}
                 refrescar={(cfg?.tables_refresh_seconds || 8) * 1000}
                 onOpenTicket={(id) => { setTicket(id); setEtapa('SALES'); }}
                 onViewTicket={(t) => setAConsultar(t)}

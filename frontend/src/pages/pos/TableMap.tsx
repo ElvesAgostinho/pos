@@ -30,7 +30,8 @@ const PONTO: Record<string, string> = {
 };
 
 export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTicket,
-  onViewTicket, onDirectSale, perguntarTipo = true, refrescar = 8000 }: {
+  onViewTicket, onDirectSale, perguntarTipo = true, refrescar = 8000,
+  mostrarPagamento = false, fundo = true }: {
   setor: any;
   onOpenTicket: (ticketId: number) => void;
   // Vêm dos PARÂMETROS do backoffice (8175 e 8063): perguntar o tipo de cliente, e de
@@ -46,6 +47,9 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   onViewTicket?: (ticket: any) => void;
   // "Passante" no diálogo da mesa NÃO abre a mesa: vai direto à venda de balcão.
   onDirectSale?: () => void;
+  // (8084) mostrar o estado do pagamento na mesa; (8271) usar a cor de fundo do setor.
+  mostrarPagamento?: boolean;
+  fundo?: boolean;
 }) {
   const qc = useQueryClient();
   // A mesa que se acabou de tocar e ainda não tem conta: falta perguntar quantos são.
@@ -138,6 +142,12 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
                 {conta && (
                   <span className="block text-[12px] font-normal opacity-90">
                     {Number(conta.grand_total).toLocaleString('pt-PT')} Kz
+                    {/* (8084) estado do pagamento: uma conta parcialmente paga vê-se no mapa */}
+                    {mostrarPagamento && Number(conta.balance_due) < Number(conta.grand_total) && (
+                      <span className="block text-[11px] font-bold text-[#f0c000]">
+                        parcial · falta {Number(conta.balance_due).toLocaleString('pt-PT')}
+                      </span>
+                    )}
                   </span>
                 )}
               </span>

@@ -2462,12 +2462,43 @@ class PosDayCloseView(APIView):
         vendas = POSTicket.objects.filter(status='PAID', closed_at__date=hoje)
         total = sum((t.grand_total for t in vendas), Decimal('0'))
 
+        # As SECÇÕES do relatório de fecho vêm dos parâmetros — o dono decide o que o
+        # papel do fecho mostra (Fecho do Dia 8037/8039/8191/8041/8043/8179/8216 e
+        # Fecho de Caixa 8038/8040/8192/8042/8044/8046/8135/8061/8178/8215). Cada
+        # secção liga a um relatório REAL do motor de reports.
+        from .params import P
         return Response({
             'date': hoje,
             'terminals': terminais,
             'open_cash_sessions': caixas,
             'open_tickets': contas,
             'sales_today': {'count': vendas.count(), 'total': str(total)},
+            'day_sections': {
+                'vendas_por_artigo': P.bool(8037, True),
+                'vendas_por_familia': P.bool(8039, False),
+                'vendas_por_subfamilia': P.bool(8191, True),
+                'vendas_por_documento': P.bool(8041, False),
+                'resumo_iva': P.bool(8043, True),
+                'cancelamentos': P.bool(8179, True),
+                'gratificacoes': P.bool(8216, True),
+            },
+            'cash_sections': {
+                'vendas_por_artigo': P.bool(8038, True),
+                'vendas_por_familia': P.bool(8040, True),
+                'vendas_por_subfamilia': P.bool(8192, False),
+                'vendas_por_documento': P.bool(8042, False),
+                'resumo_iva': P.bool(8044, True),
+                'ofertas': P.bool(8046, True),
+                'descontos': P.bool(8135, True),
+                'encargos': P.bool(8061, False),
+                'cancelamentos': P.bool(8178, True),
+                'gratificacoes': P.bool(8215, True),
+            },
+            # (8005) Fecho CEGO: o operador conta o dinheiro sem ver o esperado.
+            'blind_mode': P.text(8005, 'Modo Detalhado'),
+            # (8198/8199) fecho automático: quem corre é o agendador do sistema
+            # (cron/Task Scheduler a chamar POST aqui); o motor apenas o declara.
+            'auto_close': {'enabled': P.bool(8198, False), 'time': P.text(8199, '00:00')},
             # Enquanto houver contas abertas, NÃO se fecha o dia: seriam vendas
             # servidas e não cobradas — comida que sai e dinheiro que não entra.
             'can_close': len(contas) == 0,
@@ -2497,7 +2528,36 @@ class PosDayCloseView(APIView):
                       f'Fecho do dia — caixa {s.id} ({s.outlet.name if s.outlet_id else "—"})',
                       outlet=s.outlet, operator_name=s.operator_name)
 
+        # (8036) Dias a guardar o log — o fecho do dia é a vassoura: apaga o registo
+        # operacional mais velho do que o prazo. (O arquivo FISCAL nunca se toca.)
+        from .params import P
+        dias = P.int(8036, 30)
+        limpos = 0
+        if dias > 0:
+            corte = timezone.now() - timezone.timedelta(days=dias)
+            try:
+                from .models import POSAuditLog
+                limpos = POSAuditLog.objects.filter(created_at__lt=corte).delete()[0]
+            except Exception:
+                pass
+
+        # (8183) Backup no fecho do dia — só faz sentido sem PMS (o PMS já tem o dele).
+        backup = None
+        if P.bool(8183, False):
+            try:
+                import shutil
+                from django.conf import settings as _s
+                db = _s.DATABASES['default']
+                if db['ENGINE'].endswith('sqlite3'):
+                    origem = str(db['NAME'])
+                    destino = origem + f'.bak-{timezone.localdate():%Y%m%d}'
+                    shutil.copy2(origem, destino)
+                    backup = destino
+            except Exception:
+                backup = 'FALHOU — verifique espaço em disco'
+
         return Response({'closed_sessions': len(sessoes),
+                         'log_cleaned': limpos, 'backup': backup,
                          'detail': f'{len(sessoes)} caixa(s) fechada(s). O dia de vendas do POS está fechado.'})
 
 
@@ -2810,6 +2870,7 @@ class EventRequestSerializer(serializers.ModelSerializer):
         return str(o.total)
 
     def validate(self, data):
+        from .params import P
         ini = data.get('start_at') or (self.instance.start_at if self.instance else None)
         fim = data.get('end_at') or (self.instance.end_at if self.instance else None)
         if ini and fim and fim <= ini:
@@ -2822,7 +2883,67 @@ class EventRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'event_type': [f'"{tipo.name}" é um tipo de SERVIÇO, não de evento — '
                                 f'não se reserva um espaço para ele.']})
+
+        # CAMPOS OBRIGATÓRIOS PARAMETRIZÁVEIS (Eventos · Valores por defeito): cada
+        # casa decide o que um pedido tem de trazer para valer como negócio.
+        if not self.instance:            # só na criação — editar não re-exige tudo
+            faltas = {}
+            if P.bool(4020, True) and not data.get('segment'):
+                faltas['segment'] = ['Segmento é obrigatório (parâmetro 4020).']
+            if P.bool(4021, True) and not data.get('sub_segment'):
+                faltas['sub_segment'] = ['Sub-Segmento é obrigatório (parâmetro 4021).']
+            if P.bool(4022, True) and not data.get('channel'):
+                faltas['channel'] = ['Canal de Distribuição é obrigatório (parâmetro 4022).']
+            if P.bool(4076, True) and not data.get('customer') and not data.get('contact_name'):
+                faltas['customer'] = ['Tipo/identificação do cliente é obrigatório (parâmetro 4076).']
+            if faltas:
+                raise serializers.ValidationError(faltas)
+
+        # (4072) Valores monetários não podem ser 0: um evento CONFIRMADO sem preço é
+        # um salão dado de graça. (As Opções ainda podem não ter preço fechado.)
+        estado = data.get('state') or (self.instance.state if self.instance else None)
+        if P.bool(4072, True) and estado is not None and getattr(estado, 'blocks_space', False):
+            preco = data.get('price_per_pax', getattr(self.instance, 'price_per_pax', 0) or 0)
+            pacote = data.get('package', getattr(self.instance, 'package', None))
+            if not pacote and (preco or 0) <= 0:
+                raise serializers.ValidationError(
+                    {'price_per_pax': ['Um evento confirmado tem de ter preço ou package '
+                                       '(parâmetro 4072 — valores não podem ser 0).']})
+
+        # (4069) "Utilizar estados personalizados" DESLIGADO: os Estados Adicionais
+        # não se usam — só o estado principal da reserva conta.
+        if not P.bool(4069, True) and data.get('additional_state'):
+            raise serializers.ValidationError(
+                {'additional_state': ['Os estados personalizados estão desligados (parâmetro 4069).']})
+
+        # (4068) mais pessoas do que a lotação da disposição — só se o parâmetro deixar.
+        layout = data.get('layout') or (self.instance.layout if self.instance else None)
+        pax = data.get('pax', getattr(self.instance, 'pax', 0) or 0)
+        capacidade = getattr(layout, 'capacity', None) or getattr(layout, 'max_pax', None)
+        if layout and capacidade and pax and pax > capacidade and not P.bool(4068, False):
+            raise serializers.ValidationError(
+                {'pax': [f'{pax} pessoas excede a lotação de "{layout.name}" ({capacidade}). '
+                         f'O parâmetro 4068 não permite ultrapassar.']})
         return data
+
+    def create(self, validated):
+        from .params import P
+        from django.utils import timezone as _tz
+        import datetime as _dt
+        # VALORES POR DEFEITO dos parâmetros — o comercial escreve menos:
+        #   (4006) pax; (4004) estado; (4063/4064/4005) horas e duração; (2023) prefixo.
+        if not validated.get('pax'):
+            validated['pax'] = P.int(4006, 10)
+        if not validated.get('state'):
+            from .models import EventReservationState
+            nome = P.text(4004, 'Opção')
+            estado = (EventReservationState.objects.filter(name__iexact=nome).first()
+                      or EventReservationState.objects.filter(is_active=True).first())
+            if estado:
+                validated['state'] = estado
+        if validated.get('start_at') and not validated.get('end_at'):
+            validated['end_at'] = validated['start_at'] + _dt.timedelta(hours=P.int(4005, 8))
+        return super().create(validated)   # o número (prefixo 2023) nasce no save do modelo
 
 
 class EventRequestViewSet(viewsets.ModelViewSet):
@@ -2907,6 +3028,13 @@ class EventRequestViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def perform_update(self, serializer):
         self._exige_gestor()
+        # (8110) "Permitir alterar contas de eventos" — desligado, os pedidos ficam
+        # SELADOS depois de criados: só se cancelam, não se reescrevem.
+        from .params import P
+        if not P.bool(8110, True):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('A alteração de eventos está desligada nos parâmetros (8110). '
+                                   'Cancele e crie um novo pedido.')
         obj = serializer.save()
         self._check_conflict(obj)
 
@@ -2943,7 +3071,10 @@ class EventRequestViewSet(viewsets.ModelViewSet):
         if not espacos:
             espacos = [{'id': s.id, 'name': s.name, 'bg_color': '#ffffff', 'text_color': '#333333'}
                        for s in PosSector.objects.filter(is_active=True)]
+        from .params import P
         return Response({'spaces': espacos,
+                         # (4085) a cor das faixas de montagem/desmontagem vem dos parâmetros
+                         'setup_color': P.text(4085, '#c0392b'),
                          'requests': self.get_serializer(self.get_queryset(), many=True).data})
 
 
@@ -3021,6 +3152,17 @@ class EntityViewSet(viewsets.ModelViewSet):
         return resp
     permission_classes = [IsAuthenticated]
     serializer_class = EntitySerializer
+
+    def perform_create(self, serializer):
+        # (8143) "Formato do Nome da Entidade": quem cria só com Apelido/Outros nomes
+        # fica com o nome montado pelo formato da casa — {name1}=apelido, {name2}=resto.
+        from .params import P
+        v = serializer.validated_data
+        if not (v.get('name') or '').strip() and (v.get('last_name') or v.get('other_names')):
+            fmt = P.text(8143, '{name1}, {name2}')
+            v['name'] = (fmt.replace('{name1}', v.get('last_name') or '')
+                            .replace('{name2}', v.get('other_names') or '')).strip(' ,')
+        serializer.save()
 
     def get_queryset(self):
         from mdm.models import Customer
@@ -3228,9 +3370,32 @@ class StockDocSerializer(serializers.ModelSerializer):
 
     def _linhas(self, doc, linhas):
         from .models import StockDocLine
+        from .params import P
+        # (8210/8211) casas decimais na quantidade e no preço — a casa decide com que
+        # precisão trabalha (peixe ao grama vs. grades de cerveja).
+        q_qtd = Decimal('1').scaleb(-max(0, min(4, P.int(8210, 3))))
+        q_prc = Decimal('1').scaleb(-max(0, min(4, P.int(8211, 3))))
+        # (8230/8231) AVISO de preço alterado: o fornecedor subiu o preço e ninguém viu —
+        # é assim que a margem desaparece. O documento grava na mesma; o aviso volta
+        # na resposta para o ecrã mostrar.
+        avisar = P.bool(8230, True)
+        pct_aviso = Decimal(str(P.int(8231, 5)))
+        self._price_warnings = []
         for l in linhas:
             l.pop('doc', None)
             item = l.get('item')
+            if l.get('quantity') is not None:
+                l['quantity'] = Decimal(str(l['quantity'])).quantize(q_qtd)
+            if l.get('unit_cost') is not None:
+                l['unit_cost'] = Decimal(str(l['unit_cost'])).quantize(q_prc)
+            if (avisar and item is not None and l.get('unit_cost') is not None
+                    and (item.purchase_price or 0) > 0):
+                antigo = Decimal(str(item.purchase_price))
+                novo = Decimal(str(l['unit_cost']))
+                if antigo and abs(novo - antigo) / antigo * 100 >= pct_aviso:
+                    self._price_warnings.append(
+                        f'{item.name}: preço mudou de {antigo} para {novo} '
+                        f'({(novo - antigo) / antigo * 100:+.1f}%)')
             # (Artigo) "Permite alterar o IVA na compra" — normalmente a taxa é a da ficha
             # do artigo e não se mexe. Há artigos (importados, isentos na origem) em que o
             # fornecedor fatura com outra taxa: só ESSES aceitam a taxa que vem no documento.
@@ -3240,6 +3405,13 @@ class StockDocSerializer(serializers.ModelSerializer):
                 if taxa_doc != taxa_ficha and not getattr(item, 'allow_tax_change_on_purchase', False):
                     l['tax_percentage'] = taxa_ficha
             StockDocLine.objects.create(doc=doc, **l)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # os avisos de preço (8230) seguem com o documento acabado de criar
+        if getattr(self, '_price_warnings', None):
+            data['price_warnings'] = self._price_warnings
+        return data
 
 
 class StockDocViewSet(viewsets.ModelViewSet):
@@ -3309,6 +3481,38 @@ class StockDocViewSet(viewsets.ModelViewSet):
                                        f'duplicava o stock.'}, status=400)
         if not doc.lines.exists():
             return Response({'detail': 'Documento sem artigos.'}, status=400)
+
+        from .params import P
+        # (8229) ARMAZÉM EM CONTAGEM não recebe mercadoria: há um inventário aberto
+        # sobre ele e cada entrada era uma contagem que nunca mais fechava certa.
+        if P.bool(8229, True) and doc.warehouse_id:
+            from .models import StockDoc
+            contagem = (StockDoc.objects
+                        .filter(warehouse=doc.warehouse, voided=False, posted=False,
+                                series__kind='INVENTORY')
+                        .exclude(pk=doc.pk).first())
+            if contagem and doc.series.kind != 'INVENTORY':
+                return Response({'detail': f'O armazém "{doc.warehouse.name}" está em contagem '
+                                           f'({contagem.number}). Feche o inventário antes de '
+                                           f'lançar mercadoria.'}, status=400)
+
+        # (8277) STOCK NEGATIVO NA ORIGEM: impedir tirar o que lá não está. O negativo
+        # é sempre um erro escondido (venda sem entrada, contagem por fazer).
+        # Saem do armazém de ORIGEM: a Requisição e a Transferência.
+        if P.bool(8277, False) and doc.series.kind in ('REQUEST', 'TRANSFER'):
+            from inventory.models import StockLevel
+            faltas = []
+            for l in doc.lines.select_related('item'):
+                origem = (doc.warehouse_from if doc.series.kind == 'TRANSFER' and doc.warehouse_from_id
+                          else doc.warehouse_from or l.warehouse or doc.warehouse)
+                nivel = StockLevel.objects.filter(item=l.item, warehouse=origem).first()
+                disponivel = nivel.quantity_on_hand if nivel else Decimal('0')
+                if disponivel < l.quantity:
+                    faltas.append(f'{l.item.name}: pedido {l.quantity}, em stock {disponivel}')
+            if faltas:
+                return Response({'detail': 'Stock insuficiente na origem (parâmetro 8277):\n'
+                                           + '\n'.join(faltas)}, status=400)
+
         n = doc.post(user=(request.user.username if request.user.is_authenticated else None))
         return Response({'detail': f'{doc.number} lançado — {n} movimento(s) de stock.',
                          'movements': n, 'document': self.get_serializer(doc).data})
@@ -3657,6 +3861,9 @@ class PosDocSearchView(APIView):
         if p.get('to'):
             qs = qs.filter(doc_date__lte=p['to'])
 
+        # (8101) Nº de documentos visíveis no POS — 0 = todos (com teto de segurança).
+        from .params import P
+        limite = P.int(8101, 0) or 500
         linhas = [{
             'id': d.id, 'name': d.doc_type.name, 'type': d.doc_type.code,
             'number': d.invoice_no, 'date': str(d.doc_date),
@@ -3665,7 +3872,7 @@ class PosDocSearchView(APIView):
             'operator': d.operator_name or '', 'place': d.place_ref or '',
             'payment': d.payment_method or '',
             'voided': d.status == 'A', 'settled': d.settled,
-        } for d in qs[:500]]
+        } for d in qs[:min(limite, 2000)]]
         return Response({
             'rows': linhas,
             'total': str(sum((Decimal(l['total']) for l in linhas if not l['voided']),
@@ -3866,6 +4073,16 @@ class PosTerminalKeyboardView(APIView):
         if not kb and request.query_params.get('terminal'):
             t = PosTerminal.objects.filter(pk=request.query_params['terminal']).first()
             kb = getattr(t, 'keyboard', None) if t else None
+        # (8176) "Configuração de teclado por": Setor usa o teclado ligado ao setor
+        # pedido; Terminal já foi tratado acima; Operador cai no primeiro ativo (a
+        # ficha do operador não tem teclado próprio — não se inventa o campo).
+        if not kb and P.text(8176, 'Setor') == 'Setor' and request.query_params.get('sector'):
+            try:
+                from .models import PosSector
+                s = PosSector.objects.filter(pk=request.query_params['sector']).first()
+                kb = getattr(s, 'keyboard', None) if s else None
+            except Exception:
+                kb = None
         if not kb:
             kb = PosKeyboard.objects.filter(is_active=True).order_by('number').first()
         if not kb:
@@ -3952,6 +4169,14 @@ class PosGuestsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from .params import P
+        # (8035) "Interface com PMS" é o interruptor-mestre; (8064) "Informação do
+        # hóspede" desliga só este ecrã. Desligados no backoffice, o terminal não
+        # mostra hóspedes — mesmo com PMS instalado (casas que alugam o restaurante).
+        if not P.bool(8035, True) or not P.bool(8064, True):
+            return Response({'available': False, 'rows': [],
+                             'detail': 'A interface com o PMS está desligada nos parâmetros '
+                                       '(8035/8064).'})
         try:
             from pms.models import Reservation
         except (ImportError, ModuleNotFoundError):
@@ -3981,7 +4206,9 @@ class PosGuestsView(APIView):
                 'room': quarto,
                 'folio': folio.id if folio else None,
                 'guest': nome,
-                'entity': getattr(getattr(r, 'company', None), 'name', None) or '',
+                # (8236) mostrar (ou não) o grupo/empresa na pesquisa de quartos
+                'entity': (getattr(getattr(r, 'company', None), 'name', None) or ''
+                           if P.bool(8236, True) else ''),
                 'checkout': str(getattr(r, 'check_out', '') or ''),
                 # O REGIME não está na reserva: está na TARIFA do tipo de quarto (RatePlan).
                 # É o que o PMS tem — não se inventa um campo novo para o POS.
@@ -4015,6 +4242,12 @@ class PosMealPlanView(APIView):
                  ('ALM', 'Almoço'), ('LANCHE', 'Lanche'), ('JANT', 'Jantar')]
 
     def get(self, request):
+        from .params import P
+        # (8035) interruptor-mestre do PMS também manda aqui.
+        if not P.bool(8035, True):
+            return Response({'available': False, 'rows': [],
+                             'meals': [{'code': c, 'label': l} for c, l in self.REFEICOES],
+                             'detail': 'A interface com o PMS está desligada nos parâmetros (8035).'})
         try:
             from pms.models import Reservation
         except (ImportError, ModuleNotFoundError):
@@ -4022,10 +4255,21 @@ class PosMealPlanView(APIView):
                              'meals': [{'code': c, 'label': l} for c, l in self.REFEICOES],
                              'detail': 'Sem módulo de alojamento (PMS): não há hóspedes nem regimes.'})
 
+        # (8147) "Forçar a pesquisa de hóspedes": o mapa só devolve linhas depois de o
+        # empregado ESCREVER quem procura — hotéis de 400 quartos não listam todos.
+        q = (request.query_params.get('q') or '').strip()
+        if P.bool(8147, False) and not q:
+            return Response({'available': True, 'rows': [], 'must_search': True,
+                             'meals': [{'code': c, 'label': l} for c, l in self.REFEICOES],
+                             'detail': 'Escreva o nome ou o quarto para pesquisar (parâmetro 8147).'})
+
         rs = (Reservation.objects.filter(status='CHECKED_IN')
               .select_related('room', 'guest', 'room_type'))
         linhas = []
         for r in rs:
+            nome_q = f"{getattr(r.guest, 'full_name', '') or ''} {getattr(r.room, 'number', '') or ''}"
+            if q and q.lower() not in nome_q.lower():
+                continue
             regime = _board_da_reserva(r)
             incluidas = self.REGIMES.get(regime, [])
             linhas.append({
@@ -4134,6 +4378,19 @@ class PosTerminalConfigView(APIView):
             'tables_refresh_seconds': P.int(8063, 8),
             'transfers': P.text(8124, 'Parcial'),
             'allow_day_close': P.bool(8062, False),
+            # (8088/8138) tempos de inatividade; (8001) layout do teclado tátil;
+            # (8012) o meio de pagamento base aparece primeiro; (8084) estado do
+            # pagamento no mapa; (8197) aviso ao dividir grandes quantidades;
+            # (8271) fundo do mapa; (8180) largura do scroll; (8333) tipo obrigatório.
+            'session_timeout_minutes': P.int(8088, 60),
+            'app_close_minutes': P.int(8138, 120),
+            'keyboard_layout': P.text(8001, 'QWERTY (Português)'),
+            'base_payment_mode': P.text(8012, 'Cash'),
+            'show_payment_status': P.bool(8084, False),
+            'split_warn_qty': P.int(8197, 10),
+            'map_background': P.bool(8271, True),
+            'keyboard_scroll_width': P.int(8180, 0),
+            'guest_type_required': P.bool(8333, True),
         })
 
 
@@ -4234,10 +4491,23 @@ class PosBootstrapView(APIView):
                 'allows_mixed': m.allows_mixed, 'opens_drawer': m.opens_drawer,
                 'ask_document_number': m.ask_document_number,
             } for m in PaymentMethod.objects.filter(is_active=True, for_pos=True)],
+            # (8006/8007/8059) a moeda BASE, a ALTERNATIVA e a do TROCO vêm dos
+            # parâmetros — o terminal marca-as na lista e usa a do troco ao devolver.
             'currencies': [{
                 'code': c.code, 'symbol': c.symbol_unicode or c.symbol,
                 'is_local': c.is_local, 'buy_rate': str(c.buy_rate),
                 'print_on_pos_docs': c.print_on_pos_docs,
+                # casa por código OU por símbolo ("Kz" -> AOA); sem correspondência,
+                # a moeda LOCAL é a base — o parâmetro não pode deixar a casa sem base.
+                'is_base': (P.text(8006, 'Kz') in (c.code, c.symbol, c.symbol_unicode)) or
+                           (c.is_local and not Currency.objects.filter(
+                               models.Q(code=P.text(8006, 'Kz')) | models.Q(symbol=P.text(8006, 'Kz')),
+                               is_active=True).exists()),
+                'is_alternative': P.text(8007, 'USD') in (c.code, c.symbol, c.symbol_unicode),
+                'is_change': (P.text(8059, 'Kz') in (c.code, c.symbol, c.symbol_unicode)) or
+                             (c.is_local and not Currency.objects.filter(
+                                 models.Q(code=P.text(8059, 'Kz')) | models.Q(symbol=P.text(8059, 'Kz')),
+                                 is_active=True).exists()),
             } for c in Currency.objects.filter(is_active=True, excluded=False)],
             'taxes': [{'code': t.code, 'name': t.name, 'percentage': str(t.percentage),
                        'is_default': t.is_default}
@@ -4253,5 +4523,14 @@ class PosBootstrapView(APIView):
                 'tables_refresh_seconds': P.int(8063, 8),
                 'transfers': P.text(8124, 'Parcial'),
                 'allow_day_close': P.bool(8062, False),
+                'session_timeout_minutes': P.int(8088, 60),
+                'app_close_minutes': P.int(8138, 120),
+                'keyboard_layout': P.text(8001, 'QWERTY (Português)'),
+                'base_payment_mode': P.text(8012, 'Cash'),
+                'show_payment_status': P.bool(8084, False),
+                'split_warn_qty': P.int(8197, 10),
+                'map_background': P.bool(8271, True),
+                'keyboard_scroll_width': P.int(8180, 0),
+                'guest_type_required': P.bool(8333, True),
             },
         })

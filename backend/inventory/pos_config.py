@@ -261,9 +261,40 @@ class PosItemViewSet(viewsets.ModelViewSet):
                            Q(plu_code__icontains=q) | Q(barcodes__barcode__icontains=q)).distinct()
         return qs
 
+    def create(self, request, *args, **kwargs):
+        # PARÂMETROS DE ARTIGOS (Configuração POS › Parâmetros › Artigos):
+        #   (8010) gerar o código automaticamente quando não vem preenchido;
+        #   (8009) com quantos dígitos; (8011) com o código da sub-família à frente.
+        # Gera-se ANTES da validação — o serializer exige código, e é o motor que o dá.
+        try:
+            from pos.params import P
+        except Exception:
+            P = None
+        if P and P.bool(8010, True) and not (request.data.get('code') or '').strip():
+            prefixo = ''
+            if P.bool(8011, True) and request.data.get('subfamily'):
+                sub = ItemSubFamily.objects.filter(pk=request.data['subfamily']).first()
+                prefixo = (getattr(sub, 'code', '') or '')
+            digitos = max(2, min(8, P.int(8009, 4)))
+            base = Item.objects.count() + 1
+            codigo = f'{prefixo}{base:0{digitos}d}'
+            while Item.objects.filter(code=codigo).exists():
+                base += 1
+                codigo = f'{prefixo}{base:0{digitos}d}'
+            request.data['code'] = codigo
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
-        serializer.save(created_by=str(getattr(self.request.user, 'username', '') or ''),
-                        updated_by=str(getattr(self.request.user, 'username', '') or ''))
+        try:
+            from pos.params import P
+        except Exception:
+            P = None
+        item = serializer.save(created_by=str(getattr(self.request.user, 'username', '') or ''),
+                               updated_by=str(getattr(self.request.user, 'username', '') or ''))
+        # (8235) sem código de barras, o próprio código serve de barras — o leitor lê
+        # o que a etiqueta interna imprimiu.
+        if P and P.bool(8235, True) and not item.barcodes.exists() and item.code:
+            ItemBarcode.objects.create(item=item, barcode=item.code, is_main=True)
 
     def perform_update(self, serializer):
         serializer.save(updated_by=str(getattr(self.request.user, 'username', '') or ''))
