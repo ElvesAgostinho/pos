@@ -123,6 +123,20 @@ export default function PosTerminal() {
     abrirVendaDireta(1, 'PASSANTE');
   };
 
+  // BALCÃO PURO: com a "Venda Direta" (8300) ligada e um setor SEM mesas na planta,
+  // não há mapa para mostrar — o terminal vai DIRETO à venda. É a loja de take-away:
+  // desativam-se as mesas no backoffice e o caixa entra logo a vender.
+  const { data: mesasDoSetor } = useQuery({
+    queryKey: ['pos-tables-count', setor?.id],
+    queryFn: async () => (await apiClient.get('pos/tables/', { params: { sector: setor.id } })).data,
+    enabled: !!setor?.id,
+  });
+  useEffect(() => {
+    if (etapa !== 'MAP' || !setor || !cfg?.direct_sale || ticket) return;
+    const lista = mesasDoSetor?.results || mesasDoSetor;
+    if (Array.isArray(lista) && lista.length === 0) abrirVendaDireta(1, 'PASSANTE');
+  }, [etapa, setor, cfg, mesasDoSetor]);
+
   const inval = () => qc.invalidateQueries();
 
   // (Parâmetro 8062) "Permitir fechar o dia no Front Office": o fecho que normalmente é

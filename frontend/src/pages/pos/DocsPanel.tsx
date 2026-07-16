@@ -117,8 +117,10 @@ export default function DocsPanel({ onClose }: { onClose: () => void }) {
           {/* ações à esquerda */}
           <div className="w-[190px] bg-black flex flex-col">
             <BTN icon="🖨" label="Reimprimir" on={() => acao('print')} />
+            {/* A LISTAGEM é esta grelha — mostra-se TUDO aqui, sem mandar o caixa
+                para o backoffice (o terminal é autossuficiente). */}
             <BTN icon="🖨" label="Listagem Documentos"
-              on={() => window.open('/backoffice', '_blank')} />
+              on={() => { setDe(''); setAte(''); setNumero(''); setBusca({}); }} />
             <BTN icon="🔍" label="Pré-visualizar" on={() => acao('preview')} cor="#4ec5c1" />
             <BTN icon="🗎" label="Anular" on={() => acao('void')} cor="#e02020" />
             <BTN icon="↩" label="Processar devolução" on={() => acao('void')} cor="#e02020" />

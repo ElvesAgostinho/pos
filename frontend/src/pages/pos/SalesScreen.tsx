@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { comPerguntas } from '../posPrompt';
 import EntityPicker from './EntityPicker';
 import PayPanel from './PayPanel';
 import SubcontaBar from './SubcontaBar';
+import ArticleSearch from './ArticleSearch';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -31,6 +32,7 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   const [entidade, setEntidade] = useState<any | null>(null);
   const [escolherEntidade, setEscolherEntidade] = useState(false);
   const [pagar, setPagar] = useState(false);
+  const [procurar, setProcurar] = useState(false);   // consulta de artigo (catálogo inteiro)
 
   // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
   // muda os preços que as teclas mostram (staff/consumo interno vê o custo).
@@ -57,6 +59,12 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   const nivel: any[] = caminho.length
     ? (caminho[caminho.length - 1].children || [])
     : (teclado?.pages || []);
+
+  // O TECLADO ABRE-SE SOZINHO: ao entrar na venda, a primeira página já está aberta
+  // com as teclas à vista — no balcão não se toca duas vezes para começar a vender.
+  useEffect(() => {
+    if (!caminho.length && teclado?.pages?.length) setCaminho([teclado.pages[0]]);
+  }, [teclado]);
 
   const lancar = async (k: any) => {
     if (k.available === false) return;
@@ -210,7 +218,10 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
           <span className="text-[40px] font-bold text-white">{money(conta?.grand_total)}</span>
         </div>
 
-        <div className="grid grid-cols-4 gap-px bg-black">
+        <div className="grid grid-cols-5 gap-px bg-black">
+          <button onClick={() => setProcurar(true)}
+            title="Consulta de artigo (catálogo inteiro)"
+            className="h-[76px] bg-[#2b2b2b] text-white text-[30px]">🔍</button>
           <button onClick={() => linhas.length && apagarLinha(linhas[linhas.length - 1])}
             className="h-[76px] bg-[#2b2b2b] text-[#e02020] text-[30px]">🗑</button>
           <button onClick={enviarCozinha}
@@ -222,6 +233,13 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
             className="h-[76px] bg-[#2b2b2b] text-[#2ecc40] text-[34px]">✔</button>
         </div>
       </div>
+
+      {/* consulta de artigo: procura no catálogo INTEIRO e lança com um toque */}
+      {procurar && (
+        <ArticleSearch
+          onPick={async (a) => { setProcurar(false); await lancar({ item: a.id, available: true }); }}
+          onClose={() => setProcurar(false)} />
+      )}
 
       {escolherEntidade && (
         <EntityPicker
