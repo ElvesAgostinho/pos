@@ -104,10 +104,13 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
           </div>
         )}
 
-        {/* os meios de pagamento AUTORIZADOS neste ponto de venda */}
+        {/* os meios de pagamento AUTORIZADOS neste ponto de venda. "Conta Quarto" só
+            aparece a HÓSPEDES — o passante e o consumo interno não têm quarto onde
+            a conta caia (o tipo perguntou-se ao abrir a mesa, parâmetro 8175). */}
         <div className="p-3 bg-[#2b2b2b]">
           <div className="grid grid-cols-5 gap-2">
-            {metodos.map((m: any) => (
+            {metodos.filter((m: any) =>
+              m.method_type_code !== 'ROOM' || conta.guest_type === 'HOTEL').map((m: any) => (
               <button key={m.id} onClick={() => !busy && cobrar(m)} disabled={busy || falta <= 0}
                 className="h-[86px] bg-[#0f8b8d] text-white text-[15px] font-bold rounded-sm
                   px-2 leading-tight active:scale-95 disabled:opacity-40">

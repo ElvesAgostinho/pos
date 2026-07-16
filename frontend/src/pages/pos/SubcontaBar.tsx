@@ -53,9 +53,9 @@ export default function SubcontaBar({ conta, onSwitch }: {
     }
   };
 
-  // total de posições: as pessoas reais + o número seguinte (o que acrescenta);
-  // nunca menos de 4, para a faixa ter sempre a cara do original.
-  const total = Math.max(4, contas.length + 1);
+  // O carrossel vai ATÉ 50+ números (como o original): os primeiros são as pessoas
+  // reais; qualquer número vazio acrescenta a pessoa seguinte. Girar dá a volta.
+  const total = Math.max(50, contas.length + 1);
   const JANELA = 4;
   const girar = (d: number) => setIni((ini + d + total) % total);
 
@@ -67,19 +67,16 @@ export default function SubcontaBar({ conta, onSwitch }: {
       {Array.from({ length: Math.min(JANELA, total) }, (_, j) => {
         const i = (ini + j) % total;         // gira com volta ao princípio
         const t = contas[i];
-        const proxima = i === contas.length; // o número que ACRESCENTA
         return (
           <button key={j}
-            onClick={() => (t ? onSwitch(t.id) : proxima ? acrescentar() : undefined)}
-            disabled={!t && !proxima}
+            onClick={() => (t ? onSwitch(t.id) : acrescentar())}
             title={t ? `Subconta ${i + 1} · ${Number(t.grand_total).toLocaleString('pt-PT')} Kz`
-              : proxima ? 'Acrescentar pessoa (nova subconta)' : ''}
+              : 'Acrescentar pessoa (nova subconta)'}
             className={`flex-1 text-[22px] font-bold
               ${t && t.id === conta.id
                 ? 'bg-[#1a1a1a] text-white ring-2 ring-[#f0c000]'
                 : t ? 'bg-[#2b2b2b] text-white/80'
-                  : proxima ? 'bg-[#222] text-white/40'
-                    : 'bg-[#1c1c1c] text-white/15'}`}>
+                  : 'bg-[#1f1f1f] text-white/35'}`}>
             {i + 1}
             {t && Number(t.grand_total) > 0 && (
               <span className="block text-[11px] font-normal text-white/50 -mt-1">

@@ -743,6 +743,16 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if not OutletPaymentMethod.objects.filter(outlet=ticket.outlet, payment_method=pm, is_active=True).exists():
             return Response({'detail': f'Método "{pm.name}" não autorizado neste outlet.'}, status=status.HTTP_403_FORBIDDEN)
 
+        # REGRA: "Conta Quarto" é para HÓSPEDES. O tipo de cliente perguntou-se ao abrir
+        # (parâmetro 8175): um PASSANTE não tem quarto onde a conta caia, e o consumo
+        # INTERNO é custo da casa — deixá-los "pagar" no quarto era criar dívida a um
+        # quarto que não existe, e o Night Audit nunca mais batia.
+        if pm.method_type == 'ROOM' and getattr(ticket, 'guest_type', 'PASSANTE') != 'HOTEL':
+            tipo = {'PASSANTE': 'um passante', 'INTERNO': 'consumo interno'}.get(
+                getattr(ticket, 'guest_type', ''), 'este tipo de cliente')
+            return Response({'detail': f'"{pm.name}" só está disponível para hóspedes do hotel — '
+                                       f'esta conta é de {tipo}.'}, status=status.HTTP_400_BAD_REQUEST)
+
         # A CONTA TEM DE ESTAR NUMA CAIXA ABERTA. Sem isto, uma venda entrava numa
         # sessão já fechada — o dinheiro existia mas não aparecia em fecho nenhum, e
         # a diferença só se descobria no cofre.
