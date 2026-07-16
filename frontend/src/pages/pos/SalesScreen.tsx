@@ -9,6 +9,8 @@ import ArticleSearch from './ArticleSearch';
 import GuestsPanel from './GuestsPanel';
 import DocsPanel from './DocsPanel';
 import TicketPreview from './TicketPreview';
+import GuestPick from './GuestPick';
+import CustomerForm from './CustomerForm';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -40,6 +42,11 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   // painéis do backoffice, abertos por cima do teclado (a "junção").
   const [painel, setPainel] = useState<'' | 'GUESTS' | 'DOCS'>('');
   const [verTalao, setVerTalao] = useState(false);   // Consulta de Mesa desta conta
+  // O FORMULÁRIO DO CLIENTE reage ao TIPO da conta (parâmetro 8175):
+  // HOTEL pede o hóspede do PMS; INTERNO pede o colaborador (RH); PASSANTE é opcional.
+  const [formCliente, setFormCliente] = useState(false);
+  const [pedirHospede, setPedirHospede] = useState(false);
+  const [jaPediu, setJaPediu] = useState<number[]>([]);   // 1 pergunta por conta, não em loop
 
   // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
   // muda os preços que as teclas mostram (staff/consumo interno vê o custo).
@@ -74,6 +81,14 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   useEffect(() => {
     if (!caminho.length && teclado?.pages?.length) setCaminho([teclado.pages[0]]);
   }, [teclado]);
+
+  // AO ABRIR a conta, o tipo manda: HÓSPEDE sem nome -> lista do PMS; CONSUMO INTERNO
+  // sem nome -> lista de colaboradores (RH do backoffice). O passante não é incomodado.
+  useEffect(() => {
+    if (!conta || conta.customer_name || jaPediu.includes(conta.id)) return;
+    if (conta.guest_type === 'HOTEL') { setPedirHospede(true); setJaPediu([...jaPediu, conta.id]); }
+    else if (conta.guest_type === 'INTERNO') { setFormCliente(true); setJaPediu([...jaPediu, conta.id]); }
+  }, [conta?.id, conta?.guest_type, conta?.customer_name]);
 
   const lancar = async (k: any) => {
     if (k.available === false) return;
@@ -194,11 +209,16 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
 
       {/* ───────── comanda ───────── */}
       <div className="w-[520px] bg-[#3a3a3a] flex flex-col border-l-4 border-black">
-        {/* quem paga */}
-        <button onClick={() => setEscolherEntidade(true)}
+        {/* QUEM É O CLIENTE — o botão abre o formulário do TIPO certo: hóspede vai à
+            lista do PMS, interno à lista de colaboradores, passante ao nome/NIF. */}
+        <button onClick={() => (conta?.guest_type === 'HOTEL' ? setPedirHospede(true) : setFormCliente(true))}
           className="h-[54px] bg-[#2b2b2b] text-white flex items-center justify-between px-4 border-b border-black">
-          <span className="text-[15px] text-white/60">Entidade</span>
-          <span className="font-bold">{entidade ? entidade.name : 'Venda Direta'} 👤+</span>
+          <span className="text-[15px] text-white/60">
+            {{ HOTEL: 'Hóspede', INTERNO: 'Colaborador' }[conta?.guest_type as string] || 'Cliente'}
+          </span>
+          <span className="font-bold">
+            {conta?.customer_name || entidade?.name || 'Consumidor Final'} 👤+
+          </span>
         </button>
 
         <div className="grid grid-cols-[64px_1fr_120px] bg-[#2b2b2b] text-white text-[16px] font-bold px-2 py-2">
@@ -288,6 +308,27 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
       {/* Consulta de Mesa desta conta: emite o CM e mostra o talão térmico */}
       {verTalao && conta && (
         <TicketPreview ticket={conta} onClose={() => setVerTalao(false)} />
+      )}
+
+      {/* HÓSPEDE: a lista de check-ins do PMS — a conta fica com o nome e o quarto */}
+      {pedirHospede && conta && (
+        <GuestPick titulo="Que hóspede é este?"
+          onPick={async (g) => {
+            try {
+              await apiClient.post(`pos/tickets/${conta.id}/set_customer/`, {
+                customer_name: g.guest, company_name: g.room ? `Quarto ${g.room}` : null,
+              });
+            } catch { /* sem PMS, a conta segue */ }
+            setPedirHospede(false); inval();
+          }}
+          onClose={() => setPedirHospede(false)} />
+      )}
+
+      {/* PASSANTE (nome/NIF p/ fatura, opcional) e CONSUMO INTERNO (colaborador do RH) */}
+      {formCliente && conta && (
+        <CustomerForm conta={conta}
+          onSaved={() => { setFormCliente(false); inval(); }}
+          onClose={() => setFormCliente(false)} />
       )}
 
       {/* consulta de artigo: procura no catálogo INTEIRO e lança com um toque */}
