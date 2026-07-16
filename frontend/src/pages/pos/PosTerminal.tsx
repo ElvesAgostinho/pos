@@ -95,16 +95,21 @@ export default function PosTerminal() {
       // Os setores já vieram no bootstrap — filtrados pela caixa "Todos os setores".
       const lista = boot?.sectors || [];
       if (!lista.length) return;
-      setSetor(lista[0]);
-      setEtapa(cfg.require_cash_open ? 'CASH' : 'MAP');
+      const s = lista[0];
+      setSetor(s);
+      // (8300) "Venda Direta" LIGADO: abre LOGO numa conta de balcão — sem mapa.
+      // À risca: quem serve ao balcão não tem mesas para escolher.
+      if (cfg.require_cash_open) setEtapa('CASH');
+      else if (cfg.direct_sale) abrirVendaDireta(1, 'PASSANTE', s);
+      else setEtapa('MAP');
     })();
   }, [cfg, setor]);
 
-  const abrirVendaDireta = async (pax: number, tipo: string) => {
-    if (!setor) return;
+  const abrirVendaDireta = async (pax: number, tipo: string, s: any = setor) => {
+    if (!s) return;
     try {
       const r = await apiClient.post('pos/tickets/', {
-        outlet: setor.outlet,
+        outlet: s.outlet,
         operator_name: operador?.name || 'Operador',
         guests: pax,
         guest_type: tipo,
@@ -123,19 +128,21 @@ export default function PosTerminal() {
     abrirVendaDireta(1, 'PASSANTE');
   };
 
-  // BALCÃO PURO: com a "Venda Direta" (8300) ligada e um setor SEM mesas na planta,
-  // não há mapa para mostrar — o terminal vai DIRETO à venda. É a loja de take-away:
-  // desativam-se as mesas no backoffice e o caixa entra logo a vender.
-  const { data: mesasDoSetor } = useQuery({
-    queryKey: ['pos-tables-count', setor?.id],
-    queryFn: async () => (await apiClient.get('pos/tables/', { params: { sector: setor.id } })).data,
-    enabled: !!setor?.id,
-  });
-  useEffect(() => {
-    if (etapa !== 'MAP' || !setor || !cfg?.direct_sale || ticket) return;
-    const lista = mesasDoSetor?.results || mesasDoSetor;
-    if (Array.isArray(lista) && lista.length === 0) abrirVendaDireta(1, 'PASSANTE');
-  }, [etapa, setor, cfg, mesasDoSetor]);
+  // Ao FECHAR uma venda de balcão com o 8300 ligado, volta-se... ao balcão: o terminal
+  // vive na venda (é o take-away). Uma conta fechada VAZIA anula-se — senão o fecho do
+  // dia enchia-se de contas de 0,00 que ninguém vai cobrar.
+  const fecharVenda = async (id: number) => {
+    setTicket(null);
+    try {
+      const t = (await apiClient.get(`pos/tickets/${id}/`)).data;
+      if (t.status === 'OPEN' && !(t.lines || []).length && !(t.payments || []).length) {
+        await apiClient.post(`pos/tickets/${id}/void/`, { reason: 'Conta vazia fechada no balcão' });
+      }
+    } catch { /* a conta pode já estar paga/anulada */ }
+    inval();
+    if (cfg?.direct_sale && !cfg?.ask_sector) abrirVendaDireta(1, 'PASSANTE');
+    else setEtapa('MAP');
+  };
 
   const inval = () => qc.invalidateQueries();
 
@@ -295,7 +302,7 @@ export default function PosTerminal() {
           )}
           {etapa === 'SALES' && ticket && (
             <SalesScreen ticketId={ticket} setor={setor} cfg={cfg}
-              onClose={() => { setTicket(null); setEtapa('MAP'); inval(); }} />
+              onClose={() => fecharVenda(ticket)} />
           )}
 
           {/* O seletor de SETOR e a ABERTURA DE CAIXA são janelas por cima do palco:
@@ -305,7 +312,10 @@ export default function PosTerminal() {
               onPick={(s) => {
                 setSetor(s);
                 // "Exigir abertura de caixa": se estiver desligada, vai-se direto ao serviço.
-                setEtapa(sessao || cfg?.require_cash_open === false ? 'MAP' : 'CASH');
+                // Com a Venda Direta (8300) ligada, o serviço É o balcão — sem mapa.
+                if (!sessao && cfg?.require_cash_open !== false) setEtapa('CASH');
+                else if (cfg?.direct_sale) abrirVendaDireta(1, 'PASSANTE', s);
+                else setEtapa('MAP');
               }}
               onCancel={setor ? () => setEtapa(sessao ? 'MAP' : 'CASH') : undefined}
             />
@@ -334,7 +344,12 @@ export default function PosTerminal() {
 
           {etapa === 'CASH' && setor && (
             <CashOpen setor={setor} operador={operador}
-              onOpened={(s) => { setSessao(s); setEtapa('MAP'); }}
+              onOpened={(s) => {
+                setSessao(s);
+                // (8300) caixa aberta e Venda Direta ligada -> direto ao balcão.
+                if (cfg?.direct_sale) abrirVendaDireta(1, 'PASSANTE');
+                else setEtapa('MAP');
+              }}
               onBack={() => setEtapa('SECTOR')} />
           )}
 
