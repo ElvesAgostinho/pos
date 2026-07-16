@@ -181,6 +181,7 @@ class KDSLineSerializer(serializers.ModelSerializer):
     operator_name = serializers.CharField(source='ticket.operator_name', read_only=True, default=None)
     guests = serializers.IntegerField(source='ticket.guests', read_only=True, default=None)
     customer_name = serializers.CharField(source='ticket.customer_name', read_only=True, default=None)
+    station_label = serializers.CharField(source='get_kds_station_display', read_only=True, default=None)
     # ALERGÉNIOS — informação crítica para a cozinha/bar.
     allergens = serializers.SerializerMethodField()
 
@@ -188,7 +189,8 @@ class KDSLineSerializer(serializers.ModelSerializer):
         model = POSTicketLine
         fields = ('id', 'ticket', 'ticket_number', 'table_label', 'outlet_name', 'item_name',
                   'description', 'quantity', 'note', 'kds_station', 'kds_status', 'kds_status_display',
-                  'fired_at', 'ready_at', 'dest_label', 'dest_priority', 'delivery_status',
+                  'fired_at', 'ready_at', 'served_at', 'station_label',
+                  'dest_label', 'dest_priority', 'delivery_status',
                   'operator_name', 'guests', 'customer_name', 'allergens',
                   'is_void', 'void_reason', 'voided_at', 'kds_ack_at')
 

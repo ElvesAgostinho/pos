@@ -18,6 +18,7 @@ import CashClose from './CashClose';
 import ReservationsPanel from './ReservationsPanel';
 import DeliveriesPanel from './DeliveriesPanel';
 import GroupTables from './GroupTables';
+import { useProducao, ProductionWindow } from './ProductionBell';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -185,6 +186,9 @@ export default function PosTerminal() {
   const fecharDia = () => setFechoAberto(true);
   // FECHO DE CAIXA do operador: contagem (cega, 8005) + sangria/reforço.
   const [fechoCaixa, setFechoCaixa] = useState(false);
+  // O SINO: a produção em tempo real do lado da sala (Iniciado/Concluído/Entregue).
+  const { linhas: producao, prontos } = useProducao();
+  const [verProducao, setVerProducao] = useState(false);
 
   const sair = () => {
     localStorage.removeItem('pos_operator_token');
@@ -274,6 +278,17 @@ export default function PosTerminal() {
 
         <div className="flex-1" />
         <div className="flex items-center pr-3 text-white/80 text-sm">
+          {/* O SINO DA PRODUÇÃO: pulsa quando há pratos PRONTOS no passe */}
+          <button onClick={() => setVerProducao(true)}
+            title="Produção (cozinha/bar/pastelaria) em tempo real"
+            className={`relative w-[74px] h-[74px] m-2 rounded text-[30px] flex items-center justify-center
+              ${prontos > 0 ? 'bg-[#1f7a34] animate-pulse' : 'bg-[#2a2a2a]'}`}>
+            🔔
+            {prontos > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[26px] h-[26px] px-1 rounded-full bg-[#c0140f]
+                text-white text-[15px] font-bold flex items-center justify-center">{prontos}</span>
+            )}
+          </button>
           <span className="mr-4">{operador?.name || 'Operador'}</span>
           <button onClick={() => setEtapa('SECTOR')}
             className="w-[74px] h-[74px] m-2 rounded bg-[#3a3a3a] text-white text-[34px] flex items-center justify-center">
@@ -395,6 +410,9 @@ export default function PosTerminal() {
               }}
               onBack={() => setEtapa('SECTOR')} />
           )}
+
+          {/* A janela da produção — os três estados com os tempos calculados */}
+          {verProducao && <ProductionWindow linhas={producao} onClose={() => setVerProducao(false)} />}
 
           {/* Fecho de Caixa do operador (contagem cega + sangria/reforço) */}
           {fechoCaixa && sessao && (

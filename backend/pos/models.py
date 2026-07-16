@@ -423,6 +423,9 @@ class POSTicketLine(models.Model):
     kds_status = models.CharField(max_length=10, choices=KDS_STATUS, default='NEW')
     fired_at = models.DateTimeField(blank=True, null=True)
     ready_at = models.DateTimeField(blank=True, null=True)
+    # ENTREGUE ao cliente (READY -> SERVED): fecha o cronómetro do serviço — sem este
+    # carimbo não se mede quanto tempo o prato esperou no passe.
+    served_at = models.DateTimeField(blank=True, null=True)
     # Anulação: uma linha JÁ ENVIADA à produção nunca é apagada — é marcada como anulada,
     # continua a existir para auditoria e a estação recebe o aviso de anulação.
     is_void = models.BooleanField(default=False)

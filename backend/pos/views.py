@@ -2133,6 +2133,24 @@ class KDSViewSet(viewsets.ReadOnlyModelViewSet):
         station = self.request.query_params.get('station')
         return qs.filter(kds_station=station) if station else qs
 
+    @action(detail=False, methods=['get'])
+    def monitor(self, request):
+        """O SINO DO EMPREGADO — a produção de HOJE, do lado da sala.
+
+        A cozinha tem o KDS; o empregado tem ISTO: o que está Iniciado (ao lume), o
+        que está Concluído (PRONTO no passe — ir buscar!) e o que já foi Entregue,
+        com os carimbos (fired/ready/served) para o terminal calcular os tempos.
+        """
+        from django.utils import timezone as _tz
+        hoje = _tz.localdate()
+        qs = (POSTicketLine.objects
+              .select_related('ticket', 'ticket__table', 'ticket__outlet')
+              .filter(kds_status__in=['PREPARING', 'READY', 'SERVED'],
+                      fired_at__date=hoje)
+              .exclude(kds_station='NONE')
+              .order_by('-fired_at')[:120])
+        return Response(self.get_serializer(qs, many=True).data)
+
     @action(detail=True, methods=['post'])
     def advance(self, request, pk=None):
         line = self.get_object()
@@ -2152,7 +2170,9 @@ class KDSViewSet(viewsets.ReadOnlyModelViewSet):
         line.kds_status = nxt
         if nxt == 'READY':
             line.ready_at = timezone.now()
-        line.save(update_fields=['kds_status', 'ready_at'])
+        if nxt == 'SERVED':
+            line.served_at = timezone.now()
+        line.save(update_fields=['kds_status', 'ready_at', 'served_at'])
         # Regista TODAS as passagens de estado (quem preparou, quando ficou pronto, quando serviu).
         log_event(request, 'KDS_ADVANCE',
                   f'{STATION_LABEL.get(line.kds_station, line.kds_station)}: {line.description} → {line.get_kds_status_display()}',
