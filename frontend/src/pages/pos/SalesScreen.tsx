@@ -157,8 +157,6 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
 
       {/* ───────── comanda ───────── */}
       <div className="w-[520px] bg-[#3a3a3a] flex flex-col border-l-4 border-black">
-        {/* AS PESSOAS DA MESA: cada número é uma subconta; o seguinte acrescenta. */}
-        {conta?.table && <SubcontaBar conta={conta} onSwitch={(id) => { setTid(id); setQtd(1); }} />}
         {/* quem paga */}
         <button onClick={() => setEscolherEntidade(true)}
           className="h-[54px] bg-[#2b2b2b] text-white flex items-center justify-between px-4 border-b border-black">
@@ -191,16 +189,22 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
           )}
         </div>
 
-        {/* quantidade para a próxima tecla */}
-        <div className="grid grid-cols-4 gap-px bg-black">
-          {[1, 2, 3, 4].map((n) => (
-            <button key={n} onClick={() => setQtd(n)}
-              className={`h-[62px] text-[22px] font-bold ${qtd === n
-                ? 'bg-[#1a1a1a] text-white ring-2 ring-[#f0c000]' : 'bg-[#2b2b2b] text-white/80'}`}>
-              {n}
-            </button>
-          ))}
-        </div>
+        {/* NUMA MESA, os números de baixo são AS PESSOAS (subcontas): tocar troca,
+            o seguinte acrescenta, as setas giram o carrossel. No balcão (sem mesa)
+            são a QUANTIDADE para a próxima tecla. */}
+        {conta?.table ? (
+          <SubcontaBar conta={conta} onSwitch={(id) => { setTid(id); setQtd(1); }} />
+        ) : (
+          <div className="grid grid-cols-4 gap-px bg-black">
+            {[1, 2, 3, 4].map((n) => (
+              <button key={n} onClick={() => setQtd(n)}
+                className={`h-[62px] text-[22px] font-bold ${qtd === n
+                  ? 'bg-[#1a1a1a] text-white ring-2 ring-[#f0c000]' : 'bg-[#2b2b2b] text-white/80'}`}>
+                {n}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="h-[74px] bg-[#8a8a8a] flex items-center justify-end px-4">
           <span className="text-[40px] font-bold text-white">{money(conta?.grand_total)}</span>

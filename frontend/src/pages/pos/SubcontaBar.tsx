@@ -1,25 +1,27 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 
 /**
- * AS PESSOAS DA MESA — o carrossel de subcontas.
+ * AS PESSOAS DA MESA — os números de baixo da comanda.
  *
  * Quatro amigos jantam e cada um paga o que comeu: cada NÚMERO é uma pessoa (uma
  * subconta da MESMA mesa). Tocar num número muda para a conta dessa pessoa; tocar no
- * número SEGUINTE (o primeiro apagado) ACRESCENTA uma pessoa — abre-lhe uma subconta
- * vazia, pronta a receber os artigos dela.
+ * número SEGUINTE (apagado) ACRESCENTA uma pessoa — abre-lhe uma subconta vazia.
  *
- * Os números RODAM (carrossel com ‹ ›) — uma mesa de grupo pode ter 12 pessoas e não
- * cabem todas na faixa. Nada disto é novo: as subcontas são o `split`/`siblings` do
- * motor de tickets do backoffice; cada uma paga-se como qualquer conta.
+ * Os números GIRAM de verdade (carrossel): as setas rodam a fila — 1·2·3·4 passa a
+ * 2·3·4·5 — e ao chegar ao fim volta ao princípio. Uma mesa de grupo com 12 pessoas
+ * cabe sempre nos mesmos 4 lugares.
+ *
+ * Nada disto é novo: as subcontas são o `split`/`siblings`/`merge` do motor de
+ * tickets do backoffice; cada uma paga-se como qualquer conta.
  */
 export default function SubcontaBar({ conta, onSwitch }: {
   conta: any;                       // a conta atual (tem table e outlet)
   onSwitch: (ticketId: number) => void;
 }) {
   const qc = useQueryClient();
-  const faixa = useRef<HTMLDivElement>(null);
+  const [ini, setIni] = useState(0);      // onde começa a janela do carrossel
 
   // TODAS as contas abertas desta mesa, por ordem de chegada — o nº 1 é a primeira.
   const { data: contas = [] } = useQuery({
@@ -51,44 +53,45 @@ export default function SubcontaBar({ conta, onSwitch }: {
     }
   };
 
-  // Mostra sempre pelo menos 4 células (como o original); a seguir às pessoas reais
-  // vem O PRÓXIMO número, apagado — tocar nele é acrescentar essa pessoa.
-  const celulas = Math.max(4, contas.length + 1);
+  // total de posições: as pessoas reais + o número seguinte (o que acrescenta);
+  // nunca menos de 4, para a faixa ter sempre a cara do original.
+  const total = Math.max(4, contas.length + 1);
+  const JANELA = 4;
+  const girar = (d: number) => setIni((ini + d + total) % total);
 
   return (
-    <div className="flex items-stretch bg-black h-[54px] flex-shrink-0">
-      <button onClick={() => faixa.current?.scrollBy({ left: -240, behavior: 'smooth' })}
-        className="w-[36px] bg-[#1f1f1f] text-white text-[20px] flex-shrink-0">‹</button>
-      <div ref={faixa} className="flex-1 flex overflow-x-auto scroll-smooth"
-        style={{ scrollbarWidth: 'none' }}>
-        {Array.from({ length: celulas }, (_, i) => {
-          const t = contas[i];
-          const proxima = i === contas.length;          // o número que ACRESCENTA
-          return (
-            <button key={i}
-              onClick={() => (t ? onSwitch(t.id) : proxima ? acrescentar() : undefined)}
-              disabled={!t && !proxima}
-              title={t ? `Subconta ${i + 1} · ${Number(t.grand_total).toLocaleString('pt-PT')} Kz`
-                : proxima ? 'Acrescentar pessoa (nova subconta)' : ''}
-              className={`min-w-[120px] flex-1 border-r border-[#3a3a3a] text-[20px] font-bold
-                ${t && t.id === conta.id
-                  ? 'bg-[#262626] text-white border-2 border-[#c9a400]'
-                  : t ? 'bg-[#1a1a1a] text-white/85'
-                    : proxima ? 'bg-[#111] text-white/40'
-                      : 'bg-[#0d0d0d] text-white/15'}`}>
-              {i + 1}
-              {t && Number(t.grand_total) > 0 && (
-                <span className="block text-[11px] font-normal text-white/50 -mt-0.5">
-                  {Number(t.grand_total).toLocaleString('pt-PT')} Kz
-                </span>
-              )}
-              {!t && proxima && <span className="block text-[11px] font-normal">+ pessoa</span>}
-            </button>
-          );
-        })}
-      </div>
-      <button onClick={() => faixa.current?.scrollBy({ left: 240, behavior: 'smooth' })}
-        className="w-[36px] bg-[#1f1f1f] text-white text-[20px] flex-shrink-0">›</button>
+    <div className="flex items-stretch bg-black gap-px h-[62px] flex-shrink-0">
+      {total > JANELA && (
+        <button onClick={() => girar(-1)} className="w-[40px] bg-[#2b2b2b] text-white/80 text-[22px]">‹</button>
+      )}
+      {Array.from({ length: Math.min(JANELA, total) }, (_, j) => {
+        const i = (ini + j) % total;         // gira com volta ao princípio
+        const t = contas[i];
+        const proxima = i === contas.length; // o número que ACRESCENTA
+        return (
+          <button key={j}
+            onClick={() => (t ? onSwitch(t.id) : proxima ? acrescentar() : undefined)}
+            disabled={!t && !proxima}
+            title={t ? `Subconta ${i + 1} · ${Number(t.grand_total).toLocaleString('pt-PT')} Kz`
+              : proxima ? 'Acrescentar pessoa (nova subconta)' : ''}
+            className={`flex-1 text-[22px] font-bold
+              ${t && t.id === conta.id
+                ? 'bg-[#1a1a1a] text-white ring-2 ring-[#f0c000]'
+                : t ? 'bg-[#2b2b2b] text-white/80'
+                  : proxima ? 'bg-[#222] text-white/40'
+                    : 'bg-[#1c1c1c] text-white/15'}`}>
+            {i + 1}
+            {t && Number(t.grand_total) > 0 && (
+              <span className="block text-[11px] font-normal text-white/50 -mt-1">
+                {Number(t.grand_total).toLocaleString('pt-PT')}
+              </span>
+            )}
+          </button>
+        );
+      })}
+      {total > JANELA && (
+        <button onClick={() => girar(1)} className="w-[40px] bg-[#2b2b2b] text-white/80 text-[22px]">›</button>
+      )}
     </div>
   );
 }

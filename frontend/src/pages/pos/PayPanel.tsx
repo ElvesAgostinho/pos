@@ -150,6 +150,20 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
           )}
         </div>
 
+        {/* PAGAMENTO MISTO — o que JÁ entrou, meio a meio: metade em dinheiro, o resto
+            no cartão ou por transferência. Cada toque num meio cobra o valor escrito
+            (ou o que falta), e a lista mostra as parcelas até a conta fechar. */}
+        {(conta.payments || []).length > 0 && (
+          <div className="bg-[#242424] px-4 py-2 border-t border-black max-h-[120px] overflow-auto">
+            {(conta.payments || []).map((p: any) => (
+              <div key={p.id} className="flex justify-between text-white/85 text-[15px] leading-[1.7]">
+                <span>{p.payment_method_name}</span>
+                <span>{money(p.amount)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* pago / a pagar */}
         <div className="h-[54px] bg-[#3a3a3a] flex items-center px-4 text-white text-[20px] font-semibold">
           <span>Pago: {money(pago)}</span>

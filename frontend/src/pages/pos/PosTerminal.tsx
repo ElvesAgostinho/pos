@@ -150,21 +150,37 @@ export default function PosTerminal() {
     nav('/pos/login');
   };
 
+  // Os MODOS do mapa (consultar/cobrar/parciais/transferir) ligam-se e desligam-se no
+  // PRÓPRIO botão: primeiro toque acende (o botão muda de cor), segundo toque apaga e
+  // volta-se a lançar pedidos. Nada de faixas por cima do mapa.
+  const modoNormal = () => { setEscolher(''); setModoMapa('ORDER'); };
+  const alternar = (modo: 'VIEW' | 'PAY', escolha: '' | 'SPLIT' | 'TRANSFER', ligado: boolean) => {
+    if (ligado) return modoNormal();
+    setEscolher(escolha); setModoMapa(modo); setEtapa('MAP');
+  };
+  const emConsulta = etapa === 'MAP' && modoMapa === 'VIEW';
+  const emPagamentos = etapa === 'MAP' && modoMapa === 'PAY' && !escolher;
+  const emParciais = etapa === 'MAP' && escolher === 'SPLIT';
+  const emTransfer = etapa === 'MAP' && escolher === 'TRANSFER';
+
   // As opções da barra da esquerda. As que precisam de uma conta aberta ficam apagadas —
   // não se escondem: o empregado tem o sítio delas na memória e procurá-las-ia.
-  const MENU: { label: string; icon: string; act: () => void; on?: boolean }[] = [
+  const MENU: { label: string; icon: string; act: () => void; on?: boolean; ativo?: boolean }[] = [
     ...(cfg?.direct_sale
       ? [{ label: 'Venda Direta', icon: '🛒', act: vendaDireta, on: !!setor }]
       : []),
     // CONSULTA: toca-se na mesa e vê-se o talão — sem passar pela página de venda.
-    { label: 'Consulta de Mesa', icon: '🖨', act: () => { setModoMapa('VIEW'); setEtapa('MAP'); },
-      on: !!sessao || !cfg?.require_cash_open },
-    { label: 'Pagamentos', icon: '💰', act: () => { setModoMapa('PAY'); setEtapa('MAP'); }, on: !!sessao },
+    { label: 'Consulta de Mesa', icon: '🖨', ativo: emConsulta,
+      act: () => alternar('VIEW', '', emConsulta), on: !!sessao || !cfg?.require_cash_open },
+    { label: 'Pagamentos', icon: '💰', ativo: emPagamentos,
+      act: () => alternar('PAY', '', emPagamentos), on: !!sessao },
     // Parciais e transferências precisam de uma mesa COM conta: escolhe-se no mapa.
-    { label: 'Funções Parciais', icon: '⑂', act: () => { setEscolher('SPLIT'); setModoMapa('PAY'); setEtapa('MAP'); }, on: !!sessao },
+    { label: 'Funções Parciais', icon: '⑂', ativo: emParciais,
+      act: () => alternar('PAY', 'SPLIT', emParciais), on: !!sessao },
     // (Parâmetro 8124) "Não permitir": o botão desaparece — a casa não transfere mesas.
     ...(cfg?.transfers !== 'Não permitir'
-      ? [{ label: 'Transferências', icon: '⇄', act: () => { setEscolher('TRANSFER'); setModoMapa('PAY'); setEtapa('MAP'); }, on: !!sessao }]
+      ? [{ label: 'Transferências', icon: '⇄', ativo: emTransfer,
+          act: () => alternar('PAY', 'TRANSFER', emTransfer), on: !!sessao }]
       : []),
     { label: 'Documentos', icon: '🗎', act: () => setJanela('DOCS'), on: true },
     { label: 'Mapa de Refeições', icon: '🍸', act: () => setJanela('MEALS'), on: true },
@@ -230,9 +246,10 @@ export default function PosTerminal() {
           {MENU.map((m) => (
             <button key={m.label} onClick={() => m.on !== false && m.act()}
               disabled={m.on === false}
-              className="h-[104px] flex-shrink-0 border-b border-[#2a2a2a] flex flex-col items-center justify-center gap-1
+              className={`h-[104px] flex-shrink-0 border-b border-[#2a2a2a] flex flex-col items-center justify-center gap-1
                 text-white text-[15px] font-semibold leading-tight px-2 text-center
-                disabled:text-white/25 hover:bg-[#1f1f1f] disabled:hover:bg-transparent">
+                disabled:text-white/25 disabled:hover:bg-transparent
+                ${m.ativo ? 'bg-[#0f8b8d]' : 'hover:bg-[#1f1f1f]'}`}>
               <span className="text-[28px]">{m.icon}</span>
               {m.label}
             </button>
@@ -249,15 +266,7 @@ export default function PosTerminal() {
           style={{ background: etapa === 'SALES' ? '#2b2b2b' : (setor?.map_bg_color || '#c9c3c1') }}>
           {etapa === 'MAP' && setor && (
             <>
-              {modoMapa !== 'ORDER' && (
-                <div className="absolute top-0 inset-x-0 h-[34px] bg-[#0f8b8d] text-white
-                  flex items-center justify-center font-bold z-10">
-                  {modoMapa === 'VIEW' ? 'Consulta de Mesa — toque na mesa para ver o consumo'
-                    : escolher === 'SPLIT' ? 'Funções Parciais — escolha a mesa'
-                      : escolher === 'TRANSFER' ? 'Transferências — escolha a mesa de origem'
-                        : 'Pagamentos — escolha a mesa a cobrar'}
-                </div>
-              )}
+              {/* SEM faixas por cima do mapa: o modo vê-se no botão aceso da barra. */}
               <TableMap setor={setor} modo={modoMapa}
                 perguntarTipo={cfg?.ask_guest_type !== false}
                 refrescar={(cfg?.tables_refresh_seconds || 8) * 1000}
