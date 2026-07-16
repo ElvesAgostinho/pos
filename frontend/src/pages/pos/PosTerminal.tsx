@@ -13,6 +13,7 @@ import GuestsPanel from './GuestsPanel';
 import AccountsPanel from './AccountsPanel';
 import PinChange from './PinChange';
 import TicketPreview from './TicketPreview';
+import DayClose from './DayClose';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -174,25 +175,10 @@ export default function PosTerminal() {
 
   const inval = () => qc.invalidateQueries();
 
-  // (Parâmetro 8062) "Permitir fechar o dia no Front Office": o fecho que normalmente é
-  // do backoffice pode ser feito aqui — casas pequenas onde o gerente é o caixa.
-  const fecharDia = async () => {
-    try {
-      const r = await apiClient.get('pos/ops/day-close/');
-      const d = r.data || {};
-      if (d.can_close === false) return alert(d.blocker || 'Ainda há contas abertas.');
-      const resumo = `FECHO DO DIA — ${d.date}\n\nVendas de hoje: ${d.sales_today?.count ?? 0} conta(s), `
-        + `${Number(d.sales_today?.total || 0).toLocaleString('pt-PT')} Kz`
-        + `\nCaixas abertas a fechar: ${(d.open_cash_sessions || []).length}`
-        + `\n\nFechar o dia agora?`;
-      if (!window.confirm(resumo)) return;
-      const rr = await apiClient.post('pos/ops/day-close/', {});
-      alert(rr.data?.detail || 'Dia fechado.');
-      setSessao(null); setTicket(null); setEtapa('SECTOR'); inval();
-    } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível fechar o dia.');
-    }
-  };
+  // (Parâmetro 8062) "Permitir fechar o dia no Front Office": abre a JANELA do fecho —
+  // lista as contas que travam, e cada uma cobra-se ou anula-se ali mesmo.
+  const [fechoAberto, setFechoAberto] = useState(false);
+  const fecharDia = () => setFechoAberto(true);
 
   const sair = () => {
     localStorage.removeItem('pos_operator_token');
@@ -385,6 +371,13 @@ export default function PosTerminal() {
                 else setEtapa('MAP');
               }}
               onBack={() => setEtapa('SECTOR')} />
+          )}
+
+          {/* Fecho do Dia: as contas que travam cobram-se ou anulam-se AQUI. */}
+          {fechoAberto && (
+            <DayClose
+              onClosed={() => { setFechoAberto(false); setSessao(null); setTicket(null); setEtapa('SECTOR'); inval(); }}
+              onClose={() => setFechoAberto(false)} />
           )}
 
           {/* A troca de PIN obrigatória fica POR CIMA de tudo — não se trabalha sem ela. */}

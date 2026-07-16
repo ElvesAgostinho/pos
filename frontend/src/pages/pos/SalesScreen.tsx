@@ -243,11 +243,27 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
           <span className="text-[40px] font-bold text-white">{money(conta?.grand_total)}</span>
         </div>
 
-        <div className="grid grid-cols-5 gap-px bg-black">
+        <div className="grid grid-cols-6 gap-px bg-black">
           <button onClick={() => setProcurar(true)}
             title="Consulta de artigo (catálogo inteiro)"
             className="h-[76px] bg-[#2b2b2b] text-white text-[30px]">🔍</button>
+          {/* ANULAR A CONTA INTEIRA — a mesa aberta por engano, o cliente que se foi
+              embora. Obriga a motivo (fica na auditoria) e liberta a mesa. É o mesmo
+              `void` do motor que o backoffice e o Fecho do Dia usam. */}
+          <button onClick={async () => {
+            const motivo = window.prompt(
+              `ANULAR a conta ${conta?.ticket_number || ''}?\n\nA mesa fica livre e a anulação fica na auditoria.\n\nMotivo:`);
+            if (!motivo) return;
+            try {
+              await apiClient.post(`pos/tickets/${tid}/void/`, { reason: motivo });
+              inval();
+              onClose();
+            } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível anular.'); }
+          }}
+            title="Anular a conta (mesa aberta por engano)"
+            className="h-[76px] bg-[#2b2b2b] text-[#e02020] text-[26px] font-bold">✕</button>
           <button onClick={() => linhas.length && apagarLinha(linhas[linhas.length - 1])}
+            title="Apagar a última linha"
             className="h-[76px] bg-[#2b2b2b] text-[#e02020] text-[30px]">🗑</button>
           <button onClick={enviarCozinha}
             title="Enviar para a cozinha"

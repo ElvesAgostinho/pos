@@ -1363,11 +1363,22 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket.status = 'VOID'
         ticket.closed_at = timezone.now()
         ticket.save(update_fields=['status', 'closed_at'])
+        # A MESA LIBERTA-SE — se não houver OUTRA conta aberta nela (subcontas!). Sem
+        # isto, a mesa anulada ficava OCUPADA no mapa até alguém reparar.
+        self._liberta_mesa(ticket)
         log_event(request, 'TICKET_VOID',
                   f'Ticket anulado ({ticket.ticket_number}) · {len(cancelled)} item(s) anulados na produção · Motivo: {reason}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet,
                   reference=ticket.ticket_number, old_value=old, new_value='VOID', amount=ticket.grand_total)
         return Response(self.get_serializer(ticket).data)
+
+    @staticmethod
+    def _liberta_mesa(ticket):
+        """Mesa sem mais contas abertas volta a LIVRE — o mapa não pode mentir."""
+        if ticket.table_id and not ticket.table.tickets.filter(
+                status__in=['OPEN', 'SUSPENDED']).exists():
+            ticket.table.status = 'FREE'
+            ticket.table.save(update_fields=['status'])
 
     @action(detail=True, methods=['post'])
     def credit_note(self, request, pk=None):
@@ -1390,6 +1401,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket.status = 'VOID'
         ticket.closed_at = timezone.now()
         ticket.save(update_fields=['status', 'closed_at'])
+        self._liberta_mesa(ticket)
         log_event(request, 'TICKET_VOID',
                   f'Venda anulada ({ticket.ticket_number}) · NC: {nc_info or "s/ doc fiscal"} · '
                   f'{len(cancelled)} item(s) anulados na produção · Motivo: {reason}',
