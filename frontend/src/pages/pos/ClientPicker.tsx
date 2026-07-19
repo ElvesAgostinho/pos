@@ -34,7 +34,7 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true }: {
   const entidades = useQuery({
     queryKey: ['pos-pick-entidades', busca],
     queryFn: async () => {
-      const r = await apiClient.get('pos/marketing/entities/', { params: busca ? { search: busca } : {} });
+      const r = await apiClient.get('pos/marketing/entities/', { params: busca ? { q: busca } : {} });
       return (r.data?.results || r.data || []) as any[];
     },
     enabled: aba === 'ENTIDADE',

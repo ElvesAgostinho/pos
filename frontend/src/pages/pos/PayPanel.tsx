@@ -5,6 +5,25 @@ import Window from './Window';
 import { comPerguntas } from '../posPrompt';
 import EntityPicker from './EntityPicker';
 import GuestPick from './GuestPick';
+import CustomerIdForm from './CustomerIdForm';
+import NotesDialog from './NotesDialog';
+import {
+  IcoCliente, IcoLapis, IcoLimpar, IcoPreco, IcoVisto, IcoCruz, IcoDocumento, IcoLista,
+} from './Icons';
+
+/** Um botão do rodapé do painel de pagamentos — relevo pesado, alvo de dedo. */
+const BotaoPag = ({ children, onClick, titulo, cor = '#ffffff', on = true }: {
+  children: any; onClick: () => void; titulo: string; cor?: string; on?: boolean;
+}) => (
+  <button onClick={() => on && onClick()} disabled={!on} title={titulo} style={{ color: cor }}
+    className="h-[64px] flex items-center justify-center gap-2 rounded-[3px] border-2 border-black
+      bg-gradient-to-b from-[#4a4a4a] to-[#242424]
+      shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
+      active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
+      disabled:opacity-25 disabled:shadow-none disabled:cursor-not-allowed">
+    {children}
+  </button>
+);
 
 /**
  * PAGAMENTOS — o momento em que o dinheiro entra.
@@ -59,6 +78,42 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
   // CONTA QUARTO: o quarto escolhe-se da LISTA DO PMS (parâmetros 8035/8064 mandam),
   // não se escreve à mão — é assim que o jantar não vai parar ao quarto errado.
   const [pedirQuarto, setPedirQuarto] = useState<any | null>(null);
+  // As três janelas dos ícones de baixo.
+  const [dadosCliente, setDadosCliente] = useState(false);
+  const [verObs, setVerObs] = useState(false);
+  const [escolherSerie, setEscolherSerie] = useState(false);
+
+  // AS SÉRIES vêm do backoffice (Configuração POS › Séries de Documento).
+  const { data: series = [] } = useQuery({
+    queryKey: ['pos-doc-series'],
+    queryFn: async () => {
+      const r = await apiClient.get('pos/config/documents/');
+      return ((r.data?.results || r.data || []) as any[]).filter((s) => s.is_active !== false);
+    },
+    enabled: escolherSerie,
+  });
+
+  // EMITIR O DOCUMENTO. Sem série indicada, o motor usa a da ficha do setor.
+  const emitir = async (serie?: any) => {
+    try {
+      const r = await apiClient.post(`pos/tickets/${ticket.id}/issue_document/`, {
+        doc_type: serie?.type_code || (falta > 0 ? 'FT' : 'FR'),
+        ...(serie ? { series: serie.id } : {}),
+        ...(entidade ? { customer: entidade.id } : {}),
+      });
+      setEscolherSerie(false);
+      alert(`Documento emitido: ${r.data.invoice_no}`);
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao faturar.'); }
+  };
+
+  // OBSERVAÇÕES na conta — ficam gravadas no servidor, não só no ecrã.
+  const gravarObs = async (texto: string) => {
+    setVerObs(false);
+    try {
+      await apiClient.patch(`pos/tickets/${ticket.id}/`, { payment_notes: texto || null });
+      setConta({ ...conta, payment_notes: texto });
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar as observações.'); }
+  };
 
   const cobrar = async (m: any, extra: any = {}) => {
     // Com o 8310 ligado não há cobrança sem entidade — a escolha volta a abrir-se.
@@ -121,16 +176,35 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         {/* os meios de pagamento AUTORIZADOS neste ponto de venda. "Conta Quarto" só
             aparece a HÓSPEDES — o passante e o consumo interno não têm quarto onde
             a conta caia (o tipo perguntou-se ao abrir a mesa, parâmetro 8175). */}
-        <div className="p-3 bg-[#2b2b2b]">
-          <div className="grid grid-cols-5 gap-2">
+        <div className="p-2 bg-[#2b2b2b] min-h-[300px]">
+          <div className="grid grid-cols-5 gap-1.5">
             {metodos.filter((m: any) =>
-              m.method_type_code !== 'ROOM' || conta.guest_type === 'HOTEL').map((m: any) => (
-              <button key={m.id} onClick={() => !busy && cobrar(m)} disabled={busy || falta <= 0}
-                className="h-[86px] bg-[#0f8b8d] text-white text-[15px] font-bold rounded-sm
-                  px-2 leading-tight active:scale-95 disabled:opacity-40">
-                {m.payment_method_name}
-              </button>
-            ))}
+              m.method_type_code !== 'ROOM' || conta.guest_type === 'HOTEL').map((m: any) => {
+              // O QUE JÁ ENTROU POR ESTE MEIO. Um pagamento misto faz-se tocando em dois
+              // meios; sem ver quanto entrou em cada um, o empregado perde a conta de
+              // quanto já recebeu em dinheiro e quanto passou no cartão — e o fecho de
+              // caixa não bate. A BARRA separa o nome do valor: é o que o original faz.
+              const nesteMeio = (conta.payments || [])
+                .filter((p: any) => p.payment_method === m.payment_method)
+                .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
+              return (
+                <button key={m.id} onClick={() => !busy && cobrar(m)} disabled={busy || falta <= 0}
+                  className="h-[132px] rounded-[3px] text-white px-2 leading-tight border-2 border-black
+                    bg-gradient-to-b from-[#1aa3a5] to-[#0b6b6d]
+                    shadow-[inset_0_2px_0_rgba(255,255,255,0.25),inset_0_-3px_0_rgba(0,0,0,0.4)]
+                    active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.55)]
+                    disabled:opacity-40 disabled:shadow-none
+                    flex flex-col items-center justify-center gap-1">
+                  <span className="text-[17px] font-bold text-center">{m.payment_method_name}</span>
+                  {nesteMeio > 0 && (
+                    <>
+                      <span className="w-[78%] h-[2px] bg-white/70" />
+                      <span className="text-[20px] font-bold">{money(nesteMeio)}</span>
+                    </>
+                  )}
+                </button>
+              );
+            })}
             {metodos.length === 0 && (
               <div className="col-span-5 text-white/50 text-center py-12">
                 Nenhum meio de pagamento autorizado neste ponto de venda.
@@ -187,57 +261,120 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
           <span className="ml-auto">A pagar: {money(falta)}</span>
         </div>
 
-        {/* ações */}
+        {/* ─── PRIMEIRA FILA: identificar · observar · limpar · gift ───
+            O gift card ficou nesta fila (o original tem três botões, nós temos quatro):
+            é uma função que já existia no nosso POS e não se tira nada do que cá está —
+            escondê-la era obrigar quem tem vales a ir procurá-los noutro sítio. */}
         <div className="grid grid-cols-4 gap-1 p-1 bg-black">
-          <button onClick={() => setEscolherEntidade(true)}
-            className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Entidade (quem leva a fatura)">
-            👤+ <span className="text-[14px] align-middle ml-1">
-              {entidade ? entidade.name.slice(0, 12) : 'Venda Direta'}
-            </span>
-          </button>
-          <button onClick={async () => {
+          <BotaoPag onClick={() => setDadosCliente(true)}
+            titulo={entidade ? `Cliente: ${entidade.name}` : 'Registar / procurar o cliente (NIF para a fatura)'}>
+            <IcoCliente size={30} />
+            {entidade && <span className="text-[12px] truncate max-w-[120px]">{entidade.name}</span>}
+          </BotaoPag>
+          <BotaoPag onClick={() => setVerObs(true)}
+            titulo="Observações de pagamento (fica na conta e na auditoria)">
+            <IcoLapis size={30} />
+            {conta.payment_notes && <span className="w-2 h-2 rounded-full bg-[#f0c000]" />}
+          </BotaoPag>
+          {/* A BORRACHA limpa o VALOR escrito e o modo de cartão — não desfaz pagamentos
+              já cobrados: esses são movimentos de dinheiro, e desfazem-se com estorno. */}
+          <BotaoPag onClick={() => { setValor(''); setModoCartao(''); }}
+            titulo="Limpar o valor escrito (não desfaz pagamentos já cobrados)">
+            <IcoLimpar size={30} />
+          </BotaoPag>
+          <BotaoPag onClick={async () => {
             // GIFT CARD: o saldo do cartão abate à conta (motor redeem_gift — o saldo
             // vive no servidor; aqui só se lê o código).
             const codigo = window.prompt('GIFT CARD — leia ou escreva o código:');
             if (!codigo) return;
             try {
-              const r = await apiClient.post(`pos/tickets/${ticket.id}/redeem_gift/`, { code: codigo.trim() });
+              await apiClient.post(`pos/tickets/${ticket.id}/redeem_gift/`, { code: codigo.trim() });
               const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
               setConta(tk);
               if (Number(tk.balance_due ?? 0) <= 0) onPaid();
               else alert(`Gift aplicado. Falta: ${money(tk.balance_due)} Kz`);
             } catch (e: any) { alert(e?.response?.data?.detail || 'Gift card inválido.'); }
-          }}
-            className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Gift card">🎁</button>
-          <button onClick={() => setTeclado(!teclado)}
-            className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Escrever o valor entregue">✎</button>
-          <button onClick={() => { setValor(''); setModoCartao(''); }}
-            className="h-[56px] bg-[#1f1f1f] text-white text-[22px]" title="Limpar">⌫</button>
+          }} titulo="Gift card / voucher">
+            <IcoPreco size={30} />
+          </BotaoPag>
         </div>
-        <div className="grid grid-cols-3 gap-1 p-1 pt-0 bg-black">
-          <button onClick={onPaid} disabled={falta > 0}
-            className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px] disabled:opacity-30"
-            title="Fechar a conta">✔</button>
-          <button onClick={async () => {
-            try {
-              const r = await apiClient.post(`pos/tickets/${ticket.id}/issue_document/`, {
-                doc_type: falta > 0 ? 'FT' : 'FR',
-                ...(entidade ? { customer: entidade.id } : {}),
-              });
-              alert(`Documento emitido: ${r.data.invoice_no}`);
-            } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao faturar.'); }
-          }}
-            className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[22px]" title="Emitir documento e fechar">
-            🗎 ✔
-          </button>
-          <button onClick={onClose}
-            className="h-[56px] bg-[#1f1f1f] text-[#e02020] text-[26px]">✖</button>
+
+        {/* ─── SEGUNDA FILA: fechar · faturar · escolher série · cancelar ─── */}
+        <div className="grid grid-cols-4 gap-1 p-1 pt-0 bg-black">
+          <BotaoPag onClick={onPaid} on={falta <= 0} cor="#2ecc40"
+            titulo={falta > 0 ? `Ainda falta receber ${money(falta)} Kz` : 'Fechar a conta'}>
+            <IcoVisto size={32} />
+          </BotaoPag>
+          <BotaoPag onClick={() => emitir()} cor="#2ecc40"
+            titulo="Emitir o documento fiscal (a série vem da ficha do setor)">
+            <span className="flex items-center gap-1">
+              <IcoDocumento size={26} /><IcoVisto size={24} />
+            </span>
+          </BotaoPag>
+          {/* ESCOLHER A SÉRIE: por norma a série vem da ficha do setor (parâmetros
+              8553-8589). Este botão é para a exceção — faturar por outra série sem ir
+              ao backoffice trocar a configuração da sala toda. */}
+          <BotaoPag onClick={() => setEscolherSerie(true)} cor="#2ecc40"
+            titulo="Emitir escolhendo a série de documento">
+            <span className="flex items-center gap-1">
+              <IcoLista size={26} /><IcoVisto size={24} />
+            </span>
+          </BotaoPag>
+          <BotaoPag onClick={onClose} cor="#e02020" titulo="Fechar o painel">
+            <IcoCruz size={32} />
+          </BotaoPag>
         </div>
       </div>
 
       {escolherEntidade && (
         <EntityPicker onPick={(e) => { setEntidade(e); setEscolherEntidade(false); }}
           onCancel={() => setEscolherEntidade(false)} />
+      )}
+
+      {/* 1º ícone — a ficha do cliente (procurar no ficheiro ou registar de novo) */}
+      {dadosCliente && (
+        <CustomerIdForm onClose={() => setDadosCliente(false)}
+          onPick={async (e) => {
+            setEntidade(e); setDadosCliente(false);
+            // o NIF tem de ir para a CONTA, senão a fatura sai a Consumidor Final
+            try {
+              await apiClient.post(`pos/tickets/${ticket.id}/set_customer/`, {
+                entity: e.id, customer_name: e.name, customer_tax_id: e.tax_id || null,
+              });
+              const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
+              setConta(tk);
+            } catch { /* a entidade fica escolhida na mesma para a emissão */ }
+          }} />
+      )}
+
+      {/* 2º ícone — observações de pagamento */}
+      {verObs && (
+        <NotesDialog inicial={conta.payment_notes || ''}
+          onOk={gravarObs} onClose={() => setVerObs(false)} />
+      )}
+
+      {/* escolher a SÉRIE antes de emitir (a exceção; a regra é a ficha do setor) */}
+      {escolherSerie && (
+        <Window title="Série do documento" width={620} tone="#0f8b8d"
+          onClose={() => setEscolherSerie(false)}>
+          <div className="max-h-[60vh] overflow-auto">
+            {series.length === 0 && (
+              <div className="p-6 text-white/60">
+                Sem séries configuradas em <b>Configuração POS › Séries de Documento</b>.
+              </div>
+            )}
+            {series.map((s: any) => (
+              <button key={s.id} onClick={() => emitir(s)}
+                className="w-full h-[60px] px-5 text-left text-white text-[18px]
+                  bg-[#2b2b2b] hover:bg-[#3a3a3a] border-b border-black">
+                <b>{s.type_code}</b> — {s.name || s.type_name}
+                <span className="text-white/50 text-[14px] ml-2">
+                  (série {s.code}{s.year ? `/${s.year}` : ''})
+                </span>
+              </button>
+            ))}
+          </div>
+        </Window>
       )}
 
       {/* Conta Quarto: o quarto vem da lista do PMS, com um toque */}

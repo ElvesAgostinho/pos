@@ -307,6 +307,10 @@ class POSTicket(models.Model):
     company_name = models.CharField(max_length=200, blank=True, null=True)
     adults = models.PositiveIntegerField(default=0)
     children = models.PositiveIntegerField(default=0)
+    # OBSERVAÇÕES DE PAGAMENTO — "pagou 5000 e ficou de trazer o resto", "cheque nº…",
+    # "cortesia autorizada pelo gerente". Fica na conta e sai no documento: uma
+    # explicação dita ao colega no fim do turno perde-se; escrita, sobrevive à auditoria.
+    payment_notes = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS, default='OPEN')
 
     subtotal = models.DecimalField(max_digits=14, decimal_places=2, default=0)

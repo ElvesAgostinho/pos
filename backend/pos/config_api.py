@@ -3309,6 +3309,24 @@ class EntitySerializer(serializers.ModelSerializer):
         from mdm.models import Customer as _C
         model = _C
         fields = '__all__'
+        # O CÓDIGO é gerado pelo servidor quando não vem no pedido. O terminal não tem
+        # como saber qual é o próximo código livre do cadastro — e obrigar o empregado a
+        # inventar um, com um cliente à espera da fatura, dava códigos como "1" e "aaa"
+        # repetidos até rebentar o unique. Quem cria pelo backoffice continua a poder
+        # escolher o seu.
+        extra_kwargs = {'code': {'required': False}}
+
+    def create(self, validated):
+        from mdm.models import Customer
+        if not validated.get('code'):
+            base = 'C'
+            ultimo = (Customer.objects.filter(code__regex=r'^C\d+$')
+                      .order_by('-id').values_list('code', flat=True).first())
+            n = int(ultimo[1:]) + 1 if ultimo and ultimo[1:].isdigit() else 1
+            while Customer.objects.filter(code=f'{base}{n:05d}').exists():
+                n += 1
+            validated['code'] = f'{base}{n:05d}'
+        return super().create(validated)
 
     def get_contact(self, o):
         return o.phone or o.email or None

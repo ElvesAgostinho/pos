@@ -1844,8 +1844,26 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if not tipo:
             return Response({'detail': f'Tipo de documento "{codigo}" não está configurado no Centro Fiscal.'},
                             status=status.HTTP_400_BAD_REQUEST)
-        serie = (FiscalSeries.objects.filter(doc_type=tipo, is_active=True, is_closed=False)
-                 .order_by('-year').first())
+        # SÉRIE ESCOLHIDA À MÃO (botão "escolher série" do painel de pagamentos): a
+        # exceção. Por norma a série vem do tipo de documento — mas quem tem duas séries
+        # do mesmo tipo (uma por estabelecimento, por exemplo) precisa de dizer qual, sem
+        # ir ao backoffice trocar a configuração da sala toda. Ignorar o pedido em
+        # silêncio, como estava, era o pior dos dois mundos: o ecrã deixava escolher e o
+        # documento saía na outra série na mesma.
+        serie = None
+        pedida = request.data.get('series')
+        if pedida:
+            serie = FiscalSeries.objects.filter(pk=pedida, is_active=True, is_closed=False).first()
+            if not serie:
+                return Response({'detail': 'A série escolhida não existe, está fechada ou inativa.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if serie.doc_type_id != tipo.id:
+                return Response({'detail': f'A série escolhida não é de "{codigo}". '
+                                           f'Uma série numera um só tipo de documento.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        if not serie:
+            serie = (FiscalSeries.objects.filter(doc_type=tipo, is_active=True, is_closed=False)
+                     .order_by('-year').first())
         if not serie:
             return Response({'detail': f'Sem série ativa para "{codigo}". '
                                        f'Crie-a em Configuração POS → Financeiro → Documentos.'},
