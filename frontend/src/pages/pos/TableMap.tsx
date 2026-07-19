@@ -189,6 +189,7 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
 
         {aSentar && (
           <GuestsDialog mesa={aSentar} perguntarTipo={perguntarTipo}
+            tiposPermitidos={setor?.customer_types}
             onConfirm={(pax, tipo) => abrir.mutate({ mesa: aSentar, pax, tipo })}
             onPassante={onDirectSale ? () => { setASentar(null); onDirectSale(); } : undefined}
             onCancel={() => setASentar(null)} />

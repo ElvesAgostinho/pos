@@ -10,22 +10,22 @@ const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
 
 // Parâmetros do SETOR (os do terminal são outros). O número é a referência do suporte.
 const SECTOR_PARAMS = [
-  { g: 'Geral', n: 8573, name: 'Teclados (Front Office)', kind: 'TEXT' },
+  { g: 'Geral', n: 8573, name: 'Teclados (Front Office)', kind: 'LIST', src: 'keyboards' },
   { g: 'Geral', n: 8575, name: 'Complexo', kind: 'CHOICE', choices: ['UNICO (Único)', 'MULTIPLO'] },
-  { g: 'Geral', n: 8581, name: 'Tipos de Cliente', kind: 'CHOICE', choices: ['Todos', 'Hóspedes', 'Passantes'] },
-  { g: 'Geral', n: 8582, name: 'Descontos', kind: 'CHOICE', choices: ['Todos', 'Nenhum', 'Só supervisor'] },
-  { g: 'Geral', n: 8592, name: 'Preços Disponíveis', kind: 'CHOICE', choices: ['Todos', 'Só o do setor'] },
-  { g: 'Geral', n: 8596, name: 'Estado da mesa após fechar', kind: 'CHOICE', choices: ['Disponível', 'Limpeza'] },
-  { g: 'Geral', n: 8611, name: 'Períodos - Reporting', kind: 'TEXT' },
-  { g: 'Documentos', n: 8557, name: 'Fatura Recibo', kind: 'DOC' },
-  { g: 'Documentos', n: 8556, name: 'Nota de Crédito', kind: 'DOC' },
-  { g: 'Documentos', n: 8555, name: 'Consulta de Conta', kind: 'DOC' },
-  { g: 'Documentos', n: 8553, name: 'Talão', kind: 'DOC' },
-  { g: 'Documentos', n: 8558, name: 'Recibo', kind: 'DOC' },
-  { g: 'Documentos', n: 8562, name: 'Fatura CC', kind: 'DOC' },
-  { g: 'Documentos', n: 8587, name: 'Anulação Recibo', kind: 'DOC' },
-  { g: 'Documentos', n: 8588, name: 'Nota de Recebimento', kind: 'DOC' },
-  { g: 'Documentos', n: 8589, name: 'Anulação nota recebimento', kind: 'DOC' },
+  { g: 'Geral', n: 8581, name: 'Tipos de Cliente', kind: 'LIST', src: 'customerTypes', todos: true },
+  { g: 'Geral', n: 8582, name: 'Descontos', kind: 'LIST', src: 'discounts', todos: true },
+  { g: 'Geral', n: 8592, name: 'Preços Disponíveis', kind: 'CHOICE', choices: ['Preço 1', 'Preço 2', 'Preço 3', 'Preço 4', 'Preço 5', 'Preço 6'] },
+  { g: 'Geral', n: 8596, name: 'Estado da mesa após fechar', kind: 'CHOICE', choices: ['Disponível', 'Limpeza', 'Reservada'] },
+  { g: 'Geral', n: 8611, name: 'Períodos - Reporting', kind: 'LIST', src: 'timeBands' },
+  { g: 'Documentos', n: 8557, name: 'Fatura Recibo', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8556, name: 'Nota de Crédito', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8555, name: 'Consulta de Conta', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8553, name: 'Talão', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8558, name: 'Recibo', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8562, name: 'Fatura CC', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8587, name: 'Anulação Recibo', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8588, name: 'Nota de Recebimento', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8589, name: 'Anulação nota recebimento', kind: 'LIST', src: 'series' },
 ];
 
 /** SETOR — a sala de venda. Define o teclado, o preço, o armazém e o happy hour. */
@@ -38,7 +38,20 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
   const { data: warehouses = [] } = useQuery({ queryKey: ['posc', 'whs'], queryFn: async () => { const r = await apiClient.get('inventory/warehouses/'); return r.data?.results || r.data || []; } });
   const { data: promos = [] } = useQuery({ queryKey: ['posc', 'promos'], queryFn: async () => { try { const r = await apiClient.get('commercial/promotions/'); return r.data?.results || r.data || []; } catch { return []; } } });
   const { data: outlets = [] } = useQuery({ queryKey: ['posc', 'outlets'], queryFn: async () => (await apiClient.get('pos/outlets/')).data });
-  const { data: docTypes = [] } = useQuery({ queryKey: ['posc', 'doctypes'], queryFn: async () => { try { const r = await apiClient.get('fiscal/doc-types/'); return r.data?.results || r.data || []; } catch { return []; } } });
+  // AS LISTAS REAIS do backoffice — é daqui que vêm as opções de cada linha.
+  const lista = (chave: string, url: string) => useQuery({
+    queryKey: ['posc', chave],
+    queryFn: async () => { try { const r = await apiClient.get(url); return (r.data?.results || r.data || []) as any[]; } catch { return []; } },
+  }).data || [];
+  const FONTES: Record<string, { id: any; label: string }[]> = {
+    // (8573) os TECLADOS criados — escolhe-se qual serve esta sala
+    keyboards: lista('keyboards', 'pos/config/keyboards/').map((k: any) => ({ id: k.id, label: `${k.number} · ${k.name}` })),
+    // (8553-8589) as SÉRIES de documento (é a série que numera e assina)
+    series: lista('docseries', 'pos/config/documents/').map((x: any) => ({ id: x.id, label: `${x.code} — ${x.name}` })),
+    customerTypes: lista('custtypes', 'pos/config/customer-types/').map((x: any) => ({ id: x.id, label: x.name })),
+    discounts: lista('descontos', 'pos/config/discounts/').map((x: any) => ({ id: x.id, label: `${x.code} — ${x.name}` })),
+    timeBands: lista('bands', 'pos/config/time-bands/').map((x: any) => ({ id: x.id, label: x.name })),
+  };
 
   const save = useMutation({
     mutationFn: () => isNew
@@ -122,10 +135,12 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
                               <option value="">(nenhum)</option>
                               {p.choices!.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
-                          ) : p.kind === 'DOC' ? (
+                          ) : p.kind === 'LIST' ? (
                             <select value={v} onChange={(e) => setP(p.n, e.target.value)} className={cell}>
                               <option value="">(nenhum)</option>
-                              {docTypes.map((t: any) => <option key={t.id} value={t.code}>{t.code} ({t.name})</option>)}
+                              {(p as any).todos && <option value="TODOS">(todos)</option>}
+                              {(FONTES[(p as any).src] || []).map((o) => (
+                                <option key={o.id} value={o.id}>{o.label}</option>))}
                             </select>
                           ) : (
                             <input value={v} onChange={(e) => setP(p.n, e.target.value)} placeholder="(nenhum)" className={cell} />

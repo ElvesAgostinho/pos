@@ -17,9 +17,11 @@ import Window from './Window';
  * PASSANTE é um ATALHO, não uma escolha: quem passa não senta mesa — tocar em "Passante"
  * vai LOGO para a venda de balcão (venda direta), sem número de clientes nem "abrir mesa".
  */
-export default function GuestsDialog({ mesa, perguntarTipo = true, onConfirm, onPassante, onCancel }: {
+export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitidos, onConfirm, onPassante, onCancel }: {
   mesa: any;
   perguntarTipo?: boolean;
+  // (8581 da ficha do SETOR) que tipos de cliente esta sala aceita
+  tiposPermitidos?: string | null;
   onConfirm: (pax: number, tipo: string) => void;
   onPassante?: () => void;
   onCancel: () => void;
@@ -77,7 +79,10 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, onConfirm, on
                       ?.flags?.internal_consumption;
                   } catch { return false; }
                 })();
-                const bloqueado = k === 'INTERNO' && !podeInterno;
+                // (8581) a sala pode aceitar só um tipo — o resto fica apagado
+                const foraDoSetor = !!tiposPermitidos && tiposPermitidos !== 'TODOS'
+                  && String(tiposPermitidos) !== String(k);
+                const bloqueado = (k === 'INTERNO' && !podeInterno) || foraDoSetor;
                 return (
                   <button key={k} disabled={bloqueado}
                     title={bloqueado ? 'Sem autorização de consumo interno (ficha do utilizador)' : ''}

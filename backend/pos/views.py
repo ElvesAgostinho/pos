@@ -1427,11 +1427,27 @@ class POSTicketViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def _liberta_mesa(ticket):
-        """Mesa sem mais contas abertas volta a LIVRE — o mapa não pode mentir."""
-        if ticket.table_id and not ticket.table.tickets.filter(
-                status__in=['OPEN', 'SUSPENDED']).exists():
-            ticket.table.status = 'FREE'
-            ticket.table.save(update_fields=['status'])
+        """Mesa sem mais contas abertas: volta ao estado que o SETOR mandar.
+
+        (8596 "Estado da mesa após fechar") — há casas onde a mesa fica em LIMPEZA
+        até alguém a arrumar, e só depois é que pode ser vendida outra vez. É a
+        ficha do setor a decidir, não o código.
+        """
+        if not (ticket.table_id and not ticket.table.tickets.filter(
+                status__in=['OPEN', 'SUSPENDED']).exists()):
+            return
+        estado = 'FREE'
+        try:
+            from .models import PosSector
+            sec = PosSector.objects.filter(outlet=ticket.outlet).first()
+            p = (sec.params or {}) if sec else {}
+            escolhido = p.get('8596') or p.get(8596)
+            estado = {'Disponível': 'FREE', 'Limpeza': 'DIRTY',
+                      'Reservada': 'RESERVED'}.get(escolhido, 'FREE')
+        except Exception:
+            pass
+        ticket.table.status = estado
+        ticket.table.save(update_fields=['status'])
 
     @action(detail=True, methods=['post'])
     def credit_note(self, request, pk=None):

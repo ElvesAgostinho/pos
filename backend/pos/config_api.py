@@ -4366,14 +4366,19 @@ class PosTerminalKeyboardView(APIView):
         # (8176) "Configuração de teclado por": Setor usa o teclado ligado ao setor
         # pedido (a ficha do setor guarda o NOME do teclado); Terminal já foi tratado
         # acima; Operador cai no primeiro ativo (a ficha dele não tem teclado próprio).
-        if not kb and P.text(8176, 'Setor') == 'Setor' and request.query_params.get('sector'):
+        if not kb and request.query_params.get('sector'):
             try:
                 from .models import PosSector
                 s = PosSector.objects.filter(pk=request.query_params['sector']).first()
-                nome_kb = getattr(s, 'keyboard', None) if s else None
-                if nome_kb:
-                    kb = PosKeyboard.objects.filter(name__iexact=str(nome_kb),
-                                                    is_active=True).first()
+                if s:
+                    # (8573) o teclado escolhido na ficha do setor — por ID (ligação real)
+                    escolhido = (s.params or {}).get('8573') or (s.params or {}).get(8573)
+                    if escolhido:
+                        kb = PosKeyboard.objects.filter(pk=escolhido, is_active=True).first()
+                    # retrocompatível: fichas antigas guardavam o NOME
+                    if not kb and s.keyboard:
+                        kb = PosKeyboard.objects.filter(name__iexact=str(s.keyboard),
+                                                        is_active=True).first()
             except Exception:
                 kb = None
         if not kb:
@@ -4382,11 +4387,10 @@ class PosTerminalKeyboardView(APIView):
             return Response({'detail': 'Não há teclados configurados.',
                              'keyboard': None, 'pages': []})
 
-        # A JUNÇÃO DOS TECLADOS: o ecrã de venda mostra as páginas de TODOS os teclados
-        # ativos (o principal primeiro) — é assim que o teclado de artigos, o de funções
-        # e o de balcão configurados no backoffice aparecem lado a lado no terminal.
-        outros = list(PosKeyboard.objects.filter(is_active=True)
-                      .exclude(pk=kb.pk).order_by('number'))
+        # UM SETOR, UM TECLADO. Juntar as páginas de todos os teclados era misturar
+        # o Restaurante com o Lounge no mesmo ecrã: o empregado via teclas que não são
+        # da sala onde está. Cada setor carrega o teclado que a ficha dele manda.
+        outros = []
 
         chaves = list(PosKeyboardKey.objects.filter(keyboard=kb)
                       .select_related('item').order_by('sort_order', 'id'))
@@ -4655,6 +4659,43 @@ class EmailTemplateRules:
         return qs.filter(is_sub_template=False).order_by('-booking_priority', 'id')
 
 
+
+def _sector_payload(s):
+    """O SETOR como o terminal precisa dele — com os PARÂMETROS DA FICHA.
+
+    Cada linha da ficha do setor (Geral e Documentos) chega aqui com nome, para o
+    Front Office obedecer: que teclado usar, que tipos de cliente aceita, se deixa
+    descontos, que preço aplica, em que estado fica a mesa depois de fechar, e que
+    SÉRIE de documento usa para cada tipo (Fatura-Recibo, Talão, Nota de Crédito…).
+    """
+    p = s.params or {}
+
+    def val(num):
+        return p.get(str(num), p.get(num))
+
+    return {
+        'id': s.id, 'name': s.name, 'outlet': s.outlet_id,
+        'price_level': s.price_level, 'map_bg_color': s.map_bg_color,
+        # (8573) o TECLADO deste setor — o terminal carrega só este
+        'keyboard': val(8573),
+        # (8581) que tipos de cliente esta sala aceita · (8582) descontos
+        'customer_types': val(8581),
+        'discounts': val(8582),
+        # (8592) preços disponíveis · (8596) estado da mesa depois de fechar a conta
+        'prices': val(8592),
+        'table_state_after_close': val(8596) or 'Disponível',
+        'complex_mode': val(8575),
+        'reporting_period': val(8611),
+        # (8553-8589) as SÉRIES de documento que este setor emite
+        'documents': {
+            'invoice_receipt': val(8557), 'credit_note': val(8556),
+            'account_query': val(8555), 'receipt_slip': val(8553),
+            'receipt': val(8558), 'invoice_cc': val(8562),
+            'void_receipt': val(8587), 'goods_note': val(8588),
+            'void_goods_note': val(8589),
+        },
+    }
+
 class PosTerminalConfigView(APIView):
     """O QUE O TERMINAL FAZ — decidido no backoffice, não no código do terminal.
 
@@ -4680,9 +4721,7 @@ class PosTerminalConfigView(APIView):
     def get(self, request):
         from .params import P
         operador = request.query_params.get('operator')
-        setores = [{'id': s.id, 'name': s.name, 'outlet': s.outlet_id,
-                    'price_level': s.price_level, 'map_bg_color': s.map_bg_color}
-                   for s in _SectorAccess.sectors_for(operador)]
+        setores = [_sector_payload(s) for s in _SectorAccess.sectors_for(operador)]
         return Response({
             # os SETORES que ESTE operador pode servir ("Todos os setores" da ficha dele)
             'sectors': setores,
@@ -4789,9 +4828,7 @@ class PosBootstrapView(APIView):
             'license': {'modules': get_active_modules(settings.BASE_DIR, settings.SECRET_KEY)},
             'modules': modulos,
             # os setores que ESTE operador pode servir (caixa "Todos os setores")
-            'sectors': [{'id': s.id, 'name': s.name, 'outlet': s.outlet_id,
-                         'price_level': s.price_level, 'map_bg_color': s.map_bg_color}
-                        for s in _SectorAccess.sectors_for(operador_id)],
+            'sectors': [_sector_payload(s) for s in _SectorAccess.sectors_for(operador_id)],
             'operator': (None if not operador else {
                 'id': operador.id,
                 'name': getattr(operador, 'name', None) or getattr(operador, 'full_name', None) or operador.code,
