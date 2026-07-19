@@ -57,7 +57,6 @@ import PosAlerts from './PosAlerts';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
 import { useActiveModules } from '../../hooks/useActiveModules';
-import { irParaModulo } from '../../App';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -252,16 +251,6 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
               <div className="absolute left-0 top-full z-[61] min-w-[230px] py-1 shadow-2xl"
                 style={{ background: '#2b2b2b', border: '1px solid #444' }}>
-                <div className="px-4 py-1.5 text-[10px] uppercase tracking-widest text-[#888]">Módulos</div>
-                {[['pms', 'PMS — Hotel', 'pms_dashboard'],
-                  ['restauracao', 'Restauração', 'hoc_dashboard']].map(([k, l, ecra]) => (
-                  <button key={k}
-                    onClick={() => irParaModulo(k, ecra)}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
-                    <span className="w-5 text-center opacity-80">📁</span>{l}
-                  </button>
-                ))}
-                <div className="my-1 border-t border-[#444]" />
                 <button onClick={() => { setMenu(null); onDesktop?.(); }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
                   <span className="w-5 text-center opacity-80">🖥</span>Ambiente de Trabalho

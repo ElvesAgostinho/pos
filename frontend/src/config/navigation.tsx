@@ -10,8 +10,6 @@ import BrandsView from '../components/masterdata/BrandsView';
 import PaymentMethodsView from '../components/masterdata/PaymentMethodsView';
 import SupplierListView from '../components/esm/SupplierListView';
 import EsmDashboardView from '../components/esm/EsmDashboardView';
-import RecipesView from '../components/production/RecipesView';
-import ProductionAreasView from '../components/production/ProductionAreasView';
 import PurchaseOrdersView from '../components/procurement/PurchaseOrdersView';
 import GoodsReceiptsView from '../components/procurement/GoodsReceiptsView';
 import CollaboratorsList from '../pages/backoffice/workforce/CollaboratorsList';
@@ -35,20 +33,12 @@ import { WarehousesView as InvWarehousesView, StockLevelsView as InvStockLevelsV
 import { RequisitionsView, RfqComparisonView } from '../components/procurement/ProcurementFlowViews';
 import AccountsPayableView from '../components/finance/AccountsPayableView';
 import AccountsReceivableView from '../components/finance/AccountsReceivableView';
-import FoliosView from '../components/pms/FoliosView';
-import { HousekeepingView, MaintenanceView, RatePlansView } from '../components/pms/HotelOpsViews';
-import { LaundryView, MinibarView, SpaView } from '../components/pms/HotelServiceViews';
-import { PmsDashboardView, NightAuditView, AgenciesView } from '../components/pms/PmsAdminViews';
 import { OperationsCenterView, LiveTablesMonitor } from '../components/ops/OperationsCenterViews';
 import DocumentCenterView from '../components/documents/DocumentCenterView';
 import BookingEngineView from '../components/integration/BookingEngineView';
 import SupportCenterView from '../components/system/SupportCenterView';
 import ChannelManagerView from '../components/integration/ChannelManagerView';
 import ManagementDashboard from '../components/reporting/ManagementDashboard';
-import ReservationsView from '../components/pms/ReservationsView';
-import FrontDeskView from '../components/pms/FrontDeskView';
-import RoomsView from '../components/pms/RoomsView';
-import GuestsView from '../components/pms/GuestsView';
 import AccountsView from '../components/finance/AccountsView';
 import ReceiptsView from '../components/finance/ReceiptsView';
 import PaymentsView from '../components/finance/PaymentsView';
@@ -63,18 +53,7 @@ import PosConfigView from '../components/posconfig/PosConfigView';
 import AgtCertificationView from '../components/fiscal/AgtCertificationView';
 import SaftCenterViewNew from '../components/fiscal/SaftCenterView';
 import ProfileAccessView from '../components/security/ProfileAccessView';
-import AllergensView from '../components/production/AllergensView';
 // F&B Operations Center (Centro 10)
-import FnbDashboardView from '../components/production/fnb/FnbDashboardView';
-import FnbOutletsView from '../components/production/fnb/FnbOutletsView';
-import FnbMenusView from '../components/production/fnb/FnbMenusView';
-import FnbEventsView from '../components/production/fnb/FnbEventsView';
-import FnbIngredientsView from '../components/production/fnb/FnbIngredientsView';
-import FnbHaccpView from '../components/production/fnb/FnbHaccpView';
-import FnbWasteView from '../components/production/fnb/FnbWasteView';
-import FnbQualityView from '../components/production/fnb/FnbQualityView';
-import FnbTimingView from '../components/production/fnb/FnbTimingView';
-import FnbReportsView from '../components/production/fnb/FnbReportsView';
 // Warehouse Center (Centro 09)
 import WhDashboardView from '../components/warehouse/wh/WhDashboardView';
 import WhLocationsView from '../components/warehouse/wh/WhLocationsView';
@@ -219,44 +198,8 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   wh_costing: WhCostingView,
 
   // 10 · F&B Operations Center — cérebro da restauração
-  hoc_dashboard: FnbDashboardView,
-  hoc_restaurants: FnbRestaurants,
-  hoc_bars: FnbBars,
-  hoc_coffee: FnbCoffee,
-  hoc_poolbar: FnbPoolBar,
-  hoc_roomservice: FnbRoomService,
-  hoc_buffets: FnbBuffets,
-  hoc_events: FnbEventsView,
-  hoc_menus: FnbMenusView,
-  hoc_recipes: RecipesView,
-  hoc_ingredients: FnbIngredientsView,
-  hoc_stations: ProductionAreasView,
-  hoc_routing: KDSView,            // visão global do routing/produção (todas as estações)
-  hoc_kds: KitchenDisplay,         // display dedicado da cozinha
-  hoc_bar_display: BarDisplay,     // display dedicado do bar
-  hoc_pastry_display: PastryDisplay, // display dedicado da pastelaria
-  hoc_buffet_display: BuffetDisplay, // display dedicado do buffet
-  hoc_haccp: FnbHaccpView,
-  hoc_waste: FnbWasteView,
-  hoc_quality: FnbQualityView,
-  hoc_timing: FnbTimingView,
-  hoc_reports: FnbReportsView,
 
   // 11 · Front Office (PMS)
-  pms_reservations: ReservationsView,
-  pms_checkin: FrontDeskView,   // balcão de receção (chegadas/em casa/saídas) — NÃO é a lista de reservas
-  pms_rooms: RoomsView,
-  pms_housekeeping: HousekeepingView,
-  pms_maintenance: MaintenanceView,
-  pms_laundry: LaundryView,
-  pms_minibar: MinibarView,
-  pms_spa: SpaView,
-  pms_rates: RatePlansView,
-  pms_dashboard: PmsDashboardView,
-  pms_nightaudit: NightAuditView,
-  pms_agencies: AgenciesView,
-  pms_guests: GuestsView,
-  pms_ledger: FoliosView,
 
   // 12 · POS Management Center (mais pequeno)
 
@@ -376,7 +319,6 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   // --- Últimos casos de fronteira ---
   md_families: CategoriesView,        // famílias de artigos = agrupamento de categorias
   md_doctypes: FiscalSeriesView,      // tipos de documento vivem no centro fiscal
-  hoc_allergens: AllergensView,       // alergénios (catálogo + atribuição a artigos)
   pfo_terminal: PosTerminalLauncher,  // lançador do terminal tátil
 
   // 22 · Contabilidade Geral (PGC-AO)
@@ -690,8 +632,6 @@ export const suiteIncludes = (suiteKey: string, moduleKey: string): boolean => {
 export const FEATURE_OF: Record<string, string> = {
   com_loyalty: 'commercial.loyalty', com_menus: 'commercial.combos',
   fis_commercial: 'fiscal.commercial_docs',
-  pms_spa: 'pms.spa', pms_minibar: 'pms.minibar', pms_laundry: 'pms.laundry',
-  pms_agencies: 'pms.agencies', pms_nightaudit: 'pms.night_audit',
   ops_dashboard: 'ops.center',
   int_channel: 'integration.channel_manager', int_booking: 'integration.booking_engine',
 };

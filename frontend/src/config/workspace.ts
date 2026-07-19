@@ -1,5 +1,5 @@
 /**
- * Workspace Empresarial — os 3 ÚNICOS módulos comerciais (PMS, Restauração, POS).
+ * Workspace Empresarial — o POS, que é autossuficiente e se vende sozinho.
  * Tudo o resto pertence internamente a um destes. Cada módulo tem cor, wallpaper e
  * ícones de desktop (estilo clássico) que abrem os ecrãs reais (VIEW_REGISTRY, por id).
  * O POS TEM a sua própria área (gestão); só o TERMINAL (frontoffice) abre em janela separada.
@@ -45,8 +45,8 @@ export const CENTER_MODULES: Record<string, string[]> = {
   srm: ['pos'], procurement: ['pos'], warehouse: ['pos'],
   // POS (venda)
   posfront: ['pos'],
-  // Partilhados entre Restauração e POS
-  posmgmt: ['restauracao', 'pos'], commercial: ['restauracao', 'pos'],
+  // Partilhados
+  posmgmt: ['pos'], commercial: ['pos'],
 };
 
 export const centerInModule = (centerKey: string, moduleKey?: string) => {
@@ -88,40 +88,7 @@ const F_ESTRUTURA = [
 ];
 
 export const MODULE_TREE: Record<string, TreeFolder[]> = {
-  pms: [
-    { key: 'pms_recepcao', title: 'Receção', items: ['pms_dashboard', 'pms_reservations', 'pms_checkin', 'pms_guests', 'pms_ledger', 'pms_agencies'] },
-    { key: 'pms_quartos', title: 'Quartos & Limpeza', items: ['pms_rooms', 'pms_housekeeping', 'pms_maintenance', 'pms_laundry', 'pms_minibar', 'pms_spa'] },
-    { key: 'pms_online', title: 'Tarifas & Reservas Online', items: ['pms_rates', 'int_booking', 'int_channel'] },
-    { key: 'pms_fecho', title: 'Fecho do Dia', items: ['pms_nightaudit', 'ops_dashboard'] },
-    { key: 'pms_tesouraria', title: 'Tesouraria & Faturação', items: F_TESOURARIA },
-    { key: 'pms_fiscal', title: 'Fiscal (AGT)', items: F_FISCAL },
-    { key: 'pms_contab', title: 'Contabilidade', items: F_CONTAB },
-    { key: 'pms_relatorios', title: 'Relatórios & Documentos', items: ['rep_hotel', 'rep_pms', 'rep_finance', 'rep_fiscal', 'rep_admin', ...F_DOCS] },
-    { key: 'pms_dados', title: 'Dados Base', items: ['md_customers', 'md_employees', 'md_currencies', 'md_countries', 'md_languages', 'md_banks', 'md_taxes', 'md_payment_methods', 'md_doctypes'] },
-    { key: 'pms_estrutura', title: 'Estrutura do Hotel', items: F_ESTRUTURA },
-    { key: 'pms_seguranca', title: 'Utilizadores & Segurança', items: F_SEGURANCA },
-    { key: 'pms_sistema', title: 'Sistema & Administração', items: F_SISTEMA },
-  ],
 
-  restauracao: [
-    { key: 'res_sala', title: 'Sala & Mesas', items: ['ops_tables'] },
-    { key: 'res_cozinha', title: 'Cozinha & Produção', items: ['hoc_dashboard', 'hoc_kds', 'hoc_bar_display', 'hoc_pastry_display', 'hoc_buffet_display', 'hoc_routing', 'hoc_stations', 'hoc_timing', 'ops_kitchen'] },
-    { key: 'res_pontos', title: 'Restaurantes & Bares', items: ['hoc_restaurants', 'hoc_bars', 'hoc_coffee', 'hoc_poolbar', 'hoc_roomservice', 'hoc_buffets', 'hoc_events'] },
-    { key: 'res_menus', title: 'Menus & Receitas', items: ['hoc_menus', 'hoc_recipes', 'hoc_ingredients'] },
-    { key: 'res_qualidade', title: 'Qualidade & HACCP', items: ['hoc_haccp', 'hoc_waste', 'hoc_quality'] },
-    { key: 'res_stock', title: 'Stock & Armazém', items: ['wh_dashboard', 'wh_warehouses', 'wh_locations', 'wh_stock', 'wh_movements', 'wh_transfers', 'wh_inventory', 'wh_lots', 'wh_costing'] },
-    { key: 'res_compras', title: 'Compras & Fornecedores', items: ['proc_dashboard', 'proc_requests', 'proc_workflow', 'proc_approvals', 'proc_rfq', 'proc_comparison', 'proc_po', 'proc_grn', 'proc_returns', 'proc_planning', 'srm_dashboard', 'srm_suppliers', 'srm_contracts', 'srm_sla', 'srm_evaluation', 'srm_performance', 'srm_certificates', 'srm_documents'] },
-    { key: 'res_comercial', title: 'Comercial & Promoções', items: ['com_dashboard', 'com_pricing', 'com_campaigns', 'com_promotions', 'com_happyhour', 'com_combos', 'com_menus', 'com_discounts', 'com_giftcards', 'com_vouchers', 'com_loyalty'] },
-    { key: 'res_tesouraria', title: 'Tesouraria & Faturação', items: F_TESOURARIA },
-    { key: 'res_fiscal', title: 'Fiscal (AGT)', items: F_FISCAL },
-    { key: 'res_contab', title: 'Contabilidade', items: F_CONTAB },
-    { key: 'res_relatorios', title: 'Relatórios & Documentos', items: ['rep_fnb', 'rep_kitchen', 'rep_warehouse', 'rep_procurement', 'hoc_reports', ...F_DOCS] },
-    { key: 'res_dados', title: 'Dados Base', items: ['md_uoms', 'md_conversions', 'md_taxes', 'md_suppliers', 'md_payment_methods'] },
-    { key: 'res_config', title: 'Configuração do Serviço', items: ['posc_config'] },
-    { key: 'res_estrutura', title: 'Estrutura', items: F_ESTRUTURA },
-    { key: 'res_seguranca', title: 'Utilizadores & Segurança', items: F_SEGURANCA },
-    { key: 'res_sistema', title: 'Sistema & Administração', items: F_SISTEMA },
-  ],
 
   pos: [
     // O MÓDULO POS É A CONFIGURAÇÃO POS — e mais nada.
