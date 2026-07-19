@@ -20,7 +20,7 @@ export default function AccountsPayableView() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['payables'] }),
   });
 
-  const doPay = (inv: any) => {
+  const doPay = async (inv: any) => {
     if (!accounts.length) { aviso('Crie primeiro uma conta de tesouraria (Financeiro → Tesouraria).'); return; }
     const acc = accounts[0];
     const amount = await pedir(`Pagar fatura ${inv.number} (saldo ${money(inv.balance)}) da conta "${acc.name}". Valor a pagar:`, money(inv.balance));

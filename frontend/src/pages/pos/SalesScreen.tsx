@@ -180,7 +180,14 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
           // a linha nova é a última da conta que o servidor acabou de devolver
           // (comPerguntas devolve já o `.data`, que é a conta inteira)
           const nova = (r?.lines || []).slice(-1)[0];
-          if (nova) { setPerguntar({ linha: nova, fila: perguntas, escolhas: [] }); return; }
+          if (nova) {
+            // REFRESCAR ANTES de abrir a pergunta. Saía daqui sem o fazer, e como a
+            // comanda só se relê de 5 em 5 segundos, o artigo parecia NÃO TER SIDO
+            // LANÇADO — o empregado tocava outra vez e lançava dois.
+            inval();
+            setPerguntar({ linha: nova, fila: perguntas, escolhas: [] });
+            return;
+          }
         }
       } catch { /* sem mensagens configuradas: lança e segue */ }
       // (Parâmetro 8308) "Enviar para a cozinha automaticamente": cada artigo lançado
@@ -230,7 +237,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     const resto = perguntar.fila.slice(1);
     if (resto.length) return setPerguntar({ ...perguntar, fila: resto, escolhas });
     setPerguntar(null);
-    if (!escolhas.length) return;
+    if (!escolhas.length) return inval();   // sem resposta, mas a linha existe: mostra-a
     try {
       await apiClient.post(`pos/ticket-lines/${perguntar.linha.id}/messages/`, { texts: escolhas });
       inval();

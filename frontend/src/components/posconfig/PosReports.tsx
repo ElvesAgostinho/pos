@@ -6,7 +6,6 @@ import { Toolbar, inputStyle, money } from './kit';
 import ReportGrid from './ReportGrid';
 import ReportFilters, { type Adv } from './ReportFilters';
 
-const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const hoje = () => new Date().toISOString().slice(0, 10);
 const haUmMes = () => new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
 
@@ -84,7 +83,6 @@ export default function PosReports() {
   // ───────────────────────────── RELATÓRIO (resultado)
   const d: any = correr.data?.data;
   if (rep && d) {
-    const cols: any[] = d.columns;
     const fmt = (c: any, v: any) => c[2] === 'money' ? money(v) : (v ?? '');
 
     const imprimir = () => {
@@ -206,7 +204,7 @@ export default function PosReports() {
         </div>
 
         <Toolbar actions={[
-          { label: 'Voltar aos parâmetros', icon: '◀', color: '#6b6b6b', onClick: () => correr.reset() },
+          { label: 'Voltar aos parâmetros', icon: '◀', color: '#6b6b6b', onClick: voltar },
           { label: 'Imprimir', icon: '🖨', color: '#2b2b2b', onClick: imprimir },
           { label: 'Exportar para Excel', icon: '⬇', color: '#1f7a34', onClick: exportar },
         ]} />
@@ -248,7 +246,7 @@ export default function PosReports() {
           </div>
         </div>
 
-        <Toolbar actions={[{ label: 'Voltar', icon: '◀', color: '#6b6b6b', onClick: () => setRep(null) }]} />
+        <Toolbar actions={[{ label: 'Voltar', icon: '◀', color: '#6b6b6b', onClick: voltar }]} />
       </div>
     );
   }
@@ -318,7 +316,7 @@ export default function PosReports() {
         )}
       </div>
 
-      <Toolbar actions={pasta ? [{ label: 'Voltar', icon: '◀', color: '#6b6b6b', onClick: () => setPasta(null) }] : []}
+      <Toolbar actions={pasta ? [{ label: 'Voltar', icon: '◀', color: '#6b6b6b', onClick: voltar }] : []}
         right={<span className="text-[11px] text-[#666]">
           Tudo o que o POS sabe, em pastas. Clique numa pasta para ver os relatórios.
         </span>} />

@@ -1,5 +1,6 @@
-/**
 import { aviso } from '../ui/dialogo';
+
+/**
  * Exportação multi-formato SEM dependências externas.
  * Excel/Word usam o truque HTML-table (o Office abre-os nativamente);
  * PDF usa a impressão do browser (guardar como PDF).

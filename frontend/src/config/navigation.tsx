@@ -92,10 +92,10 @@ export interface NavModule { key: string; title: string; items: NavItem[]; }
 // Wrappers (mesmo componente, contexto próprio)
 const EdcInbox = () => <EdcInboxView onClose={() => {}} />;
 // Displays por estação — a cozinha/bar/pastelaria NUNCA veem o POS (sem preços/clientes/pagamentos).
-const KitchenDisplay = () => <KDSView fixedStation="KITCHEN" title="Kitchen Display — Cozinha" />;
-const BarDisplay = () => <KDSView fixedStation="BAR" title="Bar / Beverage Display" />;
-const PastryDisplay = () => <KDSView fixedStation="PASTRY" title="Pastry Display — Pastelaria" />;
-const BuffetDisplay = () => <KDSView fixedStation="BUFFET" title="Buffet Display" />;
+export const KitchenDisplay = () => <KDSView fixedStation="KITCHEN" title="Kitchen Display — Cozinha" />;
+export const BarDisplay = () => <KDSView fixedStation="BAR" title="Bar / Beverage Display" />;
+export const PastryDisplay = () => <KDSView fixedStation="PASTRY" title="Pastry Display — Pastelaria" />;
+export const BuffetDisplay = () => <KDSView fixedStation="BUFFET" title="Buffet Display" />;
 // Lançador do Terminal POS (o FrontOffice tátil abre em ecrã cheio, fora do backoffice).
 const PosTerminalLauncher = () => (
   <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-8">

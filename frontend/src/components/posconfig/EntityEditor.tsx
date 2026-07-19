@@ -409,7 +409,7 @@ function InfoSeccoes({ eid }: { eid: number }) {
 }
 
 /** COMISSÕES — como no HOST: cabeçalho (código+%) e janela "Add Comission" com datas. */
-function Comissoes({ eid, d, T }: any) {
+function Comissoes({ eid, d: _d, T }: any) {
   const qc = useQueryClient();
   const [add, setAdd] = useState<any | null>(null);
   const { data: rows = [] } = useQuery({

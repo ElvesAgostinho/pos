@@ -217,7 +217,7 @@ export default function PosTerminal() {
    * encontrava a mesa livre — e a conta do cliente, com o número de pessoas e o tipo já
    * escolhidos, tinha desaparecido.
    */
-  const fecharVenda = async (id: number) => {
+  const fecharVenda = async (_id: number) => {
     setTicket(null);
     inval();
     if (cfg?.direct_sale && !cfg?.ask_sector) abrirVendaDireta(1, 'PASSANTE');
@@ -256,7 +256,7 @@ export default function PosTerminal() {
 
   // As opções da barra da esquerda. As que precisam de uma conta aberta ficam apagadas —
   // não se escondem: o empregado tem o sítio delas na memória e procurá-las-ia.
-  const MENU: { label: string; icon: string; act: () => void; on?: boolean; ativo?: boolean }[] = [
+  const MENU: { label: string; icon: any; act: () => void; on?: boolean; ativo?: boolean }[] = [
     ...(cfg?.direct_sale
       ? [{ label: 'Venda Direta', icon: <IcoVenda size={28} />, act: vendaDireta, on: !!setor }]
       : []),

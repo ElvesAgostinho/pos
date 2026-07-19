@@ -66,12 +66,12 @@ export const centerInModule = (centerKey: string, moduleKey?: string) => {
 export interface TreeFolder { key: string; title: string; items: string[]; }
 
 // --- Blocos transversais (aparecem em todos os módulos) ---
-const F_CONTAB = ['acc_dashboard', 'acc_chart', 'acc_entries', 'acc_journals', 'acc_ledger', 'acc_trial_balance', 'acc_statements', 'acc_integration'];
-const F_FISCAL = ['fis_dashboard', 'fis_einvoice', 'fis_commercial', 'fis_series', 'fis_tax', 'fis_saft', 'fis_transmit', 'fis_archive', 'fis_agt', 'fis_certification', 'fis_audit'];
-const F_TESOURARIA = ['fin_dashboard', 'fin_cash', 'fin_receipts', 'fin_payments', 'fin_invoicing', 'fin_receivables', 'fin_ledger', 'fin_reconciliation'];
-const F_DOCS = ['doc_center', 'doc_inbox', 'doc_templates', 'doc_pdf', 'doc_signatures'];
-const F_SEGURANCA = ['sec_dashboard', 'sec_users', 'adm_users', 'sec_rbac', 'sec_permissions', 'sec_access', 'sec_abac', 'sec_pin', 'sec_mfa', 'sec_sessions', 'sec_devices', 'sec_audit', 'sec_login_history'];
-const F_SISTEMA = [
+export const F_CONTAB = ['acc_dashboard', 'acc_chart', 'acc_entries', 'acc_journals', 'acc_ledger', 'acc_trial_balance', 'acc_statements', 'acc_integration'];
+export const F_FISCAL = ['fis_dashboard', 'fis_einvoice', 'fis_commercial', 'fis_series', 'fis_tax', 'fis_saft', 'fis_transmit', 'fis_archive', 'fis_agt', 'fis_certification', 'fis_audit'];
+export const F_TESOURARIA = ['fin_dashboard', 'fin_cash', 'fin_receipts', 'fin_payments', 'fin_invoicing', 'fin_receivables', 'fin_ledger', 'fin_reconciliation'];
+export const F_DOCS = ['doc_center', 'doc_inbox', 'doc_templates', 'doc_pdf', 'doc_signatures'];
+export const F_SEGURANCA = ['sec_dashboard', 'sec_users', 'adm_users', 'sec_rbac', 'sec_permissions', 'sec_access', 'sec_abac', 'sec_pin', 'sec_mfa', 'sec_sessions', 'sec_devices', 'sec_audit', 'sec_login_history'];
+export const F_SISTEMA = [
   'org_profile',      // aparece em todos os módulos (a dedup evita repetir)
   'adm_dashboard', 'adm_companies', 'adm_groups', 'adm_hotels', 'adm_clients', 'adm_appearance',
   'adm_module_status', 'adm_features', 'adm_versions', 'adm_monitor', 'adm_logs', 'adm_audit', 'adm_documents',
@@ -80,7 +80,7 @@ const F_SISTEMA = [
   'wfc_dashboard', 'wfc_flows', 'wfc_tasks',
   'int_locks', 'int_bank_pos', 'int_scales', 'int_printers', 'int_apis',
 ];
-const F_ESTRUTURA = [
+export const F_ESTRUTURA = [
   'org_profile',      // Ficha do Hotel — o primeiro sítio onde alguém deve ir
   'hmc_dashboard', 'hmc_hotels', 'hmc_buildings', 'hmc_floors', 'hmc_areas', 'hmc_outlets',
   'hmc_departments', 'hmc_profit_centers', 'hmc_cost_centers', 'hmc_resources',

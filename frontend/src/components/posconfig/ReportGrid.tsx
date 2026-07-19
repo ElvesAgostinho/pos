@@ -244,12 +244,13 @@ export default function ReportGrid({ d, onView }: { d: any; onView?: (r: any[], 
           <tr className="bg-[#e9e9e9]">
             {visiveis.map((c) => (
               <th key={c[0]}
-                onClick={() => setOrdem(ordem?.col === c[0]
+                onClick={() => setOrdem(ordem && ordem.col === c[0]
                   ? { col: c[0], asc: !ordem.asc } : { col: c[0], asc: true })}
                 className={`font-bold px-2 py-1.5 border border-[#ccc] cursor-pointer select-none hover:bg-[#dfe7ef]
                   ${isMoney(c) ? 'text-right' : 'text-left'}`}>
                 {c[1]}
-                {ordem?.col === c[0] && <span className="ml-1 text-[#1a73c8]">{ordem.asc ? '▲' : '▼'}</span>}
+                {ordem && ordem.col === c[0] && (
+                  <span className="ml-1 text-[#1a73c8]">{ordem.asc ? '▲' : '▼'}</span>)}
               </th>
             ))}
           </tr>

@@ -51,12 +51,25 @@ export function confirmar(mensagem: string, titulo = 'Confirmar', tom: 'normal' 
     enfileirar({ tipo: 'CONFIRMAR', titulo, mensagem, tom, resolver }));
 }
 
-/** Substitui `prompt()`. Devolve null se o utilizador desistir. */
-export function pedir(opcoes: {
-  titulo?: string; mensagem?: string; valor?: string; entrada?: 'texto' | 'numero';
-}) {
+/**
+ * Substitui `prompt()`. Devolve null se o utilizador desistir.
+ *
+ * Aceita as duas formas, de propósito:
+ *     pedir('Motivo:')                       — como o prompt() de sempre
+ *     pedir('Motivo:', 'valor inicial')
+ *     pedir({ titulo: 'Motivo', entrada: 'numero' })
+ * A forma curta é o que existe em centenas de sítios; obrigar a escrever um objeto em
+ * todos eles não tornava nenhum deles mais claro.
+ */
+export function pedir(
+  opcoes: string | { titulo?: string; mensagem?: string; valor?: string; entrada?: 'texto' | 'numero' },
+  valorInicial?: string,
+) {
+  const o = typeof opcoes === 'string'
+    ? { titulo: 'Escreva', mensagem: opcoes, valor: valorInicial }
+    : opcoes;
   return new Promise<string | null>((resolver) =>
-    enfileirar({ tipo: 'PEDIR', entrada: 'texto', ...opcoes, resolver }));
+    enfileirar({ tipo: 'PEDIR', entrada: 'texto', ...o, resolver }));
 }
 
 // ── as teclas ────────────────────────────────────────────────────────────────

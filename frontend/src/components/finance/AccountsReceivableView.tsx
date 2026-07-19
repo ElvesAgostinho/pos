@@ -22,7 +22,7 @@ export default function AccountsReceivableView() {
   });
 
   const openInv = invoices.filter((i: any) => !['DRAFT', 'CANCELLED', 'PAID'].includes(i.status));
-  const doReceive = (inv: any) => {
+  const doReceive = async (inv: any) => {
     if (!accounts.length) { aviso('Crie primeiro uma conta de tesouraria.'); return; }
     const acc = accounts[0];
     const amount = await pedir(`Receber da fatura ${inv.number} (saldo ${money(inv.balance)}) para a conta "${acc.name}". Valor:`, money(inv.balance));

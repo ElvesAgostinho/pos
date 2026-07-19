@@ -155,7 +155,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
   };
 
   // ── uma conta (painel) ────────────────────────────────────────────────────
-  const Painel = ({ conta, id, setId, sel, setSel, lado }: any) => {
+  const Painel = ({ conta, id: _id, setId, sel, setSel, lado }: any) => {
     return (
       <div className="flex-1 flex flex-col min-w-0">
         <div className="h-[44px] bg-[#3a3a3a] flex items-center px-3 gap-2">

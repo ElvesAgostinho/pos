@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
-import { IcoVisto, IcoVoltar } from './Icons';
+import { IcoVisto } from './Icons';
 
 /**
  * ABERTURA DE CAIXA — o segundo passo, e não se salta.

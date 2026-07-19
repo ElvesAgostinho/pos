@@ -33,7 +33,7 @@ const PONTO: Record<string, string> = {
 
 export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTicket,
   onViewTicket, onDirectSale, perguntarTipo = true, refrescar = 8000,
-  mostrarPagamento = false, fundo = true }: {
+  mostrarPagamento = false, fundo: _fundo = true }: {
   setor: any;
   onOpenTicket: (ticketId: number) => void;
   // Vêm dos PARÂMETROS do backoffice (8175 e 8063): perguntar o tipo de cliente, e de

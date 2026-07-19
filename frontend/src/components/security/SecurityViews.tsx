@@ -26,7 +26,7 @@ export function UsersView() {
     if (!d.username || !d.password) { aviso('Utilizador e palavra-passe são obrigatórios.'); return; }
     create.mutate(d, { onSuccess: () => setD(empty), onError: (e: any) => aviso('Erro: ' + JSON.stringify(e?.response?.data)) });
   };
-  const changePw = (id: number) => { const p = await pedir('Nova palavra-passe:'); if (p) setPw.mutate({ id, password: p }); };
+  const changePw = async (id: number) => { const p = await pedir('Nova palavra-passe:'); if (p) setPw.mutate({ id, password: p }); };
   const setProfile = (u: any, pid: string) => upd.mutate({ id: u.id, data: { profile_ids: pid ? [Number(pid)] : [] } });
   // Propriedades: a que hotéis este utilizador tem acesso. Sem nenhum = vê todos
   // (instalação de hotel único). Com hotéis marcados, SÓ vê os dados desses hotéis.
