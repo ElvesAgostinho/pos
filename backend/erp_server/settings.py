@@ -17,6 +17,17 @@ django.urls.register_converter = _safe_register_converter
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Segredos e flags de ambiente vêm de variáveis de ambiente (.env em produção).
+# O .env É LIDO AQUI, sem bibliotecas: na instalação do cliente quem arranca isto é um
+# SERVIÇO do Windows, e serviços não fazem `source .env` — se o settings não o ler,
+# a produção arrancava com os defaults de desenvolvimento (DEBUG ligado, base de dev).
+# O ambiente real ganha sempre ao ficheiro (setdefault): um técnico pode sobrepor.
+_env_file = Path(__file__).resolve().parent.parent / '.env'
+if _env_file.exists():
+    for _linha in _env_file.read_text(encoding='utf-8').splitlines():
+        _linha = _linha.strip()
+        if _linha and not _linha.startswith('#') and '=' in _linha:
+            _k, _, _v = _linha.partition('=')
+            os.environ.setdefault(_k.strip(), _v.strip())
 # Os fallbacks abaixo destinam-se APENAS a desenvolvimento local.
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
@@ -184,7 +195,7 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": os.environ.get("SQLITE_PATH", BASE_DIR / "db.sqlite3"),
             # "DATABASE IS LOCKED" — o SQLite deixa UM escritor de cada vez. No POS há
             # sempre dois ao mesmo tempo: o terminal a lançar um artigo e o mapa a
             # refrescar, o KDS a marcar pratos, a consulta a assinar o documento e a pôr
@@ -264,4 +275,4 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@mwanalodge.ao
 
 # Ficheiros carregados pelo cliente (logótipos, imagens de artigos, fotos de alergénios).
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media")

@@ -1,0 +1,26 @@
+<!--
+  O SERVIÇO DE IMPRESSÃO — o print_agent como serviço do Windows.
+
+  É ele que entrega os talões à térmica, manda as comandas à cozinha e dá o pulso
+  que abre a gaveta. Foi a peça que faltava quando havia 287 talões em fila e
+  nenhum papel a sair: o motor produzia, ninguém entregava. Como serviço, arranca
+  com a máquina e nunca mais depende de alguém se lembrar de o abrir.
+-->
+<service>
+  <id>MwanaLodgeImpressao</id>
+  <name>Mwana Lodge — Impressão e Gaveta</name>
+  <description>Entrega talões e comandas às impressoras e abre a gaveta do dinheiro. Sem este serviço, os pedidos de impressão ficam em fila.</description>
+
+  <executable>%BASE%\..\python\python.exe</executable>
+  <arguments>manage.py print_agent</arguments>
+  <workingdirectory>%BASE%\..\app</workingdirectory>
+
+  <onfailure action="restart" delay="10 sec"/>
+
+  <log mode="roll-by-size">
+    <logpath>%BASE%\..\dados\logs</logpath>
+    <sizeThreshold>5120</sizeThreshold>
+    <keepFiles>4</keepFiles>
+  </log>
+  <startmode>Automatic</startmode>
+</service>

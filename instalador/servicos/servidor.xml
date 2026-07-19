@@ -1,0 +1,30 @@
+<!--
+  O SERVIÇO DO SERVIDOR — o coração da instalação.
+
+  É um serviço do WINDOWS a sério (WinSW): arranca com a máquina, reinicia sozinho
+  se cair, e escreve logs onde o suporte os encontra. É o que separa "um programa
+  que alguém tem de lembrar-se de abrir" de um ERP instalado — a Oracle e a
+  Primavera fazem exatamente isto.
+
+  O executável servidor.exe é o WinSW renomeado; ele lê este XML com o mesmo nome.
+-->
+<service>
+  <id>MwanaLodgeServidor</id>
+  <name>Mwana Lodge — Servidor</name>
+  <description>Servidor do System Mwana Lodge (backoffice, POS e API fiscal). Sem este serviço os terminais não vendem.</description>
+
+  <executable>%BASE%\..\python\python.exe</executable>
+  <arguments>-m waitress --listen=0.0.0.0:8000 --threads=8 erp_server.wsgi:application</arguments>
+  <workingdirectory>%BASE%\..\app</workingdirectory>
+
+  <!-- caiu? volta a subir. Um servidor de vendas não fica no chão à espera. -->
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+
+  <log mode="roll-by-size">
+    <logpath>%BASE%\..\dados\logs</logpath>
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
+  <startmode>Automatic</startmode>
+</service>

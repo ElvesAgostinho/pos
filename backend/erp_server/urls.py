@@ -59,3 +59,28 @@ if 'clm' in settings.INSTALLED_APPS:
 from django.conf import settings  # noqa: E402
 from django.conf.urls.static import static  # noqa: E402
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# ── O SITE INSTALADO (produção on-premises) ──────────────────────────────────
+# Na instalação do cliente não há Vite nem nginx: o MESMO serviço do Windows que
+# responde à API serve também o backoffice e o POS compilados. É o que permite ao
+# setup.exe instalar UM serviço e o cliente abrir http://localhost:8000 e ter tudo —
+# como a Primavera: um instalador, um serviço, um atalho.
+# Em desenvolvimento a pasta webapp/ não existe e nada disto se liga (o Vite continua).
+import os as _os  # noqa: E402
+from pathlib import Path as _Path  # noqa: E402
+_WEBAPP = _Path(_os.environ.get('MWANA_WEBAPP', str(settings.BASE_DIR / 'webapp')))
+if (_WEBAPP / 'index.html').exists():
+    from django.http import FileResponse as _FileResponse  # noqa: E402
+    from django.views.static import serve as _serve  # noqa: E402
+    from django.urls import re_path as _re_path  # noqa: E402
+    from django.views.decorators.csrf import csrf_exempt as _csrf_exempt  # noqa: E402
+
+    def _spa(request, path=''):
+        # Qualquer rota que não seja da API devolve o index: quem manda nas rotas
+        # (/backoffice, /pos/terminal…) é o React — refrescar a página não pode dar 404.
+        return _FileResponse(open(_WEBAPP / 'index.html', 'rb'), content_type='text/html')
+
+    urlpatterns += [
+        _re_path(r'^assets/(?P<path>.*)$', _serve, {'document_root': str(_WEBAPP / 'assets')}),
+        _re_path(r'^(?!api/|admin/|static/|media/|assets/).*$', _csrf_exempt(_spa)),
+    ]
