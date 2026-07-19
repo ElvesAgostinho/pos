@@ -8,6 +8,7 @@ import ClientPicker from './ClientPicker';
 import CustomerIdForm from './CustomerIdForm';
 import NotesDialog from './NotesDialog';
 import PaymentReceipt from './PaymentReceipt';
+import ZonaArrastavel from './ZonaArrastavel';
 import {
   IcoCliente, IcoLapis, IcoLimpar, IcoPreco, IcoVisto, IcoCruz, IcoDocumento, IcoLista,
 } from './Icons';
@@ -167,6 +168,10 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
   const repartir = (m: any) => {
     const chave = m.payment_method;
     const escrito = Number(String(valor).replace(',', '.'));
+    // CONTA QUARTO precisa de saber QUAL o quarto — pergunta-se já, não no fim. E não
+    // entra na divisão automática: lançar metade da conta num quarto que ninguém
+    // escolheu era pôr consumo no folio errado, e isso só se descobre no check-out.
+    if (m.method_type_code === 'ROOM' && !parcelas[chave]) { setPedirQuarto(m); return; }
     setParcelas((p) => {
       const novo: Record<number, any> = { ...p };
       // tocar num meio que já lá está TIRA-O (e o valor dele volta para os outros)
@@ -282,7 +287,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         {/* os meios de pagamento AUTORIZADOS neste ponto de venda. "Conta Quarto" só
             aparece a HÓSPEDES — o passante e o consumo interno não têm quarto onde
             a conta caia (o tipo perguntou-se ao abrir a mesa, parâmetro 8175). */}
-        <div className="p-2 bg-[#2b2b2b] min-h-[300px]">
+        <ZonaArrastavel className="p-2 bg-[#2b2b2b] h-[380px] flex-shrink-0">
           <div className="grid grid-cols-5 gap-1.5">
             {metodos.filter((m: any) =>
               m.method_type_code !== 'ROOM' || conta.guest_type === 'HOTEL').map((m: any) => {
@@ -355,7 +360,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
               </div>
             </div>
           )}
-        </div>
+        </ZonaArrastavel>
 
         {/* PAGAMENTO MISTO — o que JÁ entrou, meio a meio: metade em dinheiro, o resto
             no cartão ou por transferência. Cada toque num meio cobra o valor escrito
@@ -510,13 +515,19 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         <ClientPicker titulo="Lançar no quarto de…" soAba="QUARTO" podeSaltar={false}
           onPick={(g) => {
             const m = pedirQuarto; setPedirQuarto(null);
-            setParcelas((p) => ({
-              ...p,
-              [m.payment_method]: {
-                amount: p[m.payment_method]?.amount ?? falta,
-                nome: m.payment_method_name, metodo: m, room: g.room,
-              },
-            }));
+            setParcelas((p) => {
+              // o valor escrito manda; sem ele, leva o que falta. FIXA sempre: o quarto
+              // é uma escolha deliberada, não um resto de divisão.
+              const escrito = Number(String(valor).replace(',', '.'));
+              const v = valor && escrito > 0 ? escrito : falta;
+              setValor('');
+              return redistribuir({
+                ...p,
+                [m.payment_method]: {
+                  amount: v, nome: m.payment_method_name, metodo: m, room: g.room, fixa: true,
+                },
+              });
+            });
           }}
           onClose={() => setPedirQuarto(null)} />
       )}
