@@ -100,11 +100,9 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   // O FORMULÁRIO DO CLIENTE reage ao TIPO da conta (parâmetro 8175):
   // HOTEL pede o hóspede do PMS; INTERNO pede o colaborador (RH); PASSANTE é opcional.
   const [formCliente, setFormCliente] = useState(false);
-  const [pedirHospede, setPedirHospede] = useState(false);
   const [verCombos, setVerCombos] = useState(false);     // combos do Commercial
   const [verHistorico, setVerHistorico] = useState(false); // auditoria da conta
   const [verDestinos, setVerDestinos] = useState(false);  // Quarto/Piscina/Praia…
-  const [jaPediu, setJaPediu] = useState<number[]>([]);   // 1 pergunta por conta, não em loop
   // A LINHA ESCOLHIDA. As funções da aba "Conta" (preço, quantidade, desconto do artigo,
   // mensagem) atuam sobre ELA: sem uma linha escolhida, "alterar preço" não sabe de quê.
   const [sel, setSel] = useState<number | null>(null);
@@ -155,13 +153,10 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     ? (caminho[caminho.length - 1].children || [])
     : (teclado?.pages || []);
 
-  // AO ABRIR a conta, o tipo manda: HÓSPEDE sem nome -> lista do PMS; CONSUMO INTERNO
-  // sem nome -> lista de colaboradores (RH do backoffice). O passante não é incomodado.
-  useEffect(() => {
-    if (!conta || conta.customer_name || jaPediu.includes(conta.id)) return;
-    if (conta.guest_type === 'HOTEL') { setPedirHospede(true); setJaPediu([...jaPediu, conta.id]); }
-    else if (conta.guest_type === 'INTERNO') { setFormCliente(true); setJaPediu([...jaPediu, conta.id]); }
-  }, [conta?.id, conta?.guest_type, conta?.customer_name]);
+  // A pergunta de QUEM É O CLIENTE é UMA só: o seletor das três abas (Entidade ·
+  // Quarto · Eventos), que abre sozinho pelo 8311. Havia aqui um segundo caminho que
+  // abria uma janela só de quartos, com o mesmo fim — duas perguntas para a mesma
+  // coisa, e a segunda ainda antes de o empregado ver a conta que acabou de abrir.
 
   const lancar = async (k: any) => {
     if (k.available === false) return;
@@ -543,7 +538,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       <div className="w-[520px] bg-[#3a3a3a] flex flex-col border-l-4 border-black">
         {/* QUEM É O CLIENTE — o botão abre o formulário do TIPO certo: hóspede vai à
             lista do PMS, interno à lista de colaboradores, passante ao nome/NIF. */}
-        <button onClick={() => (conta?.guest_type === 'HOTEL' ? setPedirHospede(true) : setFormCliente(true))}
+        <button onClick={() => setEscolherCliente(true)}
           className="h-[54px] bg-[#2b2b2b] text-white flex items-center justify-between px-4 border-b border-black">
           <span className="text-[15px] text-white/60">
             {{ HOTEL: 'Hóspede', INTERNO: 'Colaborador' }[conta?.guest_type as string] || 'Cliente'}
@@ -729,18 +724,6 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       {/* Consulta de Mesa desta conta: emite o CM e mostra o talão térmico */}
       {verTalao && conta && (
         <TicketPreview ticket={conta} onClose={() => setVerTalao(false)} />
-      )}
-
-      {/* HÓSPEDE: a lista de check-ins do PMS — a conta fica com o nome e o quarto */}
-      {pedirHospede && conta && (
-        <ClientPicker titulo="Que hóspede é este?" soAba="QUARTO"
-          onPick={async (g) => {
-            try {
-              await apiClient.post(`pos/tickets/${conta.id}/set_customer/`, g);
-            } catch { /* sem PMS, a conta segue */ }
-            setPedirHospede(false); inval();
-          }}
-          onClose={() => setPedirHospede(false)} />
       )}
 
       {/* PASSANTE (nome/NIF p/ fatura, opcional) e CONSUMO INTERNO (colaborador do RH) */}

@@ -39,7 +39,10 @@ export default function PaymentReceipt({ conta, documento, onFechar, onEmitir, o
   const reimprimir = async () => {
     setAImprimir(true);
     try {
-      await apiClient.post(`pos/tickets/${conta.id}/consult/`, { reprint: true });
+      // REIMPRIMIR usa o motor de REIMPRESSÃO — não o da consulta. Chamava `consult`,
+      // que EMITE UM DOCUMENTO NOVO: carregar em "Reimprimir" três vezes deixava três
+      // Consultas de Mesa numeradas e assinadas no arquivo fiscal, por causa de papel.
+      await apiClient.post(`pos/tickets/${conta.id}/reprint/`, {});
       aviso('Enviado para a impressora.', 'Reimprimir');
     } catch (e: any) {
       aviso(e?.response?.data?.detail || 'Não foi possível reimprimir.');

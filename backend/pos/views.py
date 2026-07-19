@@ -1939,13 +1939,33 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket = self.get_object()
         if not ticket.lines.filter(is_void=False).exists():
             return Response({'detail': 'A conta ainda não tem consumo para consultar.'}, status=400)
-        doc = emit_table_consult(ticket,
-                                 user=request.user.username if request.user.is_authenticated else None,
-                                 ip=request.META.get('REMOTE_ADDR'))
+        # UM 500 NÃO DIZ NADA A QUEM ESTÁ AO BALCÃO. A emissão passa por assinatura,
+        # numeração de série e renderização do talão — se alguma falhar, o empregado
+        # merece saber ONDE, e quem assiste à distância merece o rasto no log. Sem isto,
+        # o ecrã dizia "erro 500" e não havia por onde pegar.
+        try:
+            doc = emit_table_consult(ticket,
+                                     user=request.user.username if request.user.is_authenticated else None,
+                                     ip=request.META.get('REMOTE_ADDR'))
+        except Exception as e:
+            import logging, traceback
+            logging.getLogger('pos').error('CONSULTA falhou no ticket %s: %s\n%s',
+                                           ticket.ticket_number, e, traceback.format_exc())
+            return Response({'detail': f'Não foi possível emitir a Consulta de Mesa: {e}'}, status=400)
         if not doc:
             return Response({'detail': 'Não há série de Consulta de Mesa (CM) ativa — '
                                        'configure-a em Fiscal › Séries.'}, status=400)
-        job = _print_document(ticket, doc)
+        try:
+            job = _print_document(ticket, doc)
+        except Exception as e:
+            import logging, traceback
+            logging.getLogger('pos').error('IMPRESSAO da consulta falhou (%s): %s\n%s',
+                                           doc.invoice_no, e, traceback.format_exc())
+            # o documento SAIU — não se esconde isso só porque o papel não saiu
+            return Response({'invoice_no': doc.invoice_no, 'print_job': None, 'content': None,
+                             'grand_total': str(doc.gross_total),
+                             'detail': f'Documento {doc.invoice_no} emitido, mas a impressão '
+                                       f'falhou: {e}'})
         log_event(request, 'DOC_ISSUE', f'Consulta de Mesa {doc.invoice_no}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet, reference=doc.invoice_no)
         return Response({'invoice_no': doc.invoice_no, 'print_job': job.id if job else None,

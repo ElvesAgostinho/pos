@@ -46,60 +46,70 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitid
       footer={(
         <div className="grid grid-cols-2 gap-1 p-1 bg-black">
           <button onClick={() => pax > 0 && onConfirm(pax, tipo)} disabled={pax <= 0}
-            className="h-[56px] bg-[#1f7a34] text-white text-[18px] font-bold rounded-md
-              disabled:bg-[#3a3a3a] disabled:text-white/30"><span className="inline-flex items-center gap-2"><IcoVisto size={24} />Abrir mesa</span></button>
+            className="h-[64px] rounded-[3px] flex items-center justify-center text-[#2ecc40]
+              border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] bg-gradient-to-b from-[#4a4a4a] to-[#242424] disabled:opacity-25"><IcoVisto size={30} /></button>
           <button onClick={onCancel}
-            className="h-[56px] bg-[#3a3a3a] text-white text-[18px] rounded-md"><span className="inline-flex items-center gap-2"><IcoCruz size={24} />Cancelar</span></button>
+            className="h-[64px] rounded-[3px] flex items-center justify-center text-[#e02020]
+              border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] bg-gradient-to-b from-[#4a4a4a] to-[#242424]"><IcoCruz size={30} /></button>
         </div>
       )}>
-      <div className="p-3">
-        <div className="text-center text-white/70 text-[16px] mb-2">Número de Clientes</div>
+      <div className="p-2">
+        <div className="text-center text-white text-[19px] mb-2">Número de Clientes</div>
 
-        <div className="h-[58px] bg-black rounded-md text-white text-[30px] font-bold px-4
-          flex items-center justify-center border border-[#4a4a4a]">
-          {valor || <span className="text-white/25">0</span>}
+        {/* VALOR + limpar, como no original: o visor é uma linha só, não um bloco. */}
+        <div className="flex items-stretch gap-1 mb-2">
+          <span className="w-[92px] flex items-center px-3 text-white text-[16px] font-bold">Valor</span>
+          <div className="flex-1 bg-[#8a8a8a] border-2 border-black text-white text-[24px] font-bold
+            px-4 flex items-center">
+            {valor || '1'}
+          </div>
+          <button onClick={() => setValor('')} title="Limpar"
+            className="w-[58px] flex items-center justify-center text-white rounded-[3px] border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] bg-gradient-to-b from-[#4a4a4a] to-[#242424]">
+            <IcoCruz size={22} />
+          </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-1.5 mt-2">
-          {['7', '8', '9', '4', '5', '6', '1', '2', '3', 'C', '0', '⌫'].map((t) => (
+        <div className="grid grid-cols-3 gap-1.5">
+          {['7', '8', '9', '4', '5', '6', '1', '2', '3', '.', 'C', '0'].map((t) => (
             <button key={t} onClick={() => tecla(t)}
-              className={`h-[52px] rounded-md text-[21px] font-bold active:scale-95 transition ${t === 'C'
-                ? 'bg-[#c0140f] text-white' : 'bg-[#1f1f1f] text-white hover:bg-[#2f2f2f]'}`}>
+              className={`h-[62px] rounded-[3px] text-[24px] font-bold text-white border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] ${t === 'C'
+                ? 'bg-gradient-to-b from-[#d42a24] to-[#8a0f0b]' : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424]'}`}>
               {t}
             </button>
           ))}
         </div>
 
+        {/* OS TRÊS TIPOS, logo por baixo do teclado e SEMPRE à vista — como no original.
+            É esta a escolha que decide o que acontece à conta, e estava escondida por
+            baixo de um rótulo pequeno, como se fosse um detalhe. */}
         {perguntarTipo && (
-          <>
-            <div className="text-white/50 text-[13px] mt-3 mb-1">Tipo de cliente</div>
-            <div className="grid grid-cols-3 gap-2">
-              {[['PASSANTE', 'Passante'], ['HOTEL', 'Hotel'], ['INTERNO', 'Consumo\nInterno']].map(([k, l]) => {
-                // (Utilizador POS) "Consumo interno" — sem a caixa na ficha do operador
-                // (backoffice), o botão fica apagado: o custo da casa não é para todos.
-                const podeInterno = (() => {
-                  try {
-                    return !!JSON.parse(localStorage.getItem('pos_operator') || '{}')
-                      ?.flags?.internal_consumption;
-                  } catch { return false; }
-                })();
-                // (8581) a sala pode aceitar só um tipo — o resto fica apagado
-                const foraDoSetor = !!tiposPermitidos && tiposPermitidos !== 'TODOS'
-                  && String(tiposPermitidos) !== String(k);
-                const bloqueado = (k === 'INTERNO' && !podeInterno) || foraDoSetor;
-                return (
-                  <button key={k} disabled={bloqueado}
-                    title={bloqueado ? 'Sem autorização de consumo interno (ficha do utilizador)' : ''}
-                    onClick={() => setTipo(k)}
-                    className={`h-[50px] rounded-md text-[14px] font-bold whitespace-pre-line transition
-                      disabled:opacity-30 ${tipo === k
-                      ? 'bg-[#0f8b8d] text-white ring-2 ring-white/70' : 'bg-[#1f1f1f] text-white/80'}`}>
-                    {l}
-                  </button>
-                );
-              })}
-            </div>
-          </>
+          <div className="grid grid-cols-3 gap-1.5 mt-1.5">
+            {[['PASSANTE', 'Passante'], ['HOTEL', 'Hotel'], ['INTERNO', 'Consumo Interno']].map(([k, l]) => {
+              // (Utilizador POS) "Consumo interno" — sem a caixa na ficha do operador
+              // (backoffice), o botão fica apagado: o custo da casa não é para todos.
+              const podeInterno = (() => {
+                try {
+                  return !!JSON.parse(localStorage.getItem('pos_operator') || '{}')
+                    ?.flags?.internal_consumption;
+                } catch { return false; }
+              })();
+              // (8581) a sala pode aceitar só um tipo — o resto fica apagado
+              const foraDoSetor = !!tiposPermitidos && tiposPermitidos !== 'TODOS'
+                && String(tiposPermitidos) !== String(k);
+              const bloqueado = (k === 'INTERNO' && !podeInterno) || foraDoSetor;
+              return (
+                <button key={k} disabled={bloqueado}
+                  title={bloqueado ? 'Sem autorização de consumo interno (ficha do utilizador)' : ''}
+                  onClick={() => setTipo(k)}
+                  className={`h-[62px] rounded-[3px] text-[15px] font-bold whitespace-pre-line
+                    text-white border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] disabled:opacity-25 ${tipo === k
+                    ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] ring-[3px] ring-white/80 ring-inset'
+                    : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424]'}`}>
+                  {l}
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
     </Window>
