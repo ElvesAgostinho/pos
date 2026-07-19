@@ -5,7 +5,7 @@ import { apiClient } from '../../api/client';
 import SectorPicker from './SectorPicker';
 import CashOpen from './CashOpen';
 import TableMap from './TableMap';
-import SalesScreen from './SalesScreen';
+import SalesScreen, { type TopoApi } from './SalesScreen';
 import PayPanel from './PayPanel';
 import MoveLines from './MoveLines';
 import DocsPanel from './DocsPanel';
@@ -38,6 +38,17 @@ import { useProducao, ProductionWindow } from './ProductionBell';
 
 export type Etapa = 'SECTOR' | 'CASH' | 'MAP' | 'SALES';
 
+/** Um ícone da barra preta. Apagado quando não há linha escolhida — nunca escondido. */
+const IconeTopo = ({ icon, titulo, act, on = true }: {
+  icon: string; titulo: string; act: () => void; on?: boolean;
+}) => (
+  <button onClick={() => on && act()} disabled={!on} title={titulo}
+    className="w-[86px] h-[74px] m-2 rounded bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white
+      text-[28px] flex items-center justify-center disabled:opacity-25 disabled:cursor-not-allowed">
+    {icon}
+  </button>
+);
+
 export default function PosTerminal() {
   const nav = useNavigate();
   const qc = useQueryClient();
@@ -65,6 +76,7 @@ export default function PosTerminal() {
   // A aba CONTA é da VENDA (é lá que estão a linha escolhida e a conta). A venda publica
   // aqui as suas funções — o painel é o mesmo, venha de onde vier.
   const [acoesConta, setAcoesConta] = useState<AcaoPainel[]>([]);
+  const [topo, setTopo] = useState<TopoApi | null>(null);
 
   // O TERMINAL NÃO TEM OPINIÃO PRÓPRIA: pergunta ao servidor como se comporta. Estas
   // caixas vivem em Configuração POS › Parâmetros, e mudam o caminho do empregado.
@@ -340,6 +352,36 @@ export default function PosTerminal() {
         </button>
 
         <div className="flex-1" />
+
+        {/* ───── OS QUATRO ÍCONES DA VENDA ─────
+            Vivem aqui, na barra preta, como no original — e não espalhados dentro da
+            comanda. Só aparecem DENTRO da venda: fora dela não há linha escolhida nem
+            conta em que actuar, e um ícone que não faz nada ensina o empregado a não
+            confiar no ecrã. Quem os executa é o SalesScreen (publica-os para aqui). */}
+        {etapa === 'SALES' && topo && (
+          <div className="flex items-center">
+            <IconeTopo icon="🔍" titulo="Pesquisar artigos" act={topo.procurar} />
+            <IconeTopo icon="⊕⊖" titulo={topo.temSel
+              ? 'Alterar a quantidade da linha escolhida'
+              : 'Escolha primeiro uma linha da comanda (um toque)'}
+              act={topo.quantidade} on={topo.temSel} />
+            <IconeTopo icon="✎" titulo={topo.temSel
+              ? 'Mensagens para a produção'
+              : 'Escolha primeiro uma linha da comanda (um toque)'}
+              act={topo.mensagens} on={topo.temSel} />
+            {/* VENDA DIRETA / cliente: quem leva a fatura (Entidade, Quarto, Evento). */}
+            <button onClick={topo.cliente}
+              title="Quem leva a fatura (Entidade · Quarto · Eventos)"
+              className="h-[74px] px-4 m-2 rounded bg-[#2a2a2a] hover:bg-[#3a3a3a]
+                flex flex-col items-center justify-center leading-tight">
+              <span className="text-[#f0c000] text-[12px] font-bold max-w-[130px] truncate">
+                {topo.cliente_atual || 'Venda Direta'}
+              </span>
+              <span className="text-white text-[26px]">👤+</span>
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center pr-3 text-white/80 text-sm">
           {/* O SINO DA PRODUÇÃO: pulsa quando há pratos PRONTOS no passe */}
           <button onClick={() => setVerProducao(true)}
@@ -417,7 +459,7 @@ export default function PosTerminal() {
           )}
           {etapa === 'SALES' && ticket && (
             <SalesScreen ticketId={ticket} setor={setor} cfg={cfg}
-              publicarAcoes={setAcoesConta}
+              publicarAcoes={setAcoesConta} publicarTopo={setTopo}
               onClose={() => fecharVenda(ticket)} />
           )}
 
@@ -482,16 +524,13 @@ export default function PosTerminal() {
             <SettingsPanel
               aba={menuAba} onAba={setMenuAba} onClose={() => setMenu(false)}
               direita={etapa === 'SALES' ? 520 : 0}
+              flutuante={etapa !== 'SALES'}
               abas={[
-                {
-                  nome: 'Conta', titulo: 'Conta',
-                  // Fora da venda não há conta em que mexer: os botões ficam apagados
-                  // (não escondidos) a dizer porquê.
-                  acoes: etapa === 'SALES' && acoesConta.length
-                    ? acoesConta
-                    : [{ label: 'Sem conta aberta', icon: '🚫', act: () => {}, on: false,
-                        why: 'Abra uma mesa ou uma venda direta para usar estas funções.' }],
-                },
+                // FORA DA VENDA não existe aba "Conta" — não há conta nenhuma em que
+                // mexer. Mostrá-la vazia era prometer funções que não estão lá.
+                ...(etapa === 'SALES'
+                  ? [{ nome: 'Conta', titulo: 'Conta', acoes: acoesConta }]
+                  : []),
                 { nome: 'Geral', titulo: 'Geral', acoes: acoesGeral },
                 { nome: 'Caixa', titulo: sessao ? 'Caixa Aberta' : 'Caixa', acoes: acoesCaixa },
               ]} />

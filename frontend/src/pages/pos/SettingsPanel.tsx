@@ -34,19 +34,29 @@ export type AcaoPainel = {
 
 export type AbaPainel = { nome: string; titulo: string; acoes: AcaoPainel[] };
 
-export default function SettingsPanel({ abas, aba, onAba, onClose, direita = 0 }: {
+export default function SettingsPanel({ abas, aba, onAba, onClose, direita = 0, flutuante = false }: {
   abas: AbaPainel[];
   aba: string;
   onAba: (nome: string) => void;
   onClose: () => void;
   /** espaço a deixar à direita para a comanda não ser tapada (px) */
   direita?: number;
+  /**
+   * FORA DA VENDA é um POPUP: flutua por cima do mapa, que continua a ver-se à volta.
+   * Colado ao ecrã inteiro tapava a sala toda para abrir uma gaveta — e o empregado
+   * perdia de vista as mesas enquanto o fazia. Dentro da venda é que encosta, para a
+   * comanda ficar ao lado.
+   */
+  flutuante?: boolean;
 }) {
   const atual = abas.find((a) => a.nome === aba) || abas[0];
 
-  return (
-    <div className="absolute inset-y-0 left-0 flex bg-[#2b2b2b] z-30 border-t border-black"
-      style={{ right: direita }}>
+  const corpo = (
+    <div className={flutuante
+      ? 'flex w-[940px] h-[700px] max-w-[94vw] max-h-[86vh] bg-[#2b2b2b] shadow-2xl border-2 border-black'
+      : 'absolute inset-y-0 left-0 flex bg-[#2b2b2b] z-30 border-t border-black'}
+      style={flutuante ? undefined : { right: direita }}
+      onClick={(e) => e.stopPropagation()}>
       {/* ─── as abas, à esquerda ─── */}
       <div className="w-[278px] bg-[#1a1a1a] flex flex-col flex-shrink-0 border-r border-black">
         {abas.map((a) => (
@@ -93,6 +103,16 @@ export default function SettingsPanel({ abas, aba, onAba, onClose, direita = 0 }
           </div>
         </div>
       </div>
+    </div>
+  );
+
+  // Encostado (dentro da venda) devolve-se tal e qual; POPUP leva o fundo escurecido,
+  // e tocar fora fecha — como qualquer janela do terminal.
+  if (!flutuante) return corpo;
+  return (
+    <div className="absolute inset-0 z-30 bg-black/50 flex items-center justify-center"
+      onClick={onClose}>
+      {corpo}
     </div>
   );
 }

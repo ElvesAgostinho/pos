@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { comPerguntas } from '../posPrompt';
@@ -16,6 +16,10 @@ import CustomerForm from './CustomerForm';
 import Window from './Window';
 import type { AcaoPainel } from './SettingsPanel';
 import MoveLines from './MoveLines';
+import VoidReasonDialog from './VoidReasonDialog';
+import NumPad from './NumPad';
+import MessagesPanel from './MessagesPanel';
+import ClientPicker from './ClientPicker';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -31,10 +35,21 @@ import MoveLines from './MoveLines';
  * texto livre. O servidor diz o que falta; o terminal pergunta (ver posPrompt.ts). As
  * regras vivem num sítio só.
  */
-export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, onClose }: {
+export type TopoApi = {
+  procurar: () => void;
+  quantidade: () => void;
+  mensagens: () => void;
+  cliente: () => void;
+  temSel: boolean;
+  cliente_atual: string | null;
+};
+
+export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publicarTopo, onClose }: {
   ticketId: number; setor: any; cfg?: any; onClose: () => void;
   /** a venda entrega as suas funções ao painel da engrenagem (aba "Conta") */
   publicarAcoes?: (acoes: AcaoPainel[]) => void;
+  /** …e aos quatro ícones da barra preta do terminal */
+  publicarTopo?: (api: TopoApi) => void;
 }) {
   const qc = useQueryClient();
   // A subconta ATIVA: numa mesa com várias pessoas, o carrossel troca-a sem sair da venda.
@@ -66,6 +81,14 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, onClo
   const [agrupar, setAgrupar] = useState(false);
   // Parciais e transferências DESTA conta, sem voltar ao mapa.
   const [mover, setMover] = useState<'' | 'SPLIT' | 'TRANSFER'>('');
+  // As janelas dos quatro ícones do topo e do botão de anular.
+  const [anular, setAnular] = useState(false);          // motivo de anulação
+  const [editarQtd, setEditarQtd] = useState(false);    // teclado numérico (+/−)
+  const [verMensagens, setVerMensagens] = useState(false);
+  const [escolherCliente, setEscolherCliente] = useState(false);
+  // Só se pergunta UMA vez por conta quem é o cliente — senão o ecrã reabria a cada
+  // refrescamento e o empregado não conseguia lançar nada.
+  const perguntouCliente = useRef<number | null>(null);
 
   // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
   // muda os preços que as teclas mostram (staff/consumo interno vê o custo).
@@ -319,8 +342,41 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, onClo
         : []),
       { label: 'Visualizar Preços', icon: '👁', act: () => setVerPrecos((v) => !v), on: true, ativo: verPrecos },
       { label: 'Ver artigos agrupados', icon: '▤', act: () => setAgrupar((v) => !v), on: true, ativo: agrupar },
+      // Vieram da barra do topo, que tinha onze botões minúsculos. Continuam todos cá.
+      { label: 'Enviar p/ Cozinha', icon: '🔔', act: enviarCozinha, on: !!linhas.length,
+        why: 'A conta está vazia — não há nada para enviar.' },
+      { label: 'Suspender Conta', icon: '⏸', act: suspender, on: !!linhas.length,
+        why: 'A conta está vazia — não há nada para suspender.' },
+      { label: 'Combos / Menus', icon: '🧺', act: () => setVerCombos(true), on: true },
+      { label: 'Destino da Conta', icon: '🛎', act: () => setVerDestinos(true), on: true },
+      { label: 'Histórico da Conta', icon: '≡', act: () => setVerHistorico(true), on: true },
+      { label: 'Info. Hóspedes', icon: '👤', act: () => setPainel('GUESTS'), on: true },
+      { label: 'Documentos', icon: '🗎', act: () => setPainel('DOCS'), on: true },
     ]);
   }, [conta, sel, temSel, verPrecos, agrupar, linhas.length]);
+
+  // OS ÍCONES DO TOPO (lupa, +/−, mensagens, cliente) vivem na barra preta do terminal,
+  // como no original, mas quem sabe executá-los é este ecrã. Publica-os para lá.
+  useEffect(() => {
+    publicarTopo?.({
+      procurar: () => setProcurar(true),
+      quantidade: () => temSel && setEditarQtd(true),
+      mensagens: () => temSel && setVerMensagens(true),
+      cliente: () => setEscolherCliente(true),
+      temSel,
+      cliente_atual: conta?.customer_name || null,
+    });
+  }, [conta, temSel]);
+
+  // (8311) PEDIR O CLIENTE AO ABRIR — uma vez por conta, nunca em ciclo. Perguntar só na
+  // hora de cobrar é tarde: o "afinal queria com contribuinte" chega depois de a fatura
+  // já ter saído como Consumidor Final, e essa não se corrige — anula-se.
+  useEffect(() => {
+    if (!cfg?.ask_entity_on_open || !conta || conta.customer_name) return;
+    if (perguntouCliente.current === tid) return;
+    perguntouCliente.current = tid;
+    setEscolherCliente(true);
+  }, [conta, tid, cfg?.ask_entity_on_open]);
 
   // VER ARTIGOS AGRUPADOS: três cafés lançados um a um passam a "3 Café". Junta-se só o
   // que é MESMO igual — mesmo artigo, mesmo preço e mesma nota. Agrupar um café com nota
@@ -349,31 +405,17 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, onClo
             {{ PASSANTE: 'Passante', HOTEL: 'Hóspede', INTERNO: 'Consumo Interno' }[conta?.guest_type as string] || ''}
             {conta?.customer_name ? ` · ${conta.customer_name}` : ''}
           </span>
-          {/* DESCONTO da conta: os descontos por CÓDIGO do backoffice (com validade e
-              grupos autorizados) ou manual — acima do teto 8620 exige supervisor. */}
-          <button onClick={aplicarDesconto}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">
-            % {Number(conta?.discount_percent) > 0 ? `${Number(conta.discount_percent)}%` : 'Desc.'}
-          </button>
-          {/* SUSPENDER: a conta fica de lado (grupo que sai e volta) — retoma-se no mapa. */}
-          <button onClick={suspender}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">⏸</button>
-          {/* COMBOS do Commercial: o menu lança os componentes e acerta o preço. */}
-          <button onClick={() => setVerCombos(true)}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🧺 Combos</button>
-          {/* DESTINO: a conta vai para o Quarto/Piscina/Praia — entra na fila de Entregas. */}
-          <button onClick={() => setVerDestinos(true)}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🛎</button>
-          {/* HISTÓRICO da conta: quem lançou/anulou/pagou, quando, de que IP. */}
-          <button onClick={() => setVerHistorico(true)}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">≡</button>
-          {/* consultas SEM sair da venda — artigos, hóspedes e documentos (a junção) */}
-          <button onClick={() => setProcurar(true)}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🔍 Artigos</button>
-          <button onClick={() => setPainel('GUESTS')}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">👤 Hóspedes</button>
-          <button onClick={() => setPainel('DOCS')}
-            className="h-[30px] px-3 bg-[#2b2b2b] rounded text-[13px]">🗎 Docs</button>
+          {/* Os botões que aqui estavam (desconto, suspender, combos, destino, histórico,
+              artigos, hóspedes, documentos) NÃO desapareceram: passaram para a
+              ENGRENAGEM e para os ícones do topo, que é onde o original os tem. Onze
+              botões de 13px numa barra de 40px eram alvos impossíveis num ecrã tátil. */}
+          {Number(conta?.discount_percent) > 0 && (
+            <span className="ml-2 px-2 h-[26px] flex items-center rounded bg-[#8a6100]
+              text-[13px] font-bold">−{Number(conta.discount_percent)}%</span>
+          )}
+          {conta?.status === 'SUSPENDED' && (
+            <span className="px-2 h-[26px] flex items-center rounded bg-[#8a6100] text-[13px]">⏸ suspensa</span>
+          )}
         </div>
         <div className="grid gap-2 mb-2" style={{ gridTemplateColumns: 'repeat(4, minmax(0,1fr))' }}>
           <button onClick={() => (caminho.length ? setCaminho(caminho.slice(0, -1)) : onClose())}
@@ -492,39 +534,79 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, onClo
           <span className="text-[40px] font-bold text-white">{money(conta?.grand_total)}</span>
         </div>
 
-        <div className="grid grid-cols-6 gap-px bg-black">
-          {/* CONSULTA DE MESA — o talão de conferência DESTA conta (documento CM da
-              AGT), sem sair da venda. O cliente pergunta "quanto vai?" e mostra-se. */}
+        {/* ───── OS QUATRO BOTÕES DA COMANDA ─────
+            Quatro e só quatro, como no original. Seis botões cinzentos quase iguais
+            faziam-se confundir: o "anular a conta" ficava ao lado do "apagar a última
+            linha", ambos vermelhos — e anulava-se a venda toda a querer tirar um café.
+            Enviar para a cozinha passou para a aba Conta da engrenagem; apagar a linha
+            faz-se na própria linha (dois toques). */}
+        <div className="grid grid-cols-4 gap-px bg-black">
+          {/* 1. ANULAR A VENDA — pede o MOTIVO (lista do backoffice) antes de apagar. */}
+          <button onClick={() => setAnular(true)} disabled={!linhas.length}
+            title="Anular a venda (pede o motivo)"
+            className="h-[76px] bg-[#2b2b2b] text-[#e02020] text-[30px] disabled:opacity-30">🗑</button>
+          {/* 2. CONSULTA — o talão de conferência (documento CM da AGT). O cliente
+                 pergunta "quanto vai?" e mostra-se, sem fechar a conta. */}
           <button onClick={() => setVerTalao(true)} disabled={!linhas.length}
             title="Consulta de Mesa (talão de conferência)"
             className="h-[76px] bg-[#2b2b2b] text-white text-[30px] disabled:opacity-30">🖨</button>
-          {/* ANULAR A CONTA INTEIRA — a mesa aberta por engano, o cliente que se foi
-              embora. Obriga a motivo (fica na auditoria) e liberta a mesa. É o mesmo
-              `void` do motor que o backoffice e o Fecho do Dia usam. */}
-          <button onClick={async () => {
-            const motivo = window.prompt(
-              `ANULAR a conta ${conta?.ticket_number || ''}?\n\nA mesa fica livre e a anulação fica na auditoria.\n\nMotivo:`);
-            if (!motivo) return;
+          {/* 3. VENDA — abre os Pagamentos. */}
+          <button onClick={() => setPagar(true)} disabled={!linhas.length}
+            title="Pagamentos"
+            className="h-[76px] bg-[#2b2b2b] text-[#f0c000] text-[30px] disabled:opacity-30">💰</button>
+          {/* 4. CONFIRMAR — fecha a conta e volta à sala (a conta fica aberta na mesa). */}
+          <button onClick={onClose} title="Confirmar e voltar"
+            className="h-[76px] bg-[#2b2b2b] text-[#2ecc40] text-[34px]">✔</button>
+        </div>
+      </div>
+
+      {/* ANULAR A VENDA — o motivo vem da lista do backoffice (ou texto livre). */}
+      {anular && (
+        <VoidReasonDialog onClose={() => setAnular(false)}
+          onPick={async (motivo) => {
+            setAnular(false);
             try {
               await apiClient.post(`pos/tickets/${tid}/void/`, { reason: motivo });
               inval();
               onClose();
             } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível anular.'); }
-          }}
-            title="Anular a conta (mesa aberta por engano)"
-            className="h-[76px] bg-[#2b2b2b] text-[#e02020] text-[26px] font-bold">✕</button>
-          <button onClick={() => linhas.length && apagarLinha(linhas[linhas.length - 1])}
-            title="Apagar a última linha"
-            className="h-[76px] bg-[#2b2b2b] text-[#e02020] text-[30px]">🗑</button>
-          <button onClick={enviarCozinha}
-            title="Enviar para a cozinha"
-            className="h-[76px] bg-[#2b2b2b] text-white text-[30px]">🖨</button>
-          <button onClick={() => setPagar(true)} disabled={!linhas.length}
-            className="h-[76px] bg-[#2b2b2b] text-[#f0c000] text-[30px] disabled:opacity-30">💰</button>
-          <button onClick={onClose}
-            className="h-[76px] bg-[#2b2b2b] text-[#2ecc40] text-[34px]">✔</button>
-        </div>
-      </div>
+          }} />
+      )}
+
+      {/* (+/−) do topo: o teclado numérico sobre a linha escolhida. */}
+      {editarQtd && linhaSel() && (
+        <NumPad titulo={linhaSel().description} subtitulo="Editar quantidade"
+          inicial={String(Number(linhaSel().quantity))}
+          onClose={() => setEditarQtd(false)}
+          onOk={async (valor) => {
+            const n = Number(valor.replace(',', '.'));
+            setEditarQtd(false);
+            if (!(n > 0)) return alert('A quantidade tem de ser maior que zero. Para tirar o artigo, anule a linha.');
+            await patchLinha({ quantity: n }, 'Não foi possível alterar a quantidade.');
+          }} />
+      )}
+
+      {/* ✎ do topo: as mensagens de produção do backoffice, coladas à linha escolhida. */}
+      {verMensagens && linhaSel() && (
+        <MessagesPanel linha={linhaSel()} onClose={() => setVerMensagens(false)}
+          onPick={async (texto) => {
+            setVerMensagens(false);
+            await patchLinha({ note: texto || null }, 'Não foi possível gravar a mensagem.');
+          }} />
+      )}
+
+      {/* 👤+ do topo (e a abertura automática pelo 8311): quem leva a fatura. */}
+      {escolherCliente && (
+        <ClientPicker onClose={() => setEscolherCliente(false)}
+          onPick={async (esc) => {
+            setEscolherCliente(false);
+            if (!esc.customer_name && !esc.entity) return;   // Consumidor Final: nada a gravar
+            try {
+              await apiClient.post(`pos/tickets/${tid}/set_customer/`, esc);
+              inval();
+            } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível guardar o cliente.'); }
+          }} />
+      )}
 
       {/* Parciais e transferências DESTA conta, chamadas da engrenagem (aba Conta) */}
       {mover && conta && (

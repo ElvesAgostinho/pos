@@ -4731,6 +4731,8 @@ class PosTerminalConfigView(APIView):
             'ask_guest_type': P.bool(8175, True),
             'auto_fire_kitchen': P.bool(8308, False),
             'ask_entity_before_pay': P.bool(8310, False),
+            # (8311) pedir o cliente ao ABRIR a venda (não só na hora de cobrar)
+            'ask_entity_on_open': P.bool(8311, False),
             'tables_refresh_seconds': P.int(8063, 8),
             'transfers': P.text(8124, 'Parcial'),
             'allow_day_close': P.bool(8062, False),
@@ -4874,6 +4876,8 @@ class PosBootstrapView(APIView):
                 'ask_guest_type': P.bool(8175, True),
                 'auto_fire_kitchen': P.bool(8308, False),
                 'ask_entity_before_pay': P.bool(8310, False),
+            # (8311) pedir o cliente ao ABRIR a venda (não só na hora de cobrar)
+            'ask_entity_on_open': P.bool(8311, False),
                 'tables_refresh_seconds': P.int(8063, 8),
                 'transfers': P.text(8124, 'Parcial'),
                 'allow_day_close': P.bool(8062, False),
