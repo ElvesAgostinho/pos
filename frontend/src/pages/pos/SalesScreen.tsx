@@ -285,8 +285,13 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const aplicarDesconto = async () => {
     try {
       const r = await apiClient.get('pos/config/discounts/');
+      // (8582 da FICHA DO SETOR) que descontos esta sala pode dar. A lista vinha
+      // inteira: escolhia-se na ficha "só o desconto de sócio" e o terminal continuava
+      // a oferecer todos — a ficha era decorativa. 'TODOS' (ou vazio) mantém a lista.
+      const permitido = setor?.discounts;
       const codigos = ((r.data?.results || r.data || []) as any[])
-        .filter((d) => d.is_active !== false && d.for_pos !== false);
+        .filter((d) => d.is_active !== false && d.for_pos !== false)
+        .filter((d) => !permitido || permitido === 'TODOS' || String(d.id) === String(permitido));
       const lista = codigos.map((d, i) => `${i + 1}. ${d.code} — ${d.name} (${Number(d.value)}${d.base === 'PERCENT' ? '%' : ' Kz'})`).join('\n');
       const escolha = await pedir(
         `DESCONTO DA CONTA\n\n${lista || '(sem descontos configurados)'}\n\n` +
@@ -568,7 +573,11 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
 
         <ZonaArrastavel className="flex-1">
           <div className="grid gap-2"
-            style={{ gridTemplateColumns: `repeat(${kb?.cols || 4}, minmax(0,1fr))` }}>
+            style={{
+              // (ficha da página) a grelha DA PÁGINA aberta ganha à do teclado: a das
+              // bebidas pode ter 5 colunas de garrafas e a dos pratos 3 largas.
+              gridTemplateColumns: `repeat(${caminho[0]?.cols || kb?.cols || 4}, minmax(0,1fr))`,
+            }}>
             {caminho.length > 0 && nivel.map((k: any) => (
               <button key={k.id} onClick={() => tocar(k)} disabled={k.available === false}
                 style={{

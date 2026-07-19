@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money } from './kit';
 import { ItemPicker } from './Pickers';
+import PageDialog from './PageDialog';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 let SEQ = 1;
@@ -27,6 +28,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
   const [folder, setFolder] = useState<string | null>(null);  // pasta aberta dentro da página
   const [sel, setSel] = useState<string | null>(null);        // tecla selecionada
   const [picker, setPicker] = useState(false);
+  const [novaPagina, setNovaPagina] = useState(false);
 
   const { data: full } = useQuery({
     queryKey: ['posc', 'kb', row?.id],
@@ -66,16 +68,29 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
   const S = keys.find((k) => k.tmp_id === sel);
 
   const upd = (id: string, patch: any) => setKeys((ks) => ks.map((k) => k.tmp_id === id ? { ...k, ...patch } : k));
-  const addPage = () => {
+  /**
+   * ADICIONAR PÁGINA/SUBPÁGINA — abre a FICHA (PageDialog), como no original: nome,
+   * tipo de preço, cores e a grelha (Horizontal × Vertical) perguntam-se ANTES de a
+   * tecla existir. Criava-se logo uma "NOVA PÁGINA" castanha e arranjava-se depois —
+   * quem monta dez páginas seguidas deixava sempre uma por arranjar.
+   */
+  const criarDaFicha = (d: {
+    tipo: 'PAGE' | 'FOLDER'; label: string; price_level: number;
+    color: string; text_color: string; cols: number; rows: number;
+  }) => {
+    setNovaPagina(false);
     const t = uid();
-    setKeys([...keys, { tmp_id: t, parent: null, kind: 'PAGE', label: 'NOVA PÁGINA', color: '#7a4b1a', text_color: '#ffffff', sort_order: pages.length, span: 1 }]);
-    setPage(t); setFolder(null); setSel(t);
-  };
-  const addFolder = () => {
-    if (!level) return;
-    const t = uid();
-    setKeys([...keys, { tmp_id: t, parent: level, kind: 'FOLDER', label: 'NOVA PASTA', color: '#1565c0', text_color: '#ffffff', sort_order: visible.length, span: 1 }]);
-    setSel(t);
+    if (d.tipo === 'PAGE') {
+      setKeys([...keys, { tmp_id: t, parent: null, kind: 'PAGE', label: d.label,
+        color: d.color, text_color: d.text_color, sort_order: pages.length, span: 1,
+        cols: d.cols, rows: d.rows, price_level: d.price_level }]);
+      setPage(t); setFolder(null); setSel(t);
+    } else {
+      if (!level) return;
+      setKeys([...keys, { tmp_id: t, parent: level, kind: 'FOLDER', label: d.label,
+        color: d.color, text_color: d.text_color, sort_order: visible.length, span: 1 }]);
+      setSel(t);
+    }
   };
   const addItems = (items: any[]) => {
     if (!level) return;
@@ -171,8 +186,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
           <label className="flex items-center gap-2"><input type="checkbox" checked={!!kb.show_prices} onChange={(e) => setKb({ ...kb, show_prices: e.target.checked })} className="w-4 h-4" />Visualizar Preços</label>
 
           <div className="space-y-1 pt-1">
-            <Side onClick={addPage} color="#2b8fd6">Adicionar Página</Side>
-            <Side onClick={addFolder} color="#2b8fd6" disabled={!level}>Adicionar Pasta</Side>
+            <Side onClick={() => setNovaPagina(true)} color="#2b8fd6">Adicionar Página</Side>
             <Side onClick={() => setPicker(true)} color="#2b8fd6" disabled={!level}>Adicionar Artigos</Side>
             <Side onClick={removeKey} color="#c0392b" disabled={!sel}>Remover Tecla</Side>
             <Side onClick={rename} color="#29b6f6" disabled={!sel}>Renomear tecla</Side>
@@ -242,6 +256,15 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
           )}
         </div>
       </div>
+
+      {/* A FICHA da página/subpágina — pergunta tudo antes de criar. */}
+      {novaPagina && (
+        <PageDialog podeSubpagina={!!level}
+          corDefeito="#7a4b1a" textoDefeito="#FFFFFF"
+          colsDefeito={kb.cols || 4} rowsDefeito={kb.rows || 4}
+          precoDefeito={kb.price_level || 1}
+          onOk={criarDaFicha} onClose={() => setNovaPagina(false)} />
+      )}
 
       {/* ESCOLHER ARTIGOS — o seletor COMPLETO que já existia no sistema (Pickers.tsx):
           filtros por Grupo/Família/Sub Família/Tipo/Estado, texto livre, grelha com

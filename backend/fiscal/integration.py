@@ -10,8 +10,32 @@ from .models import FiscalConfig, FiscalSeries, FiscalDocument
 from . import services
 
 
-def _resolve_series(doc_type_code):
-    """Devolve a série ativa para um tipo de documento (a mais recente por exercício)."""
+def _resolve_series(doc_type_code, outlet=None):
+    """Devolve a série para um tipo de documento.
+
+    PRIMEIRO a FICHA DO SETOR (parâmetros 8553-8589): é lá que o dono diz "o
+    Restaurante emite FR na série A, a Esplanada na B". Este resolvedor é usado pela
+    emissão AUTOMÁTICA (a que dispara ao cobrar), e ignorava a ficha — o caminho manual
+    respeitava-a e o automático não, e o mesmo setor emitia em séries diferentes
+    conforme o botão em que se tocava.
+    Sem ficha (ou sem setor), vale a série ativa mais recente do tipo."""
+    MAPA = {'FR': '8557', 'NC': '8556', 'CM': '8555', 'FS': '8553', 'VD': '8553',
+            'RC': '8558', 'FT': '8562', 'GR': '8588', 'GT': '8588'}
+    num = MAPA.get(doc_type_code)
+    if outlet is not None and num:
+        try:
+            from pos.models import PosSector
+            setor = PosSector.objects.filter(outlet=outlet).first()
+            escolhida = ((setor.params or {}).get(num)
+                         or (setor.params or {}).get(int(num))) if setor else None
+            if escolhida:
+                s = (FiscalSeries.objects
+                     .filter(pk=escolhida, doc_type__code=doc_type_code,
+                             is_active=True, is_closed=False).first())
+                if s:
+                    return s
+        except Exception:
+            pass
     return (FiscalSeries.objects
             .filter(doc_type__code=doc_type_code, is_active=True, certified=True)
             .order_by('-year', 'code').first())
@@ -36,7 +60,7 @@ def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None
     existing = existing_for('pos', ticket.id)
     if existing:
         return existing
-    series = _resolve_series('FT' if credito else cfg.pos_doc_type)
+    series = _resolve_series('FT' if credito else cfg.pos_doc_type, outlet=ticket.outlet)
     if not series:
         return None  # sem série configurada -> não bloqueia a venda
     # Desconto (VIP/manual) reduz proporcionalmente os preços das linhas na fatura.
@@ -92,7 +116,7 @@ def emit_table_consult(ticket, user=None, ip=None):
     Ao contrário da fatura, a MESMA mesa pode pedir várias consultas (o cliente pergunta
     duas vezes) — por isso não é idempotente por ticket.
     """
-    series = _resolve_series('CM')
+    series = _resolve_series('CM', outlet=ticket.outlet)
     if not series:
         return None            # sem série CM configurada -> a consulta mostra-se sem documento
     from decimal import Decimal

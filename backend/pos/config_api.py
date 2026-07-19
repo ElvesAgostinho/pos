@@ -260,7 +260,11 @@ class KeyboardKeySerializer(serializers.ModelSerializer):
     class Meta:
         model = PosKeyboardKey
         fields = ('id', 'parent', 'kind', 'label', 'item', 'item_name', 'item_code',
-                  'item_price', 'color', 'text_color', 'sort_order', 'span')
+                  'item_price', 'color', 'text_color', 'sort_order', 'span',
+                  # A GRELHA E O PREÇO DA PÁGINA (ficha "Adicionar Página"): a página
+                  # das bebidas pode ter 5 colunas e a dos pratos 3, e cada uma o seu
+                  # nível de preço. Sem estes campos aqui, a ficha gravava no vazio.
+                  'cols', 'rows', 'price_level')
 
     def get_item_price(self, o):
         if not o.item_id:
@@ -307,7 +311,10 @@ class PosKeyboardViewSet(viewsets.ModelViewSet):
                 keyboard=kb, kind=r.get('kind', 'FOLDER'), label=r.get('label') or '',
                 item_id=r.get('item') or None, color=r.get('color') or '#1565c0',
                 text_color=r.get('text_color') or '#ffffff',
-                sort_order=r.get('sort_order') or 0, span=r.get('span') or 1)
+                sort_order=r.get('sort_order') or 0, span=r.get('span') or 1,
+                # a ficha "Adicionar Página": grelha e nível de preço próprios da página
+                cols=r.get('cols') or None, rows=r.get('rows') or None,
+                price_level=r.get('price_level') or None)
             temp[r.get('tmp_id') or r.get('id')] = k
 
         # 2ª passagem: liga cada tecla ao seu pai.
@@ -4155,6 +4162,15 @@ class PosDocSearchView(APIView):
         p = request.query_params
         qs = (FiscalDocument.objects.filter(source_module='pos')
               .select_related('doc_type', 'series').order_by('-doc_date', '-number'))
+        # O DOCUMENTO DESTA VENDA. O recibo do terminal pergunta "qual é o documento
+        # da conta X?" — e este ecrã IGNORAVA o parâmetro: devolvia a lista toda, e o
+        # recibo mostrava o número do documento MAIS RECENTE, fosse de quem fosse. Num
+        # balcão com dois terminais, o cliente via o número da venda do vizinho.
+        if p.get('source_ref'):
+            qs = qs.filter(source_ref=str(p['source_ref']))
+        if p.get('search'):
+            qs = qs.filter(models.Q(invoice_no__icontains=p['search'])
+                           | models.Q(customer_name__icontains=p['search']))
         if p.get('doc_type'):
             qs = qs.filter(doc_type__code=p['doc_type'])
         if p.get('number'):
@@ -4430,8 +4446,18 @@ class PosTerminalKeyboardView(APIView):
             try:
                 from .models import PosSector
                 s = PosSector.objects.filter(pk=request.query_params['sector']).first()
-                if s and s.price_level and s.price_level > 1:
-                    nivel = s.price_level
+                if s:
+                    # (8592) "Preços Disponíveis" da FICHA DO SETOR manda no nível que
+                    # as teclas mostram. Era gravado e ignorado: o teclado lia só o campo
+                    # antigo price_level, e escolher "Preço 3" na ficha não mudava nada.
+                    p8592 = (s.params or {}).get('8592') or (s.params or {}).get(8592)
+                    if p8592:
+                        import re as _re
+                        m = _re.search(r'(\d+)', str(p8592))
+                        if m:
+                            nivel = int(m.group(1))
+                    elif s.price_level and s.price_level > 1:
+                        nivel = s.price_level
             except Exception:
                 pass
         if nivel and nivel > 1:
@@ -4445,22 +4471,42 @@ class PosTerminalKeyboardView(APIView):
             op = PosUser.objects.filter(pk=request.query_params['operator']).first()
             custo_op = bool(op and getattr(op, 'use_cost_price', False))
 
-        def preco(it):
+        # Tabelas de preço por nível, carregadas quando são precisas: cada PÁGINA pode
+        # ter o seu nível (a esplanada vende a mesma cerveja mais cara), e carregar as
+        # seis tabelas por via das dúvidas era pagar seis consultas para usar uma.
+        _tabelas = {}
+        if nivel and nivel > 1:
+            _tabelas[nivel] = precos
+
+        def _tabela(nv):
+            if nv not in _tabelas:
+                _tabelas[nv] = {p.item_id: p.price
+                                for p in ItemPrice.objects.filter(level=nv)}
+            return _tabelas[nv]
+
+        def preco(it, nv=None):
             if not it:
                 return None
             if custo_op:
                 return str(it.current_average_cost or 0)
-            # O nível de preço do teclado ganha ao preço base — é para isso que existe.
-            return str(precos.get(it.id, it.sale_price or 0))
+            nv = nv or nivel
+            if nv and nv > 1:
+                return str(_tabela(nv).get(it.id, it.sale_price or 0))
+            return str(it.sale_price or 0)
 
-        def desenha(k):
+        def desenha(k, nivel_pagina=None):
+            # (ficha da página) o nível de preço DA PÁGINA ganha ao do setor/teclado
+            if k.parent_id is None and getattr(k, 'price_level', None):
+                nivel_pagina = k.price_level
             d = {
                 'id': k.id, 'kind': k.kind, 'label': k.label,
                 'color': k.color, 'text_color': k.text_color, 'span': k.span,
                 'item': k.item_id,
+                # a grelha própria da página (vazio = a do teclado)
+                'cols': getattr(k, 'cols', None), 'rows': getattr(k, 'rows', None),
                 # As duas caixas do teclado decidem o que sai ESCRITO na tecla.
                 'code': (k.item.code if (k.item and kb.show_codes) else None),
-                'price': (preco(k.item) if (k.item and kb.show_prices) else None),
+                'price': (preco(k.item, nivel_pagina) if (k.item and kb.show_prices) else None),
                 'available': True,
             }
             # Um artigo inativo não se vende — a tecla fica lá, mas apagada. Tirá-la do
@@ -4469,7 +4515,7 @@ class PosTerminalKeyboardView(APIView):
                 d['available'] = False
             filhos = [x for x in chaves if x.parent_id == k.id]
             if filhos:
-                d['children'] = [desenha(f) for f in filhos]
+                d['children'] = [desenha(f, nivel_pagina) for f in filhos]
             return d
 
         paginas = [desenha(k) for k in chaves if k.parent_id is None]

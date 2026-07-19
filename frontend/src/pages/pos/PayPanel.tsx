@@ -109,7 +109,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
   // O NÚMERO DO DOCUMENTO desta conta, lido dos documentos emitidos.
   const numeroDoc = async (): Promise<string | null> => {
     try {
-      const dd = await apiClient.get('pos/reports/documents/', { params: { search: conta.ticket_number } });
+      const dd = await apiClient.get('pos/reports/documents/', { params: { source_ref: conta.id } });
       return ((dd.data?.rows || dd.data?.results || []) as any[])[0]?.number || null;
     } catch { return null; }
   };
@@ -248,7 +248,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
       // O RECIBO — quanto era, quanto entrou em cada meio, o troco e o documento.
       let doc: string | null = null;
       try {
-        const dd = await apiClient.get('pos/reports/documents/', { params: { search: tk.ticket_number } });
+        const dd = await apiClient.get('pos/reports/documents/', { params: { source_ref: tk.id } });
         doc = ((dd.data?.rows || dd.data?.results || []) as any[])[0]?.number || null;
       } catch { /* sem documento ainda: o recibo diz isso e deixa emitir */ }
       setRecibo(doc || '');

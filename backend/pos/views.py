@@ -700,11 +700,37 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             return Response({'detail': f'"{item.name}" é de preço manual — indique o preço.',
                              'requires_price': True}, status=status.HTTP_400_BAD_REQUEST)
         if unit_price in (None, ''):
-            # Prioridade: override do POS Product Config → Tabela de Preço da área → preço base.
+            # Prioridade: override do POS Product Config → NÍVEL DE PREÇO do setor
+            # (8592) → Tabela de Preço da área → preço base.
+            #
+            # O nível do setor faltava aqui e o resultado era o pior possível: a TECLA
+            # mostrava o Preço 3 (o teclado respeita o 8592) e a CONTA cobrava o base —
+            # o cliente via 999 no ecrã e pagava 400. O que se mostra e o que se cobra
+            # têm de sair da mesma regra.
             if cfg and cfg.pos_price is not None:
                 unit_price = cfg.pos_price
             else:
-                unit_price = ticket.outlet.price_for(item)
+                nivel_setor = None
+                try:
+                    from .models import PosSector
+                    _s = PosSector.objects.filter(outlet=ticket.outlet).first()
+                    p8592 = ((_s.params or {}).get('8592')
+                             or (_s.params or {}).get(8592)) if _s else None
+                    if p8592:
+                        import re as _re
+                        _m = _re.search(r'(\d+)', str(p8592))
+                        if _m:
+                            nivel_setor = int(_m.group(1))
+                    elif _s and _s.price_level and _s.price_level > 1:
+                        nivel_setor = _s.price_level
+                except Exception:
+                    nivel_setor = None
+                if nivel_setor and nivel_setor > 1:
+                    from inventory.models import ItemPrice
+                    _ip = ItemPrice.objects.filter(item=item, level=nivel_setor).first()
+                    unit_price = _ip.price if _ip else ticket.outlet.price_for(item)
+                else:
+                    unit_price = ticket.outlet.price_for(item)
         unit_price = Decimal(str(unit_price))
 
         # (Utilizador POS) "Usa preço de custo" — a caixa da FICHA DO OPERADOR (backoffice)
@@ -886,6 +912,28 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                                       or (ticket.dest_kind == 'ROOM' and ticket.dest_ref)):
             return Response({'detail': f'"{pm.name}" lança no folio: indique o quarto.',
                              'requires_room': True}, status=status.HTTP_400_BAD_REQUEST)
+
+        # (Modo de Pagamento) "Permite parcial" — DESLIGADA, este meio só serve para
+        # SALDAR a conta: um vale de refeição não paga metade de um jantar. Um valor
+        # abaixo do que falta é recusado — a alternativa era o vale entrar como parcela
+        # e o resto ficar pendurado num meio que o emissor não reembolsa parcialmente.
+        try:
+            _pedido = Decimal(str(request.data.get('amount') or ticket.balance_due))
+        except Exception:
+            _pedido = ticket.balance_due
+        if not pm.allows_partial and _pedido < ticket.balance_due:
+            return Response({'detail': f'"{pm.name}" não permite pagamento parcial: tem de '
+                                       f'saldar a conta ({ticket.balance_due} Kz) de uma vez. '
+                                       f'A caixa está na ficha do meio de pagamento.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # (Modo de Pagamento) "Permite misto" — DESLIGADA, este meio não se combina com
+        # outros na mesma conta. É a regra dos meios que liquidam por fora (voucher de
+        # agência, cortesia): juntá-los a dinheiro parte a conta em duas contabilidades.
+        if not pm.allows_mixed and ticket.payments.exists():
+            return Response({'detail': f'"{pm.name}" não permite pagamento misto: esta conta '
+                                       f'já tem outros pagamentos registados.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         # (Modo de Pagamento) "Perguntar nº de documento" — cheque e transferência sem
         # referência são dinheiro que ninguém consegue reconciliar no banco.
@@ -1892,6 +1940,28 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 return Response({'detail': f'A série escolhida não é de "{codigo}". '
                                            f'Uma série numera um só tipo de documento.'},
                                 status=status.HTTP_400_BAD_REQUEST)
+        # A SÉRIE DA FICHA DO SETOR (parâmetros 8553-8589). É para isto que aquelas
+        # nove linhas existem: o Restaurante emite FR na série A, a Esplanada na série B.
+        # Estavam a ser gravadas e IGNORADAS — a emissão apanhava a primeira série ativa
+        # do tipo, e a ficha do setor era decorativa. Com uma só série por tipo o
+        # resultado coincidia por sorte; com duas, saía na errada.
+        if not serie:
+            MAPA_8553 = {'FR': '8557', 'NC': '8556', 'CM': '8555', 'FS': '8553',
+                         'VD': '8553', 'RC': '8558', 'FT': '8562',
+                         'GR': '8588', 'GT': '8588'}
+            num = MAPA_8553.get(codigo)
+            if num:
+                try:
+                    from .models import PosSector
+                    setor = PosSector.objects.filter(outlet=ticket.outlet).first()
+                    escolhida = ((setor.params or {}).get(num)
+                                 or (setor.params or {}).get(int(num))) if setor else None
+                    if escolhida:
+                        serie = FiscalSeries.objects.filter(
+                            pk=escolhida, doc_type=tipo,
+                            is_active=True, is_closed=False).first()
+                except Exception:
+                    serie = None
         if not serie:
             serie = (FiscalSeries.objects.filter(doc_type=tipo, is_active=True, is_closed=False)
                      .order_by('-year').first())
