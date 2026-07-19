@@ -519,52 +519,6 @@ export const MODULES: NavModule[] = [
     ],
   },
   {
-    // O cérebro da restauração — NÃO é o POS. A cozinha trabalha aqui, não no POS.
-    key: 'hospitality', title: '10 · F&B Operations Center ⭐', items: [
-      { id: 'hoc_dashboard', name: 'Dashboard F&B' },
-      { id: 'hoc_restaurants', name: 'Restaurantes' },
-      { id: 'hoc_bars', name: 'Bares' },
-      { id: 'hoc_coffee', name: 'Coffee Shops' },
-      { id: 'hoc_poolbar', name: 'Pool Bars / Rooftop' },
-      { id: 'hoc_roomservice', name: 'Room Service / Minibar' },
-      { id: 'hoc_buffets', name: 'Buffets / Banquetes / Catering' },
-      { id: 'hoc_events', name: 'Eventos' },
-      { id: 'hoc_menus', name: 'Menu Management' },
-      { id: 'hoc_recipes', name: 'Receitas & Fichas Técnicas' },
-      { id: 'hoc_ingredients', name: 'Gestão de Ingredientes' },
-      { id: 'hoc_routing', name: 'Kitchen Routing (produção)' },
-      { id: 'hoc_stations', name: 'Estações de Produção' },
-      { id: 'hoc_kds', name: 'Kitchen Display (Cozinha)' },
-      { id: 'hoc_bar_display', name: 'Bar / Beverage Display' },
-      { id: 'hoc_pastry_display', name: 'Pastry Display' },
-      { id: 'hoc_buffet_display', name: 'Buffet Display' },
-      { id: 'hoc_allergens', name: 'Alergénios' },
-      { id: 'hoc_haccp', name: 'HACCP' },
-      { id: 'hoc_waste', name: 'Desperdícios & Quebras' },
-      { id: 'hoc_quality', name: 'Controlo de Qualidade' },
-      { id: 'hoc_timing', name: 'Service Timing' },
-      { id: 'hoc_reports', name: 'Relatórios de Produção' },
-    ],
-  },
-  {
-    key: 'pms', title: '11 · Front Office (PMS)', items: [
-      { id: 'pms_dashboard', name: 'Dashboard' },
-      { id: 'pms_reservations', name: 'Reservas' },
-      { id: 'pms_checkin', name: 'Check-in / Check-out' },
-      { id: 'pms_rooms', name: 'Quartos' },
-      { id: 'pms_housekeeping', name: 'Governanta / Housekeeping' },
-      { id: 'pms_maintenance', name: 'Manutenção' },
-      { id: 'pms_laundry', name: 'Lavandaria' },
-      { id: 'pms_minibar', name: 'Minibar' },
-      { id: 'pms_spa', name: 'Spa' },
-      { id: 'pms_rates', name: 'Tarifas' },
-      { id: 'pms_nightaudit', name: 'Night Audit' },
-      { id: 'pms_agencies', name: 'Agências & Empresas' },
-      { id: 'pms_ledger', name: 'Guest Ledger' },
-      { id: 'pms_guests', name: 'Hóspedes' },
-    ],
-  },
-  {
     // O MÓDULO POS é a CONFIGURAÇÃO POS. Os antigos ecrãs soltos (Outlets, Terminais,
     // Operadores, Turnos, Impressoras, Product Config, Configuração Operacional…) foram
     // ELIMINADOS: tudo isso vive agora dentro deste ecrã, num só sítio, com CRUD real.
@@ -703,7 +657,7 @@ export const ITEM_MODULE_KEY: Record<string, string> = Object.fromEntries(
 export const MODULE_LICENSE: Record<string, string | null> = {
   admin: null, licensing: null, security: null, hotel: null, masterdata: null,
   commercial: 'commercial', srm: 'esm', procurement: 'procurement', warehouse: 'wms',
-  hospitality: 'production', pms: 'pms', posmgmt: 'pos', posfront: 'pos',
+  posmgmt: 'pos', posfront: 'pos',
   financial: 'finance', fiscal: null, accounting: null, ops: null, reporting: null, workflow: null,
   documents: null, notifications: null, integration: null, system: null,
 };
@@ -721,9 +675,7 @@ export function moduleEnabled(key: string, active: string[]): boolean {
 export interface Suite { key: string; name: string; emoji: string; modules: string[]; }
 export const SUITES: Suite[] = [
   { key: 'all', name: 'Plataforma', emoji: '▦', modules: [] },
-  { key: 'backoffice', name: 'Backoffice', emoji: '🗄️', modules: ['admin', 'security', 'hotel', 'masterdata', 'commercial', 'srm', 'procurement', 'warehouse', 'hospitality', 'financial', 'fiscal', 'accounting', 'reporting', 'documents', 'notifications', 'integration', 'system', 'licensing'] },
-  { key: 'restauracao', name: 'Restauração', emoji: '🍽️', modules: ['posmgmt', 'commercial', 'hospitality'] },
-  { key: 'pms', name: 'PMS (Hotel)', emoji: '🛎️', modules: ['pms'] },
+  { key: 'backoffice', name: 'Backoffice', emoji: '🗄️', modules: ['admin', 'security', 'hotel', 'masterdata', 'commercial', 'srm', 'procurement', 'warehouse', 'financial', 'fiscal', 'accounting', 'reporting', 'documents', 'notifications', 'integration', 'system', 'licensing'] },
   { key: 'pos', name: 'POS', emoji: '🛒', modules: ['posmgmt'] },
   { key: 'ops', name: 'Centro de Operações', emoji: '📡', modules: ['ops', 'reporting'] },
 ];
@@ -754,19 +706,6 @@ export function featureAllowed(itemId: string, activeFeatures: string[] | null):
 // Módulos sem entrada aqui mostram os itens como botões diretos.
 export interface MenuGroup { label: string; items: string[]; }
 export const MODULE_MENUS: Record<string, MenuGroup[]> = {
-  pms: [
-    { label: 'Reservas', items: ['pms_reservations', 'pms_checkin'] },
-    { label: 'Alojamento', items: ['pms_rooms', 'pms_housekeeping'] },
-    { label: 'Hóspedes', items: ['pms_guests', 'pms_ledger'] },
-    { label: 'Noite', items: ['pms_nightaudit', 'pms_dashboard'] },
-  ],
-  hospitality: [
-    { label: 'Outlets', items: ['hoc_restaurants', 'hoc_bars', 'hoc_coffee', 'hoc_poolbar', 'hoc_roomservice', 'hoc_buffets', 'hoc_events'] },
-    { label: 'Produção', items: ['hoc_menus', 'hoc_recipes', 'hoc_ingredients', 'hoc_routing', 'hoc_stations'] },
-    { label: 'Displays', items: ['hoc_kds', 'hoc_bar_display', 'hoc_pastry_display', 'hoc_buffet_display'] },
-    { label: 'Qualidade', items: ['hoc_haccp', 'hoc_waste', 'hoc_quality', 'hoc_timing'] },
-    { label: 'Análise', items: ['hoc_dashboard', 'hoc_reports'] },
-  ],
   warehouse: [
     { label: 'Stock', items: ['wh_warehouses', 'wh_locations', 'wh_stock', 'wh_movements'] },
     { label: 'Operações', items: ['wh_transfers', 'wh_inventory', 'wh_lots', 'wh_costing'] },

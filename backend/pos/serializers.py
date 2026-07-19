@@ -56,7 +56,7 @@ class POSProductConfigSerializer(serializers.ModelSerializer):
 
     def get_allergens(self, obj):
         try:
-            prof = getattr(obj.item, 'production_profile', None)
+            prof = getattr(obj.item, 'pos_profile', None)
             return [a.name for a in prof.allergens.all()] if prof else []
         except Exception:
             return []
@@ -161,9 +161,13 @@ class POSTicketSerializer(serializers.ModelSerializer):
 
 
 def _item_allergens(item):
-    """Alergénios declarados de um artigo (production.ItemProductionProfile)."""
+    """Alergénios declarados de um artigo — da FICHA POS do artigo (pos.ItemPosProfile).
+
+    Vive no POS: a comanda, o KDS e o talão precisam disto e o POS não depende de
+    módulo nenhum para o ter.
+    """
     try:
-        prof = getattr(item, 'production_profile', None)
+        prof = getattr(item, 'pos_profile', None)
         return [a.name for a in prof.allergens.all()] if prof else []
     except Exception:
         return []

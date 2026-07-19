@@ -28,7 +28,7 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          StockDocSeriesViewSet, PaymentTermViewSet, CostCenterViewSet,
                          WarehouseViewSet, StockRecalcView, SectorWarehouseMapView,
                          PosDayCloseView, PosSaftView, PosDiagnosticsView, PosSendLogsView,
-                         PosStockSaftView,
+                         PosStockSaftView, AllergenViewSet, KitchenMessageViewSet,
                          PosCurrentAccountsView, PosEntityAccountView, EventRequestViewSet, EntityViewSet, EntityFieldRuleViewSet,
                          StockDocViewSet, PosStockLevelsView, PosPayablesView,
                          PosReportCatalogView, PosReportRunView, PosOnlineInfoView,
@@ -39,6 +39,8 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          PosBootstrapView)
 
 router = DefaultRouter()
+router.register(r'config/allergens', AllergenViewSet, basename='pos-cfg-allergen')
+router.register(r'config/kitchen-messages', KitchenMessageViewSet, basename='pos-cfg-kmsg')
 router.register(r'config/modules', PosModuleViewSet, basename='pos-cfg-module')
 router.register(r'config/terminals', PosTerminalViewSet, basename='pos-cfg-terminal')
 router.register(r'config/parameters', PosParameterViewSet, basename='pos-cfg-param')

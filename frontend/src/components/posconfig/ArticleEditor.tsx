@@ -29,7 +29,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
   const { data: subfamilies = [] } = useQuery({ queryKey: ['posc', 'subs'], queryFn: async () => (await apiClient.get('inventory/pos/subfamilies/')).data });
   const { data: printers = [] } = useQuery({ queryKey: ['posc', 'printers'], queryFn: async () => (await apiClient.get('inventory/pos/printers/')).data });
   const { data: uoms = [] } = useQuery({ queryKey: ['posc', 'uoms'], queryFn: async () => { const r = await apiClient.get('inventory/uoms/'); return r.data?.results || r.data || []; } });
-  const { data: allergens = [] } = useQuery({ queryKey: ['posc', 'allergens'], queryFn: async () => { try { const r = await apiClient.get('production/allergens/'); return r.data?.results || r.data || []; } catch { return []; } } });
+  const { data: allergens = [] } = useQuery({ queryKey: ['posc', 'allergens'], queryFn: async () => { try { const r = await apiClient.get('pos/config/allergens/'); return r.data?.results || r.data || []; } catch { return []; } } });
   const { data: promos = [] } = useQuery({ queryKey: ['posc', 'promos'], queryFn: async () => { try { const r = await apiClient.get('commercial/promotions/'); return r.data?.results || r.data || []; } catch { return []; } } });
   const { data: taxes = [] } = useQuery({ queryKey: ['posc', 'taxes'], queryFn: async () => { try { const r = await apiClient.get('fiscal/tax-rates/'); return r.data?.results || r.data || []; } catch { return []; } } });
   const { data: keyboards = [] } = useQuery({ queryKey: ['posc', 'keyboards'], queryFn: async () => (await apiClient.get('pos/config/keyboards/')).data });

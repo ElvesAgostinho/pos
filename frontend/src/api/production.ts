@@ -54,7 +54,7 @@ export const productionApi = {
     (await apiClient.get('inventory/items/', { params })).data,
   getUoms: async (): Promise<InvUom[]> => (await apiClient.get('inventory/uoms/')).data,
 
-  getAllergens: async (): Promise<Allergen[]> => (await apiClient.get('production/allergens/')).data,
+  getAllergens: async (): Promise<Allergen[]> => (await apiClient.get('pos/config/allergens/')).data,
 
   getAreas: async (): Promise<ProductionArea[]> => (await apiClient.get('production/areas/')).data,
   createArea: async (p: Partial<ProductionArea>) => (await apiClient.post('production/areas/', p)).data,

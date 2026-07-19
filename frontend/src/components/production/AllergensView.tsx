@@ -19,7 +19,7 @@ export default function AllergensView() {
 
   const { data: allergens = [] } = useQuery({
     queryKey: ['prod', 'allergens'],
-    queryFn: async () => (await apiClient.get('production/allergens/')).data,
+    queryFn: async () => (await apiClient.get('pos/config/allergens/')).data,
   });
   const { data: items = [] } = useQuery({
     queryKey: ['prod', 'items', search],

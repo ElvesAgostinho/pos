@@ -2886,3 +2886,84 @@ class EmailOutbox(models.Model):
 
     def __str__(self):
         return f'[{self.status}] {self.subject} -> {self.to}'
+
+
+# ==========================================================================
+# ALERGÉNIOS E MENSAGENS — DO POS, e só do POS.
+# Estavam alojados no módulo de Produção por acidente de história: quem os usa
+# é a comanda, o KDS e a ficha do artigo — tudo POS. Vivem aqui para o POS não
+# depender de módulo nenhum (é autossuficiente, e é assim que se vende sozinho).
+# ==========================================================================
+
+class Allergen(models.Model):
+    """Catálogo de alergénios (os 14 de declaração obrigatória, mais os da casa)."""
+    code = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=100)
+    icon = models.CharField(max_length=50, blank=True, null=True)
+    # A FOTO é o que a cozinha reconhece de relance — mais depressa do que ler.
+    photo_url = models.CharField(max_length=400, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_allergen'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class ItemPosProfile(models.Model):
+    """A ficha POS do artigo: alergénios e informação que a cozinha precisa de ver.
+
+    Um artigo tem UMA ficha; os alergénios saem daqui para a comanda, para o KDS
+    e para o talão — é o que evita servir amendoim a quem é alérgico.
+    """
+    item = models.OneToOneField('inventory.Item', on_delete=models.CASCADE,
+                                related_name='pos_profile')
+    allergens = models.ManyToManyField(Allergen, blank=True, related_name='items')
+    prep_notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'pos_item_profile'
+
+    def __str__(self):
+        return f'Ficha POS de {self.item}'
+
+
+class KitchenMessage(models.Model):
+    """MENSAGENS PARA A COZINHA — "bem passado", "sem gelo", "sem cebola".
+
+    O empregado escolhe-as na linha da comanda; saem na comanda da cozinha e no
+    KDS. São da casa: cada restaurante tem as suas.
+    """
+    code = models.CharField(max_length=40, unique=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_message = models.BooleanField(default=True)   # aparece como pergunta ao operador
+    is_comment = models.BooleanField(default=True)   # pode ser usada como comentário livre
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_kitchen_message'
+        ordering = ['sort_order', 'code']
+        verbose_name = 'Mensagem para a cozinha'
+        verbose_name_plural = 'Mensagens para a cozinha'
+
+    def __str__(self):
+        return self.name or self.code
+
+
+class KitchenMessageOption(models.Model):
+    """A resposta possível de uma mensagem: o que o operador escolhe e o que sai impresso."""
+    message = models.ForeignKey(KitchenMessage, on_delete=models.CASCADE, related_name='options')
+    code = models.CharField(max_length=40)
+    text = models.CharField(max_length=120)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pos_kitchen_message_option'
+        ordering = ['sort_order', 'code']
+
+    def __str__(self):
+        return f'{self.message.code} · {self.text}'

@@ -8,13 +8,17 @@ Idempotente (só uma vez por ticket).
 from decimal import Decimal
 
 
-def _active_recipe(item):
+def _active_recipe(item):   # noqa: mantido por compatibilidade de chamadas
     # O POS vende-se SOZINHO. Um cliente que só compra o POS não tem o motor de
     # Produção — e, sem ficha técnica, um hambúrguer sai do stock como hambúrguer
     # (revenda), não como pão+carne. O que não pode é a venda rebentar por causa
     # de um módulo que ele não comprou.
+    # O POS é AUTOSSUFICIENTE: sem módulo de fichas técnicas, um hambúrguer sai do
+    # stock como hambúrguer (revenda) — que é exatamente o que o POS vende.
+    return None
+    # (código morto abaixo, mantido para quem ligar um motor de receitas próprio)
     try:
-        from production.models import Recipe
+        from production.models import Recipe   # pragma: no cover
     except Exception:
         return None
     # A ficha técnica em vigor: prioriza a Aprovada, depois a versão mais recente.

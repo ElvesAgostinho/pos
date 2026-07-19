@@ -215,7 +215,8 @@ class PosItemDetailSerializer(serializers.ModelSerializer):
         return o.subfamily.family.group_id if o.subfamily else None
 
     def get_allergen_ids(self, o):
-        prof = getattr(o, 'production_profile', None)
+        # da FICHA POS do artigo — o POS não depende de módulo nenhum
+        prof = getattr(o, 'pos_profile', None)
         return [a.id for a in prof.allergens.all()] if prof else []
 
 
@@ -457,13 +458,11 @@ class PosItemViewSet(viewsets.ModelViewSet):
     def set_allergens(self, request, pk=None):
         """Separador NOTAS/ALERGÉNIOS — a informação crítica que chega à cozinha."""
         item = self.get_object()
-        try:
-            from production.models import ItemProductionProfile
-            prof, _ = ItemProductionProfile.objects.get_or_create(item=item)
-            prof.allergens.set(request.data.get('allergen_ids') or [])
-            return Response({'allergen_ids': [a.id for a in prof.allergens.all()]})
-        except Exception as e:
-            return Response({'detail': f'Módulo de produção indisponível: {e}'}, status=409)
+        # A ficha POS do artigo — do POS, sem depender de módulo nenhum.
+        from pos.models import ItemPosProfile
+        prof, _ = ItemPosProfile.objects.get_or_create(item=item)
+        prof.allergens.set(request.data.get('allergen_ids') or [])
+        return Response({'allergen_ids': [a.id for a in prof.allergens.all()]})
 
 
 class ReportDefinitionSerializer(serializers.ModelSerializer):

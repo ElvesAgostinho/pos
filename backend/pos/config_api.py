@@ -4851,3 +4851,67 @@ class PosBootstrapView(APIView):
                 'guest_type_required': P.bool(8333, True),
             },
         })
+
+
+# ==========================================================================
+# ALERGÉNIOS E MENSAGENS PARA A COZINHA — configurados NO POS
+# ==========================================================================
+class AllergenSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import Allergen as _A
+        model = _A
+        fields = '__all__'
+
+
+class AllergenViewSet(viewsets.ModelViewSet):
+    """Catálogo de alergénios da casa (os 14 obrigatórios vêm no arranque)."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = AllergenSerializer
+
+    def get_queryset(self):
+        from .models import Allergen
+        return Allergen.objects.all()
+
+
+class KitchenMessageOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import KitchenMessageOption as _O
+        model = _O
+        fields = ('id', 'code', 'text', 'sort_order', 'is_active')
+
+
+class KitchenMessageSerializer(serializers.ModelSerializer):
+    options = KitchenMessageOptionSerializer(many=True, required=False)
+
+    class Meta:
+        from .models import KitchenMessage as _M
+        model = _M
+        fields = '__all__'
+
+    def create(self, validated):
+        from .models import KitchenMessageOption
+        opts = validated.pop('options', [])
+        msg = super().create(validated)
+        for o in opts:
+            KitchenMessageOption.objects.create(message=msg, **o)
+        return msg
+
+    def update(self, instance, validated):
+        from .models import KitchenMessageOption
+        opts = validated.pop('options', None)
+        msg = super().update(instance, validated)
+        if opts is not None:
+            msg.options.all().delete()
+            for o in opts:
+                KitchenMessageOption.objects.create(message=msg, **o)
+        return msg
+
+
+class KitchenMessageViewSet(viewsets.ModelViewSet):
+    """As mensagens que o empregado manda para a cozinha ("sem cebola", "bem passado")."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = KitchenMessageSerializer
+
+    def get_queryset(self):
+        from .models import KitchenMessage
+        return KitchenMessage.objects.prefetch_related('options')

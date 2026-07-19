@@ -24,8 +24,8 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
   const save = useMutation({
     mutationFn: () => isNew
-      ? apiClient.post('production/pos-messages/', d)
-      : apiClient.patch(`production/pos-messages/${row.id}/`, d),
+      ? apiClient.post('pos/config/kitchen-messages/', d)
+      : apiClient.patch(`pos/config/kitchen-messages/${row.id}/`, d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['posc'] }); notifyGuide({ title: 'Mensagem gravada', message: 'O POS passa a fazer esta pergunta ao operador, e as respostas saem na comanda.' }); onClose(); },
     onError: notifyError,
   });

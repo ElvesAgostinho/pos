@@ -448,7 +448,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               fields={[]}
               renderEditor={(row, close) => <SubFamilyEditor row={row} families={families} onClose={close} />} />
           ) : section === 'allergens' ? (
-            <SimpleSection title="Alergénio" queryKey="allergens" endpoint="production/allergens/"
+            <SimpleSection title="Alergénio" queryKey="allergens" endpoint="pos/config/allergens/"
               columns={[
                 { key: 'photo_url', label: '', width: '52px',
                   render: (r: any) => r.photo_url
@@ -466,7 +466,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   help: 'A cozinha reconhece o símbolo mais depressa do que lê o texto.' },
               ]} />
           ) : section === 'messages' ? (
-            <SimpleSection title="Mensagem" queryKey="messages" endpoint="production/pos-messages/"
+            <SimpleSection title="Mensagem" queryKey="messages" endpoint="pos/config/kitchen-messages/"
               columns={[
                 { key: 'code', label: 'Código', width: '40%' },
                 { key: 'sort_order', label: 'Ordem', width: '15%' },

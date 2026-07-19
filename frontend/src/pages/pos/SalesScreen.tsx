@@ -130,7 +130,7 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
       // a nota escreve-se livre na mesma (o motor da linha aceita texto).
       let msgs: any[] = [];
       try {
-        const r = await apiClient.get('production/pos-messages/');
+        const r = await apiClient.get('pos/config/kitchen-messages/');
         msgs = ((r.data?.results || r.data || []) as any[]).filter((m) => m.is_active !== false);
       } catch { /* módulo ausente: segue com texto livre */ }
       const lista = msgs.map((m, i) => `${i + 1}. ${m.name}`).join('\n');

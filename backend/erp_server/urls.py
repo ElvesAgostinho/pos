@@ -31,8 +31,7 @@ if 'esm' in settings.INSTALLED_APPS:
     urlpatterns.append(path('api/esm/', include('esm.urls')))
 if 'inventory' in settings.INSTALLED_APPS:
     urlpatterns.append(path('api/inventory/', include('inventory.urls')))
-if 'production' in settings.INSTALLED_APPS:
-    urlpatterns.append(path('api/production/', include('production.urls')))
+# (Produção/Restauração eliminado — o POS é autossuficiente e tem o que precisa.)
 if 'procurement' in settings.INSTALLED_APPS:
     urlpatterns.append(path('api/procurement/', include('procurement.urls')))
 if 'pos' in settings.INSTALLED_APPS:
@@ -47,8 +46,7 @@ if 'eae' in settings.INSTALLED_APPS:
     urlpatterns.append(path("api/eae/", include("eae.urls")))
 if 'workforce' in settings.INSTALLED_APPS:
     urlpatterns.append(path("api/workforce/", include("workforce.urls")))
-if 'pms' in settings.INSTALLED_APPS:
-    urlpatterns.append(path("api/pms/", include("pms.urls")))
+# (PMS eliminado — o POS é autossuficiente.)
 if 'finance' in settings.INSTALLED_APPS:
     urlpatterns.append(path("api/finance/", include("finance.urls")))
 if 'commercial' in settings.INSTALLED_APPS:

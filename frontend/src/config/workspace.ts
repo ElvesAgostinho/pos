@@ -18,44 +18,6 @@ const wp = (c1: string, c2: string) =>
 
 export const WORKSPACES: Workspace[] = [
   {
-    key: 'pms', name: 'PMS',
-    color: '#1e3f66', colorDark: '#122942', accent: '#3f7fc0', glow: '#5fa8e6',
-    wallpaper: wp('#22496f', '#0d1f34'),
-    licenseModule: 'pms',
-    icons: [
-      { label: 'Reservas', icon: 'reservations', screen: 'pms_reservations', quick: true },
-      { label: 'Mapa de Quartos', icon: 'bed', screen: 'pms_rooms', quick: true },
-      { label: 'Check-In / Out', icon: 'key', screen: 'pms_checkin', quick: true },
-      { label: 'Hóspedes', icon: 'people', screen: 'pms_guests', quick: true },
-      { label: 'Housekeeping', icon: 'broom', screen: 'pms_housekeeping', quick: true },
-      { label: 'Ocupação', icon: 'chart', screen: 'pms_dashboard', quick: true },
-      { label: 'Quartos', icon: 'rooms', screen: 'pms_rooms' },
-      { label: 'Auditoria Nocturna', icon: 'moon', screen: 'pms_nightaudit' },
-      { label: 'Folios / Conta', icon: 'receipt', screen: 'pms_ledger' },
-      { label: 'Tarifas', icon: 'money', screen: 'pms_rates' },
-      { label: 'Booking Engine', icon: 'globe', screen: 'int_booking', quick: true },
-      { label: 'Relatórios', icon: 'report', screen: 'rep_hotel' },
-      { label: 'Documentos', icon: 'folder', screen: 'doc_center' },
-      { label: 'Configuração', icon: 'gear', screen: 'hmc_dashboard' },
-    ],
-  },
-  {
-    key: 'restauracao', name: 'Restauração',
-    color: '#a5551a', colorDark: '#5d3010', accent: '#dd8a2e', glow: '#f2a94e',
-    wallpaper: wp('#a05518', '#33200e'),
-    licenseModule: 'hospitality',
-    icons: [
-      { label: 'Cozinha (KDS)', icon: 'kitchen', screen: 'hoc_kds', quick: true },
-      { label: 'Bar', icon: 'cocktail', screen: 'hoc_bar_display', quick: true },
-      { label: 'Menus / Cartas', icon: 'book', screen: 'hoc_menus', quick: true },
-      { label: 'Stock', icon: 'box', screen: 'wh_stock', quick: true },
-      { label: 'Room Service', icon: 'bell', screen: 'hoc_roomservice' },
-      { label: 'Receitas', icon: 'note', screen: 'hoc_recipes' },
-      { label: 'Dashboard F&B', icon: 'chart', screen: 'hoc_dashboard' },
-      { label: 'Relatórios', icon: 'report', screen: 'rep_fnb' },
-    ],
-  },
-  {
     key: 'pos', name: 'POS',
     color: '#1f7a34', colorDark: '#0f4a1f', accent: '#3fb058', glow: '#6ee08a',
     wallpaper: wp('#1f7a34', '#0a2a14'),
@@ -79,10 +41,8 @@ export const workspaceByKey = (k: string) => WORKSPACES.find((w) => w.key === k)
  * os dos OUTROS módulos ficam ocultos, como se não existissem.
  */
 export const CENTER_MODULES: Record<string, string[]> = {
-  // PMS (hotelaria)
-  pms: ['pms'], hotel: ['pms'],
-  // Restauração (F&B)
-  hospitality: ['restauracao'], srm: ['restauracao'], procurement: ['restauracao'], warehouse: ['restauracao'],
+  // O POS é autossuficiente — não há módulos de PMS nem de Restauração.
+  srm: ['pos'], procurement: ['pos'], warehouse: ['pos'],
   // POS (venda)
   posfront: ['pos'],
   // Partilhados entre Restauração e POS
