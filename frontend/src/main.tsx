@@ -114,6 +114,10 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/backoffice/*" element={<RequireLicense><RequireAuth><App /></RequireAuth></RequireLicense>} />
 
             {/* Frontoffice Launcher (Nível 3) */}
+            {/* /pos é a porta do terminal: quem já tem sessão de operador entra
+                direto; quem não tem, faz login. É este o link dos atalhos. */}
+            <Route path="/pos" element={
+              <Navigate to={localStorage.getItem('pos_operator_token') ? '/pos/terminal' : '/pos/login'} replace />} />
             <Route path="/pos/login" element={<RequireLicense><PosLoginModern /></RequireLicense>} />
             {/* ErrorBoundary: um botão que rebente mostra O ERRO — nunca página em branco */}
             <Route path="/pos/terminal" element={<RequireLicense><RequirePosOperator><ErrorBoundary viewKey="pos-terminal"><PosStation /></ErrorBoundary></RequirePosOperator></RequireLicense>} />
