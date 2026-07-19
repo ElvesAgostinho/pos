@@ -147,20 +147,63 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
    * Enquanto não se confirma, não entrou dinheiro nenhum no servidor: pode-se corrigir
    * à vontade, que é como se conta dinheiro à frente do cliente.
    */
+  /**
+   * DIVISÃO AUTOMÁTICA entre os meios escolhidos.
+   *
+   * Há duas maneiras de repartir, e o terminal tem de aceitar as duas:
+   *
+   *   SEM ESCREVER VALOR — toca-se nos meios e a conta divide-se sozinha por eles.
+   *     Um meio: leva tudo. Dois: metade cada. Três: um terço cada. É o caso do
+   *     cliente que tem metade em dinheiro e metade para transferir e não sabe de
+   *     cabeça quanto é metade.
+   *
+   *   ESCREVENDO O VALOR — o meio leva exatamente o que se escreveu e fica FIXO. O que
+   *     sobra reparte-se pelos outros. É o caso do "tenho 5000 em dinheiro, o resto no
+   *     cartão".
+   *
+   * Antes, o primeiro meio tocado levava o TOTAL e não sobrava nada: tocar num segundo
+   * meio não fazia rigorosamente nada. Pagar metade e metade era impossível.
+   */
   const repartir = (m: any) => {
     const chave = m.payment_method;
+    const escrito = Number(String(valor).replace(',', '.'));
     setParcelas((p) => {
-      const novo = { ...p };
-      // tocar num meio que já tem valor LIMPA-O — é como se apaga um engano
-      if (!valor && novo[chave] != null) { delete novo[chave]; return novo; }
-      const escrito = Number(String(valor).replace(',', '.'));
-      const restante = Number((total - somaExcluindo(p, chave)).toFixed(2));
-      const v = valor && escrito > 0 ? escrito : restante;
-      if (v <= 0) return novo;
-      novo[chave] = { amount: v, nome: m.payment_method_name, metodo: m };
-      return novo;
+      const novo: Record<number, any> = { ...p };
+      // tocar num meio que já lá está TIRA-O (e o valor dele volta para os outros)
+      if (!valor && novo[chave] != null) delete novo[chave];
+      else {
+        novo[chave] = {
+          ...(novo[chave] || {}),
+          nome: m.payment_method_name, metodo: m,
+          amount: valor && escrito > 0 ? escrito : 0,
+          // FIXO = o empregado escreveu o valor. Os outros ajustam-se à volta dele.
+          fixa: !!(valor && escrito > 0),
+        };
+      }
+      return redistribuir(novo);
     });
     setValor('');
+  };
+
+  /**
+   * Reparte o que falta pelos meios que NÃO têm valor escrito. O último leva os cêntimos
+   * da divisão, para a soma bater sempre certo com o total — um cêntimo a menos deixa a
+   * conta por fechar e ninguém percebe porquê.
+   */
+  const redistribuir = (p: Record<number, any>) => {
+    const chaves = Object.keys(p).map(Number);
+    const fixos = chaves.filter((k) => p[k].fixa);
+    const autos = chaves.filter((k) => !p[k].fixa);
+    const somaFixos = fixos.reduce((s, k) => s + Number(p[k].amount || 0), 0);
+    let resto = Number((total - jaPago - somaFixos).toFixed(2));
+    if (resto < 0) resto = 0;
+    if (!autos.length) return p;
+    const fatia = Math.floor((resto / autos.length) * 100) / 100;
+    autos.forEach((k, i) => {
+      p[k] = { ...p[k], amount: i === autos.length - 1
+        ? Number((resto - fatia * (autos.length - 1)).toFixed(2)) : fatia };
+    });
+    return p;
   };
 
   /**

@@ -130,13 +130,16 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true,
                 }))} />
           )}
           {aba === 'QUARTO' && (
-            <Tabela cols={['Quarto', 'Conta', 'Hóspede', 'Check-Out', 'Saldo']}
+            <Tabela cols={['Quarto', 'Conta', 'Hóspede', 'Check-Out', 'Package', 'Saldo']}
               vazio={quartos.isLoading ? 'A ler os check-ins…'
                 : 'Sem hóspedes em casa (ou sem hotel ligado a este terminal).'}
               linhas={filtrar(quartos.data || [], ['guest', 'room'])
                 .map((g: any, i: number) => ({
                   chave: g.id ?? i,
-                  cels: [g.room || '—', g.folio ?? '—', g.guest, g.checkout || '—', g.balance ?? '0.00'],
+                  // "Package" é o REGIME da reserva (MP, PC, tudo incluído). Vem da tarifa
+                  // do tipo de quarto, no PMS — não se inventa aqui.
+                  cels: [g.room || '—', g.folio ?? '—', g.guest, g.checkout || '—',
+                    g.board || '—', g.balance ?? '0.00'],
                   escolher: () => onPick({
                     customer_name: g.guest, room: g.room,
                     company_name: g.room ? `Quarto ${g.room}` : undefined,

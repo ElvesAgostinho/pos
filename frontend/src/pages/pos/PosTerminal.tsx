@@ -9,6 +9,9 @@ import SalesScreen, { type TopoApi } from './SalesScreen';
 import PayPanel from './PayPanel';
 import MoveLines from './MoveLines';
 import DocsPanel from './DocsPanel';
+import ClientPicker from './ClientPicker';
+// O painel antigo continua a servir o MAPA DE REFEIÇÕES (outra coisa: quem tem refeição
+// incluída hoje). Só a "Info. Hóspede" mudou para o seletor das três abas.
 import GuestsPanel from './GuestsPanel';
 import EntitySearchPos from './EntitySearchPos';
 import PinChange from './PinChange';
@@ -590,7 +593,14 @@ export default function PosTerminal() {
               onClose={() => { setJanela(''); setContaAtual(null); inval(); }} />
           )}
           {janela === 'DOCS' && <DocsPanel onClose={() => setJanela('')} />}
-          {janela === 'GUESTS' && <GuestsPanel aba="GUESTS" onClose={() => setJanela('')} />}
+          {/* INFO. HÓSPEDE — o MESMO seletor que abre sozinho no balcão (Entidade ·
+              Quarto · Eventos), aberto na aba do Quarto. Havia aqui um painel diferente
+              a mostrar a mesma informação: duas listas de hóspedes, com colunas
+              diferentes, e o empregado a aprender as duas. */}
+          {janela === 'GUESTS' && (
+            <ClientPicker titulo="Info. Hóspede" abaInicial="QUARTO" podeSaltar={false}
+              onPick={() => setJanela('')} onClose={() => setJanela('')} />
+          )}
           {janela === 'MEALS' && <GuestsPanel aba="MEALS" onClose={() => setJanela('')} />}
           {janela === 'CC' && <EntitySearchPos onClose={() => setJanela('')} />}
           {janela === 'RESERVAS' && setor && (
