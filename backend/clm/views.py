@@ -126,16 +126,28 @@ class LicenseViewSet(viewsets.ModelViewSet):
         # (geradas em CLM › AGT), seguem no MESMO canal autenticado — o cliente
         # ativa e as faturas saem logo com o nº de certificação, sem instalador
         # a copiar ficheiros à mão. É tudo do FORNECEDOR: o cliente só recebe.
-        if getattr(lic, 'agt_certificate_number', None) and getattr(lic, 'agt_private_key', None):
+        # HERANÇA: se a licença mais recente ainda não tiver as credenciais/ligação
+        # (ex.: renovação emitida depois de configurar a AGT), valem as da licença
+        # anterior DO MESMO CLIENTE — renovar nunca pode desligar a fatura eletrónica.
+        lic_cert = lic
+        if not (lic_cert.agt_certificate_number and lic_cert.agt_private_key):
+            lic_cert = (License.objects.filter(client=lic.client,
+                                               agt_certificate_number__isnull=False)
+                        .exclude(agt_private_key__isnull=True).exclude(agt_private_key='')
+                        .order_by('-created_at').first()) or lic
+        if lic_cert.agt_certificate_number and lic_cert.agt_private_key:
             resp['agt'] = {
-                'certificate_number': lic.agt_certificate_number,
-                'private_key': lic.agt_private_key,
-                'public_key': lic.agt_public_key,
+                'certificate_number': lic_cert.agt_certificate_number,
+                'private_key': lic_cert.agt_private_key,
+                'public_key': lic_cert.agt_public_key,
             }
         # A LIGAÇÃO AGT (fatura eletrónica): endpoints + credenciais do contribuinte,
         # configurados NO PCC e entregues pelo mesmo canal — o cliente não escreve URLs.
-        if getattr(lic, 'agt_connection', None):
-            resp.setdefault('agt', {})['connection'] = lic.agt_connection
+        lic_con = lic if lic.agt_connection else (
+            License.objects.filter(client=lic.client)
+            .exclude(agt_connection={}).order_by('-created_at').first())
+        if lic_con and lic_con.agt_connection:
+            resp.setdefault('agt', {})['connection'] = lic_con.agt_connection
         return Response(resp)
 
 class InstallationViewSet(viewsets.ModelViewSet):

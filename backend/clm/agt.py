@@ -91,16 +91,38 @@ class AgtConnectionView(APIView):
                                     client_id, client_secret, environment}
     É o fornecedor que preenche isto quando a AGT emitir as credenciais do
     contribuinte; segue para o cliente na sincronização seguinte.
+
+    GET ?license_id= — o que está guardado (o secret nunca volta em claro).
     """
     permission_classes = [IsAuthenticated]
+
+    CAMPOS = ('url_auth', 'url_submit', 'url_query', 'url_cancel', 'url_download',
+              'url_saft', 'url_health', 'client_id', 'client_secret', 'environment')
+
+    def get(self, request):
+        lic = License.objects.filter(id=request.query_params.get('license_id')).first()
+        if not lic:
+            return Response({'detail': 'Licença não encontrada.'}, status=404)
+        con = dict(lic.agt_connection or {})
+        tem_secret = bool(con.pop('client_secret', None))
+        return Response({
+            'license': lic.license_number,
+            'connection': con,
+            'has_secret': tem_secret,
+            'configured': bool(con or tem_secret),
+            'certificate_number': lic.agt_certificate_number,
+            'has_keys': bool(lic.agt_private_key),
+        })
 
     def post(self, request):
         lic = License.objects.filter(id=request.data.get('license_id')).first()
         if not lic:
             return Response({'detail': 'Licença não encontrada.'}, status=404)
-        campos = ('url_auth', 'url_submit', 'url_query', 'url_cancel', 'url_download',
-                  'url_saft', 'url_health', 'client_id', 'client_secret', 'environment')
-        lic.agt_connection = {k: request.data.get(k) for k in campos if request.data.get(k)}
+        novo = {k: request.data.get(k) for k in self.CAMPOS if request.data.get(k)}
+        # editar sem redigitar o secret: campo vazio mantém o que já está guardado
+        if 'client_secret' not in novo and (lic.agt_connection or {}).get('client_secret'):
+            novo['client_secret'] = lic.agt_connection['client_secret']
+        lic.agt_connection = novo
         lic.save(update_fields=['agt_connection'])
         return Response({'detail': 'Ligação AGT guardada — o cliente recebe-a na próxima sincronização.',
                          'connection': {k: ('•••' if k == 'client_secret' else v)
