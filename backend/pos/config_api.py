@@ -4247,9 +4247,14 @@ class PosDocDetailView(APIView):
             if not motivo:
                 return Response({'detail': 'Indique o motivo da anulação.'}, status=400)
             try:
+                # `create_credit_note` recebe o ID do documento, não o objeto. Passar o
+                # objeto rebentava com "Field 'id' expected a number but got
+                # <FiscalDocument: FR A/89>" — e anular pela aba Documentos ficava
+                # impossível, que é justamente o caminho normal para corrigir uma venda.
                 nc = fs.create_credit_note(
-                    d, reason=motivo,
-                    user=(request.user.username if request.user.is_authenticated else None))
+                    d.id, reason=motivo,
+                    user=(request.user.username if request.user.is_authenticated else None),
+                    ip=request.META.get('REMOTE_ADDR'))
             except Exception as e:
                 return Response({'detail': str(e)}, status=400)
             return Response({'detail': f'Nota de crédito {nc.invoice_no} emitida.',

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { IcoLupa, IcoMaiusculas, IcoTeclado, IcoVisto } from './Icons';
+import { useArrastar } from './useArrastar';
 
 /**
  * PESQUISA COM TECLADO TÁTIL — o teclado abre-se quando é preciso, não antes.
@@ -34,6 +35,7 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
   onOk: () => void;
 }) {
   const [aberto, setAberto] = useState(false);
+  const { ref, pegar, pos } = useArrastar();
   const [maiusc, setMaiusc] = useState(false);
   const LINHAS = (() => {
     try {
@@ -64,7 +66,21 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
       </div>
 
       {aberto && (
-        <div className="space-y-1 mt-2">
+        <div ref={ref} className="space-y-1 mt-2 relative"
+          style={pos ? { position: 'fixed' as const, left: pos.x, top: pos.y, zIndex: 90,
+            background: '#1f1f1f', padding: 8, border: '3px solid #000' } : undefined}>
+          {/* PEGA — o teclado move-se: fixo, tapava o campo que se esta a preencher. */}
+        <div onMouseDown={pegar} onTouchStart={pegar}
+          className="h-[34px] flex items-center px-3 gap-1 bg-[#3a3a3a] border-b-2 border-black
+            cursor-grab active:cursor-grabbing select-none">
+          <span className="w-[42px] flex flex-col gap-[3px] opacity-50">
+            <span className="h-[2px] bg-white rounded" />
+            <span className="h-[2px] bg-white rounded" />
+            <span className="h-[2px] bg-white rounded" />
+          </span>
+          <span className="flex-1 text-center text-white/70 text-[13px]">arraste para mover</span>
+        </div>
+
           {LINHAS.map((linha, i) => (
             <div key={i} className="flex gap-1">
               {linha.map((t) => (

@@ -4,6 +4,7 @@ Fiscal issuance service — Validation Engine + Document Engine + Signature + QR
 Fluxo de emissão (imutável, atómico):
   validar -> numerar sequencialmente -> encadear hash -> assinar -> QR -> menção -> gravar
 """
+import threading
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date, datetime
 
@@ -12,6 +13,32 @@ from django.utils import timezone
 
 from .models import (FiscalConfig, FiscalSeries, FiscalDocument, FiscalDocumentLine,
                      FiscalAuditLog)
+
+# ── UMA EMISSÃO DE CADA VEZ ──────────────────────────────────────────────────
+# A numeração é SEQUENCIAL e o hash de cada documento encadeia no anterior: dois
+# documentos emitidos ao mesmo tempo disputam o mesmo número e podem partir a cadeia —
+# e uma cadeia partida é o que a AGT olha primeiro numa inspeção.
+#
+# O `select_for_update` já serializa isto no PostgreSQL. No SQLite não: ele não tranca
+# linhas, tranca o ficheiro inteiro, e a transação que começa a LER e depois quer
+# ESCREVER não consegue subir a tranca se outra estiver a ler — devolve na hora
+# "database is locked", e o empregado leva com isso a meio de uma venda. Foi o que
+# aconteceu: dez consultas ao mesmo tempo, nove falhadas.
+#
+# Este cadeado põe as emissões em fila dentro do processo. Não substitui o
+# `select_for_update` (que continua a valer entre processos, em produção): junta-se a ele.
+_EMISSAO = threading.RLock()
+
+
+def serializado(fn):
+    """Põe as emissões em fila: uma de cada vez, sempre."""
+    from functools import wraps
+
+    @wraps(fn)
+    def _dentro(*a, **kw):
+        with _EMISSAO:
+            return fn(*a, **kw)
+    return _dentro
 from . import signing
 
 TWO = Decimal('0.01')
@@ -113,6 +140,7 @@ def _compute_totals(lines, tax_inclusive=True):
     return _q(net), _q(tax), _q(gross), prepared
 
 
+@serializado
 @transaction.atomic
 def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=None,
                    doc_date=None, reference_doc=None, user=None, ip=None,
@@ -210,6 +238,7 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
     return doc
 
 
+@serializado
 @transaction.atomic
 def void_document(doc_id, reason='', user=None, ip=None):
     """Anula (estado A) — não apaga nem edita; mantém assinatura e encadeamento."""
@@ -223,6 +252,7 @@ def void_document(doc_id, reason='', user=None, ip=None):
     return doc
 
 
+@serializado
 @transaction.atomic
 def create_credit_note(original_doc_id, reason='', user=None, ip=None):
     """

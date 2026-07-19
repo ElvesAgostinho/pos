@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useArrastar } from '../pages/pos/useArrastar';
 
 /**
  * OS DIÁLOGOS DO SISTEMA — em vez dos do Windows.
@@ -89,6 +90,7 @@ const CINZA = 'bg-gradient-to-b from-[#4a4a4a] to-[#242424]';
  * pedidos ficam em fila à espera, em vez de se perderem.
  */
 export default function DialogoHost() {
+  const { ref, pegar, pos } = useArrastar();
   const [atual, setAtual] = useState<Pedido | null>(null);
   const [pendentes, setPendentes] = useState<Pedido[]>([]);
   const [texto, setTexto] = useState('');
@@ -148,10 +150,24 @@ export default function DialogoHost() {
   return (
     <div className="fixed inset-0 z-[9000] bg-black/65 flex items-center justify-center p-4"
       onClick={() => fechar(atual.tipo === 'CONFIRMAR' ? false : null)}>
-      <div className={`w-[${atual.tipo === 'PEDIR' ? 860 : 620}px] max-w-[95vw] bg-[#2b2b2b]
-        border-2 border-black shadow-2xl`}
-        style={{ width: atual.tipo === 'PEDIR' ? 860 : 620 }}
+      <div ref={ref} className="max-w-[95vw] bg-[#2b2b2b] border-2 border-black shadow-2xl"
+        style={{
+          width: atual.tipo === 'PEDIR' ? 860 : 620,
+          ...(pos ? { position: 'fixed' as const, left: pos.x, top: pos.y, margin: 0 } : {}),
+        }}
         onClick={(e) => e.stopPropagation()}>
+        {/* PEGA — o teclado move-se: fixo, tapava o campo que se esta a preencher. */}
+        <div onMouseDown={pegar} onTouchStart={pegar}
+          className="h-[34px] flex items-center px-3 gap-1 bg-[#3a3a3a] border-b-2 border-black
+            cursor-grab active:cursor-grabbing select-none">
+          <span className="w-[42px] flex flex-col gap-[3px] opacity-50">
+            <span className="h-[2px] bg-white rounded" />
+            <span className="h-[2px] bg-white rounded" />
+            <span className="h-[2px] bg-white rounded" />
+          </span>
+          <span className="flex-1 text-center text-white/70 text-[13px]">arraste para mover</span>
+        </div>
+
 
         <div className={`h-[62px] flex items-center justify-center border-b-2 border-black
           ${perigo ? 'bg-gradient-to-b from-[#d42a24] to-[#8a0f0b]'

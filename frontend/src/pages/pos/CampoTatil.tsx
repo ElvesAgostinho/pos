@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import { IcoVisto, IcoCruz, IcoMaiusculas } from './Icons';
+import { useArrastar } from './useArrastar';
 
 /**
  * OS CAMPOS DO TERMINAL — tocar num campo abre o teclado certo.
@@ -34,6 +35,7 @@ const LETRAS = [
 
 /** Envolve um formulário para que os seus campos tenham teclado. */
 export function ComTeclado({ children }: { children: any }) {
+  const { ref, pegar, pos } = useArrastar();
   const [foco, setFoco] = useState<Foco | null>(null);
   const [texto, setTexto] = useState('');
   const [maiusc, setMaiusc] = useState(false);
@@ -55,8 +57,21 @@ export function ComTeclado({ children }: { children: any }) {
       {foco && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40"
           onClick={fechar}>
-          <div className="bg-[#1f1f1f] border-[3px] border-black shadow-2xl p-2"
+          <div ref={ref} className="bg-[#1f1f1f] border-[3px] border-black shadow-2xl"
+            style={pos ? { position: 'fixed' as const, left: pos.x, top: pos.y, margin: 0 } : undefined}
             onClick={(e) => e.stopPropagation()}>
+        {/* PEGA — o teclado move-se: fixo, tapava o campo que se esta a preencher. */}
+        <div onMouseDown={pegar} onTouchStart={pegar}
+          className="h-[34px] flex items-center px-3 gap-1 bg-[#3a3a3a] border-b-2 border-black
+            cursor-grab active:cursor-grabbing select-none">
+          <span className="w-[42px] flex flex-col gap-[3px] opacity-50">
+            <span className="h-[2px] bg-white rounded" />
+            <span className="h-[2px] bg-white rounded" />
+            <span className="h-[2px] bg-white rounded" />
+          </span>
+          <span className="flex-1 text-center text-white/70 text-[13px]">arraste para mover</span>
+        </div>
+          <div className="p-2">
             <div className="text-center text-white/70 text-[15px] pb-2">{foco.titulo}</div>
             <div className="min-h-[58px] bg-[#8a8a8a]/60 border-2 border-black text-white
               text-[20px] px-4 py-3 mb-2 break-words min-w-[320px]">
@@ -113,6 +128,7 @@ export function ComTeclado({ children }: { children: any }) {
                 className={`h-[62px] rounded-[3px] flex items-center justify-center text-[#e02020] ${RELEVO} ${CINZA}`}>
                 <IcoCruz size={30} />
               </button>
+            </div>
             </div>
           </div>
         </div>

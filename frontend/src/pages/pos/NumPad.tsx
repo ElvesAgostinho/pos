@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { IcoVisto, IcoCruz } from './Icons';
+import { useArrastar } from './useArrastar';
 
 /**
  * TECLADO NUMÉRICO — quantidade, preço, percentagem.
@@ -19,6 +20,7 @@ export default function NumPad({ titulo, subtitulo = 'Editar quantidade', inicia
   onClose: () => void;
 }) {
   const [v, setV] = useState(inicial);
+  const { ref, pegar, pos } = useArrastar();
 
   const tecla = (t: string) => {
     if (t === 'C') return setV('');
@@ -28,8 +30,21 @@ export default function NumPad({ titulo, subtitulo = 'Editar quantidade', inicia
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="w-[520px] bg-[#1f1f1f] border-2 border-black shadow-2xl"
+      <div ref={ref} className="w-[520px] max-w-[95vw] bg-[#1f1f1f] border-2 border-black shadow-2xl"
+        style={pos ? { position: 'fixed' as const, left: pos.x, top: pos.y, margin: 0 } : undefined}
         onClick={(e) => e.stopPropagation()}>
+        {/* PEGA — o teclado move-se: fixo, tapava o campo que se esta a preencher. */}
+        <div onMouseDown={pegar} onTouchStart={pegar}
+          className="h-[34px] flex items-center px-3 gap-1 bg-[#3a3a3a] border-b-2 border-black
+            cursor-grab active:cursor-grabbing select-none">
+          <span className="w-[42px] flex flex-col gap-[3px] opacity-50">
+            <span className="h-[2px] bg-white rounded" />
+            <span className="h-[2px] bg-white rounded" />
+            <span className="h-[2px] bg-white rounded" />
+          </span>
+          <span className="flex-1 text-center text-white/70 text-[13px]">arraste para mover</span>
+        </div>
+
         <div className="h-[58px] bg-[#3a3a3a] flex items-center justify-center border-b border-black">
           <span className="text-white text-[22px] font-bold">{titulo}</span>
         </div>

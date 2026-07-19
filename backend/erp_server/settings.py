@@ -185,6 +185,23 @@ else:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
+            # "DATABASE IS LOCKED" — o SQLite deixa UM escritor de cada vez. No POS há
+            # sempre dois ao mesmo tempo: o terminal a lançar um artigo e o mapa a
+            # refrescar, o KDS a marcar pratos, a consulta a assinar o documento e a pôr
+            # o talão na fila de impressão. Sem espera, o segundo desiste de imediato e
+            # o empregado leva com "database is locked" no meio de uma venda.
+            #
+            # timeout: em vez de desistir, ESPERA 20s pela vez dele.
+            # WAL (ver connection_created abaixo): leitores e escritor deixam de se
+            # bloquear — quem lê o mapa não trava quem está a cobrar.
+            #
+            # transaction_mode=IMMEDIATE: a transação pede a tranca de ESCRITA logo ao
+            # começar. Por omissão o SQLite começa a ler e só depois tenta subir a
+            # tranca — e uma tranca que já não pode subir falha NA HORA, sem esperar,
+            # por muito timeout que se ponha. Era isto: dez consultas ao mesmo tempo,
+            # nove com "database is locked". A pedir a tranca à cabeça, a segunda espera
+            # pela primeira em vez de desistir.
+            "OPTIONS": {"timeout": 20, "transaction_mode": "IMMEDIATE"},
         }
     }
 
