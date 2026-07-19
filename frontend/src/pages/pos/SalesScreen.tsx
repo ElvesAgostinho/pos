@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { comPerguntas } from '../posPrompt';
-import EntityPicker from './EntityPicker';
+import EntitySearchPos from './EntitySearchPos';
 import PayPanel from './PayPanel';
 import SubcontaBar from './SubcontaBar';
 import ArticleSearch from './ArticleSearch';
@@ -752,9 +752,9 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       )}
 
       {escolherEntidade && (
-        <EntityPicker
+        <EntitySearchPos
           onPick={(e) => { setEntidade(e); setEscolherEntidade(false); }}
-          onCancel={() => setEscolherEntidade(false)} />
+          onClose={() => setEscolherEntidade(false)} />
       )}
 
       {pagar && conta && (

@@ -10,7 +10,7 @@ import PayPanel from './PayPanel';
 import MoveLines from './MoveLines';
 import DocsPanel from './DocsPanel';
 import GuestsPanel from './GuestsPanel';
-import AccountsPanel from './AccountsPanel';
+import EntitySearchPos from './EntitySearchPos';
 import PinChange from './PinChange';
 import TicketPreview from './TicketPreview';
 import DayClose from './DayClose';
@@ -570,7 +570,7 @@ export default function PosTerminal() {
           {janela === 'DOCS' && <DocsPanel onClose={() => setJanela('')} />}
           {janela === 'GUESTS' && <GuestsPanel aba="GUESTS" onClose={() => setJanela('')} />}
           {janela === 'MEALS' && <GuestsPanel aba="MEALS" onClose={() => setJanela('')} />}
-          {janela === 'CC' && <AccountsPanel onClose={() => setJanela('')} />}
+          {janela === 'CC' && <EntitySearchPos onClose={() => setJanela('')} />}
           {janela === 'RESERVAS' && setor && (
             <ReservationsPanel setor={setor}
               onOpenTicket={(id) => { setTicket(id); setEtapa('SALES'); }}

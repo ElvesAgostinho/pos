@@ -30,14 +30,23 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitid
   onConfirm: (pax: number, tipo: string) => void;
   onCancel: () => void;
 }) {
-  const [valor, setValor] = useState('');
+  // O VISOR MOSTRAVA "1" MAS VALIA ZERO: o campo estava vazio e o "1" era só um
+  // texto de recheio. O botão de abrir ficava apagado e, para o empregado, o ecrã
+  // mentia — dizia uma pessoa e recusava-se a abrir a mesa.
+  // Agora o 1 é MESMO um: a mesa abre sem tocar em nada, que é o caso mais comum.
+  const [valor, setValor] = useState('1');
+  // Enquanto ninguém tocou no teclado, o primeiro algarismo SUBSTITUI o 1 (não fica
+  // "12" quando se quer 2). Depois disso escreve-se normalmente.
+  const [virgem, setVirgem] = useState(true);
   const [tipo, setTipo] = useState('PASSANTE');
   const pax = Number(valor || 0);
 
   const tecla = (t: string) => {
-    if (t === 'C') return setValor('');
-    if (t === '⌫') return setValor(valor.slice(0, -1));
-    setValor((valor + t).slice(0, 3));
+    if (t === 'C') { setVirgem(false); return setValor(''); }
+    if (t === '⌫') { setVirgem(false); return setValor(valor.slice(0, -1)); }
+    if (t === '.') return;                       // pessoas não têm decimais
+    setValor(((virgem ? '' : valor) + t).slice(0, 3));
+    setVirgem(false);
   };
 
   return (
@@ -61,7 +70,7 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitid
           <span className="w-[92px] flex items-center px-3 text-white text-[16px] font-bold">Valor</span>
           <div className="flex-1 bg-[#8a8a8a] border-2 border-black text-white text-[24px] font-bold
             px-4 flex items-center">
-            {valor || '1'}
+            {valor || <span className="text-black/30">0</span>}
           </div>
           <button onClick={() => setValor('')} title="Limpar"
             className="w-[58px] flex items-center justify-center text-white rounded-[3px] border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] bg-gradient-to-b from-[#4a4a4a] to-[#242424]">

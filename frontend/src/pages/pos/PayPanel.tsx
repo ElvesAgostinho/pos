@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
 import { comPerguntas } from '../posPrompt';
-import EntityPicker from './EntityPicker';
+import EntitySearchPos from './EntitySearchPos';
 import ClientPicker from './ClientPicker';
 import CustomerIdForm from './CustomerIdForm';
 import NotesDialog from './NotesDialog';
@@ -412,8 +412,8 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
       )}
 
       {escolherEntidade && (
-        <EntityPicker onPick={(e) => { setEntidade(e); setEscolherEntidade(false); }}
-          onCancel={() => setEscolherEntidade(false)} />
+        <EntitySearchPos onPick={(e) => { setEntidade(e); setEscolherEntidade(false); }}
+          onClose={() => setEscolherEntidade(false)} />
       )}
 
       {/* 1º ícone — a ficha do cliente (procurar no ficheiro ou registar de novo) */}

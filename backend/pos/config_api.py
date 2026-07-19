@@ -3490,7 +3490,12 @@ class EntityViewSet(viewsets.ModelViewSet):
         for campo in ('code', 'tax_id', 'id_number'):
             if p.get(campo):
                 qs = qs.filter(**{campo + '__icontains': p[campo]})
-        for campo in ('last_name', 'name', 'other_names', 'address', 'nationality', 'country'):
+        # CIDADE, E-MAIL e TELEFONE faltavam aqui: o ecrã deixava escrevê-los e o
+        # servidor devolvia o ficheiro inteiro na mesma. Um filtro que não filtra é pior
+        # do que não ter filtro — quem procura por cidade fica a olhar para todos os
+        # clientes convencido de que estão todos naquela cidade.
+        for campo in ('last_name', 'name', 'other_names', 'address', 'nationality', 'country',
+                      'city', 'email', 'phone', 'postal_code'):
             if p.get(campo):
                 qs = qs.filter(**{campo + '__icontains': p[campo]})
         if p.get('contact'):

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
-import EntityPicker from './EntityPicker';
+import EntitySearchPos from './EntitySearchPos';
 import { aviso } from '../../ui/dialogo';
 import { IcoCruz, IcoVisto } from './Icons';
 
@@ -109,9 +109,9 @@ export default function CustomerForm({ conta, onSaved, onClose }: {
       </div>
 
       {escolherEntidade && (
-        <EntityPicker
+        <EntitySearchPos
           onPick={(e) => gravar({ customer_name: e.name, customer_tax_id: e.tax_id, customer_id: e.id })}
-          onCancel={() => setEscolherEntidade(false)} />
+          onClose={() => setEscolherEntidade(false)} />
       )}
     </Window>
   );
