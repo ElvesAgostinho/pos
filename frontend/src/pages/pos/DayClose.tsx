@@ -77,7 +77,7 @@ export default function DayClose({ onClosed, onClose }: {
         </div>
 
         {/* as contas que TRAVAM o fecho — resolvem-se AQUI, uma a uma */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto pos-arrasta">
           <div className="grid grid-cols-[110px_1fr_120px_1fr_120px_170px] bg-[#2b2b2b] text-white
             text-[13px] font-bold px-3 py-2 sticky top-0">
             <span>Conta</span><span>Onde</span><span>Outlet</span>

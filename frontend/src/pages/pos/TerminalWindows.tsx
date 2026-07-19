@@ -29,7 +29,7 @@ export function OpenTablesWindow({ onClose, onAbrir }: {
 
   return (
     <Window title="Mesas Abertas" width={860} onClose={onClose}>
-      <div className="max-h-[60vh] overflow-auto">
+      <div className="max-h-[60vh] overflow-auto pos-arrasta">
         <div className="grid grid-cols-[110px_1fr_130px_120px_120px] bg-[#2b2b2b] text-white
           text-[14px] font-bold px-3 py-2 sticky top-0">
           <span>Mesa</span><span>Conta</span><span>Estado</span>
@@ -81,7 +81,7 @@ export function HardwareWindow({ outlet, onClose }: { outlet?: number; onClose: 
 
   return (
     <Window title="Impressoras e Aparelhos" width={820} onClose={onClose}>
-      <div className="max-h-[60vh] overflow-auto">
+      <div className="max-h-[60vh] overflow-auto pos-arrasta">
         <div className="grid grid-cols-[1fr_150px_1fr_130px] bg-[#2b2b2b] text-white text-[14px] font-bold px-3 py-2">
           <span>Aparelho</span><span>Tipo</span><span>Ligação</span><span className="text-right">Teste</span>
         </div>
@@ -127,7 +127,7 @@ export function CashDetailWindow({ sessao, onClose }: { sessao: any; onClose: ()
         <Linha k="Dinheiro esperado" v={`${money(s?.expected_cash ?? s?.expected_amount)} Kz`} />
         <Linha k="Estado" v={s?.status_display || s?.status || '—'} />
       </div>
-      <div className="max-h-[42vh] overflow-auto border-t border-black/40">
+      <div className="max-h-[42vh] overflow-auto pos-arrasta border-t border-black/40">
         <div className="grid grid-cols-[160px_1fr_140px] bg-[#2b2b2b] text-white text-[14px] font-bold px-3 py-2">
           <span>Hora</span><span>Movimento</span><span className="text-right">Valor</span>
         </div>
@@ -177,7 +177,7 @@ export function SalesSummaryWindow({ onClose }: { onClose: () => void }) {
 
   return (
     <Window title={`Resumo de Vendas — ${new Date().toLocaleDateString('pt-PT')}`} width={880} onClose={onClose}>
-      <div className="max-h-[62vh] overflow-auto">
+      <div className="max-h-[62vh] overflow-auto pos-arrasta">
         {isLoading && <div className="p-6 text-white/60">A somar as vendas…</div>}
         {isError && <div className="p-6 text-[#ff8a80]">Não foi possível correr o resumo.</div>}
         {!isLoading && !isError && (

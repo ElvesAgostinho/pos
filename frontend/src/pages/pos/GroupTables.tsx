@@ -57,7 +57,7 @@ export default function GroupTables({ setor, onOpenTicket, onClose }: {
         <div className="text-white/60 text-[13px]">
           Toque nas mesas LIVRES a juntar (mín. 2) — tudo o que se lançar cai numa conta só.
         </div>
-        <div className="grid grid-cols-5 gap-2 overflow-auto" style={{ maxHeight: '30vh' }}>
+        <div className="grid grid-cols-5 gap-2 overflow-auto pos-arrasta" style={{ maxHeight: '30vh' }}>
           {(mesas as any[]).map((m: any) => {
             const livre = m.status === 'FREE' && !m.group_name;
             const marcada = sel.includes(m.id);
@@ -82,7 +82,7 @@ export default function GroupTables({ setor, onOpenTicket, onClose }: {
         {grupos.filter((g: any) => g.is_active !== false).length > 0 && (
           <>
             <div className="text-white/60 text-[13px] border-t border-white/10 pt-2">Grupos ativos:</div>
-            <div className="overflow-auto" style={{ maxHeight: '18vh' }}>
+            <div className="overflow-auto pos-arrasta" style={{ maxHeight: '18vh' }}>
               {grupos.filter((g: any) => g.is_active !== false).map((g: any) => (
                 <div key={g.id} className="flex items-center justify-between px-3 py-2 text-white
                   text-[14px] border-b border-black/30">

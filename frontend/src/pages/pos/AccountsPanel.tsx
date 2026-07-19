@@ -102,7 +102,7 @@ export default function AccountsPanel({ onPick, onClose }: {
           <span className="text-right">Saldo (Conta Corrente)</span>
         </div>
 
-        <div className="flex-1 overflow-auto bg-[#1f1f1f] min-h-0">
+        <div className="flex-1 overflow-auto pos-arrasta bg-[#1f1f1f] min-h-0">
           {linhas.map((e) => (
             <button key={e.id} onClick={() => setSel(e)}
               className={`w-full grid grid-cols-[1fr_150px_180px_180px_200px] px-3 py-2.5 text-left
@@ -143,7 +143,7 @@ export default function AccountsPanel({ onPick, onClose }: {
           com a estrela — o terminal pergunta o que o backoffice exige. */}
       {nova && (
         <Window title="Nova Entidade" width={480} onClose={() => setNova(null)} tone="#0f8b8d">
-          <div className="p-3 bg-[#1a1a1a] flex flex-col gap-2 max-h-[70vh] overflow-auto">
+          <div className="p-3 bg-[#1a1a1a] flex flex-col gap-2 max-h-[70vh] overflow-auto pos-arrasta">
             {camposVisiveis.map(([k, label, tipo]) => (
               <label key={k} className="flex flex-col gap-1">
                 <span className="text-white/60 text-[13px]">

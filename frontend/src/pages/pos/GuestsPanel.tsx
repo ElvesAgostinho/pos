@@ -47,7 +47,7 @@ export default function GuestsPanel({ aba, onPick, onClose }: {
         )}
 
         {data?.available && (
-          <div className="flex-1 overflow-auto min-h-0">
+          <div className="flex-1 overflow-auto pos-arrasta min-h-0">
             {aba === 'GUESTS' ? (
               <>
                 <div className="grid grid-cols-[130px_140px_1fr_200px_160px_140px] bg-[#3a3a3a]

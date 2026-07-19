@@ -13,12 +13,14 @@ import { IcoCruz } from './Icons';
  * fica mais alta do que o ecrã (era isso que cortava os botões de baixo).
  */
 export default function Window({
-  title, children, onClose, width = 700, footer, tone = '#3a3a3a', center = true,
+  title, children, onClose, width = 700, altura, footer, tone = '#3a3a3a', center = true,
 }: {
   title: ReactNode;
   children: ReactNode;
   onClose?: () => void;
   width?: number;
+  /** altura fixa (ex.: '86vh'). Sem ela, a janela cresce com o conteúdo. */
+  altura?: string | number;
   footer?: ReactNode;
   tone?: string;            // cor da barra do título
   center?: boolean;
@@ -78,7 +80,8 @@ export default function Window({
         style={{
           position: 'absolute',
           left: pos?.x ?? 40, top: pos?.y ?? 40,
-          width, maxWidth: 'calc(100vw - 16px)', maxHeight: 'calc(100vh - 16px)',
+          width, ...(altura ? { height: altura } : {}),
+          maxWidth: 'calc(100vw - 16px)', maxHeight: 'calc(100vh - 16px)',
         }}
         className="bg-[#2b2b2b] border-[3px] border-black rounded-[3px] shadow-[0_24px_70px_rgba(0,0,0,0.75)]
           flex flex-col overflow-hidden">
@@ -105,7 +108,7 @@ export default function Window({
           ) : <span className="w-[46px]" />}
         </div>
 
-        <div className="flex-1 overflow-auto min-h-0">{children}</div>
+        <div className="flex-1 overflow-auto min-h-0 pos-arrasta">{children}</div>
 
         {footer && <div className="flex-shrink-0 border-t border-black">{footer}</div>}
       </div>

@@ -61,7 +61,7 @@ export function ProductionWindow({ linhas, onClose }: { linhas: any[]; onClose: 
           <span>{aba === 'PREPARING' ? 'Ao lume há' : aba === 'READY' ? 'Fez-se em' : 'Serviço total'}</span>
           <span>{aba === 'READY' ? 'NO PASSE há' : 'Enviado às'}</span>
         </div>
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto pos-arrasta">
           {doEstado.map((l: any) => {
             const espera = aba === 'READY' ? dur(l.ready_at) : '';
             const urgente = aba === 'READY' && Number(espera.split(' ')[0]) >= 5;

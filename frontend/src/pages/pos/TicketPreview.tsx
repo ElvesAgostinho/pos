@@ -49,7 +49,7 @@ export default function TicketPreview({ ticket, onClose }: {
       <div className="bg-[#d8d8d8] p-3">
         {/* o talão térmico: o texto vem do servidor, tal e qual vai para a impressora */}
         <div className="bg-white text-black shadow-[0_2px_10px_rgba(0,0,0,.35)]
-          max-h-[62vh] overflow-auto px-4 py-3">
+          max-h-[62vh] overflow-auto pos-arrasta px-4 py-3">
           {erro && <div className="text-[#c0140f] font-semibold text-[14px] py-4 text-center">{erro}</div>}
           {talao === null && !erro && (
             <div className="text-black/50 text-[14px] py-6 text-center">A emitir a consulta…</div>

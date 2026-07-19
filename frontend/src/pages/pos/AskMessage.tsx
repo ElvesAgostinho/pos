@@ -30,7 +30,7 @@ export default function AskMessage({ titulo, opcoes, onPick, onSkip }: {
           <span className="text-white text-[26px] font-bold tracking-wide">{titulo}</span>
         </div>
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto pos-arrasta">
           {opcoes.map((o) => (
             <button key={o.id} onClick={() => onPick(o.text)}
               className="w-full h-[64px] px-6 text-left text-white text-[20px]

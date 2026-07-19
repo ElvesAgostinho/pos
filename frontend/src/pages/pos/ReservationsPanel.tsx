@@ -79,7 +79,7 @@ export default function ReservationsPanel({ setor, onOpenTicket, onClose }: {
           text-[13px] font-bold px-3 py-2">
           <span>Quando</span><span>Cliente</span><span>Pax</span><span>Mesa</span><span>Estado</span><span />
         </div>
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto pos-arrasta">
           {reservas.map((r: any) => (
             <div key={r.id} className="grid grid-cols-[130px_1fr_70px_110px_90px_190px] px-3 py-2
               text-white text-[14px] border-b border-black/30 items-center">
@@ -112,7 +112,7 @@ export default function ReservationsPanel({ setor, onOpenTicket, onClose }: {
       {sentar && (
         <Window title={`Sentar ${sentar.guest_name} (${sentar.party_size} pax) — escolha a mesa`}
           width={520} onClose={() => setSentar(null)} tone="#1f7a34">
-          <div className="p-3 bg-[#1a1a1a] grid grid-cols-4 gap-2 max-h-[50vh] overflow-auto">
+          <div className="p-3 bg-[#1a1a1a] grid grid-cols-4 gap-2 max-h-[50vh] overflow-auto pos-arrasta">
             {(mesas as any[]).map((m: any) => (
               <button key={m.id} onClick={() => sentarNa(sentar, m.id)}
                 className={`h-[70px] rounded font-bold text-white text-[16px]

@@ -68,7 +68,7 @@ export default function DocsPanel({ onClose }: { onClose: () => void }) {
   if (ver) {
     return (
       <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-40">
-        <div className="w-[640px] bg-white p-8 max-h-[92%] overflow-auto">
+        <div className="w-[640px] bg-white p-8 max-h-[92%] overflow-auto pos-arrasta">
           <div className="flex justify-between">
             <div>
               <div className="text-[17px] font-bold">{ver.company}</div>
@@ -165,7 +165,7 @@ export default function DocsPanel({ onClose }: { onClose: () => void }) {
               <span>Numero</span><span className="text-right">Total</span>
               <span>Utilizador</span><span>Mesa</span><span>Data</span>
             </div>
-            <div className="flex-1 overflow-auto bg-[#1f1f1f]">
+            <div className="flex-1 overflow-auto pos-arrasta bg-[#1f1f1f]">
               {(data?.rows || []).map((d: any) => (
                 <button key={d.id} onClick={() => setSel(d)}
                   className={`w-full grid grid-cols-[1fr_170px_170px_110px_150px] px-3 py-2.5 text-left

@@ -69,7 +69,7 @@ export default function PaymentReceipt({ conta, documento, onFechar, onEmitir, o
         </div>
 
         {/* ─── O PAPEL ─── */}
-        <div className="flex-1 overflow-auto bg-white">
+        <div className="flex-1 overflow-auto pos-arrasta bg-white">
           <Linha k="Kz" v={money(total)} forte />
           <Linha k="Troco Kz" v={money(troco)} forte />
 

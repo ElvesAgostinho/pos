@@ -78,7 +78,7 @@ export default function SplitPanel({ ticket, onClose }: { ticket: any; onClose: 
       <div className="grid grid-cols-[70px_1fr_120px] bg-[#2b2b2b] text-white text-[16px] font-bold px-2 py-2">
         <span>Qtd</span><span>Descrição</span><span className="text-right">Total</span>
       </div>
-      <div className="flex-1 bg-[#8a8a8a]/30 overflow-auto border-2 border-[#c9a400]">
+      <div className="flex-1 bg-[#8a8a8a]/30 overflow-auto pos-arrasta border-2 border-[#c9a400]">
         {(conta?.lines || []).map((l: any) => (
           <button key={l.id} onClick={() => setSel(sel.includes(l.id)
             ? sel.filter((x: number) => x !== l.id) : [...sel, l.id])}

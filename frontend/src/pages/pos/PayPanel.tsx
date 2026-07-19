@@ -264,18 +264,19 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
   };
 
   return (
-    <Window title="Pagamentos" width={820} tone="#0f8b8d" onClose={onClose}>
-      <div>
+    <Window title="Pagamentos" width={820} altura="88vh" tone="#0f8b8d" onClose={onClose}>
+      <div className="h-full flex flex-col">
 
         {/* o valor a entregar (vazio = cobra o que falta) */}
         <button onClick={() => setTeclado(!teclado)}
-          className="w-full h-[62px] bg-[#3a3a3a] flex items-center justify-between px-4 border-b border-black">
+          className="w-full h-[62px] bg-[#3a3a3a] flex items-center justify-between px-4
+            border-b border-black flex-shrink-0">
           <span className="text-white text-[22px] font-bold">Kz</span>
           <span className="text-white text-[26px] font-bold">{valor || money(falta)}</span>
         </button>
 
         {teclado && (
-          <div className="grid grid-cols-3 gap-1 p-2 bg-[#1f1f1f]">
+          <div className="grid grid-cols-3 gap-1 p-2 bg-[#1f1f1f] flex-shrink-0">
             {['7', '8', '9', '4', '5', '6', '1', '2', '3', 'C', '0', '⌫'].map((t) => (
               <button key={t} onClick={() => tecla(t)}
                 className={`h-[46px] text-[19px] font-bold rounded ${t === 'C'
@@ -287,7 +288,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         {/* os meios de pagamento AUTORIZADOS neste ponto de venda. "Conta Quarto" só
             aparece a HÓSPEDES — o passante e o consumo interno não têm quarto onde
             a conta caia (o tipo perguntou-se ao abrir a mesa, parâmetro 8175). */}
-        <ZonaArrastavel className="p-2 bg-[#2b2b2b] h-[380px] flex-shrink-0">
+        <ZonaArrastavel className="p-2 bg-[#2b2b2b] flex-1 min-h-[220px]">
           <div className="grid grid-cols-5 gap-1.5">
             {metodos.filter((m: any) =>
               m.method_type_code !== 'ROOM' || conta.guest_type === 'HOTEL').map((m: any) => {
@@ -366,7 +367,8 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
             no cartão ou por transferência. Cada toque num meio cobra o valor escrito
             (ou o que falta), e a lista mostra as parcelas até a conta fechar. */}
         {(conta.payments || []).length > 0 && (
-          <div className="bg-[#242424] px-4 py-2 border-t border-black max-h-[120px] overflow-auto">
+          <div className="bg-[#242424] px-4 py-2 border-t border-black max-h-[110px]
+            overflow-auto pos-arrasta flex-shrink-0">
             {(conta.payments || []).map((p: any) => (
               <div key={p.id} className="flex justify-between text-white/85 text-[15px] leading-[1.7]">
                 <span>{p.payment_method_name}</span>
@@ -377,7 +379,8 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         )}
 
         {/* pago / a pagar */}
-        <div className="h-[54px] bg-[#3a3a3a] flex items-center px-4 text-white text-[20px] font-semibold">
+        <div className="h-[54px] bg-[#3a3a3a] flex items-center px-4 text-white text-[20px]
+          font-semibold flex-shrink-0">
           <span>Pago: {money(pago)}</span>
           <span className="ml-auto">A pagar: {money(falta)}</span>
         </div>
@@ -386,7 +389,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
             O gift card ficou nesta fila (o original tem três botões, nós temos quatro):
             é uma função que já existia no nosso POS e não se tira nada do que cá está —
             escondê-la era obrigar quem tem vales a ir procurá-los noutro sítio. */}
-        <div className="grid grid-cols-4 gap-1 p-1 bg-black">
+        <div className="grid grid-cols-4 gap-1 p-1 bg-black flex-shrink-0">
           <BotaoPag onClick={() => setDadosCliente(true)}
             titulo={entidade ? `Cliente: ${entidade.name}` : 'Registar / procurar o cliente (NIF para a fatura)'}>
             <IcoCliente size={30} />
@@ -421,7 +424,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         </div>
 
         {/* ─── SEGUNDA FILA: fechar · faturar · escolher série · cancelar ─── */}
-        <div className="grid grid-cols-4 gap-1 p-1 pt-0 bg-black">
+        <div className="grid grid-cols-4 gap-1 p-1 pt-0 bg-black flex-shrink-0">
           <BotaoPag
             onClick={() => (Object.keys(parcelas).length ? confirmar() : onPaid())}
             on={!busy && (Object.keys(parcelas).length > 0 || falta <= 0)} cor="#2ecc40"
@@ -490,7 +493,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
       {escolherSerie && (
         <Window title="Série do documento" width={620} tone="#0f8b8d"
           onClose={() => setEscolherSerie(false)}>
-          <div className="max-h-[60vh] overflow-auto">
+          <div className="max-h-[60vh] overflow-auto pos-arrasta">
             {series.length === 0 && (
               <div className="p-6 text-white/60">
                 Sem séries configuradas em <b>Configuração POS › Séries de Documento</b>.

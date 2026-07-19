@@ -112,7 +112,7 @@ export default function EntityFormPos({ entidade, onGravado, onClose }: {
             <span className="w-[46px]" />
           </div>
 
-          <div className="flex-1 overflow-auto p-2 space-y-1">
+          <div className="flex-1 overflow-auto pos-arrasta p-2 space-y-1">
             <EscolhaTatil label="Tipo de entidade" valor={d.entity_type} onChange={set('entity_type')}
               opcoes={tipos.map((t: any) => ({ id: t.id, label: t.name }))} />
             <CampoTatil chave="tax_id" label="Nr. contrib." valor={d.tax_id}

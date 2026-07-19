@@ -87,7 +87,7 @@ export default function SettingsPanel({ abas, aba, onAba, onClose, direita = 0, 
           border-b border-black/60 flex-shrink-0">
           {atual?.titulo}
         </div>
-        <div className="flex-1 overflow-auto p-3">
+        <div className="flex-1 overflow-auto pos-arrasta p-3">
           <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
             {(atual?.acoes || []).map((a) => {
               const apagado = a.on === false;

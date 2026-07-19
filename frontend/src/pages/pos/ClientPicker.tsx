@@ -118,7 +118,7 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true,
         </div>
 
         {/* ─── a lista ─── */}
-        <div className="flex-1 overflow-auto min-h-[220px]">
+        <div className="flex-1 overflow-auto pos-arrasta min-h-[220px]">
           {aba === 'ENTIDADE' && (
             <Tabela cols={['Nr.', 'Nr. contrib.', 'Nome', 'Cidade', 'E-mail']}
               vazio={entidades.isLoading ? 'A procurar…' : 'Sem entidades. Escreva para procurar.'}

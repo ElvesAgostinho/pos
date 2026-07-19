@@ -55,7 +55,7 @@ export default function CustomerForm({ conta, onSaved, onClose }: {
             O consumo interno é CUSTO da casa — fica em nome do colaborador
             (Recursos Humanos do backoffice), ao preço que a ficha do operador mandar.
           </div>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto pos-arrasta">
             {colabs.map((c: any) => (
               <button key={c.id}
                 onClick={() => gravar({ customer_name: c.full_name || `${c.first_name} ${c.last_name || ''}`.trim(),

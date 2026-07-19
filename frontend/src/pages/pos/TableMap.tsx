@@ -134,7 +134,7 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   if (isLoading) return <div className="p-8 text-black/60">A carregar a sala…</div>;
 
   return (
-    <div className="absolute inset-0 overflow-auto">
+    <div className="absolute inset-0 overflow-auto pos-arrasta">
       <div className="relative" style={{ minWidth: 1200, minHeight: 700 }}>
         {mesas.map((m: any) => {
           const conta = contaDa(m.id);

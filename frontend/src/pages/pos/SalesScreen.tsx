@@ -844,7 +844,7 @@ function ComboWindow({ tid, onDone, onClose }: { tid: number; onDone: () => void
   };
   return (
     <Window title="Combos / Menus" width={560} onClose={onClose} tone="#8a6100">
-      <div className="p-3 bg-[#1a1a1a] grid grid-cols-2 gap-2 max-h-[56vh] overflow-auto">
+      <div className="p-3 bg-[#1a1a1a] grid grid-cols-2 gap-2 max-h-[56vh] overflow-auto pos-arrasta">
         {combos.map((c: any) => (
           <button key={c.id} onClick={() => lancarCombo(c)}
             className="h-[86px] bg-[#8a6100] text-white rounded-md font-bold text-[16px] px-2
@@ -883,7 +883,7 @@ function DestWindow({ tid, onDone, onClose }: { tid: number; onDone: () => void;
   };
   return (
     <Window title="Destino do pedido (entra nas Entregas)" width={520} onClose={onClose} tone="#1a4f8a">
-      <div className="p-3 bg-[#1a1a1a] grid grid-cols-3 gap-2 max-h-[52vh] overflow-auto">
+      <div className="p-3 bg-[#1a1a1a] grid grid-cols-3 gap-2 max-h-[52vh] overflow-auto pos-arrasta">
         {destinos.map((d: any) => (
           <button key={d.id} onClick={() => escolher(d)}
             className="h-[76px] bg-[#1a4f8a] text-white rounded-md font-bold text-[15px] px-2
@@ -909,7 +909,7 @@ function AuditWindow({ tid, onClose }: { tid: number; onClose: () => void }) {
   });
   return (
     <Window title="Histórico da conta (auditoria)" width={720} onClose={onClose} tone="#3a3a3a">
-      <div className="bg-[#1a1a1a] overflow-auto" style={{ maxHeight: '60vh' }}>
+      <div className="bg-[#1a1a1a] overflow-auto pos-arrasta" style={{ maxHeight: '60vh' }}>
         {eventos.map((e: any, i: number) => (
           <div key={i} className="px-4 py-2 border-b border-black/30 text-[13px]">
             <span className="text-white/40">{new Date(e.at).toLocaleString('pt-PT',

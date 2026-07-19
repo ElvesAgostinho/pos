@@ -44,7 +44,7 @@ export default function VoidReasonDialog({ titulo = 'Motivo de Anulação', onPi
         </div>
 
         {livre === null ? (
-          <div className="max-h-[70vh] overflow-auto">
+          <div className="max-h-[70vh] overflow-auto pos-arrasta">
             <button onClick={() => setLivre('')}
               className="w-full h-[62px] px-6 text-left text-white text-[19px]
                 bg-[#2b2b2b] hover:bg-[#3a3a3a] border-b border-black">

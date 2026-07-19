@@ -35,7 +35,7 @@ export default function EntityPicker({ onPick, onCancel }: {
           <span>Nº</span><span>Nr. contrib.</span><span>Nome</span><span>Contacto</span>
         </div>
 
-        <div className="flex-1 overflow-auto bg-[#1f1f1f] min-h-0">
+        <div className="flex-1 overflow-auto pos-arrasta bg-[#1f1f1f] min-h-0">
           {linhas.map((e: any) => (
             <button key={e.id} onClick={() => onPick(e)}
               className="w-full grid grid-cols-[90px_130px_1fr_130px] px-3 py-2.5 text-left text-white

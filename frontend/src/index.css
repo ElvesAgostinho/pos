@@ -86,4 +86,7 @@ input[type='radio']:disabled {
    No terminal tátil a barra não serve: tem 15px e o dedo tapa-a inteira. O conteúdo
    puxa-se com o dedo (ver ZonaArrastavel.tsx). A regra global de barras acima é para o
    backoffice, que se usa com rato. */
-.pos-arrasta::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.pos-arrasta { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+.pos-arrasta::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
+/* a regra global `*` acima punha `scrollbar-width: auto` em tudo — mais forte do que a
+   propriedade em linha do componente. Daí a barra continuar a aparecer no terminal. */

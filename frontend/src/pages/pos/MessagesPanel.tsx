@@ -73,7 +73,7 @@ export default function MessagesPanel({ linha, onGravar, onClose }: {
         </span>
       </div>
 
-      <div className="flex-1 overflow-auto p-3">
+      <div className="flex-1 overflow-auto pos-arrasta p-3">
         {isLoading && <div className="text-white/60 p-4">A ler as mensagens…</div>}
 
         {!isLoading && msgs.length === 0 && (

@@ -174,7 +174,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
           <span>Qtd</span><span>Descrição</span><span className="text-right">Total</span>
         </div>
 
-        <div className="flex-1 bg-[#8a8a8a]/30 overflow-auto border-2 border-[#c9a400]">
+        <div className="flex-1 bg-[#8a8a8a]/30 overflow-auto pos-arrasta border-2 border-[#c9a400]">
           {(conta?.lines || []).map((l: any) => (
             <button key={l.id}
               onClick={() => setSel(sel.includes(l.id)
@@ -279,7 +279,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
             <div className="h-[54px] bg-[#0f8b8d] text-white flex items-center justify-center text-[20px] font-bold">
               Mesa de destino
             </div>
-            <div className="flex-1 overflow-auto grid grid-cols-4 gap-2 p-3">
+            <div className="flex-1 overflow-auto pos-arrasta grid grid-cols-4 gap-2 p-3">
               {mesas.map((m: any) => {
                 const conta = abertas.find((t: any) => t.table === m.id);
                 return (

@@ -137,7 +137,7 @@ export default function CustomerIdForm({ onPick, onClose }: {
             Registar outra vez o mesmo cliente é o que faz o histórico dele partir-se em
             dois e o "gasto acumulado" mentir. */}
         {aProcurar && (
-          <div className="mx-1 mt-1 border-2 border-black bg-[#1f1f1f] max-h-[150px] overflow-auto flex-shrink-0">
+          <div className="mx-1 mt-1 border-2 border-black bg-[#1f1f1f] max-h-[150px] overflow-auto pos-arrasta flex-shrink-0">
             {achados.length === 0 && (
               <div className="p-3 text-white/55 text-[15px]">
                 Ninguém no ficheiro com esse NIF ou nome — pode registar de novo.
@@ -155,7 +155,7 @@ export default function CustomerIdForm({ onPick, onClose }: {
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-auto p-1">
+        <div className="flex-1 min-h-0 overflow-auto pos-arrasta p-1">
           <TouchKeyboard valor={d[campo] || ''} setValor={(v) => set(campo, v)} onOk={gravar} />
         </div>
 

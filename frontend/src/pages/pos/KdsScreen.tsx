@@ -60,7 +60,7 @@ export default function KdsScreen() {
         <span className="ml-auto text-white/60 text-[14px]">{fila.length} item(ns) na fila</span>
       </div>
 
-      <div className="flex-1 overflow-auto p-3 grid gap-3 content-start"
+      <div className="flex-1 overflow-auto pos-arrasta p-3 grid gap-3 content-start"
         style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
         {fila.map((l: any) => {
           const e = ESTADOS[l.kds_status] || ESTADOS.FIRED;

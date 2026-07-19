@@ -52,7 +52,7 @@ export default function DeliveriesPanel({ onClose }: { onClose: () => void }) {
           <span>Destino / Conta</span><span>Prioridade</span><span className="text-right">Total</span>
           <span>Estado</span><span />
         </div>
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto pos-arrasta">
           {fila.map((t: any) => (
             <div key={t.id} className="grid grid-cols-[1fr_120px_110px_110px_190px] px-3 py-2
               text-white text-[14px] border-b border-black/30 items-center">
