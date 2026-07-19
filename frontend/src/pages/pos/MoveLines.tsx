@@ -58,7 +58,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
   const { data: abertas = [] } = useQuery({
     queryKey: ['ml-open'],
     queryFn: async () => {
-      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } });
+      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } });
       return ((r.data?.results || r.data || []) as any[]).filter((t) => t.status === 'OPEN');
     },
   });

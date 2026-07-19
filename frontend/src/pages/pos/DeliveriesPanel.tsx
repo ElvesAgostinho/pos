@@ -18,7 +18,7 @@ export default function DeliveriesPanel({ onClose }: { onClose: () => void }) {
   const { data: fila = [] } = useQuery({
     queryKey: ['pos-entregas'],
     queryFn: async () => {
-      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } });
+      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } });
       // só o que tem DESTINO (não mesas) e ainda não foi entregue
       return ((r.data?.results || r.data || []) as any[])
         .filter((t) => t.status === 'OPEN' && t.dest_kind && t.dest_kind !== 'TABLE'

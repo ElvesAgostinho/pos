@@ -379,7 +379,17 @@ class POSTicketViewSet(viewsets.ModelViewSet):
               .prefetch_related('lines__item', 'payments__payment_method').all()), 'outlet__hotel')
         for f in ('outlet', 'status', 'cash_session'):
             v = self.request.query_params.get(f)
-            if v:
+            if not v:
+                continue
+            # VÁRIOS ESTADOS de uma vez: ?status=OPEN,SUSPENDED
+            # O mapa de mesas precisa das ABERTAS **e** das SUSPENSAS: uma conta
+            # suspensa mantém a mesa ocupada (o grupo saiu e volta). Pedindo só OPEN, a
+            # conta suspensa não vinha na lista, o mapa não a encontrava — e a mesa
+            # ficava vermelha a pedir outra vez o tipo de cliente, como se estivesse
+            # livre. A conta estava lá o tempo todo; era a pergunta que estava mal feita.
+            if f == 'status' and ',' in v:
+                qs = qs.filter(status__in=[x.strip() for x in v.split(',') if x.strip()])
+            else:
                 qs = qs.filter(**{f if f != 'cash_session' else 'cash_session_id': v})
         if self.request.query_params.get('delivery'):
             qs = qs.filter(delivery_status=self.request.query_params.get('delivery'))

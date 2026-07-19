@@ -211,7 +211,7 @@ export default function PosTerminal() {
   const vendaDireta = async () => {
     if (!setor) return;
     try {
-      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } });
+      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } });
       const abertas = (r.data?.results || r.data || []) as any[];
       const balcao = abertas.find((t) => !t.table && t.outlet === setor.outlet
         && (t.status === 'OPEN' || t.status === 'SUSPENDED'));

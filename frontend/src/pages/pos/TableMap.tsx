@@ -73,7 +73,7 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   const { data: contas = [] } = useQuery({
     queryKey: ['pos-open-tickets'],
     queryFn: async () => {
-      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } });
+      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } });
       // as SUSPENSAS também aparecem — a mesa continua ocupada; tocar RETOMA a conta
       return ((r.data?.results || r.data || []) as any[])
         .filter((t) => t.status === 'OPEN' || t.status === 'SUSPENDED');

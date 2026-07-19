@@ -34,7 +34,7 @@ export default function SubcontaBar({ conta, mesa, outlet, onSwitch }: {
   const { data: contas = [] } = useQuery({
     queryKey: ['subcontas', tableId],
     queryFn: async () => {
-      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } });
+      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } });
       const todas = (r.data?.results || r.data || []) as any[];
       return todas.filter((t) => t.status === 'OPEN' && t.table === tableId)
         .sort((a, b) => a.id - b.id);
