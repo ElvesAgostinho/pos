@@ -2152,6 +2152,29 @@ class POSTicketLineViewSet(viewsets.ModelViewSet):
         obj = serializer.save()
         obj.ticket.recompute(save=True)
 
+    @action(detail=True, methods=['post'])
+    def messages(self, request, pk=None):
+        """AS MENSAGENS DA LINHA — "SEM GELO", "PITAYA", uma por baixo da outra.
+
+        São MODIFICADORES da linha, não um campo de texto: uma linha leva várias, cada
+        uma sai na sua linha na comanda da cozinha, e cada uma pode ter preço (o "extra
+        queijo" que se paga). Enfiadas todas num só campo de texto, a cozinha recebia
+        "SEM GELO PITAYA" numa linha só e o extra nunca chegava à conta.
+
+        Envia-se a LISTA COMPLETA: o que vier substitui o que lá estava. É assim que
+        "tirar uma mensagem" funciona sem precisar de um segundo endpoint.
+        """
+        from .models import POSLineModifier
+        linha = self.get_object()
+        textos = [str(t).strip() for t in (request.data.get('texts') or []) if str(t).strip()]
+        linha.modifiers.all().delete()
+        for t in textos:
+            POSLineModifier.objects.create(line=linha, name=t[:100])
+        log_event(request, 'LINE_MESSAGES', f'Mensagens de {linha.description}: {" | ".join(textos) or "(nenhuma)"}',
+                  operator_name=linha.ticket.operator_name, outlet=linha.ticket.outlet,
+                  reference=linha.ticket.ticket_number)
+        return Response(self.get_serializer(linha).data)
+
     def destroy(self, request, *a, **kw):
         # MOTIVO DE ANULAÇÃO — anular um artigo JÁ EM PRODUÇÃO sem dizer porquê é como
         # deitar comida fora sem registo. Exige-se o motivo (da lista configurada).

@@ -2953,6 +2953,14 @@ class KitchenMessage(models.Model):
     is_message = models.BooleanField(default=True)   # aparece como pergunta ao operador
     is_comment = models.BooleanField(default=True)   # pode ser usada como comentário livre
     is_active = models.BooleanField(default=True)
+    # PERGUNTAR AO LANÇAR: o operador toca no sumo e o terminal pergunta logo
+    # "com gelo ou sem gelo?". É a diferença entre perguntar ao cliente na altura e ter
+    # de voltar à mesa depois — ou pior, mandar para o bar um pedido incompleto.
+    ask_on_add = models.BooleanField(default=False)
+    # A QUE ARTIGOS se aplica. VAZIO = a todos. "Com/sem gelo" não faz sentido num
+    # prato de bacalhau, e uma pergunta que não faz sentido ensina o empregado a
+    # carregar em qualquer coisa para se ver livre dela.
+    items = models.ManyToManyField('inventory.Item', blank=True, related_name='kitchen_messages')
 
     class Meta:
         db_table = 'pos_kitchen_message'

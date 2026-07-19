@@ -4963,4 +4963,14 @@ class KitchenMessageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         from .models import KitchenMessage
-        return KitchenMessage.objects.prefetch_related('options')
+        qs = KitchenMessage.objects.prefetch_related('options', 'items')
+        # ?item=<id>&ask=1 — as mensagens que ESTE artigo faz perguntar ao ser lançado.
+        # Uma mensagem sem artigos vale para todos (é a regra geral da casa); com
+        # artigos, só para esses.
+        item = self.request.query_params.get('item')
+        if self.request.query_params.get('ask') in ('1', 'true'):
+            qs = qs.filter(ask_on_add=True, is_active=True)
+        if item:
+            from django.db.models import Q
+            qs = qs.filter(Q(items__isnull=True) | Q(items__id=item)).distinct()
+        return qs

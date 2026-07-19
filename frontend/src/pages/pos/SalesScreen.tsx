@@ -20,6 +20,7 @@ import VoidReasonDialog from './VoidReasonDialog';
 import NumPad from './NumPad';
 import MessagesPanel from './MessagesPanel';
 import ClientPicker from './ClientPicker';
+import AskMessage from './AskMessage';
 import {
   IcoLixo, IcoImpressora, IcoDinheiro, IcoVisto, IcoVoltar, IcoPreco, IcoMaisMenos,
   IcoPercento, IcoPessoas, IcoLapis, IcoParciais, IcoTransferir, IcoOlho, IcoAgrupar,
@@ -112,6 +113,10 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const [editarQtd, setEditarQtd] = useState(false);    // teclado numérico (+/−)
   const [verMensagens, setVerMensagens] = useState(false);
   const [escolherCliente, setEscolherCliente] = useState(false);
+  // A FILA DE PERGUNTAS do artigo acabado de lançar ("GELO?" → "AÇÚCAR?" → …).
+  // É uma fila, não uma pergunta: um sumo pode ter duas coisas a perguntar, e as duas
+  // têm de ser feitas antes de o pedido seguir para o bar.
+  const [perguntar, setPerguntar] = useState<{ linha: any; fila: any[]; escolhas: string[] } | null>(null);
   // Só se pergunta UMA vez por conta quem é o cliente — senão o ecrã reabria a cada
   // refrescamento e o empregado não conseguia lançar nada.
   const perguntouCliente = useRef<number | null>(null);
@@ -155,12 +160,28 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const lancar = async (k: any) => {
     if (k.available === false) return;
     try {
-      await comPerguntas(`pos/tickets/${tid}/add_line/`,
+      const r = await comPerguntas(`pos/tickets/${tid}/add_line/`,
         // o OPERADOR segue no pedido: as caixas da ficha dele (preço de custo,
         // consumo interno) decidem o preço e a autorização — no servidor.
         { item: k.item, quantity: qtd, operator: operId },
         async (label, detalhe) => window.prompt(`${detalhe}\n\n${label}:`));
       setQtd(1);
+
+      // PERGUNTAR AO LANÇAR: o backoffice marca "com/sem gelo" como pergunta neste
+      // artigo, e o terminal pergunta AGORA — com o cliente à frente. Perguntar depois
+      // é voltar à mesa; não perguntar é mandar para o bar um pedido incompleto.
+      try {
+        const conf = await apiClient.get('pos/config/kitchen-messages/',
+          { params: { item: k.item, ask: 1 } });
+        const perguntas = ((conf.data?.results || conf.data || []) as any[])
+          .filter((m) => (m.options || []).length);
+        if (perguntas.length) {
+          // a linha nova é a última da conta que o servidor acabou de devolver
+          // (comPerguntas devolve já o `.data`, que é a conta inteira)
+          const nova = (r?.lines || []).slice(-1)[0];
+          if (nova) { setPerguntar({ linha: nova, fila: perguntas, escolhas: [] }); return; }
+        }
+      } catch { /* sem mensagens configuradas: lança e segue */ }
       // (Parâmetro 8308) "Enviar para a cozinha automaticamente": cada artigo lançado
       // segue LOGO para a produção — não fica à espera do botão. É o modo dos bares
       // rápidos, onde o pedido não se acumula.
@@ -199,6 +220,20 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       await apiClient.patch(`pos/ticket-lines/${l.id}/`, { note: nota || null });
       inval();
     } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar a nota.'); }
+  };
+
+  // Passa à pergunta seguinte da fila; esgotada, grava TODAS as respostas na linha de
+  // uma vez (o motor substitui a lista inteira — é assim que tirar uma também funciona).
+  const avancarPergunta = async (escolhas: string[]) => {
+    if (!perguntar) return;
+    const resto = perguntar.fila.slice(1);
+    if (resto.length) return setPerguntar({ ...perguntar, fila: resto, escolhas });
+    setPerguntar(null);
+    if (!escolhas.length) return;
+    try {
+      await apiClient.post(`pos/ticket-lines/${perguntar.linha.id}/messages/`, { texts: escolhas });
+      inval();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar as mensagens.'); }
   };
 
   const apagarLinha = async (l: any) => {
@@ -509,37 +544,55 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
           <span>Qtd</span><span>Descrição</span><span className="text-right">Total</span>
         </div>
 
-        <div className="flex-1 overflow-auto bg-[#8a8a8a]/20">
+        {/* A COMANDA É PAPEL: fundo BRANCO, tinta preta, como o talão que vai sair da
+            impressora. O cinzento fazia a conta parecer mais um painel do programa; em
+            branco, o empregado vira o ecrã ao cliente e o cliente reconhece a fatura.
+            É também o que se lê melhor sob a luz de uma sala escura. */}
+        <div className="flex-1 overflow-auto bg-white">
           {linhasVista.map((l: any) => (
             // 1 toque ESCOLHE a linha (é sobre ela que a engrenagem trabalha); 2 toques
             // anulam. Antes, um toque abria logo a caixa da nota — não havia como
             // escolher uma linha para lhe mudar o preço.
             <div key={l.id} onClick={() => setSel(l.id)} onDoubleClick={() => apagarLinha(l)}
               title="1 toque: escolher a linha · 2 toques: anular a linha"
-              className={`grid grid-cols-[64px_1fr_120px] px-2 py-2 text-white border-b border-black/20
-                text-[15px] cursor-pointer ${sel === l.id ? 'bg-[#b39100]' : ''}`}>
-              <span>{Number(l.quantity)}</span>
-              <span className="truncate">
-                {l.description}
-                {l.note && <span className="block text-[11px] text-[#7fd4ff]">{l.note}</span>}
+              className={`grid grid-cols-[58px_1fr_118px] px-2 py-2 border-b border-black/15
+                text-[16px] cursor-pointer ${sel === l.id ? 'bg-[#f0c000]' : 'hover:bg-black/5'}`}>
+              <span className="text-black font-semibold">{Number(l.quantity)}</span>
+              <span className="min-w-0">
+                <span className="block text-black font-semibold truncate">{l.description}</span>
+
+                {/* AS MENSAGENS, uma por linha e recuadas — é assim que a cozinha as
+                    lê e é assim que o cliente as confere. Amarelas sobre o papel: veem-se
+                    de relance sem competir com o nome do artigo. */}
+                {(l.modifiers || []).map((m: any) => (
+                  <span key={m.id}
+                    className="block pl-3 text-[14px] font-bold italic text-[#8a6100] truncate">
+                    {m.name}
+                    {Number(m.price_delta) !== 0 && ` (${money(m.price_delta)})`}
+                  </span>
+                ))}
+                {l.note && (
+                  <span className="block pl-3 text-[14px] font-bold italic text-[#8a6100] truncate">{l.note}</span>
+                )}
+
                 {l._juntas > 1 && (
-                  <span className="block text-[11px] text-white/50">{l._juntas} lançamentos juntos</span>
+                  <span className="block text-[12px] text-black/45">{l._juntas} lançamentos juntos</span>
                 )}
                 {/* ALERGÉNIOS da ficha do artigo (backoffice) — o empregado avisa o
                     cliente ANTES de o prato sair, não depois. */}
                 {l.allergens?.length > 0 && (
-                  <span className="flex items-center gap-1 text-[11px] text-[#ff8a80]">
+                  <span className="flex items-center gap-1 text-[12px] font-semibold text-[#b3140f]">
                     <IcoAviso size={13} /> {l.allergens.join(', ')}</span>
                 )}
                 {['FIRED', 'PREPARING', 'READY'].includes(l.kds_status) && (
-                  <span className="ml-1 text-[11px] text-[#f0c000]">• na cozinha</span>
+                  <span className="block text-[12px] text-[#1f7a34] font-semibold">• na cozinha</span>
                 )}
               </span>
-              <span className="text-right">{money(l.line_total)}</span>
+              <span className="text-right text-black font-semibold">{money(l.line_total)}</span>
             </div>
           ))}
           {linhas.length === 0 && (
-            <div className="text-white/50 text-center py-10 text-[14px]">
+            <div className="text-black/40 text-center py-10 text-[15px]">
               A conta está vazia. Toque numa tecla para lançar.
             </div>
           )}
@@ -589,6 +642,16 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
         </div>
       </div>
 
+      {/* A FILA DE PERGUNTAS do artigo acabado de lançar. Responde-se a uma, passa à
+          seguinte; no fim, todas as respostas ficam agarradas à linha. */}
+      {perguntar && perguntar.fila.length > 0 && (
+        <AskMessage
+          titulo={perguntar.fila[0].name || perguntar.fila[0].code}
+          opcoes={(perguntar.fila[0].options || []).filter((o: any) => o.is_active !== false)}
+          onPick={(texto) => avancarPergunta([...perguntar.escolhas, texto])}
+          onSkip={() => avancarPergunta(perguntar.escolhas)} />
+      )}
+
       {/* ANULAR A VENDA — o motivo vem da lista do backoffice (ou texto livre). */}
       {anular && (
         <VoidReasonDialog onClose={() => setAnular(false)}
@@ -618,9 +681,12 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       {/* ✎ do topo: as mensagens de produção do backoffice, coladas à linha escolhida. */}
       {verMensagens && linhaSel() && (
         <MessagesPanel linha={linhaSel()} onClose={() => setVerMensagens(false)}
-          onPick={async (texto) => {
+          onGravar={async (textos) => {
             setVerMensagens(false);
-            await patchLinha({ note: texto || null }, 'Não foi possível gravar a mensagem.');
+            try {
+              await apiClient.post(`pos/ticket-lines/${linhaSel().id}/messages/`, { texts: textos });
+              inval();
+            } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar as mensagens.'); }
           }} />
       )}
 

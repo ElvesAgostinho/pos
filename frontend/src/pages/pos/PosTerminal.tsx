@@ -24,7 +24,7 @@ import { useProducao, ProductionWindow } from './ProductionBell';
 import {
   IcoLupa, IcoMaisMenos, IcoLapis, IcoCliente, IcoMesas, IcoVenda, IcoSino, IcoEngrenagem,
   IcoGaveta, IcoDocumento, IcoLista, IcoImpressora, IcoChave, IcoAtualizar, IcoEcra,
-  IcoSangria, IcoCadeado, IcoDetalhe, IcoGrafico, IcoCruz, IcoAviso, IcoParciais,
+  IcoSangria, IcoCadeado, IcoDetalhe, IcoGrafico, IcoCruz, IcoAviso, IcoParciais, IcoDinheiro,
   IcoTransferir, IcoCalendario, IcoAgrupar, IcoEntrega, IcoCombo, IcoQuarto,
 } from './Icons';
 

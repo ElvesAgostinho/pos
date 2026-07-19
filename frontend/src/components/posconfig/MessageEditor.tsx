@@ -15,11 +15,15 @@ import { Toolbar, inputCls, inputStyle } from './kit';
 export default function MessageEditor({ row, onClose }: { row: any; onClose: () => void }) {
   const qc = useQueryClient();
   const isNew = !row?.id;
-  const [d, setD] = useState<any>({ sort_order: 0, is_message: true, is_comment: true, is_active: true, options: [], ...row });
+  const [d, setD] = useState<any>({ sort_order: 0, is_message: true, is_comment: true, is_active: true, ask_on_add: false, items: [], options: [], ...row });
 
-  const { data: printers = [] } = useQuery({
-    queryKey: ['posc', 'printers'],
-    queryFn: async () => (await apiClient.get('inventory/pos/printers/')).data,
+  // OS ARTIGOS que fazem esta pergunta. Vazio = todos.
+  const { data: artigos = [] } = useQuery({
+    queryKey: ['posc', 'itens-msg'],
+    queryFn: async () => {
+      const r = await apiClient.get('inventory/items/');
+      return ((r.data?.results || r.data || []) as any[]).filter((i) => i.is_sold !== false);
+    },
   });
 
   const save = useMutation({
@@ -34,7 +38,10 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
   const opts: any[] = d.options || [];
   const setOpt = (i: number, k: string, v: any) =>
     set('options', opts.map((o, j) => j === i ? { ...o, [k]: v } : o));
-  const addOpt = () => set('options', [...opts, { key_label: '', print_label: '', sort_order: 0, printer: null, on_emenu: false }]);
+  // As opções gravavam-se em `key_label`/`print_label` — campos que NÃO EXISTEM no
+  // modelo (que tem `code` e `text`). O servidor descartava-os em silêncio e a mensagem
+  // ficava sempre sem respostas: no terminal aparecia a tecla e mais nada.
+  const addOpt = () => set('options', [...opts, { code: '', text: '', sort_order: opts.length + 1, is_active: true }]);
   const delOpt = (i: number) => set('options', opts.filter((_, j) => j !== i));
 
   return (
@@ -67,6 +74,47 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
           </label>
         </div>
 
+        <div className="flex items-center gap-6 mb-4 text-[13px]">
+          <label className="flex items-center gap-3">
+            <span className="w-[70px] text-[#333]">Nome:</span>
+            <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
+              placeholder="GELO, FRUTA, Confecao…"
+              className={`${inputCls} w-[290px] flex-none`} style={inputStyle} />
+          </label>
+          {/* PERGUNTAR AO LANÇAR — a diferença entre perguntar com o cliente à frente
+              e ter de voltar à mesa depois (ou mandar ao bar um pedido incompleto). */}
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={!!d.ask_on_add} onChange={(e) => set('ask_on_add', e.target.checked)} className="w-4 h-4" />
+            <b>Perguntar ao lançar o artigo</b>
+          </label>
+        </div>
+
+        <div className="border border-[#c0c0c0] mb-4">
+          <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] border-b border-[#c0c0c0]">
+            Artigos que fazem esta pergunta
+            <span className="font-normal text-[#666] ml-2">
+              (nenhum escolhido = todos os artigos)
+            </span>
+          </div>
+          <div className="p-2 max-h-[190px] overflow-auto grid grid-cols-3 gap-x-4 gap-y-1">
+            {artigos.map((a: any) => (
+              <label key={a.id} className="flex items-center gap-2 text-[12px]">
+                <input type="checkbox" className="w-4 h-4"
+                  checked={(d.items || []).includes(a.id)}
+                  onChange={(e) => set('items', e.target.checked
+                    ? [...(d.items || []), a.id]
+                    : (d.items || []).filter((x: number) => x !== a.id))} />
+                <span className="truncate">{a.name}</span>
+              </label>
+            ))}
+            {artigos.length === 0 && <span className="text-[#999] text-[12px]">Sem artigos.</span>}
+          </div>
+          <div className="px-3 py-1.5 bg-[#f7f7f7] border-t border-[#e0e0e0] text-[11px] text-[#666]">
+            "Com gelo?" num prato de bacalhau ensina o empregado a carregar em qualquer
+            coisa para se ver livre da pergunta — e a partir daí deixa de as ler todas.
+          </div>
+        </div>
+
         {/* Modelos (respostas) */}
         <div className="border border-[#c0c0c0]">
           <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] border-b border-[#c0c0c0]">Modelos</div>
@@ -74,7 +122,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
             <table className="flex-1 text-[12px] border-collapse">
               <thead>
                 <tr className="bg-[#f4f4f4] text-[#333]">
-                  {['Tecla', 'Impressão', 'Ordem', 'Impressora', 'E-menu'].map((h) => (
+                  {['Código', 'Texto (tecla e comanda)', 'Ordem', 'Ativo'].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{h}</th>
                   ))}
                   <th className="w-[60px] border-b border-[#d0d0d0]" />
@@ -83,27 +131,21 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
               <tbody>
                 {opts.map((o, i) => (
                   <tr key={i} className="border-b border-[#eee]">
-                    <td className="px-1 py-0.5">
-                      <input value={o.key_label} onChange={(e) => setOpt(i, 'key_label', e.target.value)}
-                        placeholder="SABOR CHOCOLATE" className="w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px]" />
+                    <td className="px-1 py-0.5 w-[140px]">
+                      <input value={o.code || ''} onChange={(e) => setOpt(i, 'code', e.target.value.toUpperCase())}
+                        placeholder="GELO1" className="w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px]" />
                     </td>
                     <td className="px-1 py-0.5">
-                      <input value={o.print_label} onChange={(e) => setOpt(i, 'print_label', e.target.value)}
-                        placeholder="o que sai na comanda" className="w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px]" />
+                      <input value={o.text || ''} onChange={(e) => setOpt(i, 'text', e.target.value)}
+                        placeholder="SEM GELO" className="w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px]" />
                     </td>
                     <td className="px-1 py-0.5 w-[80px]">
                       <input type="number" value={o.sort_order ?? 0} onChange={(e) => setOpt(i, 'sort_order', Number(e.target.value))}
                         className="w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px]" />
                     </td>
-                    <td className="px-1 py-0.5 w-[170px]">
-                      <select value={o.printer || ''} onChange={(e) => setOpt(i, 'printer', Number(e.target.value) || null)}
-                        className="w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white">
-                        <option value="">—</option>
-                        {printers.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      </select>
-                    </td>
                     <td className="px-2 py-0.5 text-center w-[70px]">
-                      <input type="checkbox" checked={!!o.on_emenu} onChange={(e) => setOpt(i, 'on_emenu', e.target.checked)} className="w-4 h-4" />
+                      <input type="checkbox" checked={o.is_active !== false}
+                        onChange={(e) => setOpt(i, 'is_active', e.target.checked)} className="w-4 h-4" />
                     </td>
                     <td className="px-2 text-center">
                       <button onClick={() => delOpt(i)} className="text-red-600 font-bold text-[11px]">Apagar</button>
@@ -111,7 +153,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
                   </tr>
                 ))}
                 {opts.length === 0 && (
-                  <tr><td colSpan={6} className="text-center text-[#999] py-8">Sem modelos. Carregue em "Adicionar".</td></tr>
+                  <tr><td colSpan={5} className="text-center text-[#999] py-8">Sem modelos. Carregue em "Adicionar".</td></tr>
                 )}
               </tbody>
             </table>
@@ -131,7 +173,9 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         </div>
 
         <div className="text-[11px] text-[#666] mt-2">
-          A <b>Tecla</b> é o que o operador vê; a <b>Impressão</b> é o que sai na comanda da <b>Impressora</b> escolhida.
+          O <b>Texto</b> é o que o operador vê na tecla E o que sai na comanda da cozinha —
+          é o mesmo, de propósito: o que o empregado escolheu tem de ser exatamente o que
+          a cozinha lê.
         </div>
       </div>
 
