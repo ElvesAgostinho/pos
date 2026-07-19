@@ -7,6 +7,7 @@ import EntityPicker from './EntityPicker';
 import ClientPicker from './ClientPicker';
 import CustomerIdForm from './CustomerIdForm';
 import NotesDialog from './NotesDialog';
+import PaymentReceipt from './PaymentReceipt';
 import {
   IcoCliente, IcoLapis, IcoLimpar, IcoPreco, IcoVisto, IcoCruz, IcoDocumento, IcoLista,
 } from './Icons';
@@ -83,6 +84,8 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
   const [dadosCliente, setDadosCliente] = useState(false);
   const [verObs, setVerObs] = useState(false);
   const [escolherSerie, setEscolherSerie] = useState(false);
+  // O RECIBO final: guarda o numero do documento (ou '' se ainda nao ha).
+  const [recibo, setRecibo] = useState<string | null>(null);
 
   // AS SÉRIES vêm do backoffice (Configuração POS › Séries de Documento).
   const { data: series = [] } = useQuery({
@@ -93,6 +96,14 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
     },
     enabled: escolherSerie,
   });
+
+  // O NÚMERO DO DOCUMENTO desta conta, lido dos documentos emitidos.
+  const numeroDoc = async (): Promise<string | null> => {
+    try {
+      const dd = await apiClient.get('pos/reports/documents/', { params: { search: conta.ticket_number } });
+      return ((dd.data?.rows || dd.data?.results || []) as any[])[0]?.number || null;
+    } catch { return null; }
+  };
 
   // EMITIR O DOCUMENTO. Sem série indicada, o motor usa a da ficha do setor.
   const emitir = async (serie?: any) => {
@@ -141,7 +152,17 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
       setConta(tk);
       setValor('');
       setModoCartao('');
-      if (Number(tk.balance_due ?? 0) <= 0) onPaid();
+      // CONTA SALDADA: em vez de fechar tudo à pressa, mostra-se o RECIBO — quanto era,
+      // quanto entrou em cada meio, o troco e o número do documento. Fechar sem mostrar
+      // era deixar o empregado a contar o troco de cabeça e sem saber se a fatura saiu.
+      if (Number(tk.balance_due ?? 0) <= 0) {
+        let doc: string | null = null;
+        try {
+          const dd = await apiClient.get('pos/reports/documents/', { params: { search: tk.ticket_number } });
+          doc = ((dd.data?.rows || dd.data?.results || []) as any[])[0]?.number || null;
+        } catch { /* sem documento ainda: o recibo diz isso e deixa emitir */ }
+        setRecibo(doc || '');
+      }
     } catch (e: any) {
       aviso(e?.response?.data?.detail || 'Não foi possível cobrar.');
     } finally { setBusy(false); }
@@ -326,6 +347,14 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
           </BotaoPag>
         </div>
       </div>
+
+      {/* O RECIBO — aparece assim que a conta fica saldada. */}
+      {recibo !== null && (
+        <PaymentReceipt conta={conta} documento={recibo || null}
+          onFechar={() => { setRecibo(null); onPaid(); }}
+          onEmitir={async () => { await emitir(); const d = await numeroDoc(); setRecibo(d || ''); }}
+          onEscolherSerie={() => setEscolherSerie(true)} />
+      )}
 
       {escolherEntidade && (
         <EntityPicker onPick={(e) => { setEntidade(e); setEscolherEntidade(false); }}

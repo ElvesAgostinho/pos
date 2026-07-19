@@ -97,7 +97,36 @@ export default function DialogoHost() {
   useEffect(() => {
     empurrar = (p: Pedido) => setPendentes((v) => [...v, p]);
     if (fila.length) { setPendentes((v) => [...v, ...fila]); fila.length = 0; }
-    return () => { empurrar = null; };
+
+    /**
+     * ERROS QUE NINGUÉM VÊ. Um erro dentro de um botão (um `undefined` ao tocar em
+     * "Pagar") morre na consola do browser: o ecrã não muda, o botão não responde, e
+     * quem está a servir só sabe dizer "não dá para fazer nada". Sem a mensagem, não há
+     * como saber o que falhou — nem para quem está a assistir à distância.
+     *
+     * Apanham-se aqui e mostram-se. Vale mais uma caixa com o erro do que um botão mudo.
+     */
+    const naErro = (e: ErrorEvent) => {
+      // erros de recursos (imagens, scripts) não trazem mensagem útil ao operador
+      if (!e?.message) return;
+      aviso(`${e.message}\n\n${(e.filename || '').split('/').pop() || ''}${e.lineno ? `:${e.lineno}` : ''}`,
+        'Erro no terminal');
+    };
+    const naPromessa = (e: PromiseRejectionEvent) => {
+      const r: any = e?.reason;
+      // os erros de API já são mostrados pelo próprio ecrã — não se repetem aqui
+      if (r?.isAxiosError || r?.response) return;
+      if (!r) return;
+      aviso(String(r?.message || r), 'Erro no terminal');
+    };
+    window.addEventListener('error', naErro);
+    window.addEventListener('unhandledrejection', naPromessa);
+
+    return () => {
+      empurrar = null;
+      window.removeEventListener('error', naErro);
+      window.removeEventListener('unhandledrejection', naPromessa);
+    };
   }, []);
 
   useEffect(() => {

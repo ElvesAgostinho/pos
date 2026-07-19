@@ -54,10 +54,13 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
           className="flex-1 h-[46px] bg-[#8a8a8a] text-white text-[18px] px-3 rounded outline-none
             placeholder:text-white/40" />
         <button onClick={() => setAberto(!aberto)}
-          className={`w-[60px] h-[46px] rounded text-[20px] ${aberto
-            ? 'bg-[#0f8b8d] text-white' : 'bg-[#3a3a3a] text-white'}`} title="Teclado"><IcoTeclado size={22} /></button>
+          className={`w-[60px] h-[46px] rounded-[3px] flex items-center justify-center border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.5)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] ${aberto
+            ? 'bg-gradient-to-b from-[#17a2a4] to-[#0b6b6d] text-white'
+            : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424] text-white'}`}
+          title="Teclado"><IcoTeclado size={22} /></button>
         <button onClick={onOk}
-          className="w-[60px] h-[46px] bg-[#1f7a34] text-white text-[20px] rounded"><IcoLupa size={22} /></button>
+          className="w-[60px] h-[46px] rounded-[3px] flex items-center justify-center text-white
+            bg-gradient-to-b from-[#2b9c48] to-[#125c26] border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.5)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] "><IcoLupa size={22} /></button>
       </div>
 
       {aberto && (
@@ -66,7 +69,8 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
             <div key={i} className="flex gap-1">
               {linha.map((t) => (
                 <button key={t} onClick={() => setValor(valor + (maiusc ? t.toUpperCase() : t))}
-                  className="flex-1 h-[42px] bg-[#3a3a3a] text-white text-[16px] rounded active:bg-[#0f8b8d]">
+                  className="flex-1 h-[42px] rounded-[3px] text-white text-[17px] font-semibold
+                    bg-gradient-to-b from-[#4a4a4a] to-[#242424] border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.5)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] ">
                   {maiusc ? t.toUpperCase() : t}
                 </button>
               ))}
@@ -74,15 +78,17 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
           ))}
           <div className="flex gap-1">
             <button onClick={() => setMaiusc(!maiusc)}
-              className={`w-[90px] h-[42px] rounded text-[16px] ${maiusc
-                ? 'bg-[#0f8b8d] text-white' : 'bg-[#3a3a3a] text-white'}`}><IcoMaiusculas size={20} /></button>
+              className={`w-[90px] h-[42px] rounded-[3px] flex items-center justify-center border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.5)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] ${maiusc
+                ? 'bg-gradient-to-b from-[#17a2a4] to-[#0b6b6d] text-white'
+                : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424] text-white'}`}><IcoMaiusculas size={20} /></button>
             <button onClick={() => setValor(valor + ' ')} className="flex-1 h-[42px] bg-[#3a3a3a] rounded" />
             <button onClick={() => setValor('')}
               className="w-[80px] h-[42px] bg-[#c0140f] text-white text-[16px] font-bold rounded">C</button>
             <button onClick={() => setValor(valor.slice(0, -1))}
               className="w-[80px] h-[42px] bg-[#3a3a3a] text-white text-[16px] rounded">⌫</button>
             <button onClick={() => { onOk(); setAberto(false); }}
-              className="w-[90px] h-[42px] bg-[#1f7a34] text-white text-[18px] rounded"><IcoVisto size={24} /></button>
+              className="w-[90px] h-[42px] rounded-[3px] flex items-center justify-center text-white
+                bg-gradient-to-b from-[#2b9c48] to-[#125c26] border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.5)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] "><IcoVisto size={24} /></button>
           </div>
         </div>
       )}
