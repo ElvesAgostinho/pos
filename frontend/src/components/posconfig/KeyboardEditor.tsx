@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money } from './kit';
+import { ItemPicker } from './Pickers';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 let SEQ = 1;
@@ -26,7 +27,6 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
   const [folder, setFolder] = useState<string | null>(null);  // pasta aberta dentro da página
   const [sel, setSel] = useState<string | null>(null);        // tecla selecionada
   const [picker, setPicker] = useState(false);
-  const [q, setQ] = useState('');
 
   const { data: full } = useQuery({
     queryKey: ['posc', 'kb', row?.id],
@@ -42,14 +42,6 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
     setPage(first?.tmp_id ?? null);
   }, [full]);
 
-  const { data: articles = [] } = useQuery({
-    queryKey: ['posc', 'kb-items', q],
-    queryFn: async () => {
-      const r = await apiClient.get('inventory/pos/articles/', { params: { q: q || undefined } });
-      return (r.data?.results || r.data || []).slice(0, 60);
-    },
-    enabled: picker,
-  });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -251,35 +243,22 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
         </div>
       </div>
 
-      {/* Escolher artigos */}
+      {/* ESCOLHER ARTIGOS — o seletor COMPLETO que já existia no sistema (Pickers.tsx):
+          filtros por Grupo/Família/Sub Família/Tipo/Estado, texto livre, grelha com
+          Código, Descrição, Grupo, Família, Sub Família, Preço, IVA, Impressoras e
+          Ativo, "Selecionar Tudo" e paginação.
+
+          Aqui havia uma caixa própria, com uma lista simples e um botão "Adicionar
+          todos os 22". Numa casa com 371 artigos (que é o normal), essa lista obriga a
+          rolar às cegas para encontrar um sumo — e o "adicionar todos" enche o teclado
+          com o armazém inteiro. Duas versões do mesmo ecrã também divergem: a boa
+          ganhava filtros e esta ficava para trás.
+      */}
       {picker && (
-        <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={() => setPicker(false)}>
-          <div className="bg-white border border-[#888] w-[720px] max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
-              <span>Adicionar Artigos</span>
-              <button onClick={() => setPicker(false)}>✕</button>
-            </div>
-            <div className="p-2 border-b border-[#e0e0e0]">
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Pesquisar artigo…"
-                className={`${inp} w-full`} style={inputStyle} autoFocus />
-            </div>
-            <div className="flex-1 overflow-auto">
-              {articles.map((a: any) => (
-                <button key={a.id} onClick={() => addItems([a])}
-                  className="w-full flex items-center justify-between px-3 py-2 text-[12px] border-b border-[#eee] hover:bg-[#e6f0fa] text-left">
-                  <span><b>{a.code}</b> · {a.name}</span>
-                  <span className="text-[#666]">{money(a.prices?.[0]?.price ?? a.sale_price)}</span>
-                </button>
-              ))}
-              {articles.length === 0 && <div className="text-center text-[#999] py-8 text-[12px]">Sem artigos.</div>}
-            </div>
-            <div className="p-2 border-t border-[#e0e0e0] flex justify-end">
-              <button onClick={() => addItems(articles)} className="px-3 py-1.5 bg-[#2b2b2b] text-white text-[12px] font-bold">
-                Adicionar todos os {articles.length}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ItemPicker title="Adicionar - Artigos"
+          exclude={keys.filter((k: any) => k.kind === 'ITEM' && k.item).map((k: any) => k.item)}
+          onPick={(rows) => addItems(rows)}
+          onClose={() => setPicker(false)} />
       )}
 
       <Toolbar actions={[

@@ -503,7 +503,20 @@ export default function PosTerminal() {
             </>
           )}
           {etapa === 'SALES' && ticket && (
-            <SalesScreen ticketId={ticket} setor={setor} cfg={cfg}
+            /*
+             * A CHAVE (key) É O QUE FAZ ISTO FUNCIONAR.
+             *
+             * A venda guarda o número da conta em estado próprio (useState), e o
+             * useState só olha para o valor inicial. Sem a chave, React reaproveitava o
+             * MESMO ecrã ao mudar de mesa: abria-se a mesa 2 e a venda continuava
+             * agarrada à conta da mesa 1. Tudo o que se fizesse a seguir ia para a
+             * conta errada — os artigos lançavam-se na mesa 1, a consulta e o pagamento
+             * batiam numa conta já paga, e a mesa 2 ficava vazia como se nada tivesse
+             * sido guardado. Era este o "não vende, não guarda, não consulta".
+             *
+             * Com a chave, cada conta tem o seu ecrã: entra limpo e sai com ela.
+             */
+            <SalesScreen key={ticket} ticketId={ticket} setor={setor} cfg={cfg}
               publicarAcoes={setAcoesConta} publicarTopo={setTopo}
               onClose={() => fecharVenda(ticket)} />
           )}

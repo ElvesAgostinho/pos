@@ -82,6 +82,11 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const qc = useQueryClient();
   // A subconta ATIVA: numa mesa com várias pessoas, o carrossel troca-a sem sair da venda.
   const [tid, setTid] = useState(ticketId);
+  // Cinto e suspensórios: quem monta este ecrã dá-lhe uma `key` por conta, mas se
+  // alguém a esquecer, o número da conta segue o que vem de fora na mesma. Um ecrã de
+  // venda agarrado à conta errada lança os artigos na mesa do vizinho — não é um erro
+  // que se possa deixar depender de uma linha noutro ficheiro.
+  useEffect(() => { setTid(ticketId); }, [ticketId]);
   const [caminho, setCaminho] = useState<any[]>([]);
   const [qtd, setQtd] = useState(1);
   const [entidade, setEntidade] = useState<any | null>(null);
