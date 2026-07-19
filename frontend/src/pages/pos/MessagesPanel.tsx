@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
+import { IcoLapis } from './Icons';
 
 /**
  * MENSAGENS PARA A PRODUÇÃO — "sem sal", "bem passado", "com adoçante".
@@ -34,7 +35,7 @@ export default function MessagesPanel({ linha, onPick, onClose }: {
   return (
     <div className="absolute inset-0 bg-[#2b2b2b] z-30 flex flex-col">
       <div className="h-[56px] flex items-center justify-center gap-2 border-b border-black/60 flex-shrink-0">
-        <span className="text-[#7fd4ff] text-[22px]">✎</span>
+        <span className="text-[#7fd4ff]"><IcoLapis size={24} /></span>
         <span className="text-white text-[22px] font-bold">
           Mensagens{aberta ? ` — ${aberta.name}` : ''}
         </span>
@@ -83,11 +84,11 @@ export default function MessagesPanel({ linha, onPick, onClose }: {
             entrou por engano em "Ponto" não quer perder o painel todo. */}
         <button onClick={() => (aberta ? setAberta(null) : onClose())}
           className="h-[64px] bg-[#3a3a3a] text-white text-[18px] rounded">
-          {aberta ? '⬅ Voltar' : '✖ Fechar'}
+          {aberta ? 'Voltar' : 'Fechar'}
         </button>
         {/* LIMPAR tira a mensagem da linha — o cliente mudou de ideias. */}
         <button onClick={() => onPick('')}
-          className="h-[64px] bg-[#2b2b2b] text-white/80 text-[18px] rounded">🧽 Sem mensagem</button>
+          className="h-[64px] bg-[#2b2b2b] text-white/80 text-[18px] rounded">Sem mensagem</button>
       </div>
     </div>
   );

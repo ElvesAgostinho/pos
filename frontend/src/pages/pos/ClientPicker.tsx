@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import TouchKeyboard from './TouchKeyboard';
+import { IcoCliente, IcoQuarto, IcoCalendario } from './Icons';
 
 /**
  * QUEM VAI PAGAR — as três respostas possíveis, em três abas.
@@ -66,10 +67,10 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true }: {
   const filtrar = (linhas: any[], campos: string[]) => !busca ? linhas : linhas.filter((l) =>
     campos.some((c) => String(l?.[c] ?? '').toLowerCase().includes(busca.toLowerCase())));
 
-  const ABAS: { k: Aba; icon: string; titulo: string }[] = [
-    { k: 'ENTIDADE', icon: '👤', titulo: 'Entidade' },
-    { k: 'QUARTO', icon: '🛏', titulo: 'Quarto' },
-    { k: 'EVENTOS', icon: '📅', titulo: 'Eventos' },
+  const ABAS: { k: Aba; icon: any; titulo: string }[] = [
+    { k: 'ENTIDADE', icon: <IcoCliente size={30} />, titulo: 'Entidade' },
+    { k: 'QUARTO', icon: <IcoQuarto size={30} />, titulo: 'Quarto' },
+    { k: 'EVENTOS', icon: <IcoCalendario size={30} />, titulo: 'Eventos' },
   ];
   const titulo = ABAS.find((a) => a.k === aba)!.titulo;
 
@@ -86,7 +87,7 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true }: {
           {ABAS.map((a) => (
             <button key={a.k} onClick={() => { setAba(a.k); setTexto(''); }}
               title={a.titulo}
-              className={`w-[180px] text-[30px] border-l border-black
+              className={`w-[180px] flex items-center justify-center border-l border-black
                 ${aba === a.k ? 'bg-[#b39100] text-white' : 'bg-[#2b2b2b] text-white/70'}`}>
               {a.icon}
             </button>
@@ -147,9 +148,9 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true }: {
           <button onClick={podeSaltar ? () => onPick({}) : undefined} disabled={!podeSaltar}
             title={podeSaltar ? 'Seguir como Consumidor Final' : 'Este setor exige identificar o cliente'}
             className="h-[64px] bg-[#2b2b2b] rounded text-[#2ecc40] text-[20px] font-bold
-              disabled:opacity-25">✔ Consumidor Final</button>
+              disabled:opacity-25">Consumidor Final</button>
           <button onClick={onClose}
-            className="h-[64px] bg-[#2b2b2b] rounded text-[#e02020] text-[20px] font-bold">✖ Fechar</button>
+            className="h-[64px] bg-[#2b2b2b] rounded text-[#e02020] text-[20px] font-bold">Fechar</button>
         </div>
       </div>
     </div>

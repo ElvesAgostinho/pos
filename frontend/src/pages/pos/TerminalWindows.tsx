@@ -98,7 +98,7 @@ export function HardwareWindow({ outlet, onClose }: { outlet?: number; onClose: 
             <span className="text-white/70 truncate">{a.connection || a.address || a.port || '—'}</span>
             <span className="text-right">
               <button onClick={() => testar.mutate(a)} disabled={testar.isPending}
-                className="px-3 py-1.5 bg-[#2b2b2b] rounded text-[13px] hover:bg-[#3a3a3a]">🖨 Testar</button>
+                className="px-3 py-1.5 bg-[#2b2b2b] rounded text-[13px] hover:bg-[#3a3a3a]">Testar</button>
             </span>
           </div>
         ))}

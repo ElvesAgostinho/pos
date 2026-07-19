@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IcoVisto, IcoCruz } from './Icons';
 
 /**
  * TECLADO NUMÉRICO — quantidade, preço, percentagem.
@@ -56,9 +57,9 @@ export default function NumPad({ titulo, subtitulo = 'Editar quantidade', inicia
         <div className="grid grid-cols-2 gap-2 p-3">
           <button onClick={() => v.trim() && onOk(v.trim())} disabled={!v.trim()}
             className="h-[64px] bg-[#2b2b2b] rounded text-[#2ecc40] text-[34px] font-bold
-              disabled:opacity-25">✔</button>
+              disabled:opacity-25"><IcoVisto size={36} /></button>
           <button onClick={onClose}
-            className="h-[64px] bg-[#2b2b2b] rounded text-[#e02020] text-[34px] font-bold">✖</button>
+            className="h-[64px] bg-[#2b2b2b] rounded text-[#e02020] font-bold"><IcoCruz size={34} /></button>
         </div>
       </div>
     </div>

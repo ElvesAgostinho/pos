@@ -1,3 +1,5 @@
+import { IcoCruz } from './Icons';
+
 /**
  * O PAINEL DA ENGRENAGEM — as funções do terminal, dentro do balcão de venda.
  *
@@ -20,7 +22,8 @@
 
 export type AcaoPainel = {
   label: string;
-  icon: string;
+  /** ícone DESENHADO (ver Icons.tsx) — nunca emoji: o emoji é do sistema, não nosso */
+  icon: any;
   act: () => void;
   /** false = apagado (sem conta aberta, sem caixa, sem permissão) */
   on?: boolean;
@@ -70,8 +73,11 @@ export default function SettingsPanel({ abas, aba, onAba, onClose, direita = 0, 
         <div className="flex-1" />
         {/* FECHAR devolve ao sítio de onde se veio — a venda continua onde estava. */}
         <button onClick={onClose}
-          className="h-[76px] m-2 rounded bg-[#c0140f] text-white text-[34px] font-bold active:scale-95">
-          ✕
+          className="h-[80px] m-2 rounded-[3px] text-white flex items-center justify-center
+            border-2 border-black bg-gradient-to-b from-[#d42a24] to-[#8a0f0b]
+            shadow-[inset_0_2px_0_rgba(255,255,255,0.2),inset_0_-2px_0_rgba(0,0,0,0.5)]
+            active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]">
+          <IcoCruz size={38} />
         </button>
       </div>
 
@@ -89,11 +95,15 @@ export default function SettingsPanel({ abas, aba, onAba, onClose, direita = 0, 
                 <button key={a.label} disabled={apagado}
                   title={apagado ? (a.why || 'Indisponível agora') : a.label}
                   onClick={a.act}
-                  className={`h-[136px] rounded flex flex-col items-center justify-center gap-2 px-2
-                    text-center leading-tight active:scale-95 transition
-                    disabled:opacity-30 disabled:cursor-not-allowed
-                    ${a.ativo ? 'bg-[#b39100] ring-2 ring-white/70' : 'bg-[#3a3a3a] hover:bg-[#454545]'}`}>
-                  <span className={`text-[38px] ${a.perigo ? 'text-[#e02020]' : ''}`}>{a.icon}</span>
+                  className={`h-[140px] rounded-[3px] flex flex-col items-center justify-center gap-2.5
+                    px-2 text-center leading-tight border-2 border-black
+                    shadow-[inset_0_2px_0_rgba(255,255,255,0.16),inset_0_-2px_0_rgba(0,0,0,0.5)]
+                    active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
+                    disabled:opacity-30 disabled:shadow-none disabled:cursor-not-allowed
+                    ${a.ativo
+                      ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] ring-[3px] ring-white/80 ring-inset'
+                      : 'bg-gradient-to-b from-[#4a4a4a] to-[#262626]'}`}>
+                  <span className={a.perigo ? 'text-[#e02020]' : 'text-white'}>{a.icon}</span>
                   <span className={`text-[15px] font-semibold ${a.perigo ? 'text-[#e02020]' : 'text-white'}`}>
                     {a.label}
                   </span>

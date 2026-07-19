@@ -21,6 +21,12 @@ import GroupTables from './GroupTables';
 import SettingsPanel, { type AcaoPainel } from './SettingsPanel';
 import { OpenTablesWindow, HardwareWindow, CashDetailWindow, SalesSummaryWindow } from './TerminalWindows';
 import { useProducao, ProductionWindow } from './ProductionBell';
+import {
+  IcoLupa, IcoMaisMenos, IcoLapis, IcoCliente, IcoMesas, IcoVenda, IcoSino, IcoEngrenagem,
+  IcoGaveta, IcoDocumento, IcoLista, IcoImpressora, IcoChave, IcoAtualizar, IcoEcra,
+  IcoSangria, IcoCadeado, IcoDetalhe, IcoGrafico, IcoCruz, IcoAviso, IcoParciais,
+  IcoTransferir, IcoCalendario, IcoAgrupar, IcoEntrega, IcoCombo, IcoQuarto,
+} from './Icons';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -38,13 +44,22 @@ import { useProducao, ProductionWindow } from './ProductionBell';
 
 export type Etapa = 'SECTOR' | 'CASH' | 'MAP' | 'SALES';
 
-/** Um ícone da barra preta. Apagado quando não há linha escolhida — nunca escondido. */
-const IconeTopo = ({ icon, titulo, act, on = true }: {
-  icon: string; titulo: string; act: () => void; on?: boolean;
+/**
+ * Um ícone da barra preta. Apagado quando não há linha escolhida — nunca escondido.
+ * Relevo pesado, como as teclas: a barra é a mesma superfície do teclado, não uma
+ * barra de navegação de página web.
+ */
+const IconeTopo = ({ icon, titulo, act, on = true, aceso = false }: {
+  icon: any; titulo: string; act: () => void; on?: boolean; aceso?: boolean;
 }) => (
   <button onClick={() => on && act()} disabled={!on} title={titulo}
-    className="w-[86px] h-[74px] m-2 rounded bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white
-      text-[28px] flex items-center justify-center disabled:opacity-25 disabled:cursor-not-allowed">
+    className={`w-[92px] h-[76px] m-1.5 rounded-[3px] text-white flex items-center justify-center
+      border-2 border-black
+      shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
+      active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
+      disabled:opacity-25 disabled:shadow-none disabled:cursor-not-allowed
+      ${aceso ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00]'
+        : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424]'}`}>
     {icon}
   </button>
 );
@@ -235,35 +250,35 @@ export default function PosTerminal() {
   // não se escondem: o empregado tem o sítio delas na memória e procurá-las-ia.
   const MENU: { label: string; icon: string; act: () => void; on?: boolean; ativo?: boolean }[] = [
     ...(cfg?.direct_sale
-      ? [{ label: 'Venda Direta', icon: '🛒', act: vendaDireta, on: !!setor }]
+      ? [{ label: 'Venda Direta', icon: <IcoVenda size={28} />, act: vendaDireta, on: !!setor }]
       : []),
     // CONSULTA: toca-se na mesa e vê-se o talão — sem passar pela página de venda.
-    { label: 'Consulta de Mesa', icon: '🖨', ativo: emConsulta,
+    { label: 'Consulta de Mesa', icon: <IcoImpressora size={28} />, ativo: emConsulta,
       act: () => alternar('VIEW', '', emConsulta), on: !!sessao || !cfg?.require_cash_open },
-    { label: 'Pagamentos', icon: '💰', ativo: emPagamentos,
+    { label: 'Pagamentos', icon: <IcoDinheiro size={28} />, ativo: emPagamentos,
       act: () => alternar('PAY', '', emPagamentos), on: !!sessao },
     // Parciais e transferências precisam de uma mesa COM conta: escolhe-se no mapa.
-    { label: 'Funções Parciais', icon: '⑂', ativo: emParciais,
+    { label: 'Funções Parciais', icon: <IcoParciais size={28} />, ativo: emParciais,
       act: () => alternar('PAY', 'SPLIT', emParciais), on: !!sessao },
     // (Parâmetro 8124) "Não permitir": o botão desaparece — a casa não transfere mesas.
     ...(cfg?.transfers !== 'Não permitir'
-      ? [{ label: 'Transferências', icon: '⇄', ativo: emTransfer,
+      ? [{ label: 'Transferências', icon: <IcoTransferir size={28} />, ativo: emTransfer,
           act: () => alternar('PAY', 'TRANSFER', emTransfer), on: !!sessao }]
       : []),
     // RESERVAS de mesa (motor POSReservation) e ENTREGAS por destino (dispatch/deliver)
-    { label: 'Reservas', icon: '📅', act: () => setJanela('RESERVAS'), on: !!setor },
-    { label: 'Agrupar Mesas', icon: '⛓', act: () => setJanela('GRUPOS'), on: !!setor },
-    { label: 'Entregas', icon: '🛎', act: () => setJanela('ENTREGAS'), on: true },
-    { label: 'Documentos', icon: '🗎', act: () => setJanela('DOCS'), on: true },
-    { label: 'Mapa de Refeições', icon: '🍸', act: () => setJanela('MEALS'), on: true },
-    { label: 'Info.Hósp.', icon: '👤', act: () => setJanela('GUESTS'), on: true },
-    { label: 'Setor', icon: '🖵', act: () => setEtapa('SECTOR'), on: true },
-    { label: 'Contas Correntes', icon: '≣', act: () => setJanela('CC'), on: true },
+    { label: 'Reservas', icon: <IcoCalendario size={28} />, act: () => setJanela('RESERVAS'), on: !!setor },
+    { label: 'Agrupar Mesas', icon: <IcoAgrupar size={28} />, act: () => setJanela('GRUPOS'), on: !!setor },
+    { label: 'Entregas', icon: <IcoEntrega size={28} />, act: () => setJanela('ENTREGAS'), on: true },
+    { label: 'Documentos', icon: <IcoDocumento size={40} />, act: () => setJanela('DOCS'), on: true },
+    { label: 'Mapa de Refeições', icon: <IcoCombo size={28} />, act: () => setJanela('MEALS'), on: true },
+    { label: 'Info.Hósp.', icon: <IcoQuarto size={28} />, act: () => setJanela('GUESTS'), on: true },
+    { label: 'Setor', icon: <IcoEcra size={28} />, act: () => setEtapa('SECTOR'), on: true },
+    { label: 'Contas Correntes', icon: <IcoLista size={40} />, act: () => setJanela('CC'), on: true },
     // FECHO DE CAIXA: o operador conta a gaveta e presta contas (8005 fecho cego).
-    { label: 'Fecho de Caixa', icon: '🧮', act: () => setFechoCaixa(true), on: !!sessao },
+    { label: 'Fecho de Caixa', icon: <IcoCadeado size={40} />, act: () => setFechoCaixa(true), on: !!sessao },
     // (Parâmetro 8062) o fecho do dia só aparece se o backoffice o permitir aqui.
     ...(cfg?.allow_day_close
-      ? [{ label: 'Fecho do Dia', icon: '🔒', act: fecharDia, on: true }]
+      ? [{ label: 'Fecho do Dia', icon: <IcoCadeado size={28} />, act: fecharDia, on: true }]
       : []),
   ];
 
@@ -291,31 +306,31 @@ export default function PosTerminal() {
   };
 
   const acoesGeral: AcaoPainel[] = [
-    { label: 'Abrir Gaveta', icon: '💵', act: abrirGaveta, on: !!sessao,
+    { label: 'Abrir Gaveta', icon: <IcoGaveta size={40} />, act: abrirGaveta, on: !!sessao,
       why: 'Sem caixa aberta não há gaveta para abrir.' },
-    { label: 'Documentos', icon: '🗎', act: () => abrirJanela('DOCS'), on: true },
-    { label: 'Contas Correntes', icon: '≣', act: () => abrirJanela('CC'), on: true },
-    { label: 'Mesas Abertas', icon: '▦', act: () => abrirJanela('MESAS'), on: true },
-    { label: 'Impressoras', icon: '🖨', act: () => abrirJanela('HARDWARE'), on: true },
-    { label: 'Alterar password', icon: '🔑', act: () => { setTrocarPin(true); fecharMenu(); }, on: true },
+    { label: 'Documentos', icon: <IcoDocumento size={40} />, act: () => abrirJanela('DOCS'), on: true },
+    { label: 'Contas Correntes', icon: <IcoLista size={40} />, act: () => abrirJanela('CC'), on: true },
+    { label: 'Mesas Abertas', icon: <IcoMesas size={40} />, act: () => abrirJanela('MESAS'), on: true },
+    { label: 'Impressoras', icon: <IcoImpressora size={40} />, act: () => abrirJanela('HARDWARE'), on: true },
+    { label: 'Alterar password', icon: <IcoChave size={40} />, act: () => { setTrocarPin(true); fecharMenu(); }, on: true },
     // ATUALIZAR: outro terminal mexeu na mesa e este ainda mostra o antigo.
-    { label: 'Atualizar', icon: '⟳', act: () => { inval(); fecharMenu(); }, on: true },
-    { label: 'Trocar de Setor', icon: '🖵', act: () => { setEtapa('SECTOR'); fecharMenu(); }, on: true },
+    { label: 'Atualizar', icon: <IcoAtualizar size={40} />, act: () => { inval(); fecharMenu(); }, on: true },
+    { label: 'Trocar de Setor', icon: <IcoEcra size={40} />, act: () => { setEtapa('SECTOR'); fecharMenu(); }, on: true },
   ];
 
   const acoesCaixa: AcaoPainel[] = [
     // CASH PICKUP (sangria): o dinheiro a mais sai da gaveta e vai para o cofre. É o
     // mesmo fecho, em modo sangria — não é um segundo motor a mexer no mesmo dinheiro.
-    { label: 'Cash Pickup', icon: '💸', act: () => { setFechoCaixa(true); fecharMenu(); }, on: !!sessao,
+    { label: 'Cash Pickup', icon: <IcoSangria size={40} />, act: () => { setFechoCaixa(true); fecharMenu(); }, on: !!sessao,
       why: 'Sem caixa aberta não há dinheiro a levantar.' },
-    { label: 'Fecho da Caixa', icon: '🧮', act: () => { setFechoCaixa(true); fecharMenu(); }, on: !!sessao,
+    { label: 'Fecho da Caixa', icon: <IcoCadeado size={40} />, act: () => { setFechoCaixa(true); fecharMenu(); }, on: !!sessao,
       why: 'A caixa já está fechada.' },
-    { label: 'Reimprimir', icon: '🖨', act: () => abrirJanela('DOCS'), on: true },
-    { label: 'Detalhe da Caixa', icon: '📋', act: () => abrirJanela('CXDETALHE'), on: !!sessao,
+    { label: 'Reimprimir', icon: <IcoImpressora size={40} />, act: () => abrirJanela('DOCS'), on: true },
+    { label: 'Detalhe da Caixa', icon: <IcoDetalhe size={40} />, act: () => abrirJanela('CXDETALHE'), on: !!sessao,
       why: 'Sem caixa aberta não há detalhe para mostrar.' },
-    { label: 'Resumo de vendas', icon: '📊', act: () => abrirJanela('RESUMO'), on: true },
+    { label: 'Resumo de vendas', icon: <IcoGrafico size={40} />, act: () => abrirJanela('RESUMO'), on: true },
     ...(cfg?.allow_day_close
-      ? [{ label: 'Fecho do Dia', icon: '🔒', act: () => { fecharDia(); fecharMenu(); }, on: true }]
+      ? [{ label: 'Fecho do Dia', icon: <IcoCadeado size={40} />, act: () => { fecharDia(); fecharMenu(); }, on: true }]
       : []),
   ];
 
@@ -329,10 +344,13 @@ export default function PosTerminal() {
           </span>
         </div>
 
-        <button onClick={() => setEtapa('MAP')} disabled={!sessao}
-          className={`w-[150px] m-2 rounded flex items-center justify-center text-[40px] disabled:opacity-30
-            ${etapa === 'MAP' ? 'bg-[#b39100] text-white' : 'bg-[#2a2a2a] text-white/70'}`}>
-          ▦
+        <button onClick={() => setEtapa('MAP')} disabled={!sessao} title="Mapa de mesas"
+          className={`w-[140px] m-1.5 rounded-[3px] flex items-center justify-center border-2 border-black
+            shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
+            active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] disabled:opacity-30 disabled:shadow-none
+            ${etapa === 'MAP' ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white'
+              : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424] text-white/80'}`}>
+          <IcoMesas size={40} />
         </button>
         {/* O ícone da VENDA: com uma conta aberta, mostra-a; SEM conta, abre a VENDA
             DIRETA (a conta de balcão, sem mesa). É assim no original — o balcão não
@@ -341,14 +359,12 @@ export default function PosTerminal() {
           onClick={() => (ticket ? setEtapa('SALES') : vendaDireta())}
           disabled={!setor}
           title={ticket ? 'Voltar à venda' : 'Venda Direta (sem mesa)'}
-          className={`w-[150px] my-2 rounded flex items-center justify-center gap-1 disabled:opacity-30
-            ${etapa === 'SALES' ? 'bg-[#b39100] text-white' : 'bg-[#2a2a2a] text-white/70'}`}>
-          <span className="flex flex-col gap-[5px]">
-            <span className="w-[26px] h-[4px] bg-current rounded" />
-            <span className="w-[26px] h-[4px] bg-current rounded" />
-            <span className="w-[26px] h-[4px] bg-current rounded" />
-          </span>
-          <span className="text-[30px]">💰</span>
+          className={`w-[140px] m-1.5 rounded-[3px] flex items-center justify-center border-2 border-black
+            shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
+            active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] disabled:opacity-30 disabled:shadow-none
+            ${etapa === 'SALES' ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white'
+              : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424] text-white/80'}`}>
+          <IcoVenda size={40} />
         </button>
 
         <div className="flex-1" />
@@ -360,24 +376,34 @@ export default function PosTerminal() {
             confiar no ecrã. Quem os executa é o SalesScreen (publica-os para aqui). */}
         {etapa === 'SALES' && topo && (
           <div className="flex items-center">
-            <IconeTopo icon="🔍" titulo="Pesquisar artigos" act={topo.procurar} />
-            <IconeTopo icon="⊕⊖" titulo={topo.temSel
+            <IconeTopo icon={<IcoLupa size={34} />} titulo="Pesquisar artigos" act={topo.procurar} />
+            <IconeTopo icon={<IcoMaisMenos size={34} />} titulo={topo.temSel
               ? 'Alterar a quantidade da linha escolhida'
               : 'Escolha primeiro uma linha da comanda (um toque)'}
               act={topo.quantidade} on={topo.temSel} />
-            <IconeTopo icon="✎" titulo={topo.temSel
+            <IconeTopo icon={<IcoLapis size={34} />} titulo={topo.temSel
               ? 'Mensagens para a produção'
               : 'Escolha primeiro uma linha da comanda (um toque)'}
               act={topo.mensagens} on={topo.temSel} />
-            {/* VENDA DIRETA / cliente: quem leva a fatura (Entidade, Quarto, Evento). */}
+            {/* ONDE ESTOU + QUEM PAGA, no mesmo botão: a mesa por cima (é o que o
+                empregado confirma antes de lançar) e o cliente por baixo. Estava numa
+                faixa própria dentro da venda a gastar uma linha inteira do teclado. */}
             <button onClick={topo.cliente}
               title="Quem leva a fatura (Entidade · Quarto · Eventos)"
-              className="h-[74px] px-4 m-2 rounded bg-[#2a2a2a] hover:bg-[#3a3a3a]
-                flex flex-col items-center justify-center leading-tight">
-              <span className="text-[#f0c000] text-[12px] font-bold max-w-[130px] truncate">
-                {topo.cliente_atual || 'Venda Direta'}
+              className="h-[76px] min-w-[190px] px-4 m-1.5 rounded-[3px] border-2 border-black
+                bg-gradient-to-b from-[#4a4a4a] to-[#242424]
+                shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
+                active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
+                flex flex-col items-center justify-center gap-1 leading-tight">
+              <span className="text-[#f0c000] text-[13px] font-bold max-w-[180px] truncate">
+                {topo.onde}
               </span>
-              <span className="text-white text-[26px]">👤+</span>
+              <span className="flex items-center gap-2 text-white">
+                <IcoCliente size={26} />
+                <span className="text-[13px] max-w-[130px] truncate">
+                  {topo.cliente_atual || 'Consumidor Final'}
+                </span>
+              </span>
             </button>
           </div>
         )}
@@ -386,23 +412,30 @@ export default function PosTerminal() {
           {/* O SINO DA PRODUÇÃO: pulsa quando há pratos PRONTOS no passe */}
           <button onClick={() => setVerProducao(true)}
             title="Produção (cozinha/bar/pastelaria) em tempo real"
-            className={`relative w-[74px] h-[74px] m-2 rounded text-[30px] flex items-center justify-center
-              ${prontos > 0 ? 'bg-[#1f7a34] animate-pulse' : 'bg-[#2a2a2a]'}`}>
-            🔔
+            className={`relative w-[80px] h-[76px] m-1.5 rounded-[3px] text-white flex items-center
+              justify-center border-2 border-black
+              shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
+              ${prontos > 0 ? 'bg-gradient-to-b from-[#2b9c48] to-[#125c26] animate-pulse'
+                : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424]'}`}>
+            <IcoSino size={34} />
             {prontos > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[26px] h-[26px] px-1 rounded-full bg-[#c0140f]
-                text-white text-[15px] font-bold flex items-center justify-center">{prontos}</span>
+                text-white text-[15px] font-bold flex items-center justify-center border border-black">{prontos}</span>
             )}
           </button>
-          <span className="mr-4">{operador?.name || 'Operador'}</span>
+          <span className="mr-3 ml-1 text-[15px]">{operador?.name || 'Operador'}</span>
           {/* A ENGRENAGEM abre o PAINEL (Conta/Geral/Caixa) por cima do teclado, com a
               comanda à vista. Saltava para o seletor de setor — trocar de setor faz-se
               uma vez ao início do turno, e continua lá dentro, na aba Geral. */}
           <button onClick={() => setMenu((v) => !v)}
             title="Funções do terminal (Conta · Geral · Caixa)"
-            className={`w-[74px] h-[74px] m-2 rounded text-white text-[34px] flex items-center justify-center
-              ${menu ? 'bg-[#b39100]' : 'bg-[#3a3a3a]'}`}>
-            ⚙
+            className={`w-[80px] h-[76px] m-1.5 rounded-[3px] text-white flex items-center justify-center
+              border-2 border-black
+              shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
+              active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
+              ${menu ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00]'
+                : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424]'}`}>
+            <IcoEngrenagem size={36} />
           </button>
         </div>
       </div>
@@ -422,13 +455,17 @@ export default function PosTerminal() {
                 text-white text-[15px] font-semibold leading-tight px-2 text-center
                 disabled:text-white/25 disabled:hover:bg-transparent
                 ${m.ativo ? 'bg-[#0f8b8d]' : 'hover:bg-[#1f1f1f]'}`}>
-              <span className="text-[28px]">{m.icon}</span>
+              <span>{m.icon}</span>
               {m.label}
             </button>
           ))}
           <button onClick={sair}
-            className="h-[104px] flex-shrink-0 bg-[#c0140f] text-white flex flex-col items-center justify-center gap-1 font-bold text-[15px]">
-            <span className="text-[28px]">✕</span> Sair
+            className="h-[104px] flex-shrink-0 text-white flex flex-col items-center justify-center gap-1
+              font-bold text-[15px] border-y-2 border-black
+              bg-gradient-to-b from-[#d42a24] to-[#8a0f0b]
+              shadow-[inset_0_2px_0_rgba(255,255,255,0.2),inset_0_-2px_0_rgba(0,0,0,0.5)]
+              active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]">
+            <IcoCruz size={30} /> Sair
           </button>
         </div>
         )}
@@ -582,7 +619,7 @@ export default function PosTerminal() {
 
       {/* ───── barra de baixo: onde estou, e que horas são ───── */}
       <div className="h-[58px] bg-black text-white flex items-center px-3 flex-shrink-0">
-        <span className="text-[#e0a020] text-[28px] mr-3">⚠</span>
+        <span className="text-[#e0a020] mr-3"><IcoAviso size={28} /></span>
         <span className="text-[20px] font-bold">{setor ? setor.name : '(nenhum)'}</span>
         {sessao && (
           <span className="ml-4 text-white/60 text-sm">

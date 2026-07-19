@@ -20,6 +20,11 @@ import VoidReasonDialog from './VoidReasonDialog';
 import NumPad from './NumPad';
 import MessagesPanel from './MessagesPanel';
 import ClientPicker from './ClientPicker';
+import {
+  IcoLixo, IcoImpressora, IcoDinheiro, IcoVisto, IcoVoltar, IcoPreco, IcoMaisMenos,
+  IcoPercento, IcoPessoas, IcoLapis, IcoParciais, IcoTransferir, IcoOlho, IcoAgrupar,
+  IcoSino, IcoPausa, IcoCombo, IcoEntrega, IcoHistorico, IcoQuarto, IcoDocumento, IcoAviso,
+} from './Icons';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -35,6 +40,25 @@ import ClientPicker from './ClientPicker';
  * texto livre. O servidor diz o que falta; o terminal pergunta (ver posPrompt.ts). As
  * regras vivem num sítio só.
  */
+/**
+ * Um dos quatro botões da comanda. Relevo pesado (alto em cima, sombra em baixo) e a
+ * mesma altura de dedo: num ecrã tátil o botão tem de PARECER premível, senão o
+ * empregado carrega duas vezes por não ter a certeza que a primeira contou.
+ */
+const BotaoComanda = ({ children, onClick, on, cor, titulo }: {
+  children: any; onClick: () => void; on: boolean; cor: string; titulo: string;
+}) => (
+  <button onClick={() => on && onClick()} disabled={!on} title={titulo}
+    style={{ color: cor }}
+    className="h-[84px] flex items-center justify-center rounded-[3px] border-2 border-black
+      bg-gradient-to-b from-[#4a4a4a] to-[#262626]
+      shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.5)]
+      active:from-[#242424] active:to-[#3a3a3a] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
+      disabled:opacity-25 disabled:shadow-none disabled:cursor-not-allowed">
+    {children}
+  </button>
+);
+
 export type TopoApi = {
   procurar: () => void;
   quantidade: () => void;
@@ -42,6 +66,8 @@ export type TopoApi = {
   cliente: () => void;
   temSel: boolean;
   cliente_atual: string | null;
+  /** "Mesa: LB3 (2)" ou "Balcão · Venda Direta" */
+  onde: string;
 };
 
 export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publicarTopo, onClose }: {
@@ -117,12 +143,6 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const nivel: any[] = caminho.length
     ? (caminho[caminho.length - 1].children || [])
     : (teclado?.pages || []);
-
-  // O TECLADO ABRE-SE SOZINHO: ao entrar na venda, a primeira página já está aberta
-  // com as teclas à vista — no balcão não se toca duas vezes para começar a vender.
-  useEffect(() => {
-    if (!caminho.length && teclado?.pages?.length) setCaminho([teclado.pages[0]]);
-  }, [teclado]);
 
   // AO ABRIR a conta, o tipo manda: HÓSPEDE sem nome -> lista do PMS; CONSUMO INTERNO
   // sem nome -> lista de colaboradores (RH do backoffice). O passante não é incomodado.
@@ -326,32 +346,32 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const semLinha = 'Escolha primeiro uma linha da comanda (um toque).';
   useEffect(() => {
     publicarAcoes?.([
-      { label: 'Preço', icon: '💲', act: alterarPreco, on: temSel, why: semLinha },
-      { label: 'Quantidade', icon: '±', act: alterarQtd, on: temSel, why: semLinha },
-      { label: 'Desconto Artigo', icon: '%', act: descontoLinha, on: temSel, why: semLinha },
-      { label: 'Desconto', icon: '%', act: aplicarDesconto, on: true },
-      { label: 'Número de Clientes', icon: '👥', act: numeroClientes, on: true },
-      { label: 'Mensagens', icon: '✎', act: () => temSel && notaLinha(linhaSel()), on: temSel, why: semLinha },
-      { label: 'Anular tudo', icon: '🗑', act: anularConta, on: !!linhas.length, perigo: true,
+      { label: 'Preço', icon: <IcoPreco size={40} />, act: alterarPreco, on: temSel, why: semLinha },
+      { label: 'Quantidade', icon: <IcoMaisMenos size={40} />, act: alterarQtd, on: temSel, why: semLinha },
+      { label: 'Desconto Artigo', icon: <IcoPercento size={40} />, act: descontoLinha, on: temSel, why: semLinha },
+      { label: 'Desconto', icon: <IcoPercento size={40} />, act: aplicarDesconto, on: true },
+      { label: 'Número de Clientes', icon: <IcoPessoas size={40} />, act: numeroClientes, on: true },
+      { label: 'Mensagens', icon: <IcoLapis size={40} />, act: () => temSel && notaLinha(linhaSel()), on: temSel, why: semLinha },
+      { label: 'Anular tudo', icon: <IcoLixo size={40} />, act: anularConta, on: !!linhas.length, perigo: true,
         why: 'A conta está vazia — não há nada para anular.' },
-      { label: 'Funções Parciais', icon: '⑂', act: () => setMover('SPLIT'), on: !!linhas.length,
+      { label: 'Funções Parciais', icon: <IcoParciais size={40} />, act: () => setMover('SPLIT'), on: !!linhas.length,
         why: 'A conta está vazia — não há linhas para separar.' },
       ...(cfg?.transfers !== 'Não permitir'
-        ? [{ label: 'Transferência de Mesa', icon: '⇄', act: () => setMover('TRANSFER'), on: !!conta?.table,
+        ? [{ label: 'Transferência de Mesa', icon: <IcoTransferir size={40} />, act: () => setMover('TRANSFER'), on: !!conta?.table,
             why: 'A venda de balcão não tem mesa para transferir.' } as AcaoPainel]
         : []),
-      { label: 'Visualizar Preços', icon: '👁', act: () => setVerPrecos((v) => !v), on: true, ativo: verPrecos },
-      { label: 'Ver artigos agrupados', icon: '▤', act: () => setAgrupar((v) => !v), on: true, ativo: agrupar },
+      { label: 'Visualizar Preços', icon: <IcoOlho size={40} />, act: () => setVerPrecos((v) => !v), on: true, ativo: verPrecos },
+      { label: 'Ver artigos agrupados', icon: <IcoAgrupar size={40} />, act: () => setAgrupar((v) => !v), on: true, ativo: agrupar },
       // Vieram da barra do topo, que tinha onze botões minúsculos. Continuam todos cá.
-      { label: 'Enviar p/ Cozinha', icon: '🔔', act: enviarCozinha, on: !!linhas.length,
+      { label: 'Enviar p/ Cozinha', icon: <IcoSino size={40} />, act: enviarCozinha, on: !!linhas.length,
         why: 'A conta está vazia — não há nada para enviar.' },
-      { label: 'Suspender Conta', icon: '⏸', act: suspender, on: !!linhas.length,
+      { label: 'Suspender Conta', icon: <IcoPausa size={40} />, act: suspender, on: !!linhas.length,
         why: 'A conta está vazia — não há nada para suspender.' },
-      { label: 'Combos / Menus', icon: '🧺', act: () => setVerCombos(true), on: true },
-      { label: 'Destino da Conta', icon: '🛎', act: () => setVerDestinos(true), on: true },
-      { label: 'Histórico da Conta', icon: '≡', act: () => setVerHistorico(true), on: true },
-      { label: 'Info. Hóspedes', icon: '👤', act: () => setPainel('GUESTS'), on: true },
-      { label: 'Documentos', icon: '🗎', act: () => setPainel('DOCS'), on: true },
+      { label: 'Combos / Menus', icon: <IcoCombo size={40} />, act: () => setVerCombos(true), on: true },
+      { label: 'Destino da Conta', icon: <IcoEntrega size={40} />, act: () => setVerDestinos(true), on: true },
+      { label: 'Histórico da Conta', icon: <IcoHistorico size={40} />, act: () => setVerHistorico(true), on: true },
+      { label: 'Info. Hóspedes', icon: <IcoQuarto size={40} />, act: () => setPainel('GUESTS'), on: true },
+      { label: 'Documentos', icon: <IcoDocumento size={40} />, act: () => setPainel('DOCS'), on: true },
     ]);
   }, [conta, sel, temSel, verPrecos, agrupar, linhas.length]);
 
@@ -365,8 +385,25 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       cliente: () => setEscolherCliente(true),
       temSel,
       cliente_atual: conta?.customer_name || null,
+      // A mesa (ou o balcão) — vinha da faixa que foi retirada de dentro da venda.
+      onde: conta?.table_label
+        ? `Mesa: ${conta.table_label}${conta.guests ? ` (${conta.guests})` : ''}`
+        : (conta?.dest_label || 'Balcão · Venda Direta'),
     });
   }, [conta, temSel]);
+
+  // (8312) O TECLADO ABRE-SE SOZINHO. Entrar no balcão e ver "Escolha uma página em
+  // cima" é perder um toque em todas as vendas do dia: a primeira página é sempre a que
+  // o dono pôs primeiro, e é onde está o que mais se vende. Quem tem várias páginas
+  // troca com um toque; quem só tem uma nunca mais pensa nisso.
+  // Desliga-se no backoffice para as casas que querem o empregado a escolher a página
+  // de propósito (cozinhas com cartas muito diferentes por turno).
+  useEffect(() => {
+    if (cfg?.open_keyboard_on_sale === false) return;
+    if (caminho.length) return;
+    const p1 = (teclado?.pages || [])[0];
+    if (p1) setCaminho([p1]);
+  }, [teclado, cfg?.open_keyboard_on_sale]);
 
   // (8311) PEDIR O CLIENTE AO ABRIR — uma vez por conta, nunca em ciclo. Perguntar só na
   // hora de cobrar é tarde: o "afinal queria com contribuinte" chega depois de a fatura
@@ -395,38 +432,29 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     <div className="absolute inset-0 flex">
       {/* ───────── teclado ───────── */}
       <div className="flex-1 flex flex-col overflow-hidden p-2">
-        {/* ONDE ESTOU: a mesa (ou balcão) que está a ser atendida — sempre à vista. */}
-        <div className="h-[40px] mb-2 bg-black rounded flex items-center px-3 gap-3 text-white flex-shrink-0">
-          <span className="text-[18px] font-bold text-[#f0c000]">
-            {conta?.table_label ? `Mesa ${conta.table_label}` : (conta?.dest_label || 'Balcão · Venda Direta')}
-          </span>
-          <span className="text-white/50 text-[13px]">{conta?.ticket_number}</span>
-          <span className="ml-auto text-[13px] text-white/60">
-            {{ PASSANTE: 'Passante', HOTEL: 'Hóspede', INTERNO: 'Consumo Interno' }[conta?.guest_type as string] || ''}
-            {conta?.customer_name ? ` · ${conta.customer_name}` : ''}
-          </span>
-          {/* Os botões que aqui estavam (desconto, suspender, combos, destino, histórico,
-              artigos, hóspedes, documentos) NÃO desapareceram: passaram para a
-              ENGRENAGEM e para os ícones do topo, que é onde o original os tem. Onze
-              botões de 13px numa barra de 40px eram alvos impossíveis num ecrã tátil. */}
-          {Number(conta?.discount_percent) > 0 && (
-            <span className="ml-2 px-2 h-[26px] flex items-center rounded bg-[#8a6100]
-              text-[13px] font-bold">−{Number(conta.discount_percent)}%</span>
-          )}
-          {conta?.status === 'SUSPENDED' && (
-            <span className="px-2 h-[26px] flex items-center rounded bg-[#8a6100] text-[13px]">⏸ suspensa</span>
-          )}
-        </div>
+        {/* A FAIXA DE CONTEXTO SAIU DAQUI. "Balcão · Venda Direta · TCK-6B15E5C0 · Passante"
+            ocupava uma linha inteira para dizer o que o topo já diz — e o número do
+            talão não serve para nada a quem está a servir. O que interessa (a mesa e o
+            cliente) está na barra preta, ao pé do botão do cliente. */}
         <div className="grid gap-2 mb-2" style={{ gridTemplateColumns: 'repeat(4, minmax(0,1fr))' }}>
           <button onClick={() => (caminho.length ? setCaminho(caminho.slice(0, -1)) : onClose())}
-            className="h-[76px] bg-[#3a3a3a] text-[#f0c000] text-[34px] font-bold rounded active:scale-95">
-            ⬅
+            title="Voltar"
+            className="h-[84px] flex items-center justify-center text-[#f0c000]
+              bg-gradient-to-b from-[#4e4e4e] to-[#2c2c2c] border-2 border-black rounded-[3px]
+              shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.5)]
+              active:from-[#2c2c2c] active:to-[#3e3e3e]">
+            <IcoVoltar size={38} />
           </button>
           {(teclado?.pages || []).map((p: any) => (
+            // As PÁGINAS do teclado: cor do backoffice, relevo pesado por cima. O relevo
+            // é o que faz a tecla parecer premível num ecrã sem tacto nenhum.
             <button key={p.id} onClick={() => setCaminho([p])}
               style={{ background: p.color, color: p.text_color }}
-              className={`h-[76px] rounded font-bold text-[17px] active:scale-95
-                ${caminho[0]?.id === p.id ? 'ring-4 ring-white/70' : ''}`}>
+              className={`h-[84px] rounded-[3px] font-bold text-[19px] uppercase tracking-wide
+                border-2 border-black
+                shadow-[inset_0_2px_0_rgba(255,255,255,0.28),inset_0_-3px_0_rgba(0,0,0,0.4)]
+                active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.55)]
+                ${caminho[0]?.id === p.id ? 'ring-[3px] ring-white/85 ring-inset' : ''}`}>
               {p.label}
             </button>
           ))}
@@ -442,17 +470,20 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
                   color: k.available === false ? '#8a8a8a' : k.text_color,
                   gridColumn: k.span > 1 ? `span ${k.span}` : undefined,
                 }}
-                className="h-[92px] rounded font-bold text-[16px] flex flex-col items-center justify-center
-                  text-center px-2 leading-tight active:scale-95 disabled:cursor-not-allowed">
+                className="h-[104px] rounded-[3px] font-bold text-[18px] flex flex-col items-center
+                  justify-center text-center px-3 leading-tight border-2 border-black
+                  shadow-[inset_0_2px_0_rgba(255,255,255,0.25),inset_0_-3px_0_rgba(0,0,0,0.38)]
+                  active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.55)]
+                  disabled:shadow-none disabled:cursor-not-allowed">
                 <span>{k.label}</span>
                 {/* Só saem se as caixas "Visualizar Códigos/Preços" estiverem ligadas. */}
-                {k.code && <span className="text-[11px] font-normal opacity-80">{k.code}</span>}
-                {verPrecos && k.price && <span className="text-[14px] opacity-95">{money(k.price)}</span>}
-                {k.available === false && <span className="text-[10px]">indisponível</span>}
+                {k.code && <span className="text-[12px] font-normal opacity-80">{k.code}</span>}
+                {verPrecos && k.price && <span className="text-[15px] opacity-95">{money(k.price)}</span>}
+                {k.available === false && <span className="text-[11px]">indisponível</span>}
               </button>
             ))}
             {caminho.length === 0 && (
-              <div className="col-span-full text-white/40 text-center py-16 text-[15px]">
+              <div className="col-span-full text-white/40 text-center py-16 text-[16px]">
                 Escolha uma página em cima.
               </div>
             )}
@@ -470,7 +501,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             {{ HOTEL: 'Hóspede', INTERNO: 'Colaborador' }[conta?.guest_type as string] || 'Cliente'}
           </span>
           <span className="font-bold">
-            {conta?.customer_name || entidade?.name || 'Consumidor Final'} 👤+
+            {conta?.customer_name || entidade?.name || 'Consumidor Final'}
           </span>
         </button>
 
@@ -490,14 +521,15 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
               <span>{Number(l.quantity)}</span>
               <span className="truncate">
                 {l.description}
-                {l.note && <span className="block text-[11px] text-[#7fd4ff]">✎ {l.note}</span>}
+                {l.note && <span className="block text-[11px] text-[#7fd4ff]">{l.note}</span>}
                 {l._juntas > 1 && (
                   <span className="block text-[11px] text-white/50">{l._juntas} lançamentos juntos</span>
                 )}
                 {/* ALERGÉNIOS da ficha do artigo (backoffice) — o empregado avisa o
                     cliente ANTES de o prato sair, não depois. */}
                 {l.allergens?.length > 0 && (
-                  <span className="block text-[11px] text-[#ff8a80]">⚠ {l.allergens.join(', ')}</span>
+                  <span className="flex items-center gap-1 text-[11px] text-[#ff8a80]">
+                    <IcoAviso size={13} /> {l.allergens.join(', ')}</span>
                 )}
                 {['FIRED', 'PREPARING', 'READY'].includes(l.kds_status) && (
                   <span className="ml-1 text-[11px] text-[#f0c000]">• na cozinha</span>
@@ -540,23 +572,20 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             linha", ambos vermelhos — e anulava-se a venda toda a querer tirar um café.
             Enviar para a cozinha passou para a aba Conta da engrenagem; apagar a linha
             faz-se na própria linha (dois toques). */}
-        <div className="grid grid-cols-4 gap-px bg-black">
+        <div className="grid grid-cols-4 gap-[3px] bg-black p-[3px]">
           {/* 1. ANULAR A VENDA — pede o MOTIVO (lista do backoffice) antes de apagar. */}
-          <button onClick={() => setAnular(true)} disabled={!linhas.length}
-            title="Anular a venda (pede o motivo)"
-            className="h-[76px] bg-[#2b2b2b] text-[#e02020] text-[30px] disabled:opacity-30">🗑</button>
+          <BotaoComanda onClick={() => setAnular(true)} on={!!linhas.length} cor="#e02020"
+            titulo="Anular a venda (pede o motivo)"><IcoLixo size={36} /></BotaoComanda>
           {/* 2. CONSULTA — o talão de conferência (documento CM da AGT). O cliente
                  pergunta "quanto vai?" e mostra-se, sem fechar a conta. */}
-          <button onClick={() => setVerTalao(true)} disabled={!linhas.length}
-            title="Consulta de Mesa (talão de conferência)"
-            className="h-[76px] bg-[#2b2b2b] text-white text-[30px] disabled:opacity-30">🖨</button>
+          <BotaoComanda onClick={() => setVerTalao(true)} on={!!linhas.length} cor="#ffffff"
+            titulo="Consulta de Mesa (talão de conferência)"><IcoImpressora size={36} /></BotaoComanda>
           {/* 3. VENDA — abre os Pagamentos. */}
-          <button onClick={() => setPagar(true)} disabled={!linhas.length}
-            title="Pagamentos"
-            className="h-[76px] bg-[#2b2b2b] text-[#f0c000] text-[30px] disabled:opacity-30">💰</button>
+          <BotaoComanda onClick={() => setPagar(true)} on={!!linhas.length} cor="#f0c000"
+            titulo="Pagamentos"><IcoDinheiro size={36} /></BotaoComanda>
           {/* 4. CONFIRMAR — fecha a conta e volta à sala (a conta fica aberta na mesa). */}
-          <button onClick={onClose} title="Confirmar e voltar"
-            className="h-[76px] bg-[#2b2b2b] text-[#2ecc40] text-[34px]">✔</button>
+          <BotaoComanda onClick={onClose} on cor="#2ecc40"
+            titulo="Confirmar e voltar"><IcoVisto size={38} /></BotaoComanda>
         </div>
       </div>
 

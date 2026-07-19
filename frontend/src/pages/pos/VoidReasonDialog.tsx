@@ -78,9 +78,9 @@ export default function VoidReasonDialog({ titulo = 'Motivo de Anulação', onPi
             <div className="grid grid-cols-2 gap-2 mt-2">
               <button onClick={() => livre.trim() && onPick(livre.trim())} disabled={!livre.trim()}
                 className="h-[62px] bg-[#1f7a34] text-white text-[20px] font-bold rounded
-                  disabled:bg-[#3a3a3a] disabled:text-white/30">✔ Confirmar</button>
+                  disabled:bg-[#3a3a3a] disabled:text-white/30">Confirmar</button>
               <button onClick={() => setLivre(null)}
-                className="h-[62px] bg-[#3a3a3a] text-white text-[20px] rounded">✖ Voltar</button>
+                className="h-[62px] bg-[#3a3a3a] text-white text-[20px] rounded">Voltar</button>
             </div>
           </div>
         )}
