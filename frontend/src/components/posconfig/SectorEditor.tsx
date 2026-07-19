@@ -17,14 +17,18 @@ const SECTOR_PARAMS = [
   { g: 'Geral', n: 8592, name: 'Preços Disponíveis', kind: 'CHOICE', choices: ['Preço 1', 'Preço 2', 'Preço 3', 'Preço 4', 'Preço 5', 'Preço 6'] },
   { g: 'Geral', n: 8596, name: 'Estado da mesa após fechar', kind: 'CHOICE', choices: ['Disponível', 'Limpeza', 'Reservada'] },
   { g: 'Geral', n: 8611, name: 'Períodos - Reporting', kind: 'LIST', src: 'timeBands' },
-  { g: 'Documentos', n: 8557, name: 'Fatura Recibo', kind: 'LIST', src: 'series' },
-  { g: 'Documentos', n: 8556, name: 'Nota de Crédito', kind: 'LIST', src: 'series' },
-  { g: 'Documentos', n: 8555, name: 'Consulta de Conta', kind: 'LIST', src: 'series' },
-  { g: 'Documentos', n: 8553, name: 'Talão', kind: 'LIST', src: 'series' },
-  { g: 'Documentos', n: 8558, name: 'Recibo', kind: 'LIST', src: 'series' },
-  { g: 'Documentos', n: 8562, name: 'Fatura CC', kind: 'LIST', src: 'series' },
+  // Cada linha só oferece as séries DO SEU TIPO (dt = tipos de documento aceites): pôr
+  // uma série de Nota de Crédito na linha da Fatura-Recibo era emitir o documento errado
+  // — e um documento fiscal errado não se apaga, anula-se. Onde não há tipo exato na
+  // tabela de séries, a linha mostra todas em vez de esconder o que existe.
+  { g: 'Documentos', n: 8557, name: 'Fatura Recibo', kind: 'LIST', src: 'series', dt: [2] },
+  { g: 'Documentos', n: 8556, name: 'Nota de Crédito', kind: 'LIST', src: 'series', dt: [5] },
+  { g: 'Documentos', n: 8555, name: 'Consulta de Conta', kind: 'LIST', src: 'series', dt: [7] },
+  { g: 'Documentos', n: 8553, name: 'Talão', kind: 'LIST', src: 'series', dt: [3, 4] },
+  { g: 'Documentos', n: 8558, name: 'Recibo', kind: 'LIST', src: 'series', dt: [12] },
+  { g: 'Documentos', n: 8562, name: 'Fatura CC', kind: 'LIST', src: 'series', dt: [1] },
   { g: 'Documentos', n: 8587, name: 'Anulação Recibo', kind: 'LIST', src: 'series' },
-  { g: 'Documentos', n: 8588, name: 'Nota de Recebimento', kind: 'LIST', src: 'series' },
+  { g: 'Documentos', n: 8588, name: 'Nota de Recebimento', kind: 'LIST', src: 'series', dt: [10, 11] },
   { g: 'Documentos', n: 8589, name: 'Anulação nota recebimento', kind: 'LIST', src: 'series' },
 ];
 
@@ -43,11 +47,18 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
     queryKey: ['posc', chave],
     queryFn: async () => { try { const r = await apiClient.get(url); return (r.data?.results || r.data || []) as any[]; } catch { return []; } },
   }).data || [];
-  const FONTES: Record<string, { id: any; label: string }[]> = {
+  const FONTES: Record<string, { id: any; label: string; dt?: number }[]> = {
     // (8573) os TECLADOS criados — escolhe-se qual serve esta sala
     keyboards: lista('keyboards', 'pos/config/keyboards/').map((k: any) => ({ id: k.id, label: `${k.number} · ${k.name}` })),
-    // (8553-8589) as SÉRIES de documento (é a série que numera e assina)
-    series: lista('docseries', 'pos/config/documents/').map((x: any) => ({ id: x.id, label: `${x.code} — ${x.name}` })),
+    // (8553-8589) as SÉRIES de documento (é a série que numera e assina).
+    // O nome da série é opcional e quase nunca está preenchido — identificá-la só por
+    // ele dava doze linhas iguais ("A — null") e nenhuma escolhível. Quem manda é o
+    // TIPO (FR, NC, CM…); a letra da série vem a seguir, que é como se distinguem duas
+    // séries do mesmo tipo.
+    series: lista('docseries', 'pos/config/documents/').map((x: any) => ({
+      id: x.id, dt: x.doc_type,
+      label: `${x.type_code} — ${x.name || x.type_name}${x.code ? ` (série ${x.code}${x.year ? '/' + x.year : ''})` : ''}`,
+    })),
     customerTypes: lista('custtypes', 'pos/config/customer-types/').map((x: any) => ({ id: x.id, label: x.name })),
     discounts: lista('descontos', 'pos/config/discounts/').map((x: any) => ({ id: x.id, label: `${x.code} — ${x.name}` })),
     timeBands: lista('bands', 'pos/config/time-bands/').map((x: any) => ({ id: x.id, label: x.name })),
@@ -139,8 +150,11 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
                             <select value={v} onChange={(e) => setP(p.n, e.target.value)} className={cell}>
                               <option value="">(nenhum)</option>
                               {(p as any).todos && <option value="TODOS">(todos)</option>}
-                              {(FONTES[(p as any).src] || []).map((o) => (
-                                <option key={o.id} value={o.id}>{o.label}</option>))}
+                              {(FONTES[(p as any).src] || [])
+                                .filter((o) => !(p as any).dt || o.dt == null
+                                  || (p as any).dt.includes(o.dt))
+                                .map((o) => (
+                                  <option key={o.id} value={o.id}>{o.label}</option>))}
                             </select>
                           ) : (
                             <input value={v} onChange={(e) => setP(p.n, e.target.value)} placeholder="(nenhum)" className={cell} />
