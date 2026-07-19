@@ -66,7 +66,12 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     queryKey: ['ml-tables', setor?.id],
     queryFn: async () => {
       // As mesas do setor vêm do servidor — as mesmas da planta do backoffice.
-      const r = await apiClient.get('pos/tables/', { params: { sector: setor.id } });
+      // (8575 da FICHA DO SETOR) "Complexo": MÚLTIPLO abre a transferência a TODAS as
+      // mesas do ponto de venda (o grupo que muda da sala para a esplanada); ÚNICO
+      // fecha-a às mesas desta sala — a conta não sai do setor.
+      const multiplo = String(setor?.complex_mode || '').toUpperCase().startsWith('MULT');
+      const r = await apiClient.get('pos/tables/',
+        { params: multiplo ? { outlet: setor.outlet } : { sector: setor.id } });
       return (r.data?.results || r.data || []) as any[];
     },
   });

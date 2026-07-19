@@ -261,6 +261,43 @@ def r_movimentos_caixa(p):
     }
 
 
+def r_periodo_setor(p):
+    """VENDAS POR PERÍODO — o 8611 da ficha do setor.
+
+    A ficha de cada setor escolhe o seu período de reporting (as bandas horárias do
+    backoffice). Este mapa soma as vendas por esse período: é como o dono compara o
+    turno do almoço do Restaurante com o da noite do Lounge sem folhas de cálculo.
+    Setores sem período escolhido aparecem como "(sem período)" — à vista, não escondidos.
+    """
+    from .models import POSTicket, PosSector, TimeBand
+    ini, fim = _periodo(p)
+    bandas = {b.id: b.name for b in TimeBand.objects.all()}
+    porOutlet = {}
+    for s_ in PosSector.objects.all():
+        pr = (s_.params or {})
+        porOutlet[s_.outlet_id] = (pr.get('8611') or pr.get(8611))
+    grupos = {}
+    for t in (POSTicket.objects.filter(status='PAID', closed_at__date__gte=ini,
+                                       closed_at__date__lte=fim)
+              .select_related('outlet')):
+        banda = porOutlet.get(t.outlet_id)
+        try:
+            nome = bandas.get(int(banda), '(sem período)') if banda else '(sem período)'
+        except Exception:
+            nome = '(sem período)'
+        g = grupos.setdefault(nome, {'period': nome, 'n': 0, 'total': Decimal('0')})
+        g['n'] += 1
+        g['total'] += (t.grand_total or Decimal('0'))
+    rows = [{'period': g['period'], 'count': g['n'], 'total': str(g['total'])}
+            for g in sorted(grupos.values(), key=lambda x: -x['total'])]
+    tot = sum((_num(r['total']) for r in rows), Decimal('0'))
+    return {
+        'columns': [('period', 'Período (ficha do setor)'), ('count', 'Nº contas'),
+                    ('total', 'Total', 'money')],
+        'rows': rows, 'totals': {'total': str(tot)},
+    }
+
+
 def r_comprovativos(p):
     """COMPROVATIVOS DE PAGAMENTO — a referência de cada transferência, TPA e cheque.
 
@@ -800,6 +837,8 @@ CATALOG = [
          'params': P_PERIODO, 'fn': r_pagamentos},
         {'code': 'cx_comprovativos', 'name': 'Comprovativos de pagamento (banco/TPA/cheque)',
          'params': P_PERIODO, 'fn': r_comprovativos},
+        {'code': 'cx_periodo', 'name': 'Vendas por período (8611 da ficha do setor)',
+         'params': P_PERIODO, 'fn': r_periodo_setor},
     ]},
     {'code': '19', 'name': 'Estatísticas', 'reports': [
         {'code': 'est_horas', 'name': 'Horas de pico (para as escalas)',
