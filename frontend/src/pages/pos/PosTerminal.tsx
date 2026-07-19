@@ -224,20 +224,35 @@ export default function PosTerminal() {
   // vive na venda (é o take-away). Uma conta fechada VAZIA anula-se — senão o fecho do
   // dia enchia-se de contas de 0,00 que ninguém vai cobrar.
   /**
-   * SAIR DA VENDA — e mais nada.
+   * SAIR DA VENDA — e a regra da mesa ocupada.
    *
-   * O ✔ da comanda é "já lancei, volto à sala", não "acabei com esta conta". A conta
-   * FICA ABERTA na mesa: o empregado vai buscar as bebidas, atende outra mesa, e volta
-   * a esta para continuar. Uma conta só desaparece quando é PAGA (e o recibo sai) ou
-   * quando é ANULADA de propósito, com motivo.
+   * UMA MESA SÓ FICA OCUPADA SE TIVER CONSUMO.
    *
-   * Isto anulava sozinho as contas sem linhas ("conta vazia fechada no balcão"). Parecia
-   * arrumação, mas era perda de trabalho: quem abria a mesa, ia buscar o pedido e voltava
-   * encontrava a mesa livre — e a conta do cliente, com o número de pessoas e o tipo já
-   * escolhidos, tinha desaparecido.
+   *   conta COM artigos   -> fica aberta na mesa (vermelha). O empregado vai buscar as
+   *                          bebidas, atende outra mesa, e volta a esta para continuar.
+   *   conta VAZIA         -> fecha-se e a mesa fica LIVRE. Ao voltar lá, o terminal
+   *                          pergunta outra vez quantos são e de que tipo.
+   *
+   * Sem isto, cada toque numa mesa deixava-a ocupada para sempre: o mapa enchia-se de
+   * mesas vermelhas sem nada dentro, ninguém sabia quais eram reais, e o fecho do dia
+   * ficava preso a contas de 0,00 que nunca ninguém ia cobrar. O mesmo vale depois de
+   * anular a venda — se ficou vazia, a mesa volta a estar disponível.
+   *
+   * O que NÃO se toca: contas com artigos, com pagamentos ou com documento. Essas só
+   * saem por pagamento ou por anulação com motivo.
    */
-  const fecharVenda = async (_id: number) => {
+  const fecharVenda = async (id: number) => {
     setTicket(null);
+    try {
+      const t = (await apiClient.get(`pos/tickets/${id}/`)).data;
+      const temConsumo = ((t.lines || []) as any[]).some((l) => !l.is_void);
+      const temDinheiro = ((t.payments || []) as any[]).length > 0;
+      if (t.status === 'OPEN' && !temConsumo && !temDinheiro) {
+        await apiClient.post(`pos/tickets/${id}/void/`, {
+          reason: 'Conta fechada sem consumo — mesa libertada',
+        });
+      }
+    } catch { /* a conta pode já estar paga ou anulada: nada a fazer */ }
     inval();
     if (cfg?.direct_sale && !cfg?.ask_sector) abrirVendaDireta(1, 'PASSANTE');
     else setEtapa('MAP');
