@@ -603,7 +603,21 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             raise ValidationError({'guest_type': ['O tipo de cliente é obrigatório (parâmetro '
                                                   '8333): Passante, Hotel ou Consumo Interno.']})
         num = data.get('ticket_number') or f"TCK-{uuid.uuid4().hex[:8].upper()}"
+        # A CONTA PERTENCE À CAIXA ABERTA. Sem esta ligação, o fecho de caixa não sabe
+        # que contas são do turno, e o terminal não consegue distinguir a venda de balcão
+        # de hoje da que ficou esquecida ontem — ao tocar em Venda Direta aparecia o
+        # consumo de outra pessoa lá dentro, e vendia-se por cima da conta alheia.
+        if not data.get('cash_session') and data.get('outlet'):
+            sess = (CashSession.objects.filter(outlet=data['outlet'], status='OPEN')
+                    .order_by('-opened_at').first())
+            if sess:
+                ticket = serializer.save(ticket_number=num, cash_session=sess)
+                self._depois_de_abrir(ticket)
+                return
         ticket = serializer.save(ticket_number=num)
+        self._depois_de_abrir(ticket)
+
+    def _depois_de_abrir(self, ticket):
         # A MESA PASSA A OCUPADA. Antes só a lista de contas abertas sabia disso — o
         # estado real da mesa ficava FREE, e qualquer outro ecrã (mapa de sala, relatórios,
         # outro terminal) mostrava a mesa livre com gente sentada lá.

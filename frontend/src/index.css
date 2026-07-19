@@ -81,3 +81,9 @@ input[type='radio']:disabled {
   cursor: not-allowed;
   opacity: 0.65;
 }
+
+/* ZONA ARRASTÁVEL DO POS — sem barra de scroll.
+   No terminal tátil a barra não serve: tem 15px e o dedo tapa-a inteira. O conteúdo
+   puxa-se com o dedo (ver ZonaArrastavel.tsx). A regra global de barras acima é para o
+   backoffice, que se usa com rato. */
+.pos-arrasta::-webkit-scrollbar { width: 0; height: 0; display: none; }

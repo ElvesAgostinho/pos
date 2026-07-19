@@ -213,8 +213,15 @@ export default function PosTerminal() {
     try {
       const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } });
       const abertas = (r.data?.results || r.data || []) as any[];
+      // SÓ DESTA CAIXA. Retomar "a conta de balcão que está aberta" tem de querer dizer
+      // a DESTE turno: contas de balcão esquecidas de ontem (ou de outro operador)
+      // continuam abertas na base, e ao tocar em Venda Direta apareciam com o consumo
+      // de outra pessoa lá dentro — o empregado começava a vender por cima da conta
+      // alheia. A caixa aberta é a fronteira do turno; fora dela, começa-se do zero.
+      // As antigas não se perdem: estão em Geral › Mesas Abertas, para cobrar ou anular.
       const balcao = abertas.find((t) => !t.table && t.outlet === setor.outlet
-        && (t.status === 'OPEN' || t.status === 'SUSPENDED'));
+        && (t.status === 'OPEN' || t.status === 'SUSPENDED')
+        && sessao?.id && t.cash_session === sessao.id);
       if (balcao) { setTicket(balcao.id); setEtapa('SALES'); return; }
     } catch { /* sem lista, abre-se uma nova — é o comportamento seguro */ }
     abrirVendaDireta(1, 'PASSANTE');

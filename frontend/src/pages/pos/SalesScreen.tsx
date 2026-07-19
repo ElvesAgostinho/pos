@@ -21,6 +21,7 @@ import NumPad from './NumPad';
 import MessagesPanel from './MessagesPanel';
 import ClientPicker from './ClientPicker';
 import AskMessage from './AskMessage';
+import ZonaArrastavel from './ZonaArrastavel';
 import {
   IcoLixo, IcoImpressora, IcoDinheiro, IcoVisto, IcoVoltar, IcoPreco, IcoMaisMenos,
   IcoPercento, IcoPessoas, IcoLapis, IcoParciais, IcoTransferir, IcoOlho, IcoAgrupar,
@@ -549,7 +550,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
           ))}
         </div>
 
-        <div className="flex-1 overflow-auto">
+        <ZonaArrastavel className="flex-1">
           <div className="grid gap-2"
             style={{ gridTemplateColumns: `repeat(${kb?.cols || 4}, minmax(0,1fr))` }}>
             {caminho.length > 0 && nivel.map((k: any) => (
@@ -577,7 +578,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
               </div>
             )}
           </div>
-        </div>
+        </ZonaArrastavel>
       </div>
 
       {/* ───────── comanda ───────── */}
@@ -602,7 +603,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             impressora. O cinzento fazia a conta parecer mais um painel do programa; em
             branco, o empregado vira o ecrã ao cliente e o cliente reconhece a fatura.
             É também o que se lê melhor sob a luz de uma sala escura. */}
-        <div className="flex-1 overflow-auto bg-white">
+        <ZonaArrastavel className="flex-1 bg-white">
           {linhasVista.map((l: any) => (
             // 1 toque ESCOLHE a linha (é sobre ela que a engrenagem trabalha); 2 toques
             // anulam. Antes, um toque abria logo a caixa da nota — não havia como
@@ -650,7 +651,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
               A conta está vazia. Toque numa tecla para lançar.
             </div>
           )}
-        </div>
+        </ZonaArrastavel>
 
         {/* NUMA MESA, os números de baixo são AS PESSOAS (subcontas): tocar troca,
             o seguinte acrescenta, as setas giram o carrossel. No balcão (sem mesa)
