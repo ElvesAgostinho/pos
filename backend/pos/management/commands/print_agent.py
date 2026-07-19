@@ -47,13 +47,19 @@ class Command(BaseCommand):
         from inventory.models import Printer
         station = {'KITCHEN': 'KITCHEN', 'BAR': 'BAR', 'PASTRY': 'PASTRY',
                    'RECEIPT': 'CASHIER', 'INVOICE': 'CASHIER', 'DRAWER': 'CASHIER'}.get(job.job_type, 'CASHIER')
-        qs = Printer.objects.filter(station=station, is_active=True).select_related('device')
+        # SÓ POSTOS COM APARELHO. Havia postos criados sem aparelho associado (a ficha
+        # existe, a porta não) e era um desses que saía escolhido: o pedido ia para um
+        # sítio que não existe e falhava em silêncio. Um posto sem aparelho não imprime
+        # nada — não pode ganhar a um que imprime.
+        qs = (Printer.objects.filter(station=station, is_active=True, device__isnull=False)
+              .select_related('device'))
         if job.outlet_id:
-            no_outlet = qs.filter(outlet=job.outlet).first()
-            if no_outlet:
-                return no_outlet.device
-        p = qs.first()
-        return p.device if p else None
+            do_outlet = qs.filter(outlet=job.outlet).first()
+            if do_outlet:
+                return do_outlet.device
+        # sem posto próprio do ponto de venda, serve o genérico (outlet vazio)
+        generico = qs.filter(outlet__isnull=True).first() or qs.first()
+        return generico.device if generico else None
 
     # ── enviar bytes para a porta configurada ─────────────────────────────
     def _send(self, device, payload):
@@ -105,11 +111,17 @@ class Command(BaseCommand):
                 if not device:
                     raise RuntimeError('Nenhum posto de impressão ativo para esta estação '
                                        '(Configuração POS › Impressoras).')
-                corpo = (job.content or job.title or '').encode('cp860', errors='replace')
-                payload = INIT + corpo + CUT
-                # o talão de VENDA abre a gaveta; a comanda da cozinha não
-                if job.job_type in ('RECEIPT', 'INVOICE', 'DRAWER'):
-                    payload += DRAWER
+                if job.job_type == 'DRAWER':
+                    # ABRIR A GAVETA é SÓ o pulso. Estava a imprimir e a CORTAR papel:
+                    # cada vez que alguém abria a gaveta para dar troco saía uma tira de
+                    # papel em branco. Num turno são dezenas.
+                    payload = INIT + DRAWER
+                else:
+                    corpo = (job.content or job.title or '').encode('cp860', errors='replace')
+                    payload = INIT + corpo + CUT
+                    # o talão de VENDA abre a gaveta; a comanda da cozinha não
+                    if job.job_type in ('RECEIPT', 'INVOICE'):
+                        payload += DRAWER
                 for _ in range(max(1, job.copies or 1)):
                     self._send(device, payload)
                 job.status = 'PRINTED'

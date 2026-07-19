@@ -56,12 +56,12 @@ export default function SettingsPanel({ abas, aba, onAba, onClose, direita = 0, 
 
   const corpo = (
     <div className={flutuante
-      ? 'flex w-[940px] h-[700px] max-w-[94vw] max-h-[86vh] bg-[#2b2b2b] shadow-2xl border-2 border-black'
+      ? 'flex w-[980px] max-w-[95vw] max-h-[88vh] min-h-[420px] bg-[#2b2b2b] shadow-2xl border-[3px] border-black'
       : 'absolute inset-y-0 left-0 flex bg-[#2b2b2b] z-30 border-t border-black'}
       style={flutuante ? undefined : { right: direita }}
       onClick={(e) => e.stopPropagation()}>
       {/* ─── as abas, à esquerda ─── */}
-      <div className="w-[278px] bg-[#1a1a1a] flex flex-col flex-shrink-0 border-r border-black">
+      <div className="w-[210px] bg-[#1a1a1a] flex flex-col flex-shrink-0 border-r-2 border-black">
         {abas.map((a) => (
           <button key={a.nome} onClick={() => onAba(a.nome)}
             className={`h-[64px] px-6 text-left text-[19px] border-b border-black/60 transition
@@ -88,14 +88,15 @@ export default function SettingsPanel({ abas, aba, onAba, onClose, direita = 0, 
           {atual?.titulo}
         </div>
         <div className="flex-1 overflow-auto pos-arrasta p-3">
-          <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
+          <div className="grid gap-2 content-start"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
             {(atual?.acoes || []).map((a) => {
               const apagado = a.on === false;
               return (
                 <button key={a.label} disabled={apagado}
                   title={apagado ? (a.why || 'Indisponível agora') : a.label}
                   onClick={a.act}
-                  className={`h-[140px] rounded-[3px] flex flex-col items-center justify-center gap-2.5
+                  className={`h-[132px] rounded-[3px] flex flex-col items-center justify-center gap-2
                     px-2 text-center leading-tight border-2 border-black
                     shadow-[inset_0_2px_0_rgba(255,255,255,0.16),inset_0_-2px_0_rgba(0,0,0,0.5)]
                     active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]

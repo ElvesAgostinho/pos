@@ -35,7 +35,7 @@ from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewS
                          PosDocSearchView, PosDocDetailView, PosAlertsView,
                          MemberCardAccountView, PosTerminalKeyboardView,
                          PosGuestsView, PosMealPlanView, PosTerminalConfigView,
-                         PosTerminalChangePinView,
+                         PosTerminalChangePinView, PosOpenDrawerView,
                          PosBootstrapView)
 
 router = DefaultRouter()
@@ -138,6 +138,7 @@ urlpatterns = [
     path('terminal/keyboard/', PosTerminalKeyboardView.as_view()),
     path('terminal/config/', PosTerminalConfigView.as_view()),
     path('terminal/bootstrap/', PosBootstrapView.as_view()),
+    path('terminal/open-drawer/', PosOpenDrawerView.as_view()),
     path('terminal/change-pin/', PosTerminalChangePinView.as_view()),
     path('terminal/guests/', PosGuestsView.as_view()),
     path('terminal/meals/', PosMealPlanView.as_view()),

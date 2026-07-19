@@ -4784,6 +4784,57 @@ class PosTerminalConfigView(APIView):
         })
 
 
+class PosOpenDrawerView(APIView):
+    """ABRIR A GAVETA — a de metal, com dinheiro lá dentro.
+
+    A gaveta não tem cabo próprio: abre com um PULSO que a impressora de talões manda
+    pelo cabo RJ11. Por isso "abrir a gaveta" é, na prática, "mandar um pulso à
+    impressora da CAIXA deste ponto de venda".
+
+    Esta vista existe para o botão poder DIZER O QUE ACONTECEU. Antes punha-se o pedido
+    na fila e fechava-se o menu: se não houvesse impressora configurada, o pedido morria
+    em silêncio e o empregado ficava a olhar para uma gaveta fechada sem perceber
+    porquê. Agora ou diz por que aparelho vai, ou diz exatamente o que falta configurar.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from inventory.models import Printer
+        from .models import PrintJob, Outlet
+        from .audit import log_event
+        outlet_id = request.data.get('outlet')
+        outlet = Outlet.objects.filter(pk=outlet_id).first() if outlet_id else None
+
+        qs = (Printer.objects.filter(station='CASHIER', is_active=True, device__isnull=False)
+              .select_related('device', 'outlet'))
+        posto = None
+        if outlet:
+            posto = qs.filter(outlet=outlet).first()
+        if not posto:
+            posto = qs.filter(outlet__isnull=True).first() or qs.first()
+        if not posto:
+            semAparelho = Printer.objects.filter(station='CASHIER', is_active=True,
+                                                 device__isnull=True).count()
+            detalhe = ('Não há impressora de CAIXA com aparelho associado. '
+                       'Configure em Configuração POS › Impressoras: crie o posto da '
+                       'estação "Caixa" e ligue-o a um aparelho (Hardware) com porta.')
+            if semAparelho:
+                detalhe += (f' Há {semAparelho} posto(s) de caixa criado(s) SEM aparelho — '
+                            f'é preciso escolher-lhes o aparelho.')
+            return Response({'detail': detalhe}, status=status.HTTP_400_BAD_REQUEST)
+
+        job = PrintJob.objects.create(
+            job_type='DRAWER', outlet=outlet, target=posto.device.name,
+            title=f'Abertura de gaveta — {request.data.get("operator") or "Operador"}',
+            reference=request.data.get('reference') or None)
+        log_event(request, 'DRAWER_OPEN', f'Gaveta aberta em {posto.device.name}',
+                  outlet=outlet, operator_name=request.data.get('operator') or '',
+                  reference=job.reference)
+        return Response({'detail': f'Gaveta aberta em {posto.device.name} ({posto.device.port}).',
+                         'device': posto.device.name, 'port': posto.device.port,
+                         'print_job': job.id})
+
+
 class PosTerminalChangePinView(APIView):
     """(Utilizador POS) "Obrigar a mudar o PIN" — a troca feita NO TERMINAL.
 

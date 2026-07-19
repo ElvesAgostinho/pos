@@ -37,7 +37,8 @@ export default function Window({
     const r = el.getBoundingClientRect();
     setPos({
       x: Math.max(8, (window.innerWidth - r.width) / 2),
-      y: Math.max(8, (window.innerHeight - r.height) / 2 - 20),
+      y: Math.max(8, Math.min((window.innerHeight - r.height) / 2 - 20,
+                              window.innerHeight - r.height - 8)),
     });
   }, [center, pos]);
 
@@ -80,7 +81,11 @@ export default function Window({
         style={{
           position: 'absolute',
           left: pos?.x ?? 40, top: pos?.y ?? 40,
-          width, ...(altura ? { height: altura } : {}),
+          width,
+          // A ALTURA PEDIDA, MAS NUNCA MAIOR DO QUE O ECRÃ. Com uma altura fixa a
+          // janela passava por baixo do fundo e os botões de confirmar ficavam
+          // cortados — o empregado via a conta mas não conseguia fechá-la.
+          ...(altura ? { height: `min(${typeof altura === 'number' ? `${altura}px` : altura}, calc(100vh - 24px))` } : {}),
           maxWidth: 'calc(100vw - 16px)', maxHeight: 'calc(100vh - 16px)',
         }}
         className="bg-[#2b2b2b] border-[3px] border-black rounded-[3px] shadow-[0_24px_70px_rgba(0,0,0,0.75)]

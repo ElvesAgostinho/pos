@@ -346,16 +346,20 @@ export default function PosTerminal() {
   // exatamente o buraco por onde o dinheiro desaparece.
   const abrirGaveta = async () => {
     try {
-      await apiClient.post('pos/print-jobs/', {
-        job_type: 'DRAWER', outlet: setor?.outlet ?? null,
-        title: `Abertura de gaveta — ${operador?.name || 'Operador'}`,
+      const r = await apiClient.post('pos/terminal/open-drawer/', {
+        outlet: setor?.outlet ?? null,
+        operator: operador?.name || 'Operador',
         reference: sessao ? `CX-${sessao.id}` : null,
       });
       fecharMenu();
+      // DIZER POR ONDE FOI. Uma gaveta que não abre pode ser cabo, impressora ou
+      // configuração — sem saber por que aparelho o pulso saiu, não há por onde começar.
+      aviso(r.data?.detail || 'Gaveta aberta.', 'Gaveta');
     } catch (e: any) {
-      aviso(e?.response?.data?.detail || 'Não foi possível abrir a gaveta.');
+      aviso(e?.response?.data?.detail || 'Não foi possível abrir a gaveta.', 'Gaveta');
     }
   };
+
 
   const acoesGeral: AcaoPainel[] = [
     { label: 'Abrir Gaveta', icon: <IcoGaveta size={40} />, act: abrirGaveta, on: !!sessao,

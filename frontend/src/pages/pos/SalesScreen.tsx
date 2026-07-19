@@ -482,6 +482,22 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     });
   }, [conta, temSel]);
 
+  /**
+   * CONTA FECHADA -> FORA DA VENDA.
+   *
+   * O ecrã da venda é para contas ABERTAS. Ficava aberto com a conta já paga: o
+   * empregado via os artigos, o total e as teclas de uma venda que já não existe — e
+   * podia tentar lançar mais, ou anular o que já foi faturado. Bastava um caminho de
+   * saída falhar (fechar o recibo pelo X, um erro no meio) para o ecrã ficar preso.
+   *
+   * Agora não depende de nenhum caminho: mudou de estado, sai.
+   */
+  useEffect(() => {
+    if (conta && conta.status && conta.status !== 'OPEN' && conta.status !== 'SUSPENDED') {
+      onClose();
+    }
+  }, [conta?.status]);
+
   // (8312) O TECLADO ABRE-SE SOZINHO. Entrar no balcão e ver "Escolha uma página em
   // cima" é perder um toque em todas as vendas do dia: a primeira página é sempre a que
   // o dono pôs primeiro, e é onde está o que mais se vende. Quem tem várias páginas
