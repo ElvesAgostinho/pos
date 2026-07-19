@@ -113,7 +113,8 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   // Parciais e transferências DESTA conta, sem voltar ao mapa.
   const [mover, setMover] = useState<'' | 'SPLIT' | 'TRANSFER'>('');
   // As janelas dos quatro ícones do topo e do botão de anular.
-  const [anular, setAnular] = useState(false);          // motivo de anulação
+  const [anular, setAnular] = useState(false);          // motivo de anulação da CONTA
+  const [anularLinha, setAnularLinha] = useState<any | null>(null);  // motivo de UMA linha
   const [editarQtd, setEditarQtd] = useState(false);    // teclado numérico (+/−)
   const [verMensagens, setVerMensagens] = useState(false);
   const [escolherCliente, setEscolherCliente] = useState(false);
@@ -244,17 +245,36 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível gravar as mensagens.'); }
   };
 
+  /**
+   * TIRAR UM ARTIGO DA CONTA.
+   *
+   * ANTES DE CONFIRMAR o pedido, sai sem perguntas: o empregado ainda está a compor a
+   * comanda com o cliente à frente, engana-se e corrige — obrigar a um motivo a cada
+   * correção era pôr burocracia no meio de uma conversa.
+   *
+   * DEPOIS DE CONFIRMADO (já foi para a produção), exige MOTIVO: nessa altura há comida
+   * a ser feita ou bebida servida. O motivo diz à cozinha porque para, e fica no registo
+   * — é o que separa "o cliente mudou de ideias" de "desapareceu um whisky".
+   *
+   * Em nenhum dos casos se sai da venda: tirar um artigo é uma correção, não um fim de
+   * serviço.
+   */
   const apagarLinha = async (l: any) => {
-    const emProducao = ['FIRED', 'PREPARING', 'READY'].includes(l.kds_status);
-    let motivo: string | null = null;
-    if (emProducao) {
-      motivo = await pedir(
-        `"${l.description}" já foi para a produção.\n\nAnular obriga a um motivo (a cozinha é avisada e fica registado).\n\nMotivo:`);
-      if (!motivo) return;
-    }
+    const confirmado = ['FIRED', 'PREPARING', 'READY', 'SERVED'].includes(l.kds_status);
+    if (confirmado) { setAnularLinha(l); return; }   // pede o motivo (lista do backoffice)
     try {
-      await apiClient.delete(`pos/ticket-lines/${l.id}/`,
-        { params: motivo ? { reason: motivo } : undefined });
+      await apiClient.delete(`pos/ticket-lines/${l.id}/`);
+      setSel(null);
+      inval();
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao anular.'); }
+  };
+
+  /** A mesma remoção, já com o motivo escolhido. Também não sai da venda. */
+  const apagarLinhaComMotivo = async (l: any, motivo: string) => {
+    setAnularLinha(null);
+    try {
+      await apiClient.delete(`pos/ticket-lines/${l.id}/`, { params: { reason: motivo } });
+      setSel(null);
       inval();
     } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao anular.'); }
   };
@@ -380,6 +400,32 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao enviar para a cozinha.'); }
   };
 
+  /**
+   * CONFIRMAR O PEDIDO — o toque no ✔ verde.
+   *
+   * Faz as duas coisas que o nome promete: manda para a PRODUÇÃO o que ainda não foi
+   * (a cozinha e o bar passam a saber o que fazer) e volta à sala. A partir daqui o
+   * pedido está confirmado — tirar um artigo passa a exigir motivo.
+   *
+   * Se a conta estiver vazia, não há nada a confirmar: sai e a mesa fica livre (é a
+   * regra da mesa sem consumo, em fecharVenda).
+   */
+  const confirmarPedido = async () => {
+    const porEnviar = (conta?.lines || []).some(
+      (l: any) => !l.is_void && l.kds_status === 'NEW');
+    if (porEnviar) {
+      try {
+        const r = await apiClient.post(`pos/tickets/${tid}/fire_kitchen/`, {});
+        if (r.data?.print_warnings?.length) aviso(r.data.print_warnings.join('\n'));
+      } catch (e: any) {
+        // sem produção configurada não é motivo para prender o empregado no ecrã
+        const d = e?.response?.data?.detail;
+        if (d && !/produ|impress|estac/i.test(String(d))) aviso(d);
+      }
+    }
+    onClose();
+  };
+
   const linhas: any[] = conta?.lines || [];
   const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 
@@ -395,7 +441,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       { label: 'Desconto', icon: <IcoPercento size={40} />, act: aplicarDesconto, on: true },
       { label: 'Número de Clientes', icon: <IcoPessoas size={40} />, act: numeroClientes, on: true },
       { label: 'Mensagens', icon: <IcoLapis size={40} />, act: () => temSel && notaLinha(linhaSel()), on: temSel, why: semLinha },
-      { label: 'Anular tudo', icon: <IcoLixo size={40} />, act: anularConta, on: !!linhas.length, perigo: true,
+      { label: 'Anular tudo', icon: <IcoLixo size={40} />, act: () => setAnular(true), on: !!linhas.length, perigo: true,
         why: 'A conta está vazia — não há nada para anular.' },
       { label: 'Funções Parciais', icon: <IcoParciais size={40} />, act: () => setMover('SPLIT'), on: !!linhas.length,
         why: 'A conta está vazia — não há linhas para separar.' },
@@ -634,9 +680,18 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             Enviar para a cozinha passou para a aba Conta da engrenagem; apagar a linha
             faz-se na própria linha (dois toques). */}
         <div className="grid grid-cols-4 gap-[3px] bg-black p-[3px]">
-          {/* 1. ANULAR A VENDA — pede o MOTIVO (lista do backoffice) antes de apagar. */}
-          <BotaoComanda onClick={() => setAnular(true)} on={!!linhas.length} cor="#e02020"
-            titulo="Anular a venda (pede o motivo)"><IcoLixo size={36} /></BotaoComanda>
+          {/* 1. O CAIXOTE tem dois trabalhos, conforme o que está escolhido:
+                 · com uma LINHA escolhida -> tira esse artigo (sem perguntas se ainda
+                   não foi confirmado; com motivo se já foi para a produção)
+                 · sem nada escolhido -> anula a CONTA inteira, sempre com motivo
+                 Em nenhum dos casos se sai da venda: tirar um artigo é uma correcção,
+                 não um fim de serviço. */}
+          <BotaoComanda
+            onClick={() => (temSel ? apagarLinha(linhaSel()) : setAnular(true))}
+            on={!!linhas.length} cor="#e02020"
+            titulo={temSel
+              ? `Tirar "${linhaSel()?.description}" da conta`
+              : 'Anular a conta inteira (pede o motivo)'}><IcoLixo size={36} /></BotaoComanda>
           {/* 2. CONSULTA — o talão de conferência (documento CM da AGT). O cliente
                  pergunta "quanto vai?" e mostra-se, sem fechar a conta. */}
           <BotaoComanda onClick={() => setVerTalao(true)} on={!!linhas.length} cor="#ffffff"
@@ -644,9 +699,12 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
           {/* 3. VENDA — abre os Pagamentos. */}
           <BotaoComanda onClick={() => setPagar(true)} on={!!linhas.length} cor="#f0c000"
             titulo="Pagamentos"><IcoDinheiro size={36} /></BotaoComanda>
-          {/* 4. CONFIRMAR — fecha a conta e volta à sala (a conta fica aberta na mesa). */}
-          <BotaoComanda onClick={onClose} on cor="#2ecc40"
-            titulo="Confirmar e voltar"><IcoVisto size={38} /></BotaoComanda>
+          {/* 4. CONFIRMAR — o pedido segue para a produção e volta-se à sala.
+                 É AQUI que o pedido passa a estar confirmado: a partir deste toque,
+                 tirar um artigo já exige motivo. Antes disto, a comanda ainda está a
+                 ser composta e corrige-se à vontade. */}
+          <BotaoComanda onClick={confirmarPedido} on cor="#2ecc40"
+            titulo="Confirmar o pedido e voltar à sala"><IcoVisto size={38} /></BotaoComanda>
         </div>
       </div>
 
@@ -660,17 +718,17 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
           onSkip={() => avancarPergunta(perguntar.escolhas)} />
       )}
 
+      {/* TIRAR UM ARTIGO JÁ CONFIRMADO — motivo obrigatório, e fica-se na venda. */}
+      {anularLinha && (
+        <VoidReasonDialog titulo={`Anular "${anularLinha.description}"`}
+          onClose={() => setAnularLinha(null)}
+          onPick={(motivo) => apagarLinhaComMotivo(anularLinha, motivo)} />
+      )}
+
       {/* ANULAR A VENDA — o motivo vem da lista do backoffice (ou texto livre). */}
       {anular && (
-        <VoidReasonDialog onClose={() => setAnular(false)}
-          onPick={async (motivo) => {
-            setAnular(false);
-            try {
-              await apiClient.post(`pos/tickets/${tid}/void/`, { reason: motivo });
-              inval();
-              onClose();
-            } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível anular.'); }
-          }} />
+        <VoidReasonDialog titulo={`Anular a conta ${conta?.ticket_number || ''}`}
+          onClose={() => setAnular(false)} onPick={anularConta} />
       )}
 
       {/* (+/−) do topo: o teclado numérico sobre a linha escolhida. */}
