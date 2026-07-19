@@ -74,8 +74,16 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
   });
 
   const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
-  const pago = Number(conta.grand_total || 0) - Number(conta.balance_due ?? conta.grand_total ?? 0);
-  const falta = Number(conta.balance_due ?? conta.grand_total ?? 0);
+  const total = Number(conta.grand_total || 0);
+  // O QUE JÁ ENTROU no servidor (pagamentos anteriores desta conta).
+  const jaPago = total - Number(conta.balance_due ?? total);
+  // AS FRAÇÕES por confirmar: {id do meio: {amount, nome, metodo, room?}}
+  const [parcelas, setParcelas] = useState<Record<number, any>>({});
+  const somaExcluindo = (p: Record<number, any>, excluir?: number) =>
+    jaPago + Object.entries(p).reduce((s, [k, v]) =>
+      s + (Number(k) === excluir ? 0 : Number(v.amount || 0)), 0);
+  const pago = somaExcluindo(parcelas);
+  const falta = Number(Math.max(0, total - pago).toFixed(2));
 
   // CONTA QUARTO: o quarto escolhe-se da LISTA DO PMS (parâmetros 8035/8064 mandam),
   // não se escreve à mão — é assim que o jantar não vai parar ao quarto errado.
@@ -127,42 +135,75 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
     } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível gravar as observações.'); }
   };
 
-  const cobrar = async (m: any, extra: any = {}) => {
-    // Com o 8310 ligado não há cobrança sem entidade — a escolha volta a abrir-se.
+  /**
+   * COMPOR O PAGAMENTO — tocar num meio NÃO cobra: reparte.
+   *
+   * O cliente tem metade no cartão e metade em dinheiro; ou a mesa inteira quer dividir
+   * a conta. Cobrar logo o total ao primeiro toque tornava isso impossível: ficava pago
+   * e para repartir era preciso estornar. Agora cada toque põe uma FRAÇÃO no meio
+   * tocado — escreve-se o valor no teclado e toca-se, ou toca-se sem escrever e leva o
+   * que falta. O ✔ é que confirma tudo de uma vez.
+   *
+   * Enquanto não se confirma, não entrou dinheiro nenhum no servidor: pode-se corrigir
+   * à vontade, que é como se conta dinheiro à frente do cliente.
+   */
+  const repartir = (m: any) => {
+    const chave = m.payment_method;
+    setParcelas((p) => {
+      const novo = { ...p };
+      // tocar num meio que já tem valor LIMPA-O — é como se apaga um engano
+      if (!valor && novo[chave] != null) { delete novo[chave]; return novo; }
+      const escrito = Number(String(valor).replace(',', '.'));
+      const restante = Number((total - somaExcluindo(p, chave)).toFixed(2));
+      const v = valor && escrito > 0 ? escrito : restante;
+      if (v <= 0) return novo;
+      novo[chave] = { amount: v, nome: m.payment_method_name, metodo: m };
+      return novo;
+    });
+    setValor('');
+  };
+
+  /**
+   * CONFIRMAR — agora sim, o dinheiro entra.
+   *
+   * Cada fração vai ao motor pelo mesmo caminho de sempre (um pagamento por meio), e é
+   * o servidor que decide troco, gaveta, sangria e conta corrente. Se uma falhar, para-se
+   * ali e diz-se qual: metade cobrada e metade não é pior do que nada cobrado.
+   */
+  const confirmar = async () => {
     if (exigirEntidade && !entidade) { setEscolherEntidade(true); return; }
-    if (m.method_type_code === 'ROOM' && !extra.room) { setPedirQuarto(m); return; }
+    const linhas = Object.values(parcelas);
+    if (!linhas.length) return aviso('Escolha primeiro como o cliente paga.');
     setBusy(true);
     try {
-      const r = await comPerguntas(`pos/tickets/${ticket.id}/pay/`, {
-        payment_method: m.payment_method,
-        // Sem valor escrito, cobra-se o que falta — que é o que acontece em 9 de 10 contas.
-        amount: valor || falta,
-        ...(entidade ? { customer: entidade.id } : {}),
-        ...(modoCartao ? { card_mode: modoCartao } : {}),
-        ...extra,
-      }, async (label, detalhe) => await pedir(`${detalhe}\n\n${label}:`));
-
-      if (r?.pickup_alert) aviso(r.pickup_alert);
-      if (r?.print_counter_value) aviso(`Contravalor: ${r.print_counter_value}`);
-      if (r?.change_returned && Number(r.change_returned) > 0) {
-        aviso(`TROCO: ${money(r.change_returned)} Kz`);
+      for (const l of linhas) {
+        // CONTA QUARTO precisa do quarto — pergunta-se antes de mandar nada.
+        if (l.metodo.method_type_code === 'ROOM' && !l.room) {
+          setBusy(false); setPedirQuarto(l.metodo); return;
+        }
+        const r = await comPerguntas(`pos/tickets/${ticket.id}/pay/`, {
+          payment_method: l.metodo.payment_method,
+          amount: l.amount,
+          ...(l.room ? { room: l.room } : {}),
+          ...(entidade ? { customer: entidade.id } : {}),
+          ...(modoCartao ? { card_mode: modoCartao } : {}),
+        }, async (label, detalhe) => await pedir(`${detalhe}\n\n${label}:`));
+        if (r?.pickup_alert) aviso(r.pickup_alert);
+        if (r?.print_counter_value) aviso(`Contravalor: ${r.print_counter_value}`);
       }
 
       const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
       setConta(tk);
+      setParcelas({});
       setValor('');
       setModoCartao('');
-      // CONTA SALDADA: em vez de fechar tudo à pressa, mostra-se o RECIBO — quanto era,
-      // quanto entrou em cada meio, o troco e o número do documento. Fechar sem mostrar
-      // era deixar o empregado a contar o troco de cabeça e sem saber se a fatura saiu.
-      if (Number(tk.balance_due ?? 0) <= 0) {
-        let doc: string | null = null;
-        try {
-          const dd = await apiClient.get('pos/reports/documents/', { params: { search: tk.ticket_number } });
-          doc = ((dd.data?.rows || dd.data?.results || []) as any[])[0]?.number || null;
-        } catch { /* sem documento ainda: o recibo diz isso e deixa emitir */ }
-        setRecibo(doc || '');
-      }
+      // O RECIBO — quanto era, quanto entrou em cada meio, o troco e o documento.
+      let doc: string | null = null;
+      try {
+        const dd = await apiClient.get('pos/reports/documents/', { params: { search: tk.ticket_number } });
+        doc = ((dd.data?.rows || dd.data?.results || []) as any[])[0]?.number || null;
+      } catch { /* sem documento ainda: o recibo diz isso e deixa emitir */ }
+      setRecibo(doc || '');
     } catch (e: any) {
       aviso(e?.response?.data?.detail || 'Não foi possível cobrar.');
     } finally { setBusy(false); }
@@ -206,22 +247,32 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
               // meios; sem ver quanto entrou em cada um, o empregado perde a conta de
               // quanto já recebeu em dinheiro e quanto passou no cartão — e o fecho de
               // caixa não bate. A BARRA separa o nome do valor: é o que o original faz.
-              const nesteMeio = (conta.payments || [])
+              const jaEntrou = (conta.payments || [])
                 .filter((p: any) => p.payment_method === m.payment_method)
                 .reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
+              const fracao = parcelas[m.payment_method]?.amount;
+              // Um meio com fração fica ACESO — vê-se de relance como a conta está
+              // repartida antes de se confirmar.
+              const aceso = fracao != null;
               return (
-                <button key={m.id} onClick={() => !busy && cobrar(m)} disabled={busy || falta <= 0}
-                  className="h-[132px] rounded-[3px] text-white px-2 leading-tight border-2 border-black
-                    bg-gradient-to-b from-[#1aa3a5] to-[#0b6b6d]
+                <button key={m.id} onClick={() => !busy && repartir(m)} disabled={busy}
+                  title={aceso ? 'Tocar outra vez para tirar' : 'Escreva o valor e toque; sem valor, leva o que falta'}
+                  className={`h-[132px] rounded-[3px] text-white px-2 leading-tight border-2 border-black
                     shadow-[inset_0_2px_0_rgba(255,255,255,0.25),inset_0_-3px_0_rgba(0,0,0,0.4)]
                     active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.55)]
                     disabled:opacity-40 disabled:shadow-none
-                    flex flex-col items-center justify-center gap-1">
+                    flex flex-col items-center justify-center gap-1
+                    ${aceso ? 'bg-gradient-to-b from-[#22c3c5] to-[#0d8385] ring-[3px] ring-white/80 ring-inset'
+                      : 'bg-gradient-to-b from-[#1aa3a5] to-[#0b6b6d]'}`}>
                   <span className="text-[17px] font-bold text-center">{m.payment_method_name}</span>
-                  {nesteMeio > 0 && (
+                  {/* A BARRA DE FRAÇÃO: o que este meio leva desta conta. */}
+                  {(aceso || jaEntrou > 0) && (
                     <>
                       <span className="w-[78%] h-[2px] bg-white/70" />
-                      <span className="text-[20px] font-bold">{money(nesteMeio)}</span>
+                      <span className="text-[20px] font-bold">{money(fracao ?? jaEntrou)}</span>
+                      {jaEntrou > 0 && aceso && (
+                        <span className="text-[11px] text-white/70">já entrou {money(jaEntrou)}</span>
+                      )}
                     </>
                   )}
                 </button>
@@ -323,8 +374,12 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
 
         {/* ─── SEGUNDA FILA: fechar · faturar · escolher série · cancelar ─── */}
         <div className="grid grid-cols-4 gap-1 p-1 pt-0 bg-black">
-          <BotaoPag onClick={onPaid} on={falta <= 0} cor="#2ecc40"
-            titulo={falta > 0 ? `Ainda falta receber ${money(falta)} Kz` : 'Fechar a conta'}>
+          <BotaoPag
+            onClick={() => (Object.keys(parcelas).length ? confirmar() : onPaid())}
+            on={!busy && (Object.keys(parcelas).length > 0 || falta <= 0)} cor="#2ecc40"
+            titulo={Object.keys(parcelas).length
+              ? `Confirmar o pagamento (${money(pago - jaPago)} Kz)`
+              : falta > 0 ? `Escolha como o cliente paga` : 'Fechar a conta'}>
             <IcoVisto size={32} />
           </BotaoPag>
           <BotaoPag onClick={() => emitir()} cor="#2ecc40"
@@ -410,7 +465,16 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
       {/* Conta Quarto: o quarto vem da lista do PMS, com um toque */}
       {pedirQuarto && (
         <ClientPicker titulo="Lançar no quarto de…" soAba="QUARTO" podeSaltar={false}
-          onPick={(g) => { const m = pedirQuarto; setPedirQuarto(null); cobrar(m, { room: g.room }); }}
+          onPick={(g) => {
+            const m = pedirQuarto; setPedirQuarto(null);
+            setParcelas((p) => ({
+              ...p,
+              [m.payment_method]: {
+                amount: p[m.payment_method]?.amount ?? falta,
+                nome: m.payment_method_name, metodo: m, room: g.room,
+              },
+            }));
+          }}
           onClose={() => setPedirQuarto(null)} />
       )}
     </Window>

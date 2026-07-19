@@ -24,7 +24,19 @@ export default function TicketPreview({ ticket, onClose }: {
         setTalao(r.data?.content || '');
         setNumero(r.data?.invoice_no || '');
       } catch (e: any) {
-        setErro(e?.response?.data?.detail || 'Não foi possível emitir a consulta.');
+        // DIZER O PORQUÊ. "Não foi possível emitir a consulta" não ajuda ninguém: a
+        // razão quase sempre é "a conta ainda não tem consumo", e o servidor di-lo.
+        // Quando não há mensagem, mostra-se o código — é o que permite perceber se foi
+        // o servidor a recusar ou a ligação que caiu.
+        const d = e?.response?.data;
+        const st = e?.response?.status;
+        setErro(
+          d?.detail
+          || (d && typeof d === 'object'
+            ? Object.entries(d).map(([k, v]) => `${k}: ${v}`).join('\n') : '')
+          || (st ? `O servidor recusou a consulta (erro ${st}).`
+            : 'Sem resposta do servidor — verifique a ligação.'),
+        );
       }
     })();
   }, [ticket.id]);

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '../../api/client';
 import GuestsDialog from './GuestsDialog';
-import ClientPicker from './ClientPicker';
+
 import { aviso } from '../../ui/dialogo';
 
 /**
@@ -32,7 +32,7 @@ const PONTO: Record<string, string> = {
 };
 
 export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTicket,
-  onViewTicket, onDirectSale, perguntarTipo = true, refrescar = 8000,
+  onViewTicket, perguntarTipo = true, refrescar = 8000,
   mostrarPagamento = false, fundo: _fundo = true }: {
   setor: any;
   onOpenTicket: (ticketId: number) => void;
@@ -47,8 +47,8 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   modo?: 'ORDER' | 'PAY' | 'VIEW';
   onPayTicket?: (ticket: any) => void;
   onViewTicket?: (ticket: any) => void;
-  // "Passante" no diálogo da mesa NÃO abre a mesa: vai direto à venda de balcão.
-  onDirectSale?: () => void;
+  /* O atalho "Passante -> venda de balcão" foi retirado: quem já tocou numa mesa quer
+     AQUELA mesa. Ver GuestsDialog. */
   // (8084) mostrar o estado do pagamento na mesa; (8271) usar a cor de fundo do setor.
   mostrarPagamento?: boolean;
   fundo?: boolean;
@@ -57,7 +57,6 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   // A mesa que se acabou de tocar e ainda não tem conta: falta perguntar quantos são.
   const [aSentar, setASentar] = useState<any | null>(null);
   // Mesa de HÓSPEDE acabada de abrir: falta dizer QUEM (a lista do PMS, não à mão).
-  const [escolherHospede, setEscolherHospede] = useState<number | null>(null);
 
   const { data: mesas = [], isLoading } = useQuery({
     queryKey: ['pos-tables', setor?.id],
@@ -95,11 +94,10 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
     onSuccess: (t) => {
       setASentar(null);
       qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
-      // HÓSPEDE: antes de lançar, diz-se QUEM é — a conta leva o nome do PMS
-      // (parâmetros 8035/8064/8147 mandam na lista). Sem isto, "Hotel" era só
-      // uma etiqueta e a fatura saía Consumidor Final.
-      if (t.guest_type === 'HOTEL') setEscolherHospede(t.id);
-      else onOpenTicket(t.id);
+      // Direto ao teclado. Quem é o cliente pergunta-se DENTRO da venda, no seletor
+      // que já abre sozinho (8311): aqui era a mesma pergunta duas vezes, e a primeira
+      // ainda antes de o empregado ver a conta que acabou de abrir.
+      onOpenTicket(t.id);
     },
     onError: (e: any) => aviso(e?.response?.data?.detail || 'Não foi possível abrir a conta.'),
   });
@@ -174,23 +172,10 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
           );
         })}
 
-        {/* HÓSPEDE: escolher da lista do PMS e agarrar o nome à conta */}
-        {escolherHospede && (
-          <ClientPicker titulo="Que hóspede está nesta mesa?" soAba="QUARTO"
-            onPick={async (g) => {
-              try {
-                await apiClient.post(`pos/tickets/${escolherHospede}/set_customer/`, g);
-              } catch { /* sem PMS/nome, a conta segue na mesma */ }
-              const id = escolherHospede; setEscolherHospede(null); onOpenTicket(id);
-            }}
-            onClose={() => { const id = escolherHospede; setEscolherHospede(null); onOpenTicket(id); }} />
-        )}
-
         {aSentar && (
           <GuestsDialog mesa={aSentar} perguntarTipo={perguntarTipo}
             tiposPermitidos={setor?.customer_types}
             onConfirm={(pax, tipo) => abrir.mutate({ mesa: aSentar, pax, tipo })}
-            onPassante={onDirectSale ? () => { setASentar(null); onDirectSale(); } : undefined}
             onCancel={() => setASentar(null)} />
         )}
 

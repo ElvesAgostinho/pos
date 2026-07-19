@@ -15,20 +15,23 @@ import { IcoCruz, IcoVisto } from './Icons';
  *
  * (Este ecrã só aparece se o parâmetro 8175 "Perguntar tipo de cliente" estiver ligado.)
  *
- * PASSANTE é um ATALHO, não uma escolha: quem passa não senta mesa — tocar em "Passante"
- * vai LOGO para a venda de balcão (venda direta), sem número de clientes nem "abrir mesa".
+ * "Passante" É UM TIPO, não um atalho. Era um atalho: tocar nele largava a mesa e abria
+ * uma venda de BALCÃO. Como Passante é o que se escolhe em quase todas as mesas, o
+ * resultado era que a conta NUNCA ficava ligada à mesa — abria-se a mesa, escolhia-se
+ * Passante, e a venda ia para uma conta de balcão sem mesa nenhuma. A mesa continuava
+ * verde, e ao voltar lá o terminal perguntava tudo outra vez, como se nada tivesse
+ * acontecido. Era este o "não guarda nada".
  */
-export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitidos, onConfirm, onPassante, onCancel }: {
+export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitidos, onConfirm, onCancel }: {
   mesa: any;
   perguntarTipo?: boolean;
   // (8581 da ficha do SETOR) que tipos de cliente esta sala aceita
   tiposPermitidos?: string | null;
   onConfirm: (pax: number, tipo: string) => void;
-  onPassante?: () => void;
   onCancel: () => void;
 }) {
   const [valor, setValor] = useState('');
-  const [tipo, setTipo] = useState(onPassante ? 'HOTEL' : 'PASSANTE');
+  const [tipo, setTipo] = useState('PASSANTE');
   const pax = Number(valor || 0);
 
   const tecla = (t: string) => {
@@ -87,7 +90,7 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitid
                 return (
                   <button key={k} disabled={bloqueado}
                     title={bloqueado ? 'Sem autorização de consumo interno (ficha do utilizador)' : ''}
-                    onClick={() => (k === 'PASSANTE' && onPassante ? onPassante() : setTipo(k))}
+                    onClick={() => setTipo(k)}
                     className={`h-[50px] rounded-md text-[14px] font-bold whitespace-pre-line transition
                       disabled:opacity-30 ${tipo === k
                       ? 'bg-[#0f8b8d] text-white ring-2 ring-white/70' : 'bg-[#1f1f1f] text-white/80'}`}>
