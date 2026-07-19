@@ -1111,8 +1111,15 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 amount=applied, source_reference=ticket.ticket_number,
                 posted_by=ticket.operator_name)
 
-        POSTicketPayment.objects.create(ticket=ticket, payment_method=pm, amount=applied,
-                                        change_due=change)
+        # GUARDAR O COMPROVATIVO. Estes dados foram exigidos ao empregado com o cliente
+        # à frente (a ficha do meio de pagamento é que manda); guardá-los é o mínimo.
+        # São eles que, no fim do mês, ligam a entrada no banco a esta venda.
+        POSTicketPayment.objects.create(
+            ticket=ticket, payment_method=pm, amount=applied, change_due=change,
+            bank_reference=(request.data.get('bank_reference') or None),
+            auth_code=(request.data.get('auth_code') or request.data.get('external_ref') or None),
+            document_number=(request.data.get('document_number') or None),
+            room_ref=(request.data.get('room') or None))
 
         # O movimento do cartão fica escrito. O saldo é sempre a soma do livro.
         if modo_cartao:

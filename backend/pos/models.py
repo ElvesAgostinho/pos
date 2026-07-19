@@ -465,6 +465,17 @@ class POSTicketPayment(models.Model):
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     change_due = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    # O COMPROVATIVO DO PAGAMENTO — o que liga esta venda ao extrato do banco.
+    #
+    # O terminal já PEDIA estes dados (a ficha do meio de pagamento manda-o fazê-lo) e
+    # depois DEITAVA-OS FORA: não havia onde os guardar. O empregado escrevia a
+    # referência da transferência à frente do cliente e ela desaparecia — no fim do mês
+    # ficava uma entrada de 8200 Kz no banco e nenhuma forma de a ligar a uma conta.
+    # Pedir um dado e não o guardar é pior do que não o pedir.
+    bank_reference = models.CharField(max_length=60, blank=True, null=True)   # transferência
+    auth_code = models.CharField(max_length=40, blank=True, null=True)        # TPA/cartão
+    document_number = models.CharField(max_length=60, blank=True, null=True)  # cheque/nº doc
+    room_ref = models.CharField(max_length=20, blank=True, null=True)         # conta quarto
 
     class Meta:
         db_table = 'pos_ticket_payment'

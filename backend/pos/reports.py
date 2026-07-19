@@ -261,6 +261,49 @@ def r_movimentos_caixa(p):
     }
 
 
+def r_comprovativos(p):
+    """COMPROVATIVOS DE PAGAMENTO — a referência de cada transferência, TPA e cheque.
+
+    É o relatório da RECONCILIAÇÃO. O dinheiro de uma transferência entra na conta do
+    banco dias depois e sem dizer de que venda veio: quem fecha o mês tem uma linha de
+    8200 Kz no extrato e nada que a ligue a uma conta do restaurante. Esta lista é essa
+    ligação — referência a referência, com a venda, a data e o valor ao lado.
+
+    Só mostra os pagamentos QUE TÊM comprovativo: dinheiro não tem referência nenhuma e
+    só faria ruído aqui.
+    """
+    from .models import POSTicketPayment
+    from django.db.models import Q
+    ini, fim = _periodo(p)
+    qs = (POSTicketPayment.objects
+          .filter(ticket__closed_at__date__gte=ini, ticket__closed_at__date__lte=fim)
+          .filter(Q(bank_reference__isnull=False) | Q(auth_code__isnull=False)
+                  | Q(document_number__isnull=False) | Q(room_ref__isnull=False))
+          .exclude(bank_reference='', auth_code='', document_number='', room_ref='')
+          .select_related('ticket', 'payment_method')
+          .order_by('-created_at'))
+    rows = []
+    for x in qs:
+        rows.append({
+            'date': x.created_at.strftime('%d/%m/%Y %H:%M') if x.created_at else '',
+            'ticket': x.ticket.ticket_number,
+            'method': x.payment_method.name if x.payment_method else '—',
+            'reference': x.bank_reference or '',
+            'auth': x.auth_code or '',
+            'document': x.document_number or '',
+            'room': x.room_ref or '',
+            'amount': str(x.amount or 0),
+        })
+    tot = sum((_num(r['amount']) for r in rows), Decimal('0'))
+    return {
+        'columns': [('date', 'Data'), ('ticket', 'Venda'), ('method', 'Modo de pagamento'),
+                    ('reference', 'Referência bancária'), ('auth', 'Cód. autorização (TPA)'),
+                    ('document', 'Nº documento'), ('room', 'Quarto'),
+                    ('amount', 'Valor', 'money')],
+        'rows': rows, 'totals': {'amount': str(tot)},
+    }
+
+
 def r_pagamentos(p):
     """VENDAS POR MODO DE PAGAMENTO — quanto entrou em dinheiro, em cartão, no quarto."""
     from .models import POSTicketPayment
@@ -755,6 +798,8 @@ CATALOG = [
          'fn': r_movimentos_caixa},
         {'code': 'cx_pagamentos', 'name': 'Vendas por modo de pagamento',
          'params': P_PERIODO, 'fn': r_pagamentos},
+        {'code': 'cx_comprovativos', 'name': 'Comprovativos de pagamento (banco/TPA/cheque)',
+         'params': P_PERIODO, 'fn': r_comprovativos},
     ]},
     {'code': '19', 'name': 'Estatísticas', 'reports': [
         {'code': 'est_horas', 'name': 'Horas de pico (para as escalas)',

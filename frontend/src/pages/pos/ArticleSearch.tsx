@@ -181,13 +181,15 @@ export default function ArticleSearch({ onPick, onClose }: {
                 ))}
               </div>
             ))}
-            <div className="grid gap-1" style={{ gridTemplateColumns: '1fr 6fr 1fr 1fr 1fr' }}>
+            <div className="grid gap-1" style={{ gridTemplateColumns: '1.4fr 5fr 1fr 1fr 1fr 1fr' }}>
               <button onClick={() => setMaiusc(!maiusc)}
                 className={`h-[58px] rounded-[3px] flex items-center justify-center ${RELEVO}
                   ${maiusc ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white' : `${CINZA} text-white`}`}>
                 <IcoMaiusculas size={22} />
               </button>
               <button onClick={() => setTexto(`${texto} `)} className={`h-[58px] rounded-[3px] ${RELEVO} ${CINZA}`} />
+              <button onClick={() => tecla('0')}
+                className={`h-[58px] rounded-[3px] text-white text-[20px] font-bold ${RELEVO} ${CINZA}`}>0</button>
               <button onClick={() => setTexto(`${texto}.`)}
                 className={`h-[58px] rounded-[3px] text-white text-[20px] font-bold ${RELEVO} ${CINZA}`}>.</button>
               <button onClick={() => setTexto('')}
