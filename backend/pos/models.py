@@ -861,6 +861,15 @@ class PosKeyboardKey(models.Model):
     text_color = models.CharField(max_length=20, default='#ffffff')
     sort_order = models.PositiveIntegerField(default=0)
     span = models.PositiveSmallIntegerField(default=1)     # nº de colunas que ocupa
+    # A GRELHA DA PÁGINA. Vazio = a do teclado. A página das bebidas pode querer 5
+    # colunas de garrafas e a dos pratos 3 colunas largas: obrigar as duas à mesma
+    # grelha é deixar metade do ecrã vazio numa e apertado na outra.
+    cols = models.PositiveSmallIntegerField(blank=True, null=True)
+    rows = models.PositiveSmallIntegerField(blank=True, null=True)
+    # O TIPO DE PREÇO desta página. Vazio = o do teclado. É o que permite ter a mesma
+    # cerveja a preço de esplanada numa página e a preço de sala noutra, sem duplicar
+    # o artigo no catálogo.
+    price_level = models.PositiveSmallIntegerField(blank=True, null=True)
 
     class Meta:
         db_table = 'pos_keyboard_key'

@@ -65,6 +65,49 @@ const IconeTopo = ({ icon, titulo, act, on = true, aceso = false }: {
   </button>
 );
 
+/**
+ * AS CONTAS DE BALCÃO POR FECHAR — a faixa em cima do mapa.
+ *
+ * Sem mesa não há sítio na planta onde as desenhar, e sem sítio na planta desaparecem.
+ * Esta faixa é o sítio delas: só aparece quando há alguma, e some quando não há.
+ */
+function ContasDeBalcao({ outlet, onAbrir }: { outlet: number; onAbrir: (id: number) => void }) {
+  const { data: contas = [] } = useQuery({
+    queryKey: ['pos-open-tickets'],
+    queryFn: async () => {
+      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } });
+      return (r.data?.results || r.data || []) as any[];
+    },
+    refetchInterval: 8000,
+  });
+  const balcao = contas.filter((t: any) => !t.table && t.outlet === outlet
+    && (t.status === 'OPEN' || t.status === 'SUSPENDED'));
+  if (!balcao.length) return null;
+  const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
+
+  return (
+    <div className="absolute left-0 right-0 bottom-0 bg-black/85 border-t-2 border-[#b39100]
+      px-3 py-2 flex items-center gap-2 overflow-x-auto">
+      <span className="text-[#f0c000] text-[14px] font-bold whitespace-nowrap mr-1">
+        Balcão · {balcao.length} por fechar
+      </span>
+      {balcao.map((t: any) => (
+        <button key={t.id} onClick={() => onAbrir(t.id)}
+          className="h-[54px] px-4 rounded-[3px] border-2 border-black text-white flex flex-col
+            items-center justify-center leading-tight flex-shrink-0
+            bg-gradient-to-b from-[#4a4a4a] to-[#242424]
+            shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.5)]
+            active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]">
+          <span className="text-[15px] font-bold">{money(t.grand_total)} Kz</span>
+          <span className="text-[11px] text-white/55">
+            {t.customer_name || t.ticket_number?.slice(-6)}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function PosTerminal() {
   const nav = useNavigate();
   const qc = useQueryClient();
@@ -194,10 +237,29 @@ export default function PosTerminal() {
     }
   };
 
-  // VENDA DIRETA — a conta de balcão, sem mesa. NÃO tem popup nenhum: quem toca no ícone
-  // da venda (ou em "Passante") quer vender JÁ. Perguntas são para as mesas.
-  const vendaDireta = () => {
+  /**
+   * VENDA DIRETA — a conta de balcão, sem mesa. Sem popup nenhum: quem toca no ícone da
+   * venda quer vender JÁ. Perguntas são para as mesas.
+   *
+   * RETOMA a conta de balcão que já está aberta, em vez de abrir outra.
+   *
+   * Uma conta de balcão não tem mesa — logo não aparece no mapa. Como cada toque neste
+   * ícone criava uma conta NOVA, quem lançava três cafés, tocava no ✔ e voltava ao
+   * balcão caía numa conta vazia: os cafés continuavam lá, numa conta que já não tinha
+   * como ser encontrada. Era o "não guarda a conta" — e as contas antigas iam-se
+   * acumulando abertas, com dinheiro dentro, à espera do fecho do dia.
+   *
+   * Agora só se abre conta nova quando não há nenhuma de balcão por fechar.
+   */
+  const vendaDireta = async () => {
     if (!setor) return;
+    try {
+      const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } });
+      const abertas = (r.data?.results || r.data || []) as any[];
+      const balcao = abertas.find((t) => !t.table && t.outlet === setor.outlet
+        && (t.status === 'OPEN' || t.status === 'SUSPENDED'));
+      if (balcao) { setTicket(balcao.id); setEtapa('SALES'); return; }
+    } catch { /* sem lista, abre-se uma nova — é o comportamento seguro */ }
     abrirVendaDireta(1, 'PASSANTE');
   };
 
@@ -500,6 +562,14 @@ export default function PosTerminal() {
                   if (escolher) { setContaAtual(t); setJanela(escolher); setEscolher(''); setModoMapa('ORDER'); }
                   else setACobrar(t);
                 }} />
+
+              {/* AS CONTAS DE BALCÃO NO MAPA.
+                  Uma conta de balcão não tem mesa, por isso não aparece na planta — e
+                  ficava invisível, aberta e com dinheiro dentro, até ao fecho do dia.
+                  Esta faixa mostra-as: quantas são, quanto valem, e abre-as com um
+                  toque. O que está por cobrar tem de estar à vista de quem serve. */}
+              <ContasDeBalcao outlet={setor.outlet}
+                onAbrir={(id) => { setTicket(id); setEtapa('SALES'); }} />
             </>
           )}
           {etapa === 'SALES' && ticket && (
