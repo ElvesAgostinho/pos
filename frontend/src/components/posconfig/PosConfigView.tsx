@@ -56,7 +56,6 @@ import PosDocSearch from './PosDocSearch';
 import PosAlerts from './PosAlerts';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
-import { useActiveModules } from '../../hooks/useActiveModules';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -147,9 +146,6 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   onBack?: () => void; onDesktop?: () => void; onOpen?: (id: string) => void;
 }) {
   const qc = useQueryClient();
-  // os módulos da LICENÇA — a árvore esconde o que não está licenciado
-  const { data: licData } = useActiveModules();
-  const licActive: string[] = licData?.active || [];
   // A secção com que se abre: quem manda abrir o POS (o Desktop, um atalho) deixa-a
   // aqui. Sem isto, clicar em "Compras" no Desktop abria sempre a lista de Artigos.
   const [section, setSection] = useState(() => {
@@ -350,12 +346,10 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             </div>
           )}
           {SECTIONS.map((g0) => {
-            // A LICENÇA manda na árvore: sem o módulo de Produção (Restauração),
-            // Alergénios e Mensagens não existem — escondem-se, não rebentam.
-            const semProducao = !(licActive || []).includes('production');
-            const grp = semProducao
-              ? { ...g0, items: g0.items.filter((i: any) => !['allergens', 'messages'].includes(i.key)) }
-              : g0;
+            // A árvore do POS mostra TUDO o que é do POS. Alergénios e Mensagens são
+            // do POS (vivem em pos.Allergen / pos.KitchenMessage) — não dependem de
+            // módulo nenhum e nunca se escondem.
+            const grp = g0;
             return (
             <div key={grp.key}>
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
