@@ -14,6 +14,8 @@ import CustomerForm from './CustomerForm';
 // SEM este import, o <Window> das janelas em baixo resolvia para o Window DO BROWSER
 // (o DOM global) — React fazia `new Window()` e rebentava com "Illegal constructor".
 import Window from './Window';
+import type { AcaoPainel } from './SettingsPanel';
+import MoveLines from './MoveLines';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -29,8 +31,10 @@ import Window from './Window';
  * texto livre. O servidor diz o que falta; o terminal pergunta (ver posPrompt.ts). As
  * regras vivem num sítio só.
  */
-export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
+export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, onClose }: {
   ticketId: number; setor: any; cfg?: any; onClose: () => void;
+  /** a venda entrega as suas funções ao painel da engrenagem (aba "Conta") */
+  publicarAcoes?: (acoes: AcaoPainel[]) => void;
 }) {
   const qc = useQueryClient();
   // A subconta ATIVA: numa mesa com várias pessoas, o carrossel troca-a sem sair da venda.
@@ -53,6 +57,15 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
   const [verHistorico, setVerHistorico] = useState(false); // auditoria da conta
   const [verDestinos, setVerDestinos] = useState(false);  // Quarto/Piscina/Praia…
   const [jaPediu, setJaPediu] = useState<number[]>([]);   // 1 pergunta por conta, não em loop
+  // A LINHA ESCOLHIDA. As funções da aba "Conta" (preço, quantidade, desconto do artigo,
+  // mensagem) atuam sobre ELA: sem uma linha escolhida, "alterar preço" não sabe de quê.
+  const [sel, setSel] = useState<number | null>(null);
+  // (Parâmetros do teclado) o que as teclas mostram — alterna-se aqui, no painel, sem
+  // ir ao backoffice: o preço à vista é uma preferência de quem está a servir.
+  const [verPrecos, setVerPrecos] = useState(true);
+  const [agrupar, setAgrupar] = useState(false);
+  // Parciais e transferências DESTA conta, sem voltar ao mapa.
+  const [mover, setMover] = useState<'' | 'SPLIT' | 'TRANSFER'>('');
 
   // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
   // muda os preços que as teclas mostram (staff/consumo interno vê o custo).
@@ -192,6 +205,78 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
     }
   };
 
+  // ─── as funções da aba "Conta" do painel da engrenagem ────────────────────
+  // Todas mexem na LINHA ESCOLHIDA e todas passam pelo SERVIDOR: o total é dele, não
+  // deste ecrã. Um terminal que soma sozinho é um terminal que discorda da fatura.
+  const linhaSel = () => (conta?.lines || []).find((l: any) => l.id === sel);
+
+  const patchLinha = async (campos: any, erro: string) => {
+    const l = linhaSel();
+    if (!l) return;
+    try {
+      await apiClient.patch(`pos/ticket-lines/${l.id}/`, campos);
+      inval();
+    } catch (e: any) { alert(e?.response?.data?.detail || erro); }
+  };
+
+  // PREÇO manual: o servidor recusa se o artigo não permitir (caixa da ficha) ou se o
+  // valor descer abaixo do que o operador pode dar — não é aqui que isso se decide.
+  const alterarPreco = async () => {
+    const l = linhaSel();
+    if (!l) return;
+    const v = window.prompt(`PREÇO — ${l.description}\n\nPreço atual: ${money(l.unit_price)}\n\nNovo preço:`,
+      String(Number(l.unit_price)));
+    if (v === null || !v.trim()) return;
+    await patchLinha({ unit_price: v.replace(',', '.').trim() },
+      'Não foi possível alterar o preço (o artigo pode não permitir preço manual).');
+  };
+
+  const alterarQtd = async () => {
+    const l = linhaSel();
+    if (!l) return;
+    const v = window.prompt(`QUANTIDADE — ${l.description}\n\nQuantidade atual: ${Number(l.quantity)}\n\nNova quantidade:`,
+      String(Number(l.quantity)));
+    if (v === null || !v.trim()) return;
+    const n = Number(v.replace(',', '.').trim());
+    if (!(n > 0)) return alert('A quantidade tem de ser maior que zero. Para tirar o artigo, anule a linha.');
+    await patchLinha({ quantity: n }, 'Não foi possível alterar a quantidade.');
+  };
+
+  const descontoLinha = async () => {
+    const l = linhaSel();
+    if (!l) return;
+    const v = window.prompt(`DESCONTO DO ARTIGO — ${l.description}\n\nPercentagem (0 tira o desconto):`,
+      String(Number(l.discount_percent || 0)));
+    if (v === null) return;
+    await patchLinha({ discount_percent: v.replace('%', '').replace(',', '.').trim() || 0 },
+      'Não foi possível aplicar o desconto ao artigo.');
+  };
+
+  // NÚMERO DE CLIENTES — o divisor do gasto por pessoa. Corrige-se quando chega mais
+  // gente à mesa; sem isto o indicador do restaurante fica errado o serviço todo.
+  const numeroClientes = async () => {
+    const v = window.prompt(`NÚMERO DE CLIENTES\n\nQuantos estão à mesa?`, String(conta?.guests || 1));
+    if (v === null) return;
+    const n = Number(v.trim());
+    if (!(n > 0)) return alert('O número de clientes tem de ser maior que zero.');
+    try {
+      await apiClient.patch(`pos/tickets/${tid}/`, { guests: n });
+      inval();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar.'); }
+  };
+
+  // ANULAR TUDO — a conta inteira. Obriga a motivo (fica na auditoria) e liberta a mesa.
+  const anularConta = async () => {
+    const motivo = window.prompt(
+      `ANULAR a conta ${conta?.ticket_number || ''}?\n\nA mesa fica livre e a anulação fica na auditoria.\n\nMotivo:`);
+    if (!motivo) return;
+    try {
+      await apiClient.post(`pos/tickets/${tid}/void/`, { reason: motivo });
+      inval();
+      onClose();
+    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível anular.'); }
+  };
+
   // SUSPENDER a conta (o grupo que sai e volta) — retoma-se tocando na mesa.
   const suspender = async () => {
     try {
@@ -211,6 +296,44 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
 
   const linhas: any[] = conta?.lines || [];
   const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
+
+  // A VENDA ENTREGA AS SUAS FUNÇÕES ao painel da engrenagem. O painel é chrome; quem
+  // sabe mexer na conta é este ecrã — e é aqui que as funções ficam.
+  const temSel = sel != null && linhas.some((l) => l.id === sel);
+  const semLinha = 'Escolha primeiro uma linha da comanda (um toque).';
+  useEffect(() => {
+    publicarAcoes?.([
+      { label: 'Preço', icon: '💲', act: alterarPreco, on: temSel, why: semLinha },
+      { label: 'Quantidade', icon: '±', act: alterarQtd, on: temSel, why: semLinha },
+      { label: 'Desconto Artigo', icon: '%', act: descontoLinha, on: temSel, why: semLinha },
+      { label: 'Desconto', icon: '%', act: aplicarDesconto, on: true },
+      { label: 'Número de Clientes', icon: '👥', act: numeroClientes, on: true },
+      { label: 'Mensagens', icon: '✎', act: () => temSel && notaLinha(linhaSel()), on: temSel, why: semLinha },
+      { label: 'Anular tudo', icon: '🗑', act: anularConta, on: !!linhas.length, perigo: true,
+        why: 'A conta está vazia — não há nada para anular.' },
+      { label: 'Funções Parciais', icon: '⑂', act: () => setMover('SPLIT'), on: !!linhas.length,
+        why: 'A conta está vazia — não há linhas para separar.' },
+      ...(cfg?.transfers !== 'Não permitir'
+        ? [{ label: 'Transferência de Mesa', icon: '⇄', act: () => setMover('TRANSFER'), on: !!conta?.table,
+            why: 'A venda de balcão não tem mesa para transferir.' } as AcaoPainel]
+        : []),
+      { label: 'Visualizar Preços', icon: '👁', act: () => setVerPrecos((v) => !v), on: true, ativo: verPrecos },
+      { label: 'Ver artigos agrupados', icon: '▤', act: () => setAgrupar((v) => !v), on: true, ativo: agrupar },
+    ]);
+  }, [conta, sel, temSel, verPrecos, agrupar, linhas.length]);
+
+  // VER ARTIGOS AGRUPADOS: três cafés lançados um a um passam a "3 Café". Junta-se só o
+  // que é MESMO igual — mesmo artigo, mesmo preço e mesma nota. Agrupar um café com nota
+  // "sem açúcar" com outro sem nota era mandar para a cozinha um pedido que ninguém fez.
+  const linhasVista = !agrupar ? linhas : Object.values(
+    linhas.reduce((acc: Record<string, any>, l: any) => {
+      const chave = `${l.item}|${l.unit_price}|${l.note || ''}`;
+      if (!acc[chave]) acc[chave] = { ...l, quantity: 0, line_total: 0, _juntas: 0 };
+      acc[chave].quantity = Number(acc[chave].quantity) + Number(l.quantity);
+      acc[chave].line_total = Number(acc[chave].line_total) + Number(l.line_total);
+      acc[chave]._juntas += 1;
+      return acc;
+    }, {}));
 
   return (
     <div className="absolute inset-0 flex">
@@ -282,7 +405,7 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
                 <span>{k.label}</span>
                 {/* Só saem se as caixas "Visualizar Códigos/Preços" estiverem ligadas. */}
                 {k.code && <span className="text-[11px] font-normal opacity-80">{k.code}</span>}
-                {k.price && <span className="text-[14px] opacity-95">{money(k.price)}</span>}
+                {verPrecos && k.price && <span className="text-[14px] opacity-95">{money(k.price)}</span>}
                 {k.available === false && <span className="text-[10px]">indisponível</span>}
               </button>
             ))}
@@ -314,14 +437,21 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
         </div>
 
         <div className="flex-1 overflow-auto bg-[#8a8a8a]/20">
-          {linhas.map((l) => (
-            <div key={l.id} onClick={() => notaLinha(l)} onDoubleClick={() => apagarLinha(l)}
-              title="1 toque: nota p/ cozinha · 2 toques: anular a linha"
-              className="grid grid-cols-[64px_1fr_120px] px-2 py-2 text-white border-b border-black/20 text-[15px] cursor-pointer">
+          {linhasVista.map((l: any) => (
+            // 1 toque ESCOLHE a linha (é sobre ela que a engrenagem trabalha); 2 toques
+            // anulam. Antes, um toque abria logo a caixa da nota — não havia como
+            // escolher uma linha para lhe mudar o preço.
+            <div key={l.id} onClick={() => setSel(l.id)} onDoubleClick={() => apagarLinha(l)}
+              title="1 toque: escolher a linha · 2 toques: anular a linha"
+              className={`grid grid-cols-[64px_1fr_120px] px-2 py-2 text-white border-b border-black/20
+                text-[15px] cursor-pointer ${sel === l.id ? 'bg-[#b39100]' : ''}`}>
               <span>{Number(l.quantity)}</span>
               <span className="truncate">
                 {l.description}
                 {l.note && <span className="block text-[11px] text-[#7fd4ff]">✎ {l.note}</span>}
+                {l._juntas > 1 && (
+                  <span className="block text-[11px] text-white/50">{l._juntas} lançamentos juntos</span>
+                )}
                 {/* ALERGÉNIOS da ficha do artigo (backoffice) — o empregado avisa o
                     cliente ANTES de o prato sair, não depois. */}
                 {l.allergens?.length > 0 && (
@@ -395,6 +525,12 @@ export default function SalesScreen({ ticketId, setor, cfg, onClose }: {
             className="h-[76px] bg-[#2b2b2b] text-[#2ecc40] text-[34px]">✔</button>
         </div>
       </div>
+
+      {/* Parciais e transferências DESTA conta, chamadas da engrenagem (aba Conta) */}
+      {mover && conta && (
+        <MoveLines modo={mover} ticket={conta} setor={setor} modoTransfer={cfg?.transfers}
+          onClose={() => { setMover(''); inval(); }} />
+      )}
 
       {/* hóspedes e documentos — os painéis do backoffice, dentro da venda */}
       {painel === 'GUESTS' && <GuestsPanel aba="GUESTS" onClose={() => setPainel('')} />}

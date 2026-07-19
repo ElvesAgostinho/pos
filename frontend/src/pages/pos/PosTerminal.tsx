@@ -18,6 +18,8 @@ import CashClose from './CashClose';
 import ReservationsPanel from './ReservationsPanel';
 import DeliveriesPanel from './DeliveriesPanel';
 import GroupTables from './GroupTables';
+import SettingsPanel, { type AcaoPainel } from './SettingsPanel';
+import { OpenTablesWindow, HardwareWindow, CashDetailWindow, SalesSummaryWindow } from './TerminalWindows';
 import { useProducao, ProductionWindow } from './ProductionBell';
 
 /**
@@ -49,11 +51,20 @@ export default function PosTerminal() {
   const [aConsultar, setAConsultar] = useState<any | null>(null);
   // As janelas da barra da esquerda. Uma de cada vez — o empregado não faz duas coisas
   // ao mesmo tempo com uma mesa à espera.
-  const [janela, setJanela] = useState<'' | 'SPLIT' | 'TRANSFER' | 'DOCS' | 'GUESTS' | 'MEALS' | 'CC' | 'RESERVAS' | 'ENTREGAS' | 'GRUPOS'>('');
+  const [janela, setJanela] = useState<'' | 'SPLIT' | 'TRANSFER' | 'DOCS' | 'GUESTS' | 'MEALS' | 'CC' | 'RESERVAS' | 'ENTREGAS' | 'GRUPOS'
+    | 'MESAS' | 'HARDWARE' | 'CXDETALHE' | 'RESUMO'>('');
   const [contaAtual, setContaAtual] = useState<any | null>(null);
   // Modo de escolha de mesa: para as parciais e as transferências é preciso saber QUAL.
   const [escolher, setEscolher] = useState<'' | 'SPLIT' | 'TRANSFER'>('');
   const [agora, setAgora] = useState(new Date());
+  // O PAINEL DA ENGRENAGEM (Conta/Geral/Caixa). A aba fica GUARDADA entre aberturas:
+  // quem está a fechar a caixa abre a engrenagem três vezes seguidas e quer a mesma aba.
+  const [menu, setMenu] = useState(false);
+  const [menuAba, setMenuAba] = useState('Geral');
+  const [trocarPin, setTrocarPin] = useState(false);
+  // A aba CONTA é da VENDA (é lá que estão a linha escolhida e a conta). A venda publica
+  // aqui as suas funções — o painel é o mesmo, venha de onde vier.
+  const [acoesConta, setAcoesConta] = useState<AcaoPainel[]>([]);
 
   // O TERMINAL NÃO TEM OPINIÃO PRÓPRIA: pergunta ao servidor como se comporta. Estas
   // caixas vivem em Configuração POS › Parâmetros, e mudam o caminho do empregado.
@@ -244,6 +255,58 @@ export default function PosTerminal() {
       : []),
   ];
 
+  // ─── O PAINEL DA ENGRENAGEM ────────────────────────────────────────────────
+  // Estas duas abas são do TERMINAL e do DINHEIRO — valem com ou sem conta aberta,
+  // por isso vivem aqui e são emprestadas à venda (a aba "Conta" é que é de lá).
+  const fecharMenu = () => setMenu(false);
+  const abrirJanela = (j: typeof janela) => { setJanela(j); fecharMenu(); };
+
+  // ABRIR GAVETA sem venda: o troco que se acerta, a nota que se troca. Entra na MESMA
+  // fila das comandas (PrintJob) — a gaveta abre pelo impulso da impressora, e fica
+  // registado quem a abriu fora de um pagamento. Uma gaveta que abre sem rasto é
+  // exatamente o buraco por onde o dinheiro desaparece.
+  const abrirGaveta = async () => {
+    try {
+      await apiClient.post('pos/print-jobs/', {
+        job_type: 'DRAWER', outlet: setor?.outlet ?? null,
+        title: `Abertura de gaveta — ${operador?.name || 'Operador'}`,
+        reference: sessao ? `CX-${sessao.id}` : null,
+      });
+      fecharMenu();
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || 'Não foi possível abrir a gaveta.');
+    }
+  };
+
+  const acoesGeral: AcaoPainel[] = [
+    { label: 'Abrir Gaveta', icon: '💵', act: abrirGaveta, on: !!sessao,
+      why: 'Sem caixa aberta não há gaveta para abrir.' },
+    { label: 'Documentos', icon: '🗎', act: () => abrirJanela('DOCS'), on: true },
+    { label: 'Contas Correntes', icon: '≣', act: () => abrirJanela('CC'), on: true },
+    { label: 'Mesas Abertas', icon: '▦', act: () => abrirJanela('MESAS'), on: true },
+    { label: 'Impressoras', icon: '🖨', act: () => abrirJanela('HARDWARE'), on: true },
+    { label: 'Alterar password', icon: '🔑', act: () => { setTrocarPin(true); fecharMenu(); }, on: true },
+    // ATUALIZAR: outro terminal mexeu na mesa e este ainda mostra o antigo.
+    { label: 'Atualizar', icon: '⟳', act: () => { inval(); fecharMenu(); }, on: true },
+    { label: 'Trocar de Setor', icon: '🖵', act: () => { setEtapa('SECTOR'); fecharMenu(); }, on: true },
+  ];
+
+  const acoesCaixa: AcaoPainel[] = [
+    // CASH PICKUP (sangria): o dinheiro a mais sai da gaveta e vai para o cofre. É o
+    // mesmo fecho, em modo sangria — não é um segundo motor a mexer no mesmo dinheiro.
+    { label: 'Cash Pickup', icon: '💸', act: () => { setFechoCaixa(true); fecharMenu(); }, on: !!sessao,
+      why: 'Sem caixa aberta não há dinheiro a levantar.' },
+    { label: 'Fecho da Caixa', icon: '🧮', act: () => { setFechoCaixa(true); fecharMenu(); }, on: !!sessao,
+      why: 'A caixa já está fechada.' },
+    { label: 'Reimprimir', icon: '🖨', act: () => abrirJanela('DOCS'), on: true },
+    { label: 'Detalhe da Caixa', icon: '📋', act: () => abrirJanela('CXDETALHE'), on: !!sessao,
+      why: 'Sem caixa aberta não há detalhe para mostrar.' },
+    { label: 'Resumo de vendas', icon: '📊', act: () => abrirJanela('RESUMO'), on: true },
+    ...(cfg?.allow_day_close
+      ? [{ label: 'Fecho do Dia', icon: '🔒', act: () => { fecharDia(); fecharMenu(); }, on: true }]
+      : []),
+  ];
+
   return (
     <div className="h-screen w-screen flex flex-col bg-[#1a1a1a] select-none overflow-hidden">
       {/* ───── barra de cima: as duas vistas (mesas / venda) e a engrenagem ───── */}
@@ -290,8 +353,13 @@ export default function PosTerminal() {
             )}
           </button>
           <span className="mr-4">{operador?.name || 'Operador'}</span>
-          <button onClick={() => setEtapa('SECTOR')}
-            className="w-[74px] h-[74px] m-2 rounded bg-[#3a3a3a] text-white text-[34px] flex items-center justify-center">
+          {/* A ENGRENAGEM abre o PAINEL (Conta/Geral/Caixa) por cima do teclado, com a
+              comanda à vista. Saltava para o seletor de setor — trocar de setor faz-se
+              uma vez ao início do turno, e continua lá dentro, na aba Geral. */}
+          <button onClick={() => setMenu((v) => !v)}
+            title="Funções do terminal (Conta · Geral · Caixa)"
+            className={`w-[74px] h-[74px] m-2 rounded text-white text-[34px] flex items-center justify-center
+              ${menu ? 'bg-[#b39100]' : 'bg-[#3a3a3a]'}`}>
             ⚙
           </button>
         </div>
@@ -349,6 +417,7 @@ export default function PosTerminal() {
           )}
           {etapa === 'SALES' && ticket && (
             <SalesScreen ticketId={ticket} setor={setor} cfg={cfg}
+              publicarAcoes={setAcoesConta}
               onClose={() => fecharVenda(ticket)} />
           )}
 
@@ -388,10 +457,44 @@ export default function PosTerminal() {
               onClose={() => setJanela('')} />
           )}
           {janela === 'ENTREGAS' && <DeliveriesPanel onClose={() => setJanela('')} />}
+          {/* as janelas do painel da engrenagem */}
+          {janela === 'MESAS' && (
+            <OpenTablesWindow onClose={() => setJanela('')}
+              onAbrir={(id) => { setJanela(''); setTicket(id); setEtapa('SALES'); }} />
+          )}
+          {janela === 'HARDWARE' && (
+            <HardwareWindow outlet={setor?.outlet} onClose={() => setJanela('')} />
+          )}
+          {janela === 'CXDETALHE' && sessao && (
+            <CashDetailWindow sessao={sessao} onClose={() => setJanela('')} />
+          )}
+          {janela === 'RESUMO' && <SalesSummaryWindow onClose={() => setJanela('')} />}
           {janela === 'GRUPOS' && setor && (
             <GroupTables setor={setor}
               onOpenTicket={(id) => { setTicket(id); setEtapa('SALES'); }}
               onClose={() => setJanela('')} />
+          )}
+
+          {/* ───── O PAINEL DA ENGRENAGEM ─────
+              Dentro da VENDA deixa os 520px da comanda à vista: mexe-se no preço e vê-se
+              o total a mudar. Fora da venda ocupa o palco todo. */}
+          {menu && (
+            <SettingsPanel
+              aba={menuAba} onAba={setMenuAba} onClose={() => setMenu(false)}
+              direita={etapa === 'SALES' ? 520 : 0}
+              abas={[
+                {
+                  nome: 'Conta', titulo: 'Conta',
+                  // Fora da venda não há conta em que mexer: os botões ficam apagados
+                  // (não escondidos) a dizer porquê.
+                  acoes: etapa === 'SALES' && acoesConta.length
+                    ? acoesConta
+                    : [{ label: 'Sem conta aberta', icon: '🚫', act: () => {}, on: false,
+                        why: 'Abra uma mesa ou uma venda direta para usar estas funções.' }],
+                },
+                { nome: 'Geral', titulo: 'Geral', acoes: acoesGeral },
+                { nome: 'Caixa', titulo: sessao ? 'Caixa Aberta' : 'Caixa', acoes: acoesCaixa },
+              ]} />
           )}
 
           {/* Consulta de Mesa: o talão de conferência (documento CM da AGT), sem venda. */}
@@ -430,6 +533,11 @@ export default function PosTerminal() {
 
           {/* A troca de PIN obrigatória fica POR CIMA de tudo — não se trabalha sem ela. */}
           {pinObrigatorio && <PinChange operador={operador} onDone={pinTrocado} />}
+          {/* Troca VOLUNTÁRIA da password (Geral › Alterar password) — o mesmo ecrã
+              da troca obrigatória, para não haver dois sítios a mudar a mesma coisa. */}
+          {trocarPin && !pinObrigatorio && (
+            <PinChange operador={operador} onDone={() => setTrocarPin(false)} />
+          )}
         </div>
       </div>
 

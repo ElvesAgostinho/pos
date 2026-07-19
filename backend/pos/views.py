@@ -2127,6 +2127,31 @@ class POSTicketLineViewSet(viewsets.ModelViewSet):
         motor.format_kwarg = None
         return motor.add_line(request, pk=ticket.pk)
 
+    def perform_update(self, serializer):
+        """ALTERAR UMA LINHA (preço, quantidade, desconto do artigo, nota).
+
+        Faltavam aqui as DUAS regras que o lançamento já tinha:
+
+        1. O TOTAL DA CONTA não era recalculado. Mudar a quantidade de 1 para 3 mudava
+           a linha e deixava o total da conta no valor antigo — o cliente pagava o que
+           o ecrã dizia, que não era o que tinha consumido.
+        2. O PREÇO passava sem controlo. O lançamento só aceita preço do terminal nos
+           artigos de "preço manual"; por aqui, um PATCH punha o whisky a 1 Kz e a
+           fatura saía assinada com esse valor. A porta das traseiras da mesma casa.
+        """
+        from rest_framework.exceptions import ValidationError
+        linha = self.get_object()
+        novo_preco = serializer.validated_data.get('unit_price')
+        if (novo_preco is not None and novo_preco != linha.unit_price
+                and not getattr(linha.item, 'manual_price', False)):
+            raise ValidationError({
+                'detail': f'"{linha.description}" não é de preço manual — o preço é o da '
+                          f'tabela. Para baixar o valor, use um desconto (fica registado).',
+                'manual_price': False,
+            })
+        obj = serializer.save()
+        obj.ticket.recompute(save=True)
+
     def destroy(self, request, *a, **kw):
         # MOTIVO DE ANULAÇÃO — anular um artigo JÁ EM PRODUÇÃO sem dizer porquê é como
         # deitar comida fora sem registo. Exige-se o motivo (da lista configurada).

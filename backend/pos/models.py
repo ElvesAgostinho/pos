@@ -418,6 +418,11 @@ class POSTicketLine(models.Model):
     tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     line_total = models.DecimalField(max_digits=14, decimal_places=2, editable=False, default=0)
     note = models.CharField(max_length=255, blank=True, null=True)  # observação p/ cozinha
+    # DESCONTO DO ARTIGO — o desconto que vive NESTA linha, não na conta. É outra coisa
+    # do desconto da conta: aqui baixa-se UM prato (veio mal, o cliente esperou demais)
+    # sem tocar no resto. Sem este campo, quem queria perdoar um prato tinha de anular
+    # a linha e lançá-la a preço manual — e o motivo da anulação ficava a mentir.
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     # Motor 5 (KDS)
     kds_station = models.CharField(max_length=10, default='KITCHEN')
     kds_status = models.CharField(max_length=10, choices=KDS_STATUS, default='NEW')
@@ -437,7 +442,13 @@ class POSTicketLine(models.Model):
         db_table = 'pos_ticket_line'
 
     def save(self, *args, **kwargs):
-        self.line_total = (self.quantity * self.unit_price)
+        # O desconto do ARTIGO entra já aqui, no total da linha: assim tudo o que lê
+        # `line_total` (o recompute da conta, o talão, a fatura, o SAF-T) vê o mesmo
+        # valor. Um desconto aplicado só na impressão seria um desconto que a AGT
+        # nunca via.
+        bruto = self.quantity * self.unit_price
+        desc = self.discount_percent or 0
+        self.line_total = bruto - (bruto * desc / 100) if desc else bruto
         super().save(*args, **kwargs)
 
     def __str__(self):
