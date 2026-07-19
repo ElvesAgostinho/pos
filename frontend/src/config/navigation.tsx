@@ -96,13 +96,6 @@ const KitchenDisplay = () => <KDSView fixedStation="KITCHEN" title="Kitchen Disp
 const BarDisplay = () => <KDSView fixedStation="BAR" title="Bar / Beverage Display" />;
 const PastryDisplay = () => <KDSView fixedStation="PASTRY" title="Pastry Display — Pastelaria" />;
 const BuffetDisplay = () => <KDSView fixedStation="BUFFET" title="Buffet Display" />;
-// Outlets F&B por tipo (mesmo componente, tipo/título próprios).
-const FnbRestaurants = () => <FnbOutletsView type="RESTAURANT" title="Restaurantes" />;
-const FnbBars = () => <FnbOutletsView type="BAR" title="Bares" />;
-const FnbCoffee = () => <FnbOutletsView type="COFFEE" title="Coffee Shops" />;
-const FnbPoolBar = () => <FnbOutletsView type="POOL_BAR" title="Pool Bars / Rooftop" />;
-const FnbRoomService = () => <FnbOutletsView type="ROOM_SERVICE" title="Room Service" />;
-const FnbBuffets = () => <FnbOutletsView type="BANQUET" title="Buffets / Banquetes / Catering" />;
 // Lançador do Terminal POS (o FrontOffice tátil abre em ecrã cheio, fora do backoffice).
 const PosTerminalLauncher = () => (
   <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-8">
@@ -286,7 +279,7 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   adm_monitor: OperationsCenterView,
   sec_audit: LoginHistoryView,
   sec_devices: SessionsView,
-  com_menus: FnbMenusView,
+  com_menus: CombosView,   // "Menus Comerciais" = combos com preço próprio (o ecrã do Commercial)
   com_discounts: PromotionsView,
   com_campaigns: PromotionsView,
   com_vouchers: GiftCardsView,
