@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
+import { aviso } from '../../ui/dialogo';
+import { IcoAviso, IcoLapis } from './Icons';
 
 /**
  * KDS — O ECRÃ DA COZINHA (e do bar, e da pastelaria).
@@ -40,7 +42,7 @@ export default function KdsScreen() {
     try {
       await apiClient.post(`pos/kds/${l.id}/advance/`, {});
       qc.invalidateQueries({ queryKey: ['kds'] });
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro.'); }
   };
 
   const minutos = (t: string) => t ? Math.floor((Date.now() - new Date(t).getTime()) / 60000) : 0;
@@ -81,9 +83,9 @@ export default function KdsScreen() {
                   {l.dest_label || (l.table_label ? `Mesa ${l.table_label}` : 'Balcão')} · {l.operator_name || ''}
                 </div>
                 {/* a NOTA do empregado ("sem cebola") — é para a cozinha que ela existe */}
-                {l.note && <div className="text-[#7fd4ff] text-[13px] mt-1 font-bold">✎ {l.note}</div>}
+                {l.note && <div className="text-[#7fd4ff] text-[13px] mt-1 font-bold"><IcoLapis size={12} /> {l.note}</div>}
                 {l.allergens?.length > 0 && (
-                  <div className="text-[#ff8a80] text-[12px] mt-1">⚠ {l.allergens.join(', ')}</div>
+                  <div className="text-[#ff8a80] text-[12px] mt-1"><IcoAviso size={12} /> {l.allergens.join(', ')}</div>
                 )}
                 <div className="mt-2 text-center text-white text-[14px] font-bold rounded py-1.5"
                   style={{ background: '#2b2b2b' }}>

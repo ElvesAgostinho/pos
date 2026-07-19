@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Window from './Window';
+import { IcoCruz, IcoVisto } from './Icons';
 
 /**
  * NÚMERO DE CLIENTES — a pergunta que se faz ao sentar a mesa.
@@ -43,9 +44,9 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitid
         <div className="grid grid-cols-2 gap-1 p-1 bg-black">
           <button onClick={() => pax > 0 && onConfirm(pax, tipo)} disabled={pax <= 0}
             className="h-[56px] bg-[#1f7a34] text-white text-[18px] font-bold rounded-md
-              disabled:bg-[#3a3a3a] disabled:text-white/30">✔ Abrir mesa</button>
+              disabled:bg-[#3a3a3a] disabled:text-white/30"><span className="inline-flex items-center gap-2"><IcoVisto size={24} />Abrir mesa</span></button>
           <button onClick={onCancel}
-            className="h-[56px] bg-[#3a3a3a] text-white text-[18px] rounded-md">✖ Cancelar</button>
+            className="h-[56px] bg-[#3a3a3a] text-white text-[18px] rounded-md"><span className="inline-flex items-center gap-2"><IcoCruz size={24} />Cancelar</span></button>
         </div>
       )}>
       <div className="p-3">

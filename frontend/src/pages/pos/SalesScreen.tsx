@@ -9,7 +9,7 @@ import ArticleSearch from './ArticleSearch';
 import GuestsPanel from './GuestsPanel';
 import DocsPanel from './DocsPanel';
 import TicketPreview from './TicketPreview';
-import GuestPick from './GuestPick';
+
 import CustomerForm from './CustomerForm';
 // SEM este import, o <Window> das janelas em baixo resolvia para o Window DO BROWSER
 // (o DOM global) — React fazia `new Window()` e rebentava com "Illegal constructor".
@@ -26,6 +26,7 @@ import {
   IcoPercento, IcoPessoas, IcoLapis, IcoParciais, IcoTransferir, IcoOlho, IcoAgrupar,
   IcoSino, IcoPausa, IcoCombo, IcoEntrega, IcoHistorico, IcoQuarto, IcoDocumento, IcoAviso,
 } from './Icons';
+import { aviso, pedir } from '../../ui/dialogo';
 
 /**
  * A VENDA — o teclado e a comanda, lado a lado.
@@ -164,7 +165,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
         // o OPERADOR segue no pedido: as caixas da ficha dele (preço de custo,
         // consumo interno) decidem o preço e a autorização — no servidor.
         { item: k.item, quantity: qtd, operator: operId },
-        async (label, detalhe) => window.prompt(`${detalhe}\n\n${label}:`));
+        async (label, detalhe) => await pedir(`${detalhe}\n\n${label}:`));
       setQtd(1);
 
       // PERGUNTAR AO LANÇAR: o backoffice marca "com/sem gelo" como pergunta neste
@@ -190,7 +191,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       }
       inval();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível lançar o artigo.');
+      aviso(e?.response?.data?.detail || 'Não foi possível lançar o artigo.');
     }
   };
 
@@ -211,7 +212,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
         msgs = ((r.data?.results || r.data || []) as any[]).filter((m) => m.is_active !== false);
       } catch { /* módulo ausente: segue com texto livre */ }
       const lista = msgs.map((m, i) => `${i + 1}. ${m.name}`).join('\n');
-      const escolha = window.prompt(
+      const escolha = await pedir(
         `NOTA PARA A COZINHA — ${l.description}\n\n${lista || '(sem mensagens configuradas)'}\n\n` +
         'Escreva o Nº da mensagem, ou texto livre:', l.note || '');
       if (escolha === null) return;
@@ -219,7 +220,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       const nota = (Number.isInteger(n) && n >= 1 && n <= msgs.length) ? msgs[n - 1].name : escolha.trim();
       await apiClient.patch(`pos/ticket-lines/${l.id}/`, { note: nota || null });
       inval();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar a nota.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível gravar a nota.'); }
   };
 
   // Passa à pergunta seguinte da fila; esgotada, grava TODAS as respostas na linha de
@@ -233,14 +234,14 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     try {
       await apiClient.post(`pos/ticket-lines/${perguntar.linha.id}/messages/`, { texts: escolhas });
       inval();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar as mensagens.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível gravar as mensagens.'); }
   };
 
   const apagarLinha = async (l: any) => {
     const emProducao = ['FIRED', 'PREPARING', 'READY'].includes(l.kds_status);
     let motivo: string | null = null;
     if (emProducao) {
-      motivo = window.prompt(
+      motivo = await pedir(
         `"${l.description}" já foi para a produção.\n\nAnular obriga a um motivo (a cozinha é avisada e fica registado).\n\nMotivo:`);
       if (!motivo) return;
     }
@@ -248,7 +249,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       await apiClient.delete(`pos/ticket-lines/${l.id}/`,
         { params: motivo ? { reason: motivo } : undefined });
       inval();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao anular.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao anular.'); }
   };
 
   // DESCONTO — os códigos do backoffice primeiro (validade + grupos autorizados no
@@ -259,7 +260,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       const codigos = ((r.data?.results || r.data || []) as any[])
         .filter((d) => d.is_active !== false && d.for_pos !== false);
       const lista = codigos.map((d, i) => `${i + 1}. ${d.code} — ${d.name} (${Number(d.value)}${d.base === 'PERCENT' ? '%' : ' Kz'})`).join('\n');
-      const escolha = window.prompt(
+      const escolha = await pedir(
         `DESCONTO DA CONTA\n\n${lista || '(sem descontos configurados)'}\n\n` +
         'Escreva o Nº do desconto, ou uma percentagem (ex.: 10):');
       if (!escolha) return;
@@ -272,14 +273,14 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
         await apiClient.post(`pos/tickets/${tid}/set_discount/`, body);
       } catch (e: any) {
         if (e?.response?.data?.requires_supervisor) {
-          const sup = window.prompt(e.response.data.detail + '\n\nNome do supervisor que autoriza:');
+          const sup = await pedir(e.response.data.detail + '\n\nNome do supervisor que autoriza:');
           if (!sup) return;
           await apiClient.post(`pos/tickets/${tid}/set_discount/`, { ...body, authorized_by: sup });
         } else { throw e; }
       }
       inval();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível aplicar o desconto.');
+      aviso(e?.response?.data?.detail || 'Não foi possível aplicar o desconto.');
     }
   };
 
@@ -294,7 +295,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     try {
       await apiClient.patch(`pos/ticket-lines/${l.id}/`, campos);
       inval();
-    } catch (e: any) { alert(e?.response?.data?.detail || erro); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || erro); }
   };
 
   // PREÇO manual: o servidor recusa se o artigo não permitir (caixa da ficha) ou se o
@@ -302,7 +303,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const alterarPreco = async () => {
     const l = linhaSel();
     if (!l) return;
-    const v = window.prompt(`PREÇO — ${l.description}\n\nPreço atual: ${money(l.unit_price)}\n\nNovo preço:`,
+    const v = await pedir(`PREÇO — ${l.description}\n\nPreço atual: ${money(l.unit_price)}\n\nNovo preço:`,
       String(Number(l.unit_price)));
     if (v === null || !v.trim()) return;
     await patchLinha({ unit_price: v.replace(',', '.').trim() },
@@ -312,18 +313,18 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const alterarQtd = async () => {
     const l = linhaSel();
     if (!l) return;
-    const v = window.prompt(`QUANTIDADE — ${l.description}\n\nQuantidade atual: ${Number(l.quantity)}\n\nNova quantidade:`,
+    const v = await pedir(`QUANTIDADE — ${l.description}\n\nQuantidade atual: ${Number(l.quantity)}\n\nNova quantidade:`,
       String(Number(l.quantity)));
     if (v === null || !v.trim()) return;
     const n = Number(v.replace(',', '.').trim());
-    if (!(n > 0)) return alert('A quantidade tem de ser maior que zero. Para tirar o artigo, anule a linha.');
+    if (!(n > 0)) return aviso('A quantidade tem de ser maior que zero. Para tirar o artigo, anule a linha.');
     await patchLinha({ quantity: n }, 'Não foi possível alterar a quantidade.');
   };
 
   const descontoLinha = async () => {
     const l = linhaSel();
     if (!l) return;
-    const v = window.prompt(`DESCONTO DO ARTIGO — ${l.description}\n\nPercentagem (0 tira o desconto):`,
+    const v = await pedir(`DESCONTO DO ARTIGO — ${l.description}\n\nPercentagem (0 tira o desconto):`,
       String(Number(l.discount_percent || 0)));
     if (v === null) return;
     await patchLinha({ discount_percent: v.replace('%', '').replace(',', '.').trim() || 0 },
@@ -333,26 +334,26 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   // NÚMERO DE CLIENTES — o divisor do gasto por pessoa. Corrige-se quando chega mais
   // gente à mesa; sem isto o indicador do restaurante fica errado o serviço todo.
   const numeroClientes = async () => {
-    const v = window.prompt(`NÚMERO DE CLIENTES\n\nQuantos estão à mesa?`, String(conta?.guests || 1));
+    const v = await pedir(`NÚMERO DE CLIENTES\n\nQuantos estão à mesa?`, String(conta?.guests || 1));
     if (v === null) return;
     const n = Number(v.trim());
-    if (!(n > 0)) return alert('O número de clientes tem de ser maior que zero.');
+    if (!(n > 0)) return aviso('O número de clientes tem de ser maior que zero.');
     try {
       await apiClient.patch(`pos/tickets/${tid}/`, { guests: n });
       inval();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível gravar.'); }
   };
 
   // ANULAR TUDO — a conta inteira. Obriga a motivo (fica na auditoria) e liberta a mesa.
   const anularConta = async () => {
-    const motivo = window.prompt(
+    const motivo = await pedir(
       `ANULAR a conta ${conta?.ticket_number || ''}?\n\nA mesa fica livre e a anulação fica na auditoria.\n\nMotivo:`);
     if (!motivo) return;
     try {
       await apiClient.post(`pos/tickets/${tid}/void/`, { reason: motivo });
       inval();
       onClose();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível anular.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível anular.'); }
   };
 
   // SUSPENDER a conta (o grupo que sai e volta) — retoma-se tocando na mesa.
@@ -361,15 +362,15 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       await apiClient.post(`pos/tickets/${tid}/suspend/`, {});
       inval();
       onClose();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível suspender.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível suspender.'); }
   };
 
   const enviarCozinha = async () => {
     try {
       const r = await apiClient.post(`pos/tickets/${tid}/fire_kitchen/`, {});
-      if (r.data?.print_warnings?.length) alert(r.data.print_warnings.join('\n'));
+      if (r.data?.print_warnings?.length) aviso(r.data.print_warnings.join('\n'));
       inval();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao enviar para a cozinha.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao enviar para a cozinha.'); }
   };
 
   const linhas: any[] = conta?.lines || [];
@@ -661,7 +662,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
               await apiClient.post(`pos/tickets/${tid}/void/`, { reason: motivo });
               inval();
               onClose();
-            } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível anular.'); }
+            } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível anular.'); }
           }} />
       )}
 
@@ -673,7 +674,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
           onOk={async (valor) => {
             const n = Number(valor.replace(',', '.'));
             setEditarQtd(false);
-            if (!(n > 0)) return alert('A quantidade tem de ser maior que zero. Para tirar o artigo, anule a linha.');
+            if (!(n > 0)) return aviso('A quantidade tem de ser maior que zero. Para tirar o artigo, anule a linha.');
             await patchLinha({ quantity: n }, 'Não foi possível alterar a quantidade.');
           }} />
       )}
@@ -686,7 +687,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             try {
               await apiClient.post(`pos/ticket-lines/${linhaSel().id}/messages/`, { texts: textos });
               inval();
-            } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar as mensagens.'); }
+            } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível gravar as mensagens.'); }
           }} />
       )}
 
@@ -699,7 +700,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             try {
               await apiClient.post(`pos/tickets/${tid}/set_customer/`, esc);
               inval();
-            } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível guardar o cliente.'); }
+            } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível guardar o cliente.'); }
           }} />
       )}
 
@@ -720,12 +721,10 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
 
       {/* HÓSPEDE: a lista de check-ins do PMS — a conta fica com o nome e o quarto */}
       {pedirHospede && conta && (
-        <GuestPick titulo="Que hóspede é este?"
+        <ClientPicker titulo="Que hóspede é este?" soAba="QUARTO"
           onPick={async (g) => {
             try {
-              await apiClient.post(`pos/tickets/${conta.id}/set_customer/`, {
-                customer_name: g.guest, company_name: g.room ? `Quarto ${g.room}` : null,
-              });
+              await apiClient.post(`pos/tickets/${conta.id}/set_customer/`, g);
             } catch { /* sem PMS, a conta segue */ }
             setPedirHospede(false); inval();
           }}
@@ -787,7 +786,7 @@ function ComboWindow({ tid, onDone, onClose }: { tid: number; onDone: () => void
     try {
       await apiClient.post(`pos/tickets/${tid}/add_combo/`, { combo: c.id });
       onDone();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível lançar o combo.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível lançar o combo.'); }
   };
   return (
     <Window title="Combos / Menus" width={560} onClose={onClose} tone="#8a6100">
@@ -820,13 +819,13 @@ function DestWindow({ tid, onDone, onClose }: { tid: number; onDone: () => void;
     },
   });
   const escolher = async (d: any) => {
-    const nota = window.prompt(`Destino: ${d.name}\n\nObservações para a entrega (opcional):`) || '';
+    const nota = await pedir(`Destino: ${d.name}\n\nObservações para a entrega (opcional):`) || '';
     try {
       await apiClient.post(`pos/tickets/${tid}/set_destination/`, {
         dest_kind: 'DESTINATION', dest_ref: d.id, dest_note: nota || null,
       });
       onDone();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível definir o destino.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível definir o destino.'); }
   };
   return (
     <Window title="Destino do pedido (entra nas Entregas)" width={520} onClose={onClose} tone="#1a4f8a">

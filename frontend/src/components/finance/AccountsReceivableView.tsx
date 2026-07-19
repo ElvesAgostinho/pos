@@ -5,6 +5,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { HandCoins, DollarSign, Users } from 'lucide-react';
 import { receivablesApi } from '../../api/receivables';
 import { useAccounts } from '../../hooks/useFinance';
+import { aviso, pedir } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toFixed(2);
 const ST: Record<string, string> = { ISSUED: 'text-red-600 font-bold', PARTIAL: 'text-[#b06a00] font-bold', PAID: 'text-green-700 font-bold', DRAFT: 'text-gray-500', CANCELLED: 'text-gray-400' };
@@ -22,11 +23,11 @@ export default function AccountsReceivableView() {
 
   const openInv = invoices.filter((i: any) => !['DRAFT', 'CANCELLED', 'PAID'].includes(i.status));
   const doReceive = (inv: any) => {
-    if (!accounts.length) { alert('Crie primeiro uma conta de tesouraria.'); return; }
+    if (!accounts.length) { aviso('Crie primeiro uma conta de tesouraria.'); return; }
     const acc = accounts[0];
-    const amount = window.prompt(`Receber da fatura ${inv.number} (saldo ${money(inv.balance)}) para a conta "${acc.name}". Valor:`, money(inv.balance));
+    const amount = await pedir(`Receber da fatura ${inv.number} (saldo ${money(inv.balance)}) para a conta "${acc.name}". Valor:`, money(inv.balance));
     if (amount === null) return;
-    receive.mutate({ id: inv.id, account: acc.id, amount }, { onError: (e: any) => alert(e?.response?.data?.detail || 'Erro') });
+    receive.mutate({ id: inv.id, account: acc.id, amount }, { onError: (e: any) => aviso(e?.response?.data?.detail || 'Erro') });
   };
   const totalDue = openInv.reduce((s: number, i: any) => s + Number(i.balance), 0);
 

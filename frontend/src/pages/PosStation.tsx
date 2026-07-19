@@ -16,6 +16,7 @@ import { printFiscalInvoice } from '../components/fiscal/printInvoice';
 import { getAppearance } from '../config/appearance';
 import { TouchKeypad, TouchKeyboard } from '../components/pos/TouchKeyboard';
 import { notifyError, notifyGuide } from '../utils/friendlyError';
+import { aviso, pedir } from '../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const DEST_ICON: Record<string, any> = { POOL: Waves, BEACH: Waves, SPA: MapPin, GYM: MapPin, EVENT: MapPin };
@@ -115,7 +116,7 @@ export default function PosStation() {
   const pickSector = (o: any) => { setOutlet(o.id); const s = cashSessions.find((x: any) => x.outlet === o.id && x.status === 'OPEN'); setStep(s ? 'service' : 'cash'); };
   const doOpenCash = async () => {
     try { await posMgmtApi.openCashSession({ outlet, operator_name: opName, opening_float: Number(floatVal) || 0, terminal_name: 'POS-01' } as any); inval(); setStep('service'); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao abrir caixa'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao abrir caixa'); }
   };
   const goOrder = (tid: number) => { setTicketId(tid); setStep('order'); setCat(null); };
   const openForTable = async (t: any) => {
@@ -131,14 +132,14 @@ export default function PosStation() {
       const customer_name = kind === 'GUEST' ? `Hóspede${room ? ` · Quarto ${room}` : ''}` : 'Passante';
       await apiClient.post(`pos/tickets/${tk.id}/set_customer/`, { customer_name, adults: pax, children: 0 });
       setTableModal(null); inval(); goOrder(tk.id!);
-    } catch (e: any) { alert(JSON.stringify(e?.response?.data)); }
+    } catch (e: any) { aviso(JSON.stringify(e?.response?.data)); }
   };
   const openForDest = async (kind: string, ref: any, priority = 'NORMAL') => {
     try {
       const tk = await posMgmtApi.openTicket({ outlet, operator_name: opName, guests: 1 } as any);
       await apiClient.post(`pos/tickets/${tk.id}/set_destination/`, { dest_kind: kind, dest_ref: ref, dest_priority: priority });
       inval(); goOrder(tk.id!);
-    } catch (e: any) { alert(JSON.stringify(e?.response?.data)); }
+    } catch (e: any) { aviso(JSON.stringify(e?.response?.data)); }
   };
   // Lançar um artigo. As CAIXAS do artigo mandam: preço manual, "pergunta sempre a
   // quantidade", balança, texto livre, fração, indisponível. O servidor diz o que falta
@@ -153,13 +154,13 @@ export default function PosStation() {
   const addItem = async (c: any) => {
     try {
       await comPerguntas(`pos/tickets/${ticketId}/add_line/`, { item: c.item, quantity: qty },
-        async (label, detalhe) => window.prompt(`${detalhe}
+        async (label, detalhe) => await pedir(`${detalhe}
 
 ${label}:`));
       inval();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); }
   };
-  const addComboFn = async (cb: any) => { try { await posMgmtApi.addCombo(ticketId!, cb.id); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro no combo'); } };
+  const addComboFn = async (cb: any) => { try { await posMgmtApi.addCombo(ticketId!, cb.id); inval(); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro no combo'); } };
   // Remover artigo: se já foi enviado à produção, NÃO se apaga — anula-se e a área é avisada.
   const delLine = async (id: number) => {
     const l = (ticket?.lines || []).find((x: any) => x.id === id);
@@ -171,20 +172,20 @@ ${label}:`));
       if (fired) notifyGuide({ title: 'Artigo anulado', message: `A ${STATION_PT[l.kds_station] || 'cozinha'} foi avisada e o artigo aparece a vermelho no ecrã dessa área.`, hint: 'A anulação ficou registada na auditoria (operador, hora e motivo).' });
     } catch (e) { notifyError(e); }
   };
-  const fireKitchen = async () => { try { await posMgmtApi.fireKitchen(ticketId!); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
+  const fireKitchen = async () => { try { await posMgmtApi.fireKitchen(ticketId!); inval(); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } };
   const dispatchOrder = async (tid: number) => { await apiClient.post(`pos/tickets/${tid}/dispatch_order/`); inval(); };
   const deliverOrder = async (tid: number) => { await apiClient.post(`pos/tickets/${tid}/deliver/`, { delivered_by: opName }); inval(); };
-  const resAction = async (id: number, action: string, body: any = {}) => { try { await apiClient.post(`pos/reservations/${id}/${action}/`, body); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
+  const resAction = async (id: number, action: string, body: any = {}) => { try { await apiClient.post(`pos/reservations/${id}/${action}/`, body); inval(); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } };
   const seatReservation = async (res: any) => {
     try { const r = await apiClient.post(`pos/reservations/${res.id}/seat/`, {}); inval(); if (r.data?.ticket_id) goOrder(r.data.ticket_id); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao sentar'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao sentar'); }
   };
-  const createReservation = async (payload: any) => { try { await apiClient.post('pos/reservations/', { ...payload, outlet }); inval(); } catch (e: any) { alert(JSON.stringify(e?.response?.data)); } };
+  const createReservation = async (payload: any) => { try { await apiClient.post('pos/reservations/', { ...payload, outlet }); inval(); } catch (e: any) { aviso(JSON.stringify(e?.response?.data)); } };
   const createGroup = async (ids: number[]) => {
     try { const r = await apiClient.post('pos/table-groups/', { table_ids: ids }); inval(); if (r.data?.ticket_id) goOrder(r.data.ticket_id); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao agrupar'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao agrupar'); }
   };
-  const ungroup = async (groupId: number) => { try { await apiClient.post(`pos/table-groups/${groupId}/ungroup/`); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
+  const ungroup = async (groupId: number) => { try { await apiClient.post(`pos/table-groups/${groupId}/ungroup/`); inval(); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } };
 
   const printReceipt = async (tid: number) => {
     try {
@@ -368,7 +369,7 @@ ${label}:`));
         <button onClick={() => setModal('customer')} className="h-9 px-3 bg-[#1565c0] text-white rounded text-sm font-bold flex items-center gap-1.5"><UserPlus size={15} />{(ticket as any)?.customer_name ? (ticket as any).customer_name : 'Cliente'}</button>
         <button onClick={() => lines.length && setModal('split')} className="h-9 px-3 bg-[#6a1b9a] text-white rounded text-sm font-bold flex items-center gap-1.5"><Split size={15} />Dividir</button>
         <button onClick={() => setModal('audit')} title="Histórico da mesa" className="h-9 px-2.5 bg-[#33415a] text-white rounded text-sm font-bold flex items-center gap-1.5"><History size={15} /></button>
-        <button onClick={() => selLine ? setModal('note') : alert('Selecione primeiro a linha (o artigo) na conta.')} title="Observação para a cozinha"
+        <button onClick={() => selLine ? setModal('note') : aviso('Selecione primeiro a linha (o artigo) na conta.')} title="Observação para a cozinha"
           className="h-9 px-3 bg-[#6a1b9a] text-white rounded text-sm font-bold flex items-center gap-1.5">✎ Obs.</button>
         <button onClick={() => lines.length && setModal('discount')} title="Aplicar desconto" className="h-9 px-3 bg-[#c9820a] text-white rounded text-sm font-bold flex items-center gap-1.5">%
           {Number((ticket as any)?.discount_percent) > 0 ? ` ${Number((ticket as any).discount_percent)}%` : ' Desconto'}</button>
@@ -560,7 +561,7 @@ function NoteModal({ line, onClose, onSaved }: { line: any; onClose: () => void;
   const [kb, setKb] = useState(false);
   const save = async () => {
     try { await apiClient.patch(`pos/ticket-lines/${line.id}/`, { note: note || null }); onSaved(); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao guardar a observação'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao guardar a observação'); }
   };
   return (
     <div className="fixed inset-0 bg-black/65 flex items-center justify-center z-[60] p-4" onClick={onClose}>
@@ -605,7 +606,7 @@ function DiscountModal({ ticket, onClose, onDone }: { ticket: any; onClose: () =
     try {
       await apiClient.post(`pos/tickets/${ticket.id}/set_discount/`, { percent: value, authorized_by: auth || undefined });
       onDone();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao aplicar desconto'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao aplicar desconto'); }
   };
   return (
     <div className="fixed inset-0 bg-black/65 flex items-center justify-center z-[60] p-4" onClick={onClose}>
@@ -756,7 +757,7 @@ function ProductTile({ name, price, image, color = '#1f7a34', emoji = '🍽️',
       <span className="absolute top-2 right-2 bg-black/55 backdrop-blur-sm text-[#ffe08a] text-[12px] font-bold px-1.5 py-0.5 rounded">{money(price)}</span>
       {/* Aviso de ALERGÉNIOS — o operador tem de os ver antes de vender */}
       {allergens.length > 0 && (
-        <span onClick={(e) => { e.stopPropagation(); alert(`⚠ ALERGÉNIOS em "${name}":\n\n• ${allergens.join('\n• ')}`); }}
+        <span onClick={(e) => { e.stopPropagation(); aviso(`⚠ ALERGÉNIOS em "${name}":\n\n• ${allergens.join('\n• ')}`); }}
           title={`Alergénios: ${allergens.join(', ')}`}
           className="absolute top-2 left-2 bg-[#c0392b] text-white text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center border border-white/40 shadow">⚠</span>
       )}
@@ -997,20 +998,20 @@ function PayModal({ ticket, payments, onClose, onPaid, onRoomCharged, inval }: a
       // código do TPA, entidade da conta corrente… O servidor pede, o terminal pergunta.
       const res = await comPerguntas(`pos/tickets/${ticket.id}/pay/`,
         { payment_method: method, amount: amount || bal },
-        async (label, detalhe) => window.prompt(`${detalhe}
+        async (label, detalhe) => await pedir(`${detalhe}
 
 ${label}:`));
-      if (res?.pickup_alert) alert(res.pickup_alert);
-      if (res?.print_counter_value) alert(`Contravalor: ${res.print_counter_value}`);
+      if (res?.pickup_alert) aviso(res.pickup_alert);
+      if (res?.print_counter_value) aviso(`Contravalor: ${res.print_counter_value}`);
       const tk = await posMgmtApi.getTicket(ticket.id); inval();
-      if (Number(tk.balance_due ?? 0) <= 0) onPaid(); else { setAmount(String(tk.balance_due)); alert('Pagamento parcial registado. Saldo: ' + money(tk.balance_due)); }
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro no pagamento'); }
+      if (Number(tk.balance_due ?? 0) <= 0) onPaid(); else { setAmount(String(tk.balance_due)); aviso('Pagamento parcial registado. Saldo: ' + money(tk.balance_due)); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro no pagamento'); }
     finally { setBusy(false); }
   };
   const chargeRoom = async () => {
-    if (!room) return alert('Indique o número do quarto.'); setBusy(true);
+    if (!room) return aviso('Indique o número do quarto.'); setBusy(true);
     try { await posMgmtApi.chargeToRoom(ticket.id, room); inval(); onRoomCharged(room); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao lançar no quarto'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao lançar no quarto'); }
     finally { setBusy(false); }
   };
   return (
@@ -1071,18 +1072,18 @@ function SplitModal({ ticket, payments, tables, onClose, onClosed, inval }: any)
       await posMgmtApi.payTicket(ticket.id, method, share.toFixed(2));
       const tk = await posMgmtApi.getTicket(ticket.id); inval();
       if (Number(tk.balance_due ?? 0) <= 0) onClosed();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); }
     finally { setBusy(false); }
   };
   const moveToNew = async () => {
     if (!sel.length) return; setBusy(true);
     try { await apiClient.post(`pos/tickets/${ticket.id}/split/`, { line_ids: sel }); inval(); onClose(); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } finally { setBusy(false); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } finally { setBusy(false); }
   };
   const transferTo = async () => {
     if (!sel.length || !target) return; setBusy(true);
     try { await apiClient.post(`pos/tickets/${ticket.id}/transfer_lines/`, { line_ids: sel, table: target }); inval(); onClose(); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } finally { setBusy(false); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } finally { setBusy(false); }
   };
 
   return (
@@ -1158,11 +1159,11 @@ function CustomerModal({ ticket, onClose, onSaved }: any) {
     catch { setResults([]); }
   };
   const pick = (c: any) => { setPicked(c); setF({ ...f, customer_name: c.name || c.trade_name, customer_tax_id: c.tax_id || c.nif || '', company_name: c.company_name || '', customer_id: c.id }); };
-  const applyDiscount = async (pct: string) => { try { await apiClient.post(`pos/tickets/${ticket.id}/set_discount/`, { percent: Number(pct) || 0 }); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
+  const applyDiscount = async (pct: string) => { try { await apiClient.post(`pos/tickets/${ticket.id}/set_discount/`, { percent: Number(pct) || 0 }); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } };
   const save = async () => {
     setBusy(true);
     try { await apiClient.post(`pos/tickets/${ticket.id}/set_customer/`, f); if (disc !== String(ticket?.discount_percent || '')) await applyDiscount(disc); onSaved(); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } finally { setBusy(false); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } finally { setBusy(false); }
   };
   const clear = async () => { setBusy(true); try { await apiClient.post(`pos/tickets/${ticket.id}/set_customer/`, { customer_name: '', customer_tax_id: '', company_name: '', adults: f.adults, children: f.children }); onSaved(); } finally { setBusy(false); } };
   return (
@@ -1251,8 +1252,8 @@ function CashModal({ session, onClose, onClosed, inval }: any) {
   const [mv, setMv] = useState('REFORCO');
   const [amt, setAmt] = useState('');
   const [counted, setCounted] = useState('');
-  const doMove = async () => { if (!amt) return; try { await posMgmtApi.addCashMovement(session.id, { movement_type: mv, amount: amt } as any); setAmt(''); inval(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
-  const doClose = async () => { if (!counted) return alert('Indique o valor contado.'); try { await posMgmtApi.closeCashSession(session.id, counted, ''); onClosed(); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
+  const doMove = async () => { if (!amt) return; try { await posMgmtApi.addCashMovement(session.id, { movement_type: mv, amount: amt } as any); setAmt(''); inval(); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } };
+  const doClose = async () => { if (!counted) return aviso('Indique o valor contado.'); try { await posMgmtApi.closeCashSession(session.id, counted, ''); onClosed(); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } };
   return (
     <Overlay onClose={onClose}>
       <div className="w-[420px]">

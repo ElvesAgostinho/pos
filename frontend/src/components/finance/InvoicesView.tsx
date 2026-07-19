@@ -4,6 +4,7 @@ import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 import { FileText, Plus, Check, DollarSign, Trash2 } from 'lucide-react';
 import { useInvoices, useCreateInvoice, useIssueInvoice, useMarkInvoicePaid } from '../../hooks/useFinance';
+import { aviso } from '../../ui/dialogo';
 
 const ST: Record<string, string> = { DRAFT: 'text-gray-500', ISSUED: 'text-[#1e3f66] font-bold', PAID: 'text-green-700 font-bold', CANCELLED: 'text-red-600' };
 const today = () => new Date().toISOString().slice(0, 10);
@@ -23,7 +24,7 @@ export default function InvoicesView() {
 
   const add = () => {
     const valid = lines.filter((l) => l.description && l.unit_price);
-    if (!customer || valid.length === 0) { alert('Preencha cliente e pelo menos uma linha.'); return; }
+    if (!customer || valid.length === 0) { aviso('Preencha cliente e pelo menos uma linha.'); return; }
     create.mutate({ customer_name: customer, customer_tax_id: taxId, date: today(),
       lines: valid.map((l) => ({ description: l.description, quantity: Number(l.quantity) || 1, unit_price: Number(l.unit_price), tax_percentage: Number(l.tax_percentage) || 0 })) },
       { onSuccess: () => { setCustomer(''); setTaxId(''); setLines([emptyLine()]); } });

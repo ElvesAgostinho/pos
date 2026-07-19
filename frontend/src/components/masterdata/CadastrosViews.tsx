@@ -6,6 +6,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { Plus, Trash2, Coins, Globe, Landmark, Languages, Users } from 'lucide-react';
 import { useCadList, useCadCreate, useCadDelete } from '../../hooks/useCadastros';
 import type { CadEnt } from '../../api/cadastros';
+import { aviso } from '../../ui/dialogo';
 
 interface Field { key: string; placeholder: string; width?: string; up?: boolean }
 interface Col { header: string; key: string; width: string }
@@ -19,8 +20,8 @@ function Crud({ ent, title, icon, fields, cols, empty }: {
   const [d, setD] = useState<any>(empty);
   const add = () => {
     const first = fields[0].key;
-    if (!d[first]) { alert(`Preencha ${fields[0].placeholder}.`); return; }
-    create.mutate(d, { onSuccess: () => setD(empty), onError: (e: any) => alert('Erro: ' + JSON.stringify(e?.response?.data)) });
+    if (!d[first]) { aviso(`Preencha ${fields[0].placeholder}.`); return; }
+    create.mutate(d, { onSuccess: () => setD(empty), onError: (e: any) => aviso('Erro: ' + JSON.stringify(e?.response?.data)) });
   };
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">{data.length} registo(s)</div>}>

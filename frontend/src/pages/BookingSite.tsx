@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiClient } from '../api/client';
+import { aviso } from '../ui/dialogo';
 
 const money = (v: any, cur = '') => `${Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ${cur}`.trim();
 const BOARD: Record<string, string> = { RO: 'Só alojamento', BB: 'Pequeno-almoço', HB: 'Meia pensão', FB: 'Pensão completa', AI: 'Tudo incluído' };
@@ -30,14 +31,14 @@ export default function BookingSite() {
   const search = async () => {
     setBusy(true); setRooms(null);
     try { const r = await apiClient.get('pms/booking/availability/', { params: { slug, check_in: ci, check_out: co, adults, children } }); setRooms(r.data.rooms || []); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } finally { setBusy(false); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } finally { setBusy(false); }
   };
   const reserve = async () => {
     setBusy(true);
     try {
       const r = await apiClient.post('pms/booking/reserve/', { slug, room_type: picked.room_type, check_in: ci, check_out: co, adults, children, guest });
       setConfirmation(r.data); setPicked(null);
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro na reserva'); } finally { setBusy(false); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro na reserva'); } finally { setBusy(false); }
   };
 
   if (notFound) return <div className="min-h-screen flex items-center justify-center text-gray-500">Motor de reservas indisponível.</div>;

@@ -1,6 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
+import { aviso, pedir } from '../../ui/dialogo';
+import { IcoEntrega, IcoLapis, IcoVisto } from './Icons';
 
 /**
  * ENTREGAS — a fila do que sai da cozinha para um DESTINO (Quarto, Piscina, Praia…).
@@ -30,16 +32,16 @@ export default function DeliveriesPanel({ onClose }: { onClose: () => void }) {
 
   const despachar = async (t: any) => {
     try { await apiClient.post(`pos/tickets/${t.id}/dispatch_order/`, {}); inval(); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro.'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro.'); }
   };
   const entregar = async (t: any) => {
-    const quem = window.prompt(`ENTREGUE em ${t.dest_label}?\n\nQuem entregou:`);
+    const quem = await pedir(`ENTREGUE em ${t.dest_label}?\n\nQuem entregou:`);
     if (!quem) return;
-    const nota = window.prompt('Observações (opcional):') || '';
+    const nota = await pedir('Observações (opcional):') || '';
     try {
       await apiClient.post(`pos/tickets/${t.id}/deliver/`, { delivered_by: quem, note: nota });
       inval();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro.'); }
   };
 
   return (
@@ -57,7 +59,7 @@ export default function DeliveriesPanel({ onClose }: { onClose: () => void }) {
               <span>
                 <b>{t.dest_label}</b>
                 <span className="block text-[12px] text-white/50">{t.ticket_number} · {t.operator_name}</span>
-                {t.dest_note && <span className="block text-[12px] text-[#f0c000]">✎ {t.dest_note}</span>}
+                {t.dest_note && <span className="block text-[12px] text-[#f0c000]"><IcoLapis size={12} /> {t.dest_note}</span>}
               </span>
               <span className={t.dest_priority === 'URGENT' ? 'text-[#ff8a80] font-bold' : 'text-white/60'}>
                 {t.dest_priority === 'URGENT' ? 'URGENTE' : 'Normal'}
@@ -69,10 +71,10 @@ export default function DeliveriesPanel({ onClose }: { onClose: () => void }) {
               <span className="flex gap-1 justify-end">
                 {t.delivery_status !== 'DISPATCHED' && (
                   <button onClick={() => despachar(t)}
-                    className="h-[36px] px-3 bg-[#1a4f8a] text-white text-[13px] font-bold rounded">🛎 Despachar</button>
+                    className="h-[36px] px-3 bg-[#1a4f8a] text-white text-[13px] font-bold rounded"><span className="inline-flex items-center gap-2"><IcoEntrega size={18} />Despachar</span></button>
                 )}
                 <button onClick={() => entregar(t)}
-                  className="h-[36px] px-3 bg-[#1f7a34] text-white text-[13px] font-bold rounded">✔ Entregue</button>
+                  className="h-[36px] px-3 bg-[#1f7a34] text-white text-[13px] font-bold rounded"><span className="inline-flex items-center gap-2"><IcoVisto size={24} />Entregue</span></button>
               </span>
             </div>
           ))}

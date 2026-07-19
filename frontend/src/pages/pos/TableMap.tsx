@@ -2,7 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '../../api/client';
 import GuestsDialog from './GuestsDialog';
-import GuestPick from './GuestPick';
+import ClientPicker from './ClientPicker';
+import { aviso } from '../../ui/dialogo';
 
 /**
  * MAPA DE MESAS — a planta da sala, não uma grelha de botões.
@@ -100,19 +101,19 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
       if (t.guest_type === 'HOTEL') setEscolherHospede(t.id);
       else onOpenTicket(t.id);
     },
-    onError: (e: any) => alert(e?.response?.data?.detail || 'Não foi possível abrir a conta.'),
+    onError: (e: any) => aviso(e?.response?.data?.detail || 'Não foi possível abrir a conta.'),
   });
 
   const tocar = (m: any) => {
     const conta = contaDa(m.id);
     if (modo === 'VIEW') {
       // Consulta: só mostra — nunca abre o teclado. Mesa livre não tem o que consultar.
-      if (!conta) return alert(`A mesa ${m.table_number} está livre — sem consumo.`);
+      if (!conta) return aviso(`A mesa ${m.table_number} está livre — sem consumo.`);
       return onViewTicket?.(conta);
     }
     if (modo === 'PAY') {
       // A cobrar: só interessam as mesas COM conta. Uma mesa livre não tem o que pagar.
-      if (!conta) return alert(`A mesa ${m.table_number} está livre — não há nada a cobrar.`);
+      if (!conta) return aviso(`A mesa ${m.table_number} está livre — não há nada a cobrar.`);
       return onPayTicket?.(conta);
     }
     if (conta) {
@@ -120,13 +121,13 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
       if (conta.status === 'SUSPENDED') {
         apiClient.post(`pos/tickets/${conta.id}/reopen/`, {})
           .then(() => onOpenTicket(conta.id))
-          .catch((e) => alert(e?.response?.data?.detail || 'Não foi possível reabrir.'));
+          .catch((e) => aviso(e?.response?.data?.detail || 'Não foi possível reabrir.'));
         return;
       }
       return onOpenTicket(conta.id);                   // retoma a conta que já existe
     }
     if (['BLOCKED', 'MAINTENANCE'].includes(m.status)) {
-      return alert(`A mesa ${m.table_number} está ${m.status === 'BLOCKED' ? 'bloqueada' : 'em manutenção'}.`);
+      return aviso(`A mesa ${m.table_number} está ${m.status === 'BLOCKED' ? 'bloqueada' : 'em manutenção'}.`);
     }
     // Mesa livre: antes de abrir a conta, PERGUNTA-SE quantos são e de que tipo.
     setASentar(m);
@@ -175,12 +176,10 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
 
         {/* HÓSPEDE: escolher da lista do PMS e agarrar o nome à conta */}
         {escolherHospede && (
-          <GuestPick titulo="Que hóspede está nesta mesa?"
+          <ClientPicker titulo="Que hóspede está nesta mesa?" soAba="QUARTO"
             onPick={async (g) => {
               try {
-                await apiClient.post(`pos/tickets/${escolherHospede}/set_customer/`, {
-                  customer_name: g.guest, company_name: g.room ? `Quarto ${g.room}` : null,
-                });
+                await apiClient.post(`pos/tickets/${escolherHospede}/set_customer/`, g);
               } catch { /* sem PMS/nome, a conta segue na mesma */ }
               const id = escolherHospede; setEscolherHospede(null); onOpenTicket(id);
             }}

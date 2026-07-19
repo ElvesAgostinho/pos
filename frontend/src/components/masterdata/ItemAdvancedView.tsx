@@ -8,6 +8,7 @@ import {
   useUomList, useVariants, useCreateVariant, useDeleteVariant,
   useItemUoms, useCreateItemUom, useDeleteItemUom, useItemRecipe, useRecalcRecipe,
 } from '../../hooks/useItemAdvanced';
+import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => (v == null ? '—' : Number(v).toFixed(2));
 
@@ -29,14 +30,14 @@ export default function ItemAdvancedView() {
   const recipe = recipes[0];
 
   const addVariant = () => {
-    if (!itemId || !vd.code || !vd.name) { alert('Escolha artigo, código e nome.'); return; }
+    if (!itemId || !vd.code || !vd.name) { aviso('Escolha artigo, código e nome.'); return; }
     cv.mutate({ item: itemId, code: vd.code, name: vd.name, sale_price: vd.sale_price || null, qty_factor: vd.qty_factor || 1 },
-      { onSuccess: () => setVd({ code: '', name: '', sale_price: '', qty_factor: '1' }), onError: (e: any) => alert(JSON.stringify(e?.response?.data)) });
+      { onSuccess: () => setVd({ code: '', name: '', sale_price: '', qty_factor: '1' }), onError: (e: any) => aviso(JSON.stringify(e?.response?.data)) });
   };
   const addUom = () => {
-    if (!itemId || !ud.uom || !ud.factor) { alert('Escolha unidade e fator.'); return; }
+    if (!itemId || !ud.uom || !ud.factor) { aviso('Escolha unidade e fator.'); return; }
     cu.mutate({ item: itemId, uom: Number(ud.uom), factor: ud.factor, role: ud.role },
-      { onSuccess: () => setUd({ uom: '', factor: '', role: 'BOTH' }), onError: (e: any) => alert(JSON.stringify(e?.response?.data)) });
+      { onSuccess: () => setUd({ uom: '', factor: '', role: 'BOTH' }), onError: (e: any) => aviso(JSON.stringify(e?.response?.data)) });
   };
 
   return (

@@ -14,6 +14,7 @@ import {
   useOpenTicket, useAddTicketLine, useFireKitchen, useDeleteTicketLine, usePosSummary,
 } from '../hooks/usePosMgmt';
 import { useCombos } from '../hooks/useCommercial';
+import { aviso, pedir } from '../ui/dialogo';
 
 const CAT_COLORS = ['#b5651d', '#6a1b9a', '#4a2c1a', '#a01818', '#2e7d32', '#b5651d', '#8a1a1a', '#1565c0'];
 const money = (v: any) => Number(v || 0).toFixed(2);
@@ -78,22 +79,22 @@ export default function PosTerminal() {
   const pickSector = (o: any) => { setOutlet(o.id); setStep(session ? 'tables' : 'cash'); };
   const doOpenCash = () => openCash.mutate(
     { outlet, operator_name: opName, opening_float: Number(floatVal) || 0, terminal_name: 'POS-01' } as any,
-    { onSuccess: () => setStep('tables'), onError: (e: any) => alert(e?.response?.data?.detail || 'Erro ao abrir caixa') });
+    { onSuccess: () => setStep('tables'), onError: (e: any) => aviso(e?.response?.data?.detail || 'Erro ao abrir caixa') });
   const openTable = (t: any) => {
     const ex = openTickets.find((k: any) => k.table === t.id);
     if (ex) { setTicketId(ex.id); setStep('order'); setCat(null); return; }
     openTicket.mutate({ outlet, table: t.id, operator_name: opName, guests: 1 } as any,
       { onSuccess: (tk: any) => { setTicketId(tk.id); setStep('order'); setCat(null); },
-        onError: (e: any) => alert(JSON.stringify(e?.response?.data)) });
+        onError: (e: any) => aviso(JSON.stringify(e?.response?.data)) });
   };
   const addItem = (c: any) => addLine.mutate({ id: ticketId!, line: { item: c.item, quantity: qty } });
   const addCombo = async (combo: any) => {
     try { await posMgmtApi.addCombo(ticketId!, combo.id); inval(); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro no combo'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro no combo'); }
   };
   const doTransfer = async (t: any) => {
     try { await posMgmtApi.transferTable(ticketId!, t.id); inval(); setModal('none'); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro na transferência'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro na transferência'); }
   };
   const logout = () => { tokenStore.clearPos(); nav('/pos/login'); };
   const tableColor = (s: string) => ({ FREE: '#1a8f8f', OCCUPIED: '#c0621d', RESERVED: '#b59a1a', DIRTY: '#7a7a7a' } as any)[s] || '#1a8f8f';
@@ -254,9 +255,9 @@ export default function PosTerminal() {
       addMovement.mutate({ id: session.id, data: { movement_type: mv, amount: amt } }, { onSuccess: () => setAmt('') });
     };
     const doClose = () => {
-      if (!counted) { alert('Indique o valor contado.'); return; }
+      if (!counted) { aviso('Indique o valor contado.'); return; }
       closeCash.mutate({ id: session.id, counted, notes: '' } as any,
-        { onSuccess: () => { setModal('none'); setStep('cash'); }, onError: (e: any) => alert(e?.response?.data?.detail || 'Erro') });
+        { onSuccess: () => { setModal('none'); setStep('cash'); }, onError: (e: any) => aviso(e?.response?.data?.detail || 'Erro') });
     };
     return (
       <Overlay onClose={() => setModal('none')}>
@@ -325,9 +326,9 @@ export default function PosTerminal() {
     const [sel, setSel] = useState<number[]>([]);
     const toggle = (id: number) => setSel((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
     const doSplit = async () => {
-      if (sel.length === 0) { alert('Selecione as linhas a mover.'); return; }
+      if (sel.length === 0) { aviso('Selecione as linhas a mover.'); return; }
       try { await posMgmtApi.splitTicket(ticketId!, sel); inval(); setModal('none'); }
-      catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao dividir'); }
+      catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao dividir'); }
     };
     return (
       <Overlay onClose={() => setModal('none')}>
@@ -351,7 +352,7 @@ export default function PosTerminal() {
     const others = openTickets.filter((k: any) => k.id !== ticketId);
     const doMerge = async (src: any) => {
       try { await posMgmtApi.mergeTicket(ticketId!, src.id); inval(); setModal('none'); }
-      catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao juntar'); }
+      catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao juntar'); }
     };
     return (
       <Overlay onClose={() => setModal('none')}>
@@ -374,10 +375,10 @@ export default function PosTerminal() {
   function RefundsModal() {
     const { data: paid = [] } = useTickets(outlet ? { outlet, status: 'PAID' } : undefined);
     const doRefund = async (t: any) => {
-      const reason = window.prompt(`Estornar venda ${t.ticket_number} (${money(t.grand_total)})? Motivo:`, 'Devolução');
+      const reason = await pedir(`Estornar venda ${t.ticket_number} (${money(t.grand_total)})? Motivo:`, 'Devolução');
       if (reason === null) return;
-      try { await posMgmtApi.refundTicket(t.id, reason); inval(); alert('Estorno / nota de crédito emitida.'); }
-      catch (e: any) { alert(e?.response?.data?.detail || 'Erro no estorno'); }
+      try { await posMgmtApi.refundTicket(t.id, reason); inval(); aviso('Estorno / nota de crédito emitida.'); }
+      catch (e: any) { aviso(e?.response?.data?.detail || 'Erro no estorno'); }
     };
     return (
       <Overlay onClose={() => setModal('none')}>
@@ -457,7 +458,7 @@ export default function PosTerminal() {
           const r = await posMgmtApi.payTicket(ticketId!, method.payment_method, amount);
           const change = Number(r.change_returned || 0);
           await finalizeIfPaid(Number(r.balance_due));
-          if (change > 0) alert(`Troco: ${change.toFixed(2)}`);
+          if (change > 0) aviso(`Troco: ${change.toFixed(2)}`);
         }
       } catch (e: any) { setMsg(e?.response?.data?.detail || 'Erro no pagamento'); }
     };

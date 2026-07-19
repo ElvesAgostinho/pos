@@ -4,6 +4,7 @@ import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 import { ArrowDownCircle, Plus, Check } from 'lucide-react';
 import { useReceipts, useCreateReceipt, useConfirmReceipt, useAccounts } from '../../hooks/useFinance';
+import { aviso } from '../../ui/dialogo';
 
 const ST: Record<string, string> = { DRAFT: 'text-gray-500', CONFIRMED: 'text-green-700 font-bold', CANCELLED: 'text-red-600' };
 const today = () => new Date().toISOString().slice(0, 10);
@@ -17,7 +18,7 @@ export default function ReceiptsView() {
   const [draft, setDraft] = useState<any>(empty);
 
   const add = () => {
-    if (!draft.account || !draft.party_name || !draft.amount) { alert('Preencha conta, pagador e valor.'); return; }
+    if (!draft.account || !draft.party_name || !draft.amount) { aviso('Preencha conta, pagador e valor.'); return; }
     create.mutate({ ...draft, account: Number(draft.account) }, { onSuccess: () => setDraft({ ...empty, account: draft.account }) });
   };
 

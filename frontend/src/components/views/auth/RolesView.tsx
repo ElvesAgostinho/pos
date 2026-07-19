@@ -5,6 +5,7 @@ import ClassicButton from '../../ui/ClassicButton';
 import { Shield, Plus, Edit, Trash2, Save, CheckCircle } from 'lucide-react';
 import { useProfiles, useCreateProfile, useUpdateProfile, useDeleteProfile } from '../../../hooks/useEae';
 import type { EaeProfile } from '../../../api/eae';
+import { aviso, confirmar } from '../../../ui/dialogo';
 
 const RolesView: React.FC = () => {
   const { data: profiles, isLoading } = useProfiles();
@@ -30,12 +31,12 @@ const RolesView: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (selectedProfile && window.confirm(`Tem a certeza que deseja eliminar o perfil ${selectedProfile.name}?`)) {
+    if (selectedProfile && await confirmar(`Tem a certeza que deseja eliminar o perfil ${selectedProfile.name}?`)) {
       try {
         await deleteProfile.mutateAsync(selectedProfile.id);
         setSelectedProfile(null);
       } catch (e) {
-        alert('Erro ao eliminar perfil.');
+        aviso('Erro ao eliminar perfil.');
       }
     }
   };
@@ -49,7 +50,7 @@ const RolesView: React.FC = () => {
       }
       setMode('list');
     } catch (e) {
-      alert('Erro ao gravar perfil.');
+      aviso('Erro ao gravar perfil.');
     }
   };
 

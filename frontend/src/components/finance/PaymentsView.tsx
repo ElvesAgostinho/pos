@@ -4,6 +4,7 @@ import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 import { ArrowUpCircle, Plus, Check } from 'lucide-react';
 import { usePayments, useCreatePayment, useConfirmPayment, useAccounts } from '../../hooks/useFinance';
+import { aviso } from '../../ui/dialogo';
 
 const ST: Record<string, string> = { DRAFT: 'text-gray-500', CONFIRMED: 'text-green-700 font-bold', CANCELLED: 'text-red-600' };
 const today = () => new Date().toISOString().slice(0, 10);
@@ -17,10 +18,10 @@ export default function PaymentsView() {
   const [draft, setDraft] = useState<any>(empty);
 
   const add = () => {
-    if (!draft.account || !draft.party_name || !draft.amount) { alert('Preencha conta, beneficiário e valor.'); return; }
+    if (!draft.account || !draft.party_name || !draft.amount) { aviso('Preencha conta, beneficiário e valor.'); return; }
     create.mutate({ ...draft, account: Number(draft.account) }, { onSuccess: () => setDraft({ ...empty, account: draft.account }) });
   };
-  const doConfirm = (id: number) => confirm.mutate(id, { onError: (e: any) => alert(e?.response?.data?.detail || 'Erro') });
+  const doConfirm = (id: number) => confirm.mutate(id, { onError: (e: any) => aviso(e?.response?.data?.detail || 'Erro') });
 
   return (
     <ClassicWindow title="Pagamentos (Financeiro)" icon={<ArrowUpCircle size={14} className="text-gray-300" />}

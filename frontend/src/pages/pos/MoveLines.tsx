@@ -4,6 +4,8 @@ import { apiClient } from '../../api/client';
 import Window from './Window';
 import PayPanel from './PayPanel';
 import SubcontaBar from './SubcontaBar';
+import { aviso, confirmar } from '../../ui/dialogo';
+import { IcoCruz, IcoDinheiro, IcoVisto } from './Icons';
 
 /**
  * MOVER ARTIGOS ENTRE CONTAS — serve as duas funções, porque o motor é o mesmo:
@@ -90,7 +92,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     }
 
     const linhas = (de.lines || []).filter((l: any) => (tudo ? true : seleccao.includes(l.id)));
-    if (!linhas.length) return alert('Escolha os artigos a passar.');
+    if (!linhas.length) return aviso('Escolha os artigos a passar.');
 
     // (8197) Dividir MUITA quantidade de uma vez merece uma segunda pergunta — em
     // geral é um dedo a mais no teclado, não uma mesa de 40 pessoas.
@@ -99,7 +101,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
       const totalQtd = linhas.reduce((s: number, l: any) =>
         s + (tudo ? Number(l.quantity) : Math.min(qtd, Number(l.quantity))), 0);
       if (limite > 0 && totalQtd > limite
-          && !window.confirm(`Vai mover ${totalQtd} unidades de uma vez (aviso a partir de ${limite}).\n\nContinuar?`)) {
+          && !await confirmar(`Vai mover ${totalQtd} unidades de uma vez (aviso a partir de ${limite}).\n\nContinuar?`)) {
         return;
       }
     } catch { /* sem configuração ainda */ }
@@ -115,21 +117,21 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
       if (!paraId && paraDireita) setDirId(r.data.target.id);   // subconta acabada de nascer
       await refrescar();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível mover os artigos.');
+      aviso(e?.response?.data?.detail || 'Não foi possível mover os artigos.');
     }
   };
 
   // JUNTAR AS CONTAS — o inverso de separar: a conta da direita entra na da esquerda
   // (linhas e pagamentos), e a de origem anula-se. É o `merge` do motor de tickets.
   const juntar = async () => {
-    if (!esqId || !dirId) return alert('Escolha as duas contas a juntar.');
-    if (!window.confirm('Juntar a conta da direita à da esquerda?\n\nAs linhas e os pagamentos passam todos; a conta da direita deixa de existir.')) return;
+    if (!esqId || !dirId) return aviso('Escolha as duas contas a juntar.');
+    if (!await confirmar('Juntar a conta da direita à da esquerda?\n\nAs linhas e os pagamentos passam todos; a conta da direita deixa de existir.')) return;
     try {
       await apiClient.post(`pos/tickets/${esqId}/merge/`, { source: dirId });
       setDirId(null);
       await refrescar();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível juntar as contas.');
+      aviso(e?.response?.data?.detail || 'Não foi possível juntar as contas.');
     }
   };
 
@@ -140,15 +142,15 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     try {
       const r = await apiClient.get(`pos/tickets/${esqId}/siblings/`);
       const irmas = (r.data || []) as any[];
-      if (!irmas.length) return alert('A mesa já só tem uma conta.');
-      if (!window.confirm(`Conta conjunta: juntar ${irmas.length} subconta(s) nesta?\n\nA mesa fica com UMA conta única — paga-se tudo junto.`)) return;
+      if (!irmas.length) return aviso('A mesa já só tem uma conta.');
+      if (!await confirmar(`Conta conjunta: juntar ${irmas.length} subconta(s) nesta?\n\nA mesa fica com UMA conta única — paga-se tudo junto.`)) return;
       for (const t of irmas) {
         await apiClient.post(`pos/tickets/${esqId}/merge/`, { source: t.id });
       }
       setDirId(null);
       await refrescar();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível juntar a mesa.');
+      aviso(e?.response?.data?.detail || 'Não foi possível juntar a mesa.');
     }
   };
 
@@ -257,15 +259,15 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
 
         <div className="grid grid-cols-2 gap-1 p-1 bg-black">
           <button onClick={onClose}
-            className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px]">✔</button>
+            className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px]"><IcoVisto size={24} /></button>
           <button onClick={onClose}
-            className="h-[56px] bg-[#1f1f1f] text-[#e02020] text-[26px]">✖</button>
+            className="h-[56px] bg-[#1f1f1f] text-[#e02020] text-[26px]"><IcoCruz size={24} /></button>
         </div>
 
         {modo === 'SPLIT' && dir && (
           <button onClick={() => setAPagar(dir)}
             className="h-[56px] bg-[#0f8b8d] text-white text-[18px] font-bold">
-            💰 Cobrar esta subconta ({money(dir.grand_total)} Kz)
+            <IcoDinheiro size={20} /> Cobrar esta subconta ({money(dir.grand_total)} Kz)
           </button>
         )}
       </div>
@@ -295,7 +297,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
                         setEscolherMesa(false);
                         refrescar();
                       } catch (e: any) {
-                        alert(e?.response?.data?.detail || 'Não foi possível abrir a conta.');
+                        aviso(e?.response?.data?.detail || 'Não foi possível abrir a conta.');
                       }
                     }}
                     className={`h-[80px] rounded font-bold text-white text-[17px]

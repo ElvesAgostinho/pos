@@ -9,6 +9,7 @@ import {
 import { printFiscalInvoice, printCommercialDocument } from './printInvoice';
 import Pagination from '../ui/Pagination';
 import GridToggle from '../ui/GridToggle';
+import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -264,8 +265,8 @@ export function FiscalDocumentsView() {
                       onClick={async () => {
                         const reason = prompt(`Anular ${r.invoice_no}? Será emitida uma Nota de Crédito.\nMotivo:`, 'Anulação');
                         if (reason === null) return;
-                        try { const res = await apiClient.post(`fiscal/documents/${r.id}/credit_note/`, { reason }); alert(res.data.detail); qc.invalidateQueries({ queryKey: ['fis-docs'] }); }
-                        catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); }
+                        try { const res = await apiClient.post(`fiscal/documents/${r.id}/credit_note/`, { reason }); aviso(res.data.detail); qc.invalidateQueries({ queryKey: ['fis-docs'] }); }
+                        catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); }
                       }}><Ban size={13} /> Anular (NC)</button>
                   )}
                 </span>

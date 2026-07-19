@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
+import { aviso, pedir } from '../../ui/dialogo';
+import { IcoCruz, IcoDocumento, IcoImpressora, IcoLupa, IcoVoltar } from './Icons';
 
 /**
  * DOCUMENTOS — o que já foi faturado neste terminal.
@@ -29,7 +31,7 @@ export default function DocsPanel({ onClose }: { onClose: () => void }) {
   });
 
   const acao = async (accao: string) => {
-    if (!sel) return alert('Escolha um documento.');
+    if (!sel) return aviso('Escolha um documento.');
     try {
       if (accao === 'preview') {
         const r = await apiClient.get(`pos/reports/documents/${sel.id}/`);
@@ -37,19 +39,19 @@ export default function DocsPanel({ onClose }: { onClose: () => void }) {
       }
       if (accao === 'print') {
         const r = await apiClient.post(`pos/reports/documents/${sel.id}/`, { action: 'print' });
-        return alert(r.data.detail);
+        return aviso(r.data.detail);
       }
       if (accao === 'void') {
-        const motivo = window.prompt(
+        const motivo = await pedir(
           'ANULAR o documento emite uma NOTA DE CRÉDITO (assinada e encadeada).\n\nMotivo:');
         if (!motivo) return;
         const r = await apiClient.post(`pos/reports/documents/${sel.id}/`,
           { action: 'void', reason: motivo });
         setSel(null);
-        return alert(r.data.detail);
+        return aviso(r.data.detail);
       }
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível executar a ação.');
+      aviso(e?.response?.data?.detail || 'Não foi possível executar a ação.');
     }
   };
 
@@ -116,18 +118,18 @@ export default function DocsPanel({ onClose }: { onClose: () => void }) {
         <div className="flex-1 flex overflow-hidden">
           {/* ações à esquerda */}
           <div className="w-[190px] bg-black flex flex-col">
-            <BTN icon="🖨" label="Reimprimir" on={() => acao('print')} />
+            <BTN icon={<IcoImpressora size={22} />} label="Reimprimir" on={() => acao('print')} />
             {/* A LISTAGEM é esta grelha — mostra-se TUDO aqui, sem mandar o caixa
                 para o backoffice (o terminal é autossuficiente). */}
-            <BTN icon="🖨" label="Listagem Documentos"
+            <BTN icon={<IcoImpressora size={22} />} label="Listagem Documentos"
               on={() => { setDe(''); setAte(''); setNumero(''); setBusca({}); }} />
-            <BTN icon="🔍" label="Pré-visualizar" on={() => acao('preview')} cor="#4ec5c1" />
-            <BTN icon="🗎" label="Anular" on={() => acao('void')} cor="#e02020" />
-            <BTN icon="↩" label="Processar devolução" on={() => acao('void')} cor="#e02020" />
+            <BTN icon={<IcoLupa size={22} />} label="Pré-visualizar" on={() => acao('preview')} cor="#4ec5c1" />
+            <BTN icon={<IcoDocumento size={22} />} label="Anular" on={() => acao('void')} cor="#e02020" />
+            <BTN icon={<IcoVoltar size={20} />} label="Processar devolução" on={() => acao('void')} cor="#e02020" />
             <BTN icon="≣" label="Anulação parcial" on={() => acao('void')} cor="#e02020" />
             <button onClick={onClose}
               className="w-full h-[62px] bg-[#c0140f] text-white flex flex-col items-center justify-center gap-1 mt-auto font-bold">
-              <span className="text-[28px]">✕</span> Fechar
+              <span className="text-[28px]"><IcoCruz size={24} /></span> Fechar
             </button>
           </div>
 
@@ -154,7 +156,7 @@ export default function DocsPanel({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
               <button onClick={() => setBusca({ from: de, to: ate, number: numero || undefined })}
-                className="w-[90px] h-[88px] bg-[#1f7a34] text-white text-[26px] rounded">🔍</button>
+                className="w-[90px] h-[88px] bg-[#1f7a34] text-white text-[26px] rounded"><IcoLupa size={22} /></button>
             </div>
 
             {/* lista */}

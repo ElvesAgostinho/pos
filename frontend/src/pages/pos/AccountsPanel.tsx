@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
 import TouchKeyboard from './TouchKeyboard';
+import { aviso } from '../../ui/dialogo';
+import { IcoCruz, IcoProibido, IcoVisto } from './Icons';
 
 /**
  * CONTAS CORRENTES — as entidades e o que devem.
@@ -68,7 +70,7 @@ export default function AccountsPanel({ onPick, onClose }: {
     const faltam = camposVisiveis
       .filter(([k]) => (k === 'name' || obrig.has(k)) && !String(nova?.[k] ?? '').trim())
       .map(([, label]) => label);
-    if (faltam.length) return alert('Campos obrigatórios em falta (regras do backoffice):\n· ' + faltam.join('\n· '));
+    if (faltam.length) return aviso('Campos obrigatórios em falta (regras do backoffice):\n· ' + faltam.join('\n· '));
     try {
       const body: any = { code: nova.code?.trim() || `CL${Date.now().toString().slice(-8)}`, is_active: true };
       for (const [k] of CAMPOS) {
@@ -77,10 +79,10 @@ export default function AccountsPanel({ onPick, onClose }: {
       const r = await apiClient.post('pos/marketing/entities/', body);
       setNova(null);
       await refetch();
-      alert(`Entidade criada: ${r.data.name} (${r.data.code})`);
+      aviso(`Entidade criada: ${r.data.name} (${r.data.code})`);
     } catch (e: any) {
       const d = e?.response?.data;
-      alert(typeof d === 'object'
+      aviso(typeof d === 'object'
         ? Object.entries(d || {}).map(([k, v]) => `${k}: ${v}`).join('\n')
         : 'Não foi possível criar a entidade.');
     }
@@ -107,7 +109,7 @@ export default function AccountsPanel({ onPick, onClose }: {
                 text-white text-[15px] border-b border-black/40
                 ${sel?.id === e.id ? 'bg-[#0f8b8d]' : 'hover:bg-[#2b2b2b]'}`}>
               <span>
-                {e.blocked && <span className="text-[#ff8a80] mr-2">⛔</span>}
+                {e.blocked && <span className="text-[#ff8a80] mr-2"><IcoProibido size={16} /></span>}
                 {e.name}
               </span>
               <span>{e.other || '—'}</span>
@@ -127,13 +129,12 @@ export default function AccountsPanel({ onPick, onClose }: {
 
         <div className="grid grid-cols-3 gap-1 p-1 bg-black">
           <button onClick={() => sel && onPick?.(sel)} disabled={!sel || !onPick}
-            className="h-[64px] bg-[#1f1f1f] text-[#2ecc40] text-[18px] font-bold disabled:opacity-30">
-            ✔ Selecionar
-          </button>
+            className="h-[64px] bg-[#1f1f1f] text-[#2ecc40] text-[18px] font-bold disabled:opacity-30"><span className="inline-flex items-center gap-2"><IcoVisto size={24} />Selecionar
+          </span></button>
           <button onClick={() => setNova({})}
             className="h-[64px] bg-[#1f1f1f] text-white text-[18px]">＋ Nova entidade</button>
           <button onClick={onClose}
-            className="h-[64px] bg-[#1f1f1f] text-[#e02020] text-[18px] font-bold">✖ Cancelar</button>
+            className="h-[64px] bg-[#1f1f1f] text-[#e02020] text-[18px] font-bold"><span className="inline-flex items-center gap-2"><IcoCruz size={24} />Cancelar</span></button>
         </div>
       </div>
 
@@ -173,9 +174,9 @@ export default function AccountsPanel({ onPick, onClose }: {
             </label>
             <div className="grid grid-cols-2 gap-1 mt-1">
               <button onClick={gravarNova}
-                className="h-[52px] bg-[#1f7a34] text-white font-bold rounded">✔ Criar</button>
+                className="h-[52px] bg-[#1f7a34] text-white font-bold rounded"><span className="inline-flex items-center gap-2"><IcoVisto size={24} />Criar</span></button>
               <button onClick={() => setNova(null)}
-                className="h-[52px] bg-[#3a3a3a] text-white rounded">✖ Cancelar</button>
+                className="h-[52px] bg-[#3a3a3a] text-white rounded"><span className="inline-flex items-center gap-2"><IcoCruz size={24} />Cancelar</span></button>
             </div>
           </div>
         </Window>

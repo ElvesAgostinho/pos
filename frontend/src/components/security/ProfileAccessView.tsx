@@ -6,6 +6,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { ShieldCheck, Save, Plus } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { MODULES } from '../../config/navigation';
+import { aviso } from '../../ui/dialogo';
 
 /**
  * Acessos por Perfil — o dono define a que CENTROS cada perfil acede.
@@ -20,13 +21,13 @@ export default function ProfileAccessView() {
 
   const save = useMutation({
     mutationFn: (patch: any) => apiClient.patch(`eae/profiles/${selId}/`, patch),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['eae', 'profiles'] }); alert('Acessos guardados.'); },
-    onError: (e: any) => alert(JSON.stringify(e?.response?.data)),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['eae', 'profiles'] }); aviso('Acessos guardados.'); },
+    onError: (e: any) => aviso(JSON.stringify(e?.response?.data)),
   });
   const createProfile = useMutation({
     mutationFn: (name: string) => apiClient.post('eae/profiles/', { code: name.slice(0, 18).toUpperCase().replace(/\s+/g, '_'), name, full_access: false, allowed_modules: [] }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['eae', 'profiles'] }); setNewName(''); },
-    onError: (e: any) => alert(JSON.stringify(e?.response?.data)),
+    onError: (e: any) => aviso(JSON.stringify(e?.response?.data)),
   });
 
   // Estado editável do perfil selecionado

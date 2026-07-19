@@ -7,6 +7,7 @@ import { Plus, Save, Trash2, CheckCircle } from 'lucide-react';
 import { useTransactions, useCreateTransaction, useLocations } from '../../hooks/useWms';
 import { apiClient } from '../../api/client';
 import type { WMSStockTransaction, WMSStockTransactionLine } from '../../api/wms';
+import { aviso } from '../../ui/dialogo';
 
 const fetchItems = async () => (await apiClient.get('mdm/items/')).data;
 const fetchUoms = async () => (await apiClient.get('mdm/uoms/')).data;
@@ -27,7 +28,7 @@ export default function StockMovementsView() {
 
   const handleSave = async () => {
     if (lines.length === 0) {
-      alert('Adicione pelo menos um artigo.');
+      aviso('Adicione pelo menos um artigo.');
       return;
     }
     
@@ -36,12 +37,12 @@ export default function StockMovementsView() {
         ...formData,
         lines: lines as WMSStockTransactionLine[]
       });
-      alert('Movimento registado com sucesso!');
+      aviso('Movimento registado com sucesso!');
       setMode('list');
       setFormData({ transaction_type: 'RECEIPT' });
       setLines([]);
     } catch (e) {
-      alert('Erro ao registar movimento.');
+      aviso('Erro ao registar movimento.');
     }
   };
 

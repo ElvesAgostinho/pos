@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
-import { IcoLapis, IcoVoltar, IcoLimpar } from './Icons';
+import { IcoCruz, IcoLapis, IcoLimpar, IcoVoltar } from './Icons';
 import TouchKeyboard from './TouchKeyboard';
 
 /**
@@ -127,7 +127,7 @@ export default function MessagesPanel({ linha, onGravar, onClose }: {
           {escolhidas.map((t) => (
             <button key={t} onClick={() => alternar(t)} title="Tocar para tirar"
               className="px-3 h-[34px] rounded-[3px] bg-[#8a6100] text-white text-[14px] font-bold
-                border border-black">{t} ✕</button>
+                border border-black">{t} <IcoCruz size={13} /></button>
           ))}
         </div>
       )}

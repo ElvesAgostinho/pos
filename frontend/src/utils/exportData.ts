@@ -1,4 +1,5 @@
 /**
+import { aviso } from '../ui/dialogo';
  * Exportação multi-formato SEM dependências externas.
  * Excel/Word usam o truque HTML-table (o Office abre-os nativamente);
  * PDF usa a impressão do browser (guardar como PDF).
@@ -45,7 +46,7 @@ export function exportJSON(rows: any[], cols: ExportcolList, name: string) {
 export function exportPDF(rows: any[], cols: ExportcolList, name: string, title = name) {
   // Abre uma janela imprimível — o utilizador escolhe "Guardar como PDF".
   const w = window.open('', '_blank', 'width=900,height=650');
-  if (!w) { alert('Permita popups para exportar em PDF.'); return; }
+  if (!w) { aviso('Permita popups para exportar em PDF.'); return; }
   w.document.write(htmlTable(rows, cols, title) + '<script>window.onload=function(){window.print();}<\/script>');
   w.document.close();
 }

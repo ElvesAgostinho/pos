@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
 import { LifeBuoy, Download, Server, Database, KeyRound, Activity, CheckCircle2, XCircle, RefreshCw, Printer, MonitorSmartphone, Wifi, HardDriveDownload, ShieldCheck, Send } from 'lucide-react';
+import { aviso } from '../../ui/dialogo';
 
 function Row({ label, value, ok }: { label: string; value: any; ok?: boolean }) {
   return (
@@ -36,7 +37,7 @@ export default function SupportCenterView() {
   };
   const download = () => dl('support/diagnostics/', `diagnostico_${Date.now()}.json`);
   const backup = () => dl('support/backup/', `backup_${Date.now()}.json`);
-  const act = async (body: any) => { try { const r = await apiClient.post('support/actions/', body); alert(r.data.detail + (r.data.code ? `\nCódigo: ${r.data.code}` : '')); qc.invalidateQueries({ queryKey: ['support-diag'] }); } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); } };
+  const act = async (body: any) => { try { const r = await apiClient.post('support/actions/', body); aviso(r.data.detail + (r.data.code ? `\nCódigo: ${r.data.code}` : '')); qc.invalidateQueries({ queryKey: ['support-diag'] }); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } };
   const sys = d?.system || {}, db = d?.database || {}, lic = d?.license || {}, sv = d?.services || {}, counts = d?.data_counts || {}, events = d?.recent_events || [];
   const pr = d?.printers || {}, term = d?.terminals || {}, sup = d?.support || {};
 

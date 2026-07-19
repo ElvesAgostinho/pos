@@ -3,6 +3,7 @@ import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
 import { useFeatures } from '../../hooks/useActiveModules';
 import { ToggleLeft, ToggleRight, SlidersHorizontal } from 'lucide-react';
+import { aviso } from '../../ui/dialogo';
 
 const MOD_NAME: Record<string, string> = {
   pos: 'POS / Restauração', commercial: 'Comercial', fiscal: 'Fiscal',
@@ -17,7 +18,7 @@ export default function FeatureFlagsView() {
     try {
       await apiClient.post('licensing/features/', { key, enabled });
       qc.invalidateQueries({ queryKey: ['licensing', 'features'] });
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); }
   };
   // agrupa por módulo
   const groups: Record<string, any[]> = {};

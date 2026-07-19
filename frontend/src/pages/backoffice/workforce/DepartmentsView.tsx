@@ -4,6 +4,7 @@ import { Building, Plus, Trash2, Save } from 'lucide-react';
 import ClassicWindow from '../../../components/ui/ClassicWindow';
 import ClassicButton from '../../../components/ui/ClassicButton';
 import ClassicGrid from '../../../components/ui/ClassicGrid';
+import { aviso } from '../../../ui/dialogo';
 
 const DepartmentsView: React.FC = () => {
   const [departments, setDepartments] = useState<any[]>([]);
@@ -54,7 +55,7 @@ const DepartmentsView: React.FC = () => {
       setMode('list');
       fetchDepartments();
     } catch (e) {
-      alert("Erro ao gravar departamento");
+      aviso("Erro ao gravar departamento");
     }
   };
 

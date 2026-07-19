@@ -4,6 +4,7 @@ import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 import { Gift, Plus } from 'lucide-react';
 import { useGiftCards, useCreateGiftCard } from '../../hooks/usePosMgmt';
+import { aviso } from '../../ui/dialogo';
 
 const rndCode = () => 'GC-' + Math.random().toString(36).slice(2, 8).toUpperCase();
 
@@ -13,9 +14,9 @@ export default function GiftCardsView() {
   const [draft, setDraft] = useState<any>({ code: rndCode(), initial_balance: '' });
 
   const add = () => {
-    if (!draft.code || !draft.initial_balance) { alert('Preencha código e valor.'); return; }
+    if (!draft.code || !draft.initial_balance) { aviso('Preencha código e valor.'); return; }
     create.mutate({ code: draft.code, initial_balance: draft.initial_balance },
-      { onSuccess: () => setDraft({ code: rndCode(), initial_balance: '' }), onError: (e: any) => alert('Erro: ' + JSON.stringify(e?.response?.data)) });
+      { onSuccess: () => setDraft({ code: rndCode(), initial_balance: '' }), onError: (e: any) => aviso('Erro: ' + JSON.stringify(e?.response?.data)) });
   };
 
   return (

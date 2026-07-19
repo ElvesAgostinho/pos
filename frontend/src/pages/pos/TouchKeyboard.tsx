@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IcoLupa, IcoMaiusculas, IcoTeclado, IcoVisto } from './Icons';
 
 /**
  * PESQUISA COM TECLADO TÁTIL — o teclado abre-se quando é preciso, não antes.
@@ -54,9 +55,9 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
             placeholder:text-white/40" />
         <button onClick={() => setAberto(!aberto)}
           className={`w-[60px] h-[46px] rounded text-[20px] ${aberto
-            ? 'bg-[#0f8b8d] text-white' : 'bg-[#3a3a3a] text-white'}`} title="Teclado">⌨</button>
+            ? 'bg-[#0f8b8d] text-white' : 'bg-[#3a3a3a] text-white'}`} title="Teclado"><IcoTeclado size={22} /></button>
         <button onClick={onOk}
-          className="w-[60px] h-[46px] bg-[#1f7a34] text-white text-[20px] rounded">🔍</button>
+          className="w-[60px] h-[46px] bg-[#1f7a34] text-white text-[20px] rounded"><IcoLupa size={22} /></button>
       </div>
 
       {aberto && (
@@ -74,14 +75,14 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
           <div className="flex gap-1">
             <button onClick={() => setMaiusc(!maiusc)}
               className={`w-[90px] h-[42px] rounded text-[16px] ${maiusc
-                ? 'bg-[#0f8b8d] text-white' : 'bg-[#3a3a3a] text-white'}`}>⬆</button>
+                ? 'bg-[#0f8b8d] text-white' : 'bg-[#3a3a3a] text-white'}`}><IcoMaiusculas size={20} /></button>
             <button onClick={() => setValor(valor + ' ')} className="flex-1 h-[42px] bg-[#3a3a3a] rounded" />
             <button onClick={() => setValor('')}
               className="w-[80px] h-[42px] bg-[#c0140f] text-white text-[16px] font-bold rounded">C</button>
             <button onClick={() => setValor(valor.slice(0, -1))}
               className="w-[80px] h-[42px] bg-[#3a3a3a] text-white text-[16px] rounded">⌫</button>
             <button onClick={() => { onOk(); setAberto(false); }}
-              className="w-[90px] h-[42px] bg-[#1f7a34] text-white text-[18px] rounded">✔</button>
+              className="w-[90px] h-[42px] bg-[#1f7a34] text-white text-[18px] rounded"><IcoVisto size={24} /></button>
           </div>
         </div>
       )}

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
+import { aviso } from '../../ui/dialogo';
+import { IcoCruz, IcoVisto } from './Icons';
 
 /**
  * RESERVAS DE MESA — o livro de reservas do restaurante, no terminal.
@@ -42,7 +44,7 @@ export default function ReservationsPanel({ setor, onOpenTicket, onClose }: {
 
   const chegou = async (r: any) => {
     try { await apiClient.post(`pos/reservations/${r.id}/arrive/`, {}); inval(); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro.'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro.'); }
   };
 
   const sentarNa = async (r: any, mesaId: number) => {
@@ -52,11 +54,11 @@ export default function ReservationsPanel({ setor, onOpenTicket, onClose }: {
       qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
       const tid = resp.data?.ticket_id || resp.data?.ticket;
       if (tid) { onClose(); onOpenTicket(tid); }
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível sentar.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível sentar.'); }
   };
 
   const criar = async () => {
-    if (!nova?.guest_name || !nova?.reserved_for) return alert('Nome e data/hora são obrigatórios.');
+    if (!nova?.guest_name || !nova?.reserved_for) return aviso('Nome e data/hora são obrigatórios.');
     try {
       await apiClient.post('pos/reservations/', {
         outlet: setor.outlet, guest_name: nova.guest_name, phone: nova.phone || null,
@@ -66,7 +68,7 @@ export default function ReservationsPanel({ setor, onOpenTicket, onClose }: {
       setNova(null); inval();
     } catch (e: any) {
       const d = e?.response?.data;
-      alert(typeof d === 'object' ? Object.entries(d).map(([k, v]) => `${k}: ${v}`).join('\n') : 'Erro.');
+      aviso(typeof d === 'object' ? Object.entries(d).map(([k, v]) => `${k}: ${v}`).join('\n') : 'Erro.');
     }
   };
 
@@ -141,8 +143,8 @@ export default function ReservationsPanel({ setor, onOpenTicket, onClose }: {
               </label>
             ))}
             <div className="grid grid-cols-2 gap-1">
-              <button onClick={criar} className="h-[50px] bg-[#1f7a34] text-white font-bold rounded">✔ Reservar</button>
-              <button onClick={() => setNova(null)} className="h-[50px] bg-[#3a3a3a] text-white rounded">✖</button>
+              <button onClick={criar} className="h-[50px] bg-[#1f7a34] text-white font-bold rounded"><span className="inline-flex items-center gap-2"><IcoVisto size={24} />Reservar</span></button>
+              <button onClick={() => setNova(null)} className="h-[50px] bg-[#3a3a3a] text-white rounded"><IcoCruz size={24} /></button>
             </div>
           </div>
         </Window>

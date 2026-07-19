@@ -8,6 +8,7 @@ import {
   CheckCircle, Undo2, Lock, Unlock, Zap, RefreshCw,
 } from 'lucide-react';
 import { accApi } from '../../api/accounting';
+import { aviso } from '../../ui/dialogo';
 
 const AOA = (n: any) => new Intl.NumberFormat('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n) || 0);
 
@@ -102,7 +103,7 @@ export function AccEntriesView() {
         .map((l) => ({ account: Number(l.account), debit: Number(l.debit) || 0, credit: Number(l.credit) || 0 })) };
     create.mutate(payload, { onSuccess: (e: any) => { setSelId(e.id); setHdr({ journal: '', entry_date: new Date().toISOString().slice(0, 10), description: '' }); setLines([emptyLine(), emptyLine()]); } });
   };
-  const post = (id: number) => accApi.postEntry(id).then(() => qc.invalidateQueries({ queryKey: ['acc'] })).catch((e) => alert(e?.response?.data?.detail || 'Erro ao lançar.'));
+  const post = (id: number) => accApi.postEntry(id).then(() => qc.invalidateQueries({ queryKey: ['acc'] })).catch((e) => aviso(e?.response?.data?.detail || 'Erro ao lançar.'));
   const reverse = (id: number) => accApi.reverseEntry(id).then(() => qc.invalidateQueries({ queryKey: ['acc'] }));
 
   return (
@@ -254,7 +255,7 @@ export function AccIntegrationView() {
   const { data, isLoading } = useQuery({ queryKey: ['acc', 'autoPost'], queryFn: () => accApi.autoPostPending() });
   const run = useMutation({
     mutationFn: (sources: string[]) => accApi.runAutoPost(sources, true),
-    onSuccess: (r: any) => { alert(r.detail); qc.invalidateQueries({ queryKey: ['acc'] }); },
+    onSuccess: (r: any) => { aviso(r.detail); qc.invalidateQueries({ queryKey: ['acc'] }); },
   });
   const p = data?.pending ?? { pos: [], purchase: [], treasury: [] };
   const Section = ({ title, source, rows }: any) => (
@@ -298,8 +299,8 @@ export function AccIntegrationView() {
             <ClassicButton icon={CheckCircle} label="Apurar resultados" onClick={async () => {
               const pv = await accApi.closeResultsPreview();
               if (!confirm(`Proveitos: ${AOA(pv.total_income)}\nCustos: ${AOA(pv.total_expense)}\nResultado: ${AOA(pv.net_result)} (${pv.result_label})\n\nGerar lançamento de apuramento?`)) return;
-              try { const r = await accApi.closeResults(); alert(r.detail); qc.invalidateQueries({ queryKey: ['acc'] }); }
-              catch (e: any) { alert(e?.response?.data?.detail || 'Erro no apuramento.'); }
+              try { const r = await accApi.closeResults(); aviso(r.detail); qc.invalidateQueries({ queryKey: ['acc'] }); }
+              catch (e: any) { aviso(e?.response?.data?.detail || 'Erro no apuramento.'); }
             }} />
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { IcoCruz } from './Icons';
 
 /**
  * JANELA DO TERMINAL — arrastável, como uma janela de verdade.
@@ -79,12 +80,14 @@ export default function Window({
           left: pos?.x ?? 40, top: pos?.y ?? 40,
           width, maxWidth: 'calc(100vw - 16px)', maxHeight: 'calc(100vh - 16px)',
         }}
-        className="bg-[#2b2b2b] border-2 border-black rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.6)]
+        className="bg-[#2b2b2b] border-[3px] border-black rounded-[3px] shadow-[0_24px_70px_rgba(0,0,0,0.75)]
           flex flex-col overflow-hidden">
         {/* pega */}
         <div onMouseDown={pegar} onTouchStart={pegar}
           style={{ background: tone }}
-          className="h-[58px] flex items-center px-3 cursor-grab active:cursor-grabbing select-none flex-shrink-0">
+          className="h-[62px] flex items-center px-3 cursor-grab active:cursor-grabbing select-none
+            flex-shrink-0 border-b-2 border-black
+            shadow-[inset_0_2px_0_rgba(255,255,255,0.22),inset_0_-2px_0_rgba(0,0,0,0.35)]">
           <span className="w-[46px] flex flex-col gap-[3px] opacity-40">
             <span className="h-[2px] bg-white rounded" />
             <span className="h-[2px] bg-white rounded" />
@@ -95,8 +98,10 @@ export default function Window({
           </span>
           {onClose ? (
             <button onClick={onClose}
-              className="w-[46px] h-[40px] rounded bg-[#c0140f] text-white text-[18px] font-bold
-                hover:bg-[#e02020]">✕</button>
+              className="w-[52px] h-[46px] rounded-[3px] text-white flex items-center justify-center
+                border-2 border-black bg-gradient-to-b from-[#d42a24] to-[#8a0f0b]
+                shadow-[inset_0_2px_0_rgba(255,255,255,0.22),inset_0_-2px_0_rgba(0,0,0,0.45)]
+                active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]"><IcoCruz size={26} /></button>
           ) : <span className="w-[46px]" />}
         </div>
 

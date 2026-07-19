@@ -5,6 +5,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { Tag, Plus, Trash2 } from 'lucide-react';
 import { usePromotions, useCreatePromotion, useUpdatePromotion, useDeletePromotion } from '../../hooks/useCommercial';
 import { useMdItems, useMdCategories } from '../../hooks/useMasterData';
+import { aviso } from '../../ui/dialogo';
 
 export default function PromotionsView() {
   const { data: promos = [] } = usePromotions();
@@ -17,13 +18,13 @@ export default function PromotionsView() {
   const [d, setD] = useState<any>(empty);
 
   const add = () => {
-    if (!d.name || !d.value) { alert('Preencha nome e valor.'); return; }
+    if (!d.name || !d.value) { aviso('Preencha nome e valor.'); return; }
     const p: any = { name: d.name, scope: d.scope, discount_type: d.discount_type, value: d.value, is_active: true };
     if (d.scope === 'ITEM') p.item = Number(d.item) || null;
     if (d.scope === 'CATEGORY') p.category = Number(d.category) || null;
     if (d.happy_start) p.happy_start = d.happy_start;
     if (d.happy_end) p.happy_end = d.happy_end;
-    create.mutate(p, { onSuccess: () => setD(empty), onError: (e: any) => alert('Erro: ' + JSON.stringify(e?.response?.data)) });
+    create.mutate(p, { onSuccess: () => setD(empty), onError: (e: any) => aviso('Erro: ' + JSON.stringify(e?.response?.data)) });
   };
 
   return (

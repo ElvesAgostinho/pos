@@ -22,12 +22,24 @@ import { IcoCliente, IcoQuarto, IcoCalendario } from './Icons';
 
 type Aba = 'ENTIDADE' | 'QUARTO' | 'EVENTOS';
 
-export default function ClientPicker({ onPick, onClose, podeSaltar = true }: {
-  onPick: (escolha: { customer_name?: string; company_name?: string; entity?: number }) => void;
+export default function ClientPicker({ onPick, onClose, podeSaltar = true,
+  abaInicial = 'ENTIDADE', soAba, titulo: tituloProp }: {
+  onPick: (escolha: {
+    customer_name?: string; company_name?: string; entity?: number; room?: string;
+  }) => void;
   onClose: () => void;
   podeSaltar?: boolean;
+  /** com que aba abre */
+  abaInicial?: Aba;
+  /**
+   * Trava numa aba só. "Lançar no quarto de…" não tem nada que oferecer o ficheiro de
+   * entidades: o que se procura ali é um QUARTO, e mostrar as outras abas era convidar
+   * o empregado a escolher a coisa errada com a conta a fechar.
+   */
+  soAba?: Aba;
+  titulo?: string;
 }) {
-  const [aba, setAba] = useState<Aba>('ENTIDADE');
+  const [aba, setAba] = useState<Aba>(soAba || abaInicial);
   const [texto, setTexto] = useState('');
   const busca = texto.trim();
 
@@ -64,15 +76,26 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true }: {
     enabled: aba === 'EVENTOS',
   });
 
-  const filtrar = (linhas: any[], campos: string[]) => !busca ? linhas : linhas.filter((l) =>
-    campos.some((c) => String(l?.[c] ?? '').toLowerCase().includes(busca.toLowerCase())));
+  // O SERVIDOR nem sempre devolve uma lista: `pos/terminal/guests/` responde com um
+  // objeto quando não há hotel ligado. Sem esta garantia, o `.filter` devolvia algo que
+  // não é lista e o ecrã rebentava com "filtrar(...).map is not a function" — logo ao
+  // tocar no ícone do hóspede.
+  const filtrar = (linhas: any, campos: string[]): any[] => {
+    const lista: any[] = Array.isArray(linhas) ? linhas
+      : Array.isArray(linhas?.results) ? linhas.results : [];
+    if (!busca) return lista;
+    const t = busca.toLowerCase();
+    return lista.filter((l) => campos.some((c) => String(l?.[c] ?? '').toLowerCase().includes(t)));
+  };
 
   const ABAS: { k: Aba; icon: any; titulo: string }[] = [
     { k: 'ENTIDADE', icon: <IcoCliente size={30} />, titulo: 'Entidade' },
     { k: 'QUARTO', icon: <IcoQuarto size={30} />, titulo: 'Quarto' },
     { k: 'EVENTOS', icon: <IcoCalendario size={30} />, titulo: 'Eventos' },
   ];
-  const titulo = ABAS.find((a) => a.k === aba)!.titulo;
+  const titulo = tituloProp || ABAS.find((a) => a.k === aba)!.titulo;
+  // Travado numa aba, as outras nao se desenham — nao ha para onde enganar-se.
+  const abasVisiveis = soAba ? ABAS.filter((a) => a.k === soAba) : ABAS;
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-start justify-center pt-6 z-50" onClick={onClose}>
@@ -84,7 +107,7 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true }: {
           <div className="flex-1 flex items-center justify-center">
             <span className="text-white text-[24px] font-bold">{titulo}</span>
           </div>
-          {ABAS.map((a) => (
+          {abasVisiveis.map((a) => (
             <button key={a.k} onClick={() => { setAba(a.k); setTexto(''); }}
               title={a.titulo}
               className={`w-[180px] flex items-center justify-center border-l border-black
@@ -115,7 +138,7 @@ export default function ClientPicker({ onPick, onClose, podeSaltar = true }: {
                   chave: g.id ?? i,
                   cels: [g.room || '—', g.folio ?? '—', g.guest, g.checkout || '—', g.balance ?? '0.00'],
                   escolher: () => onPick({
-                    customer_name: g.guest,
+                    customer_name: g.guest, room: g.room,
                     company_name: g.room ? `Quarto ${g.room}` : undefined,
                   }),
                 }))} />

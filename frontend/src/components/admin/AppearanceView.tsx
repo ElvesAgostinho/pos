@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import { Image, Upload, Trash2, Monitor, Type, Palette, Save } from 'lucide-react';
+import { aviso } from '../../ui/dialogo';
 
 const read = (k: string) => (typeof localStorage !== 'undefined' ? localStorage.getItem(k) : null) || '';
 
@@ -9,7 +10,7 @@ function ImagePicker({ label, storageKey, hint }: { label: string; storageKey: s
   const [val, setVal] = useState<string>(read(storageKey));
   const onFile = (f?: File) => {
     if (!f) return;
-    if (f.size > 3_000_000) { alert('Imagem demasiado grande (máx. ~3 MB).'); return; }
+    if (f.size > 3_000_000) { aviso('Imagem demasiado grande (máx. ~3 MB).'); return; }
     const r = new FileReader();
     r.onload = () => { const d = String(r.result); localStorage.setItem(storageKey, d); setVal(d); };
     r.readAsDataURL(f);
@@ -52,7 +53,7 @@ export default function AppearanceView() {
   return (
     <ClassicWindow title="Personalização / Aparência" icon={<Image size={14} className="text-gray-300" />}
       footer={<>
-        <ClassicButton icon={Save} label="Guardar e aplicar" onClick={() => { alert('Aparência guardada. A aplicar em todo o sistema…'); window.location.reload(); }} />
+        <ClassicButton icon={Save} label="Guardar e aplicar" onClick={() => { aviso('Aparência guardada. A aplicar em todo o sistema…'); window.location.reload(); }} />
         <div className="text-gray-600">As definições guardam-se automaticamente neste terminal; "Guardar e aplicar" recarrega para aplicar em todo o lado (login, ambiente e barras).</div>
       </>}>
       <div className="p-4 space-y-4 bg-[#e6e6e6] h-full overflow-auto">

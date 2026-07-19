@@ -16,6 +16,7 @@ import BookingManage from './pages/BookingManage.tsx'
 // New Auth & Arch Components
 import Onboarding from './pages/Onboarding.tsx'
 import GuideDialog from './components/ui/GuideDialog.tsx'
+import DialogoHost from './ui/dialogo.tsx'
 import PosLoginModern from './pages/PosLoginModern.tsx'
 import Launchpad from './pages/Launchpad.tsx'
 import { useLicenseStatus } from './hooks/useActiveModules'
@@ -138,6 +139,9 @@ createRoot(document.getElementById('root')!).render(
           </Routes>
           {/* Popup explicativo global: quando algo corre mal, orienta o utilizador. */}
           <GuideDialog />
+          {/* Os NOSSOS diálogos (aviso/confirmar/pedir) — substituem os do Windows.
+              Monta-se aqui uma vez; sem isto os pedidos ficam em fila à espera. */}
+          <DialogoHost />
         </BrowserRouter>
       </AuthorizationProvider>
     </QueryClientProvider>

@@ -8,6 +8,7 @@ import {
   Banknote, Building, ShieldCheck, KeyRound, Fingerprint, Plus, Trash2, CheckCircle,
 } from 'lucide-react';
 import { finalApi } from '../../api/final';
+import { aviso } from '../../ui/dialogo';
 
 const AOA = (n: any) => new Intl.NumberFormat('pt-AO', { maximumFractionDigits: 0 }).format(Number(n) || 0) + ' Kz';
 
@@ -373,7 +374,7 @@ function SecurityPolicyEditor({ title, icon, fields }: { title: string; icon: an
   const { data } = useQuery({ queryKey: ['final', 'securityPolicy'], queryFn: () => finalApi.securityPolicy() });
   const [form, setForm] = useState<any>(null);
   const p = form ?? data ?? {};
-  const save = useMutation({ mutationFn: (v: any) => finalApi.saveSecurityPolicy(v), onSuccess: () => { qc.invalidateQueries({ queryKey: ['final', 'securityPolicy'] }); alert('Política guardada.'); } });
+  const save = useMutation({ mutationFn: (v: any) => finalApi.saveSecurityPolicy(v), onSuccess: () => { qc.invalidateQueries({ queryKey: ['final', 'securityPolicy'] }); aviso('Política guardada.'); } });
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Política de segurança global</div>}>
       <div className="p-3 max-w-md space-y-2">

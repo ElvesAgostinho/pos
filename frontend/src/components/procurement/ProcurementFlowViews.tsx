@@ -8,6 +8,7 @@ import {
   useRfqs, useAddQuote, useComparison, useConvertToPo, useSuppliersList, useUomsList,
 } from '../../hooks/useProcurementFlow';
 import { useMdItems } from '../../hooks/useMasterData';
+import { aviso } from '../../ui/dialogo';
 
 const RST: Record<string, string> = { DRAFT: 'text-gray-500', SUBMITTED: 'text-[#1e3f66] font-bold', APPROVED: 'text-green-700 font-bold', REJECTED: 'text-red-600' };
 const money = (v: any) => Number(v || 0).toFixed(2);
@@ -22,10 +23,10 @@ export function RequisitionsView() {
   const [d, setD] = useState<any>({ requester: '', item: '', quantity: '', uom: '' });
 
   const add = () => {
-    if (!d.item || !d.quantity) { alert('Escolha artigo e quantidade.'); return; }
+    if (!d.item || !d.quantity) { aviso('Escolha artigo e quantidade.'); return; }
     const uom = d.uom || uoms[0]?.id;
     create.mutate({ requester: d.requester, lines: [{ item: Number(d.item), quantity: d.quantity, uom: Number(uom) }] },
-      { onSuccess: () => setD({ requester: '', item: '', quantity: '', uom: '' }), onError: (e: any) => alert(JSON.stringify(e?.response?.data)) });
+      { onSuccess: () => setD({ requester: '', item: '', quantity: '', uom: '' }), onError: (e: any) => aviso(JSON.stringify(e?.response?.data)) });
   };
 
   return (
@@ -54,7 +55,7 @@ export function RequisitionsView() {
                 {r.status === 'DRAFT' && <button title="Submeter" onClick={() => act.mutate({ id: r.id, act: 'submit' })} className="text-[#1e3f66]"><Send size={13} /></button>}
                 {r.status === 'SUBMITTED' && <button title="Aprovar" onClick={() => act.mutate({ id: r.id, act: 'approve' })} className="text-green-700"><Check size={14} /></button>}
                 {r.status === 'SUBMITTED' && <button title="Rejeitar" onClick={() => act.mutate({ id: r.id, act: 'reject' })} className="text-red-600"><X size={14} /></button>}
-                {r.status === 'APPROVED' && <button title="Gerar RFQ" onClick={() => rfq.mutate(r.id, { onSuccess: (x: any) => alert('RFQ criada: ' + x.number) })} className="text-[#b06a00] font-bold text-[11px] flex items-center gap-1"><FileText size={12} />RFQ</button>}
+                {r.status === 'APPROVED' && <button title="Gerar RFQ" onClick={() => rfq.mutate(r.id, { onSuccess: (x: any) => aviso('RFQ criada: ' + x.number) })} className="text-[#b06a00] font-bold text-[11px] flex items-center gap-1"><FileText size={12} />RFQ</button>}
               </div>), width: '26%' },
           ]} />
         </div>
@@ -129,7 +130,7 @@ export function RfqComparisonView() {
             {comp?.quote_totals?.length ? (
               <div className="mt-3 flex flex-wrap gap-2">
                 {comp.quote_totals.map((q: any) => (
-                  <button key={q.quote} onClick={() => convert.mutate(q.quote, { onSuccess: (po: any) => alert('Ordem de Compra gerada: ' + po.po_number + ' · total ' + money(po.total_amount)) })}
+                  <button key={q.quote} onClick={() => convert.mutate(q.quote, { onSuccess: (po: any) => aviso('Ordem de Compra gerada: ' + po.po_number + ' · total ' + money(po.total_amount)) })}
                     className="px-3 py-1.5 bg-[#1e3f66] text-white rounded text-[11px] font-bold hover:bg-[#274d7a]">Gerar OC de {q.supplier} ({money(q.total)})</button>
                 ))}
               </div>

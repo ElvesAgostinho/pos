@@ -309,11 +309,25 @@ export const IcoLimpar = (p: P) => (
   </Svg>
 );
 
+/** Teclado — abrir/fechar o teclado tátil */
+export const IcoTeclado = (p: P) => (
+  <Svg {...p}>
+    <rect x="2.4" y="6" width="19.2" height="12" rx="1.8" />
+    <path d="M6 9.4h.01M9.4 9.4h.01M12.8 9.4h.01M16.2 9.4h.01M6 12.8h.01M9.4 12.8h.01M12.8 12.8h.01M16.2 12.8h.01M18.6 9.4h.01M18.6 12.8h.01" />
+    <path d="M7.6 15.6h8.8" />
+  </Svg>
+);
+
 /** Triângulo de aviso — alergénios, avisos do terminal */
 export const IcoAviso = (p: P) => (
   <Svg {...p}>
     <path d="M12 3.6 22 20.4H2Z" /><path d="M12 9.8v4.6" /><circle cx="12" cy="17.4" r="0.6" fill="currentColor" />
   </Svg>
+);
+
+/** Seta para cima — maiúsculas no teclado tátil */
+export const IcoMaiusculas = (p: P) => (
+  <Svg {...p}><path d="M12 20V5.4" strokeWidth={2.4} /><path d="M5.6 11.8 12 5.4l6.4 6.4" strokeWidth={2.4} /></Svg>
 );
 
 /** Seta para trás */

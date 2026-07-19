@@ -3,6 +3,7 @@ import { apiClient as axios } from '../../../api/client';
 import { User, Save, X } from 'lucide-react';
 import ClassicWindow from '../../../components/ui/ClassicWindow';
 import ClassicButton from '../../../components/ui/ClassicButton';
+import { aviso } from '../../../ui/dialogo';
 
 interface Props {
   onComplete: () => void;
@@ -80,7 +81,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
       onComplete();
     } catch (e) {
       console.error(e);
-      alert("Erro ao criar colaborador. Verifique a consola.");
+      aviso("Erro ao criar colaborador. Verifique a consola.");
       setLoading(false);
     }
   };

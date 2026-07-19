@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { platformApi } from '../../api/platform';
 import { apiClient } from '../../api/client';
+import { aviso } from '../../ui/dialogo';
 
 function useCrud(resource: keyof typeof platformApi, params?: any) {
   const qc = useQueryClient();
@@ -213,7 +214,7 @@ export function SysLogsView() {
 function SysInfoView({ title, icon }: { title: string; icon: any }) {
   const qc = useQueryClient();
   const { data: d } = useQuery({ queryKey: ['platform', 'system'], queryFn: () => platformApi.systemInfo() });
-  const clear = useMutation({ mutationFn: () => platformApi.clearCache(), onSuccess: () => { alert('Cache limpa.'); qc.invalidateQueries({ queryKey: ['platform', 'system'] }); } });
+  const clear = useMutation({ mutationFn: () => platformApi.clearCache(), onSuccess: () => { aviso('Cache limpa.'); qc.invalidateQueries({ queryKey: ['platform', 'system'] }); } });
   const Row = ({ k, v }: any) => <div className="flex justify-between border-b border-[#eee] py-1 text-[12px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Estado do sistema em tempo real</div>}>

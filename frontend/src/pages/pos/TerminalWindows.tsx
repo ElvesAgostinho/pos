@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
+import { aviso } from '../../ui/dialogo';
 
 /**
  * As janelas pequenas do PAINEL DA ENGRENAGEM.
@@ -74,8 +75,8 @@ export function HardwareWindow({ outlet, onClose }: { outlet?: number; onClose: 
       title: `Teste de impressão — ${ap.name}`,
       content: `TESTE DE IMPRESSAO\n${ap.name}\n${new Date().toLocaleString('pt-PT')}\n\nSe leu isto, a impressora responde.\n`,
     }),
-    onSuccess: () => alert('Teste enviado para a fila de impressão.'),
-    onError: (e: any) => alert(e?.response?.data?.detail || 'Não foi possível enviar o teste.'),
+    onSuccess: () => aviso('Teste enviado para a fila de impressão.'),
+    onError: (e: any) => aviso(e?.response?.data?.detail || 'Não foi possível enviar o teste.'),
   });
 
   return (

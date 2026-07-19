@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
+import { aviso, pedir } from '../../ui/dialogo';
+import { IcoCadeado } from './Icons';
 
 /**
  * FECHO DE CAIXA DO OPERADOR — contar o dinheiro e prestar contas.
@@ -28,30 +30,30 @@ export default function CashClose({ sessao, onClosed, onClose }: {
   const cego = s && s.expected_cash == null;    // (8005) o servidor decide o que se vê
 
   const movimento = async (tipo: 'SANGRIA' | 'REFORCO') => {
-    const valor = window.prompt(tipo === 'SANGRIA'
+    const valor = await pedir(tipo === 'SANGRIA'
       ? 'SANGRIA — quanto sai da gaveta para o cofre?'
       : 'REFORÇO — quanto entra na gaveta (troco)?');
     if (!valor) return;
-    const motivo = window.prompt('Motivo:') || '';
+    const motivo = await pedir('Motivo:') || '';
     try {
       await apiClient.post(`pos/cash-sessions/${sessao.id}/add_movement/`,
         { movement_type: tipo, amount: valor, reason: motivo });
       await refetch();
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível registar.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível registar.'); }
   };
 
   const fechar = async () => {
-    if (!contado) return alert('Conte o dinheiro e escreva o total.');
+    if (!contado) return aviso('Conte o dinheiro e escreva o total.');
     setBusy(true);
     try {
       const r = await apiClient.post(`pos/cash-sessions/${sessao.id}/close/`,
         { counted_amount: contado, closing_notes: notas });
       const d = r.data;
-      alert(`CAIXA FECHADA\n\nEsperado: ${money(d.expected_amount)} Kz\nContado: ${money(d.counted_amount)} Kz`
-        + `\nDiferença: ${money(d.difference)} Kz${Number(d.difference) !== 0 ? '  ⚠' : '  ✔'}`);
+      aviso(`CAIXA FECHADA\n\nEsperado: ${money(d.expected_amount)} Kz\nContado: ${money(d.counted_amount)} Kz`
+        + `\nDiferença: ${money(d.difference)} Kz${Number(d.difference) !== 0 ? '  (!)' : '  ✔'}`);
       onClosed();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível fechar a caixa.');
+      aviso(e?.response?.data?.detail || 'Não foi possível fechar a caixa.');
       setBusy(false);
     }
   };
@@ -98,7 +100,7 @@ export default function CashClose({ sessao, onClosed, onClose }: {
             placeholder:text-white/30 outline-none" />
         <button onClick={fechar} disabled={busy || !contado}
           className="h-[54px] bg-[#1f7a34] text-white text-[17px] font-bold rounded disabled:opacity-40">
-          {busy ? 'A fechar…' : '🔒 FECHAR A CAIXA'}
+          {busy ? 'A fechar…' : <span className="inline-flex items-center gap-2"><IcoCadeado size={22} />FECHAR A CAIXA</span>}
         </button>
       </div>
     </Window>

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money } from './kit';
+import { pedir } from '../../ui/dialogo';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -255,7 +256,7 @@ export function PosDiagnostics() {
   // suporte (parâmetro 8510). O SMTP configura-se em Parâmetros › E-mail (SMTP).
   const enviarLogs = useMutation({
     mutationFn: () => {
-      const nota = window.prompt('Descreva o problema (vai junto com os logs):') || '';
+      const nota = await pedir('Descreva o problema (vai junto com os logs):') || '';
       return apiClient.post('pos/ops/diagnostics/send-logs/', { note: nota });
     },
     onSuccess: (r: any) => notifyGuide({ title: 'Logs enviados', message: r.data.detail }),

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
+import { IcoVisto, IcoVoltar } from './Icons';
 
 /**
  * ABERTURA DE CAIXA — o segundo passo, e não se salta.
@@ -87,7 +88,7 @@ export default function CashOpen({ setor, operador, onOpened, onBack }: {
           <button onClick={onBack} className="flex-1 h-[64px] bg-[#3a3a3a] text-white text-[18px]">◀ Setor</button>
           <button onClick={() => abrir.mutate()} disabled={abrir.isPending}
             className="flex-1 h-[64px] bg-[#1f7a34] text-white text-[20px] font-bold disabled:bg-[#555]">
-            {abrir.isPending ? 'A abrir…' : '✔ Abrir Caixa'}
+            {abrir.isPending ? 'A abrir…' : <span className="inline-flex items-center gap-2"><IcoVisto size={22} />Abrir Caixa</span>}
           </button>
         </div>
       )}>

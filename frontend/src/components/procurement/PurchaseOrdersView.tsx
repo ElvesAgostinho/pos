@@ -10,6 +10,7 @@ import { useSuppliers } from '../../hooks/useEsm';
 import { useMdItems, useMdUoms } from '../../hooks/useMasterData';
 import { PO_STATUS } from '../../api/procurement';
 import type { PurchaseOrder } from '../../api/procurement';
+import { aviso } from '../../ui/dialogo';
 
 const fmt = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const inputCls = 'flex-1 border border-[#a0a0a0] p-1 focus:outline-none bg-white';
@@ -34,7 +35,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
   const set = (p: Partial<PurchaseOrder>) => setForm((f) => ({ ...f, ...p }));
 
   const save = () => {
-    if (!form.supplier || !form.delivery_warehouse) { alert('Escolha fornecedor e armazém.'); return; }
+    if (!form.supplier || !form.delivery_warehouse) { aviso('Escolha fornecedor e armazém.'); return; }
     createPO.mutate(form, { onSuccess: (r) => setCurrentId(r.id!) });
   };
   const addComponent = () => {

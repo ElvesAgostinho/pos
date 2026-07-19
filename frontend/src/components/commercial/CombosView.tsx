@@ -5,6 +5,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { Layers, Plus, Trash2 } from 'lucide-react';
 import { useCombos, useCreateCombo, useDeleteCombo } from '../../hooks/useCommercial';
 import { useMdItems } from '../../hooks/useMasterData';
+import { aviso } from '../../ui/dialogo';
 
 const emptyLine = () => ({ item: '', quantity: '1' });
 
@@ -20,9 +21,9 @@ export default function CombosView() {
   const setLine = (i: number, k: string, v: string) => setLines(lines.map((l, idx) => idx === i ? { ...l, [k]: v } : l));
   const add = () => {
     const valid = lines.filter((l) => l.item);
-    if (!name || !price || valid.length === 0) { alert('Preencha nome, preço e pelo menos um artigo.'); return; }
+    if (!name || !price || valid.length === 0) { aviso('Preencha nome, preço e pelo menos um artigo.'); return; }
     create.mutate({ name, price: Number(price), is_active: true, items: valid.map((l) => ({ item: Number(l.item), quantity: Number(l.quantity) || 1 })) },
-      { onSuccess: () => { setName(''); setPrice(''); setLines([emptyLine()]); }, onError: (e: any) => alert('Erro: ' + JSON.stringify(e?.response?.data)) });
+      { onSuccess: () => { setName(''); setPrice(''); setLines([emptyLine()]); }, onError: (e: any) => aviso('Erro: ' + JSON.stringify(e?.response?.data)) });
   };
 
   return (

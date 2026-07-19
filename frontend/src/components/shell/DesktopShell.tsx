@@ -16,6 +16,7 @@ import {
   Paperclip, History, ClipboardList, ChevronRight, ChevronDown, Folder, FolderOpen,
   Power, Moon, Sun, Server, ShieldCheck, Monitor, Building2, Database, Wifi, Cpu,
 } from 'lucide-react';
+import { aviso } from '../../ui/dialogo';
 
 // ==========================================================================
 // Enterprise Windows Desktop Shell — menu bar + ribbon + navigation tree +
@@ -191,7 +192,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
       { label: 'Voltar ao Ambiente de Trabalho', act: () => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); } },
       { label: 'Aparência', act: () => onOpen('adm_appearance') },
     ],
-    'Ajuda': [{ label: 'Sobre a Plataforma', act: () => alert('System Mwana Lodge · v1.0') }],
+    'Ajuda': [{ label: 'Sobre a Plataforma', act: () => aviso('System Mwana Lodge · v1.0') }],
   };
 
   const ribbonGroups: { title: string; btns: [any, string, string][] }[] = [
@@ -204,21 +205,21 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   const exportAs = (format: 'pdf' | 'excel' | 'word' | 'csv' | 'json') => {
     setExportOpen(false);
     const table = document.getElementById('erp-active-view')?.querySelector('table');
-    if (!table) { alert('Este ecrã não tem uma tabela para exportar.'); return; }
+    if (!table) { aviso('Este ecrã não tem uma tabela para exportar.'); return; }
     const name = (ITEM_TITLES[activeView] || 'exportacao').replace(/[^\w]+/g, '_');
     exportDomTable(table as HTMLTableElement, format, name, ITEM_TITLES[activeView] || 'Exportação');
   };
   const focusSearch = () => {
     const root = document.getElementById('erp-active-view');
     const inp = root?.querySelector('input[placeholder*="esquis" i], input[placeholder*="rocur" i], input[type="search"], input') as HTMLInputElement | undefined;
-    if (inp) inp.focus(); else alert('Este ecrã não tem campo de pesquisa.');
+    if (inp) inp.focus(); else aviso('Este ecrã não tem campo de pesquisa.');
   };
   // "Novo": foca o 1º campo do formulário do ecrã ativo (barra de inserção).
   const focusNew = () => {
     const root = document.getElementById('erp-active-view');
     const field = root?.querySelector('input:not([type="checkbox"]):not([readonly]), select, textarea') as HTMLElement | undefined;
     if (field) { field.scrollIntoView({ block: 'nearest' }); field.focus(); }
-    else alert('Este ecrã não tem formulário de inserção.');
+    else aviso('Este ecrã não tem formulário de inserção.');
   };
   // "Guardar": aciona o botão principal de gravação/criação do ecrã ativo.
   const clickPrimary = () => {
@@ -227,7 +228,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
     const re = /guardar|adicionar|criar|registar|gravar|reconciliar|agendar|novo|lançar/i;
     const btn = btns.find((b) => re.test(b.innerText || '') && !b.disabled);
     if (btn) btn.click();
-    else alert('Este ecrã não tem ação de gravação no ribbon. Use os botões do próprio ecrã.');
+    else aviso('Este ecrã não tem ação de gravação no ribbon. Use os botões do próprio ecrã.');
   };
   const runRibbon = (a: string) => {
     if (a === 'refresh') { qc.invalidateQueries(); return; }
@@ -254,7 +255,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
           history: 'Consulte o histórico no Reporting Center (por área).',
           audit: 'A auditoria está no Sistema → Logs e no Reporting Center.',
         };
-        alert(`"${labels[a] || a}": ${hint[a] || 'não disponível neste ecrã.'}`);
+        aviso(`"${labels[a] || a}": ${hint[a] || 'não disponível neste ecrã.'}`);
       }
     }, 60);
   };

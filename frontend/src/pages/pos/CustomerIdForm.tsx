@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import TouchKeyboard from './TouchKeyboard';
 import { IcoVisto, IcoCruz, IcoLupa, IcoLimpar } from './Icons';
+import { aviso } from '../../ui/dialogo';
 
 /**
  * DADOS DE IDENTIFICAÇÃO — quem leva a fatura, escrito no terminal.
@@ -54,7 +55,7 @@ export default function CustomerIdForm({ onPick, onClose }: {
   const set = (k: string, v: any) => setD((o: any) => ({ ...o, [k]: v }));
 
   const gravar = async () => {
-    if (!String(d.name || '').trim()) return alert('O NOME é obrigatório para registar a entidade.');
+    if (!String(d.name || '').trim()) return aviso('O NOME é obrigatório para registar a entidade.');
     setBusy(true);
     try {
       const corpo: any = {
@@ -67,7 +68,7 @@ export default function CustomerIdForm({ onPick, onClose }: {
       const r = await apiClient.post('pos/marketing/entities/', corpo);
       onPick(r.data);
     } catch (e: any) {
-      alert(e?.response?.data?.detail
+      aviso(e?.response?.data?.detail
         || Object.entries(e?.response?.data || {}).map(([k, v]) => `${k}: ${v}`).join('\n')
         || 'Não foi possível registar a entidade.');
     } finally { setBusy(false); }

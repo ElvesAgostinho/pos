@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
+import { aviso, confirmar } from '../../ui/dialogo';
+import { IcoAgrupar } from './Icons';
 
 /**
  * AGRUPAR MESAS — o grupo de 12 que junta três mesas de 4.
@@ -41,12 +43,12 @@ export default function GroupTables({ setor, onOpenTicket, onClose }: {
       const r = await apiClient.post('pos/table-groups/', { table_ids: sel });
       inval(); setSel([]);
       if (r.data?.ticket_id) { onClose(); onOpenTicket(r.data.ticket_id); }
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível agrupar.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível agrupar.'); }
   };
   const desagrupar = async (g: any) => {
-    if (!window.confirm(`Desagrupar "${g.name}"? A conta fica na mesa principal.`)) return;
+    if (!await confirmar(`Desagrupar "${g.name}"? A conta fica na mesa principal.`)) return;
     try { await apiClient.post(`pos/table-groups/${g.id}/ungroup/`, {}); inval(); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro.'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro.'); }
   };
 
   return (
@@ -74,7 +76,7 @@ export default function GroupTables({ setor, onOpenTicket, onClose }: {
         </div>
         <button onClick={agrupar} disabled={sel.length < 2}
           className="h-[52px] bg-[#1f7a34] text-white font-bold rounded disabled:opacity-40">
-          ⛓ Agrupar {sel.length >= 2 ? `${sel.length} mesas` : '(escolha 2+)'}
+          <IcoAgrupar size={20} /> Agrupar {sel.length >= 2 ? `${sel.length} mesas` : '(escolha 2+)'}
         </button>
 
         {grupos.filter((g: any) => g.is_active !== false).length > 0 && (

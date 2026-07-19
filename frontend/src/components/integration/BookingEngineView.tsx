@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
 import { Globe, KeyRound, RefreshCw, Link2, Search, Calendar } from 'lucide-react';
+import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const btn = 'px-3 py-1.5 text-[12px] border border-[#c0c0c0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] active:translate-y-px flex items-center gap-1.5';
@@ -19,7 +20,7 @@ export default function BookingEngineView() {
       ? (await apiClient.patch(`pms/booking-settings/${settings.id}/`, f)).data
       : (await apiClient.post('pms/booking-settings/', f)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['booking-settings'] }),
-    onError: (e: any) => alert(JSON.stringify(e?.response?.data)),
+    onError: (e: any) => aviso(JSON.stringify(e?.response?.data)),
   });
   const rotate = useMutation({ mutationFn: async () => (await apiClient.post(`pms/booking-settings/${settings.id}/rotate_key/`, {})).data, onSuccess: () => qc.invalidateQueries({ queryKey: ['booking-settings'] }) });
 
@@ -34,9 +35,9 @@ export default function BookingEngineView() {
   const [ci, setCi] = useState(d1); const [co, setCo] = useState(d2);
   const [avail, setAvail] = useState<any>(null);
   const test = async () => {
-    if (!settings?.api_key) return alert('Guarde a configuração primeiro (gera a chave).');
+    if (!settings?.api_key) return aviso('Guarde a configuração primeiro (gera a chave).');
     try { const r = await apiClient.get('pms/booking/availability/', { params: { key: settings.api_key, check_in: ci, check_out: co, adults: 2 } }); setAvail(r.data); }
-    catch (e: any) { alert(e?.response?.data?.detail || 'Erro'); }
+    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); }
   };
 
   return (

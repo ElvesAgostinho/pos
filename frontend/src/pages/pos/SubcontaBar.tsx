@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
+import { aviso } from '../../ui/dialogo';
 
 /**
  * AS PESSOAS DA MESA — os números de baixo da comanda.
@@ -55,7 +56,7 @@ export default function SubcontaBar({ conta, mesa, outlet, onSwitch }: {
       qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
       onSwitch(r.data.id);
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível acrescentar a pessoa.');
+      aviso(e?.response?.data?.detail || 'Não foi possível acrescentar a pessoa.');
     }
   };
 

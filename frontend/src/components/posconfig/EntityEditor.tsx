@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { inputStyle } from './kit';
+import { aviso, confirmar, pedir } from '../../ui/dialogo';
 
 /**
  * NOVA ENTIDADE — o editor COMPLETO da ficha (clone do HOST), em janela:
@@ -38,7 +39,7 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
   const add = async () => {
     const data: any = {};
     for (const [k, label] of cols) {
-      const v = window.prompt(`${titulo} — ${label}:`);
+      const v = await pedir(`${titulo} — ${label}:`);
       if (v === null) return;
       data[k] = v;
     }
@@ -46,7 +47,7 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
     inval();
   };
   const del = async (r: any) => {
-    if (!window.confirm('Apagar este registo?')) return;
+    if (!await confirmar('Apagar este registo?')) return;
     await apiClient.post(`pos/marketing/entities/${eid}/records/${r.id}/delete/`, {});
     inval();
   };
@@ -111,10 +112,10 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
         : await apiClient.post('pos/marketing/entities/', body);
       setD({ ...d, ...r.data });
       onSaved();
-      alert(`Gravado: ${r.data.name} (${r.data.code})`);
+      aviso(`Gravado: ${r.data.name} (${r.data.code})`);
     } catch (e: any) {
       const x = e?.response?.data;
-      alert(typeof x === 'object' ? Object.entries(x).map(([k, v]) => `${k}: ${v}`).join('\n') : 'Erro ao gravar.');
+      aviso(typeof x === 'object' ? Object.entries(x).map(([k, v]) => `${k}: ${v}`).join('\n') : 'Erro ao gravar.');
     }
   };
 
@@ -308,9 +309,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                 <tbody>{(hist?.invoices || []).map((f: any, i: number) => (
                   <tr key={i} className="border-b border-[#eee]"><td className="px-2 py-1">{f.number}</td><td className="px-2 py-1">{f.date}</td><td className="px-2 py-1">{f.type}</td><td className="px-2 py-1 text-right">{f.total}</td><td className="px-2 py-1">{f.voided ? 'Sim' : ''}</td>
                     <td className="px-2 py-1 flex gap-2">
-                      <button className="text-[#1a4f8a]" onClick={async () => { const r = await apiClient.get(`pos/reports/documents/${f.id}/`); alert(JSON.stringify(r.data, null, 1).slice(0, 1200)); }}>🔍 Pré-visualizar</button>
-                      <button className="text-[#1a4f8a]" onClick={async () => { const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'print' }); alert(r.data.detail); }}>🖨 Imprimir</button>
-                      {!f.voided && <button className="text-[#c0392b]" onClick={async () => { const m = window.prompt('Anular emite NOTA DE CRÉDITO. Motivo:'); if (!m) return; const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'void', reason: m }); alert(r.data.detail); }}>✖ Anular</button>}
+                      <button className="text-[#1a4f8a]" onClick={async () => { const r = await apiClient.get(`pos/reports/documents/${f.id}/`); aviso(JSON.stringify(r.data, null, 1).slice(0, 1200)); }}>🔍 Pré-visualizar</button>
+                      <button className="text-[#1a4f8a]" onClick={async () => { const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'print' }); aviso(r.data.detail); }}>🖨 Imprimir</button>
+                      {!f.voided && <button className="text-[#c0392b]" onClick={async () => { const m = await pedir('Anular emite NOTA DE CRÉDITO. Motivo:'); if (!m) return; const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'void', reason: m }); aviso(r.data.detail); }}>✖ Anular</button>}
                     </td></tr>))}
                   {!(hist?.invoices || []).length && <tr><td colSpan={6} className="text-center text-[#999] py-3">Não foram encontrados dados.</td></tr>}
                 </tbody></table>)}
@@ -344,9 +345,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                 }} disabled={!eid}
                   className="h-9 px-4 text-[13px] font-bold bg-[#3c3c3c] text-white disabled:opacity-40">Portabilidade de Dados</button>
                 <button onClick={async () => {
-                  if (!window.confirm('ATENÇÃO! Remoção IRREVERSÍVEL (RGPD): os dados pessoais apagam-se e o nome vira um código anónimo. Os documentos fiscais mantêm-se, como a AGT exige. Continuar?')) return;
+                  if (!await confirmar('ATENÇÃO! Remoção IRREVERSÍVEL (RGPD): os dados pessoais apagam-se e o nome vira um código anónimo. Os documentos fiscais mantêm-se, como a AGT exige. Continuar?')) return;
                   const r = await apiClient.post(`pos/marketing/entities/${eid}/anonymize/`, {});
-                  alert(r.data.detail); onSaved(); onClose();
+                  aviso(r.data.detail); onSaved(); onClose();
                 }} disabled={!eid}
                   className="h-9 px-4 text-[13px] font-bold bg-[#8a0f0f] text-white disabled:opacity-40">Iniciar Processo de Remoção</button>
               </div>
@@ -422,7 +423,7 @@ function Comissoes({ eid, d, T }: any) {
     setAdd(null); inval();
   };
   const del = async (r: any) => {
-    if (!window.confirm('Apagar esta comissão?')) return;
+    if (!await confirmar('Apagar esta comissão?')) return;
     await apiClient.post(`pos/marketing/entities/${eid}/records/${r.id}/delete/`, {}); inval();
   };
   return (<>
@@ -432,7 +433,7 @@ function Comissoes({ eid, d, T }: any) {
     <div className="border border-[#d0d0d0]">
       <div className="px-2 py-1 bg-[#e9e9e9] text-[12px] font-bold flex justify-between">
         <span>Outras Comissões</span>
-        <button onClick={() => eid ? setAdd({ ativo: true }) : alert('Grave primeiro a ficha.')} className="text-[#1a4f8a]">⊕ Adicionar</button>
+        <button onClick={() => eid ? setAdd({ ativo: true }) : aviso('Grave primeiro a ficha.')} className="text-[#1a4f8a]">⊕ Adicionar</button>
       </div>
       <table className="w-full text-[12px]"><thead><tr className="bg-[#f4f4f4]">
         {['Cód. Comissão', 'De data', 'Até à data', 'Ativo', ''].map((h, i) => <th key={i} className="text-left font-normal px-2 py-1 border-b border-[#d0d0d0]">{h}</th>)}</tr></thead>

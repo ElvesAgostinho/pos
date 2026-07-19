@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
 import PayPanel from './PayPanel';
+import { aviso, pedir } from '../../ui/dialogo';
+import { IcoCadeado, IcoCruz, IcoDinheiro } from './Icons';
 
 /**
  * FECHO DO DIA NO TERMINAL — e o que o impede.
@@ -35,11 +37,11 @@ export default function DayClose({ onClosed, onClose }: {
     try {
       const conta = (await apiClient.get(`pos/tickets/${t.id}/`)).data;
       setACobrar(conta);
-    } catch { alert('Não foi possível abrir a conta.'); }
+    } catch { aviso('Não foi possível abrir a conta.'); }
   };
 
   const anular = async (t: any) => {
-    const motivo = window.prompt(
+    const motivo = await pedir(
       `ANULAR a conta ${t.ticket} (${t.where} · ${money(t.total)} Kz)?\n\n` +
       'A anulação fica na auditoria com o motivo.\n\nMotivo:');
     if (!motivo) return;
@@ -47,17 +49,17 @@ export default function DayClose({ onClosed, onClose }: {
       await apiClient.post(`pos/tickets/${t.id}/void/`, { reason: motivo });
       await refetch();
       qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível anular.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível anular.'); }
   };
 
   const fechar = async () => {
     setBusy(true);
     try {
       const r = await apiClient.post('pos/ops/day-close/', {});
-      alert(r.data?.detail || 'Dia fechado.');
+      aviso(r.data?.detail || 'Dia fechado.');
       onClosed();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível fechar o dia.');
+      aviso(e?.response?.data?.detail || 'Não foi possível fechar o dia.');
       await refetch();
     } finally { setBusy(false); }
   };
@@ -91,9 +93,9 @@ export default function DayClose({ onClosed, onClose }: {
               <span className="text-right font-bold">{money(t.total)}</span>
               <span className="flex gap-1 justify-end">
                 <button onClick={() => cobrar(t)}
-                  className="h-[38px] px-3 bg-[#0f8b8d] text-white text-[13px] font-bold rounded">💰 Cobrar</button>
+                  className="h-[38px] px-3 bg-[#0f8b8d] text-white text-[13px] font-bold rounded"><span className="inline-flex items-center gap-2"><IcoDinheiro size={22} />Cobrar</span></button>
                 <button onClick={() => anular(t)}
-                  className="h-[38px] px-3 bg-[#8a0f0f] text-white text-[13px] font-bold rounded">✕ Anular</button>
+                  className="h-[38px] px-3 bg-[#8a0f0f] text-white text-[13px] font-bold rounded"><span className="inline-flex items-center gap-2"><IcoCruz size={24} />Anular</span></button>
               </span>
             </div>
           ))}
@@ -109,7 +111,7 @@ export default function DayClose({ onClosed, onClose }: {
             disabled:bg-[#3a3a3a] disabled:text-white/30">
           {contas.length > 0
             ? `Resolva as ${contas.length} conta(s) para fechar o dia`
-            : busy ? 'A fechar…' : '🔒 FECHAR O DIA'}
+            : busy ? 'A fechar…' : <span className="inline-flex items-center gap-2"><IcoCadeado size={22} />FECHAR O DIA</span>}
         </button>
       </div>
 

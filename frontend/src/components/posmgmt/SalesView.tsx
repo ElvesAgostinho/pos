@@ -11,6 +11,7 @@ import {
 import type { POSTicket } from '../../api/posmgmt';
 import { apiClient } from '../../api/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { aviso } from '../../ui/dialogo';
 
 const fmt = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 
@@ -32,13 +33,13 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
 
   const doIssue = (type: string) => {
     issue.mutate({ id: ticketId, type }, {
-      onError: (e: any) => alert(e?.response?.data?.detail || 'Erro ao emitir documento.'),
+      onError: (e: any) => aviso(e?.response?.data?.detail || 'Erro ao emitir documento.'),
     });
   };
 
   const doPay = (pm: number) => {
     const amount = payAmount || ticket?.balance_due || '0';
-    pay.mutate({ id: ticketId, pm, amount }, { onSuccess: (r: any) => { if (r.change_returned && Number(r.change_returned) > 0) alert(`Troco: ${fmt(r.change_returned)}`); setPayAmount(''); } });
+    pay.mutate({ id: ticketId, pm, amount }, { onSuccess: (r: any) => { if (r.change_returned && Number(r.change_returned) > 0) aviso(`Troco: ${fmt(r.change_returned)}`); setPayAmount(''); } });
   };
 
   return (
@@ -141,7 +142,7 @@ export default function SalesView() {
 
   const openSessions = sessions.filter((s: any) => s.status === 'OPEN');
   const create = () => {
-    if (!form.outlet || !form.operator_name) { alert('Outlet e operador são obrigatórios.'); return; }
+    if (!form.outlet || !form.operator_name) { aviso('Outlet e operador são obrigatórios.'); return; }
     openTicket.mutate({ ...form, cash_session: form.cash_session || null }, { onSuccess: (t: any) => setTicketId(t.id) });
   };
 
@@ -176,8 +177,8 @@ export default function SalesView() {
                 <button className="text-red-600 hover:underline text-[11px]" title="Anular venda (emite Nota de Crédito)"
                   onClick={async (e) => { e.stopPropagation();
                     if (!confirm(`Anular a venda ${r.ticket_number}? Será emitida a Nota de Crédito do documento fiscal.`)) return;
-                    try { const res = await apiClient.post(`pos/tickets/${r.id}/credit_note/`, { reason: 'Anulação de venda' }); alert(`Venda anulada. NC: ${res.data.credit_note || '(sem doc fiscal)'}`); qc.invalidateQueries({ queryKey: ['pos-tickets'] }); }
-                    catch (err: any) { alert(err?.response?.data?.detail || 'Erro'); } }}>Anular (NC)</button>
+                    try { const res = await apiClient.post(`pos/tickets/${r.id}/credit_note/`, { reason: 'Anulação de venda' }); aviso(`Venda anulada. NC: ${res.data.credit_note || '(sem doc fiscal)'}`); qc.invalidateQueries({ queryKey: ['pos-tickets'] }); }
+                    catch (err: any) { aviso(err?.response?.data?.detail || 'Erro'); } }}>Anular (NC)</button>
               ) : null, width: '10%' },
             ]}
           />

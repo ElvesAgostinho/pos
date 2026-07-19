@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
+import { IcoAviso, IcoLapis } from './Icons';
 
 /**
  * O SINO DA PRODUÇÃO — o lado do EMPREGADO do que se passa na cozinha/bar/pastelaria.
@@ -73,9 +74,9 @@ export function ProductionWindow({ linhas, onClose }: { linhas: any[]; onClose: 
                   <span className="block text-[12px] text-white/50">
                     {l.dest_label || (l.table_label ? `Mesa ${l.table_label}` : 'Balcão')} · {l.operator_name || ''}
                   </span>
-                  {l.note && <span className="block text-[12px] text-[#7fd4ff]">✎ {l.note}</span>}
+                  {l.note && <span className="block text-[12px] text-[#7fd4ff]"><IcoLapis size={12} /> {l.note}</span>}
                   {l.allergens?.length > 0 && (
-                    <span className="block text-[12px] text-[#ff8a80]">⚠ {l.allergens.join(', ')}</span>
+                    <span className="block text-[12px] text-[#ff8a80]"><IcoAviso size={12} /> {l.allergens.join(', ')}</span>
                   )}
                 </span>
                 <span className="text-white/60 text-[13px]">{l.station_label || l.kds_station}</span>
@@ -85,7 +86,7 @@ export function ProductionWindow({ linhas, onClose }: { linhas: any[]; onClose: 
                       : dur(l.fired_at, l.served_at)}
                 </span>
                 <span className={urgente ? 'text-[#ff8a80] font-bold animate-pulse' : 'text-white/60 text-[13px]'}>
-                  {aba === 'READY' ? `${espera} ⚠ ir buscar`
+                  {aba === 'READY' ? `${espera} (!) ir buscar`
                     : l.fired_at ? new Date(l.fired_at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : '—'}
                 </span>
               </div>

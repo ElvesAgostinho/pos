@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
 import EntityPicker from './EntityPicker';
+import { aviso } from '../../ui/dialogo';
+import { IcoCruz, IcoVisto } from './Icons';
 
 /**
  * OS DADOS DO CLIENTE DA CONTA — o formulário muda com o TIPO (parâmetro 8175):
@@ -41,7 +43,7 @@ export default function CustomerForm({ conta, onSaved, onClose }: {
       await apiClient.post(`pos/tickets/${conta.id}/set_customer/`, dados);
       onSaved();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível gravar os dados.');
+      aviso(e?.response?.data?.detail || 'Não foi possível gravar os dados.');
     }
   };
 
@@ -100,9 +102,9 @@ export default function CustomerForm({ conta, onSaved, onClose }: {
         </button>
         <div className="grid grid-cols-2 gap-1 mt-1">
           <button onClick={() => gravar({ customer_name: nome.trim() || null, customer_tax_id: nif.trim() || null })}
-            className="h-[52px] bg-[#1f7a34] text-white font-bold rounded">✔ Gravar</button>
+            className="h-[52px] bg-[#1f7a34] text-white font-bold rounded"><span className="inline-flex items-center gap-2"><IcoVisto size={24} />Gravar</span></button>
           <button onClick={onClose}
-            className="h-[52px] bg-[#3a3a3a] text-white rounded">✖ Fechar</button>
+            className="h-[52px] bg-[#3a3a3a] text-white rounded"><span className="inline-flex items-center gap-2"><IcoCruz size={24} />Fechar</span></button>
         </div>
       </div>
 

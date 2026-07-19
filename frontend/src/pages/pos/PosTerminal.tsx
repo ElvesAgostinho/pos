@@ -27,6 +27,7 @@ import {
   IcoSangria, IcoCadeado, IcoDetalhe, IcoGrafico, IcoCruz, IcoAviso, IcoParciais, IcoDinheiro,
   IcoTransferir, IcoCalendario, IcoAgrupar, IcoEntrega, IcoCombo, IcoQuarto,
 } from './Icons';
+import { aviso } from '../../ui/dialogo';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -53,7 +54,7 @@ const IconeTopo = ({ icon, titulo, act, on = true, aceso = false }: {
   icon: any; titulo: string; act: () => void; on?: boolean; aceso?: boolean;
 }) => (
   <button onClick={() => on && act()} disabled={!on} title={titulo}
-    className={`w-[92px] h-[76px] m-1.5 rounded-[3px] text-white flex items-center justify-center
+    className={`w-[64px] h-[62px] m-1 rounded-[3px] text-white flex items-center justify-center
       border-2 border-black
       shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
       active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
@@ -189,7 +190,7 @@ export default function PosTerminal() {
       setTicket(r.data.id);
       setEtapa('SALES');
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível abrir a venda.');
+      aviso(e?.response?.data?.detail || 'Não foi possível abrir a venda.');
     }
   };
 
@@ -203,14 +204,21 @@ export default function PosTerminal() {
   // Ao FECHAR uma venda de balcão com o 8300 ligado, volta-se... ao balcão: o terminal
   // vive na venda (é o take-away). Uma conta fechada VAZIA anula-se — senão o fecho do
   // dia enchia-se de contas de 0,00 que ninguém vai cobrar.
+  /**
+   * SAIR DA VENDA — e mais nada.
+   *
+   * O ✔ da comanda é "já lancei, volto à sala", não "acabei com esta conta". A conta
+   * FICA ABERTA na mesa: o empregado vai buscar as bebidas, atende outra mesa, e volta
+   * a esta para continuar. Uma conta só desaparece quando é PAGA (e o recibo sai) ou
+   * quando é ANULADA de propósito, com motivo.
+   *
+   * Isto anulava sozinho as contas sem linhas ("conta vazia fechada no balcão"). Parecia
+   * arrumação, mas era perda de trabalho: quem abria a mesa, ia buscar o pedido e voltava
+   * encontrava a mesa livre — e a conta do cliente, com o número de pessoas e o tipo já
+   * escolhidos, tinha desaparecido.
+   */
   const fecharVenda = async (id: number) => {
     setTicket(null);
-    try {
-      const t = (await apiClient.get(`pos/tickets/${id}/`)).data;
-      if (t.status === 'OPEN' && !(t.lines || []).length && !(t.payments || []).length) {
-        await apiClient.post(`pos/tickets/${id}/void/`, { reason: 'Conta vazia fechada no balcão' });
-      }
-    } catch { /* a conta pode já estar paga/anulada */ }
     inval();
     if (cfg?.direct_sale && !cfg?.ask_sector) abrirVendaDireta(1, 'PASSANTE');
     else setEtapa('MAP');
@@ -301,7 +309,7 @@ export default function PosTerminal() {
       });
       fecharMenu();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível abrir a gaveta.');
+      aviso(e?.response?.data?.detail || 'Não foi possível abrir a gaveta.');
     }
   };
 
@@ -310,7 +318,7 @@ export default function PosTerminal() {
       why: 'Sem caixa aberta não há gaveta para abrir.' },
     { label: 'Documentos', icon: <IcoDocumento size={40} />, act: () => abrirJanela('DOCS'), on: true },
     { label: 'Contas Correntes', icon: <IcoLista size={40} />, act: () => abrirJanela('CC'), on: true },
-    { label: 'Mesas Abertas', icon: <IcoMesas size={40} />, act: () => abrirJanela('MESAS'), on: true },
+    { label: 'Mesas Abertas', icon: <IcoMesas size={30} />, act: () => abrirJanela('MESAS'), on: true },
     { label: 'Impressoras', icon: <IcoImpressora size={40} />, act: () => abrirJanela('HARDWARE'), on: true },
     { label: 'Alterar password', icon: <IcoChave size={40} />, act: () => { setTrocarPin(true); fecharMenu(); }, on: true },
     // ATUALIZAR: outro terminal mexeu na mesa e este ainda mostra o antigo.
@@ -337,20 +345,20 @@ export default function PosTerminal() {
   return (
     <div className="h-screen w-screen flex flex-col bg-[#1a1a1a] select-none overflow-hidden">
       {/* ───── barra de cima: as duas vistas (mesas / venda) e a engrenagem ───── */}
-      <div className="h-[92px] bg-black flex items-stretch flex-shrink-0">
-        <div className="w-[210px] flex items-center justify-center">
-          <span className="text-[34px] font-black text-white tracking-tight">
+      <div className="h-[76px] bg-black flex items-stretch flex-shrink-0">
+        <div className="w-[112px] flex items-center justify-center">
+          <span className="text-[26px] font-black text-white tracking-tight">
             ML<span className="text-[#c9a400]">.</span>
           </span>
         </div>
 
         <button onClick={() => setEtapa('MAP')} disabled={!sessao} title="Mapa de mesas"
-          className={`w-[140px] m-1.5 rounded-[3px] flex items-center justify-center border-2 border-black
+          className={`w-[86px] m-1 rounded-[3px] flex items-center justify-center border-2 border-black
             shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
             active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] disabled:opacity-30 disabled:shadow-none
             ${etapa === 'MAP' ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white'
               : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424] text-white/80'}`}>
-          <IcoMesas size={40} />
+          <IcoMesas size={30} />
         </button>
         {/* O ícone da VENDA: com uma conta aberta, mostra-a; SEM conta, abre a VENDA
             DIRETA (a conta de balcão, sem mesa). É assim no original — o balcão não
@@ -359,12 +367,12 @@ export default function PosTerminal() {
           onClick={() => (ticket ? setEtapa('SALES') : vendaDireta())}
           disabled={!setor}
           title={ticket ? 'Voltar à venda' : 'Venda Direta (sem mesa)'}
-          className={`w-[140px] m-1.5 rounded-[3px] flex items-center justify-center border-2 border-black
+          className={`w-[86px] m-1 rounded-[3px] flex items-center justify-center border-2 border-black
             shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
             active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] disabled:opacity-30 disabled:shadow-none
             ${etapa === 'SALES' ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white'
               : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424] text-white/80'}`}>
-          <IcoVenda size={40} />
+          <IcoVenda size={30} />
         </button>
 
         <div className="flex-1" />
@@ -376,12 +384,12 @@ export default function PosTerminal() {
             confiar no ecrã. Quem os executa é o SalesScreen (publica-os para aqui). */}
         {etapa === 'SALES' && topo && (
           <div className="flex items-center">
-            <IconeTopo icon={<IcoLupa size={34} />} titulo="Pesquisar artigos" act={topo.procurar} />
-            <IconeTopo icon={<IcoMaisMenos size={34} />} titulo={topo.temSel
+            <IconeTopo icon={<IcoLupa size={26} />} titulo="Pesquisar artigos" act={topo.procurar} />
+            <IconeTopo icon={<IcoMaisMenos size={26} />} titulo={topo.temSel
               ? 'Alterar a quantidade da linha escolhida'
               : 'Escolha primeiro uma linha da comanda (um toque)'}
               act={topo.quantidade} on={topo.temSel} />
-            <IconeTopo icon={<IcoLapis size={34} />} titulo={topo.temSel
+            <IconeTopo icon={<IcoLapis size={26} />} titulo={topo.temSel
               ? 'Mensagens para a produção'
               : 'Escolha primeiro uma linha da comanda (um toque)'}
               act={topo.mensagens} on={topo.temSel} />
@@ -390,17 +398,17 @@ export default function PosTerminal() {
                 faixa própria dentro da venda a gastar uma linha inteira do teclado. */}
             <button onClick={topo.cliente}
               title="Quem leva a fatura (Entidade · Quarto · Eventos)"
-              className="h-[76px] min-w-[190px] px-4 m-1.5 rounded-[3px] border-2 border-black
+              className="h-[62px] min-w-[150px] px-3 m-1 rounded-[3px] border-2 border-black
                 bg-gradient-to-b from-[#4a4a4a] to-[#242424]
                 shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
                 active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
                 flex flex-col items-center justify-center gap-1 leading-tight">
-              <span className="text-[#f0c000] text-[13px] font-bold max-w-[180px] truncate">
+              <span className="text-[#f0c000] text-[11px] font-bold max-w-[150px] truncate">
                 {topo.onde}
               </span>
               <span className="flex items-center gap-2 text-white">
-                <IcoCliente size={26} />
-                <span className="text-[13px] max-w-[130px] truncate">
+                <IcoCliente size={20} />
+                <span className="text-[11px] max-w-[110px] truncate">
                   {topo.cliente_atual || 'Consumidor Final'}
                 </span>
               </span>
@@ -412,30 +420,30 @@ export default function PosTerminal() {
           {/* O SINO DA PRODUÇÃO: pulsa quando há pratos PRONTOS no passe */}
           <button onClick={() => setVerProducao(true)}
             title="Produção (cozinha/bar/pastelaria) em tempo real"
-            className={`relative w-[80px] h-[76px] m-1.5 rounded-[3px] text-white flex items-center
+            className={`relative w-[64px] h-[62px] m-1 rounded-[3px] text-white flex items-center
               justify-center border-2 border-black
               shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
               ${prontos > 0 ? 'bg-gradient-to-b from-[#2b9c48] to-[#125c26] animate-pulse'
                 : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424]'}`}>
-            <IcoSino size={34} />
+            <IcoSino size={26} />
             {prontos > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[26px] h-[26px] px-1 rounded-full bg-[#c0140f]
                 text-white text-[15px] font-bold flex items-center justify-center border border-black">{prontos}</span>
             )}
           </button>
-          <span className="mr-3 ml-1 text-[15px]">{operador?.name || 'Operador'}</span>
+          <span className="mr-2 ml-1 text-[13px]">{operador?.name || 'Operador'}</span>
           {/* A ENGRENAGEM abre o PAINEL (Conta/Geral/Caixa) por cima do teclado, com a
               comanda à vista. Saltava para o seletor de setor — trocar de setor faz-se
               uma vez ao início do turno, e continua lá dentro, na aba Geral. */}
           <button onClick={() => setMenu((v) => !v)}
             title="Funções do terminal (Conta · Geral · Caixa)"
-            className={`w-[80px] h-[76px] m-1.5 rounded-[3px] text-white flex items-center justify-center
+            className={`w-[64px] h-[62px] m-1 rounded-[3px] text-white flex items-center justify-center
               border-2 border-black
               shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
               active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
               ${menu ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00]'
                 : 'bg-gradient-to-b from-[#4a4a4a] to-[#242424]'}`}>
-            <IcoEngrenagem size={36} />
+            <IcoEngrenagem size={26} />
           </button>
         </div>
       </div>

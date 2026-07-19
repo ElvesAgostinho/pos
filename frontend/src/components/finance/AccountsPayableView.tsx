@@ -5,6 +5,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { Receipt, DollarSign } from 'lucide-react';
 import { payablesApi } from '../../api/payables';
 import { useAccounts } from '../../hooks/useFinance';
+import { aviso, pedir } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toFixed(2);
 const ST: Record<string, string> = { OPEN: 'text-red-600 font-bold', PARTIAL: 'text-[#b06a00] font-bold', PAID: 'text-green-700 font-bold', CANCELLED: 'text-gray-400' };
@@ -20,11 +21,11 @@ export default function AccountsPayableView() {
   });
 
   const doPay = (inv: any) => {
-    if (!accounts.length) { alert('Crie primeiro uma conta de tesouraria (Financeiro → Tesouraria).'); return; }
+    if (!accounts.length) { aviso('Crie primeiro uma conta de tesouraria (Financeiro → Tesouraria).'); return; }
     const acc = accounts[0];
-    const amount = window.prompt(`Pagar fatura ${inv.number} (saldo ${money(inv.balance)}) da conta "${acc.name}". Valor a pagar:`, money(inv.balance));
+    const amount = await pedir(`Pagar fatura ${inv.number} (saldo ${money(inv.balance)}) da conta "${acc.name}". Valor a pagar:`, money(inv.balance));
     if (amount === null) return;
-    pay.mutate({ id: inv.id, account: acc.id, amount }, { onError: (e: any) => alert(e?.response?.data?.detail || 'Erro no pagamento') });
+    pay.mutate({ id: inv.id, account: acc.id, amount }, { onError: (e: any) => aviso(e?.response?.data?.detail || 'Erro no pagamento') });
   };
 
   const totalOpen = invoices.reduce((s: number, i: any) => s + Number(i.balance), 0);

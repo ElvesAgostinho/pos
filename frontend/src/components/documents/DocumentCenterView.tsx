@@ -9,6 +9,7 @@ import {
   BookText, FileType2, FileSpreadsheet, FileJson, FileDown, Server, SlidersHorizontal,
 } from 'lucide-react';
 import { exportPDF, exportExcel, exportWord, exportCSV, exportJSON } from '../../utils/exportData';
+import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => (v == null ? '—' : Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 const CAT_ICON: Record<string, any> = { FATURACAO: FileText, POS: Receipt, PMS: BedDouble, COMPRAS: ShoppingCart, STOCK: Boxes, TESOURARIA: Coins, CONTABILIDADE: BookText };
@@ -136,7 +137,7 @@ export default function DocumentCenterView() {
             <Server size={13} className="text-[#1e3f66]" />
             <span className="text-gray-700">Windows Reporting Services:</span>
             <input value={reportServer} onChange={(e) => setReportServer(e.target.value)} placeholder="http://servidor/ReportServer" className="border border-[#a0a0a0] px-2 py-1 w-72" />
-            <button onClick={() => { localStorage.setItem('report_server_url', reportServer); alert('Servidor de relatórios guardado.'); }} className="px-2 py-1 border border-[#a0a0a0] bg-white hover:bg-[#f0f0f0]">Guardar</button>
+            <button onClick={() => { localStorage.setItem('report_server_url', reportServer); aviso('Servidor de relatórios guardado.'); }} className="px-2 py-1 border border-[#a0a0a0] bg-white hover:bg-[#f0f0f0]">Guardar</button>
             {reportServer && <a href={reportServer} target="_blank" rel="noreferrer" className="text-[#1565c0] hover:underline">abrir servidor →</a>}
             <span className="text-gray-500 ml-1">Descarrega relatórios pesados para o servidor Windows, sem sobrecarregar o sistema.</span>
           </div>

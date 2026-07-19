@@ -6,6 +6,7 @@ import Pagination from '../ui/Pagination';
 import { Warehouse as WhIcon, Plus, Boxes, ArrowDownCircle, ArrowUpCircle, ClipboardCheck, ArrowRightLeft, History } from 'lucide-react';
 import { useWarehouses, useCreateWarehouse, useStockLevels, useMovements, useStockOp } from '../../hooks/useWarehouse';
 import { useMdItems } from '../../hooks/useMasterData';
+import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toFixed(2);
 const qty = (v: any) => Number(v || 0).toFixed(2);
@@ -45,10 +46,10 @@ export function StockLevelsView() {
   const transfer = useStockOp('transfer');
   const [op, setOp] = useState<any>({ item: '', quantity: '', unit_cost: '', counted: '', dest: '' });
 
-  const doReceive = () => { if (!wh || !op.item || !op.quantity) return alert('Armazém, artigo e quantidade.'); receive.mutate({ warehouse: wh, item: Number(op.item), quantity: op.quantity, unit_cost: op.unit_cost || 0 }, { onSuccess: reset }); };
-  const doIssue = () => { if (!wh || !op.item || !op.quantity) return alert('Armazém, artigo e quantidade.'); issue.mutate({ warehouse: wh, item: Number(op.item), quantity: op.quantity }, { onSuccess: reset }); };
-  const doAdjust = () => { if (!wh || !op.item || op.counted === '') return alert('Armazém, artigo e contagem.'); adjust.mutate({ warehouse: wh, item: Number(op.item), counted: op.counted }, { onSuccess: reset }); };
-  const doTransfer = () => { if (!wh || !op.item || !op.quantity || !op.dest) return alert('Origem, destino, artigo e quantidade.'); transfer.mutate({ source: wh, dest: Number(op.dest), item: Number(op.item), quantity: op.quantity }, { onSuccess: reset }); };
+  const doReceive = () => { if (!wh || !op.item || !op.quantity) return aviso('Armazém, artigo e quantidade.'); receive.mutate({ warehouse: wh, item: Number(op.item), quantity: op.quantity, unit_cost: op.unit_cost || 0 }, { onSuccess: reset }); };
+  const doIssue = () => { if (!wh || !op.item || !op.quantity) return aviso('Armazém, artigo e quantidade.'); issue.mutate({ warehouse: wh, item: Number(op.item), quantity: op.quantity }, { onSuccess: reset }); };
+  const doAdjust = () => { if (!wh || !op.item || op.counted === '') return aviso('Armazém, artigo e contagem.'); adjust.mutate({ warehouse: wh, item: Number(op.item), counted: op.counted }, { onSuccess: reset }); };
+  const doTransfer = () => { if (!wh || !op.item || !op.quantity || !op.dest) return aviso('Origem, destino, artigo e quantidade.'); transfer.mutate({ source: wh, dest: Number(op.dest), item: Number(op.item), quantity: op.quantity }, { onSuccess: reset }); };
   const reset = () => setOp({ item: '', quantity: '', unit_cost: '', counted: '', dest: '' });
 
   return (

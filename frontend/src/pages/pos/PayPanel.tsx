@@ -4,12 +4,13 @@ import { apiClient } from '../../api/client';
 import Window from './Window';
 import { comPerguntas } from '../posPrompt';
 import EntityPicker from './EntityPicker';
-import GuestPick from './GuestPick';
+import ClientPicker from './ClientPicker';
 import CustomerIdForm from './CustomerIdForm';
 import NotesDialog from './NotesDialog';
 import {
   IcoCliente, IcoLapis, IcoLimpar, IcoPreco, IcoVisto, IcoCruz, IcoDocumento, IcoLista,
 } from './Icons';
+import { aviso, pedir } from '../../ui/dialogo';
 
 /** Um botão do rodapé do painel de pagamentos — relevo pesado, alvo de dedo. */
 const BotaoPag = ({ children, onClick, titulo, cor = '#ffffff', on = true }: {
@@ -102,8 +103,8 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         ...(entidade ? { customer: entidade.id } : {}),
       });
       setEscolherSerie(false);
-      alert(`Documento emitido: ${r.data.invoice_no}`);
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Erro ao faturar.'); }
+      aviso(`Documento emitido: ${r.data.invoice_no}`);
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao faturar.'); }
   };
 
   // OBSERVAÇÕES na conta — ficam gravadas no servidor, não só no ecrã.
@@ -112,7 +113,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
     try {
       await apiClient.patch(`pos/tickets/${ticket.id}/`, { payment_notes: texto || null });
       setConta({ ...conta, payment_notes: texto });
-    } catch (e: any) { alert(e?.response?.data?.detail || 'Não foi possível gravar as observações.'); }
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível gravar as observações.'); }
   };
 
   const cobrar = async (m: any, extra: any = {}) => {
@@ -128,12 +129,12 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         ...(entidade ? { customer: entidade.id } : {}),
         ...(modoCartao ? { card_mode: modoCartao } : {}),
         ...extra,
-      }, async (label, detalhe) => window.prompt(`${detalhe}\n\n${label}:`));
+      }, async (label, detalhe) => await pedir(`${detalhe}\n\n${label}:`));
 
-      if (r?.pickup_alert) alert(r.pickup_alert);
-      if (r?.print_counter_value) alert(`Contravalor: ${r.print_counter_value}`);
+      if (r?.pickup_alert) aviso(r.pickup_alert);
+      if (r?.print_counter_value) aviso(`Contravalor: ${r.print_counter_value}`);
       if (r?.change_returned && Number(r.change_returned) > 0) {
-        alert(`TROCO: ${money(r.change_returned)} Kz`);
+        aviso(`TROCO: ${money(r.change_returned)} Kz`);
       }
 
       const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
@@ -142,7 +143,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
       setModoCartao('');
       if (Number(tk.balance_due ?? 0) <= 0) onPaid();
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível cobrar.');
+      aviso(e?.response?.data?.detail || 'Não foi possível cobrar.');
     } finally { setBusy(false); }
   };
 
@@ -285,15 +286,15 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
           <BotaoPag onClick={async () => {
             // GIFT CARD: o saldo do cartão abate à conta (motor redeem_gift — o saldo
             // vive no servidor; aqui só se lê o código).
-            const codigo = window.prompt('GIFT CARD — leia ou escreva o código:');
+            const codigo = await pedir('GIFT CARD — leia ou escreva o código:');
             if (!codigo) return;
             try {
               await apiClient.post(`pos/tickets/${ticket.id}/redeem_gift/`, { code: codigo.trim() });
               const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
               setConta(tk);
               if (Number(tk.balance_due ?? 0) <= 0) onPaid();
-              else alert(`Gift aplicado. Falta: ${money(tk.balance_due)} Kz`);
-            } catch (e: any) { alert(e?.response?.data?.detail || 'Gift card inválido.'); }
+              else aviso(`Gift aplicado. Falta: ${money(tk.balance_due)} Kz`);
+            } catch (e: any) { aviso(e?.response?.data?.detail || 'Gift card inválido.'); }
           }} titulo="Gift card / voucher">
             <IcoPreco size={30} />
           </BotaoPag>
@@ -379,7 +380,7 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
 
       {/* Conta Quarto: o quarto vem da lista do PMS, com um toque */}
       {pedirQuarto && (
-        <GuestPick titulo="Lançar no quarto de…"
+        <ClientPicker titulo="Lançar no quarto de…" soAba="QUARTO" podeSaltar={false}
           onPick={(g) => { const m = pedirQuarto; setPedirQuarto(null); cobrar(m, { room: g.room }); }}
           onClose={() => setPedirQuarto(null)} />
       )}

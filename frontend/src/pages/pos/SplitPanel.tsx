@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import PayPanel from './PayPanel';
+import { aviso } from '../../ui/dialogo';
+import { IcoDinheiro, IcoImpressora, IcoParciais, IcoVisto } from './Icons';
 
 /**
  * FUNÇÕES PARCIAIS — dividir a conta.
@@ -48,7 +50,7 @@ export default function SplitPanel({ ticket, onClose }: { ticket: any; onClose: 
     if (!de) return;
     const linhas = (de.lines || []).filter((l: any) =>
       tudo ? true : seleccao.includes(l.id));
-    if (!linhas.length) return alert('Escolha os artigos a passar.');
+    if (!linhas.length) return aviso('Escolha os artigos a passar.');
 
     const corpo = {
       lines: linhas.map((l: any) => ({
@@ -64,7 +66,7 @@ export default function SplitPanel({ ticket, onClose }: { ticket: any; onClose: 
       const r = await apiClient.post(url, corpo);
       await refrescar(paraDireita ? r.data.target.id : undefined);
     } catch (e: any) {
-      alert(e?.response?.data?.detail || 'Não foi possível dividir a conta.');
+      aviso(e?.response?.data?.detail || 'Não foi possível dividir a conta.');
     }
   };
 
@@ -137,21 +139,21 @@ export default function SplitPanel({ ticket, onClose }: { ticket: any; onClose: 
         {/* ações */}
         <div className="grid grid-cols-4 gap-1 p-1 bg-black">
           <button onClick={onClose}
-            className="h-[70px] bg-[#1f1f1f] text-[#2ecc40] text-[30px]" title="Terminar">✔</button>
+            className="h-[70px] bg-[#1f1f1f] text-[#2ecc40] text-[30px]" title="Terminar"><IcoVisto size={24} /></button>
           <button onClick={() => mover(true, false)}
-            className="h-[70px] bg-[#1f1f1f] text-white text-[26px]" title="Dividir">⑂</button>
+            className="h-[70px] bg-[#1f1f1f] text-white text-[26px]" title="Dividir"><IcoParciais size={22} /></button>
           <button onClick={() => sub && setAPagar(sub)} disabled={!sub || !sub.lines?.length}
             className="h-[70px] bg-[#1f1f1f] text-[#f0c000] text-[28px] disabled:opacity-30"
-            title="Cobrar a subconta">💰</button>
+            title="Cobrar a subconta"><IcoDinheiro size={22} /></button>
           <button onClick={async () => {
             if (!sub) return;
             try {
               await apiClient.post(`pos/tickets/${sub.id}/fire_kitchen/`, {});
-              alert('Comanda enviada.');
-            } catch { alert('Erro ao imprimir.'); }
+              aviso('Comanda enviada.');
+            } catch { aviso('Erro ao imprimir.'); }
           }} disabled={!sub}
             className="h-[70px] bg-[#1f1f1f] text-white text-[26px] disabled:opacity-30"
-            title="Imprimir a subconta">🖨</button>
+            title="Imprimir a subconta"><IcoImpressora size={22} /></button>
         </div>
       </div>
 

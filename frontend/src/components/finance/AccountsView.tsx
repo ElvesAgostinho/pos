@@ -4,6 +4,7 @@ import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 import { Landmark, Plus } from 'lucide-react';
 import { useAccounts, useCreateAccount } from '../../hooks/useFinance';
+import { aviso } from '../../ui/dialogo';
 
 export default function AccountsView() {
   const { data: accounts = [] } = useAccounts();
@@ -12,7 +13,7 @@ export default function AccountsView() {
   const [draft, setDraft] = useState<any>(empty);
 
   const add = () => {
-    if (!draft.code || !draft.name) { alert('Preencha código e nome.'); return; }
+    if (!draft.code || !draft.name) { aviso('Preencha código e nome.'); return; }
     create.mutate({ ...draft, opening_balance: draft.opening_balance || 0 }, { onSuccess: () => setDraft(empty) });
   };
 

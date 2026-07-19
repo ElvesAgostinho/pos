@@ -5,6 +5,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { Tags, Plus, Trash2, ListPlus } from 'lucide-react';
 import { usePriceLists, useCreatePriceList, useDeletePriceList, useSetPrice, useRemovePriceItem } from '../../hooks/usePriceLists';
 import { useMdItems } from '../../hooks/useMasterData';
+import { aviso } from '../../ui/dialogo';
 
 export default function PriceListsView() {
   const { data: lists = [] } = usePriceLists();
@@ -20,7 +21,7 @@ export default function PriceListsView() {
   const active = lists.find((l: any) => l.id === sel) || lists[0];
   const addList = () => { if (!draft.code || !draft.name) return; create.mutate(draft, { onSuccess: () => setDraft({ code: '', name: '', currency: 'AOA' }) }); };
   const addPrice = () => {
-    if (!active || !line.item || !line.price) { alert('Escolha artigo e preço.'); return; }
+    if (!active || !line.item || !line.price) { aviso('Escolha artigo e preço.'); return; }
     setPrice.mutate({ id: active.id as number, item: Number(line.item), price: line.price }, { onSuccess: () => setLine({ item: '', price: '' }) });
   };
 
