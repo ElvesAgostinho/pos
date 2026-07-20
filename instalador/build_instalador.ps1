@@ -38,6 +38,25 @@ do {
   elseif ([string]::IsNullOrWhiteSpace($senha1)) { Write-Warning 'A senha não pode ficar vazia.' }
 } while ($senha1 -ne $senha2 -or [string]::IsNullOrWhiteSpace($senha1))
 
+# O ENDEREÇO DO PCC — o MESMO para todos os clientes (é a sua VPS). Sem isto,
+# "Sincronizar com o PCC" no cliente aponta sempre para o próprio servidor dele.
+# Só se pergunta da primeira vez; fica guardado (fora do git) para os próximos builds.
+$PccUrlFile = Join-Path $PSScriptRoot 'pcc_url.txt'
+if (Test-Path $PccUrlFile) {
+  $PccUrl = (Get-Content $PccUrlFile -Raw).Trim()
+  Write-Host "Endereço do PCC (guardado): $PccUrl — Enter para manter, ou escreva um novo:"
+  $novo = Read-Host 'PCC_URL'
+  if (-not [string]::IsNullOrWhiteSpace($novo)) { $PccUrl = $novo.Trim() }
+} else {
+  Write-Host 'Ainda não tem o endereço do PCC guardado (ex.: https://pcc.mwanalodge.ao).'
+  $PccUrl = (Read-Host 'PCC_URL').Trim()
+}
+if ([string]::IsNullOrWhiteSpace($PccUrl)) {
+  Write-Warning 'Sem PCC_URL, este cliente nunca vai conseguir sincronizar (licença, AGT). Continuando mesmo assim.'
+} else {
+  Set-Content -Path $PccUrlFile -Value $PccUrl -Encoding UTF8 -NoNewline
+}
+
 Write-Host "== 2/6 Frontend (vite build) =="
 Push-Location (Join-Path $Raiz 'frontend')
 npm run build
@@ -56,6 +75,8 @@ robocopy (Join-Path $Raiz 'backend') "$Pacote\app" /E /NFL /NDL /NJH /NJS `
 Copy-Item (Join-Path $Raiz 'frontend\dist') "$Pacote\app\webapp" -Recurse
 # o configurador viaja na raiz do pacote
 Copy-Item (Join-Path $PSScriptRoot 'configurar.py') $Pacote
+# o endereço do PCC viaja ao lado — configurar.py lê-o dali e escreve-o no .env
+if (Test-Path $PccUrlFile) { Copy-Item $PccUrlFile $Pacote }
 
 Write-Host "== 4/6 Python embutido + dependências =="
 $PyZip = Join-Path $env:TEMP "python-$PyVer-embed-amd64.zip"

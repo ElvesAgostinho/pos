@@ -56,3 +56,4 @@ servidor.log
 backend/webapp/
 instalador/pacote/
 instalador/Output/
+instalador/pcc_url.txt

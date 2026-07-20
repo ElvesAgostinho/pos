@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
@@ -98,8 +98,8 @@ export default function Parameters({ group }: { group?: string } = {}) {
           </thead>
           <tbody>
             {shown.map((g: any) => (
-              <>
-                <tr key={g.group} className="bg-[#e9e9e9]">
+              <Fragment key={g.group}>
+                <tr className="bg-[#e9e9e9]">
                   <td colSpan={2} className="px-3 py-1.5 font-bold text-[#333] border-y border-[#d0d0d0]">{g.group}</td>
                 </tr>
                 {g.params.map((p: any) => {
@@ -127,7 +127,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
                     </tr>
                   );
                 })}
-              </>
+              </Fragment>
             ))}
             {shown.length === 0 && (
               <tr><td colSpan={2} className="text-center text-[#999] py-10">Nenhum parâmetro corresponde à pesquisa.</td></tr>

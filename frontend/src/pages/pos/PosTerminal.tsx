@@ -110,6 +110,11 @@ export default function PosTerminal() {
         params: op?.operator_id ? { operator: op.operator_id } : undefined,
       })).data;
     },
+    // O terminal fica ABERTO O DIA TODO no mesmo ecrã — sem isto, um parâmetro
+    // mudado no backoffice (ex.: desligar o teclado automático) só chegava aqui
+    // se alguém recarregasse a página. 60s: perto do TTL da cache de parâmetros
+    // no servidor (30s), sem martelar o bootstrap a cada poucos segundos.
+    refetchInterval: 60000,
   });
   const cfg = boot?.terminal;
 

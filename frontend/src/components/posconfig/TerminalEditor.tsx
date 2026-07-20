@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
@@ -119,8 +119,8 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
             <table className="w-full text-[12px] border-collapse">
               <tbody>
                 {shown.map((g: any) => (
-                  <>
-                    <tr key={g.group} className="bg-[#e9e9e9]">
+                  <Fragment key={g.group}>
+                    <tr className="bg-[#e9e9e9]">
                       <td colSpan={2} className="px-2 py-1.5 border border-[#d5d5d5] font-bold">{g.group}</td>
                     </tr>
                     {g.params.map((p: any) => {
@@ -147,7 +147,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                         </tr>
                       );
                     })}
-                  </>
+                  </Fragment>
                 ))}
                 {shown.length === 0 && (
                   <tr><td colSpan={2} className="text-center text-[#999] py-8">Nenhum parâmetro corresponde à pesquisa.</td></tr>

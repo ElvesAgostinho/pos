@@ -234,7 +234,7 @@ export function PosSaft() {
 }
 
 // ─────────────────────────────────────────────────────────── Diagnóstico
-export async function PosDiagnostics() {
+export function PosDiagnostics() {
   const { data: d } = useQuery({
     queryKey: ['posops', 'diag'],
     queryFn: async () => (await apiClient.get('pos/ops/diagnostics/')).data,
@@ -253,7 +253,7 @@ export async function PosDiagnostics() {
 
   // ENVIAR OS LOGS AO SUPORTE — o cliente pede assistência com um botão: o retrato
   // do sistema (alertas + auditoria + acessos) segue por e-mail para a empresa de
-  // suporte (parâmetro 8510). O SMTP configura-se em Parâmetros › E-mail (SMTP).
+  // suporte (parâmetro 9510). O SMTP configura-se em Parâmetros › E-mail (SMTP).
   const enviarLogs = useMutation({
     mutationFn: async () => {
       const nota = await pedir('Descreva o problema (vai junto com os logs):') || '';
@@ -288,7 +288,7 @@ export async function PosDiagnostics() {
           atualiza sozinho · {new Date(d.server_time).toLocaleTimeString('pt-PT')}
         </span>
         <button onClick={() => enviarLogs.mutate()} disabled={enviarLogs.isPending}
-          title="Envia o retrato do sistema para a empresa de suporte (parâmetro 8510)"
+          title="Envia o retrato do sistema para a empresa de suporte (parâmetro 9510)"
           className="ml-4 px-3 py-1 text-[12px] font-semibold bg-[#1e3f66] text-white
             disabled:opacity-50">
           {enviarLogs.isPending ? 'A enviar…' : 'Enviar logs ao suporte'}

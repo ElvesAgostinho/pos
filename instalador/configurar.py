@@ -64,6 +64,17 @@ def escrever_env(bd):
         # SQLite na pasta de DADOS (não na de programa): o Program Files é só
         # binários; a base com as vendas vive onde os backups a encontram.
         linhas += [f'SQLITE_PATH={DADOS / "mwanalodge.sqlite3"}']
+
+    # O ENDEREÇO DO PCC — sem isto, "Sincronizar com o PCC" no cliente aponta
+    # sempre para 127.0.0.1:8000 (o PRÓPRIO servidor do cliente, nunca o do
+    # fornecedor). O build_instalador.ps1 grava-o em pcc_url.txt na raiz do
+    # pacote — é o MESMO endereço para todos os clientes (é a VPS do fornecedor).
+    pcc_url_file = RAIZ / 'pcc_url.txt'
+    if pcc_url_file.exists():
+        pcc_url = pcc_url_file.read_text(encoding='utf-8').strip()
+        if pcc_url:
+            linhas += [f'PCC_URL={pcc_url}']
+
     env.write_text('\n'.join(linhas) + '\n', encoding='utf-8')
     return 'criado'
 
