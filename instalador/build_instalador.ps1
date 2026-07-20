@@ -4,6 +4,8 @@
 #   .\build_instalador.ps1
 #
 # Faz por ordem o que faria à mão:
+#   0. pergunta a SENHA DE INSTALAÇÃO (como a Oracle/Primavera) — quem abre o
+#      setup.exe no cliente tem de a saber; sem ela, o Windows nem deixa extrair.
 #   1. compila o frontend (vite build) e mete-o DENTRO do backend (webapp\)
 #   2. copia o backend para o pacote (sem lixo: sem db de dev, sem .env, sem chaves)
 #   3. monta um Python EMBUTIDO com as dependências já instaladas — o cliente
@@ -19,13 +21,29 @@ $Pacote  = Join-Path $PSScriptRoot 'pacote'
 $PyVer   = '3.12.8'
 $WinSWUrl = 'https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe'
 
-Write-Host "== 1/5 Frontend (vite build) =="
+function Ler-SenhaPlana([string]$Prompt) {
+  $segura = Read-Host -Prompt $Prompt -AsSecureString
+  $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($segura)
+  try { [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) }
+  finally { [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+}
+
+Write-Host "== 1/6 Senha de instalação =="
+Write-Host "Esta é a senha que o TÉCNICO tem de saber para instalar no cliente — nunca fica gravada no código."
+do {
+  $senha1 = Ler-SenhaPlana 'Senha de instalação'
+  $senha2 = Ler-SenhaPlana 'Repita a senha'
+  if ($senha1 -ne $senha2) { Write-Warning 'As duas senhas não coincidem — tente outra vez.' }
+  elseif ([string]::IsNullOrWhiteSpace($senha1)) { Write-Warning 'A senha não pode ficar vazia.' }
+} while ($senha1 -ne $senha2 -or [string]::IsNullOrWhiteSpace($senha1))
+
+Write-Host "== 2/6 Frontend (vite build) =="
 Push-Location (Join-Path $Raiz 'frontend')
 npm run build
 if ($LASTEXITCODE -ne 0) { throw 'vite build falhou' }
 Pop-Location
 
-Write-Host "== 2/5 Pacote: backend limpo + webapp =="
+Write-Host "== 3/6 Pacote: backend limpo + webapp =="
 if (Test-Path $Pacote) { Remove-Item $Pacote -Recurse -Force }
 New-Item -ItemType Directory -Force "$Pacote\app" | Out-Null
 # robocopy: copia o backend SEM o que nunca pode sair desta máquina —
@@ -38,7 +56,7 @@ Copy-Item (Join-Path $Raiz 'frontend\dist') "$Pacote\app\webapp" -Recurse
 # o configurador viaja na raiz do pacote
 Copy-Item (Join-Path $PSScriptRoot 'configurar.py') $Pacote
 
-Write-Host "== 3/5 Python embutido + dependências =="
+Write-Host "== 4/6 Python embutido + dependências =="
 $PyZip = Join-Path $env:TEMP "python-$PyVer-embed-amd64.zip"
 if (-not (Test-Path $PyZip)) {
   Invoke-WebRequest "https://www.python.org/ftp/python/$PyVer/python-$PyVer-embed-amd64.zip" -OutFile $PyZip
@@ -52,7 +70,7 @@ Invoke-WebRequest 'https://bootstrap.pypa.io/get-pip.py' -OutFile "$Pacote\pytho
 & "$Pacote\python\python.exe" -m pip install --no-warn-script-location -r (Join-Path $Raiz 'backend\requirements.txt')
 if ($LASTEXITCODE -ne 0) { throw 'pip install falhou' }
 
-Write-Host "== 4/5 Serviços (WinSW) =="
+Write-Host "== 5/6 Serviços (WinSW) =="
 New-Item -ItemType Directory -Force "$Pacote\servicos" | Out-Null
 $WinSW = Join-Path $env:TEMP 'WinSW-x64.exe'
 if (-not (Test-Path $WinSW)) { Invoke-WebRequest $WinSWUrl -OutFile $WinSW }
@@ -61,14 +79,19 @@ Copy-Item $WinSW "$Pacote\servicos\impressao.exe"
 Copy-Item "$PSScriptRoot\servicos\servidor.xml"  "$Pacote\servicos\"
 Copy-Item "$PSScriptRoot\servicos\impressao.xml" "$Pacote\servicos\"
 
-Write-Host "== 5/5 Inno Setup =="
+Write-Host "== 6/6 Inno Setup =="
 $iscc = @('C:\Program Files (x86)\Inno Setup 6\ISCC.exe', 'C:\Program Files\Inno Setup 6\ISCC.exe') |
         Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $iscc) {
   Write-Warning 'Inno Setup 6 não está instalado (https://jrsoftware.org/isdl.php).'
   Write-Warning "O pacote ficou pronto em $Pacote — depois de instalar o Inno, corra:"
-  Write-Warning "  ISCC.exe `"$PSScriptRoot\setup.iss`""
+  Write-Warning "  ISCC.exe /DInstallPassword=A-SUA-SENHA `"$PSScriptRoot\setup.iss`""
   exit 0
 }
-& $iscc (Join-Path $PSScriptRoot 'setup.iss')
+# A senha só existe em memória, passada ao compilador por argumento — nunca é
+# escrita num ficheiro do projeto nem entra no histórico do git.
+& $iscc "/DInstallPassword=$senha1" (Join-Path $PSScriptRoot 'setup.iss')
+$senha1 = $null; $senha2 = $null
+if ($LASTEXITCODE -ne 0) { throw 'Inno Setup falhou a compilar o instalador.' }
 Write-Host "`nFEITO: instalador em $PSScriptRoot\Output\MwanaLodge-Setup-*.exe"
+Write-Host "Entregue a senha de instalação ao técnico por um canal separado do .exe (nunca por e-mail junto)."

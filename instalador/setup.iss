@@ -16,6 +16,16 @@
 #define AppEditor    "Mwana Lodge"
 #define AppURL       "http://localhost:8000"
 
+; SENHA DE INSTALAÇÃO — como a Oracle e a Primavera: quem abre o setup.exe tem de a saber
+; ANTES de ver sequer o "Seguinte". Não é a password do dono do sistema (essa define-se
+; depois, no onboarding) — é a chave do TÉCNICO que instala, para o .exe não poder ser
+; corrido por quem o apanhar por aí. O build_instalador.ps1 PERGUNTA esta senha a cada
+; build e passa-a por /DInstallPassword — nunca fica escrita aqui a sério. Este valor só
+; existe para o ficheiro compilar sozinho se alguém correr o ISCC à mão sem passar por lá.
+#ifndef InstallPassword
+  #define InstallPassword "TROCAR-NO-BUILD"
+#endif
+
 [Setup]
 AppId={{7E1D2C4A-ML26-4B8F-9C11-MWANALODGE01}
 AppName={#AppNome}
@@ -32,6 +42,10 @@ WizardStyle=modern
 ; o wizard fala português
 ShowLanguageDialog=no
 DisableProgramGroupPage=yes
+; A SENHA: o Windows pede-a antes de extrair um único ficheiro — Encryption=yes cifra o
+; próprio pacote, não é só uma caixa de texto decorativa à frente dos ficheiros.
+Password={#InstallPassword}
+Encryption=yes
 
 [Languages]
 Name: "pt"; MessagesFile: "compiler:Languages\Portuguese.isl"
