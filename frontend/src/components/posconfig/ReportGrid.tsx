@@ -73,7 +73,15 @@ function bate(valor: any, c: Cond) {
   }
 }
 
-export default function ReportGrid({ d, onView }: { d: any; onView?: (r: any[], c: any[]) => void }) {
+export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageInfo }: {
+  d: any; onView?: (r: any[], c: any[]) => void;
+  /** PAGINAÇÃO — como o visualizador de referência: a tela mostra uma página de
+   * cada vez (senão um registo de auditoria com 5000 linhas derrete o browser),
+   * mas Imprimir/Exportar levam SEMPRE tudo o que passou no filtro — paginar é
+   * só uma forma de olhar, nunca corta o que sai do relatório. */
+  page?: number; pageSize?: number;
+  onPageInfo?: (info: { page: number; totalPages: number; totalRows: number }) => void;
+}) {
   const cols: any[] = d.columns;
   const [rapido, setRapido] = useState<Record<string, string>>({});   // filtro por coluna
   const [conds, setConds] = useState<Cond[]>([]);                     // filtros avançados
@@ -122,12 +130,18 @@ export default function ReportGrid({ d, onView }: { d: any; onView?: (r: any[], 
     return out;
   }, [d.rows, rapido, conds, modo, ordem, cols]);
 
-  const vista = limite ? linhas.slice(0, limite) : linhas;
+  // Imprimir e exportar levam TUDO o que passou no filtro (com o limite manual, se
+  // houver) — nunca só a página que está à vista. Exportar 40 linhas de um relatório
+  // com 2000 é a origem de metade dos mal-entendidos com relatórios.
+  const capadas = limite ? linhas.slice(0, limite) : linhas;
+  useEffect(() => { onView?.(capadas, visiveis); }, [capadas, ocultas]);
 
-  // Imprimir e exportar levam o que está NO ECRÃ — com os filtros aplicados e sem as
-  // colunas escondidas. Exportar tudo quando se vê metade é a origem de metade dos
-  // mal-entendidos com relatórios.
-  useEffect(() => { onView?.(vista, visiveis); }, [vista, ocultas]);
+  const totalPaginas = Math.max(1, Math.ceil(capadas.length / pageSize));
+  const paginaAtual = Math.min(Math.max(1, page), totalPaginas);
+  const vista = capadas.slice((paginaAtual - 1) * pageSize, paginaAtual * pageSize);
+  useEffect(() => {
+    onPageInfo?.({ page: paginaAtual, totalPages: totalPaginas, totalRows: capadas.length });
+  }, [paginaAtual, totalPaginas, capadas.length]);
 
   // Os totais são os das linhas FILTRADAS — o rodapé tem de falar do que está no ecrã.
   const totais = useMemo(() => {
@@ -166,9 +180,9 @@ export default function ReportGrid({ d, onView }: { d: any; onView?: (r: any[], 
         )}
         <span className="ml-auto text-[#666]">
           {filtrado
-            ? <><b className="text-[#1a4f8a]">{linhas.length}</b> de {d.rows.length} linha(s)</>
+            ? <><b className="text-[#1a4f8a]">{capadas.length}</b> de {d.rows.length} linha(s)</>
             : <>{d.rows.length} linha(s)</>}
-          {limite ? ` · a mostrar ${vista.length}` : ''}
+          {totalPaginas > 1 ? ` · página ${paginaAtual} de ${totalPaginas} (${vista.length} nesta página)` : ''}
         </span>
       </div>
 

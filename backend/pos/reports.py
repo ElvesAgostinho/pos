@@ -1221,11 +1221,19 @@ def _columns_of(rep):
         return []
 
 
+P_DETALHE = {'key': 'detailed', 'label': 'Incluir detalhes?', 'type': 'bool_sn', 'required': True}
+
+
 def catalog():
-    """As pastas e os relatórios (sem as funções — isso não vai para o browser)."""
+    """As pastas e os relatórios (sem as funções — isso não vai para o browser).
+
+    "Incluir detalhes?" é OBRIGATÓRIO em todos — acrescenta-se aqui, uma vez só,
+    em vez de em cada uma das entradas do CATÁLOGO: um relatório novo já nasce
+    com a pergunta, sem ninguém se lembrar de a escrever.
+    """
     return [{
         'code': f['code'], 'name': f['name'], 'count': len(f['reports']),
-        'reports': [{'code': r['code'], 'name': r['name'], 'params': r['params'],
+        'reports': [{'code': r['code'], 'name': r['name'], 'params': [*r['params'], P_DETALHE],
                      'columns': _columns_of(r)}
                     for r in f['reports']],
     } for f in CATALOG]
@@ -1420,6 +1428,25 @@ def apply_advanced(dados, adv):
     return dados
 
 
+def apply_detail(dados, detailed):
+    """INCLUIR DETALHES? — Sim mostra cada linha; Não mostra só o total.
+
+    É a mesma pergunta que qualquer sistema de referência faz antes de abrir um
+    relatório: quem só quer saber "quanto foi ao todo" não precisa de abrir a
+    lista inteira. Genérico de propósito — corre em cima do que QUALQUER relatório
+    já devolve (colunas + linhas + totais), sem precisar de código por relatório.
+    """
+    if detailed in ('S', 'Sim', True, 'true', '1', 1):
+        return dados
+    mcols = [c for c in dados['columns'] if len(c) > 2 and c[2] == 'money']
+    totais = dados.get('totals') or {}
+    cols = [('n', 'Registos')] + [(c[0], c[1], 'money') for c in mcols]
+    linha = {'n': len(dados['rows'])}
+    for c in mcols:
+        linha[c[0]] = totais.get(c[0], '0')
+    return {**dados, 'columns': cols, 'rows': [linha], 'totals': {c[0]: linha[c[0]] for c in mcols}}
+
+
 FILTER_META = {
     'weekdays': [{'value': i, 'label': d} for i, d in enumerate(_DIAS)],
     'group_by': [
@@ -1481,6 +1508,7 @@ def run(code, params):
             params['from'], params['to'] = i, f
 
     dados = rep['fn'](params)
+    dados = apply_detail(dados, params.get('detailed'))
     dados = apply_advanced(dados, params.get('advanced'))
 
     # COMPARAÇÃO — o mesmo relatório no período anterior (ou no ano passado).

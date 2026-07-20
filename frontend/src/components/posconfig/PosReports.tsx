@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
+import { aviso } from '../../ui/dialogo';
 import { Toolbar, inputStyle, money } from './kit';
 import ReportGrid from './ReportGrid';
-import ReportFilters, { type Adv } from './ReportFilters';
 
 const hoje = () => new Date().toISOString().slice(0, 10);
 const haUmMes = () => new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+const PAGE_SIZE = 40;
 
 /**
  * RELATÓRIOS — por pastas, como o sistema de referência.
@@ -16,17 +17,56 @@ const haUmMes = () => new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 1
  * Um sistema com 40 relatórios numa lista é um sistema onde ninguém encontra nada.
  * As pastas são as do NEGÓCIO (Facturação, Receitas, Caixa, F&B, Eventos), não as da
  * base de dados. Tudo sai do POS — nenhum relatório vai buscar dados a outro módulo.
+ *
+ * O ecrã de parâmetros é UM formulário só, como no sistema de referência: os campos
+ * do próprio relatório (De Data, tipo de documento, armazém…) mais UM campo que
+ * existe em TODOS — "Incluir detalhes?" — e que é obrigatório escolher antes de
+ * exibir. Sim mostra cada linha; Não mostra só o total (pos/reports.py:apply_detail).
  */
+function Campo({ x, params, setParams, armazens }: {
+  x: any; params: any; setParams: (v: any) => void; armazens: any[];
+}) {
+  const val = params[x.key] ?? '';
+  const cls = 'w-[240px] border border-[#8a95a3] px-2 py-[5px] text-[13px] bg-white';
+  if (x.type === 'bool_sn') {
+    return (
+      <select value={val} onChange={(e) => setParams({ ...params, [x.key]: e.target.value })}
+        className={cls} style={inputStyle}>
+        <option value="">&lt;Selecione um Valor&gt;</option>
+        <option value="Sim">Sim</option>
+        <option value="Não">Não</option>
+      </select>
+    );
+  }
+  if (x.type === 'warehouse') {
+    return (
+      <select value={val} onChange={(e) => setParams({ ...params, [x.key]: e.target.value })}
+        className={cls} style={inputStyle}>
+        <option value="">Todos</option>
+        {armazens.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
+      </select>
+    );
+  }
+  return (
+    <input type={x.type === 'number' ? 'number' : x.type === 'date' ? 'date' : 'text'}
+      value={val} onChange={(e) => setParams({ ...params, [x.key]: e.target.value })}
+      className={cls} style={inputStyle} />
+  );
+}
+
 export default function PosReports() {
   const [pasta, setPasta] = useState<any | null>(null);
   const [rep, setRep] = useState<any | null>(null);
   const [params, setParams] = useState<any>({});
   const [busca, setBusca] = useState('');
-  // O que está NO ECRÃ depois dos filtros — é isto que se imprime e se exporta.
+  // O que passou no filtro (TODAS as linhas, não só a página à vista) — é isto que
+  // se imprime e se exporta.
   const [vista, setVista] = useState<{ rows: any[]; cols: any[] }>({ rows: [], cols: [] });
-  // O filtro avançado — decidido ANTES de abrir o relatório, e corrido no servidor.
-  const [adv, setAdv] = useState<Adv>({});
-  const [preset, setPreset] = useState('');
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [zoom, setZoom] = useState(100);
+  const [procurar, setProcurar] = useState('');
+  const [achadoIdx, setAchadoIdx] = useState(-1);
 
   const { data: cat } = useQuery({
     queryKey: ['reports', 'catalog'],
@@ -38,19 +78,9 @@ export default function PosReports() {
   });
 
   const correr = useMutation({
-    mutationFn: () => apiClient.post('pos/reports/run/', {
-      code: rep.code,
-      params: {
-        ...params,
-        ...(preset ? { preset } : {}),
-        ...(adv.compare ? { compare: adv.compare } : {}),
-        advanced: {
-          ...adv,
-          weekdays: adv.weekdays?.length ? adv.weekdays : undefined,
-        },
-      },
-    }),
+    mutationFn: () => apiClient.post('pos/reports/run/', { code: rep.code, params }),
     onError: notifyError,
+    onSuccess: () => { setPagina(1); setProcurar(''); setAchadoIdx(-1); },
   });
 
   const folders: any[] = cat?.folders || [];
@@ -67,10 +97,10 @@ export default function PosReports() {
     r.params.forEach((x: any) => {
       if (x.type === 'date') p[x.key] = x.key === 'from' ? haUmMes() : hoje();
       else if (x.default !== undefined) p[x.key] = x.default;
+      // "Incluir detalhes?" fica por escolher de propósito — é obrigatório e o
+      // botão só liga depois de o operador decidir.
     });
     setParams(p);
-    setAdv({});
-    setPreset('');
     correr.reset();
   };
 
@@ -79,6 +109,8 @@ export default function PosReports() {
     else if (rep) setRep(null);
     else setPasta(null);
   };
+
+  const podeExibir = rep ? rep.params.every((x: any) => !x.required || (params[x.key] ?? '') !== '') : false;
 
   // ───────────────────────────── RELATÓRIO (resultado)
   const d: any = correr.data?.data;
@@ -100,7 +132,8 @@ export default function PosReports() {
         </style></head><body>
         <h1>${d.title}</h1>
         <div class="meta">${d.company || ''} · NIF ${d.tax_id || ''}<br/>
-          ${d.folder} · ${d.params?.from ? `de ${d.params.from} a ${d.params.to}` : ''}<br/>
+          ${d.folder} · ${d.params?.from ? `de ${d.params.from} a ${d.params.to}` : ''} ·
+          Incluir detalhes? ${d.params?.detailed || 'Não'}<br/>
           Impresso por ${d.user || ''} em ${new Date(d.generated_at).toLocaleString('pt-PT')}</div>
         <table><thead><tr>${cols.map((c: any) => `<th>${c[1]}</th>`).join('')}</tr></thead>
         <tbody>${rows.map((r: any) => `<tr>${cols.map((c: any) =>
@@ -132,9 +165,38 @@ export default function PosReports() {
       a.download = `${rep.code}.csv`; a.click();
     };
 
+    // FIND — procura em todas as colunas da linha; encontrando, salta para a página
+    // dessa linha. "Next" repete a partir de onde ficou, como qualquer "localizar".
+    const procurarProxima = () => {
+      const q = procurar.trim().toLowerCase();
+      if (!q || !vista.rows.length) return;
+      const cols = vista.cols.length ? vista.cols : d.columns;
+      let i = achadoIdx;
+      for (let passo = 0; passo < vista.rows.length; passo++) {
+        i = (i + 1) % vista.rows.length;
+        const r = vista.rows[i];
+        if (cols.some((c: any) => String(r[c[0]] ?? '').toLowerCase().includes(q))) {
+          setAchadoIdx(i);
+          setPagina(Math.floor(i / PAGE_SIZE) + 1);
+          return;
+        }
+      }
+      aviso(`"${procurar}" não encontrado.`);
+    };
+
+    // Os parâmetros que NÃO são De Data/A Data/Incluir detalhes ecoam-se aqui — cada
+    // tipo de relatório tem os seus (tipo de documento, armazém, quantos…), e é assim
+    // que a pessoa que imprime sabe exatamente com que filtro o número saiu.
+    const outrosParams = rep.params.filter((x: any) => !['from', 'to', 'detailed'].includes(x.key)
+      && (d.params?.[x.key] ?? '') !== '');
+
+    const geradoEm = new Date(d.generated_at);
+    const idTecnico = `/POS/${pasta.code}/${rep.code} — ${rep.name} | `
+      + `${geradoEm.getFullYear()}${String(geradoEm.getMonth() + 1).padStart(2, '0')}${String(geradoEm.getDate()).padStart(2, '0')} | pt-PT | System Mwana Lodge`;
+
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-4 py-2 border-b border-[#e0e0e0] text-[13px]">
+        <div className="px-4 py-2 border-b border-[#e0e0e0] text-[13px] flex-shrink-0">
           <button onClick={() => { correr.reset(); setRep(null); setPasta(null); }}
             className="text-[#1a73c8] hover:underline">Start Page</button>
           <span className="mx-1 text-[#999]">&gt;</span>
@@ -144,7 +206,46 @@ export default function PosReports() {
           <span className="font-semibold">{rep.name}</span>
         </div>
 
-        <div className="flex-1 overflow-auto p-6">
+        {/* ── barra do visualizador — como o sistema de referência ── */}
+        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-[#d0d0d0] bg-[#f3f3f3] flex-shrink-0 text-[13px]">
+          <button title="Primeira página" disabled={pagina <= 1} onClick={() => setPagina(1)}
+            className="px-2 py-1 border border-[#c0c0c0] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#e8e8e8]">|◀</button>
+          <button title="Página anterior" disabled={pagina <= 1} onClick={() => setPagina((p) => Math.max(1, p - 1))}
+            className="px-2 py-1 border border-[#c0c0c0] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#e8e8e8]">◀</button>
+          <input value={pagina} onChange={(e) => setPagina(Math.min(totalPaginas, Math.max(1, Number(e.target.value) || 1)))}
+            className="w-[42px] text-center border border-[#c0c0c0] py-1" style={inputStyle} />
+          <span className="text-[#666] px-1">of {totalPaginas}</span>
+          <button title="Página seguinte" disabled={pagina >= totalPaginas} onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+            className="px-2 py-1 border border-[#c0c0c0] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#e8e8e8]">▶</button>
+          <button title="Última página" disabled={pagina >= totalPaginas} onClick={() => setPagina(totalPaginas)}
+            className="px-2 py-1 border border-[#c0c0c0] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#e8e8e8]">▶|</button>
+
+          <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
+          <button title="Atualizar" onClick={() => correr.mutate()}
+            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8]">↻</button>
+          <button title="Voltar aos parâmetros" onClick={voltar}
+            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8]">←</button>
+
+          <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
+          <select value={zoom} onChange={(e) => setZoom(Number(e.target.value))}
+            className="border border-[#c0c0c0] px-1 py-1 bg-white" style={inputStyle}>
+            {[50, 75, 100, 125, 150, 200].map((z) => <option key={z} value={z}>{z}%</option>)}
+          </select>
+
+          <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
+          <button title="Guardar (CSV)" onClick={exportar}
+            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8]">💾</button>
+          <button title="Imprimir" onClick={imprimir}
+            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8]">🖨</button>
+
+          <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
+          <input value={procurar} onChange={(e) => setProcurar(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && procurarProxima()}
+            placeholder="Find" className="w-[140px] border border-[#c0c0c0] px-2 py-1" style={inputStyle} />
+          <button onClick={procurarProxima} className="text-[#1a73c8] hover:underline px-1">Next</button>
+        </div>
+
+        <div className="flex-1 overflow-auto p-6" style={{ zoom: zoom / 100 }}>
           <div className="max-w-[1400px]">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -156,14 +257,21 @@ export default function PosReports() {
                     </span>
                   )}
                 </div>
-                <div className="text-[12px] text-[#555] mt-1">
-                  <b>{d.company}</b> · NIF {d.tax_id}
-                </div>
+                <div className="text-[12px] text-[#555] mt-1"><b>{d.company}</b> · NIF {d.tax_id}</div>
+                <div className="text-[12px] text-[#555]">{d.folder}</div>
                 {d.params?.from && (
                   <div className="text-[12px] text-[#555]">
                     De data: {d.params.from} — A data: {d.params.to}
                   </div>
                 )}
+                <div className="text-[12px] text-[#555]">
+                  Incluir detalhes? <b>{d.params?.detailed || 'Não'}</b>
+                </div>
+                {outrosParams.map((x: any) => (
+                  <div key={x.key} className="text-[12px] text-[#555]">
+                    {x.label}: {d.params[x.key]}
+                  </div>
+                ))}
               </div>
               <div className="text-[11px] text-[#888] italic text-right">
                 Data de impressão:<br />
@@ -172,41 +280,19 @@ export default function PosReports() {
               </div>
             </div>
 
-            {d.comparison && (
-              <div className="mb-4 border border-[#c8b8b0] bg-white">
-                <div className="px-3 py-1.5 bg-[#efe7e3] border-b border-[#c8b8b0] text-[12px] font-bold text-[#5d4037]">
-                  Comparação com {d.comparison.mode === 'year' ? 'o mesmo período do ano passado'
-                    : 'o período anterior'} ({d.comparison.from} a {d.comparison.to})
-                </div>
-                <div className="flex flex-wrap">
-                  {d.comparison.lines.map((l: any) => (
-                    <div key={l.key} className="px-4 py-3 border-r border-[#eee] min-w-[190px]">
-                      <div className="text-[11px] text-[#666] uppercase tracking-wide">{l.label}</div>
-                      <div className="text-[18px] font-bold text-[#222]">{money(l.now)}</div>
-                      <div className="text-[12px] flex items-center gap-1">
-                        <span className="font-bold" style={{
-                          color: l.up ? '#1f7a34' : l.down ? '#a01818' : '#888',
-                        }}>
-                          {l.up ? '▲' : l.down ? '▼' : '='} {l.pct}
-                        </span>
-                        <span className="text-[#888]">antes {money(l.before)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <ReportGrid d={d} onView={(rows, cols) => setVista({ rows, cols })}
+              page={pagina} pageSize={PAGE_SIZE}
+              onPageInfo={({ page, totalPages }) => { setTotalPaginas(totalPages); if (page !== pagina) setPagina(page); }} />
 
-            <ReportGrid d={d} onView={(rows, cols) => setVista({ rows, cols })} />
-
-            <div className="text-[11px] text-[#999] mt-3">{d.folder}</div>
+            <div className="mt-6 pt-3 border-t border-[#e0e0e0] text-[10px] text-[#999] flex justify-between">
+              <span>System Mwana Lodge © {new Date().getFullYear()}. Todos os direitos reservados.<br />{idTecnico}</span>
+              <span>Página {pagina} de {totalPaginas}</span>
+            </div>
           </div>
         </div>
 
         <Toolbar actions={[
           { label: 'Voltar aos parâmetros', icon: '◀', color: '#6b6b6b', onClick: voltar },
-          { label: 'Imprimir', icon: '🖨', color: '#2b2b2b', onClick: imprimir },
-          { label: 'Exportar para Excel', icon: '⬇', color: '#1f7a34', onClick: exportar },
         ]} />
       </div>
     );
@@ -226,23 +312,21 @@ export default function PosReports() {
         </div>
 
         <div className="flex-1 overflow-auto p-6">
-          {/* Os parâmetros do relatório vivem DENTRO do filtro — eram duas caixas a dizer
-              a mesma coisa (uma com as datas, outra com tudo o resto). Fica uma só, e
-              um botão. O filtro decide-se ANTES de abrir o relatório, não depois. */}
-          <div className="max-w-[980px]">
-            <ReportFilters adv={adv} setAdv={setAdv} preset={preset} setPreset={setPreset}
-              presets={cat?.filters?.presets || []}
-              groupOpts={[
-                ...(cat?.filters?.group_by || []),
-                ...(rep.columns || []),
-              ]}
-              compares={cat?.filters?.compare || []}
-              params={rep.params} values={params} setValues={setParams} armazens={armazens as any[]} />
-
-            <button onClick={() => correr.mutate()} disabled={correr.isPending}
-              className="mt-4 px-8 py-2.5 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b] text-[14px] font-semibold disabled:bg-[#b8b8b8]">
-              {correr.isPending ? 'A gerar…' : 'Exibir Relatório'}
-            </button>
+          <div className="max-w-[1100px] border border-[#c8c8c8] bg-white">
+            <div className="px-5 py-5 flex items-start justify-between gap-8">
+              <div className="grid grid-cols-2 gap-x-10 gap-y-4">
+                {rep.params.map((x: any) => (
+                  <div key={x.key} className="flex items-center gap-3">
+                    <span className="w-[170px] flex-shrink-0 text-[13px] text-[#333]">{x.label}:</span>
+                    <Campo x={x} params={params} setParams={setParams} armazens={armazens as any[]} />
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => correr.mutate()} disabled={!podeExibir || correr.isPending}
+                className="flex-shrink-0 px-6 py-2.5 bg-[#e8e8e8] border border-[#9a9a9a] hover:enabled:bg-[#dcdcdc] text-[13px] font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                {correr.isPending ? 'A gerar…' : 'Exibir Relatório'}
+              </button>
+            </div>
           </div>
         </div>
 
