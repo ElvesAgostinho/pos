@@ -14,7 +14,7 @@ import { IcoCliente, IcoQuarto, IcoCalendario } from './Icons';
  * Perguntar isto NO FIM, na hora de pagar, é tarde: o cliente já ouviu o total e agora
  * quer fatura com NIF — e a fatura já saiu como Consumidor Final. Um documento fiscal
  * não se corrige: anula-se por nota de crédito e emite-se outro. Por isso este ecrã
- * pode abrir LOGO ao entrar no balcão (parâmetro 8311 do backoffice).
+ * pode abrir LOGO ao entrar no balcão (parâmetro 9311 do backoffice).
  *
  * SALTAR é sempre possível: a maioria das vendas de balcão é mesmo Consumidor Final, e
  * obrigar a escolher alguém em todas elas parava a fila.

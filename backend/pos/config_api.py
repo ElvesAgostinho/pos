@@ -2559,6 +2559,11 @@ class PosDayCloseView(APIView):
                 'vendas_por_subfamilia': P.bool(8191, True),
                 'vendas_por_documento': P.bool(8041, False),
                 'resumo_iva': P.bool(8043, True),
+                'resumo_iva_sem_ci': P.bool(8189, False),
+                'ofertas': P.bool(8045, True),
+                'descontos': P.bool(8134, True),
+                'encargos': P.bool(8060, False),
+                'movimentos_cartao': P.bool(8156, False),
                 'cancelamentos': P.bool(8179, True),
                 'gratificacoes': P.bool(8216, True),
             },
@@ -2568,9 +2573,11 @@ class PosDayCloseView(APIView):
                 'vendas_por_subfamilia': P.bool(8192, False),
                 'vendas_por_documento': P.bool(8042, False),
                 'resumo_iva': P.bool(8044, True),
+                'resumo_iva_sem_ci': P.bool(8190, False),
                 'ofertas': P.bool(8046, True),
                 'descontos': P.bool(8135, True),
                 'encargos': P.bool(8061, False),
+                'movimentos_cartao': P.bool(8155, False),
                 'cancelamentos': P.bool(8178, True),
                 'gratificacoes': P.bool(8215, True),
             },
@@ -3694,11 +3701,12 @@ class StockDocSerializer(serializers.ModelSerializer):
         # precisão trabalha (peixe ao grama vs. grades de cerveja).
         q_qtd = Decimal('1').scaleb(-max(0, min(4, P.int(8210, 3))))
         q_prc = Decimal('1').scaleb(-max(0, min(4, P.int(8211, 3))))
-        # (8230/8231) AVISO de preço alterado: o fornecedor subiu o preço e ninguém viu —
+        # (8230/9231) AVISO de preço alterado: o fornecedor subiu o preço e ninguém viu —
         # é assim que a margem desaparece. O documento grava na mesma; o aviso volta
-        # na resposta para o ecrã mostrar.
+        # na resposta para o ecrã mostrar. (9231: 8231 na HOST real é e-mails de mesa
+        # libertada — este parâmetro moveu-se para o bloco 9xxx para não colidir.)
         avisar = P.bool(8230, True)
-        pct_aviso = Decimal(str(P.int(8231, 5)))
+        pct_aviso = Decimal(str(P.int(9231, 5)))
         self._price_warnings = []
         for l in linhas:
             l.pop('doc', None)
@@ -4805,12 +4813,13 @@ class PosTerminalConfigView(APIView):
             'ask_guest_type': P.bool(8175, True),
             'auto_fire_kitchen': P.bool(8308, False),
             'ask_entity_before_pay': P.bool(8310, False),
-            # (8311) pedir o cliente ao ABRIR a venda (não só na hora de cobrar).
+            # (9311) pedir o cliente ao ABRIR a venda (não só na hora de cobrar).
             # LIGADO de fábrica: perguntar depois é tarde — a fatura já saiu como
             # Consumidor Final e essa não se corrige, anula-se por nota de crédito.
-            'ask_entity_on_open': P.bool(8311, True),
-            # (8312) entrar no balcão já com a 1ª página do teclado aberta
-            'open_keyboard_on_sale': P.bool(8312, True),
+            # Numeração 9xxx: 8311 na HOST real é outra coisa (e-mails de mesa libertada).
+            'ask_entity_on_open': P.bool(9311, True),
+            # (9312) entrar no balcão já com a 1ª página do teclado aberta
+            'open_keyboard_on_sale': P.bool(9312, True),
             'tables_refresh_seconds': P.int(8063, 8),
             'transfers': P.text(8124, 'Parcial'),
             'allow_day_close': P.bool(8062, False),
@@ -5005,12 +5014,13 @@ class PosBootstrapView(APIView):
                 'ask_guest_type': P.bool(8175, True),
                 'auto_fire_kitchen': P.bool(8308, False),
                 'ask_entity_before_pay': P.bool(8310, False),
-            # (8311) pedir o cliente ao ABRIR a venda (não só na hora de cobrar).
+            # (9311) pedir o cliente ao ABRIR a venda (não só na hora de cobrar).
             # LIGADO de fábrica: perguntar depois é tarde — a fatura já saiu como
             # Consumidor Final e essa não se corrige, anula-se por nota de crédito.
-            'ask_entity_on_open': P.bool(8311, True),
-            # (8312) entrar no balcão já com a 1ª página do teclado aberta
-            'open_keyboard_on_sale': P.bool(8312, True),
+            # Numeração 9xxx: 8311 na HOST real é outra coisa (e-mails de mesa libertada).
+            'ask_entity_on_open': P.bool(9311, True),
+            # (9312) entrar no balcão já com a 1ª página do teclado aberta
+            'open_keyboard_on_sale': P.bool(9312, True),
                 'tables_refresh_seconds': P.int(8063, 8),
                 'transfers': P.text(8124, 'Parcial'),
                 'allow_day_close': P.bool(8062, False),

@@ -95,7 +95,7 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
       setASentar(null);
       qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
       // Direto ao teclado. Quem é o cliente pergunta-se DENTRO da venda, no seletor
-      // que já abre sozinho (8311): aqui era a mesma pergunta duas vezes, e a primeira
+      // que já abre sozinho (9311): aqui era a mesma pergunta duas vezes, e a primeira
       // ainda antes de o empregado ver a conta que acabou de abrir.
       onOpenTicket(t.id);
     },

@@ -15,6 +15,17 @@ B, I, T, C = 'BOOL', 'INT', 'TEXT', 'CHOICE'
 PARAMS = [
     # ---------------- Front Office (o que o TERMINAL faz) ----------------
     # Estes decidem o caminho do empregado. Não são preferências de ecrã: mudam o ofício.
+    # NUMERAÇÃO 9xxx: parâmetros PRÓPRIOS do Mwana Lodge (não existem no sistema de
+    # referência) — 9311/9312 nasceram como 8311/8312 nesta casa antes de se saber que a
+    # HOST usa esses dois números para outra coisa (e-mails de mesa libertada). Para não
+    # partir nada já em uso, moveram-se para o bloco 9xxx; os números 8311/8312 ficam
+    # livres para significar exatamente o que significam na HOST.
+    (9311, 'Front Office', 'Pedir o cliente ao ABRIR a venda (Entidade/Quarto/Eventos)', B, [], 'true',
+     'LIGADO de fábrica: perguntar só na hora de cobrar é tarde — a fatura já saiu como '
+     'Consumidor Final e essa não se corrige, anula-se por nota de crédito.'),
+    (9312, 'Front Office', 'Abrir o teclado ao entrar na venda', B, [], 'true',
+     'LIGADO de fábrica: entrar no balcão e ver "escolha uma página" é perder um toque em '
+     'todas as vendas do dia.'),
     (8300, 'Front Office', 'Venda Direta (vender sem passar pelas mesas)', B, [], 'false',
      'LIGADO: o terminal abre logo numa conta de balcão, sem seletor de mesa. É o bar de '
      'praia e o take-away — quem serve ao balcão não tem mesas para escolher.'),
@@ -69,6 +80,15 @@ PARAMS = [
     (8364, 'Geral', 'Impressão de Talão - Casas decimais em valores', I, [], '2', ''),
     (8620, 'Geral', 'Desconto máximo sem supervisor (%)', I, [], '10',
      'Acima deste valor, o POS exige a autorização de um supervisor.'),
+    (8196, 'Geral', 'Secção de informação para avisos do cliente', T, [], '',
+     'Códigos separados por "|" (ex.: ADMIN|DIR) — a quem chegam os avisos do POS ao cliente.'),
+    (8224, 'Geral', 'Tipos de entidades válidas para contas a receber', T, [], '',
+     'Nomes separados por vírgula (ex.: Hóspede, Empresa, Agência). Vazio = qualquer '
+     'entidade pode ficar a dever. Aplicado no pagamento em conta corrente.'),
+    (8369, 'Geral', 'Descontos exclusivos que não permitem aplicação de descontos automáticos', T, [], '', ''),
+    (9369, 'Geral', 'Horário (Happy Hour) relacionado com 8369', T, [], '',
+     'Enquanto este Happy Hour estiver ativo, os descontos automáticos NÃO se aplicam '
+     'aos artigos marcados em 8369 (o preço de Happy Hour já é o desconto).'),
 
     # ---------------- E-mail (SMTP) ----------------
     # A EMPRESA configura aqui o SEU servidor de envio (e-mails a clientes/parceiros).
@@ -103,19 +123,42 @@ PARAMS = [
     (8365, 'Interface com PMS', 'Visualizar assinatura do hóspede', B, [], 'true', ''),
     (8064, 'Interface com PMS', 'Informação do hóspede', B, [], 'true', ''),
     (8174, 'Interface com PMS', 'Verificar se a conta PMS está aberta ao anular talões de quarto', B, [], 'true', ''),
-    (8147, 'Interface com PMS', 'Plano de refeições - Forçar a pesquisa de hóspedes', B, [], 'false', ''),
+    (8147, 'Interface com PMS', 'Plano de refeições - Forçar a pesquisa de hóspedes', B, [], 'false',
+     'Sem módulo de PMS instalado nesta casa: fica guardado para quando existir.'),
+    (8065, 'Interface com PMS', 'Plano de refeições - Perguntar se deseja ir para a conta da '
+     'mesa ao associar a mesa ao quarto', B, [], 'false',
+     'Sem módulo de PMS instalado nesta casa: fica guardado para quando existir.'),
+    (8141, 'Interface com PMS', 'Card Packages - Utilizar Packages da Reserva', B, [], 'false',
+     'Sem módulo de PMS instalado nesta casa: fica guardado para quando existir.'),
+    (8339, 'Interface com PMS', 'Card Packages - Utilizar Packages Extra para aplicar desconto', B, [], 'false',
+     'Sem módulo de PMS instalado nesta casa: fica guardado para quando existir.'),
+    (8142, 'Interface com PMS', 'Refeições Extra', B, [], 'false',
+     'Sem módulo de PMS instalado nesta casa: fica guardado para quando existir.'),
+    (8225, 'Interface com PMS', 'Mostrar informação de cartão de membro na pesquisa de quartos', B, [], 'false',
+     'Sem módulo de PMS instalado nesta casa: fica guardado para quando existir.'),
+    (8325, 'Interface com PMS', 'Caixa PMS para Contas Correntes', T, [], '',
+     'Sem módulo de PMS instalado nesta casa: fica guardado para quando existir.'),
 
     # ---------------- Descontos ----------------
     (8237, 'Descontos', 'Desconto de linha detalhado', B, [], 'false', ''),
     (8075, 'Descontos', 'Desconto - Hóspede', T, [], '', ''),
     (8076, 'Descontos', 'Desconto - Empresa', T, [], '', ''),
     (8077, 'Descontos', 'Desconto - Agência', T, [], '', ''),
+    (8078, 'Descontos', 'Desconto - CRO', T, [], '', ''),
     (8079, 'Descontos', 'Desconto - Grupo', T, [], '', ''),
+    (8080, 'Descontos', 'Desconto - Timeshare', T, [], '', ''),
     (8081, 'Descontos', 'Desconto - Proprietário', T, [], '', ''),
+    (8082, 'Descontos', 'Desconto - Grupo (2)', T, [], '',
+     'Assim mesmo na HOST: dois desconto-Grupo com números diferentes. Este não está '
+     'ligado ao motor de descontos automáticos (o 8079 já cobre "Grupo") — fica guardado '
+     'para não faltar o número, mas não dispara nada sozinho.'),
 
     # ---------------- Gratificação ----------------
     (8214, 'Gratificação', 'Remover a gratificação do dinheiro no fecho', B, [], 'true', ''),
     (8213, 'Gratificação', 'Modo de pagamento para remover gratificação', C, ['Cash', 'Cartão'], 'Cash', ''),
+    (8352, 'Gratificação', 'Remover quando pagamento em consumo interno', B, [], 'false',
+     'A gorjeta do troco de uma conta de consumo interno (staff, oferta) também sai do '
+     'dinheiro contado no fecho, como a das vendas normais.'),
 
     # ---------------- Fecho de caixa ----------------
     (8005, 'Fecho de caixa', 'Perguntar Total Vendido', C, ['Modo Detalhado', 'Modo Simples', 'Não perguntar'], 'Modo Detalhado',
@@ -126,9 +169,12 @@ PARAMS = [
     (8192, 'Fecho de caixa', 'Vendas por Sub-Família', B, [], 'false', ''),
     (8042, 'Fecho de caixa', 'Vendas por Documento', B, [], 'false', ''),
     (8044, 'Fecho de caixa', 'Resumo do IVA', B, [], 'true', ''),
+    (8190, 'Fecho de caixa', 'Resumo do IVA (Sem consumos internos)', B, [], 'false',
+     'O mesmo resumo, mas sem misturar o que foi vendido com o que foi consumo da casa.'),
     (8046, 'Fecho de caixa', 'Ofertas', B, [], 'true', ''),
     (8135, 'Fecho de caixa', 'Descontos', B, [], 'true', ''),
     (8061, 'Fecho de caixa', 'Encargos', B, [], 'false', ''),
+    (8155, 'Fecho de caixa', 'Movimentos do cartão', B, [], 'false', ''),
     (8178, 'Fecho de caixa', 'Cancelamentos', B, [], 'true',
      'O relatório de fecho mostra o que foi anulado — é a primeira coisa que um dono quer ver.'),
 
@@ -141,8 +187,17 @@ PARAMS = [
     (8191, 'Fecho do Dia', 'Vendas por Sub-Família', B, [], 'true', ''),
     (8041, 'Fecho do Dia', 'Vendas por Documento', B, [], 'false', ''),
     (8043, 'Fecho do Dia', 'Resumo do IVA', B, [], 'true', ''),
+    (8189, 'Fecho do Dia', 'Resumo do IVA (Sem consumos internos)', B, [], 'false', ''),
+    (8045, 'Fecho do Dia', 'Ofertas', B, [], 'true', ''),
+    (8134, 'Fecho do Dia', 'Descontos', B, [], 'true', ''),
+    (8060, 'Fecho do Dia', 'Encargos', B, [], 'false', ''),
+    (8156, 'Fecho do Dia', 'Movimentos do cartão', B, [], 'false', ''),
     (8179, 'Fecho do Dia', 'Cancelamentos', B, [], 'true', ''),
-    (8231, 'Fecho do Dia', 'E-mails para avisar quando são libertadas mesas abertas (;)', T, [], '', ''),
+    (8231, 'Fecho do Dia', 'E-mails para avisar quando são libertadas mesas abertas (;)', T, [], '',
+     'Separados por ";". Dispara quando uma mesa fica livre (POSTicketViewSet._liberta_mesa).'),
+    (8311, 'Fecho do Dia', 'E-mails para avisar quando são libertadas mesas abertas (Relatório)', T, [], '',
+     'Campo da HOST original (caminho do relatório SSRS anexado ao e-mail). Este sistema '
+     'não tem SSRS — o e-mail sai em texto simples; fica guardado por paridade.'),
 
     # ---------------- Artigos ----------------
     (8209, 'Artigos', 'Configurar IVA por sub-família', B, [], 'false', ''),
@@ -230,8 +285,9 @@ PARAMS = [
      'Durante o inventário ninguém entra mercadoria — senão a contagem nunca fecha.'),
     (8230, 'F&B', 'Avisar quando o preço é alterado', B, [], 'true',
      'O fornecedor subiu o preço e ninguém deu por isso: é assim que a margem desaparece.'),
-    (8231, 'F&B', 'Avisar quando o preço é alterado (percentagem)', I, [], '5',
-     'A partir de quantos %% se avisa.'),
+    (9231, 'F&B', 'Avisar quando o preço é alterado (percentagem)', I, [], '5',
+     'A partir de quantos %% se avisa. (Nasceu como 8231 nesta casa; passou para o bloco '
+     '9xxx porque 8231 já significa outra coisa na HOST — mesas libertadas.)'),
     (8238, 'F&B', 'Endereço de e-mail de resposta', T, [], '', ''),
     (8277, 'F&B', 'Bloquear movimento de stock com quantidade negativa na origem', B, [], 'false',
      'Impede tirar do armazém o que lá não está — o stock negativo é sempre um erro escondido.'),

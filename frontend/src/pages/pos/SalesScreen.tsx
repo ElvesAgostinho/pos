@@ -156,7 +156,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     : (teclado?.pages || []);
 
   // A pergunta de QUEM É O CLIENTE é UMA só: o seletor das três abas (Entidade ·
-  // Quarto · Eventos), que abre sozinho pelo 8311. Havia aqui um segundo caminho que
+  // Quarto · Eventos), que abre sozinho pelo 9311. Havia aqui um segundo caminho que
   // abria uma janela só de quartos, com o mesmo fim — duas perguntas para a mesma
   // coisa, e a segunda ainda antes de o empregado ver a conta que acabou de abrir.
 
@@ -503,7 +503,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     }
   }, [conta?.status]);
 
-  // (8312) O TECLADO ABRE-SE SOZINHO. Entrar no balcão e ver "Escolha uma página em
+  // (9312) O TECLADO ABRE-SE SOZINHO. Entrar no balcão e ver "Escolha uma página em
   // cima" é perder um toque em todas as vendas do dia: a primeira página é sempre a que
   // o dono pôs primeiro, e é onde está o que mais se vende. Quem tem várias páginas
   // troca com um toque; quem só tem uma nunca mais pensa nisso.
@@ -516,7 +516,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     if (p1) setCaminho([p1]);
   }, [teclado, cfg?.open_keyboard_on_sale]);
 
-  // (8311) PEDIR O CLIENTE AO ABRIR — uma vez por conta, nunca em ciclo. Perguntar só na
+  // (9311) PEDIR O CLIENTE AO ABRIR — uma vez por conta, nunca em ciclo. Perguntar só na
   // hora de cobrar é tarde: o "afinal queria com contribuinte" chega depois de a fatura
   // já ter saído como Consumidor Final, e essa não se corrige — anula-se.
   useEffect(() => {
@@ -782,7 +782,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
           }} />
       )}
 
-      {/* 👤+ do topo (e a abertura automática pelo 8311): quem leva a fatura. */}
+      {/* 👤+ do topo (e a abertura automática pelo 9311): quem leva a fatura. */}
       {escolherCliente && (
         <ClientPicker onClose={() => setEscolherCliente(false)}
           onPick={async (esc) => {

@@ -544,11 +544,14 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                         ticket.save(update_fields=['discount_percent', 'discount_authorized_by'])
                         ticket.recompute(save=True)
                     # (8075-8081) DESCONTO POR TIPO DE ENTIDADE: Hóspede, Empresa,
-                    # Agência, Grupo, Proprietário — cada tipo tem o seu desconto de
-                    # casa nos parâmetros. O VIP (da ficha) tem prioridade.
+                    # Agência, CRO, Grupo, Timeshare, Proprietário — cada tipo tem o seu
+                    # desconto de casa nos parâmetros. O VIP (da ficha) tem prioridade.
+                    # (8082 "Grupo" fica de fora de propósito — a HOST duplica o nome mas
+                    # aplicar os dois ao mesmo tipo era um desconto a disputar consigo mesmo.)
                     elif not ticket.discount_percent and cust.entity_type_id:
                         POR_TIPO = {'HÓSPEDE': 8075, 'HOSPEDE': 8075, 'EMPRESA': 8076,
-                                    'AGÊNCIA': 8077, 'AGENCIA': 8077, 'GRUPO': 8079,
+                                    'AGÊNCIA': 8077, 'AGENCIA': 8077, 'CRO': 8078,
+                                    'GRUPO': 8079, 'TIMESHARE': 8080,
                                     'PROPRIETÁRIO': 8081, 'PROPRIETARIO': 8081}
                         num = POR_TIPO.get((cust.entity_type.name or '').strip().upper())
                         if num:
@@ -983,6 +986,17 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                                            f'{" — " + entidade.block_reason if entidade.block_reason else ""}. '
                                            f'Não se vende a crédito; cobre a conta.',
                                  'entity_blocked': True}, status=status.HTTP_400_BAD_REQUEST)
+            # (8224) TIPOS DE ENTIDADES VÁLIDAS PARA CONTAS A RECEBER — vazio = todos.
+            # Uma agência de viagens que fica sempre a dever é normal; um "Passante"
+            # a ficar a dever é a conta que nunca mais se cobra.
+            permitidos = P.text(8224, '').strip()
+            if permitidos:
+                nomes = {n.strip().upper() for n in permitidos.replace(';', ',').split(',') if n.strip()}
+                tipo = (entidade.entity_type.name if entidade.entity_type_id else '').strip().upper()
+                if tipo not in nomes:
+                    return Response({'detail': f'"{entidade.name}" ({tipo or "sem tipo"}) não é um tipo de '
+                                               f'entidade autorizado a conta corrente. Tipos permitidos: {permitidos}.',
+                                     'entity_type_not_allowed': True}, status=status.HTTP_400_BAD_REQUEST)
             # LIMITE DE CRÉDITO — deixar passar é como emprestar dinheiro sem o decidir.
             if entidade.credit_limit:
                 from fiscal.models import FiscalDocument as _FD
@@ -1527,6 +1541,23 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             pass
         ticket.table.status = estado
         ticket.table.save(update_fields=['status'])
+        # (8231) AVISO de mesa libertada — quem faz a governança da sala (chefe de
+        # sala, F&B) quer saber que uma mesa voltou a ficar livre sem ter de olhar
+        # para o mapa o dia inteiro. Só dispara se houver destinatários configurados.
+        try:
+            from .params import P
+            destinos = P.text(8231, '')
+            if destinos.strip():
+                from . import mailer
+                mailer.send(
+                    destinos,
+                    subject=f'Mesa libertada — {ticket.table.name or ticket.table.table_number}',
+                    body=(f'A mesa {ticket.table.name or ticket.table.table_number} '
+                          f'({ticket.outlet.name if ticket.outlet_id else ""}) foi libertada '
+                          f'às {timezone.now().strftime("%H:%M")}.'),
+                    context_ref=f'table:{ticket.table_id}')
+        except Exception:
+            pass  # o aviso é um extra — nunca pode impedir a mesa de libertar
 
     @action(detail=True, methods=['post'])
     def credit_note(self, request, pk=None):
