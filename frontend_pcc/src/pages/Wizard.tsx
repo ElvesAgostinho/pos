@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { apiClient as axios } from '../api/client';
 import { ChevronRight } from 'lucide-react';
 
-const API = 'http://localhost:8000/api';
-
 interface ModuleDef {
   code: string;
   name: string;
@@ -40,7 +38,7 @@ const Wizard: React.FC = () => {
   });
 
   useEffect(() => {
-    axios.get<ModuleDef[]>(`${API}/clm/modules/`)
+    axios.get<ModuleDef[]>(`clm/modules/`)
       .then((res) => {
         setCatalog(res.data);
         // Pré-selecionar um conjunto sensato de módulos opcionais
@@ -48,7 +46,7 @@ const Wizard: React.FC = () => {
         setSelected(res.data.filter((m) => !m.is_core && defaults.includes(m.code)).map((m) => m.code));
       })
       .catch((e) => console.error('Erro ao carregar catálogo de módulos', e));
-    axios.get<any[]>(`${API}/clm/features/`)
+    axios.get<any[]>(`clm/features/`)
       .then((res) => {
         setFeatureCatalog(res.data);
         // Pré-selecionar as funcionalidades "de base" (default_on); premium ficam por ativar.
@@ -82,7 +80,7 @@ const Wizard: React.FC = () => {
     try {
       // Usa a ação de provisionamento: cria cliente + licença assinada e devolve a license.key
       // (base64) que o cliente instala no ERP local para ativar exatamente estes módulos.
-      const res = await axios.post(`${API}/clm/clients/provision/`, {
+      const res = await axios.post(`clm/clients/provision/`, {
         client_data: {
           code: `CLI-${Math.floor(Math.random() * 10000)}`,
           commercial_name: formData.commercial_name || 'Novo Cliente',

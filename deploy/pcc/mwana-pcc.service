@@ -1,0 +1,30 @@
+[Unit]
+Description=System Mwana Lodge — Platform Control Center (PCC)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=mwana
+Group=mwana
+WorkingDirectory=/opt/mwana-pcc/app
+EnvironmentFile=/opt/mwana-pcc/app/.env
+Environment=SYSTEM_MODE=PCC
+Environment=MWANA_WEBAPP=/opt/mwana-pcc/webapp
+ExecStart=/opt/mwana-pcc/venv/bin/gunicorn erp_server.wsgi:application \
+    --bind unix:/run/mwana-pcc.sock \
+    --workers 3 \
+    --timeout 60 \
+    --access-logfile /opt/mwana-pcc/logs/access.log \
+    --error-logfile /opt/mwana-pcc/logs/error.log
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+# Isolamento básico — o PCC guarda dados sensíveis de todos os clientes (chaves
+# de assinatura, senhas cifradas). Não precisa de escrever fora da sua pasta.
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/mwana-pcc/logs /run
+
+[Install]
+WantedBy=multi-user.target

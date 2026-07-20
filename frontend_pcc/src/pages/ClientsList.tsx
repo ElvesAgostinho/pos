@@ -17,7 +17,7 @@ const ClientsList: React.FC = () => {
 
   const fetchClients = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/clm/clients/');
+      const res = await axios.get('clm/clients/');
       setClients(res.data);
       // mantém a seleção viva, mas com os dados frescos (has_install_password, etc.)
       setSelectedClient((cur: any) => cur ? res.data.find((c: any) => c.id === cur.id) || cur : cur);
@@ -36,7 +36,7 @@ const ClientsList: React.FC = () => {
     setAccessBusy(kind);
     setAccessResult(null);
     try {
-      const r = await axios.post(`http://localhost:8000/api/clm/licenses/${activeLicense.id}/regenerate-access/`, { kind });
+      const r = await axios.post(`clm/licenses/${activeLicense.id}/regenerate-access/`, { kind });
       setAccessResult(r.data);
       await fetchClients();
     } catch (err) {
@@ -58,7 +58,7 @@ const ClientsList: React.FC = () => {
       const activationKey = `${segment()}-${segment()}-${segment()}-${segment()}`;
 
       // Create TerminalLicense in Django
-      await axios.post('http://localhost:8000/api/clm/terminals/', {
+      await axios.post('clm/terminals/', {
         client: selectedClient.id,
         terminal_id: terminalId,
         activation_key: activationKey,

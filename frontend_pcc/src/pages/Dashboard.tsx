@@ -8,7 +8,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/api/clm/clients/');
+        const res = await axios.get('clm/clients/');
         setClients(res.data);
       } catch (err) {
         console.error("Error fetching clients:", err);

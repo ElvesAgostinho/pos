@@ -1,8 +1,15 @@
 import axios from 'axios';
 
 // Cliente HTTP do PCC. Anexa o JWT do administrador e trata sessões expiradas.
+//
+// O ENDEREÇO é uma variável de ambiente de BUILD (Vite), nunca escrito à mão:
+// em desenvolvimento (frontend_pcc corre em :5174, backend em :8000, sem proxy)
+// usa-se o valor de fábrica; na VPS compila-se com VITE_API_URL=/api/ (relativo)
+// — o nginx da VPS serve o SPA e faz proxy de /api/ para o mesmo gunicorn, seja
+// qual for o domínio. Sem isto, o browser de quem visitasse a VPS tentava falar
+// com o SEU PRÓPRIO computador (localhost:8000), nunca com o servidor real.
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/',
   headers: { 'Content-Type': 'application/json' },
 });
 
