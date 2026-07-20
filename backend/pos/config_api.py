@@ -214,16 +214,20 @@ class GlobalParamsView(APIView):
     """
     PARÂMETROS DO SISTEMA — o que liga e desliga funções no POS.
 
-    GET  → o catálogo agrupado, com o valor em vigor.
-    POST → grava os valores e limpa a cache (entram em vigor em segundos).
+    GET  → o catálogo agrupado, com o valor em vigor. ?scope=TERMINAL devolve o
+           catálogo dos parâmetros por-terminal (o TerminalEditor usa isto para a
+           aba "Geral" — o valor concreto vive em PosTerminal.params, não aqui).
+    POST → grava os valores GLOBAIS e limpa a cache (entram em vigor em segundos).
+           Os de scope TERMINAL/SECTOR gravam-se pelo próprio ecrã do terminal/setor.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         from collections import OrderedDict
-        rows = PosParameter.objects.filter(scope='GLOBAL').order_by('group', 'number')
+        scope = request.query_params.get('scope', 'GLOBAL')
+        rows = PosParameter.objects.filter(scope=scope).order_by('group', 'number')
         groups = OrderedDict()
-        SEGREDOS = {8503}          # a password SMTP NUNCA volta pela API — só se escreve
+        SEGREDOS = {9503}          # a password SMTP NUNCA volta pela API — só se escreve
         for p in rows:
             valor = p.value if p.value not in (None, '') else p.default
             if p.number in SEGREDOS and valor:
@@ -2791,7 +2795,7 @@ class PosSendLogsView(APIView):
     """ENVIAR OS LOGS AO SUPORTE — o botão do Diagnóstico para pedir assistência.
 
     Junta o retrato do sistema (diagnóstico + alertas + últimos eventos de auditoria e
-    de autenticação) num único e-mail para o endereço do parâmetro 8510 (a empresa que
+    de autenticação) num único e-mail para o endereço do parâmetro 9510 (a empresa que
     dá suporte). O cliente não copia ficheiros nem sabe onde eles moram: carrega no
     botão e o suporte recebe tudo. Fica no outbox como qualquer outro e-mail.
     """
@@ -2803,7 +2807,7 @@ class PosSendLogsView(APIView):
         from . import mailer
         from .models import POSAuditLog
         # O DESTINO DO SUPORTE vem da LICENÇA assinada (PCC) quando lá estiver —
-        # o cliente não redireciona os logs por engano; o parâmetro 8510 é o fallback.
+        # o cliente não redireciona os logs por engano; o parâmetro 9510 é o fallback.
         destino = None
         try:
             from django.conf import settings as _s
@@ -2811,9 +2815,9 @@ class PosSendLogsView(APIView):
             destino = (get_license(_s.BASE_DIR) or {}).get('support_email')
         except Exception:
             pass
-        destino = destino or P.text(8510, 'suporte@mwanalodge.ao')
+        destino = destino or P.text(9510, 'suporte@mwanalodge.ao')
         if not destino:
-            return Response({'detail': 'Configure o e-mail do suporte (parâmetro 8510).'}, status=400)
+            return Response({'detail': 'Configure o e-mail do suporte (parâmetro 9510).'}, status=400)
 
         # o retrato: alertas + últimos 100 eventos de auditoria + últimos 50 logins
         partes = [f'<h3>Envio de logs — {timezone.localtime():%d/%m/%Y %H:%M}</h3>',

@@ -26,7 +26,10 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
   const [q, setQ] = useState('');
   const [d, setD] = useState<any>({ terminal_type: 'NORMAL', is_active: true, params: {}, printers: [], hardware: [], ...row });
 
-  const { data: params = [] } = useQuery({ queryKey: ['posc', 'params'], queryFn: async () => (await apiClient.get('pos/config/parameters/')).data });
+  // Só os parâmetros de SCOPE=TERMINAL — os globais vivem noutro ecrã (Parâmetros),
+  // e o valor de cada um aqui é a substituição DESTE terminal (PosTerminal.params),
+  // nunca o campo `value` do catálogo (esse é só para os globais).
+  const { data: groups = [] } = useQuery({ queryKey: ['posc', 'tparams'], queryFn: async () => (await apiClient.get('pos/config/params/?scope=TERMINAL')).data });
   const { data: printers = [] } = useQuery({ queryKey: ['posc', 'printers'], queryFn: async () => (await apiClient.get('inventory/pos/printers/')).data });
   const { data: outlets = [] } = useQuery({ queryKey: ['posc', 'outlets'], queryFn: async () => (await apiClient.get('pos/outlets/')).data });
 
@@ -53,7 +56,10 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
   const addHw = () => set('hardware', [...hw, { code: '', description: '', hw_type: 'OTHER', port: '', is_active: true }]);
   const setHw = (i: number, k: string, v: any) => set('hardware', hw.map((x, j) => j === i ? { ...x, [k]: v } : x));
 
-  const shown = params.filter((p: any) => !q || `${p.number} ${p.name}`.toLowerCase().includes(q.toLowerCase()));
+  const shown = groups
+    .map((g: any) => ({ ...g, params: g.params.filter((p: any) =>
+      !q || `${p.number} ${p.name}`.toLowerCase().includes(q.toLowerCase())) }))
+    .filter((g: any) => g.params.length > 0);
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
@@ -111,31 +117,41 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
               </span>
             </div>
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#e9e9e9]"><th colSpan={2} className="text-left px-2 py-1.5 border border-[#d5d5d5] font-bold">Geral</th></tr></thead>
               <tbody>
-                {shown.map((p: any) => {
-                  const v = (d.params || {})[p.number] ?? p.default;
-                  return (
-                    <tr key={p.number} className="border-b border-[#eee] hover:bg-[#f7f9fb]">
-                      <td className="px-2 py-1.5 border border-[#eee]" title={p.help_text}>
-                        <span className="text-[#666]">({p.number})</span> {p.name}
-                      </td>
-                      <td className="px-2 py-1 border border-[#eee] w-[45%]">
-                        {p.kind === 'BOOL' ? (
-                          <input type="checkbox" checked={v === true || v === 'true'} onChange={(e) => setParam(p.number, e.target.checked)} className="w-4 h-4" />
-                        ) : p.kind === 'CHOICE' ? (
-                          <select value={v || ''} onChange={(e) => setParam(p.number, e.target.value)} className={cell}>
-                            <option value="">(nenhum)</option>
-                            {(p.choices || []).map((c: string) => <option key={c} value={c}>{c}</option>)}
-                          </select>
-                        ) : (
-                          <input type={p.kind === 'INT' ? 'number' : 'text'} value={v || ''}
-                            onChange={(e) => setParam(p.number, e.target.value)} placeholder="(nenhum)" className={cell} />
-                        )}
-                      </td>
+                {shown.map((g: any) => (
+                  <>
+                    <tr key={g.group} className="bg-[#e9e9e9]">
+                      <td colSpan={2} className="px-2 py-1.5 border border-[#d5d5d5] font-bold">{g.group}</td>
                     </tr>
-                  );
-                })}
+                    {g.params.map((p: any) => {
+                      const v = (d.params || {})[p.number] ?? p.default;
+                      return (
+                        <tr key={p.number} className="border-b border-[#eee] hover:bg-[#f7f9fb]">
+                          <td className="px-2 py-1.5 border border-[#eee]" title={p.help_text}>
+                            <span className="text-[#666]">({p.number})</span> {p.name}
+                            {p.help_text && <div className="text-[10px] text-[#888] mt-0.5">{p.help_text}</div>}
+                          </td>
+                          <td className="px-2 py-1 border border-[#eee] w-[45%]">
+                            {p.kind === 'BOOL' ? (
+                              <input type="checkbox" checked={v === true || v === 'true'} onChange={(e) => setParam(p.number, e.target.checked)} className="w-4 h-4" />
+                            ) : p.kind === 'CHOICE' ? (
+                              <select value={v || ''} onChange={(e) => setParam(p.number, e.target.value)} className={cell}>
+                                <option value="">(nenhum)</option>
+                                {(p.choices || []).map((c: string) => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                            ) : (
+                              <input type={p.kind === 'INT' ? 'number' : 'text'} value={v || ''}
+                                onChange={(e) => setParam(p.number, e.target.value)} placeholder="(nenhum)" className={cell} />
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                ))}
+                {shown.length === 0 && (
+                  <tr><td colSpan={2} className="text-center text-[#999] py-8">Nenhum parâmetro corresponde à pesquisa.</td></tr>
+                )}
               </tbody>
             </table>
           </>

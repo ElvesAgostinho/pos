@@ -88,10 +88,19 @@ if (-not $iscc) {
   Write-Warning "  ISCC.exe /DInstallPassword=A-SUA-SENHA `"$PSScriptRoot\setup.iss`""
   exit 0
 }
-# A senha só existe em memória, passada ao compilador por argumento — nunca é
-# escrita num ficheiro do projeto nem entra no histórico do git.
+# A senha passa ao compilador só por argumento (nunca escrita num ficheiro do
+# PROJETO nem entra no histórico do git) — mas fica um registo LOCAL depois de
+# compilar, dentro de instalador\Output\ (pasta já no .gitignore): sem isto, uma
+# senha esquecida perdia-se para sempre e ninguém instalava mais aquela versão.
 & $iscc "/DInstallPassword=$senha1" (Join-Path $PSScriptRoot 'setup.iss')
+if ($LASTEXITCODE -ne 0) { $senha1 = $null; $senha2 = $null; throw 'Inno Setup falhou a compilar o instalador.' }
+
+$RegistoSenhas = Join-Path $PSScriptRoot 'Output\senhas.txt'
+$OutputDir = Join-Path $PSScriptRoot 'Output'
+$Instalador = Get-ChildItem $OutputDir -Filter 'MwanaLodge-Setup-*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+"$(Get-Date -Format 'yyyy-MM-dd HH:mm')  $($Instalador.Name)  $senha1" | Add-Content -Path $RegistoSenhas -Encoding UTF8
 $senha1 = $null; $senha2 = $null
-if ($LASTEXITCODE -ne 0) { throw 'Inno Setup falhou a compilar o instalador.' }
+
 Write-Host "`nFEITO: instalador em $PSScriptRoot\Output\MwanaLodge-Setup-*.exe"
-Write-Host "Entregue a senha de instalação ao técnico por um canal separado do .exe (nunca por e-mail junto)."
+Write-Host "Senha registada em $RegistoSenhas — ficheiro LOCAL, fora do git, só seu. Trate-o como uma password (mova para um gestor de senhas se quiser)."
+Write-Host "Entregue a senha ao técnico por um canal separado do .exe (nunca por e-mail junto)."

@@ -91,16 +91,20 @@ PARAMS = [
      'aos artigos marcados em 8369 (o preço de Happy Hour já é o desconto).'),
 
     # ---------------- E-mail (SMTP) ----------------
+    # Bloco 9xxx: parâmetro PRÓPRIO do Mwana Lodge (sem equivalente mostrado na HOST até
+    # hoje). Nasceram como 8500-8505/8510 antes de se saber que a HOST usa 8501/8502/8503/
+    # 8510 para outra coisa (opções de Abrir Gaveta e o limite de anulação do terminal) —
+    # ver "params-numbering" na memória.
     # A EMPRESA configura aqui o SEU servidor de envio (e-mails a clientes/parceiros).
     # Sem password preenchida, o motor SIMULA (regista no outbox sem enviar) — o vendedor
     # entrega o sistema a funcionar e o cliente liga o SMTP quando tiver conta.
-    (8500, 'E-mail (SMTP)', 'Servidor SMTP', T, [], '', 'Ex.: smtp.sendgrid.net, smtp.office365.com'),
-    (8501, 'E-mail (SMTP)', 'Porta', I, [], '587', ''),
-    (8502, 'E-mail (SMTP)', 'Utilizador', T, [], '', ''),
-    (8503, 'E-mail (SMTP)', 'Password', T, [], '', 'Guardada no servidor; nunca aparece nos ecrãs.'),
-    (8504, 'E-mail (SMTP)', 'Remetente (From)', T, [], '', 'Ex.: noreply@oseuhotel.ao'),
-    (8505, 'E-mail (SMTP)', 'Usar TLS', B, [], 'true', ''),
-    (8510, 'E-mail (SMTP)', 'E-mail do suporte (envio de logs)', T, [], 'suporte@mwanalodge.ao',
+    (9500, 'E-mail (SMTP)', 'Servidor SMTP', T, [], '', 'Ex.: smtp.sendgrid.net, smtp.office365.com'),
+    (9501, 'E-mail (SMTP)', 'Porta', I, [], '587', ''),
+    (9502, 'E-mail (SMTP)', 'Utilizador', T, [], '', ''),
+    (9503, 'E-mail (SMTP)', 'Password', T, [], '', 'Guardada no servidor; nunca aparece nos ecrãs.'),
+    (9504, 'E-mail (SMTP)', 'Remetente (From)', T, [], '', 'Ex.: noreply@oseuhotel.ao'),
+    (9505, 'E-mail (SMTP)', 'Usar TLS', B, [], 'true', ''),
+    (9510, 'E-mail (SMTP)', 'E-mail do suporte (envio de logs)', T, [], 'suporte@mwanalodge.ao',
      'Para onde o Diagnóstico envia os logs do sistema quando o cliente pede assistência.'),
 
     # ---------------- Reporting ----------------
@@ -305,8 +309,91 @@ PARAMS = [
 ]
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# PARÂMETROS POR TERMINAL (scope=TERMINAL) — o catálogo é global, o VALOR
+# concreto de cada um vive em PosTerminal.params (JSON, {número: valor}), não
+# aqui. O que está aqui é só o nome/tipo/grupo/omissão — o TerminalEditor lê
+# isto em pos/config/params/?scope=TERMINAL e mostra a aba "Geral".
+# ══════════════════════════════════════════════════════════════════════════
+PARAMS_TERMINAL = [
+    # ---------------- Geral ----------------
+    (8523, 'Geral', 'Tipo Posto', C, ['Mesas', 'Venda Direta', 'Mesas + Venda Direta'],
+     'Mesas + Venda Direta', 'Como o terminal vende: por mesa, balcão, ou os dois.'),
+    (8594, 'Geral', 'Abrir Mesa por Código de Barras', B, [], 'false',
+     'O empregado lê o código na mesa para a abrir.'),
+    (8517, 'Geral', 'Setor Único', B, [], 'true', 'O terminal serve um só setor.'),
+    (8516, 'Geral', 'Setor Inicial', T, [], '', 'Setor que abre por omissão.'),
+    (8540, 'Geral', 'Setores Disponíveis', T, [], '', 'Setores a que este terminal pode aceder.'),
+    (8610, 'Geral', 'Perguntar o setor após o login', B, [], 'true',
+     'Pergunta o setor a cada início de sessão.'),
+    (8576, 'Geral', 'Modo de mesas simples', B, [], 'false', 'Mapa de mesas sem plantas.'),
+    (8545, 'Geral', 'Modos de Pagamento', C, ['Todos', 'Só dinheiro', 'Só cartão'], 'Todos',
+     'Que pagamentos este posto aceita.'),
+    (8579, 'Geral', 'Depósitos/Cash Advance - Ativar', B, [], 'false', 'Permite adiantamentos de dinheiro.'),
+    (8528, 'Geral', 'Impressora A4', T, [], '', 'Impressora para faturas A4.'),
+    (8567, 'Geral', 'Impressora de talões', T, [], '', 'A térmica deste terminal (código do periférico).'),
+    (8552, 'Geral', 'Opção para imprimir A4', B, [], 'true', ''),
+    (8580, 'Geral', 'Opção para imprimir modelo específico', B, [], 'true', ''),
+    (8513, 'Geral', 'Perguntar Nr. Clientes', T, [], 'Ao abrir mesa', ''),
+    (8537, 'Geral', 'Nr. clientes pode ser 0', B, [], 'false', ''),
+    (8539, 'Geral', 'Número de Clientes em modo de balcão', I, [], '1', ''),
+    (8514, 'Geral', 'Nos consumos internos, pedir funcionário', B, [], 'true', ''),
+    (8515, 'Geral', 'Pedir motivos de anulação', B, [], 'true', ''),
+    (8502, 'Geral', 'Juntar artigos na grelha de pedidos', B, [], 'false',
+     'Artigos iguais aparecem numa linha só, com a quantidade somada.'),
+    (8503, 'Geral', 'Juntar artigos ao imprimir documentos', B, [], 'true', ''),
+    (8532, 'Geral', 'Utilizar fatura personalizada', B, [], 'false', ''),
+    (8547, 'Geral', 'Pesquisar clientes no', T, [], 'Entity', ''),
+    (8510, 'Geral', 'Nº linhas a anular sem pedir password', I, [], '0',
+     'Acima deste número de linhas anuladas na mesma conta, pede supervisor.'),
+    (8538, 'Geral', 'Imprimir anulação no terminal', B, [], 'true', ''),
+    (8524, 'Geral', 'Nível de Preço', I, [], '1', ''),
+    (8518, 'Geral', 'Tempo até mostrar screensaver', I, [], '0', '0 = nunca.'),
+    (8511, 'Geral', 'Número da mesa em Venda Direta', I, [], '',
+     'A conta de balcão nasce com este número de mesa fixo.'),
+    (9511, 'Geral', 'Bloquear Venda Direta', B, [], 'false',
+     'Companheiro de 8511 na HOST (mesmo número lá) — aqui em número próprio para não colidir.'),
+    (8509, 'Geral', 'Código de IVA neste posto', I, [], '0', ''),
+    (8520, 'Geral', 'Quantidade de sub-contas', I, [], '10', ''),
+    (8534, 'Geral', 'Fechar janela de pagamentos quando pagamento aplicado', B, [], 'false', ''),
+    (8535, 'Geral', 'Pasta de Documentos', T, [], '', ''),
+    (8536, 'Geral', 'Pasta de Imagens', T, [], '', ''),
+    (8542, 'Geral', 'Fechar conta ao imprimir conta da mesa', B, [], 'false',
+     'Só se aplica com Tipo Posto = Mesas ou Mesas + Venda Direta.'),
+    (8612, 'Geral', 'Fazer logout depois de sair de uma conta', B, [], 'false', ''),
+    (8566, 'Geral', 'Pedir cliente/quarto na abertura de mesa', B, [], 'true', ''),
+    (8568, 'Geral', 'Casas decimais na quantidade', I, [], '2', ''),
+    (8583, 'Geral', 'Tamanho da grelha da conta %', I, [], '0', ''),
+    (9583, 'Geral', '% por Coluna', T, [], '20;60;20',
+     'Companheiro de 8583 na HOST (mesmo número lá) — aqui em número próprio para não colidir.'),
+    (8593, 'Geral', 'Payment gateway', T, [], '', ''),
+    (8595, 'Geral', 'Paperless Customer Invoice - Ativar', B, [], 'false', ''),
+    (9595, 'Geral', 'Continuar - Modos de Pagamento', T, [], '',
+     'Companheiro de 8595 na HOST (mesmo número lá) — aqui em número próprio para não colidir.'),
+    (8613, 'Geral', 'Utilizador por defeito', T, [], '', ''),
+    (8617, 'Geral', 'Documentos - Secção', T, [], '', ''),
+    (8618, 'Geral', 'Print server', T, [], '', ''),
+
+    # ---------------- Abrir Gaveta ----------------
+    (8591, 'Abrir Gaveta', 'Não abrir gaveta', B, [], 'false', ''),
+    (8501, 'Abrir Gaveta', 'No fim do dia', B, [], 'true', ''),
+    (8543, 'Abrir Gaveta', 'Na abertura de caixa', B, [], 'true', ''),
+    (8544, 'Abrir Gaveta', 'No fecho de caixa', B, [], 'true', ''),
+
+    # ---------------- Cozinha ----------------
+    (8529, 'Cozinha', 'Documento de pedidos', T, [], '', ''),
+    (8530, 'Cozinha', 'Documento de anulação de pedidos', T, [], '', ''),
+    (8541, 'Cozinha', 'Documento de transferência de mesa', T, [], '', ''),
+    (8619, 'Cozinha', 'Documento de reenvio de pedidos', T, [], '', ''),
+
+    # ---------------- Eventos ----------------
+    (8548, 'Eventos', 'Atribuir eventos a documentos Pos', B, [], 'false', ''),
+    (8549, 'Eventos', 'Dias para mostrar eventos antes da data da atual', I, [], '0', ''),
+]
+
+
 class Command(BaseCommand):
-    help = 'Cria/atualiza o catálogo de parâmetros globais do POS.'
+    help = 'Cria/atualiza o catálogo de parâmetros globais e por-terminal do POS.'
 
     def handle(self, *args, **o):
         for n, group, name, kind, choices, default, help_text in PARAMS:
@@ -314,7 +401,14 @@ class Command(BaseCommand):
                 'name': name, 'group': group, 'kind': kind, 'choices': choices,
                 'default': default, 'help_text': help_text, 'scope': 'GLOBAL',
             })
+        for n, group, name, kind, choices, default, help_text in PARAMS_TERMINAL:
+            PosParameter.objects.update_or_create(number=n, defaults={
+                'name': name, 'group': group, 'kind': kind, 'choices': choices,
+                'default': default, 'help_text': help_text, 'scope': 'TERMINAL',
+            })
         pengine.invalidate()
         self.stdout.write(self.style.SUCCESS(
             f'{PosParameter.objects.filter(scope="GLOBAL").count()} parâmetros globais em '
-            f'{len(set(p[1] for p in PARAMS))} grupos.'))
+            f'{len(set(p[1] for p in PARAMS))} grupos; '
+            f'{PosParameter.objects.filter(scope="TERMINAL").count()} por-terminal em '
+            f'{len(set(p[1] for p in PARAMS_TERMINAL))} grupos.'))
