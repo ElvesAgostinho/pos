@@ -34,6 +34,32 @@ def _num(v):
     return Decimal(str(v or 0))
 
 
+# ─────────────────────────────────────────────────── 04 · RESERVAS
+def r_reservas(p):
+    """RESERVAS — quem vem, quando, para quantos. A agenda do salão, tal como
+    o operador a vê no mapa de mesas, só que em lista e imprimível."""
+    from .models import POSReservation
+    ini, fim = _periodo(p)
+    qs = (POSReservation.objects
+          .filter(reserved_for__date__gte=ini, reserved_for__date__lte=fim)
+          .select_related('outlet', 'table').order_by('reserved_for'))
+    rows = [{
+        'when': timezone.localtime(r.reserved_for).strftime('%d/%m %H:%M'),
+        'guest': r.guest_name, 'phone': r.phone or '',
+        'party': r.party_size, 'outlet': r.outlet.name if r.outlet_id else '',
+        'table': (r.table.name or r.table.table_number) if r.table_id else '(sem mesa)',
+        'preference': r.get_preference_display() if r.preference else '',
+        'status': r.get_status_display(), 'note': r.note or '',
+    } for r in qs]
+    return {
+        'columns': [('when', 'Data/Hora'), ('guest', 'Hóspede/Cliente'), ('phone', 'Telefone'),
+                    ('party', 'Pax'), ('outlet', 'Ponto de venda'), ('table', 'Mesa'),
+                    ('preference', 'Preferência'), ('status', 'Estado'), ('note', 'Nota')],
+        'rows': rows,
+        'totals': {'party': sum(r['party'] for r in rows)},
+    }
+
+
 # ─────────────────────────────────────────────────── 06 · FACTURAÇÃO
 def r_documentos(p):
     from fiscal.models import FiscalDocument
@@ -363,6 +389,155 @@ def r_pagamentos(p):
     }
 
 
+# ─────────────────────────────────────────────────── 10 · FINANCEIROS
+def r_contas_bancarias(p):
+    """CONTAS BANCÁRIAS DA EMPRESA — as mesmas que saem no rodapé da fatura.
+    Não tem período: é a ficha, não um movimento — muda quando o dono a edita."""
+    from fiscal.models import CompanyBankAccount
+    qs = CompanyBankAccount.objects.filter(is_active=True).order_by('sort_order', 'bank_name')
+    rows = [{
+        'bank': c.bank_name, 'branch': c.branch or '', 'account': c.account_number or '',
+        'iban': c.iban or '', 'currency': c.currency, 'holder': c.account_holder or '',
+        'on_invoice': 'Sim' if c.show_on_invoice else 'Não',
+        'default': 'Sim' if c.is_default else '',
+    } for c in qs]
+    return {
+        'columns': [('bank', 'Banco'), ('branch', 'Balcão'), ('account', 'Nº de conta'),
+                    ('iban', 'IBAN'), ('currency', 'Moeda'), ('holder', 'Titular'),
+                    ('on_invoice', 'Sai na fatura'), ('default', 'Padrão')],
+        'rows': rows, 'totals': {},
+    }
+
+
+def r_transferencias_dia(p):
+    """RECEBIMENTOS POR TRANSFERÊNCIA, POR DIA — para bater com o extrato do banco
+    linha a linha (a lista detalhada com a referência de cada uma está em Caixa ›
+    Comprovativos; aqui é o total do dia, o número que se compara ao extrato)."""
+    from .models import POSTicketPayment
+    ini, fim = _periodo(p)
+    qs = (POSTicketPayment.objects
+          .filter(payment_method__bank_transfer=True,
+                  ticket__closed_at__date__gte=ini, ticket__closed_at__date__lte=fim)
+          .values('ticket__closed_at__date')
+          .annotate(n=Count('id'), total=Sum('amount'))
+          .order_by('ticket__closed_at__date'))
+    rows = [{'date': str(l['ticket__closed_at__date']), 'count': l['n'],
+             'total': str(l['total'] or 0)} for l in qs]
+    return {
+        'columns': [('date', 'Data'), ('count', 'Nº transferências'), ('total', 'Total', 'money')],
+        'rows': rows,
+        'totals': {'total': str(sum((_num(r['total']) for r in rows), Decimal('0')))},
+    }
+
+
+# ─────────────────────────────────────────────────── 11 · DEPÓSITOS
+def r_depositos(p):
+    """DEPÓSITOS (CASH ADVANCE) — o dinheiro que a entidade deixou à cabeça e o que
+    já consumiu contra ele. Entrada soma, Utilização/Devolução tira."""
+    from .models import EntityDeposit
+    ini, fim = _periodo(p)
+    qs = (EntityDeposit.objects
+          .filter(created_at__date__gte=ini, created_at__date__lte=fim)
+          .select_related('customer', 'document').order_by('-created_at'))
+    rows = [{
+        'date': timezone.localtime(d.created_at).strftime('%d/%m/%Y %H:%M'),
+        'customer': d.customer.name, 'kind': d.get_kind_display(),
+        'amount': str(d.amount), 'reason': d.reason or '',
+        'document': d.document.invoice_no if d.document_id else '', 'by': d.created_by or '',
+    } for d in qs]
+    entradas = sum((_num(r['amount']) for r in rows if r['kind'].startswith('Entrada')), Decimal('0'))
+    saidas = sum((_num(r['amount']) for r in rows if not r['kind'].startswith('Entrada')), Decimal('0'))
+    return {
+        'columns': [('date', 'Data'), ('customer', 'Entidade'), ('kind', 'Movimento'),
+                    ('amount', 'Valor', 'money'), ('reason', 'Motivo'),
+                    ('document', 'Documento'), ('by', 'Utilizador')],
+        'rows': rows,
+        'totals': {'amount': str(entradas - saidas)},
+    }
+
+
+# ─────────────────────────────────────────────────── 13 · PREVISÃO
+def r_previsao(p):
+    """PREVISÃO DE VENDAS — projeta o período pedido a partir da MÉDIA de cada dia
+    da semana num histórico recente (8 semanas por omissão).
+
+    Não é adivinhação: é a mesma lógica de qualquer sistema hoteleiro de referência
+    — segunda parece-se com a segunda passada, não com o sábado. Serve para a escala
+    de pessoal e a encomenda ao fornecedor, feitas ANTES do dia acontecer.
+    """
+    from .models import POSTicket
+    import datetime as _d
+    ini, fim = _periodo(p)
+    semanas = int(p.get('weeks') or 8)
+    ini_d = _d.date.fromisoformat(str(ini))
+    hist_ini = ini_d - _d.timedelta(weeks=semanas)
+    hist_fim = ini_d - _d.timedelta(days=1)
+
+    balde = {}  # weekday -> {'n_dias': set(datas), 'total': soma, 'tickets': soma}
+    qs = (POSTicket.objects.filter(status='PAID', closed_at__date__gte=hist_ini,
+                                   closed_at__date__lte=hist_fim)
+          .values('closed_at__date')
+          .annotate(total=Sum('grand_total'), n=Count('id')))
+    for l in qs:
+        wd = l['closed_at__date'].weekday()
+        b = balde.setdefault(wd, {'dias': 0, 'total': Decimal('0'), 'tickets': 0})
+        b['dias'] += 1
+        b['total'] += _num(l['total'])
+        b['tickets'] += l['n']
+
+    nomes = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+    rows = []
+    d = ini_d
+    fim_d = _d.date.fromisoformat(str(fim))
+    while d <= fim_d:
+        wd = d.weekday()
+        b = balde.get(wd)
+        media = (b['total'] / b['dias']) if b and b['dias'] else Decimal('0')
+        tix = round(b['tickets'] / b['dias']) if b and b['dias'] else 0
+        rows.append({
+            'date': str(d), 'weekday': nomes[wd],
+            'forecast': str(round(media, 0)), 'tickets': tix,
+            'base': f"{b['dias']} {nomes[wd].lower()}(s) anteriores" if b else '(sem histórico)',
+        })
+        d += _d.timedelta(days=1)
+    return {
+        'columns': [('date', 'Data'), ('weekday', 'Dia'), ('forecast', 'Previsão de vendas', 'money'),
+                    ('tickets', 'Contas previstas'), ('base', 'Base do cálculo')],
+        'rows': rows,
+        'totals': {'forecast': str(sum((_num(r['forecast']) for r in rows), Decimal('0')))},
+    }
+
+
+# ─────────────────────────────────────────────────── 15 · OFICIAIS
+def r_oficiais(p):
+    """MAPA OFICIAL — o retrato que se leva a um auditor ou à AGT: identificação
+    fiscal, certificação, séries ativas e certificados digitais. Não tem período:
+    é o estado ATUAL, não um histórico."""
+    from fiscal.models import FiscalConfig, FiscalSeries, DigitalCertificate
+    cfg = FiscalConfig.get()
+    rows = [
+        {'item': 'NIF', 'value': cfg.company_nif or '—'},
+        {'item': 'Nome comercial', 'value': cfg.trade_name or cfg.company_name or '—'},
+        {'item': 'Regime fiscal', 'value': cfg.tax_regime},
+        {'item': 'Regime de IVA', 'value': cfg.vat_regime},
+        {'item': 'Repartição fiscal', 'value': cfg.tax_office or '—'},
+        {'item': 'Nº de certificado (AGT)', 'value': cfg.certificate_number},
+        {'item': 'Versão da chave de assinatura', 'value': f'v{cfg.key_version}'},
+        {'item': 'Ambiente', 'value': cfg.get_environment_display()},
+    ]
+    for s in FiscalSeries.objects.filter(is_active=True).select_related('doc_type').order_by('doc_type__code', 'code'):
+        rows.append({'item': f'Série {s.doc_type.code} {s.code}',
+                     'value': f'nº atual {s.current_number} · {"certificada" if s.certified else "NÃO certificada"} · {s.get_environment_display() if hasattr(s, "get_environment_display") else s.environment}'})
+    for c in DigitalCertificate.objects.filter(status='ACTIVE').order_by('-is_default'):
+        rows.append({'item': f'Certificado digital ({c.alias})',
+                     'value': f'{c.algorithm} · válido até {c.valid_until or "—"}'
+                              + (' · PADRÃO' if c.is_default else '')})
+    return {
+        'columns': [('item', 'Elemento'), ('value', 'Valor')],
+        'rows': rows, 'totals': {},
+    }
+
+
 # ─────────────────────────────────────────────────── 19 · ESTATÍSTICAS
 def r_horas_pico(p):
     """HORAS DE PICO — a que horas se vende. É o que decide as escalas do pessoal."""
@@ -441,6 +616,106 @@ def r_contas_correntes(p):
         'rows': rows,
         'totals': {'balance': str(sum((_num(r['balance']) for r in rows), Decimal('0'))),
                    'advance': str(sum((_num(r['advance']) for r in rows), Decimal('0')))},
+    }
+
+
+# ─────────────────────────────────────────────────── 30 · GESTÃO DE PONTOS
+def r_pontos_movimentos(p):
+    """MOVIMENTOS DE PONTOS — cartões de fidelização: quem ganhou, quem gastou."""
+    from .models import MemberCardMovement
+    ini, fim = _periodo(p)
+    qs = (MemberCardMovement.objects
+          .filter(kind__in=['EARN', 'REDEEM'], created_at__date__gte=ini, created_at__date__lte=fim)
+          .select_related('customer', 'card', 'ticket').order_by('-created_at'))
+    rows = [{
+        'date': timezone.localtime(m.created_at).strftime('%d/%m/%Y %H:%M'),
+        'customer': m.customer.name, 'card': m.card.name if m.card_id else '',
+        'kind': m.get_kind_display(), 'points': str(m.points),
+        'ticket': m.ticket.ticket_number if m.ticket_id else '', 'reason': m.reason or '',
+    } for m in qs]
+    ganhos = sum((_num(r['points']) for r in rows if r['kind'].startswith('Pontos ganhos')), Decimal('0'))
+    usados = sum((_num(r['points']) for r in rows if r['kind'].startswith('Pontos usados')), Decimal('0'))
+    return {
+        'columns': [('date', 'Data'), ('customer', 'Cliente'), ('card', 'Cartão'),
+                    ('kind', 'Movimento'), ('points', 'Pontos'), ('ticket', 'Venda'), ('reason', 'Motivo')],
+        'rows': rows,
+        'totals': {'points': str(ganhos - usados)},
+    }
+
+
+def r_pontos_saldos(p):
+    """SALDO DE PONTOS POR CLIENTE — o extrato atual de cada cartão de fidelização."""
+    from .models import MemberCardMovement
+    from mdm.models import Customer
+    ids = MemberCardMovement.objects.filter(kind__in=['EARN', 'REDEEM']).values_list('customer_id', flat=True).distinct()
+    rows = []
+    for c in Customer.objects.filter(id__in=ids):
+        saldo = MemberCardMovement.points_of(c)
+        if saldo:
+            rows.append({'customer': c.name, 'tax_id': c.tax_id or '', 'points': str(saldo)})
+    rows.sort(key=lambda r: _num(r['points']), reverse=True)
+    return {
+        'columns': [('customer', 'Cliente'), ('tax_id', 'NIF'), ('points', 'Saldo de pontos')],
+        'rows': rows,
+        'totals': {'points': str(sum((_num(r['points']) for r in rows), Decimal('0')))},
+    }
+
+
+# ─────────────────────────────────────────────────── 99 · OUTROS RELATÓRIOS
+def r_gift_cards(p):
+    """CARTÕES-PRENDA ATIVOS — o passivo da casa: dinheiro já recebido, ainda por
+    entregar em consumo. Não tem período: é o saldo agora."""
+    from .models import GiftCard
+    qs = GiftCard.objects.filter(is_active=True).order_by('-balance')
+    rows = [{'code': g.code, 'initial': str(g.initial_balance), 'balance': str(g.balance),
+             'used': str(_num(g.initial_balance) - _num(g.balance))} for g in qs]
+    return {
+        'columns': [('code', 'Código'), ('initial', 'Valor inicial', 'money'),
+                    ('used', 'Já usado', 'money'), ('balance', 'Saldo', 'money')],
+        'rows': rows,
+        'totals': {'balance': str(sum((_num(r['balance']) for r in rows), Decimal('0')))},
+    }
+
+
+def r_happy_hours(p):
+    """HAPPY HOURS CONFIGURADOS — a grelha hora×dia de cada um, resumida a nº de células."""
+    from .models import HappyHour
+    qs = HappyHour.objects.filter(is_active=True).select_related('outlet').order_by('name')
+    rows = [{'name': h.name, 'kind': h.get_kind_display(),
+             'outlet': h.outlet.name if h.outlet_id else '(todos)',
+             'cells': len(h.cells or {})} for h in qs]
+    return {
+        'columns': [('name', 'Nome'), ('kind', 'Tipo'), ('outlet', 'Ponto de venda'),
+                    ('cells', 'Horas configuradas')],
+        'rows': rows, 'totals': {},
+    }
+
+
+def r_alergenios(p):
+    """CATÁLOGO DE ALERGÉNIOS — os 14 de declaração obrigatória, mais os da casa,
+    e quantos artigos já têm cada um assinalado."""
+    from .models import Allergen
+    qs = Allergen.objects.filter(is_active=True).order_by('name')
+    rows = [{'code': a.code, 'name': a.name, 'items': a.items.count()} for a in qs]
+    return {
+        'columns': [('code', 'Código'), ('name', 'Alergénio'), ('items', 'Artigos assinalados')],
+        'rows': rows, 'totals': {},
+    }
+
+
+def r_comissoes_rh(p):
+    """COMISSÕES CONFIGURADAS — quem ganha comissão, em quê, e quanto."""
+    from .models import HRCommission
+    qs = HRCommission.objects.select_related('resource', 'subfamily', 'item').order_by('resource__code')
+    rows = [{
+        'resource': c.resource.full_name if c.resource_id else '',
+        'scope': (c.item.name if c.item_id else (c.subfamily.name if c.subfamily_id else '(tudo)')),
+        'type': c.get_commission_type_display(), 'value': str(c.value),
+    } for c in qs]
+    return {
+        'columns': [('resource', 'Colaborador'), ('scope', 'Âmbito'),
+                    ('type', 'Tipo'), ('value', 'Valor')],
+        'rows': rows, 'totals': {},
     }
 
 
@@ -808,6 +1083,10 @@ P_PERIODO = [
 ]
 
 CATALOG = [
+    {'code': '04', 'name': 'Reservas', 'reports': [
+        {'code': 'res_agenda', 'name': 'Reservas do período (agenda do salão)',
+         'params': P_PERIODO, 'fn': r_reservas},
+    ]},
     {'code': '06', 'name': 'Facturação', 'reports': [
         {'code': 'fat_documentos', 'name': 'Documentos emitidos (com estado e IVA)',
          'params': P_PERIODO + [{'key': 'doc_type', 'label': 'Tipo de documento', 'type': 'text'}],
@@ -840,6 +1119,25 @@ CATALOG = [
         {'code': 'cx_periodo', 'name': 'Vendas por período (8611 da ficha do setor)',
          'params': P_PERIODO, 'fn': r_periodo_setor},
     ]},
+    {'code': '10', 'name': 'Financeiros', 'reports': [
+        {'code': 'fin_contas', 'name': 'Contas bancárias da empresa',
+         'params': [], 'fn': r_contas_bancarias},
+        {'code': 'fin_transferencias', 'name': 'Recebimentos por transferência, por dia (bater com o extrato)',
+         'params': P_PERIODO, 'fn': r_transferencias_dia},
+    ]},
+    {'code': '11', 'name': 'Depósitos', 'reports': [
+        {'code': 'dep_movimentos', 'name': 'Depósitos e utilizações (Cash Advance)',
+         'params': P_PERIODO, 'fn': r_depositos},
+    ]},
+    {'code': '13', 'name': 'Previsão', 'reports': [
+        {'code': 'prev_vendas', 'name': 'Previsão de vendas (média por dia da semana)',
+         'params': P_PERIODO + [{'key': 'weeks', 'label': 'Semanas de histórico', 'type': 'number', 'default': 8}],
+         'fn': r_previsao},
+    ]},
+    {'code': '15', 'name': 'Oficiais', 'reports': [
+        {'code': 'of_mapa', 'name': 'Mapa oficial (fiscal, séries e certificados)',
+         'params': [], 'fn': r_oficiais},
+    ]},
     {'code': '19', 'name': 'Estatísticas', 'reports': [
         {'code': 'est_horas', 'name': 'Horas de pico (para as escalas)',
          'params': P_PERIODO, 'fn': r_horas_pico},
@@ -852,6 +1150,22 @@ CATALOG = [
     {'code': '20', 'name': 'Contas Correntes', 'reports': [
         {'code': 'cc_saldos', 'name': 'Saldos por entidade (conta corrente e cash advance)',
          'params': [], 'fn': r_contas_correntes},
+    ]},
+    {'code': '30', 'name': 'Gestão de Pontos', 'reports': [
+        {'code': 'pts_movimentos', 'name': 'Movimentos de pontos (ganhos e usados)',
+         'params': P_PERIODO, 'fn': r_pontos_movimentos},
+        {'code': 'pts_saldos', 'name': 'Saldo de pontos por cliente',
+         'params': [], 'fn': r_pontos_saldos},
+    ]},
+    {'code': '99', 'name': 'Outros relatórios', 'reports': [
+        {'code': 'outros_giftcards', 'name': 'Cartões-prenda ativos (saldo por usar)',
+         'params': [], 'fn': r_gift_cards},
+        {'code': 'outros_happyhour', 'name': 'Happy Hours configurados',
+         'params': [], 'fn': r_happy_hours},
+        {'code': 'outros_alergenios', 'name': 'Catálogo de alergénios',
+         'params': [], 'fn': r_alergenios},
+        {'code': 'outros_comissoes', 'name': 'Comissões de RH configuradas',
+         'params': [], 'fn': r_comissoes_rh},
     ]},
     {'code': 'FB', 'name': 'F&B (Compras e Stock)', 'reports': [
         {'code': 'fb_compras', 'name': 'Compras por fornecedor', 'params': P_PERIODO, 'fn': r_compras},

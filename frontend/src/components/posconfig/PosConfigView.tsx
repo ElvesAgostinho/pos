@@ -53,7 +53,6 @@ import FnbPayables from './FnbPayables';
 import PosReports from './PosReports';
 import PosOnline from './PosOnline';
 import PosDocSearch from './PosDocSearch';
-import PosAlerts from './PosAlerts';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
 
@@ -79,11 +78,10 @@ const TITULOS: Record<string, [string, string]> = {
   x_reports: ['🖨', 'Relatórios'],
   x_online: ['📈', 'Informação Online'],
   x_docsearch: ['🔎', 'Pesquisar Documentos'],
-  x_alerts: ['⚠', 'Centro de Alertas'],
 };
 
 /** Ecrãs que ocupam a janela toda — sem a árvore de secções à esquerda. */
-const SEM_ARVORE = ['x_reports', 'x_online', 'x_alerts'];
+const SEM_ARVORE = ['x_reports', 'x_online'];
 
 const MENUS: any[] = [
   {
@@ -108,8 +106,6 @@ const MENUS: any[] = [
   },
   {
     title: 'Reporting', items: [
-      { icon: '⚠', label: 'Centro de Alertas', section: 'x_alerts' },
-      { sep: true },
       { icon: '🖨', label: 'Relatórios', section: 'x_reports' },
       { icon: '📈', label: 'Informação Online', section: 'x_online' },
       { icon: '🔎', label: 'Pesquisar Documentos', section: 'x_docsearch' },
@@ -374,9 +370,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
 
         {/* ---------- CONTEÚDO ---------- */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {section === 'x_alerts' ? (
-            <PosAlerts onOpen={(s) => setSection(s)} />
-          ) : section === 'x_reports' ? (
+          {section === 'x_reports' ? (
             <PosReports />
           ) : section === 'x_online' ? (
             <PosOnline />
