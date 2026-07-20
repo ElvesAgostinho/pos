@@ -1,26 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient as axios } from '../api/client';
-import { Settings, Key, CheckCircle, X, Monitor } from 'lucide-react';
+import { Settings, Key, CheckCircle, X, Monitor, Lock } from 'lucide-react';
 
 const ClientsList: React.FC = () => {
   const [clients, setClients] = useState<any[]>([]);
   const [selectedClient, setSelectedClient] = useState<any | null>(null);
-  
+
   const [showProvModal, setShowProvModal] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedLicense, setGeneratedLicense] = useState<{terminal_id: string, activation_key: string} | null>(null);
 
-  useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const res = await axios.get('http://localhost:8000/api/clm/clients/');
-        setClients(res.data);
-      } catch (err) {
-        console.error("Error fetching clients:", err);
-      }
-    };
-    fetchClients();
-  }, []);
+  // ── Acessos (senha de instalação / senha do dono) da licença ativa do cliente ──
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessBusy, setAccessBusy] = useState<'' | 'install' | 'owner'>('');
+  const [accessResult, setAccessResult] = useState<{ kind: string; username?: string; password: string } | null>(null);
+
+  const fetchClients = async () => {
+    try {
+      const res = await axios.get('http://localhost:8000/api/clm/clients/');
+      setClients(res.data);
+      // mantém a seleção viva, mas com os dados frescos (has_install_password, etc.)
+      setSelectedClient((cur: any) => cur ? res.data.find((c: any) => c.id === cur.id) || cur : cur);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+    }
+  };
+  useEffect(() => { fetchClients(); }, []);
+
+  // A licença mais recente do cliente selecionado — é nela que os acessos vivem.
+  const activeLicense = selectedClient?.licenses?.length
+    ? [...selectedClient.licenses].sort((a: any, b: any) => b.id - a.id)[0] : null;
+
+  const regenerateAccess = async (kind: 'install' | 'owner') => {
+    if (!activeLicense) return;
+    setAccessBusy(kind);
+    setAccessResult(null);
+    try {
+      const r = await axios.post(`http://localhost:8000/api/clm/licenses/${activeLicense.id}/regenerate-access/`, { kind });
+      setAccessResult(r.data);
+      await fetchClients();
+    } catch (err) {
+      console.error('Error regenerating access:', err);
+      alert('Erro ao gerar a senha.');
+    } finally {
+      setAccessBusy('');
+    }
+  };
 
   const handleGenerateTerminal = async () => {
     if (!selectedClient) return;
@@ -119,6 +144,17 @@ const ClientsList: React.FC = () => {
             </div>
             <span className="text-gray-700 ml-1 font-bold">Novo Terminal (Activation Key)</span>
           </button>
+
+          <button
+            disabled={!selectedClient}
+            onClick={() => { setAccessResult(null); setShowAccessModal(true); }}
+            className={`flex items-center space-x-1 px-2 py-1 rounded ${!selectedClient ? 'opacity-50' : 'hover:bg-[#d0d0d0]'}`}
+          >
+            <div className="w-5 h-5 rounded-full border border-transparent flex justify-center items-center bg-[#5bc0de] text-white">
+              <Lock size={10} />
+            </div>
+            <span className="text-gray-700 ml-1 font-bold">Acessos (instalação / dono)</span>
+          </button>
         </div>
       </div>
 
@@ -185,12 +221,102 @@ const ClientsList: React.FC = () => {
                   <span className="font-bold text-green-700">{generating ? 'Gerando...' : 'Gerar e Guardar'}</span>
                 </button>
               )}
-              <button 
-                onClick={closeProvModal} 
+              <button
+                onClick={closeProvModal}
                 className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white"
               >
                 <X size={12} className="text-gray-600" />
                 <span className="font-bold">{generatedLicense ? "Concluir" : "Cancelar"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de ACESSOS — senha de instalação e senha do dono da licença ativa */}
+      {showAccessModal && selectedClient && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+          <div className="bg-[#f0f0f0] border border-[#a0a0a0] w-[460px] shadow-md flex flex-col">
+            <div className="bg-[#333] text-white px-2 py-1 flex justify-between items-center">
+              <div className="flex items-center">
+                <Lock size={14} className="mr-2" />
+                <span className="font-bold text-[11px]">Acessos — {selectedClient.commercial_name}</span>
+              </div>
+              <button onClick={() => setShowAccessModal(false)} className="hover:text-red-400 font-bold">x</button>
+            </div>
+
+            <div className="p-4 bg-[#f0f0f0] flex-1 space-y-3 text-[11px] font-sans">
+              {!activeLicense ? (
+                <div className="bg-white border border-[#a0a0a0] p-3 text-gray-600">
+                  Este cliente ainda não tem nenhuma licença — crie uma pelo assistente "Novo Cliente" primeiro.
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white border border-[#a0a0a0] p-3">
+                    <div className="font-bold text-gray-700 mb-1">Senha de instalação</div>
+                    <div className="text-gray-500 text-[10px] mb-2">
+                      A que o técnico introduz para o setup.exe deste cliente sequer arrancar.
+                    </div>
+                    {activeLicense.has_install_password && (
+                      <div className="text-[10px] text-gray-500 mb-2">
+                        ✓ Definida em {new Date(activeLicense.install_password_set_at).toLocaleString('pt-PT')}
+                      </div>
+                    )}
+                    <button onClick={() => regenerateAccess('install')} disabled={accessBusy !== ''}
+                      className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white disabled:opacity-50">
+                      <Key size={11} className="text-blue-700" />
+                      <span className="font-bold text-blue-800">
+                        {accessBusy === 'install' ? 'A gerar…' : activeLicense.has_install_password ? 'Gerar nova (substitui a atual)' : 'Gerar senha de instalação'}
+                      </span>
+                    </button>
+                    {accessResult?.kind === 'install' && (
+                      <div className="mt-2 bg-[#fff8e1] border border-[#e0c080] p-2">
+                        <div className="text-[10px] font-bold text-[#8a6100] mb-1">
+                          ⚠ Só aparece agora — copie e entregue ao técnico:
+                        </div>
+                        <input readOnly value={accessResult.password} onClick={(e) => (e.target as HTMLInputElement).select()}
+                          className="w-full border border-[#999] px-2 py-1 text-[11px] font-mono bg-white select-all" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-white border border-[#a0a0a0] p-3">
+                    <div className="font-bold text-gray-700 mb-1">Senha do dono</div>
+                    <div className="text-gray-500 text-[10px] mb-2">
+                      A conta ({activeLicense.owner_username || 'dono'}) com que o dono do cliente faz o primeiro login no sistema instalado.
+                    </div>
+                    {activeLicense.has_owner_password && (
+                      <div className="text-[10px] text-gray-500 mb-2">
+                        ✓ Definida em {new Date(activeLicense.owner_password_set_at).toLocaleString('pt-PT')}
+                      </div>
+                    )}
+                    <button onClick={() => regenerateAccess('owner')} disabled={accessBusy !== ''}
+                      className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white disabled:opacity-50">
+                      <Key size={11} className="text-blue-700" />
+                      <span className="font-bold text-blue-800">
+                        {accessBusy === 'owner' ? 'A gerar…' : activeLicense.has_owner_password ? 'Gerar nova (substitui a atual)' : 'Gerar senha do dono'}
+                      </span>
+                    </button>
+                    {accessResult?.kind === 'owner' && (
+                      <div className="mt-2 bg-[#fff8e1] border border-[#e0c080] p-2">
+                        <div className="text-[10px] font-bold text-[#8a6100] mb-1">
+                          ⚠ Só aparece agora — copie e entregue ao técnico:
+                        </div>
+                        <div className="text-[10px] text-gray-600 mb-1">Utilizador: <b>{accessResult.username}</b></div>
+                        <input readOnly value={accessResult.password} onClick={(e) => (e.target as HTMLInputElement).select()}
+                          className="w-full border border-[#999] px-2 py-1 text-[11px] font-mono bg-white select-all" />
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="bg-[#e0e0e0] border-t border-[#b0b0b0] p-2 flex justify-end space-x-2">
+              <button onClick={() => setShowAccessModal(false)}
+                className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white">
+                <X size={12} className="text-gray-600" />
+                <span className="font-bold">Fechar</span>
               </button>
             </div>
           </div>

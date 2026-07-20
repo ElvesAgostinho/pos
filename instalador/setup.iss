@@ -108,6 +108,12 @@ var
   PgDados: TWizardPage;
   TipoBD: TInputOptionWizardPage;
   EdHost, EdPorta, EdBase, EdUser, EdPass: TNewEdit;
+  { ── A CONTA DO DONO — como a Oracle pede a password do SYS/SYSTEM na instalação,
+    aqui pede-se a conta com que o dono do hotel faz o PRIMEIRO login. O técnico
+    traz o utilizador/senha que o PCC gerou (ecrã "Acessos" do cliente) — nunca se
+    inventa uma ali, na hora, sem ficar registada em lado nenhum. }
+  DonoPagina: TWizardPage;
+  EdDonoUser, EdDonoPass, EdDonoPass2: TNewEdit;
 
 procedure InitializeWizard;
 var
@@ -138,12 +144,32 @@ begin
   EdBase  := Campo(PgDados, 72,  'Base:',       'mwanalodge', False);
   EdUser  := Campo(PgDados, 104, 'Utilizador:', 'mwana',     False);
   EdPass  := Campo(PgDados, 136, 'Password:',   '',          True);
+
+  DonoPagina := CreateCustomPage(PgDados.ID,
+    'Conta do Dono', 'A conta com que o dono do sistema faz o primeiro login');
+  EdDonoUser  := Campo(DonoPagina, 8,   'Utilizador:',        'dono', False);
+  EdDonoPass  := Campo(DonoPagina, 40,  'Password:',          '',     True);
+  EdDonoPass2 := Campo(DonoPagina, 72,  'Confirmar Password:', '',    True);
 end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   { a página do PostgreSQL só aparece a quem o escolheu }
   Result := (PageID = PgDados.ID) and (TipoBD.SelectedValueIndex = 0);
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  Result := True;
+  if CurPageID = DonoPagina.ID then begin
+    if EdDonoPass.Text = '' then begin
+      MsgBox('Indique a password do dono — foi gerada no PCC (ecrã Acessos do cliente).', mbError, MB_OK);
+      Result := False;
+    end else if EdDonoPass.Text <> EdDonoPass2.Text then begin
+      MsgBox('As duas passwords não coincidem.', mbError, MB_OK);
+      Result := False;
+    end;
+  end;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
@@ -161,5 +187,8 @@ begin
         'host=' + EdHost.Text + #13#10 + 'porta=' + EdPorta.Text + #13#10 +
         'base=' + EdBase.Text + #13#10 + 'utilizador=' + EdUser.Text + #13#10 +
         'password=' + EdPass.Text + #13#10, False);
+    SaveStringToFile(Ini,
+      '[dono]' + #13#10 + 'utilizador=' + EdDonoUser.Text + #13#10 +
+      'password=' + EdDonoPass.Text + #13#10, True);
   end;
 end;

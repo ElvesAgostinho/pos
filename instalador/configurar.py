@@ -31,6 +31,12 @@ def ler_escolha(caminho_ini):
     return cfg['bd'] if cfg.has_section('bd') else {'tipo': 'sqlite'}
 
 
+def ler_dono(caminho_ini):
+    cfg = configparser.ConfigParser()
+    cfg.read(caminho_ini, encoding='utf-8')
+    return cfg['dono'] if cfg.has_section('dono') else None
+
+
 def escrever_env(bd):
     """O .env é escrito UMA vez e nunca por cima: a SECRET_KEY assina sessões e a
     license.key — regenerá-la numa atualização deslogava toda a gente e invalidava
@@ -83,6 +89,18 @@ def main():
     print(f'.env {estado}; base = {bd.get("tipo", "sqlite")}')
     correr('migrate', '--noinput')
     correr('collectstatic', '--noinput')
+
+    # A CONTA DO DONO — utilizador/password que o técnico introduziu no wizard
+    # (gerados no PCC). Numa atualização, o wizard volta a perguntar; se a
+    # password vier vazia por algum motivo, não se mexe na conta existente —
+    # criar_dono.py exige --password preenchida, por isso falha alto em vez de
+    # apagar silenciosamente o acesso do dono.
+    dono = ler_dono(ini)
+    if dono and dono.get('password'):
+        correr('criar_dono', '--username', dono.get('utilizador', 'dono'),
+               '--password', dono['password'])
+        print('Conta do dono pronta.')
+
     print('Base de dados pronta. Os serviços podem arrancar.')
 
 

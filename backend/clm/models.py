@@ -120,6 +120,19 @@ class License(models.Model):
     agt_connection = models.JSONField(default=dict, blank=True)
     agt_issued_at = models.DateTimeField(blank=True, null=True)
 
+    # ACESSOS gerados no PCC (nunca escritos à mão, nunca devolvidos em claro pela API
+    # depois de gerados — só uma vez, no momento em que se criam).
+    #   install_password: a senha que o TÉCNICO usa para correr o setup.exe deste
+    #     cliente (gate do Inno Setup — ver instalador/build_instalador.ps1).
+    #   owner_username/owner_password: a conta com que o DONO do cliente faz login
+    #     pela primeira vez no sistema instalado — o técnico introduz-na no wizard
+    #     de instalação (página "Conta do Dono"), o configurar.py cria o utilizador.
+    install_password_enc = models.TextField(blank=True, null=True)
+    install_password_set_at = models.DateTimeField(blank=True, null=True)
+    owner_username = models.CharField(max_length=60, blank=True, null=True, default='dono')
+    owner_password_enc = models.TextField(blank=True, null=True)
+    owner_password_set_at = models.DateTimeField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 

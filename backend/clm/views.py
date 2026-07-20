@@ -150,6 +150,41 @@ class LicenseViewSet(viewsets.ModelViewSet):
             resp.setdefault('agt', {})['connection'] = lic_con.agt_connection
         return Response(resp)
 
+    @action(detail=True, methods=['post'], url_path='regenerate-access')
+    def regenerate_access(self, request, pk=None):
+        """ACESSOS — (re)gera a senha de instalação ou a senha do dono desta licença.
+
+        POST {kind: 'install' | 'owner'}. A senha só volta em claro NESTA resposta —
+        depois fica cifrada na base do PCC (clm.secrets) e não há forma de a reler,
+        só de a substituir por uma nova. Regenerar invalida a anterior: quem já a
+        tinha copiado tem de a copiar outra vez.
+        """
+        from django.utils import timezone
+        from .secrets import encrypt, gerar_senha
+        lic = self.get_object()
+        kind = request.data.get('kind')
+        if kind not in ('install', 'owner'):
+            return Response({'detail': 'kind tem de ser "install" ou "owner".'}, status=400)
+
+        nova = gerar_senha()
+        if kind == 'install':
+            lic.install_password_enc = encrypt(nova)
+            lic.install_password_set_at = timezone.now()
+            lic.save(update_fields=['install_password_enc', 'install_password_set_at'])
+            AuditLogCLM.objects.create(action='REGENERATE_INSTALL_PASSWORD',
+                details={'license': lic.license_number}, user_identity=str(request.user))
+            return Response({'kind': 'install', 'password': nova})
+
+        username = (request.data.get('owner_username') or lic.owner_username or 'dono').strip()
+        lic.owner_username = username
+        lic.owner_password_enc = encrypt(nova)
+        lic.owner_password_set_at = timezone.now()
+        lic.save(update_fields=['owner_username', 'owner_password_enc', 'owner_password_set_at'])
+        AuditLogCLM.objects.create(action='REGENERATE_OWNER_PASSWORD',
+            details={'license': lic.license_number}, user_identity=str(request.user))
+        return Response({'kind': 'owner', 'username': username, 'password': nova})
+
+
 class InstallationViewSet(viewsets.ModelViewSet):
     queryset = Installation.objects.all()
     serializer_class = InstallationSerializer

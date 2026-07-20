@@ -156,26 +156,37 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
             <Row label="Cor do Texto:" w="w-[100px]">
               <input value={d.text_color || ''} onChange={(e) => set('text_color', e.target.value)} className={`${inp} flex-1`} style={inputStyle} />
             </Row>
+            {/* Imagem do Hotel — SÓ por upload, de propósito: um URL escrito à mão aponta
+                para fora (uma nuvem terceira, um link que pode morrer); um ficheiro
+                carregado fica no disco do próprio servidor do hotel, como tudo o resto. */}
             <Row label="Imagem do Hotel:" w="w-[100px]">
-              <input value={d.logo_url || ''} onChange={(e) => set('logo_url', e.target.value)} placeholder="URL ou carregue um ficheiro" className={`${inp} flex-1`} style={inputStyle} />
+              <label className="flex-1 flex items-center gap-2 cursor-pointer">
+                <span className={`${inp} flex-1 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
+                  {d.logo_url ? d.logo_url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
+                </span>
+                <span className="px-3 py-1 text-[12px] font-semibold bg-[#3c3c3c] text-white hover:bg-[#4c4c4c] flex-shrink-0">
+                  Carregar…
+                </span>
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    const fd = new FormData();
+                    fd.append('file', f);
+                    fd.append('folder', 'logos');
+                    try {
+                      const r = await apiClient.post('platform/upload/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+                      set('logo_url', r.data.url);
+                      notifyGuide({ title: 'Logótipo carregado', message: 'Carregue em Gravar para o aplicar nos documentos e nos terminais.' });
+                    } catch (err) { notifyError(err); }
+                    e.target.value = '';
+                  }} />
+              </label>
+              {d.logo_url && (
+                <button onClick={() => set('logo_url', '')} title="Remover logótipo"
+                  className="px-2 py-1 text-[12px] text-[#a01818] hover:bg-[#fdecea] flex-shrink-0">✕</button>
+              )}
             </Row>
-            {/* Carregar o logótipo do disco — fica no servidor do hotel, não numa nuvem terceira. */}
-            <label className="flex items-center gap-2 text-[12px] cursor-pointer">
-              <span className="w-[100px] flex-shrink-0 text-[#333]">Carregar:</span>
-              <input type="file" accept="image/*" className="text-[11px]"
-                onChange={async (e) => {
-                  const f = e.target.files?.[0];
-                  if (!f) return;
-                  const fd = new FormData();
-                  fd.append('file', f);
-                  fd.append('folder', 'logos');
-                  try {
-                    const r = await apiClient.post('platform/upload/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-                    set('logo_url', r.data.url);
-                    notifyGuide({ title: 'Logótipo carregado', message: 'Carregue em Gravar para o aplicar nos documentos e nos terminais.' });
-                  } catch (err) { notifyError(err); }
-                }} />
-            </label>
             <div className="border border-[#d0d0d0] h-[190px] flex items-center justify-center p-3"
               style={{ background: d.bg_color || '#fff' }}>
               {d.logo_url

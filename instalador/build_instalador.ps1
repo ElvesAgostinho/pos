@@ -29,9 +29,10 @@ function Ler-SenhaPlana([string]$Prompt) {
 }
 
 Write-Host "== 1/6 Senha de instalação =="
-Write-Host "Esta é a senha que o TÉCNICO tem de saber para instalar no cliente — nunca fica gravada no código."
+Write-Host "Vá ao PCC (Gestão de Clientes > Acessos) e gere/copie a senha de instalação DESTE cliente."
+Write-Host "Cole-a aqui — nunca fica gravada no código."
 do {
-  $senha1 = Ler-SenhaPlana 'Senha de instalação'
+  $senha1 = Ler-SenhaPlana 'Senha de instalação (do PCC)'
   $senha2 = Ler-SenhaPlana 'Repita a senha'
   if ($senha1 -ne $senha2) { Write-Warning 'As duas senhas não coincidem — tente outra vez.' }
   elseif ([string]::IsNullOrWhiteSpace($senha1)) { Write-Warning 'A senha não pode ficar vazia.' }

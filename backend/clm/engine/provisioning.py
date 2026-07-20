@@ -56,19 +56,35 @@ class ProvisioningWorkflow:
         
         # 4. Generate Cryptographic Signature for Offline Validation
         license_obj.signature = self._generate_signature(license_obj)
+
+        # 5. ACESSOS — a senha de instalação (gate do setup.exe) e a senha do dono
+        # (primeiro login no sistema instalado) nascem AQUI, uma vez, e só voltam em
+        # claro NESTA resposta. Depois disso ficam cifradas na base do PCC — quem
+        # precisar de as reler outra vez tem de as gerar de novo (regenerate-access).
+        from clm.secrets import encrypt, gerar_senha
+        install_password = gerar_senha()
+        owner_password = gerar_senha()
+        license_obj.install_password_enc = encrypt(install_password)
+        license_obj.install_password_set_at = timezone.now()
+        license_obj.owner_username = 'dono'
+        license_obj.owner_password_enc = encrypt(owner_password)
+        license_obj.owner_password_set_at = timezone.now()
         license_obj.save()
 
-        # 5. Log Audit
+        # 6. Log Audit
         AuditLogCLM.objects.create(
             action="CREATE_CLIENT_PROVISIONING",
             details={"client_id": client.id, "license": license_number},
             user_identity=self.admin_user
         )
-        
+
         return {
             "status": "success",
             "client_code": client.code,
-            "license_key": self._generate_license_key_string(license_obj)
+            "license_key": self._generate_license_key_string(license_obj),
+            "install_password": install_password,
+            "owner_username": license_obj.owner_username,
+            "owner_password": owner_password,
         }
 
     def _license_payload(self, license_obj):

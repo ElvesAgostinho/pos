@@ -17,6 +17,10 @@ const Wizard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [licenseKey, setLicenseKey] = useState('');
+  // ACESSOS gerados automaticamente ao provisionar — só vêm em claro NESTA resposta.
+  const [installPassword, setInstallPassword] = useState('');
+  const [ownerUsername, setOwnerUsername] = useState('');
+  const [ownerPassword, setOwnerPassword] = useState('');
 
   // Catálogo canónico vindo do backend (fonte única partilhada com o ERP)
   const [catalog, setCatalog] = useState<ModuleDef[]>([]);
@@ -93,6 +97,9 @@ const Wizard: React.FC = () => {
       });
 
       setLicenseKey(res.data.license_key || 'Chave gerada no backend...');
+      setInstallPassword(res.data.install_password || '');
+      setOwnerUsername(res.data.owner_username || 'dono');
+      setOwnerPassword(res.data.owner_password || '');
       setSuccess(true);
     } catch (err) {
       console.error('Error provisioning:', err);
@@ -118,9 +125,33 @@ const Wizard: React.FC = () => {
               </p>
             </div>
           </div>
-          <div className="bg-white border border-[#999] p-2 mb-4">
-            <code className="text-[10px] text-gray-800 break-all select-all block mb-2">{licenseKey}</code>
+          <div className="mb-3">
+            <div className="text-[10px] font-bold text-gray-600 mb-1">Chave de licença (license.key)</div>
+            <div className="bg-white border border-[#999] p-2">
+              <code className="text-[10px] text-gray-800 break-all select-all block">{licenseKey}</code>
+            </div>
           </div>
+
+          <div className="bg-[#fff8e1] border border-[#e0c080] p-3 mb-3">
+            <div className="text-[10px] font-bold text-[#8a6100] mb-2">
+              ⚠ Estas duas senhas só aparecem UMA VEZ. Copie-as agora — depois só é possível gerar novas, não reler as atuais.
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-[10px] font-bold text-gray-600 mb-1">Senha de instalação (para o técnico)</div>
+                <input readOnly value={installPassword} onClick={(e) => (e.target as HTMLInputElement).select()}
+                  className="w-full border border-[#999] px-2 py-1 text-[11px] font-mono bg-white select-all" />
+                <div className="text-[9px] text-gray-500 mt-0.5">Cole no build_instalador.ps1 quando o pedir.</div>
+              </div>
+              <div>
+                <div className="text-[10px] font-bold text-gray-600 mb-1">Senha do dono ({ownerUsername})</div>
+                <input readOnly value={ownerPassword} onClick={(e) => (e.target as HTMLInputElement).select()}
+                  className="w-full border border-[#999] px-2 py-1 text-[11px] font-mono bg-white select-all" />
+                <div className="text-[9px] text-gray-500 mt-0.5">Digite-a na página "Conta do Dono" do instalador.</div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-end border-t border-[#ccc] pt-2 mt-2">
             <button onClick={() => { setSuccess(false); setStep(1); }} className="px-4 py-1 border border-[#333] bg-[#333] text-white hover:bg-[#444]">
               Concluir
