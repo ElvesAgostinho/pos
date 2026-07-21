@@ -57,44 +57,31 @@ sudo rm -rf /opt/mwana-pcc/webapp/* && sudo cp -r dist/. /opt/mwana-pcc/webapp/
 sudo systemctl restart mwana-pcc
 ```
 
-## A página do Django Admin (`/admin/`)
+## A consola do PCC — só por VPN (como já fazes com o sistema do teu amigo)
 
-Continua lá — é um escape hatch genuíno (corrigir um registo à mão numa
-emergência) e não vale a pena tirá-lo. Mas **não a deixe exposta ao público**:
-o `nginx-pcc.conf` já está pronto para isso — a forma correta não é mudar o
-URL (segurança por obscuridade não protege nada a sério), é **restringir por
-IP ou por VPN**. Acrescente ao bloco `location /` do nginx, antes do
-`proxy_pass`, algo como:
+O `nginx-pcc.conf` já vem assim de propósito: a consola inteira (login, Gestão
+de Clientes, Wizard, e o `/admin/` do Django) **só responde a quem está ligado
+por OpenVPN** — de fora, nem o ecrã de login se vê, é "connection refused".
+A ÚNICA porta aberta ao público é a chamada que as instalações dos clientes
+fazem sozinhas para sincronizar (`/api/clm/licenses/latest/`) — essa continua
+por HTTPS normal, sem VPN nenhuma do lado deles (decisão já tomada: só o TEU
+acesso pessoal fica atrás da VPN, os clientes não precisam de correr nada extra).
 
-```nginx
-location /admin/ {
-    allow SEU.IP.DE.CASA;      # ou a sub-rede da VPN (ver abaixo)
-    deny all;
-    proxy_pass http://unix:/run/mwana-pcc.sock;
-    proxy_set_header Host $host;
-}
+Para montar essa VPN na VPS:
+
+```bash
+sudo bash deploy/pcc/setup-vpn.sh
 ```
 
-E, já agora: a conta que criou com `createsuperuser` deve ter uma password
-forte e só sua — é a chave-mestra de todo o PCC.
+Usa o [openvpn-install](https://github.com/angristan/openvpn-install) (o
+instalador comunitário mais usado para isto — não vale a pena escrever um de
+raiz) e no fim entrega um ficheiro `.ovpn` para importar na app **OpenVPN
+Connect** (a mesma que já usas). A partir daí, `https://pcc.mwanalodge.ao` só
+abre com a VPN ligada. Para dar acesso a outro técnico mais tarde, corra o
+mesmo `openvpn-install.sh` outra vez — tem um menu "Add a new user".
 
-## VPN (para a sincronização com os clientes, opcional mas recomendado)
-
-O `PCC_URL` de cada cliente pode apontar para o domínio público com HTTPS
-(simples, funciona já) — **ou**, se quiser um nível a mais de controlo (só a
-VPS e as instalações que você autorizou é que se falam, nunca a internet
-pública), monte uma VPN **WireGuard** entre a VPS e cada instalação:
-
-1. Na VPS: `apt install wireguard`, gera um par de chaves, cria `wg0` com um IP
-   privado (ex. `10.66.0.1/24`).
-2. Em cada cliente: instala o cliente WireGuard, entra na mesma rede privada
-   (ex. `10.66.0.2/24`), aponta `PCC_URL=https://10.66.0.1` (ou um nome interno).
-3. O nginx da VPS passa a só aceitar ligações da interface `wg0` para as rotas
-   de sincronização, se quiser ir a esse ponto.
-
-Isto é mais trabalho por cliente (cada instalação precisa do túnel a correr) —
-para começar, HTTPS público com domínio + a restrição de IP no `/admin/` já dá
-uma proteção séria. Fica documentado para quando quiser subir o nível.
+Já agora: a conta que criou com `createsuperuser` deve ter uma password forte
+e só sua — é a chave-mestra de todo o PCC, mesmo estando atrás da VPN.
 
 ## Cópias de segurança
 

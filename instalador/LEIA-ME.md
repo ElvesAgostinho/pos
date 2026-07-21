@@ -56,3 +56,11 @@ do PCC na ativação.
 
 Gera-se um setup novo (versão acima) e corre-se por cima: o `.env` e os `\dados`
 mantêm-se, as migrações novas aplicam-se, os serviços reiniciam.
+
+## Extra opcional: o dono aceder de fora do hotel
+
+Se um cliente pedir para aceder ao seu próprio sistema remotamente (de casa,
+em viagem), há um script à parte em `instalador/vpn-cliente/` — instala um
+OpenVPN no servidor DELE (o dono liga-se com a app "OpenVPN Connect", a mesma
+que se usa para o PCC). Não faz parte da instalação normal; ver o LEIA-ME.md
+dessa pasta.
