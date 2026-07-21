@@ -37,19 +37,21 @@ export default function TouchKeyboard({ valor, setValor, onOk }: {
   const [aberto, setAberto] = useState(false);
   const { ref, pegar, pos } = useArrastar();
   const [maiusc, setMaiusc] = useState(false);
-  const LINHAS = (() => {
-    try {
-      const cfg = JSON.parse(localStorage.getItem('pos_cfg') || '{}');
-      return LAYOUTS[cfg.keyboard_layout] || LAYOUTS['QWERTY (Português)'];
-    } catch { return LAYOUTS['QWERTY (Português)']; }
+  const cfg = (() => {
+    try { return JSON.parse(localStorage.getItem('pos_cfg') || '{}'); } catch { return {}; }
   })();
+  const LINHAS = LAYOUTS[cfg.keyboard_layout] || LAYOUTS['QWERTY (Português)'];
+  // (9313) O teclado sobe sozinho ao focar a caixa — DE FÁBRICA. Desliga-se no
+  // backoffice para quem tem teclado físico no terminal e não quer o virtual a
+  // saltar por cima sempre que o dedo toca na caixa de pesquisa.
+  const abreSozinho = cfg.auto_open_touch_keyboard !== false;
 
   return (
     <div className="bg-[#1f1f1f] p-2 flex-shrink-0 border-t border-black">
       <div className="flex items-center gap-2">
         <button onClick={() => { setValor(''); onOk(); }}
           className="h-[46px] px-3 bg-[#3a3a3a] text-white text-[14px] rounded">(todos)</button>
-        <input value={valor} onFocus={() => setAberto(true)}
+        <input value={valor} onFocus={() => abreSozinho && setAberto(true)}
           onChange={(e) => setValor(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && onOk()}
           placeholder="procurar…"

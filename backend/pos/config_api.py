@@ -4931,6 +4931,9 @@ class PosTerminalConfigView(APIView):
             'session_timeout_minutes': P.int(8088, 60),
             'app_close_minutes': P.int(8138, 120),
             'keyboard_layout': P.text(8001, 'QWERTY (Português)'),
+            # (9313) o teclado tátil das pesquisas (Entidade, Artigos…) sobe sozinho ao
+            # focar a caixa — desliga-se para quem usa teclado físico no terminal.
+            'auto_open_touch_keyboard': P.bool(9313, True),
             'base_payment_mode': P.text(8012, 'Cash'),
             'show_payment_status': P.bool(8084, False),
             'split_warn_qty': P.int(8197, 10),
@@ -5128,6 +5131,9 @@ class PosBootstrapView(APIView):
                 'session_timeout_minutes': P.int(8088, 60),
                 'app_close_minutes': P.int(8138, 120),
                 'keyboard_layout': P.text(8001, 'QWERTY (Português)'),
+                # (9313) o teclado tátil das pesquisas (Entidade, Artigos…) sobe sozinho
+                # ao focar a caixa — desliga-se para quem usa teclado físico no terminal.
+                'auto_open_touch_keyboard': P.bool(9313, True),
                 'base_payment_mode': P.text(8012, 'Cash'),
                 'show_payment_status': P.bool(8084, False),
                 'split_warn_qty': P.int(8197, 10),

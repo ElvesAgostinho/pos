@@ -26,6 +26,11 @@ PARAMS = [
     (9312, 'Front Office', 'Abrir o teclado ao entrar na venda', B, [], 'true',
      'LIGADO de fábrica: entrar no balcão e ver "escolha uma página" é perder um toque em '
      'todas as vendas do dia.'),
+    (9313, 'Front Office', 'Abrir o teclado tátil automaticamente ao focar a pesquisa', B, [], 'true',
+     'LIGADO de fábrica: tocar na caixa de pesquisa (Entidade, Artigos, hóspedes…) já abre o '
+     'teclado no ecrã, sem precisar de tocar duas vezes. DESLIGADO: a caixa fica pronta a '
+     'escrever, mas o teclado só sobe se o empregado tocar no ícone dele — para quem liga um '
+     'teclado físico ao terminal e não quer o virtual a saltar por cima.'),
     (8300, 'Front Office', 'Venda Direta (vender sem passar pelas mesas)', B, [], 'false',
      'LIGADO: o terminal abre logo numa conta de balcão, sem seletor de mesa. É o bar de '
      'praia e o take-away — quem serve ao balcão não tem mesas para escolher.'),
