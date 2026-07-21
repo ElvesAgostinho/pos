@@ -118,6 +118,12 @@ class Item(models.Model):
     no_discount = models.BooleanField(default=False)           # não aceita descontos
     no_stock_movement = models.BooleanField(default=False)     # vender não mexe no stock
     prep_time_minutes = models.PositiveIntegerField(default=0)  # tempo de preparação (KDS)
+    # Motor 5 (KDS) — para onde o pedido vai por OMISSÃO, quando o outlet não tem uma
+    # ficha própria em POSProductConfig. Sem isto, um artigo novo (ou um outlet que
+    # ainda não configurou nada) caía sempre em "Cozinha" à força do valor por omissão
+    # do motor — e uma bebida engarrafada não passa pela cozinha nenhuma.
+    KDS_STATIONS = [('KITCHEN', 'Cozinha'), ('BAR', 'Bar'), ('PASTRY', 'Pastelaria'), ('NONE', 'Sem produção')]
+    kds_station = models.CharField(max_length=10, choices=KDS_STATIONS, default='KITCHEN')
     accounting_account = models.CharField(max_length=30, blank=True, null=True)   # conta do PGC-AO
     analytic_account_purchase = models.CharField(max_length=30, blank=True, null=True)
     analytic_account_sale = models.CharField(max_length=30, blank=True, null=True)

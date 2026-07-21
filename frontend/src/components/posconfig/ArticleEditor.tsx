@@ -275,6 +275,15 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                     <Row label="Tempo de preparação (min):" w="w-[150px]">
                       <input type="number" value={d.prep_time_minutes ?? 0} onChange={(e) => set('prep_time_minutes', Number(e.target.value))} className={inputCls} style={inputStyle} />
                     </Row>
+                    <Row label="Estação de produção (KDS):" w="w-[150px]">
+                      <select value={d.kds_station || 'KITCHEN'} onChange={(e) => set('kds_station', e.target.value)} className={inputCls} style={inputStyle}
+                        title="Para onde o pedido vai quando se lança este artigo. Um outlet pode ter uma ficha própria (Configuração POS › Setores) que substitui isto só ali.">
+                        <option value="KITCHEN">Cozinha</option>
+                        <option value="BAR">Bar</option>
+                        <option value="PASTRY">Pastelaria</option>
+                        <option value="NONE">Sem produção (não vai a lado nenhum)</option>
+                      </select>
+                    </Row>
                     <Row label="Conta de Contabilidade:" w="w-[150px]">
                       <input value={d.accounting_account || ''} onChange={(e) => set('accounting_account', e.target.value)} className={inputCls} style={inputStyle} />
                     </Row>

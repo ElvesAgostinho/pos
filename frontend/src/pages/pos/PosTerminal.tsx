@@ -310,21 +310,24 @@ export default function PosTerminal() {
       ? [{ label: 'Venda Direta', icon: <IcoVenda size={28} />, act: vendaDireta, on: !!setor }]
       : []),
     // CONSULTA: toca-se na mesa e vê-se o talão — sem passar pela página de venda.
+    // Todas estas quatro passam pelo MAPA DE MESAS (só com filtros diferentes) — com
+    // (8300) Venda Direta ligado não há mesas nenhumas, e mostrá-las aqui era a mesma
+    // porta das traseiras que já se fechou no ícone do topo.
     { label: 'Consulta de Mesa', icon: <IcoImpressora size={28} />, ativo: emConsulta,
-      act: () => alternar('VIEW', '', emConsulta), on: !!sessao || !cfg?.require_cash_open },
+      act: () => alternar('VIEW', '', emConsulta), on: (!!sessao || !cfg?.require_cash_open) && !cfg?.direct_sale },
     { label: 'Pagamentos', icon: <IcoDinheiro size={28} />, ativo: emPagamentos,
-      act: () => alternar('PAY', '', emPagamentos), on: !!sessao },
+      act: () => alternar('PAY', '', emPagamentos), on: !!sessao && !cfg?.direct_sale },
     // Parciais e transferências precisam de uma mesa COM conta: escolhe-se no mapa.
     { label: 'Funções Parciais', icon: <IcoParciais size={28} />, ativo: emParciais,
-      act: () => alternar('PAY', 'SPLIT', emParciais), on: !!sessao },
+      act: () => alternar('PAY', 'SPLIT', emParciais), on: !!sessao && !cfg?.direct_sale },
     // (Parâmetro 8124) "Não permitir": o botão desaparece — a casa não transfere mesas.
     ...(cfg?.transfers !== 'Não permitir'
       ? [{ label: 'Transferências', icon: <IcoTransferir size={28} />, ativo: emTransfer,
-          act: () => alternar('PAY', 'TRANSFER', emTransfer), on: !!sessao }]
+          act: () => alternar('PAY', 'TRANSFER', emTransfer), on: !!sessao && !cfg?.direct_sale }]
       : []),
     // RESERVAS de mesa (motor POSReservation) e ENTREGAS por destino (dispatch/deliver)
-    { label: 'Reservas', icon: <IcoCalendario size={28} />, act: () => setJanela('RESERVAS'), on: !!setor },
-    { label: 'Agrupar Mesas', icon: <IcoAgrupar size={28} />, act: () => setJanela('GRUPOS'), on: !!setor },
+    { label: 'Reservas', icon: <IcoCalendario size={28} />, act: () => setJanela('RESERVAS'), on: !!setor && !cfg?.direct_sale },
+    { label: 'Agrupar Mesas', icon: <IcoAgrupar size={28} />, act: () => setJanela('GRUPOS'), on: !!setor && !cfg?.direct_sale },
     { label: 'Entregas', icon: <IcoEntrega size={28} />, act: () => setJanela('ENTREGAS'), on: true },
     { label: 'Documentos', icon: <IcoDocumento size={40} />, act: () => setJanela('DOCS'), on: true },
     { label: 'Mapa de Refeições', icon: <IcoCombo size={28} />, act: () => setJanela('MEALS'), on: true },
@@ -405,7 +408,11 @@ export default function PosTerminal() {
           </span>
         </div>
 
-        <button onClick={() => setEtapa('MAP')} disabled={!sessao} title="Mapa de mesas"
+        {/* (8300) Venda Direta: a casa vende só ao balcão, sem mesas nenhumas — este
+            botão não pode ser a porta das traseiras de volta ao mapa. Sem isto, ligar
+            o parâmetro no backoffice não impedia nada: bastava tocar aqui. */}
+        <button onClick={() => setEtapa('MAP')} disabled={!sessao || !!cfg?.direct_sale}
+          title={cfg?.direct_sale ? 'Venda Direta ligada (8300) — sem mapa de mesas' : 'Mapa de mesas'}
           className={`w-[86px] m-1 rounded-[3px] flex items-center justify-center border-2 border-black
             shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]
             active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] disabled:opacity-30 disabled:shadow-none

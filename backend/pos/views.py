@@ -797,7 +797,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                          else item.name),
             quantity=qty,
             unit_price=unit_price + mod_delta, tax_percentage=item.tax_percentage or 0,
-            note=note, kds_station=(cfg.kds_station if cfg else 'KITCHEN'),
+            note=note, kds_station=(cfg.kds_station if cfg else item.kds_station),
         )
         for m in modifiers:
             POSLineModifier.objects.create(
@@ -830,7 +830,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             POSTicketLine.objects.create(
                 ticket=ticket, item=ci.item, description=f"{ci.item.name} · Combo {combo.name}",
                 quantity=ci.quantity, unit_price=price, tax_percentage=ci.item.tax_percentage or 0,
-                kds_station=(cfg.kds_station if cfg else 'KITCHEN'), note=f"Combo {combo.name}")
+                kds_station=(cfg.kds_station if cfg else ci.item.kds_station), note=f"Combo {combo.name}")
             components_sum += price * Decimal(str(ci.quantity))
         ticket = POSTicket.objects.get(pk=ticket.pk)
         disc = components_sum - combo.price

@@ -1084,27 +1084,29 @@ P_PERIODO = [
 
 CATALOG = [
     {'code': '04', 'name': 'Reservas', 'reports': [
-        {'code': 'res_agenda', 'name': 'Reservas do período (agenda do salão)',
+        {'code': 'res_agenda', 'name': '94. Reservas de Mesa (agenda do salão)',
          'params': P_PERIODO, 'fn': r_reservas},
     ]},
     {'code': '06', 'name': 'Facturação', 'reports': [
-        {'code': 'fat_documentos', 'name': 'Documentos emitidos (com estado e IVA)',
+        # (10/11 da referência) "Incluir detalhes?" já escolhe entre resumo e
+        # detalhado no MESMO relatório — não precisa de dois códigos separados.
+        {'code': 'fat_documentos', 'name': '10/11. Vendas por Documentos (com estado e IVA)',
          'params': P_PERIODO + [{'key': 'doc_type', 'label': 'Tipo de documento', 'type': 'text'}],
          'fn': r_documentos},
-        {'code': 'fat_iva', 'name': 'IVA liquidado por taxa (mapa para a AGT)',
+        {'code': 'fat_iva', 'name': '60. Relatório IVA (mapa para a AGT)',
          'params': P_PERIODO, 'fn': r_iva},
-        {'code': 'fat_anulacoes', 'name': 'Anulações e notas de crédito',
+        {'code': 'fat_anulacoes', 'name': '14. Documentos Cancelados (anulações e notas de crédito)',
          'params': P_PERIODO, 'fn': r_anulacoes},
     ]},
     {'code': '07', 'name': 'Receitas', 'reports': [
-        {'code': 'rec_dia', 'name': 'Vendas por dia (com ticket médio)',
+        {'code': 'rec_dia', 'name': '20/21. Vendas por Dia (com ticket médio)',
          'params': P_PERIODO, 'fn': r_vendas_dia},
-        {'code': 'rec_artigo', 'name': 'Vendas por artigo', 'params': P_PERIODO, 'fn': r_vendas_artigo},
+        {'code': 'rec_artigo', 'name': '30. Vendas por Artigo', 'params': P_PERIODO, 'fn': r_vendas_artigo},
         {'code': 'rec_familia', 'name': 'Vendas por grupo/família (% do total)',
          'params': P_PERIODO, 'fn': r_vendas_familia},
-        {'code': 'rec_operador', 'name': 'Vendas por operador (com descontos dados)',
+        {'code': 'rec_operador', 'name': '22. Vendas por Dia por User (com descontos dados)',
          'params': P_PERIODO, 'fn': r_vendas_operador},
-        {'code': 'rec_sector', 'name': 'Vendas por ponto de venda',
+        {'code': 'rec_sector', 'name': '41. Vendas por Sector (Rácio)',
          'params': P_PERIODO, 'fn': r_vendas_sector},
     ]},
     {'code': '09', 'name': 'Caixa', 'reports': [
@@ -1112,21 +1114,21 @@ CATALOG = [
          'params': P_PERIODO, 'fn': r_caixas},
         {'code': 'cx_movimentos', 'name': 'Sangrias e reforços', 'params': P_PERIODO,
          'fn': r_movimentos_caixa},
-        {'code': 'cx_pagamentos', 'name': 'Vendas por modo de pagamento',
+        {'code': 'cx_pagamentos', 'name': '50. Modos de Pagamento',
          'params': P_PERIODO, 'fn': r_pagamentos},
         {'code': 'cx_comprovativos', 'name': 'Comprovativos de pagamento (banco/TPA/cheque)',
          'params': P_PERIODO, 'fn': r_comprovativos},
-        {'code': 'cx_periodo', 'name': 'Vendas por período (8611 da ficha do setor)',
+        {'code': 'cx_periodo', 'name': '70. Vendas por Hora (período — 8611 da ficha do setor)',
          'params': P_PERIODO, 'fn': r_periodo_setor},
     ]},
     {'code': '10', 'name': 'Financeiros', 'reports': [
         {'code': 'fin_contas', 'name': 'Contas bancárias da empresa',
          'params': [], 'fn': r_contas_bancarias},
-        {'code': 'fin_transferencias', 'name': 'Recebimentos por transferência, por dia (bater com o extrato)',
+        {'code': 'fin_transferencias', 'name': '82. Reconciliação de Contas (transferências por dia, bater com o extrato)',
          'params': P_PERIODO, 'fn': r_transferencias_dia},
     ]},
     {'code': '11', 'name': 'Depósitos', 'reports': [
-        {'code': 'dep_movimentos', 'name': 'Depósitos e utilizações (Cash Advance)',
+        {'code': 'dep_movimentos', 'name': '83/84. Depósitos Recebidos e Aplicados (Cash Advance)',
          'params': P_PERIODO, 'fn': r_depositos},
     ]},
     {'code': '13', 'name': 'Previsão', 'reports': [
@@ -1144,7 +1146,7 @@ CATALOG = [
         {'code': 'est_top', 'name': 'Top artigos mais vendidos',
          'params': P_PERIODO + [{'key': 'top', 'label': 'Quantos', 'type': 'number', 'default': 20}],
          'fn': r_top_artigos},
-        {'code': 'est_anulados', 'name': 'Artigos anulados (com motivo)',
+        {'code': 'est_anulados', 'name': '31. Cancelamentos de Artigo (com motivo)',
          'params': P_PERIODO, 'fn': r_anulacoes_linha},
     ]},
     {'code': '20', 'name': 'Contas Correntes', 'reports': [
@@ -1160,11 +1162,11 @@ CATALOG = [
     {'code': '99', 'name': 'Outros relatórios', 'reports': [
         {'code': 'outros_giftcards', 'name': 'Cartões-prenda ativos (saldo por usar)',
          'params': [], 'fn': r_gift_cards},
-        {'code': 'outros_happyhour', 'name': 'Happy Hours configurados',
+        {'code': 'outros_happyhour', 'name': '33. Happy Hour (configurados)',
          'params': [], 'fn': r_happy_hours},
         {'code': 'outros_alergenios', 'name': 'Catálogo de alergénios',
          'params': [], 'fn': r_alergenios},
-        {'code': 'outros_comissoes', 'name': 'Comissões de RH configuradas',
+        {'code': 'outros_comissoes', 'name': '95. Comissões (de RH, configuradas)',
          'params': [], 'fn': r_comissoes_rh},
     ]},
     {'code': 'FB', 'name': 'F&B (Compras e Stock)', 'reports': [
@@ -1174,7 +1176,7 @@ CATALOG = [
          'fn': r_stock_valorizado},
         {'code': 'fb_quebras', 'name': 'Quebras de inventário (contado vs teórico)',
          'params': P_PERIODO, 'fn': r_quebras},
-        {'code': 'fb_consumo', 'name': 'Consumo por artigo (o que a venda tirou do armazém)',
+        {'code': 'fb_consumo', 'name': '99a. Movimentos de Stock com Artigo de Venda (consumo por artigo)',
          'params': P_PERIODO, 'fn': r_consumo},
         {'code': 'fb_margem', 'name': 'MARGEM por artigo (o prato dá lucro?)',
          'params': P_PERIODO, 'fn': r_margem},
