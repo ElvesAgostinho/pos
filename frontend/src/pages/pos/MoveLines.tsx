@@ -4,8 +4,9 @@ import { apiClient } from '../../api/client';
 import Window from './Window';
 import PayPanel from './PayPanel';
 import SubcontaBar from './SubcontaBar';
-import { aviso, confirmar } from '../../ui/dialogo';
-import { IcoCruz, IcoDinheiro, IcoVisto } from './Icons';
+import GuestsDialog from './GuestsDialog';
+import { aviso, confirmar, pedir } from '../../ui/dialogo';
+import { IcoCruz, IcoDinheiro, IcoParciais, IcoPessoas, IcoVisto } from './Icons';
 
 /**
  * MOVER ARTIGOS ENTRE CONTAS — serve as duas funções, porque o motor é o mesmo:
@@ -45,6 +46,9 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
   const [qtd, setQtd] = useState(1);
   const [aPagar, setAPagar] = useState<any | null>(null);
   const [escolherMesa, setEscolherMesa] = useState(false);
+  // (👤) o número de clientes de cada lado — a mesma ficha que se usa ao abrir
+  // a mesa, só sem perguntar o TIPO outra vez (esse já ficou decidido lá atrás).
+  const [editarPax, setEditarPax] = useState<'ESQ' | 'DIR' | null>(null);
 
   const contaQ = (id: number | null) => useQuery({
     queryKey: ['ml-ticket', id],
@@ -83,7 +87,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     setSelEsq([]); setSelDir([]);
   };
 
-  const mover = async (paraDireita: boolean, tudo: boolean) => {
+  const mover = async (paraDireita: boolean, tudo: boolean, qtdExplicita?: number) => {
     const de = paraDireita ? esq : dir;
     const deId = paraDireita ? esqId : dirId;
     const paraId = paraDireita ? dirId : esqId;
@@ -104,7 +108,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     try {
       const limite = Number(JSON.parse(localStorage.getItem('pos_cfg') || '{}').split_warn_qty || 10);
       const totalQtd = linhas.reduce((s: number, l: any) =>
-        s + (tudo ? Number(l.quantity) : Math.min(qtd, Number(l.quantity))), 0);
+        s + (tudo ? Number(l.quantity) : Math.min(qtdExplicita ?? qtd, Number(l.quantity))), 0);
       if (limite > 0 && totalQtd > limite
           && !await confirmar(`Vai mover ${totalQtd} unidades de uma vez (aviso a partir de ${limite}).\n\nContinuar?`)) {
         return;
@@ -115,7 +119,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
       const r = await apiClient.post(`pos/tickets/${deId}/split/`, {
         lines: linhas.map((l: any) => ({
           line: l.id,
-          quantity: tudo ? l.quantity : Math.min(qtd, Number(l.quantity)),
+          quantity: tudo ? l.quantity : Math.min(qtdExplicita ?? qtd, Number(l.quantity)),
         })),
         ...(paraId ? { to: paraId } : {}),
       });
@@ -123,6 +127,34 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
       await refrescar();
     } catch (e: any) {
       aviso(e?.response?.data?.detail || 'Não foi possível mover os artigos.');
+    }
+  };
+
+  // (Dividir) — o popup com o teclado numérico: escreve-se a quantidade a passar
+  // para a subconta de uma vez, em vez de tocar em "+" um por um. É o MESMO motor
+  // do botão "»" — só entra a quantidade por outra via (evita o estado que ainda
+  // não actualizou: a quantidade vai já explícita para o `mover`, não pelo `qtd`).
+  const dividir = async () => {
+    const v = await pedir({ titulo: 'Dividir', mensagem: 'Quantidade a passar para a subconta:', entrada: 'numero' });
+    if (v === null) return;
+    const n = Number(String(v).replace(',', '.'));
+    if (!(n > 0)) return aviso('Escreva um número maior que zero.');
+    setQtd(n);
+    await mover(true, false, n);
+  };
+
+  // (👤) grava o número de clientes do lado escolhido — a conta da esquerda (a mesa)
+  // ou a subconta da direita, se já existir.
+  const gravarPax = async (pax: number) => {
+    const alvo = editarPax === 'ESQ' ? esqId : dirId;
+    if (!alvo) { setEditarPax(null); return; }
+    try {
+      await apiClient.patch(`pos/tickets/${alvo}/`, { guests: pax });
+      await refrescar();
+    } catch (e: any) {
+      aviso(e?.response?.data?.detail || 'Não foi possível gravar.');
+    } finally {
+      setEditarPax(null);
     }
   };
 
@@ -164,13 +196,23 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     return (
       <div className="flex-1 flex flex-col min-w-0">
         <div className="h-[44px] bg-[#3a3a3a] flex items-center px-3 gap-2">
-          <span className="text-white text-[19px] font-bold truncate">
-            Mesa no: {conta?.table_label || '—'} ({conta?.lines?.length || 0})
+          <span className="text-white text-[19px] font-bold truncate flex-1">
+            Mesa no: {conta?.table_label || '—'} ({conta?.guests ?? 0})
           </span>
           {modo === 'TRANSFER' && lado === 'DIR' && (
             <button onClick={() => setEscolherMesa(true)}
-              className="ml-auto h-[38px] px-3 bg-[#0f8b8d] text-white text-[14px] font-bold rounded">
+              className="h-[38px] px-3 bg-[#0f8b8d] text-white text-[14px] font-bold rounded">
               escolher mesa
+            </button>
+          )}
+          {/* (👤) número de clientes deste lado — abre a MESMA ficha da abertura da
+              mesa, só sem o tipo (Passante/Hotel/Interno), que já ficou decidido. */}
+          {modo === 'SPLIT' && (
+            <button onClick={() => setEditarPax(lado)} disabled={lado === 'DIR' && !_id}
+              title="Número de clientes"
+              className="w-[38px] h-[34px] flex items-center justify-center bg-[#1f1f1f] text-white rounded
+                disabled:opacity-30">
+              <IcoPessoas size={18} />
             </button>
           )}
         </div>
@@ -262,18 +304,24 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
           <Painel conta={dir} id={dirId} setId={setDirId} sel={selDir} setSel={setSelDir} lado="DIR" />
         </div>
 
-        <div className="grid grid-cols-2 gap-1 p-1 bg-black">
-          <button onClick={onClose}
-            className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px]"><IcoVisto size={24} /></button>
-          <button onClick={onClose}
-            className="h-[56px] bg-[#1f1f1f] text-[#e02020] text-[26px]"><IcoCruz size={24} /></button>
-        </div>
-
-        {modo === 'SPLIT' && dir && (
-          <button onClick={() => setAPagar(dir)}
-            className="h-[56px] bg-[#0f8b8d] text-white text-[18px] font-bold">
-            <IcoDinheiro size={20} /> Cobrar esta subconta ({money(dir.grand_total)} Kz)
-          </button>
+        {modo === 'SPLIT' ? (
+          // Os três ícones da imagem: confirmar · dividir (teclado numérico) · cobrar a subconta.
+          <div className="grid grid-cols-3 gap-1 p-1 bg-black">
+            <button onClick={onClose}
+              className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px]" title="Terminar"><IcoVisto size={24} /></button>
+            <button onClick={dividir}
+              className="h-[56px] bg-[#1f1f1f] text-white text-[24px]" title="Dividir"><IcoParciais size={22} /></button>
+            <button onClick={() => dir && setAPagar(dir)} disabled={!dir || !dir.lines?.length}
+              className="h-[56px] bg-[#1f1f1f] text-[#f0c000] text-[26px] disabled:opacity-30"
+              title={`Cobrar a subconta${dir ? ` (${money(dir.grand_total)} Kz)` : ''}`}><IcoDinheiro size={22} /></button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-1 p-1 bg-black">
+            <button onClick={onClose}
+              className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px]"><IcoVisto size={24} /></button>
+            <button onClick={onClose}
+              className="h-[56px] bg-[#1f1f1f] text-[#e02020] text-[26px]"><IcoCruz size={24} /></button>
+          </div>
         )}
       </div>
 
@@ -325,6 +373,14 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
         <PayPanel ticket={aPagar}
           onClose={() => setAPagar(null)}
           onPaid={() => { setAPagar(null); setDirId(null); refrescar(); }} />
+      )}
+
+      {editarPax && (
+        <GuestsDialog
+          mesa={{ table_number: (editarPax === 'ESQ' ? esq : dir)?.table_label || '' }}
+          perguntarTipo={false}
+          onConfirm={(pax) => gravarPax(pax)}
+          onCancel={() => setEditarPax(null)} />
       )}
     </Window>
   );
