@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { inputStyle, money } from './kit';
-import { pedir } from '../../ui/dialogo';
+import { pedir, confirmar } from '../../ui/dialogo';
+import PermissoesBotao from './PermissoesBotao';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -18,6 +19,8 @@ const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 // ─────────────────────────────────────────────────────────── Fecho do Dia
 export function PosDayClose() {
   const qc = useQueryClient();
+  const [abrTerm, setAbrTerm] = useState(true);
+  const [abrSet, setAbrSet] = useState(true);
   const { data: d } = useQuery({
     queryKey: ['posops', 'day-close'],
     queryFn: async () => (await apiClient.get('pos/ops/day-close/')).data,
@@ -33,7 +36,32 @@ export function PosDayClose() {
     onError: notifyError,
   });
 
+  // FECHAR TERMINAIS — só fecha as caixas abertas (sem limpeza de logs/backup),
+  // para desligar os postos ao final do turno sem ainda fechar o dia de vendas.
+  const fecharTerminais = useMutation({
+    mutationFn: () => apiClient.post('pos/ops/day-close/', { force: true, terminals_only: true }),
+    onSuccess: (r: any) => {
+      qc.invalidateQueries({ queryKey: ['posops'] });
+      notifyGuide({ title: 'Terminais fechados', message: r.data.detail });
+    },
+    onError: notifyError,
+  });
+
   if (!d) return <div className="flex-1 flex items-center justify-center text-[#999]">A carregar…</div>;
+
+  const temTerminaisAbertos = d.terminals.some((t: any) => t.open);
+  const temMesasAbertas = (d.sectors || []).length > 0;
+  const ultimo = d.last_close;
+
+  const Painel = ({ titulo, aberto, onToggle, children }: any) => (
+    <div className="border-b border-[#e0e0e0]">
+      <button onClick={onToggle}
+        className="w-full flex items-center justify-between px-3 py-1.5 bg-[#e9e9e9] text-[12px] font-bold border-b border-[#d0d0d0] text-left">
+        <span>{titulo}</span><span>{aberto ? '▲' : '▼'}</span>
+      </button>
+      {aberto && children}
+    </div>
+  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
@@ -41,25 +69,23 @@ export function PosDayClose() {
         <div className="flex items-start gap-6">
           <div className="text-[34px]">🌙</div>
           <div>
-            <div className="text-[18px] font-bold text-[#333]">Fecho do dia — POS</div>
-            <div className="text-[12px] text-[#666] mt-1">
-              Fecha os terminais e as caixas do dia de vendas. Não é o Night Audit do hotel:
-              este é o do <b>ponto de venda</b>.
+            <div className="text-[16px] font-bold text-[#333]">{d.company || 'Fecho do Dia'}</div>
+            {d.hotel && <div className="text-[13px] text-[#666]">{d.hotel}</div>}
+            <div className="text-[12px] text-[#333] mt-2 flex gap-6">
+              <span>Data Actual: <b>{new Date(d.date).toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</b></span>
+              <span>Data do último fecho: <b>
+                {ultimo ? `${new Date(ultimo.at).toLocaleString('pt-PT')} (${ultimo.hours}h ${ultimo.minutes}m)` : 'Nunca'}
+              </b></span>
             </div>
-            <div className="text-[12px] text-[#333] mt-2">
+            <div className="text-[12px] text-[#333] mt-1">
               Vendas de hoje: <b>{d.sales_today.count}</b> conta(s) · <b>{money(d.sales_today.total)} Kz</b>
             </div>
           </div>
-          <div className="ml-auto text-right">
-            {/* Um botão cinzento e mudo parece avariado. Se está bloqueado, tem de DIZER
-                porquê — e o motivo aqui é sempre o mesmo: há contas por cobrar. */}
-            <button onClick={() => fechar.mutate()} disabled={!d.can_close || fechar.isPending}
-              title={d.blocker || 'Fecha as caixas e o dia de vendas do POS'}
-              className="px-6 py-3 bg-[#1f7a34] text-white text-[14px] font-bold disabled:bg-[#b8b8b8] disabled:cursor-not-allowed">
-              {fechar.isPending ? 'A fechar…' : d.can_close ? '▶ Fechar o dia' : '🔒 Fechar o dia'}
-            </button>
+          <div className="ml-auto text-right space-y-1">
+            {temTerminaisAbertos && <div className="text-[13px] font-bold text-[#a01818]">Terminais Abertos</div>}
+            {temMesasAbertas && <div className="text-[13px] font-bold text-[#a01818]">Mesas Abertas</div>}
             {d.blocker && (
-              <div className="text-[11px] text-[#a01818] mt-2 max-w-[280px] bg-[#fdecea] border border-[#e6b0aa] px-2 py-1">
+              <div className="text-[11px] text-[#a01818] mt-1 max-w-[280px] bg-[#fdecea] border border-[#e6b0aa] px-2 py-1">
                 {d.blocker}
               </div>
             )}
@@ -68,26 +94,50 @@ export function PosDayClose() {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Terminais */}
+        {/* Terminais e Setores */}
         <div className="w-[42%] border-r border-[#e0e0e0] overflow-auto">
-          <div className="px-3 py-1.5 bg-[#e9e9e9] text-[12px] font-bold border-b border-[#d0d0d0]">
-            Terminais — Estado
-          </div>
-          {d.terminals.map((t: any) => (
-            <div key={t.id} className="border-b border-[#eee]">
-              <div className="px-3 py-2 text-[14px] font-bold text-center"
-                style={{ background: t.open ? '#f28b82' : '#b7e08a', color: '#1a1a1a' }}>
-                {t.code} — {t.name} ({t.open ? 'Aberto' : 'Fechado'})
-              </div>
-              <div className="flex justify-between px-3 py-1.5 text-[12px]">
-                <span className="text-[#666]">Ponto de venda</span>
-                <span>{t.outlet || '—'}</span>
-              </div>
-            </div>
-          ))}
-          {d.terminals.length === 0 && (
-            <div className="text-center text-[#999] py-8 text-[12px]">Sem terminais.</div>
-          )}
+          <Painel titulo="Terminais — Estado" aberto={abrTerm} onToggle={() => setAbrTerm((v) => !v)}>
+            <>
+              {d.terminals.map((t: any) => (
+                <div key={t.id} className="border-b border-[#eee]">
+                  <div className="px-3 py-2 text-[14px] font-bold text-center"
+                    style={{ background: t.open ? '#f28b82' : '#b7e08a', color: '#1a1a1a' }}>
+                    {t.code} — {t.name} ({t.open ? 'Aberto' : 'Fechado'})
+                  </div>
+                  <div className="flex justify-between px-3 py-1.5 text-[12px]">
+                    <span className="text-[#666]">Setor Atual</span>
+                    <span>{t.outlet || '—'}</span>
+                  </div>
+                  <div className="flex justify-between px-3 py-1.5 text-[12px]">
+                    <span className="text-[#666]">Venda Direta</span>
+                    <span>{t.direct_sale ? `${t.direct_sale.ticket} (${t.direct_sale.open ? 'Aberta' : 'Fechada'})` : '—'}</span>
+                  </div>
+                </div>
+              ))}
+              {d.terminals.length === 0 && (
+                <div className="text-center text-[#999] py-8 text-[12px]">Sem terminais.</div>
+              )}
+            </>
+          </Painel>
+
+          <Painel titulo={`Setores — Mesas Abertas (${(d.sectors || []).length})`} aberto={abrSet} onToggle={() => setAbrSet((v) => !v)}>
+            <>
+              {(d.sectors || []).map((s: any, i: number) => (
+                <div key={i} className="border-b border-[#eee]">
+                  <div className="px-3 py-2 text-[14px] font-bold text-center" style={{ background: '#f28b82', color: '#1a1a1a' }}>
+                    Setor {s.sector}
+                  </div>
+                  <div className="flex justify-between px-3 py-1.5 text-[12px]">
+                    <span className="text-[#666]">Mesas Abertas</span>
+                    <span>{s.mesas.map((m: any) => `${m.table} (${m.count})`).join(', ')}</span>
+                  </div>
+                </div>
+              ))}
+              {(d.sectors || []).length === 0 && (
+                <div className="text-center text-[#1f7a34] py-6 text-[12px] font-bold">Sem mesas abertas.</div>
+              )}
+            </>
+          </Painel>
 
           <div className="px-3 py-1.5 bg-[#e9e9e9] text-[12px] font-bold border-y border-[#d0d0d0] mt-2">
             Caixas abertas ({d.open_cash_sessions.length})
@@ -135,6 +185,33 @@ export function PosDayClose() {
           )}
         </div>
       </div>
+
+      {/* Rodapé — igual ao original: Atualizar · Permissões · Fechar Terminais
+          à esquerda; a ação principal (Fechar o Dia) à direita. */}
+      <div className="flex items-center justify-between px-3 py-2 bg-[#f0f0f0] border-t border-[#d0d0d0] gap-2">
+        <div className="flex items-center gap-2">
+          <button onClick={() => qc.invalidateQueries({ queryKey: ['posops', 'day-close'] })}
+            className="px-3 py-1.5 border border-[#a0a0a0] bg-white text-[12px] font-semibold">
+            ⟳ Atualizar
+          </button>
+          <PermissoesBotao right={20002} titulo="Fecho do Dia" />
+          <button onClick={async () => {
+            if (await confirmar('Fechar todos os terminais (caixas abertas) agora?\n\nIsto NÃO fecha o dia de vendas — só desliga os postos.'))
+              fecharTerminais.mutate();
+          }} disabled={fecharTerminais.isPending}
+            className="px-3 py-1.5 bg-[#2b2b2b] text-white text-[12px] font-semibold disabled:opacity-50">
+            {fecharTerminais.isPending ? 'A fechar…' : 'Fechar Terminais'}
+          </button>
+        </div>
+
+        {/* Um botão cinzento e mudo parece avariado. Se está bloqueado, tem de DIZER
+            porquê — e o motivo aqui é sempre o mesmo: há contas por cobrar. */}
+        <button onClick={() => fechar.mutate()} disabled={!d.can_close || fechar.isPending}
+          title={d.blocker || 'Fecha as caixas e o dia de vendas do POS'}
+          className="px-6 py-2 bg-[#1f7a34] text-white text-[14px] font-bold disabled:bg-[#b8b8b8] disabled:cursor-not-allowed">
+          {fechar.isPending ? 'A fechar…' : d.can_close ? '▶ Fechar o Dia' : '🔒 Fechar o Dia'}
+        </button>
+      </div>
     </div>
   );
 }
@@ -174,6 +251,7 @@ export function PosSaft() {
           <div className="text-[20px] font-bold text-[#666]">Administração Geral Tributária — Ficheiro SAF-T</div>
           <div className="text-[13px] text-[#333] mt-1">Versão do ficheiro: <b>{d?.version || '1.01_01'}</b></div>
         </div>
+        <div className="ml-auto"><PermissoesBotao right={20003} titulo="Utilitários" /></div>
       </div>
 
       <div className="max-w-[700px] space-y-3 text-[13px]">
@@ -327,6 +405,7 @@ export function PosDiagnostics() {
             disabled:opacity-50">
           {enviarLogs.isPending ? 'A enviar…' : 'Enviar logs ao suporte'}
         </button>
+        <span className="ml-2 align-middle inline-block"><PermissoesBotao right={20003} titulo="Utilitários" /></span>
       </div>
 
       <div className="grid grid-cols-2 gap-3 max-w-[1000px]">

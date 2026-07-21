@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money } from './kit';
+import PermissoesBotao from './PermissoesBotao';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 
@@ -287,8 +288,11 @@ export default function PosCurrentAccounts() {
         { label: 'Contas Correntes', icon: '▸', color: '#1a73c8', disabled: !sel, onClick: () => setConta(sel) },
         { label: 'Cash Advance', icon: '▸', color: '#1f7a34', disabled: !sel, onClick: () => setConta(sel) },
       ]} right={
-        <span className="text-[11px] text-[#666]">
-          Duplo-clique abre a conta. Vermelho = deve; verde = tem dinheiro nosso à guarda dele.
+        <span className="flex items-center gap-2">
+          <span className="text-[11px] text-[#666]">
+            Duplo-clique abre a conta. Vermelho = deve; verde = tem dinheiro nosso à guarda dele.
+          </span>
+          <PermissoesBotao right={20003} titulo="Utilitários" />
         </span>
       } />
     </div>

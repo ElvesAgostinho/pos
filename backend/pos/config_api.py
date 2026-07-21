@@ -526,6 +526,33 @@ class PosUserGroupViewSet(viewsets.ModelViewSet):
             ],
         })
 
+    # (Permissões — ícone rápido de um ecrã) "Permissões: Fecho do Dia" e afins:
+    # em vez de abrir o grupo inteiro (UserGroupEditor), o próprio ecrã mostra
+    # SÓ o direito dele e deixa marcar/desmarcar por grupo ali mesmo. Os dados
+    # são os MESMOS PosRight/PosUserGroup do resto da Configuração — nada novo.
+    @action(detail=False, methods=['get', 'post'], url_path='by-right/(?P<number>[0-9]+)')
+    def by_right(self, request, number=None):
+        right = PosRight.objects.filter(number=number).first()
+        if not right:
+            return Response({'detail': f'O direito {number} não existe no catálogo (seed_rights).'}, status=404)
+
+        if request.method == 'GET':
+            tem_ids = set(right.groups.values_list('id', flat=True))
+            grupos = PosUserGroup.objects.filter(is_active=True).order_by('name')
+            return Response({
+                'right': {'number': right.number, 'name': right.name},
+                'groups': [{'id': g.id, 'name': g.name, 'has': g.id in tem_ids} for g in grupos],
+            })
+
+        grupo = PosUserGroup.objects.filter(pk=request.data.get('group')).first()
+        if not grupo:
+            return Response({'detail': 'Grupo não encontrado.'}, status=404)
+        if request.data.get('has'):
+            grupo.rights.add(right)
+        else:
+            grupo.rights.remove(right)
+        return Response({'detail': f'{grupo.name}: {right.name} {"atribuído" if request.data.get("has") else "removido"}.'})
+
 
 # ==========================================================================
 # UTILIZADORES
@@ -2518,16 +2545,35 @@ class PosDayCloseView(APIView):
         from .models import PosTerminal, CashSession, POSTicket, POSTable
         hoje = timezone.localdate()
 
+        # (Fecho do Dia do original) "Data do último fecho" + há quanto tempo — a
+        # ÚLTIMA caixa fechada de todo o sistema, não uma data inventada.
+        ultima = CashSession.objects.filter(status='CLOSED').order_by('-closed_at').first()
+        ultimo_fecho = None
+        if ultima and ultima.closed_at:
+            delta = timezone.now() - ultima.closed_at
+            horas = int(delta.total_seconds() // 3600)
+            minutos = int((delta.total_seconds() % 3600) // 60)
+            ultimo_fecho = {'at': ultima.closed_at, 'hours': horas, 'minutes': minutos}
+
         terminais = []
         for t in PosTerminal.objects.filter(is_active=True).select_related('outlet'):
             # O terminal está "aberto" se o ponto de venda dele tem caixa aberta.
             sess = (CashSession.objects.filter(status='OPEN', outlet=t.outlet).first()
                     if t.outlet_id else None)
+            # "Venda Direta" (balcão do original) — a conta SEM mesa desta caixa,
+            # com o número REAL que ela tem (não um código fixo inventado).
+            balcao = None
+            if sess:
+                bt = (POSTicket.objects.filter(cash_session=sess, table__isnull=True)
+                      .order_by('-opened_at').first())
+                if bt:
+                    balcao = {'ticket': bt.ticket_number, 'open': bt.status == 'OPEN'}
             terminais.append({
                 'id': t.id, 'code': t.code, 'name': t.name,
                 'outlet': t.outlet.name if t.outlet_id else None,
                 'open': bool(sess),
                 'session': sess.id if sess else None,
+                'direct_sale': balcao,
             })
 
         caixas = [{
@@ -2536,12 +2582,27 @@ class PosDayCloseView(APIView):
         } for s in CashSession.objects.filter(status='OPEN').select_related('outlet')]
 
         abertas = (POSTicket.objects.filter(status='OPEN')
-                   .select_related('outlet', 'table'))
+                   .select_related('outlet', 'table__sector'))
         contas = [{
             'id': t.id, 'ticket': t.ticket_number, 'outlet': t.outlet.name if t.outlet_id else '—',
             'where': t.dest_label or (f'Mesa {t.table.table_number}' if t.table_id else '—'),
             'total': str(t.grand_total), 'operator': t.operator_name,
         } for t in abertas]
+
+        # Setores com mesas abertas (agrupado) — o mesmo universo de `contas`,
+        # organizado por SETOR/MESA em vez de uma lista plana de contas.
+        setores: dict = {}
+        for t in abertas:
+            if not t.table_id or not t.table.sector_id:
+                continue
+            s = t.table.sector
+            setores.setdefault(s.id, {'sector': s.name, 'mesas': {}})
+            m = setores[s.id]['mesas']
+            m[t.table.table_number] = m.get(t.table.table_number, 0) + 1
+        setores_lista = [{
+            'sector': v['sector'],
+            'mesas': [{'table': k, 'count': n} for k, n in v['mesas'].items()],
+        } for v in setores.values()]
 
         vendas = POSTicket.objects.filter(status='PAID', closed_at__date=hoje)
         total = sum((t.grand_total for t in vendas), Decimal('0'))
@@ -2551,11 +2612,25 @@ class PosDayCloseView(APIView):
         # Fecho de Caixa 8038/8040/8192/8042/8044/8046/8135/8061/8178/8215). Cada
         # secção liga a um relatório REAL do motor de reports.
         from .params import P
+        empresa = None
+        hotel = None
+        try:
+            from identity.models import Company, Hotel
+            c = Company.objects.first()
+            empresa = c.name if c else None
+            h = Hotel.objects.first()
+            hotel = h.name if h else None
+        except Exception:
+            pass
         return Response({
             'date': hoje,
+            'company': empresa,
+            'hotel': hotel,
+            'last_close': ultimo_fecho,
             'terminals': terminais,
             'open_cash_sessions': caixas,
             'open_tickets': contas,
+            'sectors': setores_lista,
             'sales_today': {'count': vendas.count(), 'total': str(total)},
             'day_sections': {
                 'vendas_por_artigo': P.bool(8037, True),
@@ -2618,6 +2693,13 @@ class PosDayCloseView(APIView):
             log_event(request, 'CASH_CLOSE',
                       f'Fecho do dia — caixa {s.id} ({s.outlet.name if s.outlet_id else "—"})',
                       outlet=s.outlet, operator_name=s.operator_name)
+
+        # "Fechar Terminais" do original — só fecha as caixas abertas, sem correr o
+        # resto do fecho do dia (limpeza de logs, backup). Serve para desligar os
+        # postos ao final do turno sem ainda estar a fechar o dia de vendas.
+        if request.data.get('terminals_only'):
+            return Response({'closed_sessions': len(sessoes),
+                             'detail': f'{len(sessoes)} terminal(is) fechado(s).'})
 
         # (8036) Dias a guardar o log — o fecho do dia é a vassoura: apaga o registo
         # operacional mais velho do que o prazo. (O arquivo FISCAL nunca se toca.)
