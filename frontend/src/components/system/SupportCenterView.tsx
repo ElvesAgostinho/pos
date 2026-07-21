@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
-import { LifeBuoy, Download, Server, Database, KeyRound, Activity, CheckCircle2, XCircle, RefreshCw, Printer, MonitorSmartphone, Wifi, HardDriveDownload, ShieldCheck, Send } from 'lucide-react';
+import { LifeBuoy, Download, Server, Database, KeyRound, Activity, CheckCircle2, XCircle, RefreshCw, Printer, MonitorSmartphone, Wifi, HardDriveDownload, ShieldCheck, Send, Mail, RotateCw, Trash2, Users } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
 
 function Row({ label, value, ok }: { label: string; value: any; ok?: boolean }) {
@@ -30,6 +30,8 @@ export default function SupportCenterView() {
   const qc = useQueryClient();
   const { data: d, refetch, isFetching } = useQuery({ queryKey: ['support-diag'], queryFn: async () => (await apiClient.get('support/diagnostics/')).data, refetchInterval: 30000 });
   const [supportUrl, setSupportUrl] = useState('');
+  const [testEmail, setTestEmail] = useState('');
+  const [sincronizando, setSincronizando] = useState(false);
   const dl = async (path: string, name: string) => {
     const res = await apiClient.get(path, { params: { download: 1 }, responseType: 'blob' });
     const url = URL.createObjectURL(new Blob([res.data], { type: 'application/json' }));
@@ -38,8 +40,40 @@ export default function SupportCenterView() {
   const download = () => dl('support/diagnostics/', `diagnostico_${Date.now()}.json`);
   const backup = () => dl('support/backup/', `backup_${Date.now()}.json`);
   const act = async (body: any) => { try { const r = await apiClient.post('support/actions/', body); aviso(r.data.detail + (r.data.code ? `\nCódigo: ${r.data.code}` : '')); qc.invalidateQueries({ queryKey: ['support-diag'] }); } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); } };
+  const enviarTeste = async () => {
+    if (!testEmail.trim()) return aviso('Escreva o destinatário.');
+    await act({ action: 'send_test_email', to: testEmail.trim() });
+  };
+  // (Diagnóstico do original) "Sincronizar" — o MESMO botão que já existe na ficha da
+  // empresa, só que também aqui, porque é aqui que o técnico olha primeiro.
+  const sincronizar = async () => {
+    setSincronizando(true);
+    try {
+      const r = await apiClient.post('licensing/sync/', {});
+      aviso(r.data?.detail || 'Sincronizado com o PCC.');
+      qc.invalidateQueries({ queryKey: ['support-diag'] });
+    } catch (e: any) {
+      aviso(e?.response?.data?.detail || 'Não foi possível sincronizar com o PCC.');
+    } finally {
+      setSincronizando(false);
+    }
+  };
+  // "Reset desktop icons position" do original: aqui não há ícones a arrastar, o
+  // que existe de facto é a APARÊNCIA gravada no navegador (tema/cor/papel de
+  // parede) — repor isso é o equivalente real, não uma imitação vazia.
+  const reporAparencia = () => {
+    ['ui_theme', 'ui_bar_color', 'ui_wallpaper', 'ui_shell'].forEach((k) => localStorage.removeItem(k));
+    aviso('Aparência reposta. A página vai recarregar.');
+    window.location.reload();
+  };
+  const limparArmazenamento = () => {
+    localStorage.clear();
+    aviso('Armazenamento local limpo. Vai ser necessário iniciar sessão outra vez.');
+    window.location.reload();
+  };
   const sys = d?.system || {}, db = d?.database || {}, lic = d?.license || {}, sv = d?.services || {}, counts = d?.data_counts || {}, events = d?.recent_events || [];
   const pr = d?.printers || {}, term = d?.terminals || {}, sup = d?.support || {};
+  const email = d?.email || {}, sync = d?.sync || {}, sessions: any[] = d?.sessions || [];
 
   return (
     <ClassicWindow title="Support Center — Diagnóstico & Estado" icon={<LifeBuoy size={14} className="text-gray-300" />}
@@ -52,16 +86,24 @@ export default function SupportCenterView() {
         <Section title="Sistema" icon={Server}>
           <Row label="Aplicação" value={`${sys.app} v${sys.version}`} />
           <Row label="Modo" value={sys.run_mode} />
+          <Row label="A correr em container" value={sys.container ? 'Sim' : 'Não'} />
+          <Row label="Servidor" value={sys.hostname || '—'} />
+          <Row label="IP do servidor" value={sys.server_ip || '—'} />
+          <Row label="IP do cliente (este acesso)" value={sys.client_ip || '—'} />
+          <Row label="Utilizador" value={sys.user || '—'} />
           <Row label="Python / Django" value={`${sys.python} / ${sys.django}`} />
           <Row label="Plataforma" value={sys.platform} />
           <Row label="DEBUG" value={sys.debug ? 'Ligado (dev)' : 'Desligado (produção)'} ok={sys.debug === false} />
         </Section>
 
         <Section title="Base de Dados" icon={Database}>
+          <Row label="Ligação" value={db.alias || 'default'} />
           <Row label="Motor" value={db.engine} />
-          <Row label="Ligação" value={db.connected ? 'Ligada' : 'Sem ligação'} ok={!!db.connected} />
+          <Row label="Servidor" value={db.host || '(local)'} />
+          <Row label="Estado" value={db.connected ? 'Ligada' : 'Sem ligação'} ok={!!db.connected} />
           <Row label="Migrações pendentes" value={db.pending_migrations ?? '—'} ok={db.pending_migrations === 0} />
           {db.name && <Row label="BD" value={db.name} />}
+          {db.company && <Row label="Empresa" value={`${db.company}${db.company_tax_id ? ` (NIF ${db.company_tax_id})` : ''}`} />}
         </Section>
 
         <Section title="Licença" icon={KeyRound}>
@@ -70,6 +112,12 @@ export default function SupportCenterView() {
           <Row label="Nº / Validade" value={`${lic.license_number || '—'} · ${lic.valid_until || '∞'}`} />
           <Row label="Módulos / Funcionalidades" value={`${lic.modules ?? 0} / ${lic.features}`} />
           <Row label="Origem" value={lic.source || '—'} />
+          <div className="px-3 py-2">
+            <button onClick={sincronizar} disabled={sincronizando}
+              className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
+              <RotateCw size={12} className={sincronizando ? 'animate-spin' : ''} />Sincronizar com o PCC
+            </button>
+          </div>
         </Section>
 
         <Section title="Serviços & Dados" icon={Activity}>
@@ -88,6 +136,74 @@ export default function SupportCenterView() {
           <Row label="Terminais licenciados" value={`${term.active ?? 0} ativos / ${term.total ?? 0}`} />
           <Row label="Caixas abertas (em uso)" value={term.open_cash_sessions ?? 0} />
         </Section>
+
+        {/* E-mail (SMTP) — parâmetros 9500-9505/9510 (Configuração POS); envia a
+            sério pelo mesmo motor (pos.mailer) usado em toda a parte. */}
+        <Section title="E-mail (SMTP)" icon={Mail}>
+          <Row label="Servidor / Porta" value={`${email.host || '—'} / ${email.port || '—'}${email.use_tls ? ' (TLS)' : ''}`} />
+          <Row label="Utilizador" value={email.username || '—'} />
+          <Row label="Remetente (From)" value={email.from_email || '—'} />
+          <Row label="Responder para (parâmetro 9510)" value={email.support_email || '—'} />
+          <Row label="Estado" value={email.configured ? 'Configurado' : 'Sem password — envio simulado'} ok={!!email.configured} />
+          <div className="px-3 py-2 flex items-end gap-2">
+            <input value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="destinatario@exemplo.com"
+              className="flex-1 border border-[#a0a0a0] px-2 py-1.5 text-[12px]" />
+            <button onClick={enviarTeste} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1">
+              <Send size={12} />Enviar mensagem de teste
+            </button>
+          </div>
+        </Section>
+
+        {/* Sessões ativas — tokens JWT emitidos e ainda válidos (não revogados,
+            não expirados), um por utilizador distinto. */}
+        <Section title="Sessões ativas" icon={Users}>
+          <div className="max-h-44 overflow-auto">
+            <div className="grid grid-cols-[1fr_170px_170px] px-3 py-1 text-[11px] font-bold text-gray-500 border-b border-[#eee]">
+              <span>Utilizador</span><span>Início de sessão</span><span>Expira</span>
+            </div>
+            {sessions.map((s, i) => (
+              <div key={i} className="grid grid-cols-[1fr_170px_170px] px-3 py-1 border-b border-[#eee] text-[12px]">
+                <span className="font-semibold">{s.user}</span>
+                <span className="text-gray-600">{new Date(s.login_at).toLocaleString('pt-PT')}</span>
+                <span className="text-gray-600">{new Date(s.expires_at).toLocaleString('pt-PT')}</span>
+              </div>
+            ))}
+            {sessions.length === 0 && <div className="px-3 py-2 text-gray-500 text-[12px]">Sem sessões ativas.</div>}
+          </div>
+        </Section>
+
+        {/* Sincronização com o PCC — a MESMA ação do botão na ficha da empresa,
+            repetida aqui porque é aqui que o técnico olha primeiro. */}
+        <div className="col-span-2">
+          <Section title="Sincronização com o PCC" icon={RotateCw}>
+            <Row label="Endereço do PCC" value={sync.pcc_url || '—'} />
+            <Row label="Endpoint" value={`POST /api/${sync.endpoint || 'licensing/sync/'}`} />
+            <div className="px-3 py-2 flex items-center gap-2">
+              <button onClick={sincronizar} disabled={sincronizando}
+                className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
+                <RotateCw size={12} className={sincronizando ? 'animate-spin' : ''} />Sincronizar agora
+              </button>
+              <span className="text-gray-500 text-[11px]">Traz a licença e a certificação AGT mais recentes do PCC (funciona sem internet: nada muda se a ligação falhar).</span>
+            </div>
+          </Section>
+        </div>
+
+        {/* Utilitários do posto de trabalho — o que existe DE FACTO neste ecrã em
+            vez de "ícones do ambiente de trabalho" (não há; a app não é um
+            desktop). Repor aparência limpa tema/cor/papel de parede gravados no
+            navegador; Limpar Armazenamento Local limpa tudo (inclui sessão). */}
+        <div className="col-span-2">
+          <Section title="Posto de Trabalho (este navegador)" icon={Trash2}>
+            <div className="px-3 py-2 flex items-center gap-2">
+              <button onClick={reporAparencia} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1">
+                <RotateCw size={12} />Repor aparência
+              </button>
+              <button onClick={limparArmazenamento} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1">
+                <Trash2 size={12} />Limpar Armazenamento Local
+              </button>
+            </div>
+          </Section>
+        </div>
 
         {/* Assistência remota / VPN / Backup */}
         <div className="col-span-2">

@@ -241,6 +241,7 @@ export function PosDiagnostics() {
     refetchInterval: 5000,           // tempo real
   });
   const qc = useQueryClient();
+  const [testEmail, setTestEmail] = useState('');
 
   const reenviar = useMutation({
     mutationFn: () => apiClient.post('pos/print-jobs/retry_failed/', {}),
@@ -262,6 +263,39 @@ export function PosDiagnostics() {
     onSuccess: (r: any) => notifyGuide({ title: 'Logs enviados', message: r.data.detail }),
     onError: notifyError,
   });
+
+  // ENVIAR MENSAGEM DE TESTE — usa o MESMO motor (pos.mailer) que envia tudo o
+  // resto; sem SMTP configurado fica SIMULATED (o botão diz isso mesmo, não finge).
+  const enviarTeste = useMutation({
+    mutationFn: () => apiClient.post('support/actions/', { action: 'send_test_email', to: testEmail.trim() }),
+    onSuccess: (r: any) => notifyGuide({ title: 'E-mail de teste', message: r.data.detail }),
+    onError: notifyError,
+  });
+
+  // SINCRONIZAR COM O PCC — o mesmo botão que existe na ficha da empresa; aqui
+  // também, porque é aqui que se olha primeiro quando algo parece desatualizado.
+  const sincronizar = useMutation({
+    mutationFn: () => apiClient.post('licensing/sync/', {}),
+    onSuccess: (r: any) => {
+      qc.invalidateQueries({ queryKey: ['posops'] });
+      notifyGuide({ title: 'Sincronização com o PCC', message: r.data?.detail || 'Sincronizado.' });
+    },
+    onError: notifyError,
+  });
+
+  // "Reset desktop icons position" do original: aqui não há ícones a arrastar
+  // (a app não é um desktop) — o que existe DE FACTO é a aparência gravada no
+  // navegador (tema/cor/papel de parede). Repor isso é o equivalente real.
+  const reporAparencia = () => {
+    ['ui_theme', 'ui_bar_color', 'ui_wallpaper', 'ui_shell'].forEach((k) => localStorage.removeItem(k));
+    notifyGuide({ title: 'Aparência reposta', message: 'A página vai recarregar.' });
+    setTimeout(() => window.location.reload(), 600);
+  };
+  const limparArmazenamento = () => {
+    localStorage.clear();
+    notifyGuide({ title: 'Armazenamento limpo', message: 'Vai ser necessário iniciar sessão outra vez.' });
+    setTimeout(() => window.location.reload(), 600);
+  };
 
   if (!d) return <div className="flex-1 flex items-center justify-center text-[#999]">A carregar…</div>;
 
@@ -336,6 +370,85 @@ export function PosDiagnostics() {
             {d.license.modules.map((m: string) => (
               <span key={m} className="px-2 py-0.5 bg-[#e8f5e9] text-[#1f7a34] text-[11px] font-semibold">{m}</span>
             ))}
+          </div>
+        </Card>
+
+        {/* Sistema — RunningInContainer/Servidor/IP/Utilizador do original, com
+            dados a sério (socket do servidor + o pedido HTTP deste acesso). */}
+        <Card title="Sistema">
+          <L k="A correr em container" v={d.system?.container ? 'Sim' : 'Não'} />
+          <L k="Servidor" v={d.system?.hostname || '—'} />
+          <L k="IP do servidor" v={d.system?.server_ip || '—'} />
+          <L k="IP deste acesso" v={d.system?.client_ip || '—'} />
+          <L k="Utilizador" v={d.system?.user || '—'} />
+        </Card>
+
+        {/* Ligação (Available Connections do original) — uma só ligação real,
+            não várias empresas/servidores como no HOST multi-instalação. */}
+        <Card title="Ligação (Base de Dados)">
+          <L k="Nome da ligação" v={d.connection?.alias || 'default'} />
+          <L k="Empresa" v={d.connection?.company
+            ? `${d.connection.company}${d.connection.company_tax_id ? ` (NIF ${d.connection.company_tax_id})` : ''}`
+            : '—'} />
+          <L k="Servidor" v={d.connection?.host || '(local)'} />
+          <L k="Base de dados" v={d.connection?.name || '—'} />
+        </Card>
+
+        <Card title="E-mail (SMTP)">
+          <L k="Servidor / Porta" v={`${d.email?.host || '—'} / ${d.email?.port || '—'}${d.email?.use_tls ? ' (TLS)' : ''}`} />
+          <L k="Utilizador" v={d.email?.username || '—'} />
+          <L k="Remetente (From)" v={d.email?.from_email || '—'} />
+          <L k="Responder para (parâmetro 9510)" v={d.email?.support_email || '—'} />
+          <L k="Estado" v={d.email?.configured ? '● Configurado' : '● Sem password — envio simulado'} />
+          <div className="flex items-end gap-2 pt-2">
+            <input value={testEmail} onChange={(e) => setTestEmail(e.target.value)}
+              placeholder="destinatario@exemplo.com" className={`${inp} flex-1`} style={inputStyle} />
+            <button onClick={() => testEmail.trim() && enviarTeste.mutate()} disabled={enviarTeste.isPending}
+              className="px-3 py-1.5 bg-[#1e3f66] text-white text-[12px] font-semibold disabled:opacity-50">
+              {enviarTeste.isPending ? 'A enviar…' : 'Enviar mensagem de teste'}
+            </button>
+          </div>
+        </Card>
+
+        {/* Synchronization Test do original (Cardex/Tables) — o equivalente real
+            aqui é a licença + certificação AGT, que vêm do PCC, não de um PMS. */}
+        <Card title="Sincronização com o PCC">
+          <L k="Endereço do PCC" v={d.sync?.pcc_url || '—'} />
+          <L k="Endpoint" v={`POST /api/${d.sync?.endpoint || 'licensing/sync/'}`} />
+          <div className="pt-2">
+            <button onClick={() => sincronizar.mutate()} disabled={sincronizar.isPending}
+              className="px-3 py-1.5 bg-[#2b2b2b] text-white text-[12px] font-semibold disabled:opacity-50">
+              {sincronizar.isPending ? 'A sincronizar…' : '⟳ Sincronizar agora'}
+            </button>
+          </div>
+        </Card>
+
+        {/* Logged on users do original — tokens JWT emitidos e ainda válidos
+            (não revogados, não expirados), um por utilizador distinto. */}
+        <Card title="Sessões ativas">
+          <div className="grid grid-cols-[1fr_auto] text-[11px] font-bold text-[#666] border-b border-[#eee] pb-1">
+            <span>Utilizador</span><span>Início de sessão</span>
+          </div>
+          {(d.sessions || []).map((s: any, i: number) => (
+            <div key={i} className="grid grid-cols-[1fr_auto] gap-3">
+              <span className="font-semibold">{s.user}</span>
+              <span className="text-[#666]">{new Date(s.login_at).toLocaleString('pt-PT')}</span>
+            </div>
+          ))}
+          {(!d.sessions || d.sessions.length === 0) && (
+            <div className="text-[#999]">Sem sessões ativas.</div>
+          )}
+        </Card>
+
+        {/* Reset desktop icons position / Clear Local Storage do original. */}
+        <Card title="Posto de Trabalho (este navegador)">
+          <div className="flex gap-2">
+            <button onClick={reporAparencia} className="px-3 py-1.5 border border-[#8a95a3] bg-white text-[12px] font-semibold">
+              Repor aparência
+            </button>
+            <button onClick={limparArmazenamento} className="px-3 py-1.5 border border-[#8a95a3] bg-white text-[12px] font-semibold">
+              Limpar Armazenamento Local
+            </button>
           </div>
         </Card>
       </div>

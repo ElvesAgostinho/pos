@@ -2883,6 +2883,16 @@ class PosDiagnosticsView(APIView):
             if mins > 5:
                 parada = f'A comanda mais antiga está na fila há {mins} minutos — o agente de impressão não a está a consumir.'
 
+        # (Diagnóstico do original: RunningInContainer/Version/Connection/SMTP/
+        # Available Connections/Sincronização/Logged on users) — o MESMO motor do
+        # Support Center (core.support), para não ter dois sítios a calcular a
+        # mesma coisa de duas maneiras diferentes.
+        try:
+            from core.support import _collect
+            geral = _collect(request)
+        except Exception:
+            geral = {}
+
         return Response({
             'database': bd,
             'license': {'modules': get_active_modules(settings.BASE_DIR, settings.SECRET_KEY)},
@@ -2898,6 +2908,11 @@ class PosDiagnosticsView(APIView):
             'open_cash': CashSession.objects.filter(status='OPEN').count(),
             'open_tickets': POSTicket.objects.filter(status='OPEN').count(),
             'server_time': timezone.now(),
+            'system': geral.get('system', {}),
+            'connection': geral.get('database', {}),
+            'email': geral.get('email', {}),
+            'sync': geral.get('sync', {}),
+            'sessions': geral.get('sessions', []),
         })
 
 

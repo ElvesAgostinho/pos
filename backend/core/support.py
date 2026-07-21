@@ -19,32 +19,102 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 
-def _collect():
+def _collect(request=None):
+    import os
+    import socket
     now = timezone.now()
     data = {'generated_at': now.isoformat(), 'timezone': settings.TIME_ZONE}
 
     # ---- Sistema ----
+    # (Diagnóstico do original) "A correr em container?", nome/IP do servidor, quem
+    # está a ver o ecrã agora — tudo o que o técnico vê ao telefone com o cliente.
+    try:
+        hostname = socket.gethostname()
+    except Exception:
+        hostname = None
+    try:
+        server_ip = socket.gethostbyname(hostname) if hostname else None
+    except Exception:
+        server_ip = None
     data['system'] = {
         'app': 'System Mwana Lodge', 'version': '1.0.0',
         'python': sys.version.split()[0], 'django': django.get_version(),
         'platform': platform.platform(), 'debug': settings.DEBUG,
-        'run_mode': __import__('os').environ.get('SYSTEM_MODE', 'ERP'),
+        'run_mode': os.environ.get('SYSTEM_MODE', 'ERP'),
+        'container': os.path.exists('/.dockerenv') or bool(os.environ.get('KUBERNETES_SERVICE_HOST')),
+        'hostname': hostname, 'server_ip': server_ip,
+        'client_ip': (request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+                     or request.META.get('REMOTE_ADDR')) if request else None,
+        'user': getattr(request.user, 'username', None) if request and request.user.is_authenticated else None,
     }
 
     # ---- Base de dados ----
-    db = {'engine': settings.DATABASES['default']['ENGINE'].split('.')[-1], 'connected': False, 'pending_migrations': None}
+    db_settings = settings.DATABASES['default']
+    db = {'engine': db_settings['ENGINE'].split('.')[-1], 'connected': False, 'pending_migrations': None,
+          'alias': 'default', 'host': db_settings.get('HOST') or '(local)'}
     try:
         with connection.cursor() as cur:
             cur.execute('SELECT 1')
             db['connected'] = True
-        db['name'] = str(settings.DATABASES['default'].get('NAME'))
+        db['name'] = str(db_settings.get('NAME'))
         from django.db.migrations.executor import MigrationExecutor
         executor = MigrationExecutor(connection)
         targets = executor.loader.graph.leaf_nodes()
         db['pending_migrations'] = len(executor.migration_plan(targets))
     except Exception as e:  # noqa
         db['error'] = str(e)[:200]
+    try:
+        from identity.models import Company
+        c = Company.objects.first()
+        if c:
+            db['company'] = c.name
+            db['company_tax_id'] = c.tax_id
+    except Exception:
+        pass
     data['database'] = db
+
+    # ---- E-mail (SMTP) — parâmetros 9500-9505/9510, nunca a password ----
+    try:
+        from pos.params import P
+        data['email'] = {
+            'host': P.text(9500, '') or getattr(settings, 'EMAIL_HOST', ''),
+            'port': P.int(9501, 0) or getattr(settings, 'EMAIL_PORT', 587),
+            'username': P.text(9502, '') or getattr(settings, 'EMAIL_HOST_USER', ''),
+            'from_email': P.text(9504, '') or getattr(settings, 'DEFAULT_FROM_EMAIL', ''),
+            'use_tls': P.bool(9505, True),
+            'support_email': P.text(9510, ''),
+            'configured': bool((P.text(9500, '') or getattr(settings, 'EMAIL_HOST', ''))
+                               and (P.text(9503, '') or getattr(settings, 'EMAIL_HOST_PASSWORD', ''))),
+        }
+    except Exception:
+        data['email'] = {}
+
+    # ---- Sincronização com o PCC (licenças + certificação AGT) ----
+    data['sync'] = {
+        'pcc_url': os.environ.get('PCC_URL', getattr(settings, 'PCC_URL', 'http://127.0.0.1:8000')),
+        'endpoint': 'licensing/sync/',
+    }
+
+    # ---- Sessões ativas (tokens JWT emitidos, não revogados nem expirados) ----
+    sessions = []
+    try:
+        from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+        vistos = set()
+        qs = (OutstandingToken.objects
+              .exclude(id__in=BlacklistedToken.objects.values('token_id'))
+              .filter(expires_at__gte=now).select_related('user').order_by('-created_at'))
+        for t in qs:
+            u = t.user.username if t.user else '—'
+            if u in vistos:
+                continue
+            vistos.add(u)
+            sessions.append({'user': u, 'login_at': t.created_at.isoformat(),
+                             'expires_at': t.expires_at.isoformat()})
+            if len(sessions) >= 15:
+                break
+    except Exception:
+        pass
+    data['sessions'] = sessions
 
     # ---- Licença ----
     try:
@@ -149,7 +219,7 @@ class SupportDiagnosticsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        data = _collect()
+        data = _collect(request)
         if request.query_params.get('download') == '1':
             import json
             resp = HttpResponse(json.dumps(data, indent=2, ensure_ascii=False), content_type='application/json')
@@ -231,5 +301,22 @@ class SupportActionsView(APIView):
                 return Response({'detail': f'Diagnóstico enviado ao suporte (HTTP {r.status_code}).'})
             except Exception as e:  # noqa
                 return Response({'detail': f'Falha ao enviar: {str(e)[:150]}'}, status=502)
+
+        if action == 'send_test_email':
+            # (Diagnóstico do original) "Send test message" — usa o MESMO motor
+            # (pos.mailer) que envia tudo o resto; sem SMTP configurado fica
+            # SIMULATED no EmailOutbox, não falha silenciosamente nem finge enviar.
+            to = (request.data.get('to') or '').strip()
+            if not to:
+                return Response({'detail': 'Escreva um destinatário.'}, status=400)
+            from pos.mailer import send as enviar
+            reg = enviar(to, 'Teste de diagnóstico — System Mwana Lodge',
+                         'Esta é uma mensagem de teste enviada a partir do Diagnóstico.')
+            if reg.status == 'SIMULATED':
+                return Response({'detail': 'SMTP não configurado (parâmetros 9500/9503) — '
+                                           'o envio ficou SIMULADO no registo de e-mail.'})
+            if reg.status == 'FAILED':
+                return Response({'detail': f'Falha ao enviar: {reg.error}'}, status=502)
+            return Response({'detail': f'Mensagem de teste enviada para {to}.'})
 
         return Response({'detail': 'Ação inválida.'}, status=400)
