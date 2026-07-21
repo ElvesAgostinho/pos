@@ -206,15 +206,15 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
             </button>
           )}
           {/* (👤) número de clientes deste lado — abre a MESMA ficha da abertura da
-              mesa, só sem o tipo (Passante/Hotel/Interno), que já ficou decidido. */}
-          {modo === 'SPLIT' && (
-            <button onClick={() => setEditarPax(lado)} disabled={lado === 'DIR' && !_id}
-              title="Número de clientes"
-              className="w-[38px] h-[34px] flex items-center justify-center bg-[#1f1f1f] text-white rounded
-                disabled:opacity-30">
-              <IcoPessoas size={18} />
-            </button>
-          )}
+              mesa, só sem o tipo (Passante/Hotel/Interno), que já ficou decidido.
+              Existe nas DUAS funções (Parciais e Transferências): mudar de mesa ou
+              separar a conta não muda quantas pessoas há de cada lado. */}
+          <button onClick={() => setEditarPax(lado)} disabled={lado === 'DIR' && !_id}
+            title="Número de clientes"
+            className="w-[38px] h-[34px] flex items-center justify-center bg-[#1f1f1f] text-white rounded
+              disabled:opacity-30">
+            <IcoPessoas size={18} />
+          </button>
         </div>
 
         <div className="grid grid-cols-[70px_1fr_120px] bg-[#2b2b2b] text-white text-[16px] font-bold px-2 py-2">
@@ -281,13 +281,19 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
               className="w-full h-[52px] bg-[#3a3a3a] text-white text-[20px] rounded disabled:opacity-30" title="Trazer o escolhido">«</button>
             <button onClick={() => mover(false, true)} disabled={!dirId}
               className="w-full h-[52px] bg-[#3a3a3a] text-white text-[20px] rounded disabled:opacity-30" title="Trazer tudo">««</button>
-            <button onClick={juntar} disabled={!dirId}
-              className="w-full h-[52px] bg-[#0f8b8d] text-white text-[13px] font-bold rounded disabled:opacity-30"
-              title="Juntar: a conta da direita entra na da esquerda">Juntar</button>
+            {/* JUNTAR e CONTA CONJUNTA só fazem sentido nas PARCIAIS (subcontas da MESMA
+                mesa). Numa TRANSFERÊNCIA as duas mesas são de gente diferente — juntar
+                as contas delas não tem significado, e o ecrã original não mostra estes
+                dois botões aqui. */}
             {modo === 'SPLIT' && (
-              <button onClick={contaConjunta}
-                className="w-full h-[52px] bg-[#8a6100] text-white text-[12px] font-bold rounded leading-tight"
-                title="Toda a mesa numa só conta — paga-se tudo junto">Conta{'\n'}Conjunta</button>
+              <>
+                <button onClick={juntar} disabled={!dirId}
+                  className="w-full h-[52px] bg-[#0f8b8d] text-white text-[13px] font-bold rounded disabled:opacity-30"
+                  title="Juntar: a conta da direita entra na da esquerda">Juntar</button>
+                <button onClick={contaConjunta}
+                  className="w-full h-[52px] bg-[#8a6100] text-white text-[12px] font-bold rounded leading-tight"
+                  title="Toda a mesa numa só conta — paga-se tudo junto">Conta{'\n'}Conjunta</button>
+              </>
             )}
 
             <div className="flex flex-col gap-1 w-full mt-2">
