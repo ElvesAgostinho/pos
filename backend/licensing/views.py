@@ -103,6 +103,20 @@ class LicenseSyncView(APIView):
         with open(caminho, 'w') as f:
             f.write(nova_raw)
 
+        # VERSÃO — o PCC diz "a mais recente é a X" na MESMA resposta da licença.
+        # Só se guarda; quem decide descarregar é o dono, no Diagnóstico.
+        release = r.json().get('release') or {}
+        if release.get('version'):
+            from django.utils import timezone as _tz
+            from .models import SupportSetting
+            ss = SupportSetting.get()
+            ss.latest_version = release.get('version')
+            ss.latest_download_url = release.get('download_url') or ''
+            ss.latest_release_notes = release.get('notes') or ''
+            ss.version_checked_at = _tz.now()
+            ss.save(update_fields=['latest_version', 'latest_download_url',
+                                   'latest_release_notes', 'version_checked_at'])
+
         # CERTIFICAÇÃO AGT AUTOMÁTICA: se o PCC mandou credenciais e o nº de
         # certificado é DIFERENTE do instalado, aplica-as (chaves de assinatura +
         # número nas faturas). Igual = não se mexe — trocar a chave sem motivo
@@ -157,6 +171,7 @@ class LicenseSyncView(APIView):
             'modules': len(nova.get('modules') or []),
             # módulos novos só entram quando o serviço reinicia (INSTALLED_APPS)
             'restart_needed': mudou_modulos,
+            'latest_version': release.get('version'),
         })
 
 

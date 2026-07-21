@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Client, Contact, CommercialData, License, Installation, Equipment, AuditLogCLM, TerminalLicense
+from .models import Client, Contact, CommercialData, License, Installation, Equipment, AuditLogCLM, TerminalLicense, SystemRelease
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,4 +62,10 @@ class TerminalLicenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TerminalLicense
         fields = '__all__'
+
+class SystemReleaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemRelease
+        fields = '__all__'
+        read_only_fields = ('created_at',)
 

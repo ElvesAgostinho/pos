@@ -13,6 +13,7 @@ export default function Sidebar({ activeView = 'dashboard', onSelectView }: Side
     { name: 'Gestão de Clientes', id: 'clients' },
     { name: 'Novo Provisionamento', id: 'provisioning' },
     { name: 'Certificação AGT', id: 'agt' },
+    { name: 'Versões', id: 'releases' },
   ];
 
   const renderSection = (title: string, items: {name: string, id: string}[], isOpen: boolean, setOpen: (v: boolean) => void) => (

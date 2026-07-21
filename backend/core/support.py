@@ -18,6 +18,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+# VERSÃO INSTALADA — a ÚNICA fonte: sobe-se este número a cada build
+# (instalador/build_instalador.ps1) e publica-se a mesma versão no PCC
+# (CLM › Versões) para os clientes saberem que há uma nova.
+APP_VERSION = '1.0.0'
+
 
 def _collect(request=None):
     import os
@@ -37,7 +42,7 @@ def _collect(request=None):
     except Exception:
         server_ip = None
     data['system'] = {
-        'app': 'System Mwana Lodge', 'version': '1.0.0',
+        'app': 'System Mwana Lodge', 'version': APP_VERSION,
         'python': sys.version.split()[0], 'django': django.get_version(),
         'platform': platform.platform(), 'debug': settings.DEBUG,
         'run_mode': os.environ.get('SYSTEM_MODE', 'ERP'),
@@ -197,8 +202,20 @@ def _collect(request=None):
             'remote_assist_code': ss.remote_assist_code if ra_on else None,
             'vpn_link': 'configurado' if ss.support_url else 'não configurado',
         }
+        # ---- Atualização — o que o PCC disse na última sincronização ----
+        # (Sincronizar com o PCC, em Licença) grava isto; aqui só se compara.
+        disponivel = bool(ss.latest_version and ss.latest_version != APP_VERSION)
+        data['update'] = {
+            'current_version': APP_VERSION,
+            'latest_version': ss.latest_version or None,
+            'available': disponivel,
+            'download_url': ss.latest_download_url if disponivel else None,
+            'notes': ss.latest_release_notes if disponivel else None,
+            'checked_at': ss.version_checked_at.isoformat() if ss.version_checked_at else None,
+        }
     except Exception:
         data['support'] = {}
+        data['update'] = {'current_version': APP_VERSION, 'latest_version': None, 'available': False}
 
     # ---- Eventos recentes (auditoria) ----
     events = []

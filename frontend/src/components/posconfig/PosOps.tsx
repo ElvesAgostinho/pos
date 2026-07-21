@@ -502,6 +502,29 @@ export function PosDiagnostics() {
           </div>
         </Card>
 
+        {/* ATUALIZAÇÃO — o que o PCC disse na última "Sincronizar agora". A
+            descarga é um clique; CORRER o instalador por cima continua a ser
+            manual (o dono ou o técnico) — nunca sozinho em cima de um serviço
+            do Windows a correr. */}
+        {d.update?.available && (
+          <div className="col-span-2">
+            <Card title="Atualização disponível">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="font-semibold">
+                    Versão {d.update.latest_version} disponível (esta instalação tem a {d.update.current_version})
+                  </div>
+                  {d.update.notes && <div className="text-[#666] mt-1 whitespace-pre-wrap">{d.update.notes}</div>}
+                </div>
+                <a href={d.update.download_url} target="_blank" rel="noopener noreferrer"
+                  className="flex-shrink-0 px-4 py-2 bg-[#1f7a34] text-white text-[13px] font-bold">
+                  ⬇ Descarregar
+                </a>
+              </div>
+            </Card>
+          </div>
+        )}
+
         {/* Logged on users do original — tokens JWT emitidos e ainda válidos
             (não revogados, não expirados), um por utilizador distinto. */}
         <Card title="Sessões ativas">

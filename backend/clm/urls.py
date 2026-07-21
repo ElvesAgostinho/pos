@@ -9,6 +9,7 @@ router.register(r'licenses', views.LicenseViewSet, basename='license')
 router.register(r'installations', views.InstallationViewSet, basename='installation')
 router.register(r'audits', views.AuditLogViewSet, basename='audit')
 router.register(r'terminals', views.TerminalLicenseViewSet, basename='terminal')
+router.register(r'releases', views.SystemReleaseViewSet, basename='release')
 
 urlpatterns = [
     path('modules/', views.ModuleCatalogView.as_view(), name='module-catalog'),

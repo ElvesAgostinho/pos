@@ -2995,6 +2995,7 @@ class PosDiagnosticsView(APIView):
             'email': geral.get('email', {}),
             'sync': geral.get('sync', {}),
             'sessions': geral.get('sessions', []),
+            'update': geral.get('update', {}),
         })
 
 

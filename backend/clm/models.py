@@ -207,3 +207,26 @@ class TerminalLicense(models.Model):
 
     def __str__(self):
         return f"{self.terminal_id} ({self.get_asset_type_display()}) - {self.client.commercial_name}"
+
+
+class SystemRelease(models.Model):
+    """VERSÕES publicadas do sistema — o que os clientes veem ao sincronizar.
+
+    O fornecedor publica aqui cada `.exe` novo (build_instalador.ps1); o cliente,
+    ao sincronizar (LicenseViewSet.latest), recebe sempre a ÚLTIMA (a mais
+    recentemente criada) e compara com a versão que tem instalada. A descarga
+    é automática (o link); CORRER o instalador por cima continua a ser manual —
+    aplicar sozinho por cima de um serviço do Windows a correr é arriscado.
+    """
+    version = models.CharField(max_length=20, unique=True, help_text='Ex.: 1.1.0')
+    download_url = models.URLField(help_text='Onde o cliente descarrega o .exe desta versão.')
+    release_notes = models.TextField(blank=True, help_text='O que mudou — aparece no aviso do cliente.')
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=80, blank=True)
+
+    class Meta:
+        db_table = 'clm_system_release'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'v{self.version}'

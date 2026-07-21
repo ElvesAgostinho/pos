@@ -26,10 +26,11 @@ class FeatureCatalogView(APIView):
     def get(self, request):
         return Response(FEATURES)
 
-from .models import Client, License, Installation, AuditLogCLM, TerminalLicense
+from .models import Client, License, Installation, AuditLogCLM, TerminalLicense, SystemRelease
 from .serializers import (
-    ClientSerializer, LicenseSerializer, InstallationSerializer, 
-    AuditLogCLMSerializer, ProvisioningRequestSerializer, TerminalLicenseSerializer
+    ClientSerializer, LicenseSerializer, InstallationSerializer,
+    AuditLogCLMSerializer, ProvisioningRequestSerializer, TerminalLicenseSerializer,
+    SystemReleaseSerializer
 )
 from .engine.provisioning import ProvisioningWorkflow
 
@@ -148,6 +149,14 @@ class LicenseViewSet(viewsets.ModelViewSet):
             .exclude(agt_connection={}).order_by('-created_at').first())
         if lic_con and lic_con.agt_connection:
             resp.setdefault('agt', {})['connection'] = lic_con.agt_connection
+        # VERSÃO MAIS RECENTE — a mesma sincronização que já traz licença/AGT
+        # também diz "há uma versão nova aqui" (SystemRelease, publicada pelo
+        # fornecedor). O cliente é que decide se descarrega e quando corre o
+        # instalador — isto é só o aviso.
+        rel = SystemRelease.objects.order_by('-created_at').first()
+        if rel:
+            resp['release'] = {'version': rel.version, 'download_url': rel.download_url,
+                               'notes': rel.release_notes}
         return Response(resp)
 
     @action(detail=True, methods=['post'], url_path='regenerate-access')
@@ -249,3 +258,18 @@ class TerminalLicenseViewSet(viewsets.ModelViewSet):
             
         except TerminalLicense.DoesNotExist:
             return Response({"error": "Invalid Terminal ID or Activation Key"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class SystemReleaseViewSet(viewsets.ModelViewSet):
+    """VERSÕES — o fornecedor publica aqui cada .exe novo (build_instalador.ps1).
+
+    Só o fornecedor (staff do PCC) publica; os clientes só LEEM a mais recente,
+    e só através de licenses/latest/ (autenticado por prova de posse da licença,
+    não por esta rota — esta é admin-only).
+    """
+    queryset = SystemRelease.objects.all()
+    serializer_class = SystemReleaseSerializer
+    permission_classes = [IsAdminUser]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=getattr(self.request.user, 'username', '') or 'PCC')
