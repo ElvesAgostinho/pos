@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.db import transaction
+from django.http import Http404
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -2349,7 +2350,13 @@ class POSTicketLineViewSet(viewsets.ModelViewSet):
         # MOTIVO DE ANULAÇÃO — anular um artigo JÁ EM PRODUÇÃO sem dizer porquê é como
         # deitar comida fora sem registo. Exige-se o motivo (da lista configurada).
         from .models import VoidReason
-        instance = self.get_object()
+        try:
+            instance = self.get_object()
+        except Http404:
+            # IDEMPOTENTE: se a linha já não existe, o resultado pedido — linha fora da
+            # conta — já está feito. Um duplo toque no ecrã tátil (ou um pedido repetido
+            # por rede lenta) não deve mostrar ao operador o erro cru do servidor.
+            return Response(status=status.HTTP_204_NO_CONTENT)
         motivo = request.query_params.get('reason') or request.data.get('reason')
         if instance.kds_status in ('FIRED', 'PREPARING', 'READY') and not motivo:
             return Response({

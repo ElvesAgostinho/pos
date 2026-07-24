@@ -126,6 +126,11 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   // Só se pergunta UMA vez por conta quem é o cliente — senão o ecrã reabria a cada
   // refrescamento e o empregado não conseguia lançar nada.
   const perguntouCliente = useRef<number | null>(null);
+  // GUARDA CONTRA O DUPLO TOQUE ao anular uma linha: o duplo-clique na linha e o
+  // caixote com a linha escolhida chamam a MESMA função — sem isto, um toque a mais
+  // tentava apagar uma linha que o primeiro pedido já tinha apagado, e o operador via
+  // o erro cru do servidor ("No POSTicketLine matches the given query.").
+  const anulandoLinha = useRef<Set<number>>(new Set());
 
   // O teclado pede-se COM o operador: a caixa "Usa preço de custo" da ficha dele
   // muda os preços que as teclas mostram (staff/consumo interno vê o custo).
@@ -263,21 +268,33 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   const apagarLinha = async (l: any) => {
     const confirmado = ['FIRED', 'PREPARING', 'READY', 'SERVED'].includes(l.kds_status);
     if (confirmado) { setAnularLinha(l); return; }   // pede o motivo (lista do backoffice)
+    if (anulandoLinha.current.has(l.id)) return;      // já em curso — o duplo-toque ignora-se
+    anulandoLinha.current.add(l.id);
     try {
       await apiClient.delete(`pos/ticket-lines/${l.id}/`);
       setSel(null);
       inval();
-    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao anular.'); }
+    } catch (e: any) {
+      // 404 = a linha já não existe (outro toque já a tinha apagado): o resultado que se
+      // queria já está feito, não é um erro para mostrar ao operador.
+      if (e?.response?.status === 404) { setSel(null); inval(); }
+      else aviso(e?.response?.data?.detail || 'Erro ao anular.');
+    } finally { anulandoLinha.current.delete(l.id); }
   };
 
   /** A mesma remoção, já com o motivo escolhido. Também não sai da venda. */
   const apagarLinhaComMotivo = async (l: any, motivo: string) => {
     setAnularLinha(null);
+    if (anulandoLinha.current.has(l.id)) return;
+    anulandoLinha.current.add(l.id);
     try {
       await apiClient.delete(`pos/ticket-lines/${l.id}/`, { params: { reason: motivo } });
       setSel(null);
       inval();
-    } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro ao anular.'); }
+    } catch (e: any) {
+      if (e?.response?.status === 404) { setSel(null); inval(); }
+      else aviso(e?.response?.data?.detail || 'Erro ao anular.');
+    } finally { anulandoLinha.current.delete(l.id); }
   };
 
   // DESCONTO — os códigos do backoffice primeiro (validade + grupos autorizados no
