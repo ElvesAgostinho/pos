@@ -263,8 +263,107 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
     setValor(valor + t);
   };
 
+  // OS BOTÕES DE AÇÃO vão no FOOTER da janela (fixo, nunca dentro da área que rola)
+  // — com muitos meios de pagamento a lista cresce e empurrava Confirmar/Fechar
+  // para fora do ecrã; o empregado via a conta mas não conseguia fechá-la.
+  const rodape = (
+    <>
+      {/* PAGAMENTO MISTO — o que JÁ entrou, meio a meio: metade em dinheiro, o resto
+          no cartão ou por transferência. Cada toque num meio cobra o valor escrito
+          (ou o que falta), e a lista mostra as parcelas até a conta fechar.
+          Fica no rodapé fixo por ser um resumo que o empregado precisa ver sempre,
+          mesmo quando a grelha de meios de pagamento cresce e passa a rolar. */}
+      {(conta.payments || []).length > 0 && (
+        <div className="bg-[#242424] px-4 py-2 border-t border-black max-h-[110px]
+          overflow-auto pos-arrasta flex-shrink-0">
+          {(conta.payments || []).map((p: any) => (
+            <div key={p.id} className="flex justify-between text-white/85 text-[15px] leading-[1.7]">
+              <span>{p.payment_method_name}</span>
+              <span>{money(p.amount)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* pago / a pagar */}
+      <div className="h-[54px] bg-[#3a3a3a] flex items-center px-4 text-white text-[20px]
+        font-semibold flex-shrink-0">
+        <span>Pago: {money(pago)}</span>
+        <span className="ml-auto">A pagar: {money(falta)}</span>
+      </div>
+
+      {/* ─── PRIMEIRA FILA: identificar · observar · limpar · gift ───
+          O gift card ficou nesta fila (o original tem três botões, nós temos quatro):
+          é uma função que já existia no nosso POS e não se tira nada do que cá está —
+          escondê-la era obrigar quem tem vales a ir procurá-los noutro sítio. */}
+      <div className="grid grid-cols-4 gap-1 p-1 bg-black">
+        <BotaoPag onClick={() => setDadosCliente(true)}
+          titulo={entidade ? `Cliente: ${entidade.name}` : 'Registar / procurar o cliente (NIF para a fatura)'}>
+          <IcoCliente size={30} />
+          {entidade && <span className="text-[12px] truncate max-w-[120px]">{entidade.name}</span>}
+        </BotaoPag>
+        <BotaoPag onClick={() => setVerObs(true)}
+          titulo="Observações de pagamento (fica na conta e na auditoria)">
+          <IcoLapis size={30} />
+          {conta.payment_notes && <span className="w-2 h-2 rounded-full bg-[#f0c000]" />}
+        </BotaoPag>
+        {/* A BORRACHA limpa o VALOR escrito e o modo de cartão — não desfaz pagamentos
+            já cobrados: esses são movimentos de dinheiro, e desfazem-se com estorno. */}
+        <BotaoPag onClick={() => { setValor(''); setModoCartao(''); }}
+          titulo="Limpar o valor escrito (não desfaz pagamentos já cobrados)">
+          <IcoLimpar size={30} />
+        </BotaoPag>
+        <BotaoPag onClick={async () => {
+          // GIFT CARD: o saldo do cartão abate à conta (motor redeem_gift — o saldo
+          // vive no servidor; aqui só se lê o código).
+          const codigo = await pedir('GIFT CARD — leia ou escreva o código:');
+          if (!codigo) return;
+          try {
+            await apiClient.post(`pos/tickets/${ticket.id}/redeem_gift/`, { code: codigo.trim() });
+            const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
+            setConta(tk);
+            if (Number(tk.balance_due ?? 0) <= 0) onPaid();
+            else aviso(`Gift aplicado. Falta: ${money(tk.balance_due)} Kz`);
+          } catch (e: any) { aviso(e?.response?.data?.detail || 'Gift card inválido.'); }
+        }} titulo="Gift card / voucher">
+          <IcoPreco size={30} />
+        </BotaoPag>
+      </div>
+
+      {/* ─── SEGUNDA FILA: fechar · faturar · escolher série · cancelar ─── */}
+      <div className="grid grid-cols-4 gap-1 p-1 pt-0 bg-black">
+        <BotaoPag
+          onClick={() => (Object.keys(parcelas).length ? confirmar() : onPaid())}
+          on={!busy && (Object.keys(parcelas).length > 0 || falta <= 0)} cor="#2ecc40"
+          titulo={Object.keys(parcelas).length
+            ? `Confirmar o pagamento (${money(pago - jaPago)} Kz)`
+            : falta > 0 ? `Escolha como o cliente paga` : 'Fechar a conta'}>
+          <IcoVisto size={32} />
+        </BotaoPag>
+        <BotaoPag onClick={() => emitir()} cor="#2ecc40"
+          titulo="Emitir o documento fiscal (a série vem da ficha do setor)">
+          <span className="flex items-center gap-1">
+            <IcoDocumento size={26} /><IcoVisto size={24} />
+          </span>
+        </BotaoPag>
+        {/* ESCOLHER A SÉRIE: por norma a série vem da ficha do setor (parâmetros
+            8553-8589). Este botão é para a exceção — faturar por outra série sem ir
+            ao backoffice trocar a configuração da sala toda. */}
+        <BotaoPag onClick={() => setEscolherSerie(true)} cor="#2ecc40"
+          titulo="Emitir escolhendo a série de documento">
+          <span className="flex items-center gap-1">
+            <IcoLista size={26} /><IcoVisto size={24} />
+          </span>
+        </BotaoPag>
+        <BotaoPag onClick={onClose} cor="#e02020" titulo="Fechar o painel">
+          <IcoCruz size={32} />
+        </BotaoPag>
+      </div>
+    </>
+  );
+
   return (
-    <Window title="Pagamentos" width={820} altura="88vh" tone="#0f8b8d" onClose={onClose}>
+    <Window title="Pagamentos" width={820} altura="88vh" tone="#0f8b8d" onClose={onClose} footer={rodape}>
       <div className="h-full flex flex-col">
 
         {/* o valor a entregar (vazio = cobra o que falta) */}
@@ -362,96 +461,6 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
             </div>
           )}
         </ZonaArrastavel>
-
-        {/* PAGAMENTO MISTO — o que JÁ entrou, meio a meio: metade em dinheiro, o resto
-            no cartão ou por transferência. Cada toque num meio cobra o valor escrito
-            (ou o que falta), e a lista mostra as parcelas até a conta fechar. */}
-        {(conta.payments || []).length > 0 && (
-          <div className="bg-[#242424] px-4 py-2 border-t border-black max-h-[110px]
-            overflow-auto pos-arrasta flex-shrink-0">
-            {(conta.payments || []).map((p: any) => (
-              <div key={p.id} className="flex justify-between text-white/85 text-[15px] leading-[1.7]">
-                <span>{p.payment_method_name}</span>
-                <span>{money(p.amount)}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* pago / a pagar */}
-        <div className="h-[54px] bg-[#3a3a3a] flex items-center px-4 text-white text-[20px]
-          font-semibold flex-shrink-0">
-          <span>Pago: {money(pago)}</span>
-          <span className="ml-auto">A pagar: {money(falta)}</span>
-        </div>
-
-        {/* ─── PRIMEIRA FILA: identificar · observar · limpar · gift ───
-            O gift card ficou nesta fila (o original tem três botões, nós temos quatro):
-            é uma função que já existia no nosso POS e não se tira nada do que cá está —
-            escondê-la era obrigar quem tem vales a ir procurá-los noutro sítio. */}
-        <div className="grid grid-cols-4 gap-1 p-1 bg-black flex-shrink-0">
-          <BotaoPag onClick={() => setDadosCliente(true)}
-            titulo={entidade ? `Cliente: ${entidade.name}` : 'Registar / procurar o cliente (NIF para a fatura)'}>
-            <IcoCliente size={30} />
-            {entidade && <span className="text-[12px] truncate max-w-[120px]">{entidade.name}</span>}
-          </BotaoPag>
-          <BotaoPag onClick={() => setVerObs(true)}
-            titulo="Observações de pagamento (fica na conta e na auditoria)">
-            <IcoLapis size={30} />
-            {conta.payment_notes && <span className="w-2 h-2 rounded-full bg-[#f0c000]" />}
-          </BotaoPag>
-          {/* A BORRACHA limpa o VALOR escrito e o modo de cartão — não desfaz pagamentos
-              já cobrados: esses são movimentos de dinheiro, e desfazem-se com estorno. */}
-          <BotaoPag onClick={() => { setValor(''); setModoCartao(''); }}
-            titulo="Limpar o valor escrito (não desfaz pagamentos já cobrados)">
-            <IcoLimpar size={30} />
-          </BotaoPag>
-          <BotaoPag onClick={async () => {
-            // GIFT CARD: o saldo do cartão abate à conta (motor redeem_gift — o saldo
-            // vive no servidor; aqui só se lê o código).
-            const codigo = await pedir('GIFT CARD — leia ou escreva o código:');
-            if (!codigo) return;
-            try {
-              await apiClient.post(`pos/tickets/${ticket.id}/redeem_gift/`, { code: codigo.trim() });
-              const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
-              setConta(tk);
-              if (Number(tk.balance_due ?? 0) <= 0) onPaid();
-              else aviso(`Gift aplicado. Falta: ${money(tk.balance_due)} Kz`);
-            } catch (e: any) { aviso(e?.response?.data?.detail || 'Gift card inválido.'); }
-          }} titulo="Gift card / voucher">
-            <IcoPreco size={30} />
-          </BotaoPag>
-        </div>
-
-        {/* ─── SEGUNDA FILA: fechar · faturar · escolher série · cancelar ─── */}
-        <div className="grid grid-cols-4 gap-1 p-1 pt-0 bg-black flex-shrink-0">
-          <BotaoPag
-            onClick={() => (Object.keys(parcelas).length ? confirmar() : onPaid())}
-            on={!busy && (Object.keys(parcelas).length > 0 || falta <= 0)} cor="#2ecc40"
-            titulo={Object.keys(parcelas).length
-              ? `Confirmar o pagamento (${money(pago - jaPago)} Kz)`
-              : falta > 0 ? `Escolha como o cliente paga` : 'Fechar a conta'}>
-            <IcoVisto size={32} />
-          </BotaoPag>
-          <BotaoPag onClick={() => emitir()} cor="#2ecc40"
-            titulo="Emitir o documento fiscal (a série vem da ficha do setor)">
-            <span className="flex items-center gap-1">
-              <IcoDocumento size={26} /><IcoVisto size={24} />
-            </span>
-          </BotaoPag>
-          {/* ESCOLHER A SÉRIE: por norma a série vem da ficha do setor (parâmetros
-              8553-8589). Este botão é para a exceção — faturar por outra série sem ir
-              ao backoffice trocar a configuração da sala toda. */}
-          <BotaoPag onClick={() => setEscolherSerie(true)} cor="#2ecc40"
-            titulo="Emitir escolhendo a série de documento">
-            <span className="flex items-center gap-1">
-              <IcoLista size={26} /><IcoVisto size={24} />
-            </span>
-          </BotaoPag>
-          <BotaoPag onClick={onClose} cor="#e02020" titulo="Fechar o painel">
-            <IcoCruz size={32} />
-          </BotaoPag>
-        </div>
       </div>
 
       {/* O RECIBO — aparece assim que a conta fica saldada. */}
