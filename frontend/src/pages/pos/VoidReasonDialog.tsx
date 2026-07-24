@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import TouchKeyboard from './TouchKeyboard';
+import ZonaArrastavel from './ZonaArrastavel';
 
 /**
  * MOTIVO DE ANULAÇÃO — a pergunta que se faz antes de apagar uma venda.
@@ -35,16 +36,19 @@ export default function VoidReasonDialog({ titulo = 'Motivo de Anulação', onPi
   });
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-start justify-center pt-16 z-50"
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
       onClick={onClose}>
-      <div className="w-[600px] bg-[#1f1f1f] shadow-2xl border border-black"
-        onClick={(e) => e.stopPropagation()}>
-        <div className="h-[64px] bg-[#c0140f] flex items-center justify-center">
+      {/* max-h-[90vh] + flex-col: em ecrãs mais baixos (terminais tácteis) o cabeçalho
+          fica sempre à vista e só a LISTA rola — nunca a janela inteira, que cortava
+          o último motivo a meio (via ZonaArrastavel, como o resto do POS tátil). */}
+      <div className="w-[600px] max-h-[90vh] bg-[#1f1f1f] shadow-2xl border border-black
+        flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="h-[64px] flex-shrink-0 bg-[#c0140f] flex items-center justify-center">
           <span className="text-white text-[26px] font-bold">{titulo}</span>
         </div>
 
         {livre === null ? (
-          <div className="max-h-[70vh] overflow-auto pos-arrasta">
+          <ZonaArrastavel className="flex-1 min-h-0">
             <button onClick={() => setLivre('')}
               className="w-full h-[62px] px-6 text-left text-white text-[19px]
                 bg-[#2b2b2b] hover:bg-[#3a3a3a] border-b border-black">
@@ -66,9 +70,9 @@ export default function VoidReasonDialog({ titulo = 'Motivo de Anulação', onPi
                 {m.key_label}
               </button>
             ))}
-          </div>
+          </ZonaArrastavel>
         ) : (
-          <div className="p-3">
+          <div className="p-3 overflow-auto">
             <div className="h-[56px] bg-black rounded text-white text-[20px] px-4 flex items-center
               border border-[#4a4a4a] mb-2">
               {livre || <span className="text-white/25">Escreva o motivo…</span>}
