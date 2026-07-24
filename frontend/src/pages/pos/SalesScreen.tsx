@@ -394,10 +394,10 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível gravar.'); }
   };
 
-  // ANULAR TUDO — a conta inteira. Obriga a motivo (fica na auditoria) e liberta a mesa.
-  const anularConta = async () => {
-    const motivo = await pedir(
-      `ANULAR a conta ${conta?.ticket_number || ''}?\n\nA mesa fica livre e a anulação fica na auditoria.\n\nMotivo:`);
+  // ANULAR TUDO — a conta inteira. O motivo já vem escolhido do VoidReasonDialog (lista
+  // do backoffice ou texto livre) — pedir de novo aqui era mostrar um segundo prompt
+  // depois de o empregado já ter escolhido, a perguntar a mesma coisa outra vez.
+  const anularConta = async (motivo: string) => {
     if (!motivo) return;
     try {
       await apiClient.post(`pos/tickets/${tid}/void/`, { reason: motivo });
