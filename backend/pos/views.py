@@ -2368,6 +2368,12 @@ class POSTicketLineViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *a, **kw)
 
     def perform_destroy(self, instance):
+        if instance.is_void:
+            # JÁ ANULADA: fica no registo, sempre — é o que a anulação em produção
+            # promete (cancel_production). Sem isto, um segundo pedido de apagar
+            # sobre a MESMA linha (ecrã tátil sem indicação visual, ou um pedido
+            # repetido) apagava para sempre o motivo e o carimbo da anulação original.
+            return
         ticket = instance.ticket
         desc = f'{instance.quantity}x {instance.description} @ {instance.unit_price}'
         reason = (self.request.query_params.get('reason')

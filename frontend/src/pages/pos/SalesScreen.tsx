@@ -646,17 +646,34 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             branco, o empregado vira o ecrã ao cliente e o cliente reconhece a fatura.
             É também o que se lê melhor sob a luz de uma sala escura. */}
         <ZonaArrastavel className="flex-1 bg-white">
-          {linhasVista.map((l: any) => (
+          {linhasVista.map((l: any) => {
+            // JÁ EM PRODUÇÃO, anular NÃO apaga a linha — fica no registo (is_void),
+            // deixa de somar ao total, e a estação recebe o aviso. Antes disto, a
+            // linha continuava aqui EXATAMENTE IGUAL (mesmo preço, sem risco), só
+            // sem o "· na cozinha": o total já tinha baixado por trás, mas o ecrã
+            // dizia o contrário — o empregado achava que não tinha acontecido nada
+            // e tocava OUTRA VEZ, e essa segunda vez é que apagava mesmo a linha,
+            // destruindo o registo de auditoria da anulação original.
+            const anulada = !!l.is_void;
+            return (
             // 1 toque ESCOLHE a linha (é sobre ela que a engrenagem trabalha); 2 toques
             // anulam. Antes, um toque abria logo a caixa da nota — não havia como
             // escolher uma linha para lhe mudar o preço.
-            <div key={l.id} onClick={() => setSel(l.id)} onDoubleClick={() => apagarLinha(l)}
-              title="1 toque: escolher a linha · 2 toques: anular a linha"
+            <div key={l.id} onClick={() => !anulada && setSel(l.id)}
+              onDoubleClick={() => !anulada && apagarLinha(l)}
+              title={anulada ? 'Linha anulada' : '1 toque: escolher a linha · 2 toques: anular a linha'}
               className={`grid grid-cols-[58px_1fr_118px] px-2 py-2 border-b border-black/15
-                text-[16px] cursor-pointer ${sel === l.id ? 'bg-[#f0c000]' : 'hover:bg-black/5'}`}>
-              <span className="text-black font-semibold">{Number(l.quantity)}</span>
+                text-[16px] ${anulada ? 'bg-[#fbeaea] text-black/40 line-through cursor-default'
+                  : `cursor-pointer ${sel === l.id ? 'bg-[#f0c000]' : 'hover:bg-black/5'}`}`}>
+              <span className={`font-semibold ${anulada ? '' : 'text-black'}`}>{Number(l.quantity)}</span>
               <span className="min-w-0">
-                <span className="block text-black font-semibold truncate">{l.description}</span>
+                <span className={`block font-semibold truncate ${anulada ? '' : 'text-black'}`}>{l.description}</span>
+                {anulada && (
+                  <span className="inline-block mt-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded
+                    bg-[#a01818] text-white no-underline">
+                    ANULADO{l.void_reason ? ` · ${l.void_reason}` : ''}
+                  </span>
+                )}
 
                 {/* AS MENSAGENS, uma por linha e recuadas — é assim que a cozinha as
                     lê e é assim que o cliente as confere. Amarelas sobre o papel: veem-se
@@ -681,13 +698,21 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
                   <span className="flex items-center gap-1 text-[12px] font-semibold text-[#b3140f]">
                     <IcoAviso size={13} /> {l.allergens.join(', ')}</span>
                 )}
+                {/* A ESTAÇÃO certa, não sempre "cozinha" — dizia "na cozinha" para
+                    TODA a produção, incluindo bebidas que vão para o BAR (ficha do
+                    artigo, kds_station). O empregado achava que a bebida estava a
+                    entrar na fila errada; estava só o rótulo a mentir. */}
                 {['FIRED', 'PREPARING', 'READY'].includes(l.kds_status) && (
-                  <span className="block text-[12px] text-[#1f7a34] font-semibold">• na cozinha</span>
+                  <span className="block text-[12px] text-[#1f7a34] font-semibold">
+                    • {{ KITCHEN: 'na cozinha', BAR: 'no bar', PASTRY: 'na pastelaria' }[l.kds_station as string]
+                      || 'em produção'}
+                  </span>
                 )}
               </span>
-              <span className="text-right text-black font-semibold">{money(l.line_total)}</span>
+              <span className={`text-right font-semibold ${anulada ? '' : 'text-black'}`}>{money(l.line_total)}</span>
             </div>
-          ))}
+            );
+          })}
           {linhas.length === 0 && (
             <div className="text-black/40 text-center py-10 text-[15px]">
               A conta está vazia. Toque numa tecla para lançar.
