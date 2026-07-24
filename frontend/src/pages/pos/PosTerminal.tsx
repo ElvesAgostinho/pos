@@ -31,6 +31,7 @@ import {
   IcoTransferir, IcoCalendario, IcoAgrupar, IcoEntrega, IcoCombo, IcoQuarto,
 } from './Icons';
 import { aviso } from '../../ui/dialogo';
+import { tokenStore } from '../../api/auth';
 
 /**
  * O TERMINAL — o ecrã do empregado de mesa.
@@ -106,8 +107,12 @@ export default function PosTerminal() {
     queryKey: ['pos-bootstrap'],
     queryFn: async () => {
       const op = JSON.parse(localStorage.getItem('pos_operator') || '{}');
+      // O login guarda o operador com o campo `id` (ver PosLoginView) — isto lia
+      // `operator_id`, que nunca existiu ali. O parâmetro ia sempre vazio, o servidor
+      // tratava como "sem operador" e devolvia TODOS os setores — a caixa "Todos os
+      // setores" da ficha do operador ficava só de decoração, ninguém era restringido.
       return (await apiClient.get('pos/terminal/bootstrap/', {
-        params: op?.operator_id ? { operator: op.operator_id } : undefined,
+        params: op?.id ? { operator: op.id } : undefined,
       })).data;
     },
     // O terminal fica ABERTO O DIA TODO no mesmo ecrã — sem isto, um parâmetro
@@ -148,7 +153,10 @@ export default function PosTerminal() {
     const t = setInterval(() => {
       const min = (Date.now() - ultimo) / 60000;
       if (min >= (cfg.app_close_minutes || 120) || min >= cfg.session_timeout_minutes) {
-        localStorage.removeItem('pos_operator_token');
+        // Limpa TUDO (token de acesso e identidade, não só o sinalizador de sessão) —
+        // um terminal ao molho com o token ainda válido no localStorage continuava a
+        // autenticar pedidos em nome do operador mesmo depois de "sair".
+        tokenStore.clearPos();
         nav('/pos/login');
       }
     }, 30000);
@@ -165,18 +173,33 @@ export default function PosTerminal() {
   }, [cfg]);
 
   // O ARRANQUE obedece aos parâmetros:
-  //   · "Escolher o setor ao entrar" desligado -> usa o primeiro setor e não pergunta;
+  //   · SETOR já escolhido no ecrã de login -> usa-o direto, SE o operador tiver
+  //     acesso a ele (a lista `boot.sectors` já vem filtrada pela caixa "Todos os
+  //     setores" da ficha do operador — quem escolheu no login um setor a que não
+  //     tem direito é ignorado aqui, e cai-se no comportamento normal). Sem isto o
+  //     empregado escolhia o setor no login e o terminal voltava a perguntar a
+  //     seguir, como se a primeira escolha não tivesse contado para nada.
+  //   · Senão, "Escolher o setor ao entrar" desligado -> usa o primeiro setor
+  //     permitido e não pergunta;
   //   · "Exigir abertura de caixa" desligado   -> salta a caixa (terminais que não recebem
   //     dinheiro, só lançam no quarto);
   //   · "Venda Direta" ligado                  -> abre logo uma conta de balcão, sem mesas.
   useEffect(() => {
     if (!cfg || setor) return;
     (async () => {
-      if (cfg.ask_sector) return;                       // o seletor fica, como está
-      // Os setores já vieram no bootstrap — filtrados pela caixa "Todos os setores".
       const lista = boot?.sectors || [];
+      const areaLogin = localStorage.getItem('pos_area');
+      // Um SÓ USO: depois de aplicado (ou rejeitado), não deve voltar a decidir nada
+      // sozinho — um "Trocar de Setor" a meio da sessão não pode ser desfeito por um
+      // refrescar da página que releia esta escolha antiga do login.
+      if (areaLogin) localStorage.removeItem('pos_area');
+      const preset = areaLogin ? lista.find((sec: any) => String(sec.outlet) === areaLogin) : null;
+      // O operador escolheu um setor no login a que não tem acesso (ficha do dono não
+      // autoriza) — avisa-se, em vez de trocar o setor caladamente sem dizer porquê.
+      if (areaLogin && !preset) aviso('Não tem acesso a esse setor. Escolha um dos setores autorizados.');
+      if (!preset && cfg.ask_sector) return;             // o seletor fica, como está
       if (!lista.length) return;
-      const s = lista[0];
+      const s = preset || lista[0];
       setSetor(s);
       // (8300) "Venda Direta" LIGADO: abre LOGO numa conta de balcão — sem mapa.
       // À risca: quem serve ao balcão não tem mesas para escolher.
@@ -286,7 +309,7 @@ export default function PosTerminal() {
   const [verProducao, setVerProducao] = useState(false);
 
   const sair = () => {
-    localStorage.removeItem('pos_operator_token');
+    tokenStore.clearPos();
     nav('/pos/login');
   };
 

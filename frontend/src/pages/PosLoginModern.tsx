@@ -26,6 +26,12 @@ const PosLoginModern: React.FC = () => {
   const [areas, setAreas] = useState(DEFAULT_AREAS);
   const [property, setProperty] = useState(DEFAULT_PROPERTIES[0].id);
   const [area, setArea] = useState(DEFAULT_AREAS[0].id);
+  // Só passa a valer a pena GUARDAR a escolha se a lista veio mesmo do servidor: sem
+  // sessão anterior neste aparelho (primeiro acesso, ou depois de "Sair"), a lista de
+  // outlets exige autenticação e cai nestes três nomes de exemplo — não são setores
+  // reais, e o terminal não pode tentar usá-los depois do login (rejeitava sempre,
+  // com um aviso de "sem acesso" que nem era verdade).
+  const [areasReais, setAreasReais] = useState(false);
   const [pin, setPin] = useState('');
   const [showPad, setShowPad] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -40,7 +46,13 @@ const PosLoginModern: React.FC = () => {
 
   useEffect(() => {
     posMgmtApi.getOutlets()
-      .then((os) => { if (os?.length) setAreas(os.map((o: any) => ({ id: String(o.id), name: o.name }))); })
+      .then((os) => {
+        if (os?.length) {
+          setAreas(os.map((o: any) => ({ id: String(o.id), name: o.name })));
+          setArea(String(os[0].id));
+          setAreasReais(true);
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -55,7 +67,8 @@ const PosLoginModern: React.FC = () => {
     setError(''); setLoading(true);
     try {
       localStorage.setItem('pos_property', property);
-      localStorage.setItem('pos_area', area);
+      if (areasReais) localStorage.setItem('pos_area', area);
+      else localStorage.removeItem('pos_area');
       await authApi.posLogin(pin);
       navigate('/pos/terminal');
     } catch (err: any) {
