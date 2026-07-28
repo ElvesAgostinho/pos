@@ -265,6 +265,21 @@ class POSTableViewSet(viewsets.ModelViewSet):
             return qs.filter(sector_id=sector)
         return qs.filter(outlet_id=outlet) if outlet else qs
 
+    def list(self, request, *a, **kw):
+        # AUTO-CORREÇÃO: uma mesa marcada OCCUPIED sem NENHUMA conta aberta/suspensa
+        # é sempre um valor GUARDADO a mais — "ocupada" só quer dizer "tem conta",
+        # nunca é uma escolha à parte (ao contrário de limpeza/reservada/bloqueada).
+        # Se alguma vez uma conta foi fechada por um caminho que não passou pelo
+        # motor que liberta a mesa (_liberta_mesa), ficava vermelha para sempre. Como
+        # isto só lê os poucos registos já filtrados para este pedido, corrige-se aqui
+        # sempre que se lê a lista — sem esperar por uma ação específica do operador.
+        qs = self.filter_queryset(self.get_queryset())
+        presas = [t for t in qs if t.status == 'OCCUPIED'
+                  and not t.tickets.filter(status__in=['OPEN', 'SUSPENDED']).exists()]
+        if presas:
+            POSTable.objects.filter(pk__in=[t.pk for t in presas]).update(status='FREE')
+        return super().list(request, *a, **kw)
+
     def perform_create(self, serializer):
         """
         Auto-posiciona a mesa no mapa quando a posição não é indicada (ex.: criada em

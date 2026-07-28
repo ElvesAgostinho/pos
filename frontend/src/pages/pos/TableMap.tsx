@@ -138,7 +138,13 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
       <div className="relative" style={{ minWidth: 1200, minHeight: 700 }}>
         {mesas.map((m: any) => {
           const conta = contaDa(m.id);
-          const estado = conta ? 'OCCUPIED' : m.status;
+          // "OCCUPIED" só é verdade se houver mesmo uma conta aberta — é um estado
+          // CALCULADO (existe conta ou não existe), não uma escolha como limpeza ou
+          // reservada. Guardado à parte na mesa (m.status), podia ficar parado nesse
+          // valor se alguma limpeza de dados alguma vez mudasse a conta sem passar
+          // pelo motor que liberta a mesa — e a mesa ficava vermelha para sempre,
+          // sem ninguém lá. Sem conta real, nunca se mostra ocupada.
+          const estado = conta ? 'OCCUPIED' : (m.status === 'OCCUPIED' ? 'FREE' : m.status);
           const redonda = m.shape === 'ROUND';
           return (
             <button key={m.id} onClick={() => tocar(m)}
