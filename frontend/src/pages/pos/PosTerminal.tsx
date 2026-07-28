@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
@@ -76,6 +76,10 @@ export default function PosTerminal() {
   const [setor, setSetor] = useState<any | null>(null);
   const [sessao, setSessao] = useState<any | null>(null);
   const [ticket, setTicket] = useState<number | null>(null);
+  // (9312) O teclado abre-se sozinho na primeira venda — mas SÓ NA PRIMEIRA. A
+  // SalesScreen nasce de novo a cada troca de subconta (key={ticket} abaixo), por
+  // isso este "já abri" tem de viver AQUI, fora do que se apaga a cada troca.
+  const tecladoAbriuRef = useRef(false);
   // Modo do mapa: lançar artigos, cobrar, ou CONSULTAR (mostrar o talão sem abrir a venda).
   const [modoMapa, setModoMapa] = useState<'ORDER' | 'PAY' | 'VIEW'>('ORDER');
   const [aCobrar, setACobrar] = useState<any | null>(null);
@@ -602,6 +606,7 @@ export default function PosTerminal() {
              */
             <SalesScreen key={ticket} ticketId={ticket} setor={setor} cfg={cfg}
               publicarAcoes={setAcoesConta} publicarTopo={setTopo}
+              tecladoAbriuRef={tecladoAbriuRef}
               onClose={() => fecharVenda(ticket)} />
           )}
 

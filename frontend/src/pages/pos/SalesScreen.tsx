@@ -73,12 +73,17 @@ export type TopoApi = {
   onde: string;
 };
 
-export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publicarTopo, onClose }: {
+export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publicarTopo, onClose, tecladoAbriuRef }: {
   ticketId: number; setor: any; cfg?: any; onClose: () => void;
   /** a venda entrega as suas funções ao painel da engrenagem (aba "Conta") */
   publicarAcoes?: (acoes: AcaoPainel[]) => void;
   /** …e aos quatro ícones da barra preta do terminal */
   publicarTopo?: (api: TopoApi) => void;
+  /** ABRE-SE SOZINHO SÓ NA PRIMEIRA VEZ (9312): este ecrã nasce de novo a cada troca
+      de subconta (key={ticket} no Terminal) — sem um sítio que sobreviva à troca para
+      lembrar "já abri", o teclado reabria-se sozinho toda vez que se mudava de pessoa
+      na mesma mesa, empurrando o empregado de volta à primeira página cada vez. */
+  tecladoAbriuRef?: { current: boolean };
 }) {
   const qc = useQueryClient();
   // A subconta ATIVA: numa mesa com várias pessoas, o carrossel troca-a sem sair da venda.
@@ -126,6 +131,14 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   // Só se pergunta UMA vez por conta quem é o cliente — senão o ecrã reabria a cada
   // refrescamento e o empregado não conseguia lançar nada.
   const perguntouCliente = useRef<number | null>(null);
+  // ERA A VEZ DESTA SUBCONTA ABRIR O TECLADO SOZINHA? Captura-se UMA VEZ, no instante
+  // em que este ecrã nasce — antes de o catálogo (teclado) sequer ter chegado do
+  // servidor. Marcar a bandeira partilhada SÓ depois de o teclado carregar (dentro do
+  // efeito de baixo) deixava uma corrida: se o empregado tocasse numa página à mão
+  // antes do catálogo chegar, a bandeira nunca era marcada NESTA subconta — e a
+  // abertura automática saltava para a PRÓXIMA, em vez de nunca mais aparecer.
+  const souAPrimeiraRef = useRef(!tecladoAbriuRef || !tecladoAbriuRef.current);
+  useEffect(() => { if (tecladoAbriuRef) tecladoAbriuRef.current = true; }, []);
   // GUARDA CONTRA O DUPLO TOQUE ao anular uma linha: o duplo-clique na linha e o
   // caixote com a linha escolhida chamam a MESMA função — sem isto, um toque a mais
   // tentava apagar uma linha que o primeiro pedido já tinha apagado, e o operador via
@@ -529,6 +542,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   useEffect(() => {
     if (cfg?.open_keyboard_on_sale === false) return;
     if (caminho.length) return;
+    if (!souAPrimeiraRef.current) return;   // já abriu sozinho noutra subconta desta sessão
     const p1 = (teclado?.pages || [])[0];
     if (p1) setCaminho([p1]);
   }, [teclado, cfg?.open_keyboard_on_sale]);
