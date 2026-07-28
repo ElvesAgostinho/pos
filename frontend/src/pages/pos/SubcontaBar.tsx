@@ -14,45 +14,56 @@ import { aviso } from '../../ui/dialogo';
  * 2·3·4·5 — e ao chegar ao fim volta ao princípio. Uma mesa de grupo com 12 pessoas
  * cabe sempre nos mesmos 4 lugares.
  *
+ * NO BALCÃO (Venda Direta, sem mesa) é a MESMA lógica — só muda o que agrupa as
+ * subcontas: em vez de "mesma mesa", é "mesma caixa aberta" (cash_session). Três
+ * clientes ao balcão ao mesmo tempo são três números, cada um a sua conta — sem
+ * isto só se conseguia servir um de cada vez, com os outros à espera.
+ *
  * Nada disto é novo: as subcontas são o `split`/`siblings`/`merge` do motor de
  * tickets do backoffice; cada uma paga-se como qualquer conta.
  */
-export default function SubcontaBar({ conta, mesa, outlet, onSwitch }: {
-  conta: any;                       // a conta atual (tem table e outlet)
+export default function SubcontaBar({ conta, mesa, outlet, cashSession, onSwitch }: {
+  conta: any;                       // a conta atual (tem table/cash_session e outlet)
   // Sem conta ativa (o painel direito das Parciais nasce vazio), a MESA de referência
   // vem por aqui — o carrossel mostra as pessoas dela na mesma, para se escolher uma.
   mesa?: number | null;
   outlet?: number | null;
+  // Só usado no BALCÃO (sem mesa) — agrupa as subcontas pela caixa aberta, não pela mesa.
+  cashSession?: number | null;
   onSwitch: (ticketId: number) => void;
 }) {
   const qc = useQueryClient();
   const [ini, setIni] = useState(0);      // onde começa a janela do carrossel
   const tableId = conta?.table ?? mesa ?? null;
   const outletId = conta?.outlet ?? outlet ?? null;
+  const sessaoId = conta?.cash_session ?? cashSession ?? null;
+  const chave = tableId ? `mesa-${tableId}` : sessaoId ? `caixa-${sessaoId}` : null;
 
-  // TODAS as contas abertas desta mesa, por ordem de chegada — o nº 1 é a primeira.
+  // TODAS as contas abertas do grupo (mesma mesa, ou mesma caixa no balcão), por
+  // ordem de chegada — o nº 1 é a primeira.
   const { data: contas = [] } = useQuery({
-    queryKey: ['subcontas', tableId],
+    queryKey: ['subcontas', chave],
     queryFn: async () => {
       const r = await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } });
       const todas = (r.data?.results || r.data || []) as any[];
-      return todas.filter((t) => t.status === 'OPEN' && t.table === tableId)
+      return todas.filter((t) => t.status === 'OPEN'
+        && (tableId ? t.table === tableId : !t.table && t.cash_session === sessaoId))
         .sort((a, b) => a.id - b.id);
     },
-    enabled: !!tableId,
+    enabled: !!chave,
     refetchInterval: 8000,
   });
 
-  if (!tableId) return null;    // venda direta / balcão: não há mesa, não há pessoas
+  if (!chave) return null;    // nem mesa nem caixa aberta: não há como agrupar subcontas
 
   const acrescentar = async () => {
     try {
       const r = await apiClient.post('pos/tickets/', {
-        outlet: outletId, table: tableId, guests: 1,
+        outlet: outletId, table: tableId || undefined, guests: 1,
         guest_type: conta?.guest_type || 'PASSANTE',
         operator_name: (JSON.parse(localStorage.getItem('pos_operator') || '{}').name) || 'Operador',
       });
-      qc.invalidateQueries({ queryKey: ['subcontas', tableId] });
+      qc.invalidateQueries({ queryKey: ['subcontas', chave] });
       qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
       onSwitch(r.data.id);
     } catch (e: any) {

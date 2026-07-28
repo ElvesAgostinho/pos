@@ -299,13 +299,18 @@ export default function PosTerminal() {
           reason: 'Conta fechada sem consumo — mesa libertada',
         });
       }
-      if (t.table) {
+      {
+        // Irmãs: mesma MESA (subcontas à volta de uma mesa) OU, ao balcão (sem
+        // mesa), mesma CAIXA aberta — nunca "qualquer conta de balcão do outlet",
+        // senão apanhava contas de OUTRO operador/turno que nada tinham a ver.
         const irmas = (await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } })).data;
         const lista = (irmas?.results || irmas || []) as any[];
+        const mesmoGrupo = (s: any) => t.table ? s.table === t.table
+          : !s.table && t.cash_session && s.cash_session === t.cash_session;
         for (const s of lista) {
-          if (s.id !== id && s.table === t.table && vaziaSemDinheiro(s)) {
+          if (s.id !== id && mesmoGrupo(s) && vaziaSemDinheiro(s)) {
             await apiClient.post(`pos/tickets/${s.id}/void/`, {
-              reason: 'Subconta vazia — mesa libertada',
+              reason: 'Subconta vazia — libertada',
             }).catch(() => {});
           }
         }
