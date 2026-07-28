@@ -230,6 +230,21 @@ if _REDIS_URL:
 else:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
+# Hasher extra para o PIN do terminal POS (pos.PosPinHasher) — o login por PIN
+# percorre TODOS os operadores ativos a testar o hash de cada um; com o hasher
+# por omissão (~600 mil iterações) isso custava vários segundos por operador.
+# Fica ao FUNDO da lista: continua disponível para VERIFICAR PINs já gravados
+# com ele, mas nunca se torna o hasher por omissão (o `password` da conta de
+# acesso continua com o hasher forte de sempre).
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+    "pos.hashers.PosPinHasher",
+]
+
 # Validadores de palavra-passe (aplicam-se onde validate_password é chamado).
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},

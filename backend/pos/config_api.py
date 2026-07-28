@@ -602,7 +602,9 @@ class PosUserSerializer(serializers.ModelSerializer):
             user.auth_user = au
             user.password_changed_at = timezone.now()
         if pin:
-            user.pos_pin = make_password(pin)     # o PIN do terminal também é guardado em hash
+            # hasher RÁPIDO (pos.PosPinHasher) — o login por PIN verifica-o contra
+            # TODOS os operadores ativos, um a um; ver hashers.py.
+            user.pos_pin = make_password(pin, hasher='pbkdf2_pos_pin')
         if password or pin:
             user.save()
 
@@ -5020,7 +5022,7 @@ class PosTerminalChangePinView(APIView):
             if outro.pos_pin and check_password(novo, outro.pos_pin):
                 return Response({'detail': 'Esse PIN já está em uso por outro operador. Escolha outro.'},
                                 status=400)
-        user.pos_pin = make_password(novo)
+        user.pos_pin = make_password(novo, hasher='pbkdf2_pos_pin')
         user.pos_must_change_pin = False
         user.save(update_fields=['pos_pin', 'pos_must_change_pin'])
         return Response({'detail': 'PIN alterado com sucesso.'})
