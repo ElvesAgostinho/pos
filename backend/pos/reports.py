@@ -580,7 +580,7 @@ def r_anulacoes_linha(p):
         'ticket': l.ticket.ticket_number if l.ticket_id else '',
         'operator': l.ticket.operator_name if l.ticket_id else '',
         'item': l.description, 'qty': str(l.quantity),
-        'value': str(l.line_total), 'reason': l.note or '',
+        'value': str(l.line_total), 'reason': l.void_reason or '',
     } for l in qs]
     return {
         'columns': [('date', 'Data'), ('ticket', 'Conta'), ('operator', 'Operador'),
