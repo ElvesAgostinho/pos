@@ -3,16 +3,62 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Tab, Box, Row, Check, Toolbar, inputCls, inputStyle, money, GridCheck } from './kit';
+import ComponentsPicker from './ComponentsPicker';
+import ArticleLogs from './ArticleLogs';
 
-type TabKey = 'geral' | 'outros' | 'notas' | 'teclados' | 'barras' | 'descontos' | 'unidades' | 'armazens' | 'fornecedores' | 'dashboard';
+type TabKey = 'geral' | 'outros' | 'notas' | 'teclados' | 'composicao' | 'barras' | 'descontos' | 'unidades' | 'armazens' | 'fornecedores' | 'dashboard';
 
 const TABS: [TabKey, string][] = [
   ['geral', 'Geral'], ['outros', 'Outros'], ['notas', 'Notas/Alergénios'], ['teclados', 'Teclados'],
-  ['barras', 'Código de Barras'], ['descontos', 'Descontos'], ['unidades', 'Unidades'],
-  ['armazens', 'Armazéns'], ['fornecedores', 'Fornecedores'], ['dashboard', 'Dashboard'],
+  ['composicao', 'Composição/Unidade'], ['barras', 'Código de Barras'], ['descontos', 'Descontos'],
+  ['unidades', 'Unidades'], ['armazens', 'Armazéns'], ['fornecedores', 'Fornecedores'], ['dashboard', 'Dashboard'],
 ];
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+/** Imagem por UPLOAD (não por URL escrita à mão — ver core/uploads.py: fica no disco
+    do próprio servidor, nunca numa nuvem terceira). Mesmo padrão do logótipo em
+    CompanyEditor.tsx. */
+function ImagemUpload({ titulo, url, folder, onChange }: {
+  titulo: string; url?: string | null; folder: string; onChange: (url: string) => void;
+}) {
+  return (
+    <Box title={titulo}>
+      <div className="flex items-center gap-2">
+        <label className="flex-1 flex items-center gap-2 cursor-pointer min-w-0">
+          <span className={`${inputCls} flex-1 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
+            {url ? url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
+          </span>
+          <span className="px-3 py-1 text-[12px] font-semibold bg-[#3c3c3c] text-white hover:bg-[#4c4c4c] flex-shrink-0">
+            Carregar…
+          </span>
+          <input type="file" accept="image/*" className="hidden"
+            onChange={async (e) => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              const fd = new FormData();
+              fd.append('file', f);
+              fd.append('folder', folder);
+              try {
+                const r = await apiClient.post('platform/upload/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+                onChange(r.data.url);
+              } catch (err) { notifyError(err); }
+              e.target.value = '';
+            }} />
+        </label>
+        {url && (
+          <button onClick={() => onChange('')} title="Remover imagem"
+            className="px-2 py-1 text-[12px] text-[#a01818] hover:bg-[#fdecea] flex-shrink-0">✕</button>
+        )}
+      </div>
+      <div className="mt-2 h-24 flex items-center justify-center border border-[#ddd] bg-white">
+        {url
+          ? <img src={url} alt="" className="max-h-full max-w-full object-contain" />
+          : <span className="text-[11px] text-[#999]">Sem imagem</span>}
+      </div>
+    </Box>
+  );
+}
 
 /** FICHA DO ARTIGO — 10 separadores, CRUD real. */
 export default function ArticleEditor({ id, onClose, onSaved }: { id: number | 'new'; onClose: () => void; onSaved: () => void }) {
@@ -22,6 +68,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
   const [d, setD] = useState<any>({ is_active: true, item_type: 'Retail', tax_percentage: 14, is_sold: true, is_purchased: true });
   const [prices, setPrices] = useState<any[]>([]);
   const [newBc, setNewBc] = useState('');
+  const [verLogs, setVerLogs] = useState(false);
 
   // --- Dados de apoio ---
   const { data: groups = [] } = useQuery({ queryKey: ['posc', 'groups'], queryFn: async () => (await apiClient.get('inventory/pos/groups/')).data });
@@ -58,6 +105,20 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
     }
   }, [item]);
 
+  // --- Composição/Unidade (ficha técnica) — carregada sempre (não só ao abrir o
+  // separador), senão "Gravar" sem nunca ter aberto esta aba apagava a receita
+  // que já lá estava.
+  const [receita, setReceita] = useState<any>({ pax: 1, doses: 1, instructions: '', ingredients: [] });
+  const [selRecIds, setSelRecIds] = useState<number[]>([]);
+  const [multiplicador, setMultiplicador] = useState('1');
+  const [pickerAberto, setPickerAberto] = useState(false);
+  const { data: recipeData } = useQuery({
+    queryKey: ['posc', 'recipe', id],
+    queryFn: async () => (await apiClient.get(`inventory/pos/articles/${id}/recipe/`)).data,
+    enabled: !isNew,
+  });
+  useEffect(() => { if (recipeData) setReceita(recipeData); }, [recipeData]);
+
   // --- Separadores que leem doutros módulos ---
   const { data: whs = [] } = useQuery({
     queryKey: ['posc', 'wh', id], enabled: !isNew && tab === 'armazens',
@@ -82,6 +143,12 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
       const aid = r.data.id;
       await apiClient.post(`inventory/pos/articles/${aid}/set_prices/`, { prices });
       if (d.allergen_ids) await apiClient.post(`inventory/pos/articles/${aid}/set_allergens/`, { allergen_ids: d.allergen_ids });
+      // Composição/Unidade — só grava se a ficha JÁ TEM (ou passou a ter) alguma
+      // coisa: um artigo sem receita nenhuma não precisa de um PUT vazio a cada
+      // "Gravar" (e um `isNew` não tem ainda `id` para as linhas apontarem).
+      if (!isNew && (receita.ingredients?.length || recipeData?.ingredients?.length)) {
+        await apiClient.put(`inventory/pos/articles/${aid}/recipe/`, receita);
+      }
       return r.data;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['posc'] }); notifyGuide({ title: 'Artigo gravado', message: 'A ficha foi gravada. As alterações entram já no POS.' }); onSaved(); },
@@ -318,14 +385,10 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <Box title="Imagem - Tecla">
-                  <input value={d.key_image_url || ''} onChange={(e) => set('key_image_url', e.target.value)} placeholder="URL da imagem" className={inputCls + ' w-full'} style={inputStyle} />
-                  {d.key_image_url && <img src={d.key_image_url} alt="" className="mt-2 h-24 object-contain border border-[#ddd]" />}
-                </Box>
-                <Box title="Imagem - Composição">
-                  <input value={d.composition_image_url || ''} onChange={(e) => set('composition_image_url', e.target.value)} placeholder="URL da imagem" className={inputCls + ' w-full'} style={inputStyle} />
-                  {d.composition_image_url && <img src={d.composition_image_url} alt="" className="mt-2 h-24 object-contain border border-[#ddd]" />}
-                </Box>
+                <ImagemUpload titulo="Imagem - Tecla" url={d.key_image_url} folder="articles"
+                  onChange={(url) => set('key_image_url', url)} />
+                <ImagemUpload titulo="Imagem - Composição" url={d.composition_image_url} folder="articles"
+                  onChange={(url) => set('composition_image_url', url)} />
               </div>
               <Box title="Notas">
                 <textarea value={d.notes || ''} onChange={(e) => set('notes', e.target.value)} rows={4} className="w-full border border-[#8a95a3] p-2 text-[12px]" style={inputStyle} />
@@ -381,6 +444,174 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
               use <b>Parâmetros do Sistema → Teclados</b>.
             </div>
           </Box>
+        )}
+
+        {tab === 'composicao' && (
+          isNew ? (
+            <div className="text-[12px] text-[#a01818] p-4">Grave o artigo antes de montar a ficha técnica.</div>
+          ) : (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center gap-4 mb-2">
+                <Row label="Pax:" w="w-[40px]">
+                  <input type="number" min={1} value={receita.pax}
+                    onChange={(e) => setReceita((r: any) => ({ ...r, pax: Math.max(1, Number(e.target.value) || 1) }))}
+                    className="border border-[#8a95a3] px-2 py-1 text-[12px] w-[70px]" style={inputStyle} />
+                </Row>
+                <Row label="Doses:" w="w-[50px]">
+                  <input type="number" min={1} value={receita.doses}
+                    onChange={(e) => setReceita((r: any) => ({ ...r, doses: Math.max(1, Number(e.target.value) || 1) }))}
+                    className="border border-[#8a95a3] px-2 py-1 text-[12px] w-[70px]" style={inputStyle} />
+                </Row>
+                <button onClick={() => setVerLogs(true)}
+                  className="flex items-center gap-1 text-[12px] text-[#1f7a34] font-semibold hover:underline">
+                  <span className="w-4 h-4 rounded-full bg-[#1f7a34] text-white flex items-center justify-center text-[10px]">↻</span>
+                  Histórico
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-auto border border-[#c0c0c0]">
+                <table className="text-[12px] border-collapse w-full">
+                  <thead className="sticky top-0 bg-[#eee] z-10">
+                    <tr>
+                      <th className="w-[28px] border border-[#ddd]"></th>
+                      {['Código', 'Descrição', 'Unidade', 'Quantidade', 'Desperdício%', 'Quantidade-',
+                        'Custo', 'Custo Total', '%', 'Armazém', 'Tipo', 'Fornecedor', 'Stock Qtd.',
+                        'Dose Qtd', 'Custo Dose'].map((h) => (
+                        <th key={h} className="text-left px-2 py-1 border border-[#ddd] whitespace-nowrap font-semibold">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(receita.ingredients || []).map((ing: any) => {
+                      const totalCusto = (receita.ingredients || []).reduce(
+                        (s: number, x: any) => s + Number(x.line_cost || 0), 0);
+                      const pct = totalCusto > 0 ? (Number(ing.line_cost || 0) / totalCusto * 100) : 0;
+                      const key = ing._key ?? ing.id;
+                      return (
+                        <tr key={key} className={selRecIds.includes(key) ? 'bg-[#fff3cd]' : ''}>
+                          <td className="text-center border border-[#eee]">
+                            <input type="checkbox" checked={selRecIds.includes(key)}
+                              onChange={() => setSelRecIds((s) => s.includes(key) ? s.filter((x) => x !== key) : [...s, key])} />
+                          </td>
+                          <td className="px-2 py-1 border border-[#eee]">{ing.item_code}</td>
+                          <td className="px-2 py-1 border border-[#eee]">{ing.item_name}</td>
+                          <td className="px-2 py-1 border border-[#eee]">{ing.uom_code}</td>
+                          <td className="px-1 py-1 border border-[#eee]">
+                            <input type="number" step="0.0001" value={ing.quantity}
+                              onChange={(e) => setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
+                                x === ing ? { ...x, quantity: e.target.value } : x) }))}
+                              className="w-[80px] border border-[#ccc] px-1 py-0.5" style={inputStyle} />
+                          </td>
+                          <td className="px-1 py-1 border border-[#eee]">
+                            <input type="number" step="0.01" value={ing.waste_percentage}
+                              onChange={(e) => setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
+                                x === ing ? { ...x, waste_percentage: e.target.value } : x) }))}
+                              className="w-[64px] border border-[#ccc] px-1 py-0.5" style={inputStyle} />
+                          </td>
+                          <td className="px-2 py-1 border border-[#eee] text-right">
+                            {(Number(ing.quantity || 0) * (1 + Number(ing.waste_percentage || 0) / 100)).toFixed(4)}
+                          </td>
+                          <td className="px-2 py-1 border border-[#eee] text-right">{money(Number(ing.unit_cost || 0).toFixed(2))}</td>
+                          <td className="px-2 py-1 border border-[#eee] text-right">{money(ing.line_cost)}</td>
+                          <td className="px-2 py-1 border border-[#eee] text-right">{pct.toFixed(1)}%</td>
+                          <td className="px-2 py-1 border border-[#eee]">{ing.warehouse_name || '—'}</td>
+                          <td className="px-2 py-1 border border-[#eee]">{ing.item_type}</td>
+                          <td className="px-2 py-1 border border-[#eee]">{ing.supplier || '—'}</td>
+                          <td className="px-2 py-1 border border-[#eee] text-right">{ing.stock_qty}</td>
+                          <td className="px-2 py-1 border border-[#eee] text-right">{ing.dose_qty}</td>
+                          <td className="px-2 py-1 border border-[#eee] text-right">{money(ing.dose_cost)}</td>
+                        </tr>
+                      );
+                    })}
+                    {(receita.ingredients || []).length === 0 && (
+                      <tr><td colSpan={15} className="text-center text-[#999] py-8">
+                        Sem componentes. Toque em <b>Adicionar</b> para montar a ficha técnica.
+                      </td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex items-center gap-3 py-2 border-t border-[#c0c0c0] mt-1">
+                <button onClick={() => setPickerAberto(true)} title="Adicionar componente à ficha técnica"
+                  className="flex items-center gap-1 text-[12px] font-semibold text-[#2b6bff] hover:underline">
+                  <span className="w-5 h-5 rounded-full bg-[#2b6bff] text-white flex items-center justify-center text-[13px]">+</span>
+                  Adicionar
+                </button>
+                <button onClick={() => {
+                  if (!selRecIds.length) return;
+                  setReceita((r: any) => ({ ...r, ingredients: r.ingredients.filter((x: any) => !selRecIds.includes(x._key ?? x.id)) }));
+                  setSelRecIds([]);
+                }} disabled={!selRecIds.length}
+                  className="flex items-center gap-1 text-[12px] font-semibold text-[#c0392b] hover:underline disabled:opacity-30 disabled:no-underline">
+                  <span className="w-5 h-5 rounded-full bg-[#c0392b] text-white flex items-center justify-center text-[13px]">−</span>
+                  Apagar
+                </button>
+                <span className="text-[12px] text-[#555] ml-2">Multiplicar:</span>
+                <input value={multiplicador} onChange={(e) => setMultiplicador(e.target.value)}
+                  className="w-[60px] border border-[#8a95a3] px-2 py-1 text-[12px]" style={inputStyle} />
+                <button onClick={() => {
+                  const f = Number(multiplicador) || 1;
+                  if (!selRecIds.length) return;
+                  setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
+                    selRecIds.includes(x._key ?? x.id) ? { ...x, quantity: (Number(x.quantity) * f).toFixed(4) } : x) }));
+                }} disabled={!selRecIds.length}
+                  className="flex items-center gap-1 text-[12px] font-semibold text-[#1f7a34] hover:underline disabled:opacity-30 disabled:no-underline">
+                  <span className="w-4 h-4 rounded-full bg-[#1f7a34] text-white flex items-center justify-center text-[10px]">✔</span>
+                  Aplicar
+                </button>
+                <button onClick={() => {
+                  const w = window.open('', '_blank', 'width=700,height=900');
+                  if (!w) return;
+                  const linhas = (receita.ingredients || []).map((i: any) =>
+                    `<tr><td>${i.item_code}</td><td>${i.item_name}</td><td>${i.uom_code}</td>` +
+                    `<td style="text-align:right">${i.quantity}</td><td style="text-align:right">${money(i.line_cost)}</td></tr>`).join('');
+                  w.document.write(`<html><head><title>Ficha Técnica — ${d.name}</title>
+                    <style>body{font-family:sans-serif;font-size:13px} table{width:100%;border-collapse:collapse}
+                    th,td{border:1px solid #999;padding:4px 6px;text-align:left}</style></head><body>
+                    <h2>${d.name}</h2><div>Pax: ${receita.pax} · Doses: ${receita.doses}</div>
+                    <table><thead><tr><th>Código</th><th>Descrição</th><th>Un.</th><th>Qtd</th><th>Custo Total</th></tr></thead>
+                    <tbody>${linhas}</tbody></table></body></html>`);
+                  w.document.close();
+                  w.print();
+                }} className="flex items-center gap-1 text-[12px] font-semibold text-[#555] hover:underline">
+                  <span className="w-4 h-4 rounded-full bg-[#555] text-white flex items-center justify-center text-[10px]">🖶</span>
+                  Imprimir
+                </button>
+                <div className="ml-auto text-[12px] text-[#333] text-right leading-tight">
+                  <div>Total Custo: <b>{money((receita.ingredients || []).reduce((s: number, x: any) => s + Number(x.line_cost || 0), 0))}</b></div>
+                  <div>Dose: <b>{money((receita.ingredients || []).reduce((s: number, x: any) => s + Number(x.line_cost || 0), 0) / (receita.doses || 1))}</b></div>
+                </div>
+              </div>
+
+              {pickerAberto && (
+                <ComponentsPicker
+                  onClose={() => setPickerAberto(false)}
+                  onPick={async (picked) => {
+                    setPickerAberto(false);
+                    try {
+                      const full = (await apiClient.get(`inventory/pos/articles/${picked.id}/`)).data;
+                      const baseUom = full.sale_uom || full.stock_uom || full.purchase_uom;
+                      const uomObj = uoms.find((u: any) => u.id === baseUom);
+                      const novaLinha = {
+                        _key: `novo-${Date.now()}-${picked.id}`,
+                        ingredient_item: full.id, item_code: full.code, item_name: full.name,
+                        item_type: full.item_type, uom: baseUom, uom_code: uomObj?.code || '',
+                        quantity: '1.0000', waste_percentage: '0.00', warehouse: null, warehouse_name: null,
+                        unit_cost: full.current_average_cost || '0.00', stock_qty: '0', supplier: '',
+                      };
+                      // effective_quantity/line_cost/dose_qty/dose_cost recalculam-se ao gravar
+                      // (o servidor é quem manda no custo); aqui mostra-se já uma pré-visualização.
+                      const custo = Number(novaLinha.unit_cost);
+                      (novaLinha as any).line_cost = custo.toFixed(2);
+                      (novaLinha as any).dose_qty = (1 / (receita.doses || 1)).toFixed(4);
+                      (novaLinha as any).dose_cost = (custo / (receita.doses || 1)).toFixed(2);
+                      setReceita((r: any) => ({ ...r, ingredients: [...(r.ingredients || []), novaLinha] }));
+                    } catch (e) { notifyError(e); }
+                  }} />
+              )}
+            </div>
+          )
         )}
 
         {tab === 'barras' && (
@@ -539,11 +770,29 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
         )}
       </div>
 
-      {/* Barra inferior */}
-      <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
-      ]} />
+      {/* Barra inferior — "Visualizar Logs" à esquerda (como na referência), Gravar/Fechar à direita. */}
+      <Toolbar
+        actions={isNew ? [] : [
+          { icon: '☰', label: 'Visualizar Logs', color: '#555', onClick: () => setVerLogs(true) },
+        ]}
+        right={
+          <div className="flex items-center gap-1">
+            <button onClick={() => save.mutate()} disabled={save.isPending}
+              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#333] disabled:opacity-35 hover:bg-[#e8e8e8]">
+              <span className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[15px] font-bold"
+                style={{ background: '#1f7a34' }}>✔</span>
+              {save.isPending ? 'A gravar…' : 'Gravar'}
+            </button>
+            <span className="w-px h-6 bg-[#d5d5d5]" />
+            <button onClick={onClose}
+              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#333] hover:bg-[#e8e8e8]">
+              <span className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[15px] font-bold"
+                style={{ background: '#c0392b' }}>✖</span>
+              Fechar
+            </button>
+          </div>
+        } />
+      {verLogs && !isNew && <ArticleLogs id={id as number} nome={d.name} onClose={() => setVerLogs(false)} />}
     </div>
   );
 }

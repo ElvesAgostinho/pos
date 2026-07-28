@@ -18,7 +18,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import (Item, ItemGroup, ItemFamily, ItemSubFamily, Printer,
                      ItemBarcode, ItemPrice, UnitOfMeasure, StockLevel, Warehouse,
-                     SubFamilyMapping, ReportDefinition)
+                     SubFamilyMapping, ReportDefinition, Recipe, RecipeIngredient,
+                     ItemChangeLog)
 
 
 # --------------------------------------------------------------------------
@@ -220,6 +221,93 @@ class PosItemDetailSerializer(serializers.ModelSerializer):
         return [a.id for a in prof.allergens.all()] if prof else []
 
 
+# --------------------------------------------------------------------------
+# COMPOSIÇÃO/UNIDADE — a ficha técnica (Recipe/RecipeIngredient já existiam no
+# motor de stock, usados no consumo automático da venda; faltava o ecrã).
+# --------------------------------------------------------------------------
+def _latest_supplier_name(item):
+    """O mesmo histórico REAL de compras do separador Fornecedores — não se inventa
+    um "fornecedor preferido" que a ficha não tem."""
+    try:
+        from procurement.models import PurchaseOrderLine
+        l = (PurchaseOrderLine.objects.filter(item=item)
+             .select_related('purchase_order__supplier')
+             .order_by('-purchase_order__order_date').first())
+        return getattr(l.purchase_order.supplier, 'name', '') if l else ''
+    except Exception:
+        return ''
+
+
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    item_code = serializers.CharField(source='ingredient_item.code', read_only=True)
+    item_name = serializers.CharField(source='ingredient_item.name', read_only=True)
+    item_type = serializers.CharField(source='ingredient_item.item_type', read_only=True)
+    uom_code = serializers.CharField(source='uom.code', read_only=True)
+    warehouse_name = serializers.CharField(source='warehouse.name', read_only=True, default=None)
+    unit_cost = serializers.SerializerMethodField()
+    effective_quantity = serializers.SerializerMethodField()
+    line_cost = serializers.SerializerMethodField()
+    stock_qty = serializers.SerializerMethodField()
+    supplier = serializers.SerializerMethodField()
+    dose_qty = serializers.SerializerMethodField()
+    dose_cost = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ('id', 'ingredient_item', 'item_code', 'item_name', 'item_type', 'uom', 'uom_code',
+                  'quantity', 'waste_percentage', 'warehouse', 'warehouse_name', 'sort_order',
+                  'unit_cost', 'effective_quantity', 'line_cost', 'stock_qty', 'supplier',
+                  'dose_qty', 'dose_cost')
+
+    def get_unit_cost(self, o):
+        return str(o.ingredient_item.current_average_cost or 0)
+
+    def get_effective_quantity(self, o):
+        # (Quantidade-) a quantidade DEPOIS do desperdício — é a que realmente sai do armazém.
+        efetiva = o.quantity * (Decimal('1') + (o.waste_percentage or 0) / Decimal('100'))
+        return str(efetiva.quantize(Decimal('0.0001')))
+
+    def get_line_cost(self, o):
+        custo = o.ingredient_item.current_average_cost or Decimal('0')
+        efetiva = o.quantity * (Decimal('1') + (o.waste_percentage or 0) / Decimal('100'))
+        return str((efetiva * custo).quantize(Decimal('0.01')))
+
+    def get_stock_qty(self, o):
+        qs = StockLevel.objects.filter(item=o.ingredient_item)
+        if o.warehouse_id:
+            qs = qs.filter(warehouse=o.warehouse_id)
+        return str(qs.aggregate(q=Sum('quantity_on_hand'))['q'] or Decimal('0'))
+
+    def get_supplier(self, o):
+        return _latest_supplier_name(o.ingredient_item)
+
+    def get_dose_qty(self, o):
+        doses = o.recipe.doses or 1
+        return str((o.quantity / doses).quantize(Decimal('0.0001')))
+
+    def get_dose_cost(self, o):
+        custo = o.ingredient_item.current_average_cost or Decimal('0')
+        efetiva = o.quantity * (Decimal('1') + (o.waste_percentage or 0) / Decimal('100'))
+        doses = o.recipe.doses or 1
+        return str(((efetiva * custo) / doses).quantize(Decimal('0.01')))
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    ingredients = RecipeIngredientSerializer(many=True, required=False)
+    total_cost = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'final_item', 'instructions', 'pax', 'doses', 'theoretical_cost',
+                  'ingredients', 'total_cost')
+        read_only_fields = ('theoretical_cost',)
+
+    def get_total_cost(self, o):
+        total = sum((Decimal(RecipeIngredientSerializer().get_line_cost(i))
+                     for i in o.ingredients.all()), Decimal('0'))
+        return str(total.quantize(Decimal('0.01')))
+
+
 class PosItemViewSet(viewsets.ModelViewSet):
     """Configuração POS → Artigos. CRUD real, com todos os separadores."""
     permission_classes = [IsAuthenticated]
@@ -298,7 +386,30 @@ class PosItemViewSet(viewsets.ModelViewSet):
             ItemBarcode.objects.create(item=item, barcode=item.code, is_main=True)
 
     def perform_update(self, serializer):
-        serializer.save(updated_by=str(getattr(self.request.user, 'username', '') or ''))
+        # "Visualizar Logs" — regista CADA CAMPO que mudou nesta gravação, com o que
+        # era e o que passou a ser. Lê-se ANTES de gravar (senão o "antes" já seria
+        # o "depois"), e compara-se depois de gravar.
+        instance = serializer.instance
+        changed_by = str(getattr(self.request.user, 'username', '') or '')
+
+        def foto(obj):
+            campos = {}
+            for f in serializer.validated_data.keys():
+                v = getattr(obj, f, None)
+                if hasattr(v, 'all'):   # M2M (printers, discounts): junta os ids
+                    v = ','.join(str(x.pk) for x in v.all())
+                campos[f] = '' if v is None else str(v)
+            return campos
+
+        antes = foto(instance)
+        obj = serializer.save(updated_by=changed_by)
+        depois = foto(obj)
+        from .models import ItemChangeLog
+        logs = [ItemChangeLog(item=obj, field_name=f, old_value=antes[f], new_value=depois[f],
+                              changed_by=changed_by)
+                for f in antes if antes[f] != depois[f]]
+        if logs:
+            ItemChangeLog.objects.bulk_create(logs)
 
     # ---------------- Separadores que leem de outros módulos ----------------
     @action(detail=True, methods=['get'])
@@ -463,6 +574,78 @@ class PosItemViewSet(viewsets.ModelViewSet):
         prof, _ = ItemPosProfile.objects.get_or_create(item=item)
         prof.allergens.set(request.data.get('allergen_ids') or [])
         return Response({'allergen_ids': [a.id for a in prof.allergens.all()]})
+
+    @action(detail=True, methods=['get', 'put'])
+    def recipe(self, request, pk=None):
+        """Separador COMPOSIÇÃO/UNIDADE — a ficha técnica (Recipe/RecipeIngredient).
+
+        GET devolve a ficha (uma em branco, pax=1/doses=1, se o artigo ainda não tem
+        nenhuma — não se obriga a criar antes de ver). PUT grava tudo de uma vez: os
+        ingredientes que vieram substituem os que lá estavam, como o resto da ficha.
+        """
+        item = self.get_object()
+        if request.method == 'GET':
+            rec = Recipe.objects.filter(final_item=item).prefetch_related('ingredients').first()
+            if not rec:
+                return Response({'final_item': item.id, 'instructions': '', 'pax': 1, 'doses': 1,
+                                 'theoretical_cost': '0.00', 'ingredients': [], 'total_cost': '0.00'})
+            return Response(RecipeSerializer(rec).data)
+
+        ingredientes = request.data.get('ingredients') or []
+        rec, _ = Recipe.objects.get_or_create(final_item=item)
+        rec.instructions = request.data.get('instructions') or ''
+        rec.pax = max(1, int(request.data.get('pax') or 1))
+        rec.doses = max(1, int(request.data.get('doses') or 1))
+
+        # GRAVA-SE TUDO DE UMA VEZ: apaga as linhas antigas e recria as que vieram —
+        # é o mesmo padrão do resto da ficha ("Gravar" é a foto completa do ecrã).
+        rec.ingredients.all().delete()
+        novas = []
+        for i, ing in enumerate(ingredientes):
+            if not ing.get('ingredient_item') or not ing.get('uom'):
+                continue
+            novas.append(RecipeIngredient(
+                recipe=rec, ingredient_item_id=ing['ingredient_item'], uom_id=ing['uom'],
+                quantity=Decimal(str(ing.get('quantity') or 0)),
+                waste_percentage=Decimal(str(ing.get('waste_percentage') or 0)),
+                warehouse_id=ing.get('warehouse') or None, sort_order=i,
+            ))
+        RecipeIngredient.objects.bulk_create(novas)
+
+        # CUSTO TEÓRICO — a soma do custo de cada linha (quantidade já com desperdício
+        # × custo médio do ingrediente). É este número que o Dashboard/margem usa.
+        total = Decimal('0')
+        for ing in RecipeIngredient.objects.filter(recipe=rec).select_related('ingredient_item'):
+            custo = ing.ingredient_item.current_average_cost or Decimal('0')
+            efetiva = ing.quantity * (Decimal('1') + (ing.waste_percentage or 0) / Decimal('100'))
+            total += efetiva * custo
+        rec.theoretical_cost = total.quantize(Decimal('0.0001'))
+        rec.save(update_fields=['instructions', 'pax', 'doses', 'theoretical_cost'])
+        item.has_recipe = True
+        item.save(update_fields=['has_recipe'])
+        return Response(RecipeSerializer(rec).data)
+
+    @action(detail=True, methods=['get'])
+    def logs(self, request, pk=None):
+        """"Visualizar Logs" — as alterações campo a campo desta ficha."""
+        item = self.get_object()
+        qs = item.change_logs.all()
+        user = request.query_params.get('user')
+        if user:
+            qs = qs.filter(changed_by=user)
+        de = request.query_params.get('from')
+        ate = request.query_params.get('to')
+        if de:
+            qs = qs.filter(changed_at__date__gte=de)
+        if ate:
+            qs = qs.filter(changed_at__date__lte=ate)
+        page = self.paginate_queryset(qs)
+        rows = [{'id': l.id, 'changed_at': l.changed_at.isoformat(), 'changed_by': l.changed_by or '—',
+                 'field_name': l.field_name, 'old_value': l.old_value, 'new_value': l.new_value}
+                for l in (page if page is not None else qs)]
+        if page is not None:
+            return self.get_paginated_response(rows)
+        return Response(rows)
 
 
 class ReportDefinitionSerializer(serializers.ModelSerializer):

@@ -177,11 +177,33 @@ class Item(models.Model):
     def __str__(self):
         return f"[{self.code}] {self.name}"
 
+
+class ItemChangeLog(models.Model):
+    """"Visualizar Logs" da ficha do artigo — um registo por CAMPO alterado, não por
+    gravação: uma só gravação que muda o preço e o IVA fica em DUAS linhas, cada uma
+    a dizer exatamente o que era e o que passou a ser. É o que separa "quem mudou o
+    preço da água" de "alguém mexeu na ficha, não se sabe o quê"."""
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='change_logs')
+    field_name = models.CharField(max_length=80)
+    old_value = models.CharField(max_length=500, blank=True, null=True)
+    new_value = models.CharField(max_length=500, blank=True, null=True)
+    changed_by = models.CharField(max_length=80, blank=True, null=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-changed_at']
+
+
 class Recipe(models.Model):
     # Ficha Técnica para um Produto Produzido (ex: Bitoque, Cocktail)
     final_item = models.OneToOneField(Item, on_delete=models.CASCADE, related_name='recipe')
     instructions = models.TextField(blank=True, null=True)
-    
+
+    # PAX/DOSES — a ficha dá para X pessoas e rende Y doses; é a partir daqui que se
+    # calcula o custo POR DOSE de cada ingrediente (Custo Total da linha ÷ doses).
+    pax = models.PositiveIntegerField(default=1)
+    doses = models.PositiveIntegerField(default=1)
+
     # Custo Teórico é a soma dos custos dos ingredientes
     theoretical_cost = models.DecimalField(max_digits=12, decimal_places=4, default=0.0000)
 
@@ -193,6 +215,16 @@ class RecipeIngredient(models.Model):
     ingredient_item = models.ForeignKey(Item, on_delete=models.RESTRICT, related_name='used_in_recipes')
     quantity = models.DecimalField(max_digits=10, decimal_places=4)
     uom = models.ForeignKey(UnitOfMeasure, on_delete=models.RESTRICT)
+    # (Desperdício%) o que se perde a preparar (aparas, evaporação…) — a quantidade
+    # EFETIVA gasta é a quantidade × (1 + desperdício/100), e é essa que entra no custo.
+    waste_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    # (Armazém) de onde este ingrediente sai — informativo; sem armazém escolhido,
+    # o Stock Qtd. mostra o total do artigo em todos os armazéns.
+    warehouse = models.ForeignKey('Warehouse', on_delete=models.SET_NULL, blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['sort_order', 'id']
 
     def __str__(self):
         return f"{self.quantity} {self.uom.code} de {self.ingredient_item.name}"
