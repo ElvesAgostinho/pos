@@ -285,14 +285,30 @@ export default function PosTerminal() {
    */
   const fecharVenda = async (id: number) => {
     setTicket(null);
+    // ESTA regra vale para a conta que se estava a ver E para QUALQUER subconta
+    // irmã (mesma mesa) que tenha ficado vazia — o carrossel "acrescentar pessoa"
+    // (SubcontaBar) cria a conta logo ao tocar no número, e trocar de volta sem
+    // lançar nada nela não passava por aqui: a mesa ficava "ocupada" com uma
+    // subconta fantasma que ninguém via.
     try {
       const t = (await apiClient.get(`pos/tickets/${id}/`)).data;
-      const temConsumo = ((t.lines || []) as any[]).some((l) => !l.is_void);
-      const temDinheiro = ((t.payments || []) as any[]).length > 0;
-      if (t.status === 'OPEN' && !temConsumo && !temDinheiro) {
+      const vaziaSemDinheiro = (x: any) =>
+        x.status === 'OPEN' && !(x.lines || []).some((l: any) => !l.is_void) && !(x.payments || []).length;
+      if (vaziaSemDinheiro(t)) {
         await apiClient.post(`pos/tickets/${id}/void/`, {
           reason: 'Conta fechada sem consumo — mesa libertada',
         });
+      }
+      if (t.table) {
+        const irmas = (await apiClient.get('pos/tickets/', { params: { status: 'OPEN,SUSPENDED' } })).data;
+        const lista = (irmas?.results || irmas || []) as any[];
+        for (const s of lista) {
+          if (s.id !== id && s.table === t.table && vaziaSemDinheiro(s)) {
+            await apiClient.post(`pos/tickets/${s.id}/void/`, {
+              reason: 'Subconta vazia — mesa libertada',
+            }).catch(() => {});
+          }
+        }
       }
     } catch { /* a conta pode já estar paga ou anulada: nada a fazer */ }
     inval();
@@ -437,8 +453,13 @@ export default function PosTerminal() {
 
         {/* (8300) Venda Direta: a casa vende só ao balcão, sem mesas nenhumas — este
             botão não pode ser a porta das traseiras de volta ao mapa. Sem isto, ligar
-            o parâmetro no backoffice não impedia nada: bastava tocar aqui. */}
-        <button onClick={() => setEtapa('MAP')} disabled={!sessao || !!cfg?.direct_sale}
+            o parâmetro no backoffice não impedia nada: bastava tocar aqui.
+            DENTRO DE UMA VENDA, isto tem de passar por fecharVenda — é lá que se
+            liberta a mesa se a conta (e as subcontas irmãs) ficaram vazias. Ir direto
+            a setEtapa('MAP') saltava essa limpeza: a mesa ficava "ocupada" com uma
+            conta de 0 Kz que ninguém via, presa até alguém entrar e sair de novo. */}
+        <button onClick={() => (etapa === 'SALES' && ticket ? fecharVenda(ticket) : setEtapa('MAP'))}
+          disabled={!sessao || !!cfg?.direct_sale}
           title={cfg?.direct_sale ? 'Venda Direta ligada (8300) — sem mapa de mesas' : 'Mapa de mesas'}
           className={`w-[86px] m-1 rounded-[3px] flex items-center justify-center border-2 border-black
             shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)]

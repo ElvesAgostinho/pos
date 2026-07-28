@@ -129,8 +129,12 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   // têm de ser feitas antes de o pedido seguir para o bar.
   const [perguntar, setPerguntar] = useState<{ linha: any; fila: any[]; escolhas: string[] } | null>(null);
   // Só se pergunta UMA vez por conta quem é o cliente — senão o ecrã reabria a cada
-  // refrescamento e o empregado não conseguia lançar nada.
-  const perguntouCliente = useRef<number | null>(null);
+  // refrescamento e o empregado não conseguia lançar nada. TEM DE SER UM CONJUNTO, não
+  // um único número: só guardar a ÚLTIMA subconta perguntada fazia voltar a perguntar
+  // (e a reabrir o teclado da pesquisa) sempre que se voltava a uma subconta anterior
+  // no carrossel — 1→2 perguntava a 2; voltar a 1 perguntava OUTRA VEZ, porque a
+  // "memória" só tinha espaço para uma.
+  const perguntouCliente = useRef<Set<number>>(new Set());
   // ERA A VEZ DESTA SUBCONTA ABRIR O TECLADO SOZINHA? Captura-se UMA VEZ, no instante
   // em que este ecrã nasce — antes de o catálogo (teclado) sequer ter chegado do
   // servidor. Marcar a bandeira partilhada SÓ depois de o teclado carregar (dentro do
@@ -167,6 +171,14 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     qc.invalidateQueries({ queryKey: ["pos-ticket", tid] });
     qc.invalidateQueries({ queryKey: ['pos-open-tickets'] });
   };
+
+  // TROCAR DE SUBCONTA — só troca. NÃO se anula a subconta que se deixa: espreitar a
+  // conta da pessoa 2 antes de lançar o que quer que seja na 1 não pode DESTRUIR a 1
+  // só por estar vazia nesse instante (é assim que se compõe uma comanda — vai-se e
+  // vem-se entre pessoas). A limpeza de subcontas abandonadas (vazias, nunca usadas)
+  // faz-se ao SAIR da venda (fecharVenda, em PosTerminal.tsx) — aí sim, se continuam
+  // vazias, é porque ninguém as ia mesmo usar.
+  const trocarSubconta = (novoId: number) => { setTid(novoId); setQtd(1); };
 
   const kb = teclado?.keyboard;
   const nivel: any[] = caminho.length
@@ -552,8 +564,8 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   // já ter saído como Consumidor Final, e essa não se corrige — anula-se.
   useEffect(() => {
     if (!cfg?.ask_entity_on_open || !conta || conta.customer_name) return;
-    if (perguntouCliente.current === tid) return;
-    perguntouCliente.current = tid;
+    if (perguntouCliente.current.has(tid)) return;
+    perguntouCliente.current.add(tid);
     setEscolherCliente(true);
   }, [conta, tid, cfg?.ask_entity_on_open]);
 
@@ -738,7 +750,7 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             o seguinte acrescenta, as setas giram o carrossel. No balcão (sem mesa)
             são a QUANTIDADE para a próxima tecla. */}
         {conta?.table ? (
-          <SubcontaBar conta={conta} onSwitch={(id) => { setTid(id); setQtd(1); }} />
+          <SubcontaBar conta={conta} onSwitch={trocarSubconta} />
         ) : (
           <div className="grid grid-cols-4 gap-px bg-black">
             {[1, 2, 3, 4].map((n) => (

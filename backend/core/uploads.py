@@ -11,7 +11,7 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 ALLOWED = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'}
 MAX_BYTES = 2 * 1024 * 1024      # 2 MB
@@ -41,3 +41,23 @@ class UploadView(APIView):
             for chunk in f.chunks():
                 out.write(chunk)
         return Response({'url': f'{settings.MEDIA_URL}{folder}/{name}', 'size': f.size}, status=201)
+
+
+class PublicBrandingView(APIView):
+    """GET /api/platform/branding/  — nome e logótipo do hotel para o ecrã de LOGIN e o
+    ambiente de trabalho, ANTES de haver sessão nenhuma.
+
+    Só nome e logótipo — nada mais do hotel sai daqui. O login/ambiente de trabalho
+    tinha o seu PRÓPRIO logótipo, guardado só no localStorage deste aparelho (teria de
+    se carregar o mesmo ficheiro em cada terminal, um por um); passa a ler o logótipo
+    REAL da empresa (Administração → Empresa), a mesma fonte que já assina os
+    documentos fiscais — um logótipo só, não dois a poderem desincronizar.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from identity.models import Hotel
+        h = Hotel.objects.filter(is_master=True).first() or Hotel.objects.order_by('id').first()
+        if not h:
+            return Response({'name': '', 'logo_url': ''})
+        return Response({'name': h.name or '', 'logo_url': h.logo_url or ''})

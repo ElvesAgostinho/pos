@@ -19,10 +19,19 @@ const CustomerLogin: React.FC = () => {
   const [config, setConfig] = useState(false);
   const [online, setOnline] = useState<boolean | null>(null);
 
+  // O logótipo/nome "Aparência" (ui_login_logo) é uma personalização POR APARELHO,
+  // em localStorage — não chega sozinha ao logótipo real da empresa (Administração →
+  // Empresa), que fica na base. Sem isto, o login mostrava sempre o "ML" de fábrica
+  // em qualquer terminal onde não se tivesse carregado o MESMO ficheiro à mão.
+  const [marca, setMarca] = useState<{ name: string; logo_url: string } | null>(null);
+  useEffect(() => {
+    apiClient.get('platform/branding/').then((r) => setMarca(r.data)).catch(() => {});
+  }, []);
+
   const company = getAppearance('companyName');
   const erpName = getAppearance('erpName');
   const welcome = getAppearance('welcome');
-  const logo = getAppearance('logo');
+  const logo = getAppearance('logo') || marca?.logo_url || '';
   const loginBg = getAppearance('loginBg');
   const barColor = getAppearance('barColor') || '#1e3f66';
 

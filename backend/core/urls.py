@@ -8,7 +8,7 @@ from .platform import (
 )
 
 from .audit_api import AuditEventViewSet, GlobalSearchView, AuditOverviewView
-from .uploads import UploadView
+from .uploads import UploadView, PublicBrandingView
 
 router = DefaultRouter()
 router.register(r'audit/events', AuditEventViewSet, basename='audit-event')
@@ -22,6 +22,7 @@ router.register(r'workflow-tasks', WorkflowTaskViewSet, basename='cfg-wf-task')
 
 urlpatterns = [
     path('upload/', UploadView.as_view()),
+    path('branding/', PublicBrandingView.as_view()),
     path('audit/search/', GlobalSearchView.as_view()),
     path('audit/overview/', AuditOverviewView.as_view()),
     path('system/', SystemInfoView.as_view(), name='cfg-system'),

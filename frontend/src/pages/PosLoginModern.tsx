@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Home, Monitor, User, ChevronDown, Check, XCircle, Keyboard, RotateCcw, Power, Delete } from 'lucide-react';
 import { authApi } from '../api/auth';
 import { posMgmtApi } from '../api/posmgmt';
+import { apiClient } from '../api/client';
 
 // ---------------------------------------------------------------------------
 // Marca / identificação do terminal — EDITE aqui para a sua própria marca e
@@ -38,6 +39,13 @@ const PosLoginModern: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  // O logótipo real da empresa (Administração → Empresa) — o terminal só conhecia o
+  // ficheiro guardado em localStorage NESTE aparelho; num segundo terminal, sem o
+  // mesmo ficheiro carregado à mão, caía sempre no "ML" de fábrica.
+  const [logoUrl, setLogoUrl] = useState('');
+  useEffect(() => {
+    apiClient.get('platform/branding/').then((r) => setLogoUrl(r.data?.logo_url || '')).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30000);
@@ -94,8 +102,8 @@ const PosLoginModern: React.FC = () => {
         {/* Cabeçalho */}
         <div className="bg-gradient-to-b from-[#232323] to-[#040404] px-3 py-2 flex justify-between items-center">
           <div className="flex items-end leading-none">
-            {localStorage.getItem('ui_login_logo')
-              ? <img src={localStorage.getItem('ui_login_logo') as string} alt="Logótipo" className="h-8 object-contain" />
+            {(localStorage.getItem('ui_login_logo') || logoUrl)
+              ? <img src={localStorage.getItem('ui_login_logo') || logoUrl} alt="Logótipo" className="h-8 object-contain" />
               : <span className="text-[30px] font-black tracking-tight"><span className="text-[#c9a400]">M</span><span className="text-white">L</span></span>}
           </div>
           <div className="text-right text-white">

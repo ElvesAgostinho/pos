@@ -47,6 +47,13 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   const user = tokenStore.getUser();
   const erpName = getAppearance('erpName') || 'System Mwana Lodge';
   const customBg = getAppearance('wallpaper') || getAppearance('loginBg');
+  // Logótipo real da empresa (Administração → Empresa) — o ambiente de trabalho só
+  // mostrava a palavra "System Mwana Lodge" estilizada, nunca a imagem que o dono
+  // carregou lá. Mesma fonte que o login e os documentos fiscais usam.
+  const [logoUrl, setLogoUrl] = useState('');
+  useEffect(() => {
+    apiClient.get('platform/branding/').then((r) => setLogoUrl(r.data?.logo_url || '')).catch(() => {});
+  }, []);
 
   const active = lic?.active || [];
   const licensed = useMemo(() => WORKSPACES.filter((w) => moduleEnabled(w.licenseModule, active)), [lic]);
@@ -169,6 +176,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
       <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-white"
         style={{ background: '#2b2b2b', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+        {logoUrl && <img src={logoUrl} alt="" className="h-8 w-8 object-contain mr-1 flex-shrink-0" />}
         {/* Logo 3D = seletor de módulos */}
         <button onClick={(e) => { e.stopPropagation(); setModMenu((s) => !s); setTopMenu(null); }}
           title="Trocar de módulo"
