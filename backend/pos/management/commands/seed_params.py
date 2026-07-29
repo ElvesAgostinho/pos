@@ -70,13 +70,23 @@ PARAMS = [
     (8138, 'Geral', 'Tempo em minutos para fechar POS automaticamente', I, [], '120', ''),
     (8089, 'Geral', 'Hora para aviso de fecho do Dia', I, [], '5', ''),
     (8110, 'Geral', 'Permitir alterar contas de eventos', B, [], 'true', ''),
-    (8127, 'Geral', 'Configuração de documentos por', C, ['Setor', 'Terminal'], 'Setor', ''),
+    (8127, 'Geral', 'Configuração de documentos por', C, ['Setor', 'Terminal'], 'Setor',
+     'A série de cada documento (Fatura-Recibo, Nota de Crédito, Recibo…) vem da ficha do '
+     'SETOR (separador Documentos). "Terminal" ficaria disponível se o Front Office soubesse '
+     'em que posto físico está a correr — hoje o fluxo é Setor→Caixa→Mesas→Pedido→Pagar, sem '
+     'esse emparelhamento, por isso a escolha por Terminal não tem efeito.'),
     (8143, 'Geral', 'Formato do Nome da Entidade', T, [], '{name1}, {name2}', ''),
     (8148, 'Geral', 'Nome da entidade por defeito para Faturas Simplificadas', T, [], 'Consumidor Final', ''),
     (8333, 'Geral', 'Tipo de Hóspede é obrigatório', B, [], 'true', ''),
-    (8145, 'Geral', 'Permissões de utilizador', B, [], 'true', ''),
+    (8145, 'Geral', 'Permissões de utilizador', B, [], 'true',
+     'LIGADO: o pagamento respeita a ficha do GRUPO (Utilizadores → Grupos → separador '
+     '"POS - Pagamentos") — um perfil sem um método marcado não o pode usar. Desligado, '
+     'qualquer perfil usa qualquer método ativo no outlet.'),
     (8197, 'Geral', 'Quantidade máxima a dividir antes de emitir aviso', I, [], '10', ''),
-    (8150, 'Geral', 'Primeiro número de mesa a utilizar nas contas de cartão', I, [], '100000', ''),
+    (8150, 'Geral', 'Primeiro número de mesa a utilizar nas contas de cartão', I, [], '100000',
+     'Campo herdado de sistemas que emitem CARTÕES numerados como conta em vez de mesa. '
+     'Este POS não tem esse modo — a conta sem mesa é a Venda Direta (balcão), com o seu '
+     'próprio carrossel de subcontas. Sem efeito.'),
     (8175, 'Geral', 'Perguntar tipo de cliente', B, [], 'true',
      'LIGADO: ao abrir a mesa, o POS pergunta se é passante ou hóspede.'),
     (8180, 'Geral', 'Largura do scroll no teclado de artigos', I, [], '0', ''),
@@ -118,10 +128,21 @@ PARAMS = [
      'Para onde o Diagnóstico envia os logs do sistema quando o cliente pede assistência.'),
 
     # ---------------- Reporting ----------------
-    (1363, 'Reporting', 'Servidor de Relatórios (URL)', T, [], '', 'Windows Reporting Services (SSRS).'),
-    (1360, 'Reporting', 'Gestor de Relatórios (URL)', T, [], '', ''),
-    (8053, 'Reporting', 'Ligação aos Relatórios', T, [], '', ''),
-    (8374, 'Reporting', 'Relatório - Ficha técnica', T, [], '', ''),
+    # Estes 4 apontavam para o Windows Reporting Services (SSRS) da HOST — um
+    # servidor externo que gerava os relatórios em .rdl. Este sistema não usa
+    # SSRS: tem o SEU PRÓPRIO motor de relatórios (Reporting Center, pos/reports.py
+    # + PosReports.tsx, mais de 30 relatórios reais, nenhum deles precisa de
+    # servidor externo nenhum). Ficam guardados por paridade de número com a HOST,
+    # tal como a "Interface com PMS" — nunca vão ligar a nada NESTE sistema.
+    (1363, 'Reporting', 'Servidor de Relatórios (URL)', T, [], '',
+     'SSRS (Windows Reporting Services) da HOST — este sistema tem o seu próprio motor de relatórios, não usa SSRS.'),
+    (1360, 'Reporting', 'Gestor de Relatórios (URL)', T, [], '',
+     'SSRS da HOST — sem equivalente neste sistema (Reporting Center próprio).'),
+    (8053, 'Reporting', 'Ligação aos Relatórios', T, [], '',
+     'SSRS da HOST — sem equivalente neste sistema (Reporting Center próprio).'),
+    (8374, 'Reporting', 'Relatório - Ficha técnica', T, [], '',
+     'Modelo SSRS da Ficha Técnica na HOST. Aqui a Ficha Técnica imprime-se nativamente '
+     '(Configuração POS → Artigos → aba Composição/Unidade → Imprimir) — não precisa de modelo nenhum.'),
 
     # ---------------- Moeda ----------------
     (8006, 'Moeda', 'Moeda base', T, [], 'Kz', ''),
@@ -307,10 +328,19 @@ PARAMS = [
      'Impede tirar do armazém o que lá não está — o stock negativo é sempre um erro escondido.'),
 
     # ---------------- Gestão de F&B · Exportação ----------------
-    (8274, 'F&B · Exportação', 'Dias', I, [], '0', ''),
-    (8275, 'F&B · Exportação', 'Nome do ficheiro', T, [], 'CT{F:yyyyMMdd}_{T:yyyyMMdd}.txt', ''),
-    (8276, 'F&B · Exportação', 'Pasta de exportação', T, [], '', ''),
-    (8273, 'F&B · Exportação', 'Decimais', I, [], '4', ''),
+    # Na HOST, isto exportava os movimentos de stock/custo para um FICHEIRO de texto
+    # que a contabilidade externa importava à parte. Este sistema não precisa: tem o
+    # SEU PRÓPRIO motor de contabilidade (Centro 22, PGC-AO) que faz o auto-posting
+    # DIRETO para o razão — sem ficheiro no meio, sem passo manual de importar.
+    # Ficam guardados por paridade de número; nunca vão gerar ficheiro nenhum aqui.
+    (8274, 'F&B · Exportação', 'Dias', I, [], '0',
+     'Exportação para ficheiro de texto (HOST) — este sistema lança direto no razão, sem ficheiro.'),
+    (8275, 'F&B · Exportação', 'Nome do ficheiro', T, [], 'CT{F:yyyyMMdd}_{T:yyyyMMdd}.txt',
+     'Exportação para ficheiro de texto (HOST) — sem equivalente (auto-posting direto).'),
+    (8276, 'F&B · Exportação', 'Pasta de exportação', T, [], '',
+     'Exportação para ficheiro de texto (HOST) — sem equivalente (auto-posting direto).'),
+    (8273, 'F&B · Exportação', 'Decimais', I, [], '4',
+     'Exportação para ficheiro de texto (HOST) — sem equivalente (auto-posting direto).'),
 
     # ---------------- Gestão de F&B · Contas a pagar / Contabilidade ----------------
     (10537, 'F&B · Contas a pagar', 'Recibo de pagamento (relatório)', T, [], '', ''),
@@ -328,73 +358,142 @@ PARAMS = [
 PARAMS_TERMINAL = [
     # ---------------- Geral ----------------
     (8523, 'Geral', 'Tipo Posto', C, ['Mesas', 'Venda Direta', 'Mesas + Venda Direta'],
-     'Mesas + Venda Direta', 'Como o terminal vende: por mesa, balcão, ou os dois.'),
+     'Mesas + Venda Direta', 'Como o terminal vende: por mesa, balcão, ou os dois. "Mesas" '
+     'esconde o botão de Venda Direta; "Venda Direta" abre logo o balcão e esconde o mapa.'),
     (8594, 'Geral', 'Abrir Mesa por Código de Barras', B, [], 'false',
-     'O empregado lê o código na mesa para a abrir.'),
-    (8517, 'Geral', 'Setor Único', B, [], 'true', 'O terminal serve um só setor.'),
-    (8516, 'Geral', 'Setor Inicial', T, [], '', 'Setor que abre por omissão.'),
-    (8540, 'Geral', 'Setores Disponíveis', T, [], '', 'Setores a que este terminal pode aceder.'),
+     'O empregado lê o código na mesa (o próprio número dela) para a abrir, sem tocar no mapa.'),
+    (8517, 'Geral', 'Setor Único', B, [], 'true',
+     'O terminal serve um só setor — esconde "Setor"/"Trocar de Setor" e nunca pergunta.'),
+    (8516, 'Geral', 'Setor Inicial', T, [], '',
+     'Código do setor que abre por omissão quando não se pergunta (8610/8302 desligados).'),
+    (8540, 'Geral', 'Setores Disponíveis', T, [], '',
+     'Códigos separados por vírgula. Restringe os setores deste TERMINAL, por cima da '
+     'ficha do operador ("Todos os setores").'),
     (8610, 'Geral', 'Perguntar o setor após o login', B, [], 'true',
-     'Pergunta o setor a cada início de sessão.'),
-    (8576, 'Geral', 'Modo de mesas simples', B, [], 'false', 'Mapa de mesas sem plantas.'),
+     'Pergunta o setor a cada início de sessão (em conjunto com 8302 e 8517).'),
+    (8576, 'Geral', 'Modo de mesas simples', B, [], 'false',
+     'Mapa de mesas em grelha por número, sem a planta (posição/forma) da sala.'),
     (8545, 'Geral', 'Modos de Pagamento', C, ['Todos', 'Só dinheiro', 'Só cartão'], 'Todos',
-     'Que pagamentos este posto aceita.'),
-    (8579, 'Geral', 'Depósitos/Cash Advance - Ativar', B, [], 'false', 'Permite adiantamentos de dinheiro.'),
+     'Que pagamentos este posto aceita — filtra a lista no painel de Pagamentos.'),
+    (8579, 'Geral', 'Depósitos/Cash Advance - Ativar', B, [], 'false',
+     'Mostra o botão "Depósito" em Contas Correntes (adiantamento da entidade).'),
     (8528, 'Geral', 'Impressora A4', T, [], '', 'Impressora para faturas A4.'),
     (8567, 'Geral', 'Impressora de talões', T, [], '', 'A térmica deste terminal (código do periférico).'),
     (8552, 'Geral', 'Opção para imprimir A4', B, [], 'true', ''),
     (8580, 'Geral', 'Opção para imprimir modelo específico', B, [], 'true', ''),
-    (8513, 'Geral', 'Perguntar Nr. Clientes', T, [], 'Ao abrir mesa', ''),
-    (8537, 'Geral', 'Nr. clientes pode ser 0', B, [], 'false', ''),
-    (8539, 'Geral', 'Número de Clientes em modo de balcão', I, [], '1', ''),
-    (8514, 'Geral', 'Nos consumos internos, pedir funcionário', B, [], 'true', ''),
-    (8515, 'Geral', 'Pedir motivos de anulação', B, [], 'true', ''),
+    # 8528/8552 (impressão A4 por spooler do Windows) e 8580 (escolher "modelo
+    # específico") são do mundo do papel A4 num spooler local — este sistema não tem
+    # essa peça: a impressão é nativa (talão pela fila PrintJob/print_agent, ou o
+    # ecrã do navegador em janelas de conferência/recibo). 8567 (impressora térmica
+    # DESTE terminal) esbarra na mesma limitação do 8127/TERMINAL: o Front Office não
+    # sabe em que posto físico está a correr para escolher UM aparelho entre vários —
+    # a impressora é resolvida por ESTAÇÃO+OUTLET (Configuração POS › Impressoras),
+    # não por parâmetro. Os quatro ficam sem efeito, documentados para não se
+    # inventar um spooler A4 que este produto nunca teve.
+    (8513, 'Geral', 'Perguntar Nr. Clientes', T, [], 'Ao abrir mesa',
+     '"Nunca" abre a mesa direto (1 · Passante), sem parar no teclado numérico. '
+     'Qualquer outro valor mantém a pergunta ao abrir mesa.'),
+    (8537, 'Geral', 'Nr. clientes pode ser 0', B, [], 'false',
+     'LIGADO: o teclado de clientes aceita 0 (mesa reservada, conta técnica).'),
+    (8539, 'Geral', 'Número de Clientes em modo de balcão', I, [], '1',
+     'Nº de clientes com que a Venda Direta abre (era sempre 1, fixo no código).'),
+    (8514, 'Geral', 'Nos consumos internos, pedir funcionário', B, [], 'true',
+     'Abre o formulário do colaborador (RH) assim que a conta é de Consumo Interno.'),
+    (8515, 'Geral', 'Pedir motivos de anulação', B, [], 'true',
+     'Exige motivo ao anular um artigo já em produção (Cozinha/Bar/Pastelaria).'),
     (8502, 'Geral', 'Juntar artigos na grelha de pedidos', B, [], 'false',
      'Artigos iguais aparecem numa linha só, com a quantidade somada.'),
-    (8503, 'Geral', 'Juntar artigos ao imprimir documentos', B, [], 'true', ''),
-    (8532, 'Geral', 'Utilizar fatura personalizada', B, [], 'false', ''),
-    (8547, 'Geral', 'Pesquisar clientes no', T, [], 'Entity', ''),
+    (8503, 'Geral', 'Juntar artigos ao imprimir documentos', B, [], 'true',
+     'Três cafés lançados um a um saem no papel como "3x Café", não em três linhas.'),
+    (8532, 'Geral', 'Utilizar fatura personalizada', B, [], 'false',
+     'Usa o cabeçalho/rodapé de Configuração › Modelos de Documento (por tipo), em '
+     'vez do texto fixo. Sem modelo para o tipo, usa-se o de sempre.'),
+    (8547, 'Geral', 'Pesquisar clientes no', T, [], 'Entity',
+     'O único cadastro de clientes deste sistema é o mdm.Customer ("Entity") — não há '
+     'outra fonte de pesquisa para escolher.'),
     (8510, 'Geral', 'Nº linhas a anular sem pedir password', I, [], '0',
      'Acima deste número de linhas anuladas na mesma conta, pede supervisor.'),
-    (8538, 'Geral', 'Imprimir anulação no terminal', B, [], 'true', ''),
-    (8524, 'Geral', 'Nível de Preço', I, [], '1', ''),
+    (8538, 'Geral', 'Imprimir anulação no terminal', B, [], 'true',
+     'Imprime um talão de anulação na CAIXA (à parte da comanda que já vai à estação).'),
+    (8524, 'Geral', 'Nível de Preço', I, [], '1',
+     'Nível de preço deste TERMINAL — só entra quando o setor não manda em nada '
+     '(8592 vazio e o setor no nível 1, o base).'),
     (8518, 'Geral', 'Tempo até mostrar screensaver', I, [], '0', '0 = nunca.'),
     (8511, 'Geral', 'Número da mesa em Venda Direta', I, [], '',
-     'A conta de balcão nasce com este número de mesa fixo.'),
+     'A conta de balcão nasce já rotulada "Mesa <nº>" no recibo/ecrã, em vez de sem '
+     'identificação nenhuma. Vazio = sem rótulo fixo (como sempre foi).'),
     (9511, 'Geral', 'Bloquear Venda Direta', B, [], 'false',
-     'Companheiro de 8511 na HOST (mesmo número lá) — aqui em número próprio para não colidir.'),
-    (8509, 'Geral', 'Código de IVA neste posto', I, [], '0', ''),
+     'LIGADO: o servidor recusa qualquer conta sem mesa (não só esconde o botão — trava '
+     'mesmo quem tentar por outra via, ex.: offline). Companheiro de 8511 na HOST.'),
+    (8509, 'Geral', 'Código de IVA neste posto', I, [], '0',
+     'Id de uma taxa (Fiscal › Taxas de IVA). Quando preenchido, ESTE terminal fatura '
+     'tudo a essa taxa, por cima da taxa da ficha do artigo. 0 = usa sempre a do artigo.'),
     (8520, 'Geral', 'Quantidade de sub-contas', I, [], '10', ''),
-    (8534, 'Geral', 'Fechar janela de pagamentos quando pagamento aplicado', B, [], 'false', ''),
-    (8535, 'Geral', 'Pasta de Documentos', T, [], '', ''),
-    (8536, 'Geral', 'Pasta de Imagens', T, [], '', ''),
+    (8534, 'Geral', 'Fechar janela de pagamentos quando pagamento aplicado', B, [], 'false',
+     'LIGADO: fecha o painel de Pagamentos logo a seguir a aplicar um pagamento, sem '
+     'esperar pelo recibo (reimprime-se depois a partir da conta).'),
+    (8535, 'Geral', 'Pasta de Documentos', T, [], '',
+     'Pasta LOCAL do terminal (spooler HOST). Este sistema guarda tudo no servidor '
+     '(core/uploads.py + MEDIA_ROOT) — não há pasta de terminal para configurar. Sem efeito.'),
+    (8536, 'Geral', 'Pasta de Imagens', T, [], '',
+     'Mesmo caso do 8535: as imagens (ex.: fotos de artigo) sobem para o servidor, '
+     'não para uma pasta local do posto. Sem efeito.'),
     (8542, 'Geral', 'Fechar conta ao imprimir conta da mesa', B, [], 'false',
-     'Só se aplica com Tipo Posto = Mesas ou Mesas + Venda Direta.'),
+     'Só se aplica com Tipo Posto = Mesas ou Mesas + Venda Direta. Sem efeito: fechar '
+     '(cobrar) uma conta sem escolher método de pagamento arrisca inconsistência '
+     'fiscal — a Consulta de Mesa mantém-se, de propósito, "sem fechar a conta".'),
     (8612, 'Geral', 'Fazer logout depois de sair de uma conta', B, [], 'false', ''),
     (8566, 'Geral', 'Pedir cliente/quarto na abertura de mesa', B, [], 'true', ''),
-    (8568, 'Geral', 'Casas decimais na quantidade', I, [], '2', ''),
-    (8583, 'Geral', 'Tamanho da grelha da conta %', I, [], '0', ''),
+    (8568, 'Geral', 'Casas decimais na quantidade', I, [], '2',
+     'Casas decimais da quantidade na grelha da conta (corta zeros à direita).'),
+    (8583, 'Geral', 'Tamanho da grelha da conta %', I, [], '0',
+     '0 (fábrica) = colunas em pixels fixos, como sempre foi. Qualquer outro valor '
+     'liga a partilha em percentagem do 9583.'),
     (9583, 'Geral', '% por Coluna', T, [], '20;60;20',
-     'Companheiro de 8583 na HOST (mesmo número lá) — aqui em número próprio para não colidir.'),
-    (8593, 'Geral', 'Payment gateway', T, [], '', ''),
-    (8595, 'Geral', 'Paperless Customer Invoice - Ativar', B, [], 'false', ''),
+     'Qtd;Descrição;Total, em percentagem — só entra com o 8583 ligado. Companheiro '
+     'de 8583 na HOST (mesmo número lá) — aqui em número próprio para não colidir.'),
+    (8593, 'Geral', 'Payment gateway', T, [], '',
+     'Já coberto pela ficha do Modo de Pagamento (Interface externa/TPA) — usada em '
+     'cada método, não por posto. Sem efeito, para não duplicar a configuração.'),
+    (8595, 'Geral', 'Paperless Customer Invoice - Ativar', B, [], 'false',
+     'LIGADO: manda a fatura por e-mail ao cliente com conta (mdm.Customer.email), a '
+     'par do talão. Filtra por método de pagamento em 9595.'),
     (9595, 'Geral', 'Continuar - Modos de Pagamento', T, [], '',
-     'Companheiro de 8595 na HOST (mesmo número lá) — aqui em número próprio para não colidir.'),
-    (8613, 'Geral', 'Utilizador por defeito', T, [], '', ''),
-    (8617, 'Geral', 'Documentos - Secção', T, [], '', ''),
-    (8618, 'Geral', 'Print server', T, [], '', ''),
+     'Códigos de Modo de Pagamento (separados por vírgula) que mandam a fatura por '
+     'e-mail quando 8595 está ligado. Vazio = todos os métodos.'),
+    (8613, 'Geral', 'Utilizador por defeito', T, [], '',
+     'O login deste sistema é só por PIN (sem campo de utilizador para pré-preencher '
+     '— ver PosLoginModern). Sem efeito.'),
+    (8617, 'Geral', 'Documentos - Secção', T, [], '',
+     'Sem um destino concreto (que documento, que evento) para associar à secção, '
+     'não se liga sem inventar a regra. Ver 8196 para o padrão equivalente já ligado '
+     '(avisos do cliente por secção).'),
+    (8618, 'Geral', 'Print server', T, [], '',
+     'O agente de impressão (print_agent) fala DIRETO com a impressora (rede/série/'
+     'spooler Windows) — não há servidor de impressão intermédio. Sem efeito.'),
 
     # ---------------- Abrir Gaveta ----------------
-    (8591, 'Abrir Gaveta', 'Não abrir gaveta', B, [], 'false', ''),
-    (8501, 'Abrir Gaveta', 'No fim do dia', B, [], 'true', ''),
-    (8543, 'Abrir Gaveta', 'Na abertura de caixa', B, [], 'true', ''),
-    (8544, 'Abrir Gaveta', 'No fecho de caixa', B, [], 'true', ''),
+    (8591, 'Abrir Gaveta', 'Não abrir gaveta', B, [], 'false',
+     'Interruptor mestre: LIGADO, nenhum dos motivos abaixo (nem o pagamento em '
+     'dinheiro) abre a gaveta neste sistema — para terminais sem gaveta física.'),
+    (8501, 'Abrir Gaveta', 'No fim do dia', B, [], 'true',
+     'Abre a gaveta de cada caixa fechada no Fecho do Dia (Operações › Fecho do Dia).'),
+    (8543, 'Abrir Gaveta', 'Na abertura de caixa', B, [], 'true',
+     'Abre a gaveta ao abrir a sessão de caixa — para lá pôr o fundo de troco.'),
+    (8544, 'Abrir Gaveta', 'No fecho de caixa', B, [], 'true',
+     'Abre a gaveta ao fechar a sessão de caixa (contagem) e em "Fechar Terminais".'),
 
     # ---------------- Cozinha ----------------
-    (8529, 'Cozinha', 'Documento de pedidos', T, [], '', ''),
-    (8530, 'Cozinha', 'Documento de anulação de pedidos', T, [], '', ''),
-    (8541, 'Cozinha', 'Documento de transferência de mesa', T, [], '', ''),
-    (8619, 'Cozinha', 'Documento de reenvio de pedidos', T, [], '', ''),
+    (8529, 'Cozinha', 'Documento de pedidos', T, [], '',
+     'Texto fixo no topo da comanda de pedido normal. Vazio = sem cabeçalho.'),
+    (8530, 'Cozinha', 'Documento de anulação de pedidos', T, [], '',
+     'Texto fixo no topo da comanda de anulação. Vazio = "*** ANULAÇÃO — NÃO PREPARAR ***".'),
+    (8541, 'Cozinha', 'Documento de transferência de mesa', T, [], '',
+     'Texto fixo no topo da comanda enviada às estações quando uma conta com pedidos já '
+     'em curso muda de mesa. Vazio = "*** MUDANÇA DE MESA ***".'),
+    (8619, 'Cozinha', 'Documento de reenvio de pedidos', T, [], '',
+     'Texto fixo no topo das comandas reenviadas em "Reenviar comandas falhadas" '
+     '(Operações). Vazio = "*** REENVIO — PEDIDO JÁ FEITO ***".'),
 
     # ---------------- Eventos ----------------
     (8548, 'Eventos', 'Atribuir eventos a documentos Pos', B, [], 'false', ''),

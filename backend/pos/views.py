@@ -32,7 +32,7 @@ def _safe_consume(ticket, request):
         pass  # o consumo de stock nunca deve quebrar o pagamento
 
 
-def _print_document(ticket, doc, copia=False):
+def _print_document(ticket, doc, copia=False, abre_gaveta=True):
     """Põe o documento fiscal na fila de impressão (1ª via ou 2ª via).
 
     O talão que sai TEM de ser uma fatura aceite pela AGT. Faltavam-lhe quatro coisas
@@ -54,11 +54,28 @@ def _print_document(ticket, doc, copia=False):
     casas = max(0, min(4, P.int(8364, 2)))
     def fmt(v):
         return f"{Decimal(str(v)):.{casas}f}"
-    linhas_doc = doc.lines.all()
+    linhas_doc = list(doc.lines.all())
     if P.bool(8149, False):
         linhas_doc = [l for l in linhas_doc if (l.line_total + l.tax_amount) != 0]
+    # (8503) "Juntar artigos ao imprimir documentos" — três cafés lançados um a um
+    # saem no papel como "3x Café", não em três linhas iguais. Junta-se só o que é
+    # MESMO igual (descrição, preço e taxa) — um café com desconto não se junta com
+    # um sem desconto, senão o total da linha deixava de bater com o preço unitário.
+    if P.bool(8503, True):
+        agrupadas = {}
+        ordem = []
+        for l in linhas_doc:
+            chave = (l.description, l.unit_price, l.tax_percentage)
+            if chave not in agrupadas:
+                agrupadas[chave] = {'quantity': Decimal('0'), 'line_total': Decimal('0'),
+                                    'tax_amount': Decimal('0'), 'description': l.description}
+                ordem.append(chave)
+            agrupadas[chave]['quantity'] += l.quantity
+            agrupadas[chave]['line_total'] += l.line_total
+            agrupadas[chave]['tax_amount'] += l.tax_amount
+        linhas_doc = [type('L', (), agrupadas[c])() for c in ordem]
     linhas = "\n".join(
-        f"{l.quantity.normalize():f}x {l.description} .... {fmt(l.line_total + l.tax_amount)}"
+        f"{Decimal(l.quantity).normalize():f}x {l.description} .... {fmt(l.line_total + l.tax_amount)}"
         for l in linhas_doc)
 
     # Resumo de IVA por taxa (é o que a AGT confere).
@@ -85,9 +102,27 @@ def _print_document(ticket, doc, copia=False):
     rodape = P.text(8256, 'Obrigado pela sua visita.')
     corte = '\n' * max(0, min(10, P.int(8207, 2)))
 
+    # (8532) "Utilizar fatura personalizada" — o cabeçalho/rodapé vêm da FICHA
+    # (Configuração › Modelos de Documento), por tipo de documento, em vez do texto
+    # fixo do código. Sem modelo configurado para este tipo, usa-se o de sempre.
+    cabecalho_pers, rodape_pers = None, None
+    if P.bool(8532, False):
+        from core.models import DocumentTemplate
+        modelo = DocumentTemplate.objects.filter(doc_type=doc.doc_type.code).first()
+        if modelo:
+            tokens = {'empresa': cfg.company_name or '', 'nif': cfg.company_nif or ''}
+            try:
+                if modelo.header:
+                    cabecalho_pers = modelo.header.format(**tokens)
+                if modelo.footer:
+                    rodape_pers = modelo.footer.format(**tokens)
+            except (KeyError, IndexError):
+                pass   # modelo com token desconhecido — não trava a impressão
+
     def _corpo(texto_via):
-        return (f"{cfg.company_name or ''}\n"
-                f"NIF: {cfg.company_nif or ''}\n"
+        cabecalho = cabecalho_pers if cabecalho_pers is not None else (
+            f"{cfg.company_name or ''}\nNIF: {cfg.company_nif or ''}")
+        return (f"{cabecalho}\n"
                 f"*** {texto_via.upper()} ***\n"
                 f"{doc.invoice_no}   {doc.doc_date:%d/%m/%Y}\n"
                 f"Cliente: {doc.customer_name or sem_nif}\n"
@@ -96,29 +131,69 @@ def _print_document(ticket, doc, copia=False):
                 f"{iva}\n"
                 f"TOTAL: {fmt(doc.gross_total)} Kz\n"
                 f"Valor por extenso: {doc.amount_in_words or ''}\n"
-                f"{'-' * 34}\n{mencao}\n{rodape}{corte}")
+                f"{'-' * 34}\n{mencao}\n{rodape_pers if rodape_pers is not None else rodape}{corte}")
 
     # AS VIAS DA SÉRIE (caixa "Textos das cópias" do backoffice): a 1ª via é o
     # ORIGINAL (a do cliente); as outras saem com o texto delas — arquivo,
     # contabilidade. Cada via é um trabalho próprio na fila, com o texto impresso.
     vias = [v for v in (getattr(doc.series, 'copy_texts', None) or []) if str(v).strip()] \
         or ['Original']
+    # (8591) interruptor mestre — desligado, esta impressão nunca abre a gaveta.
+    abre_gaveta = abre_gaveta and not P.bool(8591, False)
     if copia:
-        # REIMPRESSÃO: não é uma via nova — é a 2ª via do Original, e diz-lo.
+        # REIMPRESSÃO: não é uma via nova — é a 2ª via do Original, e diz-lo. Não é
+        # dinheiro a entrar de novo — não tem razão para abrir a gaveta.
         return PrintJob.objects.create(
             job_type='INVOICE', outlet=ticket.outlet,
             title=f'2ª VIA · {doc.invoice_no}',
             content=_corpo(f'2ª VIA · {vias[0]}'),
-            reference=doc.invoice_no, copies=1)
+            reference=doc.invoice_no, copies=1, opens_drawer=False)
     primeiro = None
     for via in vias:
         job = PrintJob.objects.create(
             job_type='INVOICE', outlet=ticket.outlet,
             title=f'{doc.invoice_no} · {via}',
             content=_corpo(via),
-            reference=doc.invoice_no, copies=1)
+            reference=doc.invoice_no, copies=1, opens_drawer=abre_gaveta)
         primeiro = primeiro or job
     return primeiro
+
+
+def _tax_for(item_tax):
+    """(8509) "Código de IVA neste posto" — quando configurado (id de fiscal.TaxRate),
+    ESTE terminal fatura tudo a essa taxa, por cima da ficha do artigo. É para postos
+    sob um regime diferente do resto da casa (ex.: take-away com IVA distinto do
+    salão) — não é um "se faltar, usa este": sobrepõe-se sempre que está ligado.
+    """
+    codigo = P.int(8509, 0)
+    if not codigo:
+        return item_tax
+    from fiscal.models import TaxRate
+    taxa = TaxRate.objects.filter(pk=codigo, is_active=True).first()
+    return taxa.rate_on() if taxa else item_tax
+
+
+def queue_drawer_job(outlet, title, reason=''):
+    """Põe um pulso de ABRIR GAVETA na fila, sem talão nenhum — para os momentos que
+    não são uma venda (abertura/fecho de caixa, fecho do dia): 8543/8544/8501, sempre
+    sujeitos ao interruptor mestre 8591. Sem impressora de caixa configurada para o
+    outlet, não faz nada — não é suposto travar a abertura/fecho de caixa por isso.
+    """
+    from .params import P
+    if P.bool(8591, False):
+        return None
+    from inventory.models import Printer
+    from .models import PrintJob
+    qs = (Printer.objects.filter(station='CASHIER', is_active=True, device__isnull=False)
+          .select_related('device'))
+    posto = (qs.filter(outlet=outlet).first() if outlet else None) \
+        or qs.filter(outlet__isnull=True).first() or qs.first()
+    if not posto:
+        return None
+    return PrintJob.objects.create(
+        job_type='DRAWER', outlet=outlet, target=posto.device.name,
+        title=title, reference=reason or None)
+
 
 def _safe_fiscalize(ticket, request, credito=False, customer=None):
     """Emite o documento fiscal (AGT) do ticket pago. Nunca quebra o pagamento.
@@ -166,7 +241,16 @@ class OutletPaymentMethodViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = OutletPaymentMethod.objects.select_related('payment_method', 'outlet').all()
         outlet = self.request.query_params.get('outlet')
-        return qs.filter(outlet_id=outlet) if outlet else qs
+        if outlet:
+            qs = qs.filter(outlet_id=outlet)
+        # (8545) "Modos de Pagamento" deste posto — um quiosque só-dinheiro não deve
+        # sequer mostrar o botão de cartão no painel de pagamentos.
+        modo = P.text(8545, 'Todos')
+        if modo == 'Só dinheiro':
+            qs = qs.filter(payment_method__method_type='CASH')
+        elif modo == 'Só cartão':
+            qs = qs.filter(payment_method__method_type='CARD')
+        return qs
 
 
 class CashSessionViewSet(viewsets.ModelViewSet):
@@ -190,6 +274,18 @@ class CashSessionViewSet(viewsets.ModelViewSet):
         log_event(self.request, 'CASH_OPEN', f'Abertura de caixa (fundo {session.opening_float})',
                   operator_name=session.operator_name, outlet=session.outlet,
                   terminal_name=session.terminal_name, reference=f'CX-{session.id}', amount=session.opening_float)
+
+    def create(self, request, *args, **kwargs):
+        resp = super().create(request, *args, **kwargs)
+        # (Abrir Gaveta 8543/8591) O fundo de caixa entra fisicamente na gaveta —
+        # o terminal abre-a já na abertura, para o operador lá pôr o dinheiro.
+        abre = P.bool(8543, True) and not P.bool(8591, False)
+        resp.data['open_drawer'] = abre
+        if abre:
+            sess = CashSession.objects.filter(pk=resp.data.get('id')).first()
+            if sess:
+                queue_drawer_job(sess.outlet, f'Abertura de caixa — CX-{sess.id}', f'CX-{sess.id}')
+        return resp
 
     @action(detail=True, methods=['post'])
     def add_movement(self, request, pk=None):
@@ -239,7 +335,13 @@ class CashSessionViewSet(viewsets.ModelViewSet):
         log_event(request, 'CASH_CLOSE', f'Fecho de caixa (diferença {session.difference})',
                   operator_name=session.operator_name, outlet=session.outlet, reference=f'CX-{session.id}',
                   old_value=str(expected), new_value=str(counted), amount=session.difference)
-        return Response(self.get_serializer(session).data)
+        data = self.get_serializer(session).data
+        # (Abrir Gaveta 8544/8591) A gaveta abre para o operador guardar a contagem.
+        abre = P.bool(8544, True) and not P.bool(8591, False)
+        data['open_drawer'] = abre
+        if abre:
+            queue_drawer_job(session.outlet, f'Fecho de caixa — CX-{session.id}', f'CX-{session.id}')
+        return Response(data)
 
 
 class CashMovementViewSet(viewsets.ReadOnlyModelViewSet):
@@ -443,7 +545,11 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket.save(update_fields=['dest_kind', 'dest_ref', 'dest_label', 'dest_note',
                                    'dest_priority', 'table', 'delivery_status'])
         # Mesa VIP -> aplica desconto automático (se ainda sem desconto).
-        if kind == 'TABLE' and ref and not ticket.discount_percent:
+        # (8240) um desconto EXCLUSIVO já aplicado (código nesta lista) não se deixa
+        # substituir por um automático — foi escolhido de propósito, fica.
+        exclusivo_ja_aplicado = bool(ticket.discount_id and ticket.discount.code in
+                                      [c.strip() for c in P.text(8240, '').split(',') if c.strip()])
+        if kind == 'TABLE' and ref and not ticket.discount_percent and not exclusivo_ja_aplicado:
             tbl = POSTable.objects.filter(pk=ref).first()
             if tbl and tbl.is_vip and tbl.vip_discount_percent:
                 ticket.discount_percent = tbl.vip_discount_percent
@@ -546,7 +652,12 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket.save(update_fields=['customer_name', 'customer_tax_id', 'company_name', 'adults', 'children', 'guests'])
         # Cliente VIP do MDM -> desconto automático + info de limite de crédito.
         vip = None
-        cust_id = d.get('customer_id')
+        # "entity" (ClientPicker/CustomerIdForm) e "customer_id" (CustomerForm) são o
+        # MESMO id — o cadastro único de mdm.Customer visto de dois ecrãs diferentes.
+        # Só um deles chegava a ser lido: o desconto VIP/tipo de entidade e o aviso do
+        # cliente ficavam mudos sempre que a conta escolhia o cliente pelo 👤 do topo
+        # ou pelo painel de pagamento — os dois caminhos mais usados.
+        cust_id = d.get('customer_id') or d.get('entity')
         if cust_id:
             try:
                 from mdm.models import Customer
@@ -554,7 +665,35 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 if cust:
                     vip = {'is_vip': cust.is_vip, 'credit_limit': str(cust.credit_limit),
                            'vip_discount_percent': str(cust.vip_discount_percent)}
-                    if cust.is_vip and cust.vip_discount_percent and not ticket.discount_percent:
+                    # (8196) AVISO DO CLIENTE — a ficha diz "tem aviso" e o texto (ex.:
+                    # "cheque devolvido em 2025", "não aceitar cartão"). Volta já na
+                    # resposta (o operador tem de o ver ANTES de fechar a conta) e, se o
+                    # parâmetro tiver secções (códigos separados por "|"), avisa por
+                    # email quem estiver nessas secções — a mesma ficha do utilizador
+                    # (PosUser.section) que já existia e nunca tinha uso nenhum.
+                    if cust.has_warnings and cust.warning_text:
+                        vip['customer_warning'] = cust.warning_text
+                        seccoes = [s.strip() for s in P.text(8196, '').split('|') if s.strip()]
+                        if seccoes:
+                            try:
+                                from . import mailer
+                                from .models import PosUser
+                                destinos = list(PosUser.objects.filter(
+                                    section__in=seccoes, is_blocked=False,
+                                    email__isnull=False).exclude(email='')
+                                    .values_list('email', flat=True))
+                                if destinos:
+                                    mailer.send(destinos,
+                                        f'Aviso de cliente — {cust.name}',
+                                        f'{cust.name} tem um aviso ativo: {cust.warning_text}\n\n'
+                                        f'Conta: {ticket.ticket_number} — {ticket.outlet.name if ticket.outlet else ""}',
+                                        context_ref=f'pos_customer_warning:{cust.id}')
+                            except Exception:
+                                pass
+                    # (8240) idem: um desconto exclusivo já aplicado bloqueia os automáticos.
+                    exclusivo_ja_aplicado = bool(ticket.discount_id and ticket.discount.code in
+                                                  [c.strip() for c in P.text(8240, '').split(',') if c.strip()])
+                    if cust.is_vip and cust.vip_discount_percent and not ticket.discount_percent and not exclusivo_ja_aplicado:
                         ticket.discount_percent = cust.vip_discount_percent
                         ticket.discount_authorized_by = f'VIP ({cust.name})'
                         ticket.save(update_fields=['discount_percent', 'discount_authorized_by'])
@@ -564,7 +703,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                     # desconto de casa nos parâmetros. O VIP (da ficha) tem prioridade.
                     # (8082 "Grupo" fica de fora de propósito — a HOST duplica o nome mas
                     # aplicar os dois ao mesmo tipo era um desconto a disputar consigo mesmo.)
-                    elif not ticket.discount_percent and cust.entity_type_id:
+                    elif not ticket.discount_percent and not exclusivo_ja_aplicado and cust.entity_type_id:
                         POR_TIPO = {'HÓSPEDE': 8075, 'HOSPEDE': 8075, 'EMPRESA': 8076,
                                     'AGÊNCIA': 8077, 'AGENCIA': 8077, 'CRO': 8078,
                                     'GRUPO': 8079, 'TIMESHARE': 8080,
@@ -621,7 +760,21 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             from rest_framework.exceptions import ValidationError
             raise ValidationError({'guest_type': ['O tipo de cliente é obrigatório (parâmetro '
                                                   '8333): Passante, Hotel ou Consumo Interno.']})
+        # (9511) "Bloquear Venda Direta" — recusa no SERVIDOR, não só esconde o botão no
+        # ecrã (isso já é o 8523 "Tipo Posto" = Mesas). Uma conta sem mesa a chegar por
+        # outra via (offline, API) tem de ser travada da mesma forma que o botão.
+        if not data.get('table') and P.bool(9511, False):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'table': ['Venda Direta está bloqueada neste posto '
+                                             '(parâmetro 9511) — escolha uma mesa.']})
         num = data.get('ticket_number') or f"TCK-{uuid.uuid4().hex[:8].upper()}"
+        # (8511) "Número da mesa em Venda Direta" — a conta de balcão nasce com este
+        # nº de mesa fixo no rótulo (recibo, ecrã), em vez de ficar sem identificação
+        # nenhuma até ganhar o número interno do talão.
+        if not data.get('table') and not data.get('dest_label'):
+            fixo = P.text(8511, '').strip()
+            if fixo:
+                data['dest_label'] = f'Mesa {fixo}'
         # A CONTA PERTENCE À CAIXA ABERTA. Sem esta ligação, o fecho de caixa não sabe
         # que contas são do turno, e o terminal não consegue distinguir a venda de balcão
         # de hoje da que ficou esquecida ontem — ao tocar em Venda Direta aparecia o
@@ -744,6 +897,12 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                         nivel_setor = _s.price_level
                 except Exception:
                     nivel_setor = None
+                # (8524) "Nível de Preço" do TERMINAL — só entra quando o setor não
+                # manda em nada (8592 vazio e ficha do setor no nível 1, o base).
+                if not nivel_setor:
+                    nivel_terminal = P.int(8524, 1)
+                    if nivel_terminal > 1:
+                        nivel_setor = nivel_terminal
                 if nivel_setor and nivel_setor > 1:
                     from inventory.models import ItemPrice
                     _ip = ItemPrice.objects.filter(item=item, level=nivel_setor).first()
@@ -812,7 +971,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             description=(descricao if (getattr(item, 'free_text', False) and descricao)
                          else item.name),
             quantity=qty,
-            unit_price=unit_price + mod_delta, tax_percentage=item.tax_percentage or 0,
+            unit_price=unit_price + mod_delta, tax_percentage=_tax_for(item.tax_percentage or 0),
             note=note, kds_station=(cfg.kds_station if cfg else item.kds_station),
         )
         for m in modifiers:
@@ -845,7 +1004,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             price = Decimal(str(cfg.effective_price if cfg else (ci.item.sale_price or 0)))
             POSTicketLine.objects.create(
                 ticket=ticket, item=ci.item, description=f"{ci.item.name} · Combo {combo.name}",
-                quantity=ci.quantity, unit_price=price, tax_percentage=ci.item.tax_percentage or 0,
+                quantity=ci.quantity, unit_price=price, tax_percentage=_tax_for(ci.item.tax_percentage or 0),
                 kds_station=(cfg.kds_station if cfg else ci.item.kds_station), note=f"Combo {combo.name}")
             components_sum += price * Decimal(str(ci.quantity))
         ticket = POSTicket.objects.get(pk=ticket.pk)
@@ -878,6 +1037,15 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if ticket.status != 'OPEN':
             return Response({'detail': 'Esta conta já não está aberta (pode ter sido paga noutro terminal).'},
                             status=status.HTTP_400_BAD_REQUEST)
+        # A conta pode ter nascido ANTES de haver caixa aberta (mesa sentada de manhã,
+        # caixa só abre ao meio-dia). Sem isto, o dinheiro dela nunca entrava em
+        # fecho de caixa nenhum — nem no de hoje nem no de amanhã — e ficava sempre
+        # a "faltar" na gaveta, sem ninguém perceber porquê.
+        if not ticket.cash_session_id:
+            sessao_aberta = CashSession.objects.filter(outlet=ticket.outlet, status='OPEN').order_by('-opened_at').first()
+            if sessao_aberta:
+                ticket.cash_session = sessao_aberta
+                ticket.save(update_fields=['cash_session'])
         from mdm.models import PaymentMethod
         try:
             pm = PaymentMethod.objects.get(pk=request.data.get('payment_method'))
@@ -913,12 +1081,27 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if not pm.for_pos:
             return Response({'detail': f'"{pm.name}" não é um modo de pagamento de POS.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        from .models import PosUser
+        pu = PosUser.objects.filter(auth_user=request.user).first() if request.user.is_authenticated else None
+
+        # (8145) Permissões de utilizador — a ficha do GRUPO (separador "POS -
+        # Pagamentos" do Configuração POS → Utilizadores → Grupos) diz que métodos
+        # cada perfil vê. "(Todos)" é o valor por omissão do grupo; uma entrada com o
+        # nome do método substitui-o. Desligado (8145=false), qualquer grupo usa
+        # qualquer método — é o que já acontecia antes desta ligação existir.
+        if P.bool(8145, True) and pu and pu.group and pu.group.pos_payments:
+            mapa = pu.group.pos_payments
+            permitido = mapa.get(pm.name, mapa.get('(Todos)', True))
+            if not permitido:
+                return Response({
+                    'detail': f'O seu perfil ("{pu.group.name}") não está autorizado a usar "{pm.name}".',
+                    'requires_supervisor': True,
+                }, status=status.HTTP_403_FORBIDDEN)
+
         # (Modo de Pagamento) "Consumo interno" — o staff não paga, mas ALGUÉM tem de
         # poder lançar. Cruza-se com a caixa "Consumo interno" da ficha do utilizador:
         # quem não a tiver, não consegue usar este método.
         if pm.internal_consumption:
-            from .models import PosUser
-            pu = PosUser.objects.filter(auth_user=request.user).first() if request.user.is_authenticated else None
             if not (pu and pu.internal_consumption):
                 return Response({
                     'detail': f'Não está autorizado a lançar consumo interno ("{pm.name}"). '
@@ -1132,10 +1315,18 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if pm.tip_from_change and change > 0 and request.data.get('tip_change'):
             tip, change = change, Decimal('0')
             if ticket.cash_session_id:
+                # (8213) "Modo de pagamento para remover gratificação": só marca como
+                # GRATIFICACAO (e por isso só sai do esperado no fecho) quando o meio
+                # de pagamento bate com o escolhido — noutro meio, é uma entrada normal.
+                modo_gratif = P.text(8213, 'Cash')
+                bate_modo = (modo_gratif == 'Cash' and pm.method_type == 'CASH') or \
+                            (modo_gratif == 'Cartão' and pm.method_type == 'CARD')
                 CashMovement.objects.create(
-                    session=ticket.cash_session, movement_type='ENTRADA', amount=tip,
+                    session=ticket.cash_session,
+                    movement_type='GRATIFICACAO' if bate_modo else 'ENTRADA', amount=tip,
                     reason=f'Gratificação (troco de {ticket.ticket_number})',
                     created_by=(request.user.username if request.user.is_authenticated else 'POS'),
+                    internal_consumption=(ticket.guest_type == 'INTERNO'),
                 )
 
         # (Cartão) "Crédito" — o pré-pago paga com o que tem. Deixar passar sem saldo é
@@ -1307,7 +1498,23 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 from fiscal.integration import existing_for
                 doc = existing_for('pos', ticket.id)
                 if doc:
-                    _print_document(ticket, doc)
+                    # (8591 + ficha do método de pagamento) "Pagamento direto" não
+                    # mete dinheiro físico na gaveta — não há razão para ela abrir.
+                    _print_document(ticket, doc,
+                                    abre_gaveta=bool(pm.opens_drawer) and not pm.direct_payment)
+                    # (8595/9595) "Paperless Customer Invoice" — em vez de (ou além de)
+                    # gastar papel, manda-se a fatura por e-mail a quem tem conta. 9595
+                    # filtra por MÉTODO de pagamento (códigos separados por vírgula);
+                    # vazio = todos os métodos qualificam.
+                    if P.bool(8595, False) and doc.customer_id and doc.customer.email:
+                        modos = [c.strip() for c in P.text(9595, '').split(',') if c.strip()]
+                        if not modos or pm.code in modos:
+                            from . import mailer
+                            mailer.send(doc.customer.email,
+                                        f'Fatura {doc.invoice_no}',
+                                        f'Em anexo a sua fatura {doc.invoice_no}, no valor de '
+                                        f'{doc.gross_total} Kz.\n\nObrigado pela preferência.',
+                                        context_ref=f'paperless:{doc.id}')
             except Exception:
                 pass   # a impressora nunca trava a cobrança (fila + reimprimir tratam)
 
@@ -1320,7 +1527,9 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         data['tip'] = str(tip)
         # O terminal obedece a estas: abre (ou não) a gaveta, imprime (ou não) o documento.
         # "Pagamento direto" não abre gaveta: não entra dinheiro físico nenhum.
-        data['open_drawer'] = bool(pm.opens_drawer) and not pm.direct_payment
+        # (8591) "Não abrir gaveta" é o interruptor mestre — sobrepõe-se à ficha do
+        # método de pagamento (útil num terminal sem gaveta física ligada).
+        data['open_drawer'] = bool(pm.opens_drawer) and not pm.direct_payment and not P.bool(8591, False)
         data['print_document'] = bool(pm.prints_document)
         data['document_type'] = pm.document_type          # Fatura ou Talão
         if cartao_dono:
@@ -1480,8 +1689,13 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         # Motor 8: gera uma comanda de impressão por estação.
         from inventory.models import Printer
         avisos = []
+        # (8529) Cabeçalho da comanda de pedido — a casa pode querer um texto fixo
+        # no topo (ex.: nome do hotel, "MESA/BALCÃO"). Vazio = sem cabeçalho, como
+        # sempre foi.
+        cabecalho_pedido = P.text(8529, '').strip()
         for station, lines in by_station.items():
-            content = "\n".join(f"{int(l.quantity)}x {l.description}" + (f"  » {l.note}" if l.note else "") for l in lines)
+            corpo = "\n".join(f"{int(l.quantity)}x {l.description}" + (f"  » {l.note}" if l.note else "") for l in lines)
+            content = f"{cabecalho_pedido}\n{corpo}" if cabecalho_pedido else corpo
             # A que IMPRESSORA vai esta estação, e a que APARELHO está ela ligada?
             prt = (Printer.objects.filter(station=station, outlet=ticket.outlet, is_active=True).first()
                    or Printer.objects.filter(station=station, is_active=True).first())
@@ -1658,6 +1872,28 @@ class POSTicketViewSet(viewsets.ModelViewSet):
 
         dest.status = 'OCCUPIED'
         dest.save(update_fields=['status'])
+
+        # (8541) A comida já está a caminho da mesa ANTIGA — quem a leva à mesa (e a
+        # cozinha, se ainda estiver a preparar) precisa de saber que o cliente mudou de
+        # sítio. Sem isto, o empregado ia à mesa 4 com o prato e o cliente já não lá
+        # estava. Só avisa as estações com algo REALMENTE em curso (pedido já enviado).
+        em_curso = ticket.lines.filter(is_void=False, kds_status__in=('FIRED', 'PREPARING', 'READY')) \
+            .exclude(kds_station='NONE')
+        if em_curso.exists() and old_table:
+            from collections import defaultdict
+            from .models import PrintJob
+            cabecalho = P.text(8541, '').strip() or '*** MUDANÇA DE MESA ***'
+            by_station = defaultdict(list)
+            for l in em_curso:
+                by_station[l.kds_station].append(l)
+            for station, sl in by_station.items():
+                content = (f"{cabecalho}\nMesa {old_table.table_number} -> Mesa {dest.table_number}\n"
+                           + "\n".join(f"{int(l.quantity)}x {l.description}" for l in sl))
+                PrintJob.objects.create(
+                    job_type=station if station in ('KITCHEN', 'BAR', 'PASTRY') else 'KITCHEN',
+                    target=station, outlet=ticket.outlet,
+                    title=f"Mudança de mesa — {old_table.table_number} → {dest.table_number}",
+                    content=content, reference=ticket.ticket_number)
 
         log_event(request, 'TABLE_CHANGE',
                   f'Conta transferida da mesa {old_table.table_number if old_table else "—"} '
@@ -2104,7 +2340,10 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Não há série de Consulta de Mesa (CM) ativa — '
                                        'configure-a em Fiscal › Séries.'}, status=400)
         try:
-            job = _print_document(ticket, doc)
+            # A CONSULTA é conferência, não cobrança — nenhum dinheiro muda de mãos
+            # aqui. Abrir a gaveta numa consulta era um talão a mais e uma gaveta
+            # aberta sem venda nenhuma para explicar.
+            job = _print_document(ticket, doc, abre_gaveta=False)
         except Exception as e:
             import logging, traceback
             logging.getLogger('pos').error('IMPRESSAO da consulta falhou (%s): %s\n%s',
@@ -2219,7 +2458,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                             ticket=ticket, item=item, description=item.name,
                             quantity=Decimal(str(ln.get('quantity', 1))),
                             unit_price=Decimal(str(ln.get('unit_price', item.sale_price or 0))),
-                            tax_percentage=item.tax_percentage or 0)
+                            tax_percentage=_tax_for(item.tax_percentage or 0))
                     POSTicket.objects.get(pk=ticket.pk).recompute(save=True)
                     for pm in tk.get('payments', []):
                         POSTicketPayment.objects.create(
@@ -2267,8 +2506,11 @@ def cancel_production(request, ticket, lines, reason='Anulado no POS'):
         by_station[l.kds_station].append(l)
 
     where = ticket.dest_label or (ticket.table.table_number if ticket.table else ticket.ticket_number)
+    # (8530) Cabeçalho da comanda de anulação — a casa pode querer outro aviso
+    # ("NÃO PREPARAR", "CANCELADO"…); vazio mantém o texto de sempre.
+    cabecalho_anulacao = P.text(8530, '').strip() or '*** ANULAÇÃO — NÃO PREPARAR ***'
     for station, sl in by_station.items():
-        content = ("*** ANULAÇÃO — NÃO PREPARAR ***\n"
+        content = (cabecalho_anulacao + "\n"
                    + "\n".join(f"{int(l.quantity)}x {l.description}" for l in sl)
                    + f"\nMotivo: {reason}")
         PrintJob.objects.create(
@@ -2373,13 +2615,30 @@ class POSTicketLineViewSet(viewsets.ModelViewSet):
             # por rede lenta) não deve mostrar ao operador o erro cru do servidor.
             return Response(status=status.HTTP_204_NO_CONTENT)
         motivo = request.query_params.get('reason') or request.data.get('reason')
-        if instance.kds_status in ('FIRED', 'PREPARING', 'READY') and not motivo:
+        # (8515) "Pedir motivos de anulação" — desligado, nunca se exige (nem para o
+        # que já foi à produção). Ligado (por omissão), mantém-se a regra de sempre.
+        if (P.bool(8515, True) and instance.kds_status in ('FIRED', 'PREPARING', 'READY')
+                and not motivo):
             return Response({
                 'detail': 'Este artigo já foi para a produção. Indique o motivo da anulação.',
                 'requires_reason': True,
                 'reasons': [{'code': r.code, 'label': r.key_label}
                             for r in VoidReason.objects.filter(is_active=True)],
             }, status=status.HTTP_400_BAD_REQUEST)
+        # (8510) "Nº linhas a anular sem pedir password" — a partir deste número de
+        # linhas JÁ anuladas nesta conta, a próxima exige autorização de supervisor.
+        # 0 = sem limite (como sempre foi).
+        limite = P.int(8510, 0)
+        if limite > 0:
+            autorizado = (request.query_params.get('authorized_by')
+                          or request.data.get('authorized_by'))
+            ja_anuladas = instance.ticket.lines.filter(is_void=True).count()
+            if ja_anuladas >= limite and not autorizado:
+                return Response({
+                    'detail': f'Esta conta já tem {ja_anuladas} artigo(s) anulado(s) '
+                              f'(limite sem supervisor: {limite}). É preciso autorização.',
+                    'requires_supervisor': True, 'max_without_supervisor': limite,
+                }, status=status.HTTP_403_FORBIDDEN)
         return super().destroy(request, *a, **kw)
 
     def perform_destroy(self, instance):
@@ -2398,6 +2657,17 @@ class POSTicketLineViewSet(viewsets.ModelViewSet):
         vr = VoidReason.objects.filter(key_label=reason).first() or VoidReason.objects.filter(code=reason).first()
         if vr:
             reason = vr.print_label
+        # (8538) "Imprimir anulação no terminal" — o talão da CAIXA, à parte da comanda
+        # que já vai à estação (cancel_production): é o comprovativo que fica com quem
+        # cobra, para juntar ao motivo na hora do fecho.
+        if P.bool(8538, True):
+            from .models import PrintJob
+            PrintJob.objects.create(
+                job_type='RECEIPT', outlet=ticket.outlet, opens_drawer=False,
+                title=f'ANULAÇÃO — {ticket.dest_label or ticket.ticket_number}',
+                content=(f"*** ARTIGO ANULADO ***\n{desc}\nMotivo: {reason}\n"
+                         f"Operador: {ticket.operator_name}"),
+                reference=ticket.ticket_number)
         if instance.kds_status in ('FIRED', 'PREPARING', 'READY'):
             # Já está em produção: NÃO se apaga. Anula-se, avisa-se a estação e fica no registo.
             cancel_production(self.request, ticket, [instance], reason)
@@ -2554,6 +2824,14 @@ class PrintJobViewSet(viewsets.ModelViewSet):
         from .models import PrintJob
         falhadas = scope_qs(self.request, PrintJob.objects.filter(status='FAILED'), 'outlet__hotel')
         n = falhadas.count()
+        # (8619) Um reenvio parece um pedido novo se sair igual — a cozinha arrisca
+        # preparar a dobrar. O cabeçalho marca o papel como reimpressão, não pedido novo.
+        cabecalho = P.text(8619, '').strip() or '*** REENVIO — PEDIDO JÁ FEITO ***'
+        com_comanda = list(falhadas.exclude(job_type='DRAWER'))
+        for job in com_comanda:
+            if not (job.content or '').startswith(cabecalho):
+                job.content = f"{cabecalho}\n{job.content or ''}"
+        PrintJob.objects.bulk_update(com_comanda, ['content'])
         falhadas.update(status='QUEUED', error=None)
         return Response({'requeued': n,
                          'detail': f'{n} comanda(s) voltaram para a fila de impressão.'})

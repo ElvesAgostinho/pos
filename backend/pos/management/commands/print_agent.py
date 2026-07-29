@@ -119,8 +119,10 @@ class Command(BaseCommand):
                 else:
                     corpo = (job.content or job.title or '').encode('cp860', errors='replace')
                     payload = INIT + corpo + CUT
-                    # o talão de VENDA abre a gaveta; a comanda da cozinha não
-                    if job.job_type in ('RECEIPT', 'INVOICE'):
+                    # o talão de VENDA abre a gaveta; a comanda da cozinha não. Dentro
+                    # de RECEIPT/INVOICE, opens_drawer ainda decide caso a caso (8591 e
+                    # o método de pagamento — ver pos.views._print_document/pay).
+                    if job.job_type in ('RECEIPT', 'INVOICE') and job.opens_drawer:
                         payload += DRAWER
                 for _ in range(max(1, job.copies or 1)):
                     self._send(device, payload)

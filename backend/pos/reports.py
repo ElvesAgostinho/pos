@@ -591,6 +591,31 @@ def r_anulacoes_linha(p):
     }
 
 
+# ─────────────────────────────────────────────────── OFERTAS (8045/8046)
+def r_ofertas(p):
+    """OFERTAS — artigos a 100% de desconto (POSTicketLine.is_gift). O valor mostrado
+    é o PREÇO DE TABELA que a casa deixou de cobrar, não o valor da linha (esse já é 0)."""
+    from .models import POSTicketLine
+    ini, fim = _periodo(p)
+    qs = (POSTicketLine.objects.filter(is_gift=True, is_void=False,
+                                        ticket__opened_at__date__gte=ini,
+                                        ticket__opened_at__date__lte=fim)
+          .select_related('ticket').order_by('-ticket__opened_at'))
+    rows = [{
+        'date': l.ticket.opened_at.strftime('%d/%m %H:%M') if l.ticket_id else '',
+        'ticket': l.ticket.ticket_number if l.ticket_id else '',
+        'operator': l.ticket.operator_name if l.ticket_id else '',
+        'item': l.description, 'qty': str(l.quantity),
+        'value': str(l.quantity * l.unit_price),
+    } for l in qs]
+    return {
+        'columns': [('date', 'Data'), ('ticket', 'Conta'), ('operator', 'Operador'),
+                    ('item', 'Artigo'), ('qty', 'Qtd'), ('value', 'Valor de tabela', 'money')],
+        'rows': rows,
+        'totals': {'value': str(sum((_num(r['value']) for r in rows), Decimal('0')))},
+    }
+
+
 # ─────────────────────────────────────────────────── 20 · CONTAS CORRENTES
 def r_contas_correntes(p):
     from mdm.models import Customer
@@ -1148,6 +1173,8 @@ CATALOG = [
          'fn': r_top_artigos},
         {'code': 'est_anulados', 'name': '31. Cancelamentos de Artigo (com motivo)',
          'params': P_PERIODO, 'fn': r_anulacoes_linha},
+        {'code': 'est_ofertas', 'name': 'Ofertas (artigos a 100% de desconto)',
+         'params': P_PERIODO, 'fn': r_ofertas},
     ]},
     {'code': '20', 'name': 'Contas Correntes', 'reports': [
         {'code': 'cc_saldos', 'name': 'Saldos por entidade (conta corrente e cash advance)',

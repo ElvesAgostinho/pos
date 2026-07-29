@@ -410,6 +410,12 @@ class Customer(models.Model):
     mailing_general = models.BooleanField(default=False)
     mailing_events = models.BooleanField(default=False)
     mailing_birthday = models.BooleanField(default=False)
+    # (8201) "Newsletter - Interesses": a newsletter geral só vai a quem marcou pelo
+    # menos um destes interesses, quando o parâmetro tem códigos preenchidos (ex.:
+    # SPA;GOLFE). Vazio no cliente = não recebe nenhuma newsletter filtrada por
+    # interesse (mas continua a receber a geral sem filtro, se 8201 estiver vazio).
+    newsletter_interests = models.ManyToManyField('pos.SelectionCode', blank=True,
+                                                   related_name='interested_customers')
     vip_code = models.CharField(max_length=40, blank=True, null=True)
     distinction_program = models.BooleanField(default=False)
     commission_code = models.CharField(max_length=40, blank=True, null=True)

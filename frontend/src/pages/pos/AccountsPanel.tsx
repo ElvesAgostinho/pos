@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
 import TouchKeyboard from './TouchKeyboard';
-import { aviso } from '../../ui/dialogo';
+import { aviso, pedir } from '../../ui/dialogo';
 import { IcoCruz, IcoProibido, IcoVisto } from './Icons';
 
 /**
@@ -14,9 +14,10 @@ import { IcoCruz, IcoProibido, IcoVisto } from './Icons';
  * entidade bloqueada aparece bloqueada — e o empregado não fica a saber disso só na hora
  * de cobrar, à frente do cliente.
  */
-export default function AccountsPanel({ onPick, onClose }: {
+export default function AccountsPanel({ onPick, onClose, cfg }: {
   onPick?: (e: any) => void;
   onClose: () => void;
+  cfg?: any;
 }) {
   const [texto, setTexto] = useState('');
   const [busca, setBusca] = useState('');
@@ -91,6 +92,25 @@ export default function AccountsPanel({ onPick, onClose }: {
   const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
   const linhas: any[] = data?.rows || [];
 
+  // (8579) "Depósitos/Cash Advance - Ativar" — o adiantamento que a entidade deixa
+  // antecipado (evento pré-pago, grupo em digressão), para ir gastando nas contas
+  // sem levar dinheiro a cada consumo. O motor (EntityDeposit) já existia; faltava
+  // um botão que o chamasse.
+  const lancarDeposito = async () => {
+    if (!sel) return;
+    const resp = await pedir(`Depósito de ${sel.name}\n\nValor a lançar (Kz):`);
+    if (!resp) return;
+    const valor = Number(resp.replace(',', '.'));
+    if (!valor || valor <= 0) return aviso('Valor inválido.');
+    try {
+      await apiClient.post(`pos/ops/current-accounts/${sel.id}/`, { action: 'deposit', amount: valor });
+      await refetch();
+      aviso(`Depósito de ${money(valor)} Kz lançado em ${sel.name}.`);
+    } catch (e: any) {
+      aviso(e?.response?.data?.detail || 'Não foi possível lançar o depósito.');
+    }
+  };
+
   return (
     <Window title="Contas Correntes — Entidades" width={1400} onClose={onClose}>
       <div className="flex flex-col" style={{ height: '62vh' }}>
@@ -127,10 +147,16 @@ export default function AccountsPanel({ onPick, onClose }: {
 
         <TouchKeyboard valor={texto} setValor={setTexto} onOk={() => setBusca(texto)} />
 
-        <div className="grid grid-cols-3 gap-1 p-1 bg-black">
+        <div className={`grid gap-1 p-1 bg-black ${cfg?.cash_advance_enabled ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <button onClick={() => sel && onPick?.(sel)} disabled={!sel || !onPick}
             className="h-[64px] bg-[#1f1f1f] text-[#2ecc40] text-[18px] font-bold disabled:opacity-30"><span className="inline-flex items-center gap-2"><IcoVisto size={24} />Selecionar
           </span></button>
+          {cfg?.cash_advance_enabled && (
+            <button onClick={lancarDeposito} disabled={!sel}
+              className="h-[64px] bg-[#1f1f1f] text-[#f0c000] text-[18px] font-bold disabled:opacity-30">
+              Depósito
+            </button>
+          )}
           <button onClick={() => setNova({})}
             className="h-[64px] bg-[#1f1f1f] text-white text-[18px]">＋ Nova entidade</button>
           <button onClick={onClose}

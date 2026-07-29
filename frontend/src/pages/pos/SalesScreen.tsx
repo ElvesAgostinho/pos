@@ -115,7 +115,25 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
   // (Parâmetros do teclado) o que as teclas mostram — alterna-se aqui, no painel, sem
   // ir ao backoffice: o preço à vista é uma preferência de quem está a servir.
   const [verPrecos, setVerPrecos] = useState(true);
-  const [agrupar, setAgrupar] = useState(false);
+  // (8502) "Juntar artigos na grelha de pedidos" — o valor de fábrica do botão "Ver
+  // artigos agrupados"; o empregado continua a poder ligar/desligar por conta.
+  const [agrupar, setAgrupar] = useState(!!cfg?.group_grid_items);
+  // (8583/9583) "Tamanho da grelha da conta %"/"% por Coluna" — 8583=0 (fábrica)
+  // mantém as três colunas em pixels fixos, como sempre foi. Só quando o dono liga
+  // o 8583 é que entra a partilha em percentagem (9583: "20;60;20" = Qtd;Descrição;Total).
+  const colunasGrelha = (() => {
+    if (!cfg?.grid_size_pct) return '58px 1fr 118px';
+    const partes = String(cfg?.grid_columns_pct || '20;60;20').split(';').map((p: string) => p.trim());
+    if (partes.length !== 3 || partes.some((p: string) => !p || isNaN(Number(p)))) return '58px 1fr 118px';
+    return partes.map((p: string) => `${p}%`).join(' ');
+  })();
+  // (8568) "Casas decimais na quantidade" — 2,5 kg de picanha mostra-se com as casas
+  // configuradas; 3 cafés continuam a mostrar-se "3", não "3.00" (corta zeros à direita).
+  const casasQtd = Number.isInteger(cfg?.qty_decimals) ? cfg.qty_decimals : 2;
+  const fmtQtd = (q: any) => {
+    const n = Number(q);
+    return n.toFixed(casasQtd).replace(/\.?0+$/, '') || '0';
+  };
   // Parciais e transferências DESTA conta, sem voltar ao mapa.
   const [mover, setMover] = useState<'' | 'SPLIT' | 'TRANSFER'>('');
   // As janelas dos quatro ícones do topo e do botão de anular.
@@ -303,6 +321,17 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       // 404 = a linha já não existe (outro toque já a tinha apagado): o resultado que se
       // queria já está feito, não é um erro para mostrar ao operador.
       if (e?.response?.status === 404) { setSel(null); inval(); }
+      // (8510) A partir do limite de linhas anuladas sem supervisor, pede-se o nome
+      // de quem autoriza e repete-se o pedido — o mesmo padrão do desconto (8620).
+      else if (e?.response?.data?.requires_supervisor) {
+        const sup = await pedir(e.response.data.detail + '\n\nNome do supervisor que autoriza:');
+        if (sup) {
+          try {
+            await apiClient.delete(`pos/ticket-lines/${l.id}/`, { params: { authorized_by: sup } });
+            setSel(null); inval();
+          } catch (e2: any) { aviso(e2?.response?.data?.detail || 'Erro ao anular.'); }
+        }
+      }
       else aviso(e?.response?.data?.detail || 'Erro ao anular.');
     } finally { anulandoLinha.current.delete(l.id); }
   };
@@ -318,6 +347,16 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
       inval();
     } catch (e: any) {
       if (e?.response?.status === 404) { setSel(null); inval(); }
+      else if (e?.response?.data?.requires_supervisor) {
+        const sup = await pedir(e.response.data.detail + '\n\nNome do supervisor que autoriza:');
+        if (sup) {
+          try {
+            await apiClient.delete(`pos/ticket-lines/${l.id}/`,
+              { params: { reason: motivo, authorized_by: sup } });
+            setSel(null); inval();
+          } catch (e2: any) { aviso(e2?.response?.data?.detail || 'Erro ao anular.'); }
+        }
+      }
       else aviso(e?.response?.data?.detail || 'Erro ao anular.');
     } finally { anulandoLinha.current.delete(l.id); }
   };
@@ -573,6 +612,18 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     setEscolherCliente(true);
   }, [conta, tid, cfg?.ask_entity_on_open]);
 
+  // (8514) "Nos consumos internos, pedir funcionário" — CONSUMO INTERNO é custo da
+  // casa, não venda: sem saber QUEM comeu, o custo do staff fica anónimo dentro da
+  // receita. O formulário (CustomerForm) já sabia perguntar o colaborador do RH —
+  // só faltava alguém o abrir. Mesma disciplina do 9311: uma vez por conta.
+  useEffect(() => {
+    if (cfg?.ask_internal_staff === false) return;
+    if (!conta || conta.guest_type !== 'INTERNO' || conta.customer_name) return;
+    if (perguntouCliente.current.has(tid)) return;
+    perguntouCliente.current.add(tid);
+    setFormCliente(true);
+  }, [conta, tid, cfg?.ask_internal_staff]);
+
   // VER ARTIGOS AGRUPADOS: três cafés lançados um a um passam a "3 Café". Junta-se só o
   // que é MESMO igual — mesmo artigo, mesmo preço e mesma nota. Agrupar um café com nota
   // "sem açúcar" com outro sem nota era mandar para a cozinha um pedido que ninguém fez.
@@ -667,7 +718,8 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
           </span>
         </button>
 
-        <div className="grid grid-cols-[64px_1fr_120px] bg-[#2b2b2b] text-white text-[16px] font-bold px-2 py-2">
+        <div className="grid bg-[#2b2b2b] text-white text-[16px] font-bold px-2 py-2"
+          style={{ gridTemplateColumns: colunasGrelha }}>
           <span>Qtd</span><span>Descrição</span><span className="text-right">Total</span>
         </div>
 
@@ -692,10 +744,11 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             <div key={l.id} onClick={() => !anulada && setSel(l.id)}
               onDoubleClick={() => !anulada && apagarLinha(l)}
               title={anulada ? 'Linha anulada' : '1 toque: escolher a linha · 2 toques: anular a linha'}
-              className={`grid grid-cols-[58px_1fr_118px] px-2 py-2 border-b border-black/15
+              style={{ gridTemplateColumns: colunasGrelha }}
+              className={`grid px-2 py-2 border-b border-black/15
                 text-[16px] ${anulada ? 'bg-[#fbeaea] text-black/40 line-through cursor-default'
                   : `cursor-pointer ${sel === l.id ? 'bg-[#f0c000]' : 'hover:bg-black/5'}`}`}>
-              <span className={`font-semibold ${anulada ? '' : 'text-black'}`}>{Number(l.quantity)}</span>
+              <span className={`font-semibold ${anulada ? '' : 'text-black'}`}>{fmtQtd(l.quantity)}</span>
               <span className="min-w-0">
                 <span className={`block font-semibold truncate ${anulada ? '' : 'text-black'}`}>{l.description}</span>
                 {anulada && (
@@ -717,6 +770,14 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
                 ))}
                 {l.note && (
                   <span className="block pl-3 text-[14px] font-bold italic text-[#8a6100] truncate">{l.note}</span>
+                )}
+                {/* (8237) Desconto de linha detalhado — sem isto, o desconto de um
+                    artigo só se via no preço mais baixo; ninguém sabia SE tinha
+                    desconto, nem quanto, sem ir aos detalhes. */}
+                {cfg?.line_discount_detail && Number(l.discount_percent) > 0 && (
+                  <span className="block pl-3 text-[13px] font-bold text-[#1f7a34]">
+                    Desconto {Number(l.discount_percent)}%
+                  </span>
                 )}
 
                 {l._juntas > 1 && (
@@ -851,8 +912,11 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
             setEscolherCliente(false);
             if (!esc.customer_name && !esc.entity) return;   // Consumidor Final: nada a gravar
             try {
-              await apiClient.post(`pos/tickets/${tid}/set_customer/`, esc);
+              const r = await apiClient.post(`pos/tickets/${tid}/set_customer/`, esc);
               inval();
+              // (8196) Aviso na ficha do cliente — mostra-se assim que se escolhe.
+              const avisoCliente = r.data?.vip?.customer_warning;
+              if (avisoCliente) aviso(`Aviso deste cliente: ${avisoCliente}`);
             } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível guardar o cliente.'); }
           }} />
       )}

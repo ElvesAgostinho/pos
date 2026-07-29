@@ -136,11 +136,39 @@ class CashSession(models.Model):
 
     @property
     def expected_cash(self):
-        """Esperado = fundo inicial + reforços/entradas − sangrias/saídas. (Vendas em dinheiro: integração futura.)"""
+        """Esperado = fundo inicial + vendas em dinheiro + reforços/entradas − sangrias/saídas.
+
+        As VENDAS EM DINHEIRO faltavam aqui: o fecho só somava movimentos manuais
+        (sangria/reforço/entrada/saída), nunca o dinheiro que entrou a pagar contas —
+        um "esperado" que ignora as vendas do dia não reconcilia nada a sério, é só o
+        fundo de maneio a andar às voltas. `POSTicketPayment.amount` é o valor NETO já
+        aplicado (troco já descontado) — exatamente o que fica na gaveta por cada venda.
+
+        (8214) "Remover a gratificação do dinheiro no fecho": a gorjeta (troco que o
+        cliente deixou) é dinheiro que sai da gaveta para o empregado, não para a casa.
+        LIGADO (omissão): a gorjeta NÃO conta para o esperado — contá-la dava sempre
+        "falta" no fecho, porque o dinheiro físico já saiu com quem a recebeu.
+        (8213) só remove para o modo de pagamento indicado (Cash/Cartão — aqui só faz
+        sentido para Cash, é sempre troco em dinheiro). (8352) estende a remoção às
+        gorjetas lançadas em contas de consumo interno.
+        """
         from decimal import Decimal
+        from .params import P
         total = Decimal(self.opening_float)
+
+        cash_sales = self.tickets.filter(
+            payments__payment_method__method_type='CASH'
+        ).aggregate(t=models.Sum('payments__amount'))['t'] or Decimal('0')
+        total += Decimal(cash_sales)
+
+        remover_gratificacao = P.bool(8214, True)
+        remover_consumo_interno = P.bool(8352, False)
         for m in self.movements.all():
-            if m.movement_type in ('REFORCO', 'ENTRADA'):
+            if m.movement_type == 'GRATIFICACAO':
+                if remover_gratificacao and (remover_consumo_interno or not m.internal_consumption):
+                    continue  # fica com quem recebeu — não entra no esperado da casa
+                total += m.amount
+            elif m.movement_type in ('REFORCO', 'ENTRADA'):
                 total += m.amount
             else:  # SANGRIA, SAIDA
                 total -= m.amount
@@ -154,13 +182,21 @@ class CashMovement(models.Model):
         ('REFORCO', 'Reforço'),
         ('ENTRADA', 'Entrada Manual'),
         ('SAIDA', 'Saída Manual'),
+        # (8214/8213/8352) marcado à parte de "Entrada Manual": é o troco que o
+        # cliente deixou ficar — dinheiro que já saiu com o empregado, não com a
+        # casa. Precisa de ser distinguível para o fecho (expected_cash) decidir
+        # se conta ou não, conforme o parâmetro.
+        ('GRATIFICACAO', 'Gratificação'),
     ]
     session = models.ForeignKey(CashSession, on_delete=models.CASCADE, related_name='movements')
-    movement_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    movement_type = models.CharField(max_length=13, choices=TYPE_CHOICES)
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     reason = models.CharField(max_length=255, blank=True, null=True)
     created_by = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # (8352) só é True quando a gorjeta nasceu numa conta de Consumo Interno —
+    # é o que decide se a remoção do 8214 se estende a este caso.
+    internal_consumption = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'pos_cash_movement'
@@ -365,6 +401,18 @@ class POSTicket(models.Model):
             ids = list(self.discount.items.values_list('id', flat=True))
             scope_ids = set(ids) if ids else None
         desconto_artigos = Decimal('0')   # artigos que SÃO um desconto ("Desconto em valor")
+
+        # (8369/9369) enquanto o Happy Hour indicado em 9369 estiver ATIVO agora, os
+        # artigos com o código listado em 8369 saem da base do desconto automático — o
+        # preço de Happy Hour já É o desconto; descontar por cima descontava a dobrar.
+        from .params import P
+        codigos_hh = {c.strip() for c in P.text(8369, '').split(',') if c.strip()}
+        hh_ativo = False
+        if codigos_hh:
+            nome_hh = P.text(9369, '')
+            if nome_hh:
+                hh = HappyHour.objects.filter(name=nome_hh, is_active=True).first()
+                hh_ativo = bool(hh and hh.value_now())
         for l in self.lines.filter(is_void=False).select_related('item'):   # anuladas não somam (mas ficam no registo)
             line_gross = l.line_total  # qty * unit_price = preço com IVA incluído
             # (Artigo) "Desconto em valor" — o artigo não é um produto: É um desconto.
@@ -380,7 +428,8 @@ class POSTicket(models.Model):
             gross += line_gross
             # (Artigo) "Não permite desconto" — o tabaco e as garrafas de marca não
             # levam os 10% do gerente. A caixa exclui a linha da BASE do desconto.
-            if not (l.item and getattr(l.item, 'no_discount', False)):
+            excluido_happy_hour = hh_ativo and l.item and l.item.code in codigos_hh
+            if not (l.item and getattr(l.item, 'no_discount', False)) and not excluido_happy_hour:
                 # Âmbito do desconto (separador F&B): se o desconto só vale para certos
                 # artigos, a base é só desses. "Desconto de bebidas" não desconta a comida.
                 if scope_ids is None or (l.item_id in scope_ids):
@@ -427,6 +476,10 @@ class POSTicketLine(models.Model):
     # sem tocar no resto. Sem este campo, quem queria perdoar um prato tinha de anular
     # a linha e lançá-la a preço manual — e o motivo da anulação ficava a mentir.
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    # (8177) 100% de desconto não é uma "venda a zero" — é uma OFERTA (o prato saiu,
+    # ninguém pagou por ele). Sem esta marca, o relatório de Ofertas do fecho do dia
+    # nunca tinha nada para mostrar: nem uma linha a 0 Kz aparecia lá.
+    is_gift = models.BooleanField(default=False)
     # Motor 5 (KDS)
     kds_station = models.CharField(max_length=10, default='KITCHEN')
     kds_status = models.CharField(max_length=10, choices=KDS_STATUS, default='NEW')
@@ -453,6 +506,12 @@ class POSTicketLine(models.Model):
         bruto = self.quantity * self.unit_price
         desc = self.discount_percent or 0
         self.line_total = bruto - (bruto * desc / 100) if desc else bruto
+        # (8177) LIGADO de fábrica: 100% de desconto marca a linha como oferta,
+        # sozinho — ninguém teve de lembrar de marcar duas vezes a mesma coisa.
+        if desc >= 100:
+            from .params import P
+            if P.bool(8177, True):
+                self.is_gift = True
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -536,6 +595,11 @@ class PrintJob(models.Model):
     content = models.TextField(blank=True, null=True)  # texto renderizado da comanda/documento
     reference = models.CharField(max_length=60, blank=True, null=True)
     copies = models.PositiveIntegerField(default=1)
+    # Um TALÃO/FATURA de um pagamento "direto" (transferência, conta quarto…) não tem
+    # dinheiro físico a entrar — não há troco a dar, não há razão para a gaveta abrir.
+    # Antes o agente de impressão abria SEMPRE a gaveta em RECEIPT/INVOICE, mesmo nesses
+    # casos. Por omissão True para não mudar o comportamento de quem já usa o sistema.
+    opens_drawer = models.BooleanField(default=True)
     status = models.CharField(max_length=10, choices=STATUS, default='QUEUED')
     error = models.CharField(max_length=200, blank=True, null=True)   # porque é que falhou
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1041,6 +1105,11 @@ class PosUser(models.Model):
     email = models.EmailField(blank=True, null=True)
     entry_date = models.DateField(blank=True, null=True)
     exit_date = models.DateField(blank=True, null=True)
+    # (8176) "Configuração de teclado por" = Operador — o teclado de artigos que ESTE
+    # utilizador vê, independente do setor onde está a vender (ex.: um gerente que
+    # circula entre salas e quer sempre o mesmo teclado "geral").
+    keyboard = models.ForeignKey('PosKeyboard', on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='users')
 
     # --- Caixas atribuídas (que caixas este utilizador pode abrir) ---
     cash_registers = models.JSONField(default=dict, blank=True)
@@ -2617,6 +2686,10 @@ class StockDoc(models.Model):
                                        null=True, related_name='stock_docs_out')   # origem
     cost_center = models.ForeignKey(CostCenter, on_delete=models.SET_NULL, blank=True, null=True,
                                     related_name='stock_docs')
+    # (8335) "Conta analítica": a conta do PGC-AO para onde este documento reparte o
+    # custo — Escondido/Visível/Obrigatório decide-se no parâmetro, o campo é sempre
+    # texto livre (o plano de contas não é fixo de casa para casa).
+    analytic_account = models.CharField(max_length=30, blank=True, null=True)
     payment_term = models.ForeignKey(PaymentTerm, on_delete=models.SET_NULL, blank=True, null=True,
                                      related_name='stock_docs')
     due_date = models.DateField(blank=True, null=True)

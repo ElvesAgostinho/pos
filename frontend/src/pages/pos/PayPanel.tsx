@@ -251,6 +251,10 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
         const dd = await apiClient.get('pos/reports/documents/', { params: { source_ref: tk.id } });
         doc = ((dd.data?.rows || dd.data?.results || []) as any[])[0]?.number || null;
       } catch { /* sem documento ainda: o recibo diz isso e deixa emitir */ }
+      // (8534) "Fechar janela de pagamentos quando pagamento aplicado" — fecha logo,
+      // sem esperar pelo recibo. Quem quer o recibo reimprime a partir da conta.
+      const fechaLogo = !!JSON.parse(localStorage.getItem('pos_cfg') || '{}').close_on_payment;
+      if (fechaLogo) { onPaid(); return; }
       setRecibo(doc || '');
     } catch (e: any) {
       aviso(e?.response?.data?.detail || 'Não foi possível cobrar.');
@@ -483,11 +487,14 @@ export default function PayPanel({ ticket, entidade: entidadeInicial, exigirEnti
             setEntidade(e); setDadosCliente(false);
             // o NIF tem de ir para a CONTA, senão a fatura sai a Consumidor Final
             try {
-              await apiClient.post(`pos/tickets/${ticket.id}/set_customer/`, {
+              const r = await apiClient.post(`pos/tickets/${ticket.id}/set_customer/`, {
                 entity: e.id, customer_name: e.name, customer_tax_id: e.tax_id || null,
               });
               const tk = (await apiClient.get(`pos/tickets/${ticket.id}/`)).data;
               setConta(tk);
+              // (8196) Aviso na ficha do cliente — mostra-se assim que se escolhe.
+              const avisoCliente = r.data?.vip?.customer_warning;
+              if (avisoCliente) aviso(`Aviso deste cliente: ${avisoCliente}`);
             } catch { /* a entidade fica escolhida na mesma para a emissão */ }
           }} />
       )}

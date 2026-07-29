@@ -33,8 +33,16 @@ class UploadView(APIView):
             return Response({'detail': f'A imagem tem {f.size // 1024} KB. O máximo são 2 MB — '
                                        f'uma imagem grande atrasa o terminal a cada arranque.'}, status=400)
 
-        folder = (request.data.get('folder') or 'logos').strip('/')
-        dest_dir = os.path.join(settings.MEDIA_ROOT, folder)
+        # A PASTA vem do pedido — e um pedido pode mentir. "../../../../Windows" ou
+        # "..\\..\\secrets" tentam sair do MEDIA_ROOT para escrever noutro sítio do
+        # disco do servidor. Normaliza-se o caminho final e confirma-se que continua
+        # DENTRO do MEDIA_ROOT antes de escrever um único byte — só o nome do
+        # ficheiro é gerado (uuid), mas a PASTA era 100% controlada por quem pede.
+        folder = (request.data.get('folder') or 'logos').strip('/\\')
+        media_root = os.path.realpath(settings.MEDIA_ROOT)
+        dest_dir = os.path.realpath(os.path.join(media_root, folder))
+        if os.path.commonpath([media_root, dest_dir]) != media_root:
+            return Response({'detail': 'Pasta de destino inválida.'}, status=400)
         os.makedirs(dest_dir, exist_ok=True)
         name = f'{uuid.uuid4().hex[:12]}{ext}'
         with open(os.path.join(dest_dir, name), 'wb') as out:

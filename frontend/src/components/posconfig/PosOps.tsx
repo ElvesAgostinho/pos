@@ -246,7 +246,7 @@ export function PosSaft() {
   return (
     <div className="flex-1 overflow-auto bg-white p-6">
       <div className="flex items-center gap-3 mb-6">
-        <span className="w-10 h-10 bg-[#1a73c8] text-white flex items-center justify-center text-[18px] font-black">AGT</span>
+        <img src="/agt-logo.png" alt="AGT — Administração Geral Tributária" className="h-20 w-auto flex-shrink-0" />
         <div>
           <div className="text-[20px] font-bold text-[#666]">Administração Geral Tributária — Ficheiro SAF-T</div>
           <div className="text-[13px] text-[#333] mt-1">Versão do ficheiro: <b>{d?.version || '1.01_01'}</b></div>
@@ -299,7 +299,7 @@ export function PosSaft() {
 
         <button onClick={() => criar.mutate()} disabled={criar.isPending || !d?.documents}
           className="mt-4 px-6 py-3 bg-[#3d8bd6] text-white text-[14px] font-semibold hover:bg-[#2f77bd] disabled:bg-[#b8b8b8]">
-          {criar.isPending ? 'A criar…' : '▶ Criar ficheiro'}
+          {criar.isPending ? 'A criar…' : <span className="inline-flex items-center gap-1.5"><Glyph icon="▶" size={13} /> Criar ficheiro</span>}
         </button>
         {!d?.documents && (
           <div className="text-[11px] text-[#8a6100]">

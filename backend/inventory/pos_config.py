@@ -384,6 +384,15 @@ class PosItemViewSet(viewsets.ModelViewSet):
         # o que a etiqueta interna imprimiu.
         if P and P.bool(8235, True) and not item.barcodes.exists() and item.code:
             ItemBarcode.objects.create(item=item, barcode=item.code, is_main=True)
+        # (8209) "Configurar IVA por sub-família": um artigo novo nasce já com a taxa
+        # da sub-família — sem isto, cada artigo tinha de escolher o IVA à mão, e uma
+        # sub-família inteira (ex.: "Bebidas Alcoólicas") podia ficar com taxas
+        # misturadas só por esquecimento.
+        if P and P.bool(8209, False) and not item.tax_percentage and getattr(item, 'subfamily_id', None):
+            sub = getattr(item, 'subfamily', None)
+            if sub and sub.default_tax_percentage is not None:
+                item.tax_percentage = sub.default_tax_percentage
+                item.save(update_fields=['tax_percentage'])
 
     def perform_update(self, serializer):
         # "Visualizar Logs" — regista CADA CAMPO que mudou nesta gravação, com o que

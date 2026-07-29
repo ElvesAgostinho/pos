@@ -34,10 +34,35 @@ export default function FnbPayables() {
     },
   });
 
+  // (10537) "Recibo de pagamento" — nativo, sem SSRS nem modelo a escolher: o mesmo
+  // padrão de impressão já usado na Ficha Técnica e nos talões do POS.
+  const imprimirRecibo = (doc: any) => {
+    const w = window.open('', '_blank', 'width=480,height=640');
+    if (!w) return;
+    w.document.write(`<html><head><title>Recibo de Pagamento — ${doc.number}</title>
+      <style>body{font-family:sans-serif;font-size:13px;padding:16px}
+      h2{margin:0 0 4px}table{width:100%;border-collapse:collapse;margin-top:12px}
+      td{padding:4px 0}.tot{font-weight:bold;font-size:16px;border-top:1px solid #999;padding-top:6px}</style>
+      </head><body>
+      <h2>Recibo de Pagamento</h2>
+      <div>${aberta?.name || ''}${aberta?.other ? ` — NIF ${aberta.other}` : ''}</div>
+      <table>
+        <tr><td>Documento</td><td style="text-align:right">${doc.number}</td></tr>
+        <tr><td>Data do documento</td><td style="text-align:right">${doc.date}</td></tr>
+        <tr><td>Referência do fornecedor</td><td style="text-align:right">${doc.external_ref || '—'}</td></tr>
+        <tr><td>Pago em</td><td style="text-align:right">${new Date().toLocaleString('pt-PT')}</td></tr>
+        <tr class="tot"><td>Valor pago</td><td style="text-align:right">${money(doc.total)} Kz</td></tr>
+      </table></body></html>`);
+    w.document.close();
+    w.print();
+  };
+
   const pagar = useMutation({
     mutationFn: (id: number) => apiClient.post(`pos/fnb/documents/${id}/pay/`, {}),
-    onSuccess: (r: any) => {
+    onSuccess: (r: any, id: number) => {
       qc.invalidateQueries({ queryKey: ['pay'] });
+      const doc = aberta?.documents?.find((d: any) => d.id === id);
+      if (doc) imprimirRecibo(doc);
       setAberta(null);
       notifyGuide({ title: 'Pago', message: r.data.detail });
     },

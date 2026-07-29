@@ -13,7 +13,11 @@ body {
   font-family: "Segoe UI", Tahoma, Verdana, Geneva, sans-serif;
   background-color: #dfe3e8;
   color: #222;
-  -webkit-font-smoothing: antialiased;
+  /* SEM "antialiased": essa regra (copiada de resets pensados para macOS) desliga
+     o ClearType/subpixel do Windows e trocava-o por um cinzento mais fino — a letra
+     ficava "fusca" precisamente no sistema operativo onde este ERP mais corre. Sem a
+     regra, o Windows usa o alisamento nativo dele; o Mac continua a alisar sozinho. */
+  text-rendering: optimizeLegibility;
 }
 
 /* ============================================================

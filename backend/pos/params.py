@@ -20,8 +20,19 @@ def _all():
     vals = cache.get(CACHE_KEY)
     if vals is None:
         from .models import PosParameter
+        # GLOBAL e TERMINAL entram no MESMO dicionário. Em rigor, um parâmetro
+        # scope=TERMINAL devia valer só para O TERMINAL FÍSICO que o tem — mas a
+        # sessão do Front Office (login por operador + setor) nunca identifica
+        # "qual PosTerminal é este ecrã": não há emparelhamento de aparelho, nem
+        # o bootstrap recebe um `terminal=`. Sem essa identificação, um valor
+        # gravado em PosTerminal.params nunca chegaria a lugar nenhum — o ecrã
+        # de "Terminais" ficava só de decoração, exatamente como os catálogo
+        # dizia "TERMINAL" mas nada lia o número. Até existir essa identificação
+        # (feature à parte, não inventada aqui), o valor vale para a instalação
+        # toda — o que já é uma melhoria real: mudar o parâmetro passa a mudar
+        # o comportamento, em vez de não fazer nada.
         vals = {p.number: (p.value if p.value not in (None, '') else p.default)
-                for p in PosParameter.objects.filter(scope='GLOBAL')}
+                for p in PosParameter.objects.filter(scope__in=('GLOBAL', 'TERMINAL'))}
         cache.set(CACHE_KEY, vals, TTL)
     return vals
 

@@ -93,6 +93,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
   const { data: segs = [] } = useQuery({ queryKey: ['ent-segs'], queryFn: async () => { const r = await apiClient.get('pos/config/segments/'); return r.data?.results || r.data || []; } });
   const { data: subsegs = [] } = useQuery({ queryKey: ['ent-subsegs'], queryFn: async () => { try { const r = await apiClient.get('pos/config/sub-segments/'); return r.data?.results || r.data || []; } catch { return []; } } });
   const { data: canais = [] } = useQuery({ queryKey: ['ent-canais'], queryFn: async () => { try { const r = await apiClient.get('pos/config/channels/'); return r.data?.results || r.data || []; } catch { return []; } } });
+  // (8201) "Newsletter - Interesses": a newsletter geral filtra por estes códigos
+  // quando o parâmetro tem algum preenchido — sem marcar aqui, o cliente não conta.
+  const { data: interesses = [] } = useQuery({ queryKey: ['ent-interesses'], queryFn: async () => { try { const r = await apiClient.get('pos/config/selection-codes/'); return r.data?.results || r.data || []; } catch { return []; } } });
   const { data: hist } = useQuery({
     queryKey: ['ent-hist', eid],
     queryFn: async () => (await apiClient.get(`pos/marketing/entities/${eid}/history/`)).data,
@@ -273,6 +276,25 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <div className="col-span-2 flex gap-5"><C k="mailing_general" l="Mailing Geral" /><C k="mailing_events" l="Mailing de Eventos" /><C k="mailing_birthday" l="Mailing de Aniversário" /></div>
               <div className="col-span-2"><RecGrid eid={eid} kind="SELCODE" titulo="Códigos de seleção"
                 cols={[['codigo', 'Código'], ['descricao', 'Descrição']]} /></div>
+              {interesses.length > 0 && (
+                <div className="col-span-2 border-t border-[#ddd] pt-1">
+                  <div className="text-[12px] font-bold mb-1">Interesses (filtra a Newsletter — parâmetro 8201)</div>
+                  <div className="flex flex-wrap gap-3">
+                    {interesses.map((i: any) => {
+                      const ids: number[] = d.newsletter_interests || [];
+                      const marcado = ids.includes(i.id);
+                      return (
+                        <label key={i.id} className="flex items-center gap-1.5 text-[12px] cursor-pointer">
+                          <input type="checkbox" checked={marcado} className="w-4 h-4"
+                            onChange={() => set('newsletter_interests',
+                              marcado ? ids.filter((x) => x !== i.id) : [...ids, i.id])} />
+                          {i.name} <span className="text-[#999]">({i.group_name})</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="col-span-2 text-[12px] font-bold border-t border-[#ddd] pt-1">Códigos de Sales & Marketing</div>
               <S k="segment" l="Segmento:" opts={segs} /> <T k="vip_code" l="Código VIP:" />
               <S k="sub_segment" l="Sub-Segmento:" opts={subsegs} /> <S k="channel" l="Canal de Dist.:" opts={canais} />

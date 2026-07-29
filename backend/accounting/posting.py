@@ -184,7 +184,7 @@ def _pending():
     out = {'pos': [], 'purchase': [], 'treasury': []}
     try:
         from pos.models import POSTicket
-        for t in POSTicket.objects.filter(status='CLOSED').order_by('-opened_at')[:500]:
+        for t in POSTicket.objects.filter(status='PAID').order_by('-opened_at')[:500]:
             if t.ticket_number not in posted_refs:
                 out['pos'].append({'ref': t.ticket_number, 'date': (t.closed_at or t.opened_at).date().isoformat(),
                                    'amount': float(t.grand_total or 0)})
@@ -213,7 +213,7 @@ def run_autopost(sources=None, autopost=True, by=None):
     if 'pos' in sources:
         try:
             from pos.models import POSTicket
-            for t in POSTicket.objects.filter(status='CLOSED'):
+            for t in POSTicket.objects.filter(status='PAID'):
                 if post_pos_ticket(t, autopost, by):
                     created += 1
         except Exception:

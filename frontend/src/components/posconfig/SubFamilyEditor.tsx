@@ -91,6 +91,15 @@ export default function SubFamilyEditor({ row, families, onClose }:
             <input value={d.accounting_account || ''} onChange={(e) => set('accounting_account', e.target.value)}
               className={`${inputCls} w-[210px] flex-none`} style={inputStyle} />
           </label>
+          <label className="flex items-center gap-3 text-[13px]">
+            <span className="w-[200px] text-[#333]">IVA por omissão (%):</span>
+            <input type="number" step="0.01" value={d.default_tax_percentage ?? ''}
+              onChange={(e) => set('default_tax_percentage', e.target.value === '' ? null : Number(e.target.value))}
+              placeholder="(nenhum)" className={`${inputCls} w-[210px] flex-none`} style={inputStyle} />
+            <span className="text-[11px] text-[#888]">
+              Com o parâmetro 8209 ligado, um artigo novo desta sub-família nasce já com esta taxa.
+            </span>
+          </label>
         </div>
 
         {isNew ? (

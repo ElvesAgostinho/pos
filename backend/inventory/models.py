@@ -553,6 +553,11 @@ class ItemSubFamily(models.Model):
     print_order = models.PositiveIntegerField(default=0)
     # Conta do PGC-AO: o que este grupo/família vende cai nesta conta de proveitos.
     accounting_account = models.CharField(max_length=30, blank=True, null=True)
+    # (8209) "Configurar IVA por sub-família": LIGADO, um artigo NOVO desta
+    # sub-família nasce já com esta taxa — sem ter de se escolher artigo a
+    # artigo. Vazio = a sub-família não impõe taxa nenhuma (fica o que o
+    # artigo já tiver).
+    default_tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     sort_order = models.PositiveIntegerField(default=0)
 

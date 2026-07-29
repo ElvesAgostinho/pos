@@ -13,7 +13,7 @@ import ClientPicker from './ClientPicker';
 // O painel antigo continua a servir o MAPA DE REFEIÇÕES (outra coisa: quem tem refeição
 // incluída hoje). Só a "Info. Hóspede" mudou para o seletor das três abas.
 import GuestsPanel from './GuestsPanel';
-import EntitySearchPos from './EntitySearchPos';
+import AccountsPanel from './AccountsPanel';
 import PinChange from './PinChange';
 import TicketPreview from './TicketPreview';
 import DayClose from './DayClose';
@@ -171,6 +171,26 @@ export default function PosTerminal() {
     };
   }, [cfg?.session_timeout_minutes, cfg?.app_close_minutes]);
 
+  // (8518) "Tempo até mostrar screensaver" — mais cedo que a inatividade (8088), só
+  // apaga o ecrã (nada de sessão nem de dados): um restaurante com o terminal à vista
+  // do cliente não quer a conta de outra mesa exposta enquanto ninguém mexe.
+  const [screensaver, setScreensaver] = useState(false);
+  useEffect(() => {
+    if (!cfg?.screensaver_minutes) return;
+    let ultimo = Date.now();
+    const mexeu = () => { ultimo = Date.now(); setScreensaver(false); };
+    window.addEventListener('pointerdown', mexeu);
+    window.addEventListener('keydown', mexeu);
+    const t = setInterval(() => {
+      if ((Date.now() - ultimo) / 60000 >= cfg.screensaver_minutes) setScreensaver(true);
+    }, 15000);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener('pointerdown', mexeu);
+      window.removeEventListener('keydown', mexeu);
+    };
+  }, [cfg?.screensaver_minutes]);
+
   // o resto do terminal (teclado tátil, painéis) lê a configuração daqui
   useEffect(() => {
     if (cfg) localStorage.setItem('pos_cfg', JSON.stringify(cfg));
@@ -203,12 +223,17 @@ export default function PosTerminal() {
       if (areaLogin && !preset) aviso('Não tem acesso a esse setor. Escolha um dos setores autorizados.');
       if (!preset && cfg.ask_sector) return;             // o seletor fica, como está
       if (!lista.length) return;
-      const s = preset || lista[0];
+      // (8516) "Setor Inicial" — quando se auto-escolhe (não se pergunta), prefere-se
+      // este setor ao primeiro da lista, se o terminal tiver acesso a ele.
+      const inicial = cfg.initial_sector
+        ? lista.find((sec: any) => sec.code === cfg.initial_sector)
+        : null;
+      const s = preset || inicial || lista[0];
       setSetor(s);
       // (8300) "Venda Direta" LIGADO: abre LOGO numa conta de balcão — sem mapa.
       // À risca: quem serve ao balcão não tem mesas para escolher.
       if (cfg.require_cash_open) setEtapa('CASH');
-      else if (cfg.direct_sale) abrirVendaDireta(1, 'PASSANTE', s);
+      else if (cfg.direct_sale) abrirVendaDireta(cfg?.balcao_guests || 1, 'PASSANTE', s);
       else setEtapa('MAP');
     })();
   }, [cfg, setor]);
@@ -259,7 +284,7 @@ export default function PosTerminal() {
         && sessao?.id && t.cash_session === sessao.id);
       if (balcao) { setTicket(balcao.id); setEtapa('SALES'); return; }
     } catch { /* sem lista, abre-se uma nova — é o comportamento seguro */ }
-    abrirVendaDireta(1, 'PASSANTE');
+    abrirVendaDireta(cfg?.balcao_guests || 1, 'PASSANTE');
   };
 
   // Ao FECHAR uma venda de balcão com o 8300 ligado, volta-se... ao balcão: o terminal
@@ -317,7 +342,11 @@ export default function PosTerminal() {
       }
     } catch { /* a conta pode já estar paga ou anulada: nada a fazer */ }
     inval();
-    if (cfg?.direct_sale && !cfg?.ask_sector) abrirVendaDireta(1, 'PASSANTE');
+    // (8612) "Fazer logout depois de sair de uma conta" — o posto partilhado por
+    // vários empregados (bar de piscina, evento) não deve ficar aberto no nome de
+    // quem serviu a última mesa; o próximo é obrigado a entrar com o PIN dele.
+    if (cfg?.logout_on_close) { tokenStore.clearPos(); nav('/pos/login'); return; }
+    if (cfg?.direct_sale && !cfg?.ask_sector) abrirVendaDireta(cfg?.balcao_guests || 1, 'PASSANTE');
     else setEtapa('MAP');
   };
 
@@ -354,7 +383,10 @@ export default function PosTerminal() {
   // As opções da barra da esquerda. As que precisam de uma conta aberta ficam apagadas —
   // não se escondem: o empregado tem o sítio delas na memória e procurá-las-ia.
   const MENU: { label: string; icon: any; act: () => void; on?: boolean; ativo?: boolean }[] = [
-    ...(cfg?.direct_sale
+    // (8523 "Tipo Posto") "Mesas + Venda Direta" mostra o botão mesmo sem 8300/8300
+    // ligado — é o modo combinado. "Mesas" (hide_direct_sale) esconde-o: este posto
+    // não vende ao balcão.
+    ...(!cfg?.hide_direct_sale
       ? [{ label: 'Venda Direta', icon: <IcoVenda size={28} />, act: vendaDireta, on: !!setor }]
       : []),
     // CONSULTA: toca-se na mesa e vê-se o talão — sem passar pela página de venda.
@@ -380,7 +412,10 @@ export default function PosTerminal() {
     { label: 'Documentos', icon: <IcoDocumento size={40} />, act: () => setJanela('DOCS'), on: true },
     { label: 'Mapa de Refeições', icon: <IcoCombo size={28} />, act: () => setJanela('MEALS'), on: true },
     { label: 'Info.Hósp.', icon: <IcoQuarto size={28} />, act: () => setJanela('GUESTS'), on: true },
-    { label: 'Setor', icon: <IcoEcra size={28} />, act: () => setEtapa('SECTOR'), on: true },
+    // (8517) "Setor Único" — trocar de setor não faz sentido num posto de um só setor.
+    ...(cfg?.single_sector ? [] : [
+      { label: 'Setor', icon: <IcoEcra size={28} />, act: () => setEtapa('SECTOR'), on: true },
+    ]),
     { label: 'Contas Correntes', icon: <IcoLista size={40} />, act: () => setJanela('CC'), on: true },
     // FECHO DE CAIXA: o operador conta a gaveta e presta contas (8005 fecho cego).
     { label: 'Fecho de Caixa', icon: <IcoCadeado size={40} />, act: () => setFechoCaixa(true), on: !!sessao },
@@ -427,7 +462,9 @@ export default function PosTerminal() {
     { label: 'Alterar password', icon: <IcoChave size={40} />, act: () => { setTrocarPin(true); fecharMenu(); }, on: true },
     // ATUALIZAR: outro terminal mexeu na mesa e este ainda mostra o antigo.
     { label: 'Atualizar', icon: <IcoAtualizar size={40} />, act: () => { inval(); fecharMenu(); }, on: true },
-    { label: 'Trocar de Setor', icon: <IcoEcra size={40} />, act: () => { setEtapa('SECTOR'); fecharMenu(); }, on: true },
+    ...(cfg?.single_sector ? [] : [
+      { label: 'Trocar de Setor', icon: <IcoEcra size={40} />, act: () => { setEtapa('SECTOR'); fecharMenu(); }, on: true },
+    ]),
   ];
 
   const acoesCaixa: AcaoPainel[] = [
@@ -605,6 +642,10 @@ export default function PosTerminal() {
                 perguntarTipo={cfg?.ask_guest_type !== false}
                 mostrarPagamento={!!cfg?.show_payment_status}
                 fundo={cfg?.map_background !== false}
+                simples={!!cfg?.simple_tables}
+                codigoBarras={!!cfg?.barcode_open_table}
+                perguntarClientes={cfg?.ask_guests_count !== false}
+                permiteZeroClientes={!!cfg?.guests_can_be_zero}
                 refrescar={(cfg?.tables_refresh_seconds || 8) * 1000}
                 onOpenTicket={(id) => { setTicket(id); setEtapa('SALES'); }}
                 onViewTicket={(t) => setAConsultar(t)}
@@ -645,7 +686,7 @@ export default function PosTerminal() {
                 // "Exigir abertura de caixa": se estiver desligada, vai-se direto ao serviço.
                 // Com a Venda Direta (8300) ligada, o serviço É o balcão — sem mapa.
                 if (!sessao && cfg?.require_cash_open !== false) setEtapa('CASH');
-                else if (cfg?.direct_sale) abrirVendaDireta(1, 'PASSANTE', s);
+                else if (cfg?.direct_sale) abrirVendaDireta(cfg?.balcao_guests || 1, 'PASSANTE', s);
                 else setEtapa('MAP');
               }}
               onCancel={setor ? () => setEtapa(sessao ? 'MAP' : 'CASH') : undefined}
@@ -672,7 +713,7 @@ export default function PosTerminal() {
               onPick={() => setJanela('')} onClose={() => setJanela('')} />
           )}
           {janela === 'MEALS' && <GuestsPanel aba="MEALS" onClose={() => setJanela('')} />}
-          {janela === 'CC' && <EntitySearchPos onClose={() => setJanela('')} />}
+          {janela === 'CC' && <AccountsPanel cfg={cfg} onClose={() => setJanela('')} />}
           {janela === 'RESERVAS' && setor && (
             <ReservationsPanel setor={setor}
               onOpenTicket={(id) => { setTicket(id); setEtapa('SALES'); }}
@@ -727,7 +768,7 @@ export default function PosTerminal() {
               onOpened={(s) => {
                 setSessao(s);
                 // (8300) caixa aberta e Venda Direta ligada -> direto ao balcão.
-                if (cfg?.direct_sale) abrirVendaDireta(1, 'PASSANTE');
+                if (cfg?.direct_sale) abrirVendaDireta(cfg?.balcao_guests || 1, 'PASSANTE');
                 else setEtapa('MAP');
               }}
               onBack={() => setEtapa('SECTOR')} />
@@ -778,6 +819,20 @@ export default function PosTerminal() {
           </div>
         </div>
       </div>
+
+      {/* (8518) Screensaver — apaga a conta em ecrã sem tocar em sessão nenhuma;
+          qualquer toque (o listener acima) devolve o terminal ao que estava. */}
+      {screensaver && (
+        <div onClick={() => setScreensaver(false)}
+          className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center
+            text-white cursor-pointer select-none">
+          <div className="text-[64px] font-bold">
+            {agora.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
+          </div>
+          <div className="text-[18px] text-white/50 mt-2">{boot?.company?.name || 'Mwana Lodge'}</div>
+          <div className="text-[13px] text-white/30 mt-8">Toque para continuar</div>
+        </div>
+      )}
     </div>
   );
 }

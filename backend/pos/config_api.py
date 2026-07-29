@@ -1886,10 +1886,16 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def newsletter(self, request):
-        """NEWSLETTER (4080/4180) — envia um modelo a TODOS os clientes com e-mail.
+        """NEWSLETTER (4080/4180/8201) — envia um modelo aos clientes que o autorizaram.
 
         Gate: o parâmetro 4080 tem de estar ligado. Os endereços do 4180 recebem
         cópia (a equipa vê o que saiu). Cada destinatário fica no outbox.
+
+        (Sales & Marketing → "Incluir nos mailings" + "Mailing Geral") só vai a
+        quem MARCOU as duas caixas — mandar a quem nunca autorizou já não é
+        marketing, é spam.
+        (8201) "Newsletter - Interesses": com códigos preenchidos (ex.: SPA;GOLFE),
+        filtra ainda mais — só quem tem pelo menos um desses interesses na ficha.
         """
         from . import mailer
         from .params import P
@@ -1901,7 +1907,11 @@ class EmailTemplateViewSet(viewsets.ModelViewSet):
         if not t:
             return Response({'detail': 'Indique o modelo (template).'}, status=400)
         from mdm.models import Customer
-        clientes = Customer.objects.filter(is_active=True).exclude(email__isnull=True).exclude(email='')
+        clientes = (Customer.objects.filter(is_active=True, include_mailings=True, mailing_general=True)
+                    .exclude(email__isnull=True).exclude(email=''))
+        interesses = [c.strip() for c in P.text(8201, '').split(';') if c.strip()]
+        if interesses:
+            clientes = clientes.filter(newsletter_interests__code__in=interesses).distinct()
         enviados = []
         for c in clientes:
             reg = mailer.send_template(t, c.email, ctx={'GuestName': c.name},
@@ -2699,8 +2709,19 @@ class PosDayCloseView(APIView):
         # "Fechar Terminais" do original — só fecha as caixas abertas, sem correr o
         # resto do fecho do dia (limpeza de logs, backup). Serve para desligar os
         # postos ao final do turno sem ainda estar a fechar o dia de vendas.
+        # (Abrir Gaveta) 8591 é o interruptor mestre — desligado, nada mais nesta ficha
+        # abre gaveta nenhuma. 8544 é o de "No fecho de caixa".
+        from .params import P as _P
+        from .views import queue_drawer_job
+        outlets_fechados = {s.outlet_id: s.outlet for s in sessoes if s.outlet_id}
+
         if request.data.get('terminals_only'):
+            abre_gaveta_fecho = _P.bool(8544, True) and not _P.bool(8591, False)
+            if abre_gaveta_fecho:
+                for outlet in outlets_fechados.values():
+                    queue_drawer_job(outlet, 'Fecho de terminais', 'TERMINALS_ONLY')
             return Response({'closed_sessions': len(sessoes),
+                             'open_drawer': abre_gaveta_fecho,
                              'detail': f'{len(sessoes)} terminal(is) fechado(s).'})
 
         # (8036) Dias a guardar o log — o fecho do dia é a vassoura: apaga o registo
@@ -2731,8 +2752,13 @@ class PosDayCloseView(APIView):
             except Exception:
                 backup = 'FALHOU — verifique espaço em disco'
 
+        abre_gaveta_dia = _P.bool(8501, True) and not _P.bool(8591, False)
+        if abre_gaveta_dia:
+            for outlet in outlets_fechados.values():
+                queue_drawer_job(outlet, 'Fecho do dia', 'DAY_CLOSE')
         return Response({'closed_sessions': len(sessoes),
                          'log_cleaned': limpos, 'backup': backup,
+                         'open_drawer': abre_gaveta_dia,
                          'detail': f'{len(sessoes)} caixa(s) fechada(s). O dia de vendas do POS está fechado.'})
 
 
@@ -3879,9 +3905,29 @@ class StockDocViewSet(viewsets.ModelViewSet):
             qs = qs.filter(series__nature='PAYABLE', paid=False, voided=False)
         return qs
 
+    def _exige_8335_8337(self, serializer):
+        """(8335/8337) Conta analítica / Centro de Custo — Escondido/Visível/OBRIGATÓRIO.
+        A obrigatoriedade só vale a pena imposta aqui: escondida no formulário, o
+        documento gravava na mesma sem ela."""
+        from .params import P
+        v = serializer.validated_data
+        if P.text(8335, 'Escondido') == 'Obrigatório' and not (v.get('analytic_account') or
+                                                                getattr(serializer.instance, 'analytic_account', None)):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'analytic_account': 'A conta analítica é obrigatória (parâmetro 8335).'})
+        if P.text(8337, 'Escondido') == 'Obrigatório' and not (v.get('cost_center') or
+                                                                getattr(serializer.instance, 'cost_center_id', None)):
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'cost_center': 'O centro de custo é obrigatório (parâmetro 8337).'})
+
     def perform_create(self, serializer):
+        self._exige_8335_8337(serializer)
         serializer.save(created_by=(self.request.user.username
                                     if self.request.user.is_authenticated else None))
+
+    def perform_update(self, serializer):
+        self._exige_8335_8337(serializer)
+        serializer.save()
 
     def _exige_fnb(self, request):
         """(Utilizador POS) "Utilizador F&B" — mexer no stock não é para toda a gente.
@@ -4507,36 +4553,61 @@ class PosTerminalKeyboardView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from .models import PosKeyboard, PosKeyboardKey, PosTerminal
+        from .models import PosKeyboard, PosKeyboardKey, PosTerminal, PosUser
         from .params import P
         from inventory.models import ItemPrice
 
         kb = None
-        # O teclado pode vir pedido à mão, ou ser o do TERMINAL que está a perguntar.
+        # O teclado pode vir pedido à mão — ganha sempre a quem escolher explicitamente.
         if request.query_params.get('keyboard'):
             kb = PosKeyboard.objects.filter(pk=request.query_params['keyboard'],
                                             is_active=True).first()
-        if not kb and request.query_params.get('terminal'):
+
+        def _por_terminal():
+            if not request.query_params.get('terminal'):
+                return None
             t = PosTerminal.objects.filter(pk=request.query_params['terminal']).first()
-            kb = getattr(t, 'keyboard', None) if t else None
-        # (8176) "Configuração de teclado por": Setor usa o teclado ligado ao setor
-        # pedido (a ficha do setor guarda o NOME do teclado); Terminal já foi tratado
-        # acima; Operador cai no primeiro ativo (a ficha dele não tem teclado próprio).
-        if not kb and request.query_params.get('sector'):
+            return getattr(t, 'keyboard', None) if t else None
+
+        def _por_setor():
+            if not request.query_params.get('sector'):
+                return None
             try:
                 from .models import PosSector
                 s = PosSector.objects.filter(pk=request.query_params['sector']).first()
-                if s:
-                    # (8573) o teclado escolhido na ficha do setor — por ID (ligação real)
-                    escolhido = (s.params or {}).get('8573') or (s.params or {}).get(8573)
-                    if escolhido:
-                        kb = PosKeyboard.objects.filter(pk=escolhido, is_active=True).first()
-                    # retrocompatível: fichas antigas guardavam o NOME
-                    if not kb and s.keyboard:
-                        kb = PosKeyboard.objects.filter(name__iexact=str(s.keyboard),
-                                                        is_active=True).first()
+                if not s:
+                    return None
+                # (8573) o teclado escolhido na ficha do setor — por ID (ligação real)
+                escolhido = (s.params or {}).get('8573') or (s.params or {}).get(8573)
+                if escolhido:
+                    achado = PosKeyboard.objects.filter(pk=escolhido, is_active=True).first()
+                    if achado:
+                        return achado
+                # retrocompatível: fichas antigas guardavam o NOME
+                if s.keyboard:
+                    return PosKeyboard.objects.filter(name__iexact=str(s.keyboard),
+                                                       is_active=True).first()
             except Exception:
-                kb = None
+                return None
+            return None
+
+        def _por_operador():
+            if not request.query_params.get('operator'):
+                return None
+            op = PosUser.objects.filter(pk=request.query_params['operator']).first()
+            return op.keyboard if (op and op.keyboard_id and op.keyboard.is_active) else None
+
+        # (8176) "Configuração de teclado por" — manda na ORDEM em que se tenta
+        # resolver; a ficha preferida vazia (ex.: setor sem teclado na ficha) não
+        # deixa o empregado sem teclado nenhum — tenta-se as outras a seguir.
+        modo = P.text(8176, 'Setor')
+        resolveres = {'Setor': _por_setor, 'Terminal': _por_terminal, 'Operador': _por_operador}
+        ordem = [modo] + [m for m in ('Setor', 'Terminal', 'Operador') if m != modo]
+        for m in ordem:
+            if kb:
+                break
+            kb = resolveres[m]()
+
         if not kb:
             kb = PosKeyboard.objects.filter(is_active=True).order_by('number').first()
         if not kb:
@@ -4805,7 +4876,14 @@ class _SectorAccess:
     @staticmethod
     def sectors_for(operator_id):
         from .models import PosUser, PosSector
+        from .params import P
         qs = PosSector.objects.filter(is_active=True)
+        # (8540) "Setores Disponíveis" — restringe pelo TERMINAL, por cima da restrição
+        # da ficha do operador: um posto físico no Rooftop não deve listar o Restaurante
+        # só porque o operador dele, hoje, tem acesso aos dois setores.
+        so = [c.strip() for c in P.text(8540, '').split(',') if c.strip()]
+        if so:
+            qs = qs.filter(code__in=so)
         if not operator_id:
             return qs
         op = PosUser.objects.filter(pk=operator_id).first()
@@ -4860,7 +4938,7 @@ def _sector_payload(s):
         return p.get(str(num), p.get(num))
 
     return {
-        'id': s.id, 'name': s.name, 'outlet': s.outlet_id,
+        'id': s.id, 'code': s.code, 'name': s.name, 'outlet': s.outlet_id,
         'price_level': s.price_level, 'map_bg_color': s.map_bg_color,
         # (8573) o TECLADO deste setor — o terminal carrega só este
         'keyboard': val(8573),
@@ -4909,20 +4987,38 @@ class PosTerminalConfigView(APIView):
         from .params import P
         operador = request.query_params.get('operator')
         setores = [_sector_payload(s) for s in _SectorAccess.sectors_for(operador)]
+        # (8523) "Tipo Posto" — Mesas / Venda Direta / Mesas + Venda Direta. Mais rico
+        # que o 8300 antigo (só ligado/desligado): decide também se o botão de mesas
+        # ou o de Venda Direta chegam a aparecer no terminal.
+        tipo_posto = P.text(8523, 'Mesas + Venda Direta')
+        direct_sale = P.bool(8300, False) or tipo_posto == 'Venda Direta'
+        hide_direct_sale = tipo_posto == 'Mesas'
+        # (8517/8610) "Setor Único"/"Perguntar o setor após o login" — um terminal de
+        # um só setor não precisa de perguntar; nenhum dos dois pode forçar a
+        # pergunta se o outro (ou o 8302 antigo) disser que não.
+        single_sector = P.bool(8517, True)
+        ask_sector = P.bool(8302, True) and P.bool(8610, True) and not single_sector
         return Response({
             # os SETORES que ESTE operador pode servir ("Todos os setores" da ficha dele)
             'sectors': setores,
-            'direct_sale': P.bool(8300, False),
-            'ask_sector': P.bool(8302, True),
+            'direct_sale': direct_sale,
+            'hide_direct_sale': hide_direct_sale,
+            'ask_sector': ask_sector,
+            'single_sector': single_sector,
+            'initial_sector': P.text(8516, ''),
             'require_cash_open': P.bool(8304, True),
             'ask_guest_type': P.bool(8175, True),
             'auto_fire_kitchen': P.bool(8308, False),
             'ask_entity_before_pay': P.bool(8310, False),
+            'ask_internal_staff': P.bool(8514, True),
             # (9311) pedir o cliente ao ABRIR a venda (não só na hora de cobrar).
             # LIGADO de fábrica: perguntar depois é tarde — a fatura já saiu como
             # Consumidor Final e essa não se corrige, anula-se por nota de crédito.
             # Numeração 9xxx: 8311 na HOST real é outra coisa (e-mails de mesa libertada).
-            'ask_entity_on_open': P.bool(9311, True),
+            # (8566) "Pedir cliente/quarto na abertura de mesa" é o MESMO pedido — o
+            # ClientPicker já pergunta cliente OU quarto conforme o tipo. Qualquer um
+            # dos dois a dizer "sim" já é suficiente para perguntar.
+            'ask_entity_on_open': P.bool(9311, True) or P.bool(8566, True),
             # (9312) entrar no balcão já com a 1ª página do teclado aberta
             'open_keyboard_on_sale': P.bool(9312, True),
             # (8306) o mesmo, mas só para a Venda Direta (balcão) — o 9312 acima
@@ -4937,6 +5033,7 @@ class PosTerminalConfigView(APIView):
             # (8271) fundo do mapa; (8180) largura do scroll; (8333) tipo obrigatório.
             'session_timeout_minutes': P.int(8088, 60),
             'app_close_minutes': P.int(8138, 120),
+            'screensaver_minutes': P.int(8518, 0),
             'keyboard_layout': P.text(8001, 'QWERTY (Português)'),
             # (9313) o teclado tátil das pesquisas (Entidade, Artigos…) sobe sozinho ao
             # focar a caixa — desliga-se para quem usa teclado físico no terminal.
@@ -4945,8 +5042,33 @@ class PosTerminalConfigView(APIView):
             'show_payment_status': P.bool(8084, False),
             'split_warn_qty': P.int(8197, 10),
             'map_background': P.bool(8271, True),
+            'simple_tables': P.bool(8576, False),
+            'barcode_open_table': P.bool(8594, False),
+            'ask_guests_count': P.text(8513, 'Ao abrir mesa').strip().lower() != 'nunca',
+            'guests_can_be_zero': P.bool(8537, False),
+            'balcao_guests': P.int(8539, 1),
+            'cash_advance_enabled': P.bool(8579, False),
+            'group_grid_items': P.bool(8502, False),
+            'close_on_payment': P.bool(8534, False),
+            'grid_size_pct': P.int(8583, 0),
+            'grid_columns_pct': P.text(9583, '20;60;20'),
+            'qty_decimals': P.int(8568, 2),
+            'logout_on_close': P.bool(8612, False),
             'keyboard_scroll_width': P.int(8180, 0),
             'guest_type_required': P.bool(8333, True),
+            # (8237) mostrar o desconto de CADA linha na comanda (não só o preço
+            # já descontado, silencioso).
+            'line_discount_detail': P.bool(8237, False),
+            # (8177) um desconto de 100% no artigo passa a contar como OFERTA —
+            # entra no relatório de ofertas do fecho, não como "venda a zero".
+            'discount_100_is_gift': P.bool(8177, True),
+            # (8240/8369) listas de códigos de desconto que NÃO participam no
+            # motor de descontos automáticos — o operador só os aplica à mão.
+            'exclusive_discounts': P.text(8240, ''),
+            'exclusive_discounts_no_auto': P.text(8369, ''),
+            # (9369) enquanto este Happy Hour estiver ativo, os automáticos não
+            # se aplicam aos artigos do 8369 (o preço de Happy Hour já É o desconto).
+            'exclusive_discounts_happy_hour': P.text(9369, ''),
         })
 
 
@@ -5119,17 +5241,24 @@ class PosBootstrapView(APIView):
                       for t in TaxRate.objects.filter(is_active=True)],
             # os parâmetros que mandam no comportamento do terminal
             'terminal': {
-                'direct_sale': P.bool(8300, False),
-                'ask_sector': P.bool(8302, True),
+                'direct_sale': (P.bool(8300, False) or P.text(8523, 'Mesas + Venda Direta') == 'Venda Direta'),
+                'hide_direct_sale': P.text(8523, 'Mesas + Venda Direta') == 'Mesas',
+                'ask_sector': (P.bool(8302, True) and P.bool(8610, True) and not P.bool(8517, True)),
+                'single_sector': P.bool(8517, True),
+                'initial_sector': P.text(8516, ''),
                 'require_cash_open': P.bool(8304, True),
                 'ask_guest_type': P.bool(8175, True),
                 'auto_fire_kitchen': P.bool(8308, False),
                 'ask_entity_before_pay': P.bool(8310, False),
+                'ask_internal_staff': P.bool(8514, True),
             # (9311) pedir o cliente ao ABRIR a venda (não só na hora de cobrar).
             # LIGADO de fábrica: perguntar depois é tarde — a fatura já saiu como
             # Consumidor Final e essa não se corrige, anula-se por nota de crédito.
             # Numeração 9xxx: 8311 na HOST real é outra coisa (e-mails de mesa libertada).
-            'ask_entity_on_open': P.bool(9311, True),
+            # (8566) "Pedir cliente/quarto na abertura de mesa" é o MESMO pedido — o
+            # ClientPicker já pergunta cliente OU quarto conforme o tipo. Qualquer um
+            # dos dois a dizer "sim" já é suficiente para perguntar.
+            'ask_entity_on_open': P.bool(9311, True) or P.bool(8566, True),
             # (9312) entrar no balcão já com a 1ª página do teclado aberta
             'open_keyboard_on_sale': P.bool(9312, True),
             # (8306) o mesmo, mas só para a Venda Direta (balcão) — o 9312 acima
@@ -5140,6 +5269,7 @@ class PosBootstrapView(APIView):
                 'allow_day_close': P.bool(8062, False),
                 'session_timeout_minutes': P.int(8088, 60),
                 'app_close_minutes': P.int(8138, 120),
+                'screensaver_minutes': P.int(8518, 0),
                 'keyboard_layout': P.text(8001, 'QWERTY (Português)'),
                 # (9313) o teclado tátil das pesquisas (Entidade, Artigos…) sobe sozinho
                 # ao focar a caixa — desliga-se para quem usa teclado físico no terminal.
@@ -5148,8 +5278,25 @@ class PosBootstrapView(APIView):
                 'show_payment_status': P.bool(8084, False),
                 'split_warn_qty': P.int(8197, 10),
                 'map_background': P.bool(8271, True),
+                'simple_tables': P.bool(8576, False),
+                'barcode_open_table': P.bool(8594, False),
+                'ask_guests_count': P.text(8513, 'Ao abrir mesa').strip().lower() != 'nunca',
+                'guests_can_be_zero': P.bool(8537, False),
+                'balcao_guests': P.int(8539, 1),
+                'cash_advance_enabled': P.bool(8579, False),
+                'group_grid_items': P.bool(8502, False),
+                'close_on_payment': P.bool(8534, False),
+                'grid_size_pct': P.int(8583, 0),
+                'grid_columns_pct': P.text(9583, '20;60;20'),
+                'qty_decimals': P.int(8568, 2),
+                'logout_on_close': P.bool(8612, False),
                 'keyboard_scroll_width': P.int(8180, 0),
                 'guest_type_required': P.bool(8333, True),
+                'line_discount_detail': P.bool(8237, False),
+                'discount_100_is_gift': P.bool(8177, True),
+                'exclusive_discounts': P.text(8240, ''),
+                'exclusive_discounts_no_auto': P.text(8369, ''),
+                'exclusive_discounts_happy_hour': P.text(9369, ''),
             },
         })
 

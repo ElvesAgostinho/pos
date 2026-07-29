@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiClient } from '../../api/client';
 import GuestsDialog from './GuestsDialog';
 
@@ -33,7 +33,8 @@ const PONTO: Record<string, string> = {
 
 export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTicket,
   onViewTicket, perguntarTipo = true, refrescar = 8000,
-  mostrarPagamento = false, fundo: _fundo = true }: {
+  mostrarPagamento = false, fundo: _fundo = true, simples = false, codigoBarras = false,
+  perguntarClientes = true, permiteZeroClientes = false }: {
   setor: any;
   onOpenTicket: (ticketId: number) => void;
   // Vêm dos PARÂMETROS do backoffice (8175 e 8063): perguntar o tipo de cliente, e de
@@ -52,6 +53,19 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
   // (8084) mostrar o estado do pagamento na mesa; (8271) usar a cor de fundo do setor.
   mostrarPagamento?: boolean;
   fundo?: boolean;
+  // (8576) "Modo de mesas simples" — grelha por número, sem a planta (posição/forma)
+  // da sala. Serve quem nunca desenhou a planta no backoffice: numa planta vazia,
+  // as mesas empilhavam-se todas no canto (0,0), umas em cima das outras.
+  simples?: boolean;
+  // (8594) "Abrir Mesa por Código de Barras" — a etiqueta na mesa traz o número dela;
+  // o leitor "escreve" os dígitos muito depressa e termina com Enter.
+  codigoBarras?: boolean;
+  // (8513) "Perguntar Nr. Clientes" — 'Nunca' abre a mesa direto (1 · Passante), sem
+  // parar no teclado numérico. Qualquer outro valor (inclui o de fábrica, "Ao abrir
+  // mesa") mantém a pergunta.
+  perguntarClientes?: boolean;
+  // (8537) "Nr. clientes pode ser 0"
+  permiteZeroClientes?: boolean;
 }) {
   const qc = useQueryClient();
   // A mesa que se acabou de tocar e ainda não tem conta: falta perguntar quantos são.
@@ -127,15 +141,47 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
     if (['BLOCKED', 'MAINTENANCE'].includes(m.status)) {
       return aviso(`A mesa ${m.table_number} está ${m.status === 'BLOCKED' ? 'bloqueada' : 'em manutenção'}.`);
     }
+    // (8513) "Perguntar Nr. Clientes" = Nunca: abre direto, sem parar no teclado.
+    if (!perguntarClientes) return abrir.mutate({ mesa: m, pax: 1, tipo: 'PASSANTE' });
     // Mesa livre: antes de abrir a conta, PERGUNTA-SE quantos são e de que tipo.
     setASentar(m);
   };
+
+  // (8594) Um leitor de código de barras "escreve" muito depressa e acaba com Enter —
+  // é assim que se distingue de alguém a carregar em teclas a sério. Buffer que se
+  // limpa sozinho ao fim de 100ms de silêncio, para nunca confundir a leitura com
+  // atalhos de teclado normais do ecrã.
+  const bufferRef = useRef('');
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!codigoBarras) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        const codigo = bufferRef.current.trim();
+        bufferRef.current = '';
+        if (!codigo) return;
+        const m = mesas.find((t: any) => String(t.table_number) === codigo);
+        if (m) tocar(m);
+        else aviso(`Não há nenhuma mesa com o código "${codigo}".`);
+        return;
+      }
+      if (e.key.length === 1) bufferRef.current += e.key;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => { bufferRef.current = ''; }, 100);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [codigoBarras, mesas]);
 
   if (isLoading) return <div className="p-8 text-black/60">A carregar a sala…</div>;
 
   return (
     <div className="absolute inset-0 overflow-auto pos-arrasta">
-      <div className="relative" style={{ minWidth: 1200, minHeight: 700 }}>
+      <div className={simples ? 'flex flex-wrap content-start gap-3 p-3' : 'relative'}
+        style={simples ? undefined : { minWidth: 1200, minHeight: 700 }}>
         {mesas.map((m: any) => {
           const conta = contaDa(m.id);
           // "OCCUPIED" só é verdade se houver mesmo uma conta aberta — é um estado
@@ -148,7 +194,12 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
           const redonda = m.shape === 'ROUND';
           return (
             <button key={m.id} onClick={() => tocar(m)}
-              style={{
+              style={simples ? {
+                width: 120, height: 90,
+                background: m.color || '#0f8b8d',
+                color: m.text_color || '#fff',
+                borderRadius: 4,
+              } : {
                 position: 'absolute',
                 left: m.pos_x, top: m.pos_y,
                 width: m.width, height: m.height,
@@ -180,7 +231,7 @@ export default function TableMap({ setor, onOpenTicket, modo = 'ORDER', onPayTic
 
         {aSentar && (
           <GuestsDialog mesa={aSentar} perguntarTipo={perguntarTipo}
-            tiposPermitidos={setor?.customer_types}
+            tiposPermitidos={setor?.customer_types} permiteZero={permiteZeroClientes}
             onConfirm={(pax, tipo) => abrir.mutate({ mesa: aSentar, pax, tipo })}
             onCancel={() => setASentar(null)} />
         )}

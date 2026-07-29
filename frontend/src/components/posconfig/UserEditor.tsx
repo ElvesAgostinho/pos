@@ -48,6 +48,12 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
 
   const { data: groups = [] } = useQuery({ queryKey: ['posc', 'ugroups'], queryFn: async () => (await apiClient.get('pos/config/user-groups/')).data });
   const { data: sectors = [] } = useQuery({ queryKey: ['posc', 'sectors'], queryFn: async () => (await apiClient.get('pos/config/sectors/')).data });
+  // (8176 = "Operador") o teclado DESTE utilizador — só tem efeito quando o
+  // parâmetro "Configuração de teclado por" está em Operador.
+  const { data: keyboards = [] } = useQuery({ queryKey: ['posc', 'keyboards'], queryFn: async () => {
+    const r = await apiClient.get('pos/config/keyboards/');
+    return (r.data?.results || r.data || []) as any[];
+  } });
 
   const save = useMutation({
     mutationFn: () => isNew
@@ -171,6 +177,13 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                   <select value={d.section || ''} onChange={(e) => set('section', e.target.value)} className={`${inp} flex-1`} style={inputStyle}>
                     <option value="">—</option>
                     {groups.map((g: any) => <option key={g.id} value={g.name}>{g.name}</option>)}
+                  </select>
+                </R>
+                <R label="Teclado:">
+                  <select value={d.keyboard || ''} onChange={(e) => set('keyboard', e.target.value ? Number(e.target.value) : null)}
+                    className={`${inp} flex-1`} style={inputStyle}>
+                    <option value="">—</option>
+                    {keyboards.map((k: any) => <option key={k.id} value={k.id}>{k.name}</option>)}
                   </select>
                 </R>
               </div>

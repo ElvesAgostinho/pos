@@ -50,6 +50,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
   const { data: estados = [] } = useList('pos/config/doc-status/', 'status');
   const { data: armazens = [] } = useList('pos/config/warehouses/', 'wh');
   const { data: termos = [] } = useList('pos/config/payment-terms/', 'terms');
+  const { data: centros = [] } = useList('pos/config/cost-centers/', 'cc');
   const { data: entidades = [] } = useList('pos/marketing/entities/', 'ents');
   const { data: artigos = [] } = useList('inventory/pos/articles/', 'arts');
 
@@ -214,6 +215,22 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
               <L w="w-[140px]">{mode === 'INTERNAL' ? 'Data de entrega:' : 'Data de vencimento:'}</L>
               <input type="date" value={edit.due_date ?? ''} onChange={(e) => setEdit({ ...edit, due_date: e.target.value })}
                 className={`${inp} w-[170px]`} style={inputStyle} />
+            </div>
+            {/* (8335/8337) Conta analítica e Centro de Custo — o PGC-AO só sabe onde
+                lançar o custo se o documento disser. O "obrigatório" do parâmetro é
+                imposto no servidor ao gravar, não só aqui na tela. */}
+            <div className="flex items-center gap-2">
+              <L w="w-[140px]">Centro de Custo:</L>
+              <select value={edit.cost_center ?? ''} onChange={(e) => setEdit({ ...edit, cost_center: e.target.value })}
+                className={`${inp} w-[170px]`} style={inputStyle}>
+                <option value="">—</option>
+                {centros.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <L w="w-[140px]">Conta analítica:</L>
+              <input value={edit.analytic_account ?? ''} onChange={(e) => setEdit({ ...edit, analytic_account: e.target.value })}
+                className={`${inp} w-[170px]`} style={inputStyle} placeholder="(nenhuma)" />
             </div>
             <div className="flex items-center gap-2">
               <L w="w-[140px]">Estado:</L>

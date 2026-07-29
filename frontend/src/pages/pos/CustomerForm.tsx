@@ -40,7 +40,11 @@ export default function CustomerForm({ conta, onSaved, onClose }: {
 
   const gravar = async (dados: any) => {
     try {
-      await apiClient.post(`pos/tickets/${conta.id}/set_customer/`, dados);
+      const r = await apiClient.post(`pos/tickets/${conta.id}/set_customer/`, dados);
+      // (8196) Este cliente tem um aviso na ficha (ex.: cheque devolvido, não aceitar
+      // cartão) — o operador tem de o ver ANTES de continuar a servir a conta.
+      const avisoCliente = r.data?.vip?.customer_warning;
+      if (avisoCliente) aviso(`Aviso deste cliente: ${avisoCliente}`);
       onSaved();
     } catch (e: any) {
       aviso(e?.response?.data?.detail || 'Não foi possível gravar os dados.');

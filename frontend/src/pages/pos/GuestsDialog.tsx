@@ -22,11 +22,15 @@ import { IcoCruz, IcoVisto } from './Icons';
  * verde, e ao voltar lá o terminal perguntava tudo outra vez, como se nada tivesse
  * acontecido. Era este o "não guarda nada".
  */
-export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitidos, onConfirm, onCancel }: {
+export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitidos, permiteZero = false,
+  onConfirm, onCancel }: {
   mesa: any;
   perguntarTipo?: boolean;
   // (8581 da ficha do SETOR) que tipos de cliente esta sala aceita
   tiposPermitidos?: string | null;
+  // (8537) "Nr. clientes pode ser 0" — mesa reservada para alguém que ainda não
+  // chegou, ou uma conta técnica sem gente à mesa nenhuma.
+  permiteZero?: boolean;
   onConfirm: (pax: number, tipo: string) => void;
   onCancel: () => void;
 }) {
@@ -54,7 +58,8 @@ export default function GuestsDialog({ mesa, perguntarTipo = true, tiposPermitid
       onClose={onCancel}
       footer={(
         <div className="grid grid-cols-2 gap-1 p-1 bg-black">
-          <button onClick={() => pax > 0 && onConfirm(pax, tipo)} disabled={pax <= 0}
+          <button onClick={() => (pax > 0 || (permiteZero && pax === 0)) && onConfirm(pax, tipo)}
+            disabled={pax < 0 || (pax === 0 && !permiteZero)}
             className="h-[64px] rounded-[3px] flex items-center justify-center text-[#2ecc40]
               border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)] bg-gradient-to-b from-[#4a4a4a] to-[#242424] disabled:opacity-25"><IcoVisto size={30} /></button>
           <button onClick={onCancel}
