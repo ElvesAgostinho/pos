@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
-import { inputStyle } from './kit';
+import { inputStyle, Glyph } from './kit';
 import { aviso, confirmar, pedir } from '../../ui/dialogo';
 
 /**
@@ -57,7 +57,7 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
       <div className="px-2 py-1 bg-[#e9e9e9] text-[12px] font-bold flex justify-between">
         <span>{titulo}</span>
         <span className="flex gap-2">
-          <button onClick={add} className="text-[#1a4f8a]">⊕ Adicionar</button>
+          <button onClick={add} className="flex items-center gap-1 text-[#1a4f8a]"><Glyph icon="⊕" size={13} /> Adicionar</button>
         </span>
       </div>
       <table className="w-full text-[12px]">
@@ -69,7 +69,7 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
           {(rows as any[]).map((r) => (
             <tr key={r.id} className="border-b border-[#eee]">
               {cols.map(([k]) => <td key={k} className="px-2 py-1">{String(r.data?.[k] ?? '')}</td>)}
-              <td className="px-2 py-1 text-center"><button onClick={() => del(r)} className="text-[#c0392b]">✖</button></td>
+              <td className="px-2 py-1 text-center"><button onClick={() => del(r)} className="text-[#c0392b] inline-flex"><Glyph icon="✖" size={13} /></button></td>
             </tr>
           ))}
           {rows.length === 0 && <tr><td colSpan={cols.length + 1} className="text-center text-[#999] py-4">Não foram encontrados dados.</td></tr>}
@@ -137,7 +137,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
         style={{ height: 'min(86vh, 760px)', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold bg-[#3c3c3c]">
           <span>{eid ? `Entidade — ${d.name || d.code}` : 'Nova entidade'}</span>
-          <button onClick={onClose} className="w-6 h-6 bg-[#c0140f] text-white text-[12px]">✕</button>
+          <button onClick={onClose} className="w-6 h-6 bg-[#c0140f] text-white text-[12px] flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
@@ -147,7 +147,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <button key={k} onClick={() => setSec(k)}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 text-[13px] text-left border-b border-[#eee]
                   ${sec === k ? 'bg-[#dce9f7] font-bold text-[#0b4a8f]' : 'hover:bg-[#f5f5f5]'}`}>
-                <span className="w-6 text-center">{ico}</span>{l}
+                <span className="w-6 flex items-center justify-center"><Glyph icon={ico} size={15} /></span>{l}
               </button>
             ))}
           </div>
@@ -309,9 +309,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                 <tbody>{(hist?.invoices || []).map((f: any, i: number) => (
                   <tr key={i} className="border-b border-[#eee]"><td className="px-2 py-1">{f.number}</td><td className="px-2 py-1">{f.date}</td><td className="px-2 py-1">{f.type}</td><td className="px-2 py-1 text-right">{f.total}</td><td className="px-2 py-1">{f.voided ? 'Sim' : ''}</td>
                     <td className="px-2 py-1 flex gap-2">
-                      <button className="text-[#1a4f8a]" onClick={async () => { const r = await apiClient.get(`pos/reports/documents/${f.id}/`); aviso(JSON.stringify(r.data, null, 1).slice(0, 1200)); }}>🔍 Pré-visualizar</button>
-                      <button className="text-[#1a4f8a]" onClick={async () => { const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'print' }); aviso(r.data.detail); }}>🖨 Imprimir</button>
-                      {!f.voided && <button className="text-[#c0392b]" onClick={async () => { const m = await pedir('Anular emite NOTA DE CRÉDITO. Motivo:'); if (!m) return; const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'void', reason: m }); aviso(r.data.detail); }}>✖ Anular</button>}
+                      <button className="text-[#1a4f8a] flex items-center gap-1" onClick={async () => { const r = await apiClient.get(`pos/reports/documents/${f.id}/`); aviso(JSON.stringify(r.data, null, 1).slice(0, 1200)); }}><Glyph icon="🔍" size={13} /> Pré-visualizar</button>
+                      <button className="text-[#1a4f8a] flex items-center gap-1" onClick={async () => { const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'print' }); aviso(r.data.detail); }}><Glyph icon="🖨" size={13} /> Imprimir</button>
+                      {!f.voided && <button className="text-[#c0392b] flex items-center gap-1" onClick={async () => { const m = await pedir('Anular emite NOTA DE CRÉDITO. Motivo:'); if (!m) return; const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'void', reason: m }); aviso(r.data.detail); }}><Glyph icon="✖" size={13} /> Anular</button>}
                     </td></tr>))}
                   {!(hist?.invoices || []).length && <tr><td colSpan={6} className="text-center text-[#999] py-3">Não foram encontrados dados.</td></tr>}
                 </tbody></table>)}
@@ -357,12 +357,12 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
 
         {/* rodapé clássico */}
         <div className="h-12 flex items-center gap-5 px-4 bg-[#e4e4e4] border-t border-[#c0c0c0] text-[13px]">
-          <span className="text-[#888]">👤 Guest Info</span>
-          <span className="text-[#888]">⎇ Sincronizar</span>
-          <button onClick={() => window.print()} className="hover:underline">🖨 Imprimir</button>
+          <span className="text-[#888] flex items-center gap-1"><Glyph icon="👤" size={14} /> Guest Info</span>
+          <span className="text-[#888] flex items-center gap-1"><Glyph icon="⎇" size={14} /> Sincronizar</span>
+          <button onClick={() => window.print()} className="hover:underline flex items-center gap-1"><Glyph icon="🖨" size={14} /> Imprimir</button>
           <div className="flex-1" />
-          <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white text-[11px] flex items-center justify-center">✔</span> Gravar</button>
-          <button onClick={onClose} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#c0140f] text-white text-[11px] flex items-center justify-center">✕</span> Fechar</button>
+          <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
+          <button onClick={onClose} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#c0140f] text-white flex items-center justify-center"><Glyph icon="✕" size={12} /></span> Fechar</button>
         </div>
       </div>
     </div>
@@ -440,8 +440,8 @@ function Comissoes({ eid, d: _d, T }: any) {
         <tbody>{(rows as any[]).map((r) => (
           <tr key={r.id} className="border-b border-[#eee]">
             <td className="px-2 py-1">{r.data?.codigo}</td><td className="px-2 py-1">{r.data?.de}</td>
-            <td className="px-2 py-1">{r.data?.ate}</td><td className="px-2 py-1">{r.data?.ativo ? '✔' : ''}</td>
-            <td className="px-2 py-1 text-center"><button onClick={() => del(r)} className="text-[#c0392b]">✖</button></td></tr>))}
+            <td className="px-2 py-1">{r.data?.ate}</td><td className="px-2 py-1">{r.data?.ativo ? <Glyph icon="✔" size={13} /> : ''}</td>
+            <td className="px-2 py-1 text-center"><button onClick={() => del(r)} className="text-[#c0392b] inline-flex"><Glyph icon="✖" size={13} /></button></td></tr>))}
           {!rows.length && <tr><td colSpan={5} className="text-center text-[#999] py-4">Não foram encontrados dados.</td></tr>}
         </tbody></table>
     </div>
@@ -449,7 +449,7 @@ function Comissoes({ eid, d: _d, T }: any) {
       <div className="fixed inset-0 bg-black/40 z-[400] flex items-center justify-center" onClick={() => setAdd(null)}>
         <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#f0f0f0] border border-[#333] shadow-2xl">
           <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold bg-[#3c3c3c]">
-            <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#c0140f]">✕</button></div>
+            <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#c0140f] flex items-center justify-center"><Glyph icon="✕" size={11} /></button></div>
           <div className="p-4 space-y-2">
             <Row l="Cód. Comissão:" w={110}><input value={add.codigo || ''} onChange={(e) => setAdd({ ...add, codigo: e.target.value })} className={inp} /></Row>
             <Row l="De data:" w={110}><input type="date" value={add.de || ''} onChange={(e) => setAdd({ ...add, de: e.target.value })} className={inp} /></Row>
@@ -457,8 +457,8 @@ function Comissoes({ eid, d: _d, T }: any) {
             <label className="flex items-center gap-1.5 text-[12px] pl-[118px]"><input type="checkbox" checked={!!add.ativo} onChange={(e) => setAdd({ ...add, ativo: e.target.checked })} className="w-4 h-4" />Ativo</label>
           </div>
           <div className="h-11 flex items-center justify-between px-4 bg-[#e4e4e4] border-t border-[#c0c0c0] text-[13px]">
-            <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white text-[11px] flex items-center justify-center">✔</span> Gravar</button>
-            <button onClick={() => setAdd(null)} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#c0140f] text-white text-[11px] flex items-center justify-center">✕</span> Fechar</button>
+            <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
+            <button onClick={() => setAdd(null)} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#c0140f] text-white flex items-center justify-center"><Glyph icon="✕" size={12} /></span> Fechar</button>
           </div>
         </div>
       </div>

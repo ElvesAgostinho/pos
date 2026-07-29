@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
-import { money } from './kit';
+import { money, Glyph } from './kit';
 
 const TIPOS = [
   { v: '', l: '(Todos)' },
@@ -130,7 +130,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
                   <td className="px-2 py-1 border border-[#eee]">{it.family_name || '—'}</td>
                   <td className="px-2 py-1 border border-[#eee]">{it.subfamily_name || '—'}</td>
                   <td className="px-2 py-1 border border-[#eee] text-right">{money(it.sale_price)}</td>
-                  <td className="px-2 py-1 border border-[#eee] text-center">{it.is_active ? '✔' : '—'}</td>
+                  <td className="px-2 py-1 border border-[#eee] text-center">{it.is_active ? <Glyph icon="✔" size={13} /> : '—'}</td>
                 </tr>
               ))}
               {!isFetching && linhas.length === 0 && (
@@ -147,21 +147,21 @@ export default function ComponentsPicker({ onClose, onPick }: {
               : '0 registos'}
           </span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage(1)} disabled={page <= 1} className="px-2 py-1 border border-[#ccc] disabled:opacity-30">⏮</button>
+            <button onClick={() => setPage(1)} disabled={page <= 1} className="px-2 py-1 border border-[#ccc] disabled:opacity-30 inline-flex"><Glyph icon="⏮" size={13} /></button>
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-2 py-1 border border-[#ccc] disabled:opacity-30">‹</button>
             <button onClick={() => setPage((p) => Math.min(totalPaginas, p + 1))} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#ccc] disabled:opacity-30">›</button>
-            <button onClick={() => setPage(totalPaginas)} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#ccc] disabled:opacity-30">⏭</button>
+            <button onClick={() => setPage(totalPaginas)} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#ccc] disabled:opacity-30 inline-flex"><Glyph icon="⏭" size={13} /></button>
           </div>
         </div>
 
         <div className="flex justify-between px-3 py-2 border-t border-[#ddd]">
           <button onClick={() => sel && onPick(sel)} disabled={!sel}
             className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#1f7a34' }}>
-            ✔ OK
+            <Glyph icon="✔" size={14} /> OK
           </button>
           <button onClick={onClose}
             className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#c0392b' }}>
-            ✖ Fechar
+            <Glyph icon="✖" size={14} /> Fechar
           </button>
         </div>
       </div>

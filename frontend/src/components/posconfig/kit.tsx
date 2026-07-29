@@ -1,4 +1,77 @@
 import type { ReactNode } from 'react';
+import {
+  Check as CheckIcon, X, Pencil, Copy, Minus, Plus, CirclePlus, Download, Printer,
+  RefreshCw, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SquareCheck, Search,
+  Ban, Save, Package, BarChart3, ArrowUpToLine, LayoutGrid, Clock, Building2, Landmark,
+  Users, User, Mail, PartyPopper, FolderArchive, TrendingUp, Monitor, Moon, Coins, Receipt,
+  Wrench, Settings, Heart, IdCard, Phone, Star, Info, Link as LinkIcon, BedSingle as Bed,
+  Handshake, CreditCard, GitBranch, Lock, Eye, TriangleAlert, Menu, Key,
+} from 'lucide-react';
+
+/**
+ * GLIFO → ÍCONE. As barras de ferramentas dos ecrãs de configuração (Toolbar,
+ * abaixo) e o menu do módulo (SECTIONS) vinham de um emoji ou de um carácter
+ * Unicode solto (✔ ✖ ✎ 🏢…) — desenhados pelo SISTEMA (Windows/Android/iPhone
+ * mostram formas diferentes), coloridos por cima de fundo escuro, e sem obedecer
+ * ao tamanho nem à cor do botão. Este mapa troca o glifo por um traço da mesma
+ * biblioteca usada no resto do sistema — quem já usa `icon: '✔'` num ecrã não
+ * precisa de mudar nada: só troca o DESENHO por dentro do Toolbar/menu.
+ */
+export const ICON_MAP: Record<string, any> = {
+  '✔': CheckIcon, '✓': CheckIcon, '✅': CheckIcon, '☑': SquareCheck,
+  '✖': X, '✕': X, '✗': X, '❌': X,
+  '✎': Pencil, '✏': Pencil, '🖊': Pencil,
+  '⧉': Copy, '📋': Copy,
+  '−': Minus, '➖': Minus,
+  '＋': Plus, '➕': Plus,
+  '⤓': Download, '⬇': Download, '📥': Download,
+  '⤒': ArrowUpToLine,
+  '🖶': Printer, '🖨': Printer,
+  '⟳': RefreshCw, '🔄': RefreshCw, '🔁': RefreshCw,
+  '▶': ChevronRight, '▸': ChevronRight,
+  '◀': ChevronLeft,
+  '⏮': ChevronsLeft, '⏭': ChevronsRight,
+  '🔍': Search, '🔎': Search,
+  '🚫': Ban, '⛔': Ban, '❗': TriangleAlert, '⚠': TriangleAlert,
+  '💾': Save,
+  '📦': Package,
+  '📊': BarChart3, '📈': TrendingUp,
+  '▦': LayoutGrid,
+  '🕐': Clock,
+  '🏢': Building2, '🏛': Landmark,
+  '👥': Users, '👤': User,
+  '✉': Mail,
+  '🗂': FolderArchive,
+  '🎉': PartyPopper,
+  '🖥': Monitor,
+  '🌙': Moon,
+  '💰': Coins, '💸': Coins,
+  '🧾': Receipt,
+  '🔧': Wrench,
+  '⚙': Settings,
+  '♥': Heart,
+  '⊕': CirclePlus,
+  '🪪': IdCard,
+  '☎': Phone,
+  '⭐': Star,
+  'ℹ': Info,
+  '🔗': LinkIcon,
+  '🛏': Bed,
+  '🤝': Handshake,
+  '💳': CreditCard,
+  '⎇': GitBranch,
+  '🔒': Lock, '🔐': Lock, '🔓': Lock,
+  '👁': Eye,
+  '☰': Menu,
+  '🔑': Key,
+};
+
+/** Renderiza o ícone certo para um glifo conhecido; sem mapa, mostra o texto
+    original (nunca esconde um ícone só porque ainda não entrou no mapa). */
+export function Glyph({ icon, size = 15 }: { icon: string; size?: number }) {
+  const Cmp = ICON_MAP[icon];
+  return Cmp ? <Cmp size={size} strokeWidth={2.3} /> : <>{icon}</>;
+}
 
 export const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 
@@ -127,8 +200,8 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
         <div key={a.label} className="flex items-center">
           <button onClick={a.onClick} disabled={a.disabled}
             className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#333] disabled:opacity-35 disabled:cursor-default hover:bg-[#e8e8e8]">
-            <span className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[15px] font-bold flex-shrink-0"
-              style={{ background: a.disabled ? '#b8b8b8' : a.color }}>{a.icon}</span>
+            <span className="w-7 h-7 rounded-full flex items-center justify-center text-white flex-shrink-0"
+              style={{ background: a.disabled ? '#b8b8b8' : a.color }}><Glyph icon={a.icon} /></span>
             {a.label}
           </button>
           {i < actions.length - 1 && <span className="w-px h-6 bg-[#d5d5d5]" />}

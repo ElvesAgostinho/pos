@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Tab, Box, Row, Check, Toolbar, inputCls, inputStyle, money, GridCheck } from './kit';
+import { Tab, Box, Row, Check, Toolbar, inputCls, inputStyle, money, GridCheck, Glyph } from './kit';
 import ComponentsPicker from './ComponentsPicker';
 import ArticleLogs from './ArticleLogs';
 
@@ -48,7 +48,7 @@ function ImagemUpload({ titulo, url, folder, onChange }: {
         </label>
         {url && (
           <button onClick={() => onChange('')} title="Remover imagem"
-            className="px-2 py-1 text-[12px] text-[#a01818] hover:bg-[#fdecea] flex-shrink-0">✕</button>
+            className="px-2 py-1 text-[#a01818] hover:bg-[#fdecea] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
         )}
       </div>
       <div className="mt-2 h-24 flex items-center justify-center border border-[#ddd] bg-white">
@@ -557,7 +557,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                     selRecIds.includes(x._key ?? x.id) ? { ...x, quantity: (Number(x.quantity) * f).toFixed(4) } : x) }));
                 }} disabled={!selRecIds.length}
                   className="flex items-center gap-1 text-[12px] font-semibold text-[#1f7a34] hover:underline disabled:opacity-30 disabled:no-underline">
-                  <span className="w-4 h-4 rounded-full bg-[#1f7a34] text-white flex items-center justify-center text-[10px]">✔</span>
+                  <span className="w-4 h-4 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={9} /></span>
                   Aplicar
                 </button>
                 <button onClick={() => {
@@ -575,7 +575,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   w.document.close();
                   w.print();
                 }} className="flex items-center gap-1 text-[12px] font-semibold text-[#555] hover:underline">
-                  <span className="w-4 h-4 rounded-full bg-[#555] text-white flex items-center justify-center text-[10px]">🖶</span>
+                  <span className="w-4 h-4 rounded-full bg-[#555] text-white flex items-center justify-center"><Glyph icon="🖶" size={9} /></span>
                   Imprimir
                 </button>
                 <div className="ml-auto text-[12px] text-[#333] text-right leading-tight">
@@ -779,15 +779,15 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
           <div className="flex items-center gap-1">
             <button onClick={() => save.mutate()} disabled={save.isPending}
               className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#333] disabled:opacity-35 hover:bg-[#e8e8e8]">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[15px] font-bold"
-                style={{ background: '#1f7a34' }}>✔</span>
+              <span className="w-7 h-7 rounded-full flex items-center justify-center text-white"
+                style={{ background: '#1f7a34' }}><Glyph icon="✔" size={15} /></span>
               {save.isPending ? 'A gravar…' : 'Gravar'}
             </button>
             <span className="w-px h-6 bg-[#d5d5d5]" />
             <button onClick={onClose}
               className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#333] hover:bg-[#e8e8e8]">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[15px] font-bold"
-                style={{ background: '#c0392b' }}>✖</span>
+              <span className="w-7 h-7 rounded-full flex items-center justify-center text-white"
+                style={{ background: '#c0392b' }}><Glyph icon="✖" size={15} /></span>
               Fechar
             </button>
           </div>

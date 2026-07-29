@@ -5,7 +5,7 @@ import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 import {
   LayoutDashboard, BookOpen, NotebookPen, ScrollText, Scale, FileBarChart, Plus, Trash2,
-  CheckCircle, Undo2, Lock, Unlock, Zap, RefreshCw,
+  CheckCircle, Undo2, Lock, Unlock, Zap, RefreshCw, Check, X,
 } from 'lucide-react';
 import { accApi } from '../../api/accounting';
 import { aviso } from '../../ui/dialogo';
@@ -161,7 +161,9 @@ export function AccEntriesView() {
               </table>
               <div className="flex items-center justify-between mt-2">
                 <ClassicButton icon={Plus} label="Linha" onClick={() => setLines([...lines, emptyLine()])} />
-                <div className={`font-bold ${balanced ? 'text-green-700' : 'text-red-600'}`}>D: {AOA(totD)} · C: {AOA(totC)} {balanced ? '✓ Salda' : '✗ Não salda'}</div>
+                <div className={`font-bold flex items-center gap-1 ${balanced ? 'text-green-700' : 'text-red-600'}`}>
+                  D: {AOA(totD)} · C: {AOA(totC)} {balanced ? <><Check size={13} strokeWidth={3} /> Salda</> : <><X size={13} strokeWidth={3} /> Não salda</>}
+                </div>
               </div>
               <div className="mt-2"><ClassicButton icon={CheckCircle} label="Guardar lançamento" onClick={save} /></div>
               {rows.length > 0 && <div className="text-gray-400 mt-4">Selecione um lançamento na lista para ver/lançar.</div>}
@@ -270,7 +272,7 @@ export function AccIntegrationView() {
           { header: 'Data', accessor: 'date', width: '27%' },
           { header: 'Valor', accessor: (r: any) => AOA(r.amount), width: '27%' },
         ]} />
-        {rows.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3">Tudo contabilizado ✓</div>}
+        {rows.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3 flex items-center justify-center gap-1"><Check size={13} /> Tudo contabilizado</div>}
       </div>
     </div>
   );
@@ -341,7 +343,7 @@ export function AccStatementsView() {
             {bs.equity.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Resultado do exercício" value={bs.net_result} />
             <Line label="Total Fundos Próprios" value={bs.total_equity} bold />
-            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${bs.balanced ? 'text-green-700' : 'text-red-600'}`}><span>Passivo + Fundos Próprios {bs.balanced ? '✓' : '✗'}</span><span>{AOA(bs.total_liabilities_equity)}</span></div>
+            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${bs.balanced ? 'text-green-700' : 'text-red-600'}`}><span className="flex items-center gap-1">Passivo + Fundos Próprios {bs.balanced ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}</span><span>{AOA(bs.total_liabilities_equity)}</span></div>
           </> : <div className="text-gray-400">A carregar…</div>}
         </Panel>
       </div>

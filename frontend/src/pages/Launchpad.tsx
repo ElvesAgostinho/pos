@@ -2,14 +2,21 @@ import { useNavigate } from 'react-router-dom';
 import { MODULES, moduleEnabled } from '../config/navigation';
 import { useActiveModules } from '../hooks/useActiveModules';
 import { tokenStore, authApi } from '../api/auth';
-import { LogOut } from 'lucide-react';
+import {
+  LogOut, Wrench, Key, ShieldCheck, Hotel, FolderArchive, TrendingUp, Handshake,
+  ShoppingCart, Warehouse, UtensilsCrossed, ConciergeBell, CreditCard, Monitor, Wallet,
+  Landmark, BarChart3, Workflow, FileText, Bell, Plug, Settings, Folder,
+} from 'lucide-react';
 
-// Ícone (emoji) por módulo — Launchpad estilo enterprise (Oracle/SAP Fiori).
-const ICONS: Record<string, string> = {
-  admin: '🛠️', licensing: '🔑', security: '🔐', hotel: '🏨', masterdata: '🗂️',
-  commercial: '💹', srm: '🤝', procurement: '🛒', warehouse: '📦', hospitality: '🍽️',
-  pms: '🛎️', posmgmt: '💳', posfront: '🖥️', financial: '💰', fiscal: '🇦🇴',
-  reporting: '📊', workflow: '🔀', documents: '📄', notifications: '🔔', integration: '🔌', system: '⚙️',
+// Ícone por módulo — Launchpad estilo enterprise (Oracle/SAP Fiori). Traço da
+// lucide-react, não emoji: um emoji muda de forma entre Windows/Android/iPhone
+// e vem colorido em cima do cartão branco — aqui é sempre o mesmo traço fino.
+const ICONS: Record<string, any> = {
+  admin: Wrench, licensing: Key, security: ShieldCheck, hotel: Hotel, masterdata: FolderArchive,
+  commercial: TrendingUp, srm: Handshake, procurement: ShoppingCart, warehouse: Warehouse,
+  hospitality: UtensilsCrossed, pms: ConciergeBell, posmgmt: CreditCard, posfront: Monitor,
+  financial: Wallet, fiscal: Landmark, reporting: BarChart3, workflow: Workflow,
+  documents: FileText, notifications: Bell, integration: Plug, system: Settings,
 };
 
 export default function Launchpad() {
@@ -43,14 +50,17 @@ export default function Launchpad() {
           Selecione um módulo — abre no seu próprio separador do navegador, mantendo a mesma sessão.
         </div>
         <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))' }}>
-          {modules.map((mod) => (
-            <button key={mod.key} onClick={() => open(mod)}
-              className="bg-white border border-[#d5dbe3] rounded-lg p-4 text-left shadow-sm hover:shadow-md hover:border-[#1e3f66] transition group">
-              <div className="text-3xl mb-2">{ICONS[mod.key] || '📁'}</div>
-              <div className="font-bold text-[#1e3f66] text-sm leading-tight group-hover:underline">{mod.title}</div>
-              <div className="text-gray-400 text-xs mt-1">{mod.items.length} opções</div>
-            </button>
-          ))}
+          {modules.map((mod) => {
+            const Ico = ICONS[mod.key] || Folder;
+            return (
+              <button key={mod.key} onClick={() => open(mod)}
+                className="bg-white border border-[#d5dbe3] rounded-lg p-4 text-left shadow-sm hover:shadow-md hover:border-[#1e3f66] transition group">
+                <div className="text-[#1e3f66] mb-2"><Ico size={30} strokeWidth={1.8} /></div>
+                <div className="font-bold text-[#1e3f66] text-sm leading-tight group-hover:underline">{mod.title}</div>
+                <div className="text-gray-400 text-xs mt-1">{mod.items.length} opções</div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

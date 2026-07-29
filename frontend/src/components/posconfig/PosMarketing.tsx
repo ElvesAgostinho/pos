@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, Glyph } from './kit';
 import EntityEditor from './EntityEditor';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
@@ -256,7 +256,7 @@ export function EntitySearch() {
             </div>
             <button onClick={pesquisar}
               className="w-[200px] flex flex-col items-center justify-center gap-2 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-              <span className="text-[26px]">🔄</span>
+              <Glyph icon="🔄" size={26} />
               <span className="text-[13px]">Pesquisar</span>
             </button>
           </div>
@@ -279,7 +279,7 @@ export function EntitySearch() {
                     className={`border-b border-[#eee] cursor-pointer ${sel === r.id ? 'bg-[#dce9f7]' : 'hover:bg-[#f5f9ff]'}`}>
                     <td className="px-2 py-1">{r.last_name || '—'}</td>
                     <td className="px-2 py-1 font-semibold">
-                      {r.is_blocked && <span title={r.block_reason || 'Bloqueado'} className="text-[#a01818] mr-1">⛔</span>}
+                      {r.is_blocked && <span title={r.block_reason || 'Bloqueado'} className="text-[#a01818] mr-1 inline-flex align-middle"><Glyph icon="⛔" size={13} /></span>}
                       {r.name}
                     </td>
                     <td className="px-2 py-1">{r.other_names || '—'}</td>
@@ -329,7 +329,7 @@ export function EntitySearch() {
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setObrig(false)} />
           <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#888] shadow-2xl w-[440px]">
             <div className="px-3 py-2 bg-[#3c3c3c] text-white text-[13px] font-bold flex justify-between">
-              Campos obrigatórios <button onClick={() => setObrig(false)}>✕</button>
+              Campos obrigatórios <button onClick={() => setObrig(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[50vh] overflow-auto">
               <div className="text-[11px] text-[#666] mb-2">
@@ -354,12 +354,12 @@ export function EntitySearch() {
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setDups(false)} />
           <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#888] shadow-2xl w-[620px]">
             <div className="px-3 py-2 bg-[#3c3c3c] text-white text-[13px] font-bold flex justify-between">
-              Controlo de duplicação <button onClick={() => setDups(false)}>✕</button>
+              Controlo de duplicação <button onClick={() => setDups(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[55vh] overflow-auto text-[12px]">
               {(duplicados?.groups || []).length === 0 ? (
-                <div className="text-center text-[#1f7a34] py-8 font-bold">
-                  ✔ Nenhuma entidade repetida.
+                <div className="text-center text-[#1f7a34] py-8 font-bold flex items-center justify-center gap-1.5">
+                  <Glyph icon="✔" size={15} /> Nenhuma entidade repetida.
                 </div>
               ) : (duplicados.groups.map((g: any, i: number) => (
                 <div key={i} className="mb-3 border border-[#e6b0aa] bg-[#fdecea] p-2">
@@ -525,7 +525,7 @@ export function EventRequests() {
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center gap-3 px-3 py-2 border-b border-[#d8d8d8] bg-[#f7f7f7] text-[12px]">
         <button onClick={exportar} className="flex items-center gap-2 px-2 py-1 hover:bg-[#e8e8e8]">
-          <span className="text-[#1f7a34] text-[15px]">📊</span> Exportar para Excel
+          <span className="text-[#1f7a34]"><Glyph icon="📊" size={15} /></span> Exportar para Excel
         </button>
         <span className="ml-2">Estado:</span>
         <select value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1); }}
@@ -552,7 +552,7 @@ export function EventRequests() {
                 <td className="px-2 py-1 font-semibold">{r.customer_name || r.contact_name || r.title}</td>
                 <td className="px-2 py-1">
                   <span className="px-1.5 py-0.5" style={{ background: r.state_bg || '#eee', color: r.state_fg || '#333' }}>
-                    {r.space_name}{r.blocks_space ? ' 🔒' : ''}
+                    {r.space_name}{r.blocks_space && <Glyph icon="🔒" size={11} />}
                   </span>
                 </td>
                 <td className="px-2 py-1">{r.phone || '—'}</td>
@@ -582,9 +582,9 @@ export function EventRequests() {
           className={`${inp} w-[70px]`} style={inputStyle}>
           {[25, 50, 100].map((n) => <option key={n}>{n}</option>)}
         </select>
-        <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-2 disabled:opacity-30">◀</button>
+        <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-2 disabled:opacity-30 inline-flex"><Glyph icon="◀" size={13} /></button>
         <span>Página {page} de {paginas}</span>
-        <button disabled={page >= paginas} onClick={() => setPage(page + 1)} className="px-2 disabled:opacity-30">▶</button>
+        <button disabled={page >= paginas} onClick={() => setPage(page + 1)} className="px-2 disabled:opacity-30 inline-flex"><Glyph icon="▶" size={13} /></button>
         <span className="ml-auto text-[#666]">
           {total === 0 ? 'Não foram encontrados dados.' : `${total} pedido(s)`}
         </span>
@@ -594,7 +594,7 @@ export function EventRequests() {
         { label: 'Adicionar', icon: '➕', onClick: () => setEdit({ pax: 0, price_per_pax: 0, extra_total: 0, answered: false }) },
         { label: 'Editar', icon: '✏', disabled: !sel, onClick: () => setEdit({ ...rows.find((r) => r.id === sel) }) },
       ]} right={
-        <span className="text-[11px] text-[#666]">Duplo-clique abre o pedido. 🔒 = o estado bloqueia o espaço.</span>
+        <span className="text-[11px] text-[#666] flex items-center gap-1">Duplo-clique abre o pedido. <Glyph icon="🔒" size={11} /> = o estado bloqueia o espaço.</span>
       } />
     </div>
   );

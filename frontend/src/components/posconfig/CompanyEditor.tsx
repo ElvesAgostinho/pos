@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, GridCheck } from './kit';
+import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
 import { aviso } from '../../ui/dialogo';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
@@ -184,7 +184,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
               </label>
               {d.logo_url && (
                 <button onClick={() => set('logo_url', '')} title="Remover logótipo"
-                  className="px-2 py-1 text-[12px] text-[#a01818] hover:bg-[#fdecea] flex-shrink-0">✕</button>
+                  className="px-2 py-1 text-[#a01818] hover:bg-[#fdecea] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
               )}
             </Row>
             <div className="border border-[#d0d0d0] h-[190px] flex items-center justify-center p-3"
@@ -249,7 +249,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   </div>
                 </div>
                 <div className="col-span-2 flex items-center gap-2 text-[11px] text-[#666] border-t border-[#eee] pt-2">
-                  <span className="w-6 h-6 rounded-full bg-[#3c3c3c] text-white flex items-center justify-center">🔑</span>
+                  <span className="w-6 h-6 rounded-full bg-[#3c3c3c] text-white flex items-center justify-center"><Glyph icon="🔑" size={13} /></span>
                   <span className="flex-1">
                     <b>Gestor de licenças</b> — os campos a cinzento vêm do ficheiro de licença assinado pelo fornecedor
                     e não são editáveis. Para alargar módulos, terminais ou validade, contacte o fornecedor.
@@ -303,7 +303,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   ['✎', 'Editar', '#1a73c8', () => mems[0] && setPopup({ ...mems[0], _i: 0 })],
                   ['−', 'Apagar', '#c0392b', () => set('memberships', mems.slice(0, -1))]].map(([ic, lb, c, fn]: any) => (
                   <button key={lb} onClick={fn} className="flex items-center gap-2 w-full px-2 py-1.5 bg-[#3c3c3c] text-white text-[13px] hover:bg-[#4c4c4c]">
-                    <span className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: c }}>{ic}</span>{lb}
+                    <span className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: c }}><Glyph icon={ic} size={13} /></span>{lb}
                   </button>
                 ))}
               </div>
@@ -404,7 +404,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
           <div className="bg-white border border-[#888] w-[560px] shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
               <span>A editar {groups.find((g: any) => g.id === popup.group)?.name || 'grupo'}</span>
-              <button onClick={() => setPopup(null)} className="text-white">✕</button>
+              <button onClick={() => setPopup(null)} className="text-white inline-flex"><Glyph icon="✕" size={14} /></button>
             </div>
             <div className="p-4 space-y-3">
               <Row label="Group Id:"><select value={popup.group || ''} onChange={(e) => setPopup({ ...popup, group: Number(e.target.value) })} className={`${inp} flex-1`} style={inputStyle}>

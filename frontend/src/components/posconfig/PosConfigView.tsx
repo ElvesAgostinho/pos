@@ -54,7 +54,7 @@ import PosReports from './PosReports';
 import PosOnline from './PosOnline';
 import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
-import { SECTIONS, Toolbar, Field, Sel, money, GridCheck } from './kit';
+import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph } from './kit';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -245,7 +245,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 style={{ background: '#2b2b2b', border: '1px solid #444' }}>
                 <button onClick={() => { setMenu(null); onDesktop?.(); }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
-                  <span className="w-5 text-center opacity-80">🖥</span>Ambiente de Trabalho
+                  <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>Ambiente de Trabalho
                 </button>
               </div>
             </>
@@ -291,7 +291,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                         else if (it.url) window.open(it.url, '_blank');
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
-                      <span className="w-5 text-center opacity-80">{it.icon}</span>
+                      <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon={it.icon} size={16} /></span>
                       {it.label}
                     </button>
                   ))}
@@ -310,7 +310,9 @@ export default function PosConfigView({ onDesktop, onOpen }: {
       {/* Título da janela */}
       <div className="flex items-center gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
         style={{ background: '#3c3c3c' }}>
-        <span className="text-[#c9a400]">{TITULOS[section] ? TITULOS[section][0] : '🔧'}</span>{' '}
+        <span className="text-[#c9a400] inline-flex items-center">
+          <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
+        </span>{' '}
         {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
       </div>
 
@@ -323,8 +325,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         <div className="w-[236px] flex-shrink-0 border-r border-[#c0c0c0] bg-white overflow-auto">
           {favs.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[13px] font-semibold text-[#8a6100] bg-[#fff7e6] border-b border-[#e0c080]">
-                ♥ Favoritos
+              <div className="px-3 py-2 text-[13px] font-semibold text-[#8a6100] bg-[#fff7e6] border-b border-[#e0c080] flex items-center gap-1.5">
+                <Glyph icon="♥" size={13} /> Favoritos
               </div>
               {favs.map((f) => (
                 <div key={f.key}
@@ -357,7 +359,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
                   className={`w-full flex items-center gap-2 pl-4 pr-3 py-1.5 text-[13px] text-left border-b border-[#f0f0f0] ${section === it.key ? 'bg-[#dce9f7] font-bold text-[#0b4a8f]' : 'text-[#444] hover:bg-[#f7f7f7]'}`}>
                   {(it as any).icon
-                    ? <span className="w-5 text-center text-[14px]">{(it as any).icon}</span>
+                    ? <span className="w-5 flex items-center justify-center"><Glyph icon={(it as any).icon} size={15} /></span>
                     : <span className="w-5 flex justify-center"><span className="w-1.5 h-1.5 rounded-full bg-[#666]" /></span>}
                   {it.label}
                 </button>
@@ -1396,14 +1398,14 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   {[25, 50, 100, 250].map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setPage(1)} disabled={page === 1} className="px-1.5 disabled:opacity-30">⏮</button>
-                  <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-1.5 disabled:opacity-30">◀</button>
+                  <button onClick={() => setPage(1)} disabled={page === 1} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="⏮" size={14} /></button>
+                  <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="◀" size={14} /></button>
                   <span>Página</span>
                   <input value={page} onChange={(e) => setPage(Math.min(totalPages, Math.max(1, Number(e.target.value) || 1)))}
                     className="w-12 border border-[#8a95a3] px-1 py-0.5 text-center bg-white" />
                   <span>de {totalPages}</span>
-                  <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-1.5 disabled:opacity-30">▶</button>
-                  <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-1.5 disabled:opacity-30">⏭</button>
+                  <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="▶" size={14} /></button>
+                  <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="⏭" size={14} /></button>
                 </div>
                 <span className="ml-auto text-[#555]">
                   Nº registos a visualizar {rows.length ? (page - 1) * pageSize + 1 : 0} - {Math.min(page * pageSize, rows.length)} de {rows.length}
