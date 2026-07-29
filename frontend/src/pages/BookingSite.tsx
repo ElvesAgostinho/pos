@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { aviso } from '../ui/dialogo';
+import { Check } from 'lucide-react';
 
 const money = (v: any, cur = '') => `${Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ${cur}`.trim();
 const BOARD: Record<string, string> = { RO: 'Só alojamento', BB: 'Pequeno-almoço', HB: 'Meia pensão', FB: 'Pensão completa', AI: 'Tudo incluído' };
@@ -113,7 +114,7 @@ export default function BookingSite() {
       {confirmation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl w-full max-w-md p-6 text-center">
-            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-3xl" style={{ background: '#1f9d55' }}>✓</div>
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white" style={{ background: '#1f9d55' }}><Check size={30} strokeWidth={3} /></div>
             <h3 className="text-xl font-bold">Reserva confirmada!</h3>
             <p className="text-gray-600 mt-2">Código: <b className="font-mono">{confirmation.confirmation}</b></p>
             <p className="text-gray-600">{confirmation.room_type} · {confirmation.check_in} → {confirmation.check_out}</p>

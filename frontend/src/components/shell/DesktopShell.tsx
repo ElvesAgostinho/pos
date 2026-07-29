@@ -249,7 +249,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         const labels: Record<string, string> = { edit: 'Editar', delete: 'Eliminar', duplicate: 'Duplicar', attach: 'Anexos', history: 'Histórico', audit: 'Auditoria' };
         const hint: Record<string, string> = {
           edit: 'Selecione a linha e edite pelos controlos da própria linha.',
-          delete: 'Use o ícone de lixo (🗑) na linha que quer eliminar.',
+          delete: 'Use o ícone de eliminar na linha que quer apagar.',
           duplicate: 'Duplicação disponível apenas em alguns ecrãs.',
           attach: 'Anexos ligam-se no Reporting/Document Center.',
           history: 'Consulte o histórico no Reporting Center (por área).',

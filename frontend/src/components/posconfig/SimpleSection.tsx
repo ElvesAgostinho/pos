@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputCls, inputStyle } from './kit';
+import { Toolbar, inputCls, inputStyle, Glyph } from './kit';
 
 export interface Col {
   key: string; label: string; width?: string; render?: (r: any) => any;
@@ -157,7 +157,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
         <div className="flex items-center border border-[#8a95a3] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
             className="px-2 py-1 text-[12px] outline-none w-[220px]" />
-          <span className="px-2 text-[#666]">🔍</span>
+          <span className="px-2 text-[#666]"><Glyph icon="🔍" size={13} /></span>
         </div>
       </div>
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
-import { PackageCheck, Plus, Trash2, Save, ArrowLeft, CheckCircle } from 'lucide-react';
+import { PackageCheck, Plus, Trash2, Save, ArrowLeft, CheckCircle, Check } from 'lucide-react';
 import {
   useGRNs, useGRN, useCreateGRN, useDeleteGRN, useValidateGRN, useAddGRNLine, useDeleteGRNLine, usePOs,
 } from '../../hooks/useProcurement';
@@ -51,7 +51,7 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
             {!isNew && !validated && (
               <ClassicButton icon={CheckCircle} label="Validar Receção" onClick={() => validate.mutate(currentId!)} />
             )}
-            {validated && <span className="text-green-700 font-bold text-[11px]">✓ Validada — performance do fornecedor atualizada</span>}
+            {validated && <span className="text-green-700 font-bold text-[11px] flex items-center gap-1"><Check size={12} strokeWidth={3} /> Validada — performance do fornecedor atualizada</span>}
           </div>
           <ClassicButton icon={ArrowLeft} label="Voltar à Lista" onClick={onBack} />
         </>

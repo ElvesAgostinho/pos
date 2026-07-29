@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ClassicWindow from '../../ui/ClassicWindow';
 import ClassicButton from '../../ui/ClassicButton';
 import ClassicGrid from '../../ui/ClassicGrid';
-import { ClipboardList, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { ClipboardList, Plus, Trash2, CheckCircle, Check } from 'lucide-react';
 import { useWhCounts, useConfirmCount, useWhWarehouses, useWhItems } from '../../../hooks/useWh';
 
 export default function WhInventoryView() {
@@ -64,7 +64,7 @@ export default function WhInventoryView() {
                 <span className="font-bold">{sel.number} · {sel.warehouse_name}</span>
                 {sel.status !== 'CONFIRMED'
                   ? <ClassicButton icon={CheckCircle} label="Confirmar (ajustar stock)" onClick={() => confirm.mutate(sel.id!)} />
-                  : <span className="text-green-700 font-bold">✓ Confirmado</span>}
+                  : <span className="text-green-700 font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmado</span>}
               </div>
               {sel.status !== 'CONFIRMED' && (
                 <div className="flex flex-wrap items-end gap-2 p-2 bg-[#f0f0f0] border-b border-[#a0a0a0] text-[11px]">

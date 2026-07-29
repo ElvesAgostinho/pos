@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 interface Column {
   header: string;
@@ -47,7 +47,7 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
           <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filtrar nesta lista…"
             className="flex-1 bg-transparent outline-none text-[11px] py-0.5" />
           {filter && <><span className="text-gray-400 text-[10px]">{rows.length}/{data.length}</span>
-            <button onClick={() => setFilter('')} className="text-gray-400 hover:text-gray-700 text-[11px]">✕</button></>}
+            <button onClick={() => setFilter('')} className="text-gray-400 hover:text-gray-700"><X size={12} /></button></>}
         </div>
       )}
       <table className="w-full min-w-max border-collapse">

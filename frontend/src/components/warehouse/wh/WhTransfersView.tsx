@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ClassicWindow from '../../ui/ClassicWindow';
 import ClassicButton from '../../ui/ClassicButton';
 import ClassicGrid from '../../ui/ClassicGrid';
-import { ArrowLeftRight, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { ArrowLeftRight, Plus, Trash2, CheckCircle, Check } from 'lucide-react';
 import { useWhTransfers, useConfirmTransfer, useWhWarehouses, useWhItems } from '../../../hooks/useWh';
 
 export default function WhTransfersView() {
@@ -68,7 +68,7 @@ export default function WhTransfersView() {
                 <span className="font-bold">{sel.number} · {sel.source_name} → {sel.destination_name}</span>
                 {sel.status !== 'CONFIRMED'
                   ? <ClassicButton icon={CheckCircle} label="Confirmar" onClick={() => confirm.mutate(sel.id!)} />
-                  : <span className="text-green-700 font-bold">✓ Confirmada</span>}
+                  : <span className="text-green-700 font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
               </div>
               {sel.status !== 'CONFIRMED' && (
                 <div className="flex flex-wrap items-end gap-2 p-2 bg-[#f0f0f0] border-b border-[#a0a0a0] text-[11px]">

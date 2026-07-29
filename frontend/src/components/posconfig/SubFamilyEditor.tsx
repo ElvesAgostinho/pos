@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputCls, inputStyle } from './kit';
+import { Toolbar, inputCls, inputStyle, Glyph } from './kit';
 
 /**
  * FICHA DA SUB-FAMÍLIA.
@@ -131,7 +131,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
                   </>
                 )}
                 <button onClick={applyToAll} className="flex items-center gap-1.5 text-[13px] text-[#1f7a34] font-semibold">
-                  <span className="w-6 h-6 rounded-full bg-[#1f7a34] text-white flex items-center justify-center text-[13px]">✔</span>
+                  <span className="w-6 h-6 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
                   Aplicar à selecção
                 </button>
               </div>

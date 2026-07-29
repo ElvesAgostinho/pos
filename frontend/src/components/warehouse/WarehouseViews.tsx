@@ -3,7 +3,7 @@ import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 import Pagination from '../ui/Pagination';
-import { Warehouse as WhIcon, Plus, Boxes, ArrowDownCircle, ArrowUpCircle, ClipboardCheck, ArrowRightLeft, History } from 'lucide-react';
+import { Warehouse as WhIcon, Plus, Boxes, ArrowDownCircle, ArrowUpCircle, ClipboardCheck, ArrowRightLeft, History, Check } from 'lucide-react';
 import { useWarehouses, useCreateWarehouse, useStockLevels, useMovements, useStockOp } from '../../hooks/useWarehouse';
 import { useMdItems } from '../../hooks/useMasterData';
 import { aviso } from '../../ui/dialogo';
@@ -27,7 +27,7 @@ export function WarehousesView() {
           <ClassicGrid rowKey="id" data={whs} columns={[
             { header: 'Armazém', accessor: 'name', width: '50%' },
             { header: 'Hotel', accessor: (r: any) => r.hotel_name || '—', width: '35%' },
-            { header: 'Principal', accessor: (r: any) => (r.is_main ? '✓' : '—'), width: '15%' },
+            { header: 'Principal', accessor: (r: any) => (r.is_main ? <Check size={13} className="text-green-700" /> : '—'), width: '15%' },
           ]} />
         </div>
       </div>

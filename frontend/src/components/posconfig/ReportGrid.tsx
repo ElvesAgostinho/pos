@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { inputStyle, money } from './kit';
+import { inputStyle, money, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[2px] text-[11px] bg-white';
 
@@ -162,7 +162,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       <div className="flex items-center gap-2 mb-2 text-[12px]">
         <button onClick={() => setPainel(!painel)}
           className={`px-3 py-1 border ${conds.length ? 'border-[#1a73c8] bg-[#e8f0fe] text-[#1a4f8a] font-semibold' : 'border-[#b0b0b0] bg-white'}`}>
-          ⚙ Filtros avançados{conds.length ? ` (${conds.length})` : ''}
+          <span className="inline-flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtros avançados{conds.length ? ` (${conds.length})` : ''}</span>
         </button>
         <button onClick={() => setColsPainel(!colsPainel)}
           className="px-3 py-1 border border-[#b0b0b0] bg-white">

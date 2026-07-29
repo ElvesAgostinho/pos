@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
-import { Toolbar, money } from './kit';
+import { Toolbar, money, Glyph } from './kit';
 
 /**
  * CENTRO DE ALERTAS — o sistema procura os problemas; o dono não tem de os procurar.
@@ -55,8 +55,8 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
       <div className="flex-1 overflow-auto p-4">
         {d.alerts.length === 0 ? (
           <div className="border border-[#c8c8c8] bg-white p-10 text-center">
-            <div className="w-12 h-12 mx-auto rounded-full bg-[#1f7a34] text-white flex items-center justify-center text-[22px] font-bold">
-              ✔
+            <div className="w-12 h-12 mx-auto rounded-full bg-[#1f7a34] text-white flex items-center justify-center font-bold">
+              <Glyph icon="✔" size={22} />
             </div>
             <div className="text-[16px] font-bold text-[#1f7a34] mt-3">Nada a assinalar</div>
             <div className="text-[12px] text-[#666] mt-1">

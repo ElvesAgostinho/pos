@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
-import { Receipt, Plus, Trash2, ArrowLeft, CreditCard, ChefHat, FileText } from 'lucide-react';
+import { Receipt, Plus, Trash2, ArrowLeft, CreditCard, ChefHat, FileText, Check } from 'lucide-react';
 import {
   useTickets, useTicket, useOpenTicket, useAddTicketLine, useDeleteTicketLine, usePayTicket,
   useOutlets, useProductConfigs, useOutletPayments, useCashSessions, useFireKitchen,
@@ -121,7 +121,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
               </div>
             </div>
           ) : (
-            <div className="border-t border-[#a0a0a0] bg-[#eaf5ea] p-2 text-center text-green-700 font-bold text-[12px]">✓ Ticket pago</div>
+            <div className="border-t border-[#a0a0a0] bg-[#eaf5ea] p-2 text-center text-green-700 font-bold text-[12px] flex items-center justify-center gap-1"><Check size={13} strokeWidth={3} /> Ticket pago</div>
           )}
         </div>
       </div>

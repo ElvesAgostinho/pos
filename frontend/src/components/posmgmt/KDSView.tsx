@@ -171,7 +171,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
                 {opts.show_timer && (
                   <span className="flex items-center gap-1 text-[15px] font-black tabular-nums px-2 py-0.5 rounded"
                     style={{ background: 'rgba(0,0,0,.25)' }}>
-                    <Clock size={14} />{m}m{atrasado ? ' ⚠' : ''}
+                    <Clock size={14} />{m}m{atrasado && <AlertTriangle size={13} />}
                   </span>
                 )}
               </div>

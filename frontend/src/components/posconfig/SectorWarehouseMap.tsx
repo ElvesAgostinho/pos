@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -85,7 +85,7 @@ export default function SectorWarehouseMap() {
         </select>
         <button onClick={aplicar} disabled={!armazem || sel.length === 0}
           className="flex items-center gap-2 px-2 py-1 hover:bg-[#e8e8e8] disabled:opacity-35">
-          <span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center text-[11px]">✔</span>
+          <span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
           Aplicar à seleção ({sel.length})
         </button>
       </div>

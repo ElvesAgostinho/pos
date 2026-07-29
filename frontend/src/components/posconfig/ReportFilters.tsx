@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { inputStyle } from './kit';
+import { inputStyle, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 
@@ -58,7 +58,7 @@ export default function ReportFilters({
     <div className="border border-[#c8c8c8] bg-white">
       <button onClick={() => setAberto(!aberto)}
         className="w-full flex items-center gap-2 px-3 py-2 bg-[#e4e4e4] border-b border-[#c8c8c8] text-left">
-        <span className="text-[12px] font-bold text-[#333]">⚙ Filtro avançado</span>
+        <span className="text-[12px] font-bold text-[#333] flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtro avançado</span>
         {ativos > 0 && (
           <span className="px-2 py-0.5 bg-[#1a73c8] text-white text-[11px] font-semibold">
             {ativos} ativo(s)

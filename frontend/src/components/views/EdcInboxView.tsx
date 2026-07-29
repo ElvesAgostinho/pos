@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import ClassicGrid from '../ui/ClassicGrid';
-import { Inbox, CheckCircle, FileText } from 'lucide-react';
+import { Inbox, CheckCircle, FileText, Check } from 'lucide-react';
 import { apiClient } from '../../api/client';
 
 interface Props { onClose?: () => void }
@@ -47,7 +47,7 @@ export default function EdcInboxView(_props: Props) {
               { header: 'Prioridade', accessor: (r: any) => <span className={r.priority === 'URGENT' ? 'text-red-600 font-bold' : r.priority === 'HIGH' ? 'text-amber-700' : ''}>{r.priority_display}</span>, width: '14%' },
               { header: '', accessor: (r: any) => <button onClick={() => complete.mutate(r.id)} title="Concluir" className="text-green-700 hover:text-green-900 flex items-center gap-1 text-[11px]"><CheckCircle size={12} /> Concluir</button>, width: '14%' },
             ]} />
-            {tasks.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3">Sem tarefas pendentes ✓</div>}
+            {tasks.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3 flex items-center justify-center gap-1"><Check size={12} /> Sem tarefas pendentes</div>}
           </div>
         </div>
         {/* Documentos recentes */}
