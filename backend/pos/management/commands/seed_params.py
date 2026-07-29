@@ -40,6 +40,11 @@ PARAMS = [
     (8304, 'Front Office', 'Exigir abertura de caixa', B, [], 'true',
      'DESLIGADO: vende-se sem declarar o fundo de maneio. Só faz sentido em terminais que '
      'não recebem dinheiro (só lançam no quarto).'),
+    (8306, 'Front Office', 'Abrir o teclado automaticamente na Venda Direta (balcão)', B, [], 'true',
+     'LIGADO de fábrica: no balcão (8300), entrar na venda já mostra a 1ª página do teclado — '
+     'perder um toque em CADA cliente do dia. DESLIGADO: fica em "Escolha uma página em cima", '
+     'para quem tem várias cartas ao balcão e quer escolher de propósito. Só vale para o '
+     'balcão — nas mesas quem manda é o 9312.'),
     (8308, 'Front Office', 'Enviar para a cozinha automaticamente ao lançar', B, [], 'false',
      'LIGADO: cada artigo lançado vai logo para a produção. Serve o bar (a cerveja sai já); '
      'não serve o restaurante (a mesa ainda está a escolher).'),

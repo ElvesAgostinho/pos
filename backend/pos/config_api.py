@@ -4891,6 +4891,7 @@ class PosTerminalConfigView(APIView):
       · Venda Direta (8300) — vender ao balcão, sem passar pelas mesas;
       · Escolher o setor ao entrar (8302);
       · Exigir abertura de caixa (8304);
+      · Abrir o teclado automaticamente na Venda Direta (8306);
       · Perguntar tipo de cliente (8175) — Passante / Hotel / Consumo Interno;
       · Enviar para a cozinha automaticamente (8308);
       · Pedir a entidade antes de cobrar (8310);
@@ -4924,6 +4925,9 @@ class PosTerminalConfigView(APIView):
             'ask_entity_on_open': P.bool(9311, True),
             # (9312) entrar no balcão já com a 1ª página do teclado aberta
             'open_keyboard_on_sale': P.bool(9312, True),
+            # (8306) o mesmo, mas só para a Venda Direta (balcão) — o 9312 acima
+            # continua a mandar nas mesas; este é a exceção específica do balcão.
+            'open_keyboard_direct_sale': P.bool(8306, True),
             'tables_refresh_seconds': P.int(8063, 8),
             'transfers': P.text(8124, 'Parcial'),
             'allow_day_close': P.bool(8062, False),
@@ -5128,6 +5132,9 @@ class PosBootstrapView(APIView):
             'ask_entity_on_open': P.bool(9311, True),
             # (9312) entrar no balcão já com a 1ª página do teclado aberta
             'open_keyboard_on_sale': P.bool(9312, True),
+            # (8306) o mesmo, mas só para a Venda Direta (balcão) — o 9312 acima
+            # continua a mandar nas mesas; este é a exceção específica do balcão.
+            'open_keyboard_direct_sale': P.bool(8306, True),
                 'tables_refresh_seconds': P.int(8063, 8),
                 'transfers': P.text(8124, 'Parcial'),
                 'allow_day_close': P.bool(8062, False),

@@ -545,19 +545,23 @@ export default function SalesScreen({ ticketId, setor, cfg, publicarAcoes, publi
     }
   }, [conta?.status]);
 
-  // (9312) O TECLADO ABRE-SE SOZINHO. Entrar no balcão e ver "Escolha uma página em
-  // cima" é perder um toque em todas as vendas do dia: a primeira página é sempre a que
-  // o dono pôs primeiro, e é onde está o que mais se vende. Quem tem várias páginas
-  // troca com um toque; quem só tem uma nunca mais pensa nisso.
-  // Desliga-se no backoffice para as casas que querem o empregado a escolher a página
-  // de propósito (cozinhas com cartas muito diferentes por turno).
+  // (9312 nas mesas / 8306 no balcão) O TECLADO ABRE-SE SOZINHO. Entrar no balcão e
+  // ver "Escolha uma página em cima" é perder um toque em todas as vendas do dia: a
+  // primeira página é sempre a que o dono pôs primeiro, e é onde está o que mais se
+  // vende. Quem tem várias páginas troca com um toque; quem só tem uma nunca mais
+  // pensa nisso.
+  // São DOIS parâmetros diferentes de propósito: uma casa pode querer o teclado a
+  // abrir sozinho nas mesas mas escolher de propósito no balcão (cartas diferentes
+  // por turno), ou o contrário — o 8306 só vale sem mesa (Venda Direta).
+  const abreTecladoSozinho = conta?.table ? cfg?.open_keyboard_on_sale !== false
+    : cfg?.open_keyboard_direct_sale !== false;
   useEffect(() => {
-    if (cfg?.open_keyboard_on_sale === false) return;
+    if (!abreTecladoSozinho) return;
     if (caminho.length) return;
     if (!souAPrimeiraRef.current) return;   // já abriu sozinho noutra subconta desta sessão
     const p1 = (teclado?.pages || [])[0];
     if (p1) setCaminho([p1]);
-  }, [teclado, cfg?.open_keyboard_on_sale]);
+  }, [teclado, abreTecladoSozinho]);
 
   // (9311) PEDIR O CLIENTE AO ABRIR — uma vez por conta, nunca em ciclo. Perguntar só na
   // hora de cobrar é tarde: o "afinal queria com contribuinte" chega depois de a fatura
