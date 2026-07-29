@@ -10,9 +10,17 @@ export const apiClient = axios.create({
 });
 
 // Anexa o token JWT: backoffice (erp_access) ou, no POS FrontOffice, o token de
-// serviço do terminal (pos_access).
+// serviço do terminal (pos_access). TEM de escolher pelo ecrã em que se está —
+// não por "qual existir primeiro": um token de backoffice guardado de uma
+// sessão anterior (mesma origem, mesmo localStorage) "ganhava" sempre ao token
+// do POS, mesmo dentro do terminal. O login do POS funcionava, mas TODOS os
+// pedidos a seguir iam com o token errado e voltavam 401 — sessão que nunca
+// pegava, "entra e sai" sem mais nenhum.
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('erp_access') || localStorage.getItem('pos_access');
+  const estaNoPos = window.location.pathname.includes('/pos');
+  const token = estaNoPos
+    ? (localStorage.getItem('pos_access') || localStorage.getItem('erp_access'))
+    : (localStorage.getItem('erp_access') || localStorage.getItem('pos_access'));
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
