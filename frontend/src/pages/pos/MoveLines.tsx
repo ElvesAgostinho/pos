@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import Window from './Window';
@@ -49,6 +49,13 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
   // (👤) o número de clientes de cada lado — a mesma ficha que se usa ao abrir
   // a mesa, só sem perguntar o TIPO outra vez (esse já ficou decidido lá atrás).
   const [editarPax, setEditarPax] = useState<'ESQ' | 'DIR' | null>(null);
+  // NUMA TRANSFERÊNCIA, escolher uma mesa LIVRE como destino já lhe abre uma conta
+  // (a mesa fica "ocupada" no mapa) — mas só passam artigos de verdade quando se
+  // toca em "»". Se o empregado escolher a mesa e sair sem chegar a passar nada
+  // (fechou a janela, mudou de ideias), essa conta fica presa: vermelha no mapa,
+  // vazia para sempre. Guarda-se aqui QUAL conta nasceu assim, para se anular
+  // sozinha ao fechar — exatamente como uma subconta vazia se limpa ao sair.
+  const criadaVazia = useRef<number | null>(null);
 
   const contaQ = (id: number | null) => useQuery({
     queryKey: ['ml-ticket', id],
@@ -124,6 +131,9 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
         ...(paraId ? { to: paraId } : {}),
       });
       if (!paraId && paraDireita) setDirId(r.data.target.id);   // subconta acabada de nascer
+      // Chegou artigo a sério a esta conta: já não é a "conta vazia à espera" —
+      // não se anula mais ao fechar a janela.
+      if (paraId === criadaVazia.current) criadaVazia.current = null;
       await refrescar();
     } catch (e: any) {
       aviso(e?.response?.data?.detail || 'Não foi possível mover os artigos.');
@@ -261,8 +271,28 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
     );
   };
 
+  // Sair da janela: se ficou uma mesa "escolhida como destino" mas NENHUM artigo
+  // chegou a passar para ela, essa conta não serve para nada — só prende a mesa
+  // ocupada no mapa até alguém entrar e sair de novo (o mesmo problema que já
+  // acontecia com subcontas vazias na venda, agora aqui nas transferências).
+  const fecharTudo = async () => {
+    const id = criadaVazia.current;
+    if (id) {
+      criadaVazia.current = null;
+      try {
+        const t = (await apiClient.get(`pos/tickets/${id}/`)).data;
+        if (!(t.lines || []).some((l: any) => !l.is_void)) {
+          await apiClient.post(`pos/tickets/${id}/void/`, {
+            reason: 'Mesa de destino escolhida mas nada chegou a passar',
+          });
+        }
+      } catch { /* já não existe ou já tem artigos: nada a fazer */ }
+    }
+    onClose();
+  };
+
   return (
-    <Window width={1460} onClose={onClose}
+    <Window width={1460} onClose={fecharTudo}
       title={modo === 'SPLIT'
         ? `Funções Parciais: ${esq?.table_label || ''}`
         : 'Transferências'}>
@@ -313,7 +343,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
         {modo === 'SPLIT' ? (
           // Os três ícones da imagem: confirmar · dividir (teclado numérico) · cobrar a subconta.
           <div className="grid grid-cols-3 gap-1 p-1 bg-black">
-            <button onClick={onClose}
+            <button onClick={fecharTudo}
               className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px]" title="Terminar"><IcoVisto size={24} /></button>
             <button onClick={dividir}
               className="h-[56px] bg-[#1f1f1f] text-white text-[24px]" title="Dividir"><IcoParciais size={22} /></button>
@@ -323,9 +353,9 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-1 p-1 bg-black">
-            <button onClick={onClose}
+            <button onClick={fecharTudo}
               className="h-[56px] bg-[#1f1f1f] text-[#2ecc40] text-[26px]"><IcoVisto size={24} /></button>
-            <button onClick={onClose}
+            <button onClick={fecharTudo}
               className="h-[56px] bg-[#1f1f1f] text-[#e02020] text-[26px]"><IcoCruz size={24} /></button>
           </div>
         )}
@@ -353,6 +383,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
                           operator_name: esq?.operator_name || 'Operador',
                         });
                         setDirId(r.data.id);
+                        criadaVazia.current = r.data.id;
                         setEscolherMesa(false);
                         refrescar();
                       } catch (e: any) {
