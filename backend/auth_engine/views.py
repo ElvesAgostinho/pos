@@ -62,6 +62,12 @@ def _roles_for(user):
 class BackofficeLoginView(APIView):
     """Login administrativo por credenciais (username/email + password). Devolve JWT."""
     permission_classes = [AllowAny]
+    # Um token velho (expirado, ou doutro arranque do servidor) no cabeçalho
+    # Authorization nunca pode impedir o login: o JWTAuthentication por omissão
+    # rejeita o pedido ANTES de a permissão (AllowAny) sequer ser vista — "senha
+    # falha" sem ser mesmo a senha, só porque o browser ainda tinha um token
+    # antigo guardado. O login é a única porta que tem de aceitar sempre.
+    authentication_classes = []
 
     def post(self, request):
         identifier = (request.data.get('username') or request.data.get('email') or '').strip()
@@ -129,6 +135,9 @@ class BackofficeLoginView(APIView):
 class PosLoginView(APIView):
     """Login de operador POS por PIN. Devolve um token de terminal e a identidade do operador."""
     permission_classes = [AllowAny]
+    # Ver o comentário em BackofficeLoginView: um token velho no cabeçalho não
+    # pode barrar este ecrã — é aqui que se entra quando já não se tem sessão.
+    authentication_classes = []
 
     def post(self, request):
         pin = str(request.data.get('pin') or '').strip()

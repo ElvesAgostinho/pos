@@ -28,9 +28,16 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     const url: string = error.config?.url || '';
+    // Um 401 SEM token anexado não é uma sessão inválida — é uma janela de
+    // arranque (a página navegou para /pos/terminal e disparou pedidos no
+    // mesmíssimo instante em que o login gravava o token no localStorage).
+    // Forçar logout aqui destruía um login que tinha acabado de funcionar:
+    // "entra e sai" sem mais nenhum. Só se desconfia da SESSÃO quando o
+    // SERVIDOR rejeitou um token que realmente foi enviado.
+    const tokenEnviado = !!error.config?.headers?.Authorization;
     // Sessão expirada/ inválida: limpa credenciais e força novo login,
     // exceto nos próprios endpoints de autenticação (evita loops).
-    if (status === 401 && !url.includes('auth/')) {
+    if (status === 401 && tokenEnviado && !url.includes('auth/')) {
       const inPos = window.location.pathname.includes('/pos');
       if (inPos) {
         localStorage.removeItem('pos_operator_token');
