@@ -6,6 +6,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import {
   Lock, CreditCard, Scale, Printer, Plug, Mail, MessageSquare, Bell, BellRing,
   FileText, PenTool, Clock, ScrollText, HardDriveDownload, RefreshCw, Trash2, Plus, Database,
+  Star, Check,
 } from 'lucide-react';
 import { platformApi } from '../../api/platform';
 import { apiClient } from '../../api/client';
@@ -146,7 +147,7 @@ function TemplatesBase({ title, icon, onlySignature }: { title: string; icon: an
             { header: 'Formato', accessor: (r: any) => r.page_format_display, width: '16%' },
             { header: 'Logo/QR', accessor: (r: any) => `${r.show_logo ? 'Logo' : ''} ${r.show_qr ? 'QR' : ''}`.trim() || '—', width: '14%' },
             { header: 'Assinatura', accessor: (r: any) => <input type="checkbox" checked={r.signature_enabled} onChange={() => update.mutate({ id: r.id, data: { signature_enabled: !r.signature_enabled } })} />, width: '12%' },
-            { header: 'Def.', accessor: (r: any) => r.is_default ? '★' : '', width: '8%' },
+            { header: 'Def.', accessor: (r: any) => r.is_default ? <Star size={13} className="fill-current" /> : '', width: '8%' },
             { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '8%' },
           ]} />
         </div>
@@ -223,7 +224,7 @@ function SysInfoView({ title, icon }: { title: string; icon: any }) {
           <>
             <div className="bg-white border border-[#a0a0a0] p-3">
               <Row k="Aplicação" v={`${d.app} v${d.version}`} />
-              <Row k="Atualização" v={d.update?.up_to_date ? `✓ Atualizado (${d.update.current})` : `Disponível ${d.update?.latest}`} />
+              <Row k="Atualização" v={d.update?.up_to_date ? <span className="flex items-center gap-1"><Check size={12} strokeWidth={3} /> Atualizado ({d.update.current})</span> : `Disponível ${d.update?.latest}`} />
               <Row k="Canal" v={d.update?.channel} />
               <Row k="Base de dados" v={d.database} />
               <Row k="Python / Django" v={`${d.python} / ${d.django}`} />

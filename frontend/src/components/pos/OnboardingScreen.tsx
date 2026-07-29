@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { apiClient as axios } from '../../api/client';
-import { Monitor, Key, ShieldCheck, CheckCircle, RefreshCcw } from 'lucide-react';
+import { Monitor, Key, ShieldCheck, CheckCircle, RefreshCcw, TriangleAlert } from 'lucide-react';
 
 interface OnboardingScreenProps {
   onSuccess: (token: string, terminalName: string) => void;
@@ -74,7 +74,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSuccess }) => {
 
             {error && (
               <div className="bg-red-500/20 border border-red-500/50 text-red-100 px-4 py-3 rounded-lg text-sm flex items-start">
-                <span className="mr-2">⚠️</span>
+                <span className="mr-2"><TriangleAlert size={16} /></span>
                 <span>{error}</span>
               </div>
             )}

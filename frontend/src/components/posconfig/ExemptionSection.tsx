@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import SimpleSection from './SimpleSection';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -40,7 +40,7 @@ export default function ExemptionSection() {
     <div className={`flex items-center gap-3 px-3 py-2 text-[12px] border-b ${unlocked
       ? 'bg-[#e8f5e9] border-[#b6d7b9] text-[#1f7a34]'
       : 'bg-[#fff7e6] border-[#e0c080] text-[#8a6100]'}`}>
-      <span className="text-[14px]">{unlocked ? '🔓' : '🔒'}</span>
+      <Glyph icon={unlocked ? '🔓' : '🔒'} size={15} />
       {unlocked ? (
         <span>Edição <b>desbloqueada</b>. Cada alteração fica na auditoria com o seu nome.</span>
       ) : (
@@ -84,7 +84,7 @@ export default function ExemptionSection() {
             <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold"
               style={{ background: '#3c3c3c' }}>
               <span>Password</span>
-              <button onClick={fechar} className="w-5 h-5 bg-[#c0392b] text-[12px] leading-none">✕</button>
+              <button onClick={fechar} className="w-5 h-5 bg-[#c0392b] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
             </div>
             <div className="p-5 bg-white">
               <label className="flex items-center gap-4 text-[13px]">

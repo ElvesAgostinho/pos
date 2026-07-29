@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar } from './kit';
+import { Toolbar, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -124,16 +124,16 @@ export default function TableMapDesigner({ sector, mode, onClose }:
       <div className="bg-[#f0f0f0] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#3c3c3c' }}>
           <span>{mode === 'online' ? 'Mesas - Online' : 'Mesas'} — {sector.name}</span>
-          <button onClick={onClose} className="text-white text-[16px]">✕</button>
+          <button onClick={onClose} className="text-white"><Glyph icon="✕" size={16} /></button>
         </div>
 
         {/* Barra de ferramentas do desenho (só no modo planta) */}
         {mode === 'design' && (
           <div className="flex items-center gap-2 p-2 border-b border-[#c0c0c0] bg-white flex-wrap">
-            <Btn onClick={cutSel} disabled={sel === null}>✂ Cortar</Btn>
-            <Btn onClick={copySel} disabled={sel === null}>⧉ Copiar</Btn>
+            <Btn onClick={cutSel} disabled={sel === null}><Glyph icon="✂" size={13} /> Cortar</Btn>
+            <Btn onClick={copySel} disabled={sel === null}><Glyph icon="⧉" size={13} /> Copiar</Btn>
             <Btn onClick={delSel} disabled={sel === null}><span className="text-[#ff8a8a]">●</span> Apagar</Btn>
-            <Btn onClick={paste} disabled={!clip}>📋 Colar</Btn>
+            <Btn onClick={paste} disabled={!clip}><Glyph icon="📋" size={13} /> Colar</Btn>
             <span className="w-px h-6 bg-[#d5d5d5] mx-1" />
             <Btn onClick={() => align('top')} disabled={sel === null}>⇥ Alinhar topo</Btn>
             <Btn onClick={() => align('left')} disabled={sel === null}>⇤ Alinhar esquerda</Btn>

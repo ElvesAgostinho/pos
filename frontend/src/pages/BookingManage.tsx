@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { apiClient } from '../api/client';
+import { Check } from 'lucide-react';
 
 const money = (v: any, cur = '') => `${Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 0 })} ${cur}`.trim();
 
@@ -71,10 +72,10 @@ export default function BookingManage() {
               <Line label="Estadia" value={`${res.check_in} → ${res.check_out} (${res.nights} noite(s))`} />
               <Line label="Pessoas" value={`${res.adults} adulto(s), ${res.children} criança(s)`} />
               <Line label="Total" value={money(res.total, cfg?.currency)} bold />
-              {res.online_checkin && <p className="text-green-700 text-sm text-center bg-green-50 rounded py-1">✓ Check-in online concluído</p>}
+              {res.online_checkin && <p className="text-green-700 text-sm text-center bg-green-50 rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Check-in online concluído</p>}
               {res.status_code === 'BOOKED' && Number(cfg?.deposit_percent) > 0 && (
                 res.deposit_paid
-                  ? <p className="text-green-700 text-sm text-center bg-green-50 rounded py-1">✓ Adiantamento pago</p>
+                  ? <p className="text-green-700 text-sm text-center bg-green-50 rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Adiantamento pago</p>
                   : <button onClick={payDeposit} disabled={busy} className="w-full py-2 rounded-lg text-white font-semibold" style={{ background: '#1f9d55' }}>Pagar adiantamento ({money(Number(res.total) * Number(cfg?.deposit_percent) / 100, cfg?.currency)})</button>
               )}
 

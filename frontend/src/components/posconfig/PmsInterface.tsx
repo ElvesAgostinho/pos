@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, GridCheck } from './kit';
+import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border-0 px-1.5 py-1 text-[12px] bg-transparent outline-none';
@@ -147,7 +147,7 @@ function Mapeamentos({ qc }: { qc: any }) {
             className={`${inp} w-[240px]`} style={inputStyle} />
           <button onClick={aplicar} disabled={!encargo || sel.length === 0}
             className="flex items-center gap-2 px-2 py-1 hover:bg-[#e8e8e8] disabled:opacity-35">
-            <span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center text-[11px]">✔</span>
+            <span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
             Aplicar à seleção ({sel.length})
           </button>
           <label className="flex items-center gap-2 ml-auto">
@@ -387,7 +387,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
             ? `Ligações Multi Hotel - ${isNew ? 'Adicionar' : `Editar ${d.description || ''}`}`
             : `Ligações externas - Editar ${d.sector_name || ''}`}
         </span>
-        <button onClick={onClose} className="w-5 h-5 bg-[#c0392b] text-[12px] leading-none">✕</button>
+        <button onClick={onClose} className="w-5 h-5 bg-[#c0392b] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
       </div>
 
       <div className="flex-1 overflow-auto p-5 space-y-2 max-w-[720px]">

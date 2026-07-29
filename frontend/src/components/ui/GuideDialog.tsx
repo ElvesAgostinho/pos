@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TriangleAlert, Lightbulb } from 'lucide-react';
 import type { Guide } from '../../utils/friendlyError';
 
 /**
@@ -29,7 +30,7 @@ export default function GuideDialog() {
         {/* Barra de título */}
         <div className="h-8 flex items-center gap-2 px-3 text-white font-bold text-[12px]"
           style={{ background: 'linear-gradient(to bottom, #d7a13a, #b5761b 55%, #91590f)' }}>
-          <span className="text-[14px]">⚠</span>{g.title}
+          <TriangleAlert size={14} />{g.title}
         </div>
 
         <div className="p-4 flex gap-3">
@@ -39,7 +40,7 @@ export default function GuideDialog() {
             <div className="whitespace-pre-line font-semibold leading-relaxed">{g.message}</div>
             {g.hint && (
               <div className="mt-3 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#1e3f66] flex gap-2">
-                <span>💡</span><span><b>O que fazer:</b> {g.hint}</span>
+                <Lightbulb size={14} className="flex-shrink-0 mt-px" /><span><b>O que fazer:</b> {g.hint}</span>
               </div>
             )}
           </div>

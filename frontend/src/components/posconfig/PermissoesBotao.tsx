@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Users } from 'lucide-react';
+import { Users, X } from 'lucide-react';
 
 /**
  * PERMISSÕES DE UM ECRÃ — o ícone que abre "Permissões: <nome do ecrã>".
@@ -63,7 +63,7 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
           <div className="w-[420px] bg-white border border-[#a0a0a0] shadow-xl">
             <div className="px-3 py-2 bg-[#3a3a3a] text-white text-[14px] font-bold flex items-center justify-between">
               <span>Permissões — {titulo}</span>
-              <button onClick={() => setAberto(false)} className="w-6 h-6 bg-[#c0140f] text-white text-[13px] font-bold">✕</button>
+              <button onClick={() => setAberto(false)} className="w-6 h-6 bg-[#c0140f] text-white font-bold flex items-center justify-center"><X size={14} /></button>
             </div>
             <div className="max-h-[50vh] overflow-auto">
               <div className="grid grid-cols-[1fr_60px] px-3 py-1.5 text-[11px] font-bold text-[#666] bg-[#f4f4f4] border-b border-[#ddd]">

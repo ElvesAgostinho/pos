@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
+import { Glyph } from './kit';
 
 const inp = 'border border-[#c8c8c8] px-1.5 py-1 text-[12px] w-full bg-white';
 
@@ -183,7 +184,7 @@ export default function Maintenance() {
               </tbody>
             </table>
             <button onClick={addLine} className="flex items-center gap-2 m-2 text-[13px] text-[#333]">
-              <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center">＋</span>
+              <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center"><Glyph icon="＋" size={13} /></span>
               Acrescentar linha
             </button>
           </div>
@@ -191,17 +192,17 @@ export default function Maintenance() {
           <div className="flex items-center gap-4 px-3 py-2 border-t border-[#d0d0d0] bg-[#f4f4f4] text-[13px]">
             <button onClick={() => run.mutate()} disabled={run.isPending}
               className="flex items-center gap-2 font-semibold text-[#1f7a34] disabled:opacity-50">
-              <span className="w-7 h-7 rounded-full bg-[#1f7a34] text-white flex items-center justify-center">✔</span>
+              <span className="w-7 h-7 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={14} /></span>
               {run.isPending ? 'A gravar…' : 'Gravar'}
             </button>
             <span className="opacity-30">|</span>
             <span>Estado:</span>
             <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#29b6f6] text-white text-[11px] flex items-center justify-center">·</span>{lines.length}</span>
-            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white text-[11px] flex items-center justify-center">✔</span>{result.ok}</span>
-            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#c0392b] text-white text-[11px] flex items-center justify-center">✖</span>{result.fail}</span>
+            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>{result.ok}</span>
+            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#c0392b] text-white flex items-center justify-center"><Glyph icon="✖" size={11} /></span>{result.fail}</span>
             <button onClick={() => { setLines([{ code: '', name: '', plu_code: '', p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }]); setResult({ ok: 0, fail: 0, errors: [] }); }}
               className="ml-auto flex items-center gap-2 text-[#c0392b] font-semibold">
-              <span className="w-6 h-6 rounded-full bg-[#c0392b] text-white flex items-center justify-center">−</span> Limpar tudo
+              <span className="w-6 h-6 rounded-full bg-[#c0392b] text-white flex items-center justify-center"><Glyph icon="−" size={13} /></span> Limpar tudo
             </button>
           </div>
           {result.errors.length > 0 && (

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { inputStyle } from './kit';
+import { inputStyle, Glyph } from './kit';
 
 /**
  * ADICIONAR PÁGINA / SUBPÁGINA — a ficha que se preenche ANTES de a tecla existir.
@@ -81,7 +81,7 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
 
         <div className="h-[40px] bg-[#3c3c3c] flex items-center justify-end px-2">
           <button onClick={onClose}
-            className="w-[26px] h-[22px] bg-[#c0392b] text-white text-[13px] font-bold leading-none">✕</button>
+            className="w-[26px] h-[22px] bg-[#c0392b] text-white font-bold leading-none flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
         </div>
 
         <div className="bg-white p-5 border-y border-[#d0d0d0]">
@@ -132,12 +132,12 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
             price_level: preco, color: cor, text_color: texto, cols, rows,
           })}
             className="flex items-center gap-2 text-[13px] text-[#333] hover:bg-[#eaeaea] px-3 py-1.5">
-            <span className="w-6 h-6 rounded-full bg-[#1f7a34] text-white flex items-center justify-center text-[13px]">✔</span>
+            <span className="w-6 h-6 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
             OK
           </button>
           <button onClick={onClose}
             className="flex items-center gap-2 text-[13px] text-[#333] hover:bg-[#eaeaea] px-3 py-1.5">
-            <span className="w-6 h-6 rounded-full bg-[#c0392b] text-white flex items-center justify-center text-[13px]">✕</span>
+            <span className="w-6 h-6 rounded-full bg-[#c0392b] text-white flex items-center justify-center"><Glyph icon="✕" size={13} /></span>
             Fechar
           </button>
         </div>

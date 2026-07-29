@@ -2,7 +2,7 @@ import { Fragment, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Glyph } from './kit';
 
 const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
 
@@ -81,7 +81,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
         <div className="flex items-center border border-[#8a95a3] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="nome ou número (ex.: 8128)"
             className="px-2 py-1 text-[12px] outline-none w-[280px]" />
-          <span className="px-2 text-[#666]">🔍</span>
+          <span className="px-2 text-[#666]"><Glyph icon="🔍" size={13} /></span>
         </div>
         <span className="ml-auto text-[11px] text-[#666]">
           {total} parâmetros · {dirty.size > 0 && <b className="text-[#a01818]">{dirty.size} por gravar</b>}

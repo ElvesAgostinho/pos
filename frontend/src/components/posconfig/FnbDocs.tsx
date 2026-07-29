@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[120px]', children }: any) => (
@@ -242,7 +242,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
                       <div className="text-[11px] text-[#666] leading-5">
                         <div>Morada: {e.address || '—'}</div>
                         <div>Nr. contrib.: {e.tax_id || '—'}</div>
-                        {e.is_blocked && <div className="text-[#a01818] font-bold">⛔ Entidade bloqueada</div>}
+                        {e.is_blocked && <div className="text-[#a01818] font-bold flex items-center gap-1"><Glyph icon="⛔" size={13} /> Entidade bloqueada</div>}
                       </div>
                     ) : null;
                   })()}
@@ -471,7 +471,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
 
         <button onClick={pesquisar}
           className="w-[180px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-          <span className="text-[22px]">🔄</span>
+          <Glyph icon="🔄" size={22} />
           <span className="text-[13px]">Pesquisar</span>
         </button>
       </div>

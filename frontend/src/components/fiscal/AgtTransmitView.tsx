@@ -131,7 +131,7 @@ export default function AgtTransmitView() {
               <div className="text-[11px] text-gray-600">
                 Estado: <b>{c?.health || '—'}</b> · verificado {when(c?.health_at)}<br />
                 Tentativas máx.: {c?.max_retries} · timeout {c?.timeout_seconds}s
-                {!c?.has_credentials && <div className="text-[#a01818] font-bold">⚠ Sem credenciais configuradas</div>}
+                {!c?.has_credentials && <div className="text-[#a01818] font-bold flex items-center gap-1"><AlertTriangle size={13} /> Sem credenciais configuradas</div>}
               </div>
             </div>
           )}

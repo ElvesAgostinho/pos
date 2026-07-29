@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
@@ -265,7 +265,7 @@ export default function PosDocSearch() {
 
         <button onClick={() => { setAplicado({ ...f }); setPage(1); }}
           className="ml-auto w-[170px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-          <span className="text-[22px]">🔄</span>
+          <Glyph icon="🔄" size={22} />
           <span className="text-[13px]">Pesquisar</span>
         </button>
       </div>
@@ -341,7 +341,7 @@ function PopupAnular({ anular, setAnular, acao }: any) {
       <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setAnular(null)} />
       <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#888] shadow-2xl w-[460px]">
         <div className="px-3 py-2 bg-[#3c3c3c] text-white text-[13px] font-bold flex justify-between">
-          Anular {anular.number} <button onClick={() => setAnular(null)}>✕</button>
+          Anular {anular.number} <button onClick={() => setAnular(null)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
         </div>
         <div className="p-4 space-y-3 text-[12px]">
           <div className="text-[#8a6100] bg-[#fff7e6] border border-[#e0c080] px-2 py-1.5">

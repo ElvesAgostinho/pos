@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
-import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2 } from 'lucide-react';
+import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb, TriangleAlert } from 'lucide-react';
 
 const btn = 'px-3 py-1.5 text-[12px] border border-[#c0c0c0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] active:translate-y-px flex items-center gap-1.5';
 const PROVIDERS: [string, string][] = [['BOOKING', 'Booking.com'], ['EXPEDIA', 'Expedia'], ['AIRBNB', 'Airbnb'], ['AGODA', 'Agoda'], ['HOTELS', 'Hotels.com'], ['TRIVAGO', 'Trivago'], ['GOOGLE', 'Google Hotels'], ['OTHER', 'Outro']];
@@ -54,8 +54,8 @@ export default function ChannelManagerView() {
             </tbody>
           </table>
           <div className="mt-2 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#1e3f66]">
-            💡 <b>Como funciona:</b> preenche em baixo o canal, o <b>Property ID</b> e a <b>Chave API</b> → o sistema envia disponibilidade e tarifas, e recebe as reservas automaticamente (com <b>anti-overbooking</b>). As reservas entram no <b>PMS → Reservas</b>.
-            <br />⚠️ As OTAs só dão as credenciais a software <b>homologado</b> por elas — este é o passo comercial a fazer com cada plataforma.
+            <div className="flex items-start gap-1.5"><Lightbulb size={14} className="flex-shrink-0 mt-px" /> <span><b>Como funciona:</b> preenche em baixo o canal, o <b>Property ID</b> e a <b>Chave API</b> → o sistema envia disponibilidade e tarifas, e recebe as reservas automaticamente (com <b>anti-overbooking</b>). As reservas entram no <b>PMS → Reservas</b>.</span></div>
+            <div className="flex items-start gap-1.5 mt-1"><TriangleAlert size={14} className="flex-shrink-0 mt-px" /> <span>As OTAs só dão as credenciais a software <b>homologado</b> por elas — este é o passo comercial a fazer com cada plataforma.</span></div>
           </div>
         </div>
 

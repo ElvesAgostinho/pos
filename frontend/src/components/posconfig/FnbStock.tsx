@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[130px]', children }: any) => (
@@ -90,7 +90,7 @@ export default function FnbStock() {
       <td className="px-2 py-1 font-semibold">
         {r.name}
         {Number(r.quantity) < 0 && (
-          <span className="ml-2 text-[11px] text-[#a01818]" title="Stock negativo — é sempre um erro">⚠ negativo</span>
+          <span className="ml-2 text-[11px] text-[#a01818] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
         )}
       </td>
       {!agrupar && <td className="px-2 py-1">{r.warehouse}</td>}
@@ -151,7 +151,7 @@ export default function FnbStock() {
 
         <button onClick={pesquisar}
           className="ml-auto w-[180px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-          <span className="text-[22px]">🔄</span>
+          <Glyph icon="🔄" size={22} />
           <span className="text-[13px]">Pesquisar</span>
         </button>
       </div>

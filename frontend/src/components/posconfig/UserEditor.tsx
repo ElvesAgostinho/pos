@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Glyph } from './kit';
 import { SubFamilyPicker, ItemPicker } from './Pickers';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
@@ -113,7 +113,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
               <div className="space-y-2">
                 <button onClick={() => setPwModal('main')}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#2b2b2b] text-white text-[13px] font-bold">
-                  🔑 Password
+                  <Glyph icon="🔑" size={14} /> Password
                 </button>
                 <label className="flex items-center gap-2 text-[12px]">
                   <input type="checkbox" checked={!!d.must_change_password} onChange={(e) => set('must_change_password', e.target.checked)} className="w-4 h-4" />
@@ -304,7 +304,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                 </label>
                 <button onClick={() => setPwModal('pos')}
                   className="w-[250px] flex items-center justify-center gap-2 py-2.5 bg-[#2b2b2b] text-white text-[13px] font-bold">
-                  🔑 PIN do Terminal (POS)
+                  <Glyph icon="🔑" size={14} /> PIN do Terminal (POS)
                 </button>
                 <label className="flex items-center gap-2 text-[12px]">
                   <input type="checkbox" checked={!!d.pos_must_change_pin} onChange={(e) => set('pos_must_change_pin', e.target.checked)} className="w-4 h-4" />

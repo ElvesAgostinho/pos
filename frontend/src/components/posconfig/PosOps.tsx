@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { inputStyle, money } from './kit';
+import { inputStyle, money, Glyph } from './kit';
 import { pedir, confirmar } from '../../ui/dialogo';
 import PermissoesBotao from './PermissoesBotao';
 
@@ -67,7 +67,7 @@ export function PosDayClose() {
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="px-4 py-3 bg-[#f7f7f7] border-b border-[#d0d0d0]">
         <div className="flex items-start gap-6">
-          <div className="text-[34px]">🌙</div>
+          <div className="text-[#333]"><Glyph icon="🌙" size={34} /></div>
           <div>
             <div className="text-[16px] font-bold text-[#333]">{d.company || 'Fecho do Dia'}</div>
             {d.hotel && <div className="text-[13px] text-[#666]">{d.hotel}</div>}
@@ -156,8 +156,8 @@ export function PosDayClose() {
             Contas por cobrar ({d.open_tickets.length})
           </div>
           {d.open_tickets.length === 0 ? (
-            <div className="text-center text-[#1f7a34] py-10 text-[13px] font-bold">
-              ✔ Nada por cobrar. O dia pode fechar.
+            <div className="text-center text-[#1f7a34] py-10 text-[13px] font-bold flex items-center justify-center gap-1.5">
+              <Glyph icon="✔" size={14} /> Nada por cobrar. O dia pode fechar.
             </div>
           ) : (
             <>
@@ -191,8 +191,8 @@ export function PosDayClose() {
       <div className="flex items-center justify-between px-3 py-2 bg-[#f0f0f0] border-t border-[#d0d0d0] gap-2">
         <div className="flex items-center gap-2">
           <button onClick={() => qc.invalidateQueries({ queryKey: ['posops', 'day-close'] })}
-            className="px-3 py-1.5 border border-[#a0a0a0] bg-white text-[12px] font-semibold">
-            ⟳ Atualizar
+            className="px-3 py-1.5 border border-[#a0a0a0] bg-white text-[12px] font-semibold flex items-center gap-1.5">
+            <Glyph icon="⟳" size={13} /> Atualizar
           </button>
           <PermissoesBotao right={20002} titulo="Fecho do Dia" />
           <button onClick={async () => {
@@ -208,8 +208,8 @@ export function PosDayClose() {
             porquê — e o motivo aqui é sempre o mesmo: há contas por cobrar. */}
         <button onClick={() => fechar.mutate()} disabled={!d.can_close || fechar.isPending}
           title={d.blocker || 'Fecha as caixas e o dia de vendas do POS'}
-          className="px-6 py-2 bg-[#1f7a34] text-white text-[14px] font-bold disabled:bg-[#b8b8b8] disabled:cursor-not-allowed">
-          {fechar.isPending ? 'A fechar…' : d.can_close ? '▶ Fechar o Dia' : '🔒 Fechar o Dia'}
+          className="px-6 py-2 bg-[#1f7a34] text-white text-[14px] font-bold disabled:bg-[#b8b8b8] disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+          {fechar.isPending ? 'A fechar…' : d.can_close ? <><Glyph icon="▶" size={13} /> Fechar o Dia</> : <><Glyph icon="🔒" size={13} /> Fechar o Dia</>}
         </button>
       </div>
     </div>

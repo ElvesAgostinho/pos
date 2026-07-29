@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, Glyph } from './kit';
 import PermissoesBotao from './PermissoesBotao';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
@@ -228,7 +228,7 @@ export default function PosCurrentAccounts() {
 
         <button onClick={pesquisar}
           className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-          <span className="text-[26px]">🔄</span>
+          <Glyph icon="🔄" size={26} />
           <span className="text-[13px]">Pesquisar</span>
         </button>
       </div>
@@ -245,7 +245,7 @@ export default function PosCurrentAccounts() {
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setConta(r.id)}
                 className={`border-b border-[#eee] cursor-pointer ${sel === r.id ? 'bg-[#dce9f7]' : 'hover:bg-[#f5f9ff]'}`}>
                 <td className="px-2 py-1.5 font-semibold">
-                  {r.blocked && <span className="text-[#a01818] mr-1" title="Bloqueada">⛔</span>}
+                  {r.blocked && <span className="text-[#a01818] mr-1 inline-flex align-middle" title="Bloqueada"><Glyph icon="⛔" size={13} /></span>}
                   {r.name}
                 </td>
                 <td className="px-2 py-1.5">{r.address || '—'}</td>

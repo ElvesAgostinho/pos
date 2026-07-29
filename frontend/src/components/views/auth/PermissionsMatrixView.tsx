@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import ClassicWindow from '../../ui/ClassicWindow';
-import { Shield } from 'lucide-react';
+import { Shield, Check, X } from 'lucide-react';
 import { useProfiles, useResources, usePolicies } from '../../../hooks/useEae';
 
 const PermissionsMatrixView: React.FC = () => {
@@ -12,10 +12,11 @@ const PermissionsMatrixView: React.FC = () => {
 
   const policyMatrix = useMemo(() => {
     if (!policies) return {};
-    const matrix: Record<string, Record<number, string>> = {};
+    const matrix: Record<string, Record<number, { allow: boolean; label: string }>> = {};
     policies.forEach(p => {
       if (!matrix[p.resource]) matrix[p.resource] = {};
-      matrix[p.resource][p.profile] = p.effect === 'allow' ? `✓ ${p.action}` : `✖ Denied`;
+      matrix[p.resource][p.profile] = p.effect === 'allow'
+        ? { allow: true, label: p.action } : { allow: false, label: 'Denied' };
     });
     return matrix;
   }, [policies]);
@@ -59,8 +60,10 @@ const PermissionsMatrixView: React.FC = () => {
                     {profiles?.map(profile => {
                       const policy = policyMatrix[resource.id]?.[profile.id];
                       return (
-                        <td key={profile.id} className={`px-2 py-1 border-r border-[#e0e0e0] text-center ${policy?.includes('✓') ? 'text-green-600' : policy?.includes('✖') ? 'text-red-500' : 'text-gray-400'}`}>
-                          {policy || '-'}
+                        <td key={profile.id} className={`px-2 py-1 border-r border-[#e0e0e0] text-center ${policy ? (policy.allow ? 'text-green-600' : 'text-red-500') : 'text-gray-400'}`}>
+                          {policy
+                            ? <span className="inline-flex items-center gap-1">{policy.allow ? <Check size={13} strokeWidth={3} /> : <X size={13} strokeWidth={3} />}{policy.label}</span>
+                            : '-'}
                         </td>
                       );
                     })}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Glyph } from './kit';
 import { ItemPicker, SubFamilyPicker } from './Pickers';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
@@ -145,7 +145,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                 </span>
               </div>
               <button onClick={() => setPicker('pack')} title="Escolher os artigos incluídos"
-                className="w-9 h-[28px] bg-[#3c3c3c] text-white flex items-center justify-center">👁</button>
+                className="w-9 h-[28px] bg-[#3c3c3c] text-white flex items-center justify-center"><Glyph icon="👁" size={14} /></button>
             </Row>
 
             <Row label="Happy Hour:">

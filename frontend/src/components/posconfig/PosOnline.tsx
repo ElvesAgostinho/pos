@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
-import { money } from './kit';
+import { money, Glyph } from './kit';
 
 /**
  * INFORMAÇÃO ONLINE — o que está a acontecer AGORA.
@@ -68,15 +68,15 @@ export default function PosOnline() {
                   <td className="px-2 py-1 font-mono">{t.ticket}</td>
                   <td className="px-2 py-1">{t.where}</td>
                   <td className="px-2 py-1">{t.operator}</td>
-                  <td className="px-2 py-1" style={{ color: t.minutes > 90 ? '#a01818' : '#666' }}>
-                    {t.minutes} min{t.minutes > 90 && ' ⚠'}
+                  <td className="px-2 py-1 flex items-center gap-1" style={{ color: t.minutes > 90 ? '#a01818' : '#666' }}>
+                    {t.minutes} min{t.minutes > 90 && <Glyph icon="⚠" size={12} />}
                   </td>
                   <td className="px-2 py-1 text-right font-bold">{money(t.total)}</td>
                 </tr>
               ))}
               {d.open_tickets.length === 0 && (
                 <tr><td colSpan={5} className="text-center text-[#1f7a34] py-6 font-semibold">
-                  ✔ Nada por cobrar.
+                  <span className="inline-flex items-center gap-1.5"><Glyph icon="✔" size={14} /> Nada por cobrar.</span>
                 </td></tr>
               )}
             </tbody>

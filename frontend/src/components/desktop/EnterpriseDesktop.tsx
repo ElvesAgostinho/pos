@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { X, Check, Settings, Power } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
@@ -259,7 +260,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             <div className="h-[34px] flex items-center justify-between px-3 text-white text-[13px] font-bold"
               style={{ background: ws.colorDark }}>
               <span>{embutido.title}{embutido.widget ? ' (widget)' : ''}</span>
-              <button onClick={() => setEmbutido(null)} className="hover:bg-white/20 px-2">✕</button>
+              <button onClick={() => setEmbutido(null)} className="hover:bg-white/20 px-2"><X size={15} /></button>
             </div>
             <iframe src={embutido.url} title={embutido.title}
               className="w-full bg-white" style={{ height: 'calc(100% - 34px)', border: 0 }} />
@@ -274,8 +275,9 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           </div>
           <div className="bg-black/40 border border-white/15 rounded-lg p-3 text-white text-[12px] space-y-1.5">
             <div className="font-bold text-[11px] uppercase text-white/60 mb-1">{ws.name} · Estado</div>
-            {[['Licença', '✓ ativa'], ['Servidor', 'online'], ['VPN', 'ligada']].map(([k, v]) => (
-              <div key={k} className="flex justify-between"><span className="text-white/60">{k}</span><span className="text-[#9dffb0]">{v}</span></div>
+            {[['Licença', true, 'ativa'], ['Servidor', false, 'online'], ['VPN', false, 'ligada']].map(([k, showCheck, v]) => (
+              <div key={k as string} className="flex justify-between"><span className="text-white/60">{k}</span>
+                <span className="text-[#9dffb0] flex items-center gap-1">{showCheck && <Check size={11} strokeWidth={3} />}{v}</span></div>
             ))}
           </div>
         </div>
@@ -314,8 +316,8 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             </div>
           </div>
           <div className="border-t border-[#d0d0d0] flex">
-            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2 text-[12px] hover:bg-[#e4e4e4] text-left">⚙ Backoffice clássico</button>
-            <button onClick={logout} className="px-4 py-2 text-[12px] hover:bg-[#c0392b] hover:text-white text-left">⏻ Sair</button>
+            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2 text-[12px] hover:bg-[#e4e4e4] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
+            <button onClick={logout} className="px-4 py-2 text-[12px] hover:bg-[#c0392b] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
           </div>
         </div>
       )}

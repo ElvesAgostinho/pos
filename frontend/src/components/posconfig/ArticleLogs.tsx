@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
+import { Glyph } from './kit';
 
 /** "Visualizar Logs" — cada campo alterado desta ficha, com o que era e o que
     passou a ser (inventory.ItemChangeLog, registado a cada Gravar). */
@@ -48,7 +49,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
         onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-3 py-2 bg-[#2b2b2b] text-white">
           <span className="text-[14px] font-bold">Visualizar Logs{nome ? `: ${nome}` : ''}</span>
-          <button onClick={onClose} className="text-white/80 hover:text-white text-[16px]">✕</button>
+          <button onClick={onClose} className="text-white/80 hover:text-white"><Glyph icon="✕" size={16} /></button>
         </div>
 
         <div className="p-3 border-b border-[#ddd] flex items-end gap-3">
@@ -98,11 +99,11 @@ export default function ArticleLogs({ id, nome, onClose }: {
         <div className="flex justify-between px-3 py-2 border-t border-[#ddd]">
           <button onClick={exportar}
             className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#1f7a34' }}>
-            ⬇ Exportar para Excel
+            <Glyph icon="⬇" size={13} /> Exportar para Excel
           </button>
           <button onClick={onClose}
             className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#c0392b' }}>
-            ✖ Fechar
+            <Glyph icon="✖" size={13} /> Fechar
           </button>
         </div>
       </div>

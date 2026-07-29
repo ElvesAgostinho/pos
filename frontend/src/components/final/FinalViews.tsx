@@ -5,7 +5,7 @@ import ClassicButton from '../ui/ClassicButton';
 import ClassicGrid from '../ui/ClassicGrid';
 import {
   GitBranch, ListTodo, LayoutDashboard, Undo2, ClipboardList, ShoppingCart, Award,
-  Banknote, Building, ShieldCheck, KeyRound, Fingerprint, Plus, Trash2, CheckCircle,
+  Banknote, Building, ShieldCheck, KeyRound, Fingerprint, Plus, Trash2, CheckCircle, Check,
 } from 'lucide-react';
 import { finalApi } from '../../api/final';
 import { aviso } from '../../ui/dialogo';
@@ -160,7 +160,7 @@ export function ProcReturnsView() {
           {sel ? <>
             <div className="flex items-center justify-between p-2 bg-[#eef4fb] border-b border-[#a0a0a0] text-[11px]">
               <span className="font-bold">{sel.number} · {sel.supplier_name}</span>
-              {sel.status !== 'CONFIRMED' ? <ClassicButton icon={CheckCircle} label="Confirmar (saída stock)" onClick={() => doConfirm(sel.id)} /> : <span className="text-green-700 font-bold">✓ Confirmada</span>}
+              {sel.status !== 'CONFIRMED' ? <ClassicButton icon={CheckCircle} label="Confirmar (saída stock)" onClick={() => doConfirm(sel.id)} /> : <span className="text-green-700 font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
             </div>
             {sel.status !== 'CONFIRMED' && <div className="flex flex-wrap items-end gap-2 p-2 bg-[#f0f0f0] border-b border-[#a0a0a0] text-[11px]">
               <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white max-w-[160px]"><option value="">Artigo…</option>{items.map((i: any) => <option key={i.id} value={i.id}>{i.name}</option>)}</select>
@@ -328,7 +328,7 @@ export function AdmModuleStatusView() {
     <ClassicWindow title="Administração — Estado dos Módulos" icon={<ShieldCheck size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Módulos e funcionalidades licenciadas</div>}>
       <div className="p-3 grid grid-cols-2 gap-3">
         <div className="bg-white border border-[#a0a0a0]"><div className="bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-1.5 text-[11px] font-bold">Módulos ativos ({modules.length})</div>
-          <div className="p-2 text-[12px]">{modules.length ? modules.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#eee]">✓ {typeof m === 'string' ? m : (m.name || m.code || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem informação.</div>}</div>
+          <div className="p-2 text-[12px]">{modules.length ? modules.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#eee] flex items-center gap-1"><Check size={12} strokeWidth={3} className="text-green-700" /> {typeof m === 'string' ? m : (m.name || m.code || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem informação.</div>}</div>
         </div>
         <div className="bg-white border border-[#a0a0a0]"><div className="bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-1.5 text-[11px] font-bold">Funcionalidades ({features.length})</div>
           <div className="p-2 text-[12px]">{features.length ? features.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#eee]">• {typeof m === 'string' ? m : (m.name || m.key || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem restrições / sem informação.</div>}</div>
@@ -345,7 +345,7 @@ export function AdmVersionsView() {
     <ClassicWindow title="Administração — Versões" icon={<ShieldCheck size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Informação de versão e ambiente</div>}>
       <div className="p-3">{!d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
         <div className="bg-white border border-[#a0a0a0] p-3 max-w-lg">
-          <Row k="Aplicação" v={`${d.app} v${d.version}`} /><Row k="Atualização" v={d.update?.up_to_date ? `✓ Atualizado` : `Disponível ${d.update?.latest}`} />
+          <Row k="Aplicação" v={`${d.app} v${d.version}`} /><Row k="Atualização" v={d.update?.up_to_date ? <span className="flex items-center gap-1"><Check size={12} strokeWidth={3} /> Atualizado</span> : `Disponível ${d.update?.latest}`} />
           <Row k="Base de dados" v={d.database} /><Row k="Python" v={d.python} /><Row k="Django" v={d.django} /><Row k="Plataforma" v={d.platform} /><Row k="Modo debug" v={String(d.debug)} />
         </div>
       )}</div>

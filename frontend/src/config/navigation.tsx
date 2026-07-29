@@ -607,12 +607,12 @@ export function moduleEnabled(key: string, active: string[]): boolean {
 // que PARTILHAM o mesmo motor (produtos, stock, faturação, pagamentos, permissões).
 // Um center pode pertencer a várias suites. `modules: []` = todos (Backoffice completo).
 // ==========================================================================
-export interface Suite { key: string; name: string; emoji: string; modules: string[]; }
+export interface Suite { key: string; name: string; modules: string[]; }
 export const SUITES: Suite[] = [
-  { key: 'all', name: 'Plataforma', emoji: '▦', modules: [] },
-  { key: 'backoffice', name: 'Backoffice', emoji: '🗄️', modules: ['admin', 'security', 'hotel', 'masterdata', 'commercial', 'srm', 'procurement', 'warehouse', 'financial', 'fiscal', 'accounting', 'reporting', 'documents', 'notifications', 'integration', 'system', 'licensing'] },
-  { key: 'pos', name: 'POS', emoji: '🛒', modules: ['posmgmt'] },
-  { key: 'ops', name: 'Centro de Operações', emoji: '📡', modules: ['ops', 'reporting'] },
+  { key: 'all', name: 'Plataforma', modules: [] },
+  { key: 'backoffice', name: 'Backoffice', modules: ['admin', 'security', 'hotel', 'masterdata', 'commercial', 'srm', 'procurement', 'warehouse', 'financial', 'fiscal', 'accounting', 'reporting', 'documents', 'notifications', 'integration', 'system', 'licensing'] },
+  { key: 'pos', name: 'POS', modules: ['posmgmt'] },
+  { key: 'ops', name: 'Centro de Operações', modules: ['ops', 'reporting'] },
 ];
 export const suiteIncludes = (suiteKey: string, moduleKey: string): boolean => {
   const s = SUITES.find((x) => x.key === suiteKey);

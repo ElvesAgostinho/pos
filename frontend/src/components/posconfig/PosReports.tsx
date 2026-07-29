@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso } from '../../ui/dialogo';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, Glyph } from './kit';
 import ReportGrid from './ReportGrid';
 
 const hoje = () => new Date().toISOString().slice(0, 10);
@@ -234,9 +234,9 @@ export default function PosReports() {
 
           <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
           <button title="Guardar (CSV)" onClick={exportar}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8]">💾</button>
+            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8] inline-flex"><Glyph icon="💾" size={14} /></button>
           <button title="Imprimir" onClick={imprimir}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8]">🖨</button>
+            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8] inline-flex"><Glyph icon="🖨" size={14} /></button>
 
           <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
           <input value={procurar} onChange={(e) => setProcurar(e.target.value)}

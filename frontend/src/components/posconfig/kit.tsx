@@ -5,7 +5,7 @@ import {
   Ban, Save, Package, BarChart3, ArrowUpToLine, LayoutGrid, Clock, Building2, Landmark,
   Users, User, Mail, PartyPopper, FolderArchive, TrendingUp, Monitor, Moon, Coins, Receipt,
   Wrench, Settings, Heart, IdCard, Phone, Star, Info, Link as LinkIcon, BedSingle as Bed,
-  Handshake, CreditCard, GitBranch, Lock, Eye, TriangleAlert, Menu, Key,
+  Handshake, CreditCard, GitBranch, Lock, Eye, TriangleAlert, Menu, Key, Unlock, Scissors,
 } from 'lucide-react';
 
 /**
@@ -60,7 +60,9 @@ export const ICON_MAP: Record<string, any> = {
   '🤝': Handshake,
   '💳': CreditCard,
   '⎇': GitBranch,
-  '🔒': Lock, '🔐': Lock, '🔓': Lock,
+  '🔒': Lock, '🔐': Lock,
+  '🔓': Unlock,
+  '✂': Scissors,
   '👁': Eye,
   '☰': Menu,
   '🔑': Key,

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
@@ -195,7 +195,7 @@ export default function FnbInventory() {
                   start_zero: edit.start_zero ?? false,
                 })}
                 className="w-[140px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b] disabled:bg-[#b8b8b8]">
-                <span className="text-[20px]">🔄</span>
+                <Glyph icon="🔄" size={20} />
                 <span className="text-[12px]">{gerar.isPending ? 'A gerar…' : 'Atualizar'}</span>
               </button>
             </div>
@@ -347,7 +347,7 @@ export default function FnbInventory() {
         </div>
         <button onClick={() => setAplicado({ ...f })}
           className="ml-auto w-[180px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-          <span className="text-[22px]">🔄</span>
+          <Glyph icon="🔄" size={22} />
           <span className="text-[13px]">Pesquisar</span>
         </button>
       </div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, GridCheck } from './kit';
+import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -223,7 +223,7 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
         onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
           <span>{code} - Histórico</span>
-          <button onClick={onClose} className="w-5 h-5 bg-[#c0392b] text-[12px] leading-none">✕</button>
+          <button onClick={onClose} className="w-5 h-5 bg-[#c0392b] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
         </div>
 
         <div className="flex-1 overflow-auto bg-white">

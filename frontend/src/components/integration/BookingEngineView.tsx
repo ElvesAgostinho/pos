@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
-import { Globe, KeyRound, RefreshCw, Link2, Search, Calendar } from 'lucide-react';
+import { Globe, KeyRound, RefreshCw, Link2, Search, Calendar, Lightbulb } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -105,8 +105,8 @@ export default function BookingEngineView() {
               <li>Aguarde a propagação do DNS (<b>15 min a 24 h</b>). Depois, <span className="font-mono">https://reservas.oseudominio.ao</span> abre o seu site de reservas.</li>
               <li><b>HTTPS:</b> no servidor, emita o certificado gratuito (Let's Encrypt): <span className="font-mono bg-[#f4f4f4] px-1">certbot --nginx -d reservas.oseudominio.ao</span></li>
             </ol>
-            <div className="mt-2 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#1e3f66]">
-              💡 Enquanto não tiver domínio próprio, o site funciona já no link acima. O domínio só troca o endereço — nada mais muda.
+            <div className="mt-2 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#1e3f66] flex items-start gap-1.5">
+              <Lightbulb size={14} className="flex-shrink-0 mt-px" /> Enquanto não tiver domínio próprio, o site funciona já no link acima. O domínio só troca o endereço — nada mais muda.
             </div>
           </div>
         )}

@@ -124,7 +124,7 @@ export default function SaftCenterView() {
             { header: 'Período', accessor: (r: any) => `${r.start_date} → ${r.end_date}`, width: '20%' },
             { header: 'Ficheiro', accessor: 'filename', width: '26%' },
             { header: 'Tamanho', accessor: (r: any) => `${(r.size_bytes / 1024).toFixed(1)} KB`, width: '9%' },
-            { header: 'Válido', accessor: (r: any) => r.is_valid ? <span className="text-green-700 font-bold">✓</span> : <span className="text-red-600 font-bold">✗</span>, width: '7%' },
+            { header: 'Válido', accessor: (r: any) => r.is_valid ? <CheckCircle2 size={14} className="text-green-700" /> : <XCircle size={14} className="text-red-600" />, width: '7%' },
             { header: 'Impressão digital (SHA-256)', accessor: (r: any) => <span className="font-mono text-[10px]">{(r.sha256 || '').slice(0, 20)}…</span>, width: '18%' },
           ]} />
         </Panel>
