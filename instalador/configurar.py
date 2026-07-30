@@ -100,6 +100,13 @@ def main():
     print(f'.env {estado}; base = {bd.get("tipo", "sqlite")}')
     correr('migrate', '--noinput')
     correr('collectstatic', '--noinput')
+    # O CATÁLOGO DE PARÂMETROS (Configuração POS → Parâmetros) — sem isto, uma
+    # instalação nova arranca com ZERO linhas na tabela; o motor (pos/params.py)
+    # continua a funcionar (cai nos valores por omissão do próprio código), mas
+    # o dono não vê nada para configurar, nem sabe que aqueles parâmetros
+    # existem. update_or_create: idempotente, nunca apaga um valor que o dono já
+    # tenha escolhido (só atualiza nome/grupo/texto de ajuda a cada versão nova).
+    correr('seed_params')
 
     # A CONTA DO DONO — utilizador/password que o técnico introduziu no wizard
     # (gerados no PCC). Numa atualização, o wizard volta a perguntar; se a
