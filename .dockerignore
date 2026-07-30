@@ -1,0 +1,45 @@
+# Segredos e dados locais — nunca dentro da imagem
+.env
+.env.*
+!.env.example
+*.key
+license.key
+private.pem
+*_private.pem
+*.private.pem
+*.sqlite3
+db.sqlite3
+
+# Dependências instaladas localmente — reinstalam-se dentro do contentor
+node_modules/
+frontend/node_modules/
+frontend_pcc/node_modules/
+backend/venv/
+venv/
+.venv/
+
+# Builds locais — recompilam-se dentro do contentor
+frontend/dist/
+frontend_pcc/dist/
+backend/webapp/
+backend/staticfiles/
+dist/
+dist-ssr/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Instalador Windows e ficheiros grandes que nada têm a ver com o PCC
+instalador/pacote/
+instalador/Output/
+instalador/pcc_url.txt
+
+# Editores / SO / git
+.git/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

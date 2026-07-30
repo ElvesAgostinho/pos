@@ -1,5 +1,10 @@
 # Pôr o PCC numa VPS a sério
 
+> **A usar um painel Docker (EasyPanel, CapRover, Coolify…) em vez de SSH direto?**
+> Este README é para uma VPS "nua" (Ubuntu + nginx + systemd por SSH). Para
+> EasyPanel especificamente, veja **`README-easypanel.md`** ao lado — usa o
+> `Dockerfile` desta mesma pasta.
+
 O PCC é o SEU sistema — a consola onde emites licenças, geras as senhas de
 instalação/dono, e para onde os clientes sincronizam (certificação AGT, ligação
 e-fatura, renovações). Hoje só corre na sua máquina, por isso tem de me pedir

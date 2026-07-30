@@ -10,6 +10,7 @@ uma licença (ao contrário do HMAC simétrico anterior, que usava o SECRET_KEY 
 """
 import base64
 import json
+import os
 from pathlib import Path
 
 from cryptography.hazmat.primitives import hashes, serialization
@@ -17,7 +18,19 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
 
 ENGINE_DIR = Path(__file__).resolve().parent
-PRIVATE_KEY_PATH = ENGINE_DIR / "private.pem"
+
+# A CHAVE PRIVADA nunca pode viver dentro da pasta de código num deploy em
+# contentor (Docker/EasyPanel): a pasta de código é reconstruída do zero a cada
+# `git pull`/redeploy — perdê-la-ia, e uma chave nova invalida TODAS as licenças
+# já emitidas a TODOS os clientes (o public.pem de cada instalação, distribuído
+# com o produto, deixaria de bater certo com a nova private.pem do PCC). Por
+# isso o caminho é configurável (LICENSING_KEYS_DIR) e deve apontar para um
+# volume PERSISTENTE. Sem essa variável, mantém-se o caminho de sempre (a
+# instalação Windows do cliente nunca muda isto — só o PCC em contentor precisa).
+PRIVATE_KEY_PATH = Path(os.environ.get("LICENSING_KEYS_DIR") or ENGINE_DIR) / "private.pem"
+# A CHAVE PÚBLICA é sempre a que vem NO CÓDIGO (git) — é ela que viaja dentro de
+# cada instalação do cliente para verificar as licenças; tem de ser a MESMA em
+# todo o lado, nunca uma cópia à parte que possa desalinhar da do PCC.
 PUBLIC_KEY_PATH = ENGINE_DIR / "public.pem"
 
 

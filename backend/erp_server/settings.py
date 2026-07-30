@@ -80,6 +80,16 @@ if RUN_MODE == 'PCC':
     # acrescentamos se faltar, evitando "Application labels aren't unique".
     if "clm" not in INSTALLED_APPS:
         INSTALLED_APPS.append("clm")
+    # (mdm) tem campos que apontam para 'pos.SelectionCode', 'inventory.Item', etc.
+    # — são "core" mas referenciam modelos de módulos OPCIONAIS. No modo ERP isso
+    # nunca dava erro porque o cliente normal ativa quase sempre o POS por licença;
+    # o PCC nunca passa pelo resolve_active() (só gere licenças, não vende a si
+    # próprio um módulo), por isso ficava sem 'pos'/'inventory' instalados e o
+    # `manage.py check`/`migrate` rebentava logo ao arrancar (fields.E307). O PCC
+    # nunca USA estas tabelas — só precisa delas para o Django validar o esquema.
+    for _app in ('inventory', 'pos', 'commercial'):
+        if _app not in INSTALLED_APPS:
+            INSTALLED_APPS.append(_app)
 else:
     # No Hospitality ERP, carregamos a licença offline e ativamos os módulos autorizados
     try:
@@ -99,6 +109,10 @@ else:
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Serve /static/ sozinho (admin, DRF) quando não há nginx à frente — caso do
+    # contentor Docker do PCC. Na instalação do cliente (Windows) isto também não
+    # faz mal: fica só a servir ficheiros que já lá estavam.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -108,6 +122,14 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.audit_middleware.AuditMiddleware",   # trilho de auditoria universal
 ]
+if RUN_MODE == 'PCC':
+    # Só a consola do PCC tem esta camada extra (ver core/pcc_access.py) — o
+    # sistema instalado no cliente (RUN_MODE=ERP) nunca precisa disto.
+    MIDDLEWARE.append("core.pcc_access.PccConsoleGateMiddleware")
+
+# (PCC) Lista de IPs/redes com acesso à consola — CIDR separado por vírgulas
+# (ex.: "41.63.12.7,10.8.0.0/24"). Vazia = sem restrição extra (só o login).
+PCC_ALLOWED_IPS = os.environ.get('PCC_ALLOWED_IPS', '')
 
 # CORS: em dev permite tudo; em produção só as origens configuradas (DJANGO_CORS_ORIGINS).
 if DEBUG:
@@ -258,6 +280,15 @@ USE_TZ = True
 STATIC_URL = "static/"
 # Ficheiros estáticos servidos em produção (python manage.py collectstatic).
 STATIC_ROOT = os.environ.get("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles"))
+# WhiteNoise: comprime e dá hash ao nome (cache eterna sem ficar com o ficheiro
+# velho preso) — só em produção; em DEBUG o Django serve os estáticos à mão.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        if not DEBUG else "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 LICENSING_HARD_MODE = False
 
 # ---------------------------------------------------------------------------
@@ -279,11 +310,15 @@ if not DEBUG:
         import warnings
         warnings.warn("DJANGO_SECRET_KEY não definido em produção — usar um segredo forte via ambiente.")
 
-# SMTP Email Configuration
+# SMTP — por variável de ambiente, com o SendGrid como omissão (era fixo no
+# código antes; quem usa outro fornecedor não conseguia mudar sem editar isto).
+# Sem EMAIL_HOST_PASSWORD definida, o envio de e-mail falha (ou, no POS, o
+# motor pos/mailer.py já sabe SIMULAR e registar em vez de rebentar — mas o
+# PCC/admin do Django usa o backend SMTP direto, por isso aqui falha a sério).
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('1', 'true', 'yes')
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'apikey')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@mwanalodge.ao')

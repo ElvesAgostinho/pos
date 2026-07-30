@@ -102,7 +102,8 @@ Copy-Item "$PSScriptRoot\servicos\servidor.xml"  "$Pacote\servicos\"
 Copy-Item "$PSScriptRoot\servicos\impressao.xml" "$Pacote\servicos\"
 
 Write-Host "== 6/6 Inno Setup =="
-$iscc = @('C:\Program Files (x86)\Inno Setup 6\ISCC.exe', 'C:\Program Files\Inno Setup 6\ISCC.exe') |
+$iscc = @('C:\Program Files (x86)\Inno Setup 6\ISCC.exe', 'C:\Program Files\Inno Setup 6\ISCC.exe',
+          "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe") |
         Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $iscc) {
   Write-Warning 'Inno Setup 6 não está instalado (https://jrsoftware.org/isdl.php).'
