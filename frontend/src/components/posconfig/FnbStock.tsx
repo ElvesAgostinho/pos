@@ -49,15 +49,15 @@ export default function FnbStock() {
   });
 
   const recalcular = useMutation({
-    mutationFn: () => apiClient.post('pos/stock/recalc/', {}),
+    mutationFn: () => apiClient.post('pos/config/stock-recalc/', { cost_items: true, stock_qty: true }),
     onSuccess: (r: any) => {
       qc.invalidateQueries({ queryKey: ['fnb'] });
-      const n = r.data.changed?.length || 0;
+      const n = r.data.changes?.length || 0;
       notifyGuide({
         title: n ? `${n} saldo(s) corrigido(s)` : 'Stock certo',
         message: n
-          ? r.data.changed.slice(0, 5).map((c: any) =>
-            `${c.item}: ${c.before} → ${c.after}`).join(' · ')
+          ? r.data.changes.slice(0, 5).map((c: any) =>
+            `${c.item} (${c.field}): ${c.before} → ${c.after}`).join(' · ')
           : 'Todos os saldos batem com o histórico de movimentos.',
       });
     },

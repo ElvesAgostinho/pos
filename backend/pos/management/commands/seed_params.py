@@ -135,13 +135,13 @@ PARAMS = [
     # servidor externo nenhum). Ficam guardados por paridade de número com a HOST,
     # tal como a "Interface com PMS" — nunca vão ligar a nada NESTE sistema.
     (1363, 'Reporting', 'Servidor de Relatórios (URL)', T, [], '',
-     'SSRS (Windows Reporting Services) da HOST — este sistema tem o seu próprio motor de relatórios, não usa SSRS.'),
+     'Campo de um servidor externo de relatórios que este sistema não usa — tem o seu próprio motor de relatórios nativo (Reporting Center). Sem efeito.'),
     (1360, 'Reporting', 'Gestor de Relatórios (URL)', T, [], '',
-     'SSRS da HOST — sem equivalente neste sistema (Reporting Center próprio).'),
+     'Sem equivalente neste sistema (Reporting Center próprio, sem servidor externo). Sem efeito.'),
     (8053, 'Reporting', 'Ligação aos Relatórios', T, [], '',
-     'SSRS da HOST — sem equivalente neste sistema (Reporting Center próprio).'),
+     'Sem equivalente neste sistema (Reporting Center próprio, sem servidor externo). Sem efeito.'),
     (8374, 'Reporting', 'Relatório - Ficha técnica', T, [], '',
-     'Modelo SSRS da Ficha Técnica na HOST. Aqui a Ficha Técnica imprime-se nativamente '
+     'Modelo de relatório externo que este sistema não usa. Aqui a Ficha Técnica imprime-se nativamente '
      '(Configuração POS → Artigos → aba Composição/Unidade → Imprimir) — não precisa de modelo nenhum.'),
 
     # ---------------- Moeda ----------------
@@ -184,7 +184,7 @@ PARAMS = [
     (8080, 'Descontos', 'Desconto - Timeshare', T, [], '', ''),
     (8081, 'Descontos', 'Desconto - Proprietário', T, [], '', ''),
     (8082, 'Descontos', 'Desconto - Grupo (2)', T, [], '',
-     'Assim mesmo na HOST: dois desconto-Grupo com números diferentes. Este não está '
+     'Duplicado histórico do desconto "Grupo". Este não está '
      'ligado ao motor de descontos automáticos (o 8079 já cobre "Grupo") — fica guardado '
      'para não faltar o número, mas não dispara nada sozinho.'),
 
@@ -231,8 +231,8 @@ PARAMS = [
     (8231, 'Fecho do Dia', 'E-mails para avisar quando são libertadas mesas abertas (;)', T, [], '',
      'Separados por ";". Dispara quando uma mesa fica livre (POSTicketViewSet._liberta_mesa).'),
     (8311, 'Fecho do Dia', 'E-mails para avisar quando são libertadas mesas abertas (Relatório)', T, [], '',
-     'Campo da HOST original (caminho do relatório SSRS anexado ao e-mail). Este sistema '
-     'não tem SSRS — o e-mail sai em texto simples; fica guardado por paridade.'),
+     'Campo herdado para o caminho de um relatório externo anexado ao e-mail. Este sistema '
+     'não usa esse mecanismo — o e-mail sai em texto simples. Sem efeito.'),
 
     # ---------------- Artigos ----------------
     (8209, 'Artigos', 'Configurar IVA por sub-família', B, [], 'false', ''),
@@ -321,8 +321,7 @@ PARAMS = [
     (8230, 'F&B', 'Avisar quando o preço é alterado', B, [], 'true',
      'O fornecedor subiu o preço e ninguém deu por isso: é assim que a margem desaparece.'),
     (9231, 'F&B', 'Avisar quando o preço é alterado (percentagem)', I, [], '5',
-     'A partir de quantos %% se avisa. (Nasceu como 8231 nesta casa; passou para o bloco '
-     '9xxx porque 8231 já significa outra coisa na HOST — mesas libertadas.)'),
+     'A partir de quantos %% se avisa.'),
     (8238, 'F&B', 'Endereço de e-mail de resposta', T, [], '', ''),
     (8277, 'F&B', 'Bloquear movimento de stock com quantidade negativa na origem', B, [], 'false',
      'Impede tirar do armazém o que lá não está — o stock negativo é sempre um erro escondido.'),
@@ -334,13 +333,13 @@ PARAMS = [
     # DIRETO para o razão — sem ficheiro no meio, sem passo manual de importar.
     # Ficam guardados por paridade de número; nunca vão gerar ficheiro nenhum aqui.
     (8274, 'F&B · Exportação', 'Dias', I, [], '0',
-     'Exportação para ficheiro de texto (HOST) — este sistema lança direto no razão, sem ficheiro.'),
+     'Campo herdado de exportação para ficheiro de texto — este sistema lança direto no razão, sem ficheiro. Sem efeito.'),
     (8275, 'F&B · Exportação', 'Nome do ficheiro', T, [], 'CT{F:yyyyMMdd}_{T:yyyyMMdd}.txt',
-     'Exportação para ficheiro de texto (HOST) — sem equivalente (auto-posting direto).'),
+     'Campo herdado de exportação para ficheiro de texto — sem equivalente (auto-posting direto). Sem efeito.'),
     (8276, 'F&B · Exportação', 'Pasta de exportação', T, [], '',
-     'Exportação para ficheiro de texto (HOST) — sem equivalente (auto-posting direto).'),
+     'Campo herdado de exportação para ficheiro de texto — sem equivalente (auto-posting direto). Sem efeito.'),
     (8273, 'F&B · Exportação', 'Decimais', I, [], '4',
-     'Exportação para ficheiro de texto (HOST) — sem equivalente (auto-posting direto).'),
+     'Campo herdado de exportação para ficheiro de texto — sem equivalente (auto-posting direto). Sem efeito.'),
 
     # ---------------- Gestão de F&B · Contas a pagar / Contabilidade ----------------
     (10537, 'F&B · Contas a pagar', 'Recibo de pagamento (relatório)', T, [], '', ''),
@@ -424,7 +423,7 @@ PARAMS_TERMINAL = [
      'identificação nenhuma. Vazio = sem rótulo fixo (como sempre foi).'),
     (9511, 'Geral', 'Bloquear Venda Direta', B, [], 'false',
      'LIGADO: o servidor recusa qualquer conta sem mesa (não só esconde o botão — trava '
-     'mesmo quem tentar por outra via, ex.: offline). Companheiro de 8511 na HOST.'),
+     'mesmo quem tentar por outra via, ex.: offline).'),
     (8509, 'Geral', 'Código de IVA neste posto', I, [], '0',
      'Id de uma taxa (Fiscal › Taxas de IVA). Quando preenchido, ESTE terminal fatura '
      'tudo a essa taxa, por cima da taxa da ficha do artigo. 0 = usa sempre a do artigo.'),
@@ -433,7 +432,7 @@ PARAMS_TERMINAL = [
      'LIGADO: fecha o painel de Pagamentos logo a seguir a aplicar um pagamento, sem '
      'esperar pelo recibo (reimprime-se depois a partir da conta).'),
     (8535, 'Geral', 'Pasta de Documentos', T, [], '',
-     'Pasta LOCAL do terminal (spooler HOST). Este sistema guarda tudo no servidor '
+     'Pasta LOCAL herdada de outro sistema. Este sistema guarda tudo no servidor '
      '(core/uploads.py + MEDIA_ROOT) — não há pasta de terminal para configurar. Sem efeito.'),
     (8536, 'Geral', 'Pasta de Imagens', T, [], '',
      'Mesmo caso do 8535: as imagens (ex.: fotos de artigo) sobem para o servidor, '
@@ -450,8 +449,7 @@ PARAMS_TERMINAL = [
      '0 (fábrica) = colunas em pixels fixos, como sempre foi. Qualquer outro valor '
      'liga a partilha em percentagem do 9583.'),
     (9583, 'Geral', '% por Coluna', T, [], '20;60;20',
-     'Qtd;Descrição;Total, em percentagem — só entra com o 8583 ligado. Companheiro '
-     'de 8583 na HOST (mesmo número lá) — aqui em número próprio para não colidir.'),
+     'Qtd;Descrição;Total, em percentagem — só entra com o 8583 ligado.'),
     (8593, 'Geral', 'Payment gateway', T, [], '',
      'Já coberto pela ficha do Modo de Pagamento (Interface externa/TPA) — usada em '
      'cada método, não por posto. Sem efeito, para não duplicar a configuração.'),
