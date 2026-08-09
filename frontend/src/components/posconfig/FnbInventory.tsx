@@ -105,7 +105,7 @@ export default function FnbInventory() {
         </div>
 
         <div className="flex gap-3 p-3">
-          <fieldset className="border border-[#c8c8c8] bg-white px-3 pb-3 flex-1">
+          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1.5px groove #c0c0c0' }}>
             <legend className="text-[12px] px-1 font-bold">Geral</legend>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="flex items-center gap-2">
@@ -144,7 +144,7 @@ export default function FnbInventory() {
             </div>
           </fieldset>
 
-          <fieldset className="border border-[#c8c8c8] bg-white px-3 pb-3 flex-1">
+          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1.5px groove #c0c0c0' }}>
             <legend className="text-[12px] px-1 font-bold">Filtros</legend>
             <div className="flex gap-4">
               <div className="space-y-2">

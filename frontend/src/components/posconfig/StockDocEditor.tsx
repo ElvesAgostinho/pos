@@ -158,7 +158,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                 </div>
 
                 <div className="space-y-4">
-                  <fieldset className="border border-[#c8c8c8] px-3 pb-3 pt-1">
+                  <fieldset className="px-3 pb-3 pt-1" style={{ border: '1.5px groove #c0c0c0' }}>
                     <legend className="text-[12px] px-1">Natureza</legend>
                     {[['RECEIVABLE', 'Documento a receber'], ['PAYABLE', 'Documento a pagar']].map(([v, l]) => (
                       <label key={v} className="flex items-center gap-2 text-[12px] py-0.5">
@@ -168,7 +168,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                     ))}
                   </fieldset>
 
-                  <fieldset className="border border-[#c8c8c8] px-3 pb-3 pt-1">
+                  <fieldset className="px-3 pb-3 pt-1" style={{ border: '1.5px groove #c0c0c0' }}>
                     <legend className="text-[12px] px-1">Documento externo</legend>
                     {[['IGNORE', 'Ignorar duplicação'], ['WARN', 'Informar sobre duplicação'],
                       ['BLOCK', 'Não permite duplicação']].map(([v, l]) => (
