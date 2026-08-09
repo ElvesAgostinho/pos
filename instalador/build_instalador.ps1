@@ -1,4 +1,4 @@
-# ============================================================================
+﻿# ============================================================================
 # MONTAR O SETUP.EXE — corre na MÁQUINA DO FORNECEDOR (a sua), nunca no cliente.
 #
 #   .\build_instalador.ps1
@@ -70,7 +70,7 @@ New-Item -ItemType Directory -Force "$Pacote\app" | Out-Null
 # a base de dev, o .env, as chaves privadas e a licença de teste.
 robocopy (Join-Path $Raiz 'backend') "$Pacote\app" /E /NFL /NDL /NJH /NJS `
   /XF db.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.pem license.key *.key.bak servidor.log `
-  /XD __pycache__ .pytest_cache staticfiles | Out-Null
+  /XD __pycache__ .pytest_cache staticfiles venv .venv media | Out-Null
 # o site compilado vai DENTRO do backend: um serviço serve tudo
 Copy-Item (Join-Path $Raiz 'frontend\dist') "$Pacote\app\webapp" -Recurse
 # o configurador viaja na raiz do pacote
@@ -87,6 +87,11 @@ Expand-Archive $PyZip "$Pacote\python" -Force
 # o embutido traz o site desligado — liga-se para o pip funcionar
 $pth = Get-ChildItem "$Pacote\python\python3*._pth" | Select-Object -First 1
 (Get-Content $pth.FullName) -replace '#import site', 'import site' | Set-Content $pth.FullName
+# O Python embutido só vê as pastas listadas AQUI (é o que o torna "isolado").
+# "-m waitress" funciona sem isto (o -m junta sempre a pasta atual sozinho),
+# mas correr "manage.py" diretamente (ex.: o serviço de Impressão) não — sem
+# esta linha, import erp_server falha sempre, nesse caso, em qualquer máquina.
+Add-Content -Path $pth.FullName -Value '..\app' -Encoding UTF8
 Invoke-WebRequest 'https://bootstrap.pypa.io/get-pip.py' -OutFile "$Pacote\python\get-pip.py"
 & "$Pacote\python\python.exe" "$Pacote\python\get-pip.py" --no-warn-script-location
 & "$Pacote\python\python.exe" -m pip install --no-warn-script-location -r (Join-Path $Raiz 'backend\requirements.txt')

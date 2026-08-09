@@ -4,19 +4,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, AllowAny  # Consola do fornecedor: apenas staff
 
-from core.modules import all_modules, FEATURES
+from core.modules import sellable_modules, FEATURES
 
 
 class ModuleCatalogView(APIView):
     """
-    Catálogo canónico de módulos, consumido pela consola PCC (Wizard de licenças).
-    Fonte única definida em core/modules.py — garante que ativar um módulo aqui
-    corresponde exatamente à app que arranca no ERP do cliente.
+    Catálogo de módulos VENDÁVEIS, consumido pela consola PCC (Wizard de
+    licenças) para provisionar clientes NOVOS. Fonte única definida em
+    core/modules.py — um módulo ainda em desenvolvimento (sellable=False,
+    ex.: PMS) não aparece aqui, mas continua a funcionar normalmente para
+    quem já o tem ativo (isto só limita o que se oferece a partir de agora).
     """
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        return Response(all_modules())
+        return Response(sellable_modules())
 
 
 class FeatureCatalogView(APIView):

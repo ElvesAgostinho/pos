@@ -91,14 +91,30 @@ if RUN_MODE == 'PCC':
         if _app not in INSTALLED_APPS:
             INSTALLED_APPS.append(_app)
 else:
-    # No Hospitality ERP, carregamos a licença offline e ativamos os módulos autorizados
+    # (mdm) tem campos que apontam para 'pos.SelectionCode', 'inventory.Item', etc.
+    # — são "core" mas referenciam modelos de módulos OPCIONAIS. Numa instalação
+    # ACABADA DE FAZER ainda não há license.key nenhum no disco (só é colocado
+    # depois) — resolve_active([]) devolvia um conjunto vazio e 'pos'/'inventory'
+    # nunca entravam em INSTALLED_APPS, e o primeiro `manage.py migrate` do
+    # instalador rebentava logo (fields.E307), sem chegar a criar a conta do
+    # dono. MESMA razão e MESMA correção já aplicada acima ao modo PCC: o
+    # esquema destas tabelas tem de existir sempre — quem controla se o cliente
+    # pode USAR o POS é a licença/permissões, não a app estar ou não instalada.
+    # 'commercial' entra por causa do mesmo problema um nível abaixo: inventory.Item
+    # e pos.PosSector apontam para commercial.Promotion (Happy Hour/Combos) — exatamente
+    # o motivo que já tinha obrigado a incluí-lo no modo PCC, acima.
+    for _app in ('inventory', 'pos', 'commercial'):
+        if _app not in INSTALLED_APPS:
+            INSTALLED_APPS.append(_app)
+
+    # Carregamos a licença offline e ativamos os RESTANTES módulos autorizados.
     try:
         from licensing.offline_validator import get_active_modules
         active_modules = get_active_modules(BASE_DIR, SECRET_KEY)
 
         # Fecho transitivo: dado o que a licença autoriza, resolve as dependências
         # necessárias (ex: 'procurement' arrasta 'esm' e 'inventory') e ignora o resto.
-        # Se não houver licença válida, o conjunto é vazio -> nenhum módulo opcional carrega.
+        # Se não houver licença válida, só ficam ativos 'inventory'/'pos' (acima).
         from core.modules import resolve_active
         for app in resolve_active(active_modules):
             if app not in INSTALLED_APPS:

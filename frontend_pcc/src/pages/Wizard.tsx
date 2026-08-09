@@ -55,7 +55,7 @@ const Wizard: React.FC = () => {
       .catch((e) => console.error('Erro ao carregar catálogo de funcionalidades', e));
   }, []);
 
-  const steps = ['Dados Gerais', 'Empresa e Hotel', 'Módulos', 'Funcionalidades', 'Licença', 'Resumo'];
+  const steps = ['Dados Gerais', 'Módulos', 'Funcionalidades', 'Licença', 'Resumo'];
   const toggleFeature = (key: string) =>
     setSelectedFeatures((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   const featuresByModule = featureCatalog.reduce<Record<string, any[]>>((acc, f) => {
@@ -214,24 +214,7 @@ const Wizard: React.FC = () => {
 
           {step === 2 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">2. Estrutura Base</h2>
-              <p className="text-gray-600 mb-2 text-[10px]">O Provisioning Engine criará esta estrutura automaticamente.</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-700 mb-1">Nome da Empresa Matriz</label>
-                  <input type="text" className="w-full border border-[#999] px-2 py-1 text-xs" defaultValue="Pestana Management" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-700 mb-1">Nome do Primeiro Hotel</label>
-                  <input type="text" className="w-full border border-[#999] px-2 py-1 text-xs" defaultValue="Hotel Luanda" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">3. Ativação de Módulos</h2>
+              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">2. Ativação de Módulos</h2>
               <p className="text-[10px] text-gray-500">
                 Cada módulo corresponde a uma aplicação real do ERP. O que ativar aqui é o que arranca no servidor do cliente.
               </p>
@@ -274,9 +257,9 @@ const Wizard: React.FC = () => {
             </div>
           )}
 
-          {step === 4 && (
+          {step === 3 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">4. Funcionalidades (Premium & Base)</h2>
+              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">3. Funcionalidades (Premium & Base)</h2>
               <p className="text-[10px] text-gray-500">
                 Dentro de cada módulo, escolha as funcionalidades incluídas nesta licença. As desativadas não aparecem no ERP do cliente.
               </p>
@@ -301,9 +284,9 @@ const Wizard: React.FC = () => {
             </div>
           )}
 
-          {step === 5 && (
+          {step === 4 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">5. Detalhes da Licença</h2>
+              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">4. Detalhes da Licença</h2>
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">Plano Contratado</label>
@@ -326,9 +309,9 @@ const Wizard: React.FC = () => {
             </div>
           )}
 
-          {step === 6 && (
+          {step === 5 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">6. Tudo Pronto para o Deploy!</h2>
+              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">5. Tudo Pronto para o Deploy!</h2>
               <div className="bg-[#f9f9f9] border border-[#ccc] p-4 text-[11px] max-h-60 overflow-y-auto">
                 <ul className="space-y-1">
                   <li><span className="text-[#90c040] font-bold">✓</span> Criar Cliente: {formData.commercial_name || 'Novo Cliente'}</li>

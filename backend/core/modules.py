@@ -57,6 +57,13 @@ OPTIONAL_MODULES = [
      "requires": [], "description": "Tesouraria, recebimentos, pagamentos, centros de custo e faturação (AR)."},
     {"code": "commercial", "name": "Commercial Center (Pricing & Promoções)", "category": "Comercial",
      "requires": ["inventory", "pos"], "description": "Promoções, Happy Hour e Combos que alimentam o POS."},
+    {"code": "pms", "name": "PMS · Property Management System", "category": "Operação",
+     "requires": [], "description": "Reservas, quartos, blocos, check-in/out e folio do hóspede.",
+     # AINDA EM DESENVOLVIMENTO — não oferecer no Wizard de provisionamento do
+     # PCC enquanto não estiver pronto para clientes pagantes. Continua ativo
+     # para instalações/licenças que já o tenham (não se retira nada a quem já
+     # o usa) — só deixa de aparecer como opção para clientes NOVOS.
+     "sellable": False},
 ]
 
 # Lista de app_labels opcionais — consumida por erp_server.settings para o gating.
@@ -93,9 +100,22 @@ def resolve_active(requested):
 
 
 def all_modules():
-    """Catálogo completo (core + opcionais) para a consola PCC."""
+    """Catálogo completo (core + opcionais) — inclui módulos ainda não à venda
+    (sellable=False); usado onde é preciso ver TUDO o que existe, não só o
+    que se pode oferecer a um cliente novo (ex.: o validador offline de
+    licenças tem de reconhecer módulos de quem já os tem ativos)."""
     return [{**m, "is_core": True} for m in CORE_MODULES] + \
            [{**m, "is_core": False} for m in OPTIONAL_MODULES]
+
+
+def sellable_modules():
+    """Só os módulos que o Wizard de provisionamento do PCC pode oferecer a um
+    cliente NOVO — os que já estão prontos para vender. Core está sempre
+    incluído (não é opção, é a base). Um módulo ainda em desenvolvimento
+    (sellable=False) fica de fora daqui mas continua a funcionar para quem já
+    o tem — isto só afeta o que aparece para provisionar clientes novos."""
+    return [{**m, "is_core": True} for m in CORE_MODULES] + \
+           [{**m, "is_core": False} for m in OPTIONAL_MODULES if m.get("sellable", True)]
 
 
 # ==========================================================================

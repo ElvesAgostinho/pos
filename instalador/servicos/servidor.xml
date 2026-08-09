@@ -13,8 +13,11 @@
   <name>Mwana Lodge — Servidor</name>
   <description>Servidor do System Mwana Lodge (backoffice, POS e API fiscal). Sem este serviço os terminais não vendem.</description>
 
+  <!-- run_server.py corre `migrate` sozinho antes de servir (self-heal do esquema
+       a cada arranque — ver o comentário no topo do ficheiro) e só depois inicia
+       o waitress. Nunca voltar a apontar isto direto para "-m waitress...". -->
   <executable>%BASE%\..\python\python.exe</executable>
-  <arguments>-m waitress --listen=0.0.0.0:8000 --threads=8 erp_server.wsgi:application</arguments>
+  <arguments>run_server.py</arguments>
   <workingdirectory>%BASE%\..\app</workingdirectory>
 
   <!-- caiu? volta a subir. Um servidor de vendas não fica no chão à espera. -->

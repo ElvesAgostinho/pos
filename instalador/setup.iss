@@ -115,19 +115,23 @@ var
   DonoPagina: TWizardPage;
   EdDonoUser, EdDonoPass, EdDonoPass2: TNewEdit;
 
-procedure InitializeWizard;
+{ O Pascal Script do Inno Setup não suporta funções aninhadas (ao contrário do
+  Object Pascal normal) — por isso "Campo" tem de viver cá fora, não dentro de
+  InitializeWizard. Foi isto que partia a compilação ("'BEGIN' expected"). }
+function Campo(AOwner: TWizardPage; ATop: Integer; ACaption, ADefault: String;
+               APass: Boolean): TNewEdit;
 var
   L: TNewStaticText;
-  function Campo(AOwner: TWizardPage; ATop: Integer; ACaption, ADefault: String;
-                 APass: Boolean): TNewEdit;
-  begin
-    L := TNewStaticText.Create(AOwner.Surface);
-    L.Parent := AOwner.Surface; L.Top := ATop; L.Left := 0; L.Caption := ACaption;
-    Result := TNewEdit.Create(AOwner.Surface);
-    Result.Parent := AOwner.Surface; Result.Top := ATop - 4; Result.Left := 140;
-    Result.Width := 280; Result.Text := ADefault;
-    if APass then Result.PasswordChar := '*';
-  end;
+begin
+  L := TNewStaticText.Create(AOwner.Surface);
+  L.Parent := AOwner.Surface; L.Top := ATop; L.Left := 0; L.Caption := ACaption;
+  Result := TNewEdit.Create(AOwner.Surface);
+  Result.Parent := AOwner.Surface; Result.Top := ATop - 4; Result.Left := 140;
+  Result.Width := 280; Result.Text := ADefault;
+  if APass then Result.PasswordChar := '*';
+end;
+
+procedure InitializeWizard;
 begin
   TipoBD := CreateInputOptionPage(wpSelectDir,
     'Base de Dados', 'Onde ficam guardadas as vendas',

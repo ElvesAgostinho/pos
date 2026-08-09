@@ -1,4 +1,4 @@
-# ============================================================================
+﻿# ============================================================================
 # OPENVPN NO SERVIDOR DO CLIENTE — para o DONO DO HOTEL aceder ao seu próprio
 # sistema remotamente (de casa, em viagem), com OpenVPN Connect no telemóvel
 # ou portátil — a MESMA ferramenta que o fornecedor usa para o PCC, só que

@@ -12,7 +12,12 @@
   <description>Entrega talões e comandas às impressoras e abre a gaveta do dinheiro. Sem este serviço, os pedidos de impressão ficam em fila.</description>
 
   <executable>%BASE%\..\python\python.exe</executable>
-  <arguments>manage.py print_agent</arguments>
+  <!-- Caminho ABSOLUTO para o manage.py — um caminho relativo ("manage.py" sozinho)
+       dependia da workingdirectory ser respeitada antes do Python resolver o script,
+       e nalgumas máquinas isso falhava com "ModuleNotFoundError: No module named
+       'erp_server'" (o Python nunca chegava a adicionar a pasta do projeto ao
+       sys.path). Com o caminho completo já não há ambiguidade nenhuma. -->
+  <arguments>"%BASE%\..\app\manage.py" print_agent</arguments>
   <workingdirectory>%BASE%\..\app</workingdirectory>
 
   <onfailure action="restart" delay="10 sec"/>

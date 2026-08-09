@@ -50,6 +50,12 @@ def escrever_env(bd):
         'DJANGO_ALLOWED_HOSTS=*',
         f'DJANGO_MEDIA_ROOT={DADOS / "media"}',
         f'DJANGO_STATIC_ROOT={DADOS / "staticfiles"}',
+        # Este instalador serve tudo em HTTP simples na porta 8000 (sem nginx/
+        # certificado à frente) — sem isto, o settings.py assume produção=HTTPS
+        # por omissão e o Django entra num redirecionamento http->https sem fim
+        # (a página nunca abre, "loop infinito"). Se um dia se puser um proxy
+        # com TLS à frente, isto muda para True.
+        'DJANGO_SSL_REDIRECT=False',
     ]
     if bd.get('tipo') == 'postgres':
         linhas += [
