@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { money, Glyph } from './kit';
+import { TOKENS } from '../../config/theme';
 
 /**
  * INFORMAÇÃO ONLINE — o que está a acontecer AGORA.
@@ -19,12 +20,15 @@ export default function PosOnline() {
   if (!d) return <div className="flex-1 flex items-center justify-center text-[#999]">A carregar…</div>;
 
   const Card = ({ label, value, sub, color }: any) => (
-    <div className="border border-[#d5d5d5] bg-white px-4 py-3 flex-1">
+    <div className="bg-white px-4 py-3 flex-1" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
       <div className="text-[11px] text-[#666] uppercase tracking-wide">{label}</div>
       <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#222' }}>{value}</div>
       {sub && <div className="text-[11px] text-[#888]">{sub}</div>}
     </div>
   );
+  const panelStyle = { boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft };
+  const panelHeader = 'px-3 py-1.5 text-[12px] font-bold border-b';
+  const panelHeaderStyle = { background: 'linear-gradient(to bottom, #f7f9fb 0%, #e6eaee 100%)', borderColor: TOKENS.line, color: TOKENS.textOnLight };
 
   const mesas = d.tables || {};
   const ocupadas = mesas.OCCUPIED || 0;
@@ -52,8 +56,8 @@ export default function PosOnline() {
       </div>
 
       <div className="flex gap-3">
-        <div className="flex-1 border border-[#d5d5d5] bg-white">
-          <div className="px-3 py-1.5 bg-[#e4e4e4] text-[12px] font-bold border-b border-[#d0d0d0]">
+        <div className="flex-1 bg-white" style={panelStyle}>
+          <div className={panelHeader} style={panelHeaderStyle}>
             Contas abertas — quem está a ser servido agora
           </div>
           <table className="w-full text-[12px]">
@@ -84,8 +88,8 @@ export default function PosOnline() {
         </div>
 
         <div className="w-[34%] space-y-3">
-          <div className="border border-[#d5d5d5] bg-white">
-            <div className="px-3 py-1.5 bg-[#e4e4e4] text-[12px] font-bold border-b border-[#d0d0d0]">
+          <div className="bg-white" style={panelStyle}>
+            <div className={panelHeader} style={panelHeaderStyle}>
               Mais vendidos hoje
             </div>
             <table className="w-full text-[12px]">
@@ -104,8 +108,8 @@ export default function PosOnline() {
             </table>
           </div>
 
-          <div className="border border-[#d5d5d5] bg-white">
-            <div className="px-3 py-1.5 bg-[#e4e4e4] text-[12px] font-bold border-b border-[#d0d0d0]">
+          <div className="bg-white" style={panelStyle}>
+            <div className={panelHeader} style={panelHeaderStyle}>
               Vendas por ponto de venda
             </div>
             <table className="w-full text-[12px]">

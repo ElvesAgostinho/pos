@@ -5,6 +5,7 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { inputStyle, money, Glyph } from './kit';
 import { pedir, confirmar } from '../../ui/dialogo';
 import PermissoesBotao from './PermissoesBotao';
+import { TOKENS } from '../../config/theme';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -386,13 +387,22 @@ export function PosDiagnostics() {
 
   if (!d) return <div className="flex-1 flex items-center justify-center text-[#999]">A carregar…</div>;
 
+  // Cartão de estado — moldura em relevo (a mesma receita da caixa clássica:
+  // sombra a definir o painel contra o fundo, cabeçalho em gradiente, nunca
+  // plano) em vez de um simples <div> com borda fina.
   const Card = ({ title, ok, children }: any) => (
-    <div className="border border-[#d5d5d5] bg-white">
-      <div className={`px-3 py-1.5 text-[12px] font-bold ${ok === false
-        ? 'bg-[#fdecea] text-[#a01818]' : 'bg-[#dbe7f3] text-[#1a4f8a]'}`}>
+    <div className="bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
+      <div className="px-3 py-2 text-[12px] font-bold"
+        style={{
+          color: ok === false ? TOKENS.dangerSoft : TOKENS.selectedText,
+          background: ok === false
+            ? 'linear-gradient(to bottom, #fdf0ef 0%, #fbe1de 100%)'
+            : 'linear-gradient(to bottom, #eef4fb 0%, #dfe9f5 100%)',
+          borderBottom: `1px solid ${ok === false ? '#f0c4bf' : '#c8d7ea'}`,
+        }}>
         {title}
       </div>
-      <div className="p-3 text-[12px] space-y-1">{children}</div>
+      <div className="p-3 text-[12px] space-y-1.5">{children}</div>
     </div>
   );
   const L = ({ k, v }: any) => (
