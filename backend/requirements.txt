@@ -10,11 +10,11 @@ pycparser==3.0
 PyJWT==2.13.0
 requests==2.32.3         # fiscal/agt_client.py fala com os servidores da AGT por HTTP
 pyserial==3.5             # pos/management/commands/print_agent.py — impressoras/gavetas por COM
-pywin32==308; sys_platform == 'win32'  # print_agent.py — spooler do Windows (win32print); marcador evita tentar instalar no PCC (Linux)
+pywin32==312; sys_platform == 'win32'  # print_agent.py — spooler do Windows (win32print); marcador evita tentar instalar no PCC (Linux)
 sqlparse==0.5.5
 tzdata==2026.2
 # --- Produção (opcional; instalar no servidor de produção) ---
-psycopg[binary]==3.2.3   # PostgreSQL
+psycopg[binary]==3.2.10  # PostgreSQL (3.2.3 foi retirado do PyPI)
 waitress==3.0.2          # servidor WSGI (Windows) — alternativa: gunicorn (Linux)
 whitenoise==6.8.2        # servir estáticos
 
