@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authApi, tokenStore } from '../api/auth';
 import { apiClient } from '../api/client';
 import { getAppearance } from '../config/appearance';
+import { TOKENS } from '../config/theme';
 import { User, Lock, LogIn, Eye, EyeOff, Settings, Building2, X, Wifi } from 'lucide-react';
 
 // Login estilo Primavera / Windows clássico — janela retangular, barra de título,
@@ -37,7 +38,7 @@ const CustomerLogin: React.FC = () => {
   const welcome = getAppearance('welcome');
   const logo = getAppearance('logo') || marca?.logo_url || '';
   const loginBg = getAppearance('loginBg');
-  const barColor = getAppearance('barColor') || '#1e3f66';
+  const barColor = getAppearance('barColor') || TOKENS.accent;
 
   useEffect(() => { tokenStore.clearBackoffice(); tokenStore.clearPos(); }, []);
   // Testa a ligação ao servidor (barra de estado).

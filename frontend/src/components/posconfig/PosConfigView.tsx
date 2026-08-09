@@ -60,6 +60,7 @@ import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph } from './kit';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
+import { TOKENS } from '../../config/theme';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -231,7 +232,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   return (
     <div className="h-full flex flex-col" style={{ background: '#f0f0f0', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* ---------- BARRA DE MENUS (topo escuro) ---------- */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#2b2b2b', height: 56 }}>
+      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: TOKENS.bar, height: 56 }}>
         {/* ML — é aqui que se troca de módulo (como o logótipo do original). */}
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')}
@@ -254,7 +255,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
               <div className="absolute left-0 top-full z-[61] min-w-[230px] py-1 shadow-2xl"
-                style={{ background: '#2b2b2b', border: '1px solid #444' }}>
+                style={{ background: TOKENS.bar, border: '1px solid #444' }}>
                 <button onClick={() => { setMenu(null); onDesktop?.(); }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
                   <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>Ambiente de Trabalho
@@ -275,7 +276,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 {/* clicar fora fecha */}
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
                 <div className="absolute left-0 top-full z-[61] min-w-[250px] py-1 shadow-2xl"
-                  style={{ background: '#2b2b2b', border: '1px solid #444' }}>
+                  style={{ background: TOKENS.bar, border: '1px solid #444' }}>
                   {m.items.map((it: any, i: number) => it.sep ? (
                     <div key={i} className="my-1 border-t border-[#444]" />
                   ) : (
@@ -325,7 +326,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           nenhuma forma de bloquear o ecrã nem sair sem passar pelo Ambiente de
           Trabalho primeiro. */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
-        style={{ background: '#3c3c3c' }}>
+        style={{ background: TOKENS.barSoft }}>
         <div className="flex items-center gap-2">
           <span className="text-[#c9a400] inline-flex items-center">
             <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
@@ -1385,7 +1386,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
 
                 <button onClick={search}
                   className="w-[190px] flex flex-col items-center justify-center gap-1 text-white font-bold text-[14px]"
-                  style={{ background: '#2b2b2b' }}>
+                  style={{ background: TOKENS.bar }}>
                   <span className="text-[22px]">⟳</span> Pesquisar
                 </button>
               </div>

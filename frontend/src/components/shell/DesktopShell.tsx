@@ -6,6 +6,7 @@ import {
   VIEW_REGISTRY, ITEM_TITLES, ITEM_MODULE_KEY, moduleEnabled, moduleKeyOf, featureAllowed,
 } from '../../config/navigation';
 import { getAppearance } from '../../config/appearance';
+import { classicTheme } from '../../config/theme';
 import ErrorBoundary from './ErrorBoundary';
 import { exportDomTable } from '../../utils/exportData';
 import { WORKSPACES, MODULE_TREE } from '../../config/workspace';
@@ -15,8 +16,10 @@ import {
   FilePlus2, Pencil, Save, Trash2, Copy, Search, RefreshCw, Printer, Download,
   Paperclip, History, ClipboardList, ChevronRight, ChevronDown, Folder, FolderOpen,
   Power, Moon, Sun, Server, ShieldCheck, Monitor, Building2, Database, Wifi, Cpu,
+  Lock, LogOut, X,
 } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
+import LockScreen from '../ui/LockScreen';
 
 // ==========================================================================
 // Enterprise Windows Desktop Shell — menu bar + ribbon + navigation tree +
@@ -25,7 +28,9 @@ import { aviso } from '../../ui/dialogo';
 // ==========================================================================
 
 // Ecrãs que trazem a sua própria janela completa (não entram na árvore + ribbon).
-const FULLSCREEN_VIEWS = ['posc_config'];
+// PMS é ecrã inteiro, cabeçalho e menus PRÓPRIOS (PmsShell) — igual à Configuração
+// POS. NUNCA passa pela árvore/ribbon clássica abaixo.
+const FULLSCREEN_VIEWS = ['posc_config', 'pms_home'];
 
 const cmd = (name: string) => window.dispatchEvent(new CustomEvent('erp:cmd', { detail: name }));
 
@@ -51,6 +56,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   const [treeQuery, setTreeQuery] = useState('');
   const [clock, setClock] = useState(new Date());
   const [exportOpen, setExportOpen] = useState(false);
+  const [locked, setLocked] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
 
   // PROPRIEDADE ATIVA — em grupos com vários hotéis, tudo o que se vê é do hotel escolhido.
@@ -159,17 +165,10 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
     document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  const barColor = getAppearance('barColor') || '#1e3f66';
   const companyName = getAppearance('companyName');
-  const t = dark
-    ? { bar: '#2b2b2b', barText: '#e6e6e6', ribbon: '#333', tree: '#252525', treeText: '#dcdcdc', line: '#3a3a3a', body: '#1e1e1e', status: '#1b1b1b', hover: '#3a3a3a', accent: '#4a9edb' }
-    : {
-        // Aspeto clássico "pesado": barras com relevo/gradiente, linhas fortes.
-        bar: 'linear-gradient(to bottom, #fbfcfd 0%, #eceff2 55%, #dfe3e8 100%)', barText: '#1a2433',
-        ribbon: 'linear-gradient(to bottom, #f6f8fa 0%, #e6eaee 60%, #d7dce2 100%)',
-        tree: '#ffffff', treeText: '#1a2a3a', line: '#9aa6b6', body: '#dfe3e8',
-        status: barColor, hover: '#cfe0f5', accent: barColor,
-      };
+  // Paleta oficial (config/theme.ts) — antes definida aqui, sozinha, ligeiramente
+  // diferente da usada na Configuração POS e no login. Uma só fonte agora.
+  const t = classicTheme(dark);
 
   const logout = async () => { await authApi.logout(); nav('/backoffice/login'); };
   // Bloqueia o acesso direto a ecrãs não autorizados (mesmo via estado guardado).
@@ -313,6 +312,35 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         <button onClick={() => setDark((d) => !d)} title="Tema" className="px-2 h-[26px] hover:bg-black/10">{dark ? <Sun size={14} /> : <Moon size={14} />}</button>
       </div>
 
+      {/* ================= CONTROLOS DE JANELA (estilo clássico, igual ao PCC) ================= */}
+      <div className="flex items-center justify-between bg-[#4d4d4d] h-7 px-2 select-none border-b border-[#333] flex-shrink-0">
+        <div className="flex items-center text-white text-[12px] font-medium truncate">{ITEM_TITLES[activeView] || ''}</div>
+        <div className="flex items-center space-x-1 pr-1">
+          <span className="text-[#cfe3ff] text-[11px] mr-2 flex items-center">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#90c040] mr-1.5" /> {user?.username || 'operador'}
+          </span>
+          <div onClick={() => setLocked(true)} title="Bloquear ecrã"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#666]">
+            <Lock size={11} />
+          </div>
+          <div onClick={logout} title="Terminar sessão"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#e74c3c] border border-[#c0392b] text-white hover:brightness-110 mr-1">
+            <LogOut size={11} />
+          </div>
+          <div title="Minimizar" className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#f1c40f] border border-[#d4ac0d] hover:brightness-110">
+            <div className="w-2 h-[2px] bg-black mb-[-5px]"></div>
+          </div>
+          <div title="Maximizar" className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#f1c40f] border border-[#d4ac0d] hover:brightness-110">
+            <div className="w-2 h-2 border border-black"></div>
+          </div>
+          <div onClick={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }}
+            title="Voltar ao Ambiente de Trabalho"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#e74c3c] border border-[#c0392b] text-white hover:brightness-110">
+            <X size={12} strokeWidth={3} />
+          </div>
+        </div>
+      </div>
+
       {/* ================= RIBBON ================= */}
       <div className="flex items-stretch gap-0 px-1 py-1 flex-shrink-0 border-b overflow-x-auto" style={{ background: t.ribbon, borderColor: t.line, boxShadow: dark ? 'none' : 'inset 0 1px 0 #fff, 0 2px 4px rgba(0,0,0,0.14)' }}>
         {ribbonGroups.map((g) => (
@@ -436,6 +464,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         <span>{clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
         <button onClick={logout} title="Terminar sessão" className="ml-1 hover:text-[#ffd1d1]"><Power size={13} /></button>
       </div>
+      {locked && <LockScreen onUnlock={() => setLocked(false)} />}
     </div>
   );
 }
