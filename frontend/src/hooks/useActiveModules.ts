@@ -52,3 +52,21 @@ export const useMyAccess = () =>
     },
     staleTime: 5 * 60 * 1000,
   });
+
+// Nº de certificação AGT — vem SEMPRE de fiscal.FiscalConfig (a mesma fonte que já
+// assina as faturas e o SAF-T), nunca de texto fixo no código. '0000' é o valor de
+// fábrica (ainda não certificado) — mostra-se como tal, honestamente, não se esconde
+// nem se finge um número. Assim que o PCC aplicar a certificação real (Sincronizar
+// com o PCC), este hook reflete-a sozinho, em qualquer ecrã que o use.
+export interface AgtCertificate { certificate_number: string; certified: boolean; environment?: string }
+export const useAgtCertificate = () =>
+  useQuery({
+    queryKey: ['fiscal', 'certificate'],
+    queryFn: async (): Promise<AgtCertificate> => {
+      const r = await apiClient.get('fiscal/config/');
+      const cfg = (r.data?.results || r.data || [])[0] || {};
+      const num = cfg.certificate_number || '0000';
+      return { certificate_number: num, certified: num !== '0000', environment: cfg.environment };
+    },
+    staleTime: 60 * 1000,
+  });

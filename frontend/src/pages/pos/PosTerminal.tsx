@@ -817,6 +817,14 @@ export default function PosTerminal() {
             {agora.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
             {' '}{agora.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
           </div>
+          {/* Nº de certificação AGT — mesma fonte que assina as faturas (fiscal.
+              FiscalConfig, via bootstrap). '0000' é o valor de fábrica: diz-se isso
+              mesmo, nunca se finge um número que ainda não existe. */}
+          <div className="text-[10px] text-white/40">
+            {boot?.company?.certificate && boot.company.certificate !== '0000'
+              ? `Programa validado n.º ${boot.company.certificate}`
+              : 'Sem certificação AGT'}
+          </div>
         </div>
       </div>
 

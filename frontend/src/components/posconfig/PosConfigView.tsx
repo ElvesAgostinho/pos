@@ -1,7 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, LogOut } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
+import { authApi } from '../../api/auth';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
+import LockScreen from '../ui/LockScreen';
 import ArticleEditor from './ArticleEditor';
 import SimpleSection from './SimpleSection';
 import SubFamilyEditor from './SubFamilyEditor';
@@ -55,6 +59,7 @@ import PosOnline from './PosOnline';
 import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph } from './kit';
+import { useAgtCertificate } from '../../hooks/useActiveModules';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -150,6 +155,13 @@ export default function PosConfigView({ onDesktop, onOpen }: {
     return pedida || 'articles';
   });
   const [menu, setMenu] = useState<string | null>(null);
+  // Sessão — o POS é o ÚNICO ecrã que a maioria dos utilizadores vê (é ecrã inteiro,
+  // sem a moldura do resto do backoffice) — sem isto, não havia como bloquear o
+  // ecrã nem terminar sessão sem sair pelo Ambiente de Trabalho primeiro.
+  const nav = useNavigate();
+  const [locked, setLocked] = useState(false);
+  const logout = async () => { await authApi.logout(); nav('/backoffice/login'); };
+  const { data: agt } = useAgtCertificate();
   // FAVORITOS — as secções que este utilizador usa todos os dias (ficam no browser dele).
   const [favs, setFavs] = useState<any[]>(() => JSON.parse(localStorage.getItem('posc_favs') || '[]'));
   const [open, setOpen] = useState<Record<string, boolean>>({ artigos: true });
@@ -307,14 +319,46 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         </div>
       </div>
 
-      {/* Título da janela */}
-      <div className="flex items-center gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
+      {/* Título da janela — mesmos controlos de sessão/janela do PCC (bloquear,
+          terminar sessão, minimizar/maximizar decorativos, fechar). O POS é ecrã
+          inteiro (sem a moldura do resto do backoffice) — sem isto não havia
+          nenhuma forma de bloquear o ecrã nem sair sem passar pelo Ambiente de
+          Trabalho primeiro. */}
+      <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
         style={{ background: '#3c3c3c' }}>
-        <span className="text-[#c9a400] inline-flex items-center">
-          <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
-        </span>{' '}
-        {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
+        <div className="flex items-center gap-2">
+          <span className="text-[#c9a400] inline-flex items-center">
+            <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
+          </span>{' '}
+          {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
+        </div>
+        <div className="flex items-center gap-1 text-[12px] font-normal">
+          <span className="text-[#cfe3ff] text-[11px] mr-2 flex items-center">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#90c040] mr-1.5" />
+            {JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}
+          </span>
+          <div onClick={() => setLocked(true)} title="Bloquear ecrã"
+            className="w-6 h-5 flex items-center justify-center cursor-pointer hover:bg-white/15">
+            <Lock size={12} />
+          </div>
+          <div onClick={logout} title="Terminar sessão"
+            className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#e74c3c] border border-[#c0392b] hover:brightness-110 mr-1">
+            <LogOut size={12} />
+          </div>
+          <div title="Minimizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#f1c40f] border border-[#d4ac0d] hover:brightness-110">
+            <div className="w-2 h-[2px] bg-black mb-[-5px]" />
+          </div>
+          <div title="Maximizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#f1c40f] border border-[#d4ac0d] hover:brightness-110">
+            <div className="w-2 h-2 border border-black" />
+          </div>
+          <div onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
+            title="Voltar ao Ambiente de Trabalho"
+            className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#e74c3c] border border-[#c0392b] hover:brightness-110">
+            <Glyph icon="✕" size={12} />
+          </div>
+        </div>
       </div>
+      {locked && <LockScreen onUnlock={() => setLocked(false)} />}
 
       <div className="flex-1 flex overflow-hidden">
         {/* ---------- SECÇÕES ----------
@@ -1427,6 +1471,19 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             </>
           )}
         </div>
+      </div>
+
+      {/* Rodapé — nº de certificação AGT, sempre em tempo real (fiscal.FiscalConfig,
+          a mesma fonte que assina as faturas). Nunca um texto fixo no código: enquanto
+          não há certificação real diz isso mesmo, sem fingir um número. */}
+      <div className="h-6 flex items-center px-3 text-[10px] text-[#888] bg-[#e8e8e8] border-t border-[#c0c0c0] flex-shrink-0">
+        <span>System Mwana Lodge</span>
+        <span className="mx-2 opacity-40">|</span>
+        <span>
+          {agt?.certified
+            ? `Processado por programa validado n.º ${agt.certificate_number}`
+            : 'Ainda sem certificação AGT'}
+        </span>
       </div>
     </div>
   );
