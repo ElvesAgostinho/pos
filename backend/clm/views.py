@@ -84,6 +84,23 @@ class LicenseViewSet(viewsets.ModelViewSet):
     serializer_class = LicenseSerializer
     permission_classes = [IsAdminUser]
 
+    @action(detail=True, methods=['get'])
+    def key(self, request, pk=None):
+        """
+        Devolve o license.key desta licença — recalculado na hora (payload + assinatura
+        RSA), nunca guardado em claro. Ao contrário das senhas de instalação/dono (essas
+        sim, mostradas só uma vez), o license.key não é um segredo de uso único: pode
+        pedir-se de novo sempre que precisar, para o entregar outra vez a um técnico.
+        """
+        from clm.engine.provisioning import ProvisioningWorkflow
+        lic = self.get_object()
+        wf = ProvisioningWorkflow(admin_user=str(getattr(request.user, 'username', '') or ''))
+        return Response({
+            'license_number': lic.license_number,
+            'client_code': lic.client.code,
+            'license_key': wf._generate_license_key_string(lic),
+        })
+
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def latest(self, request):
         """SINCRONIZAÇÃO: o backoffice do cliente pede a licença MAIS RECENTE.

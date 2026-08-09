@@ -33,6 +33,33 @@ const ClientsList: React.FC = () => {
   const [accessBusy, setAccessBusy] = useState<'' | 'install' | 'owner'>('');
   const [accessResult, setAccessResult] = useState<{ kind: string; username?: string; password: string } | null>(null);
 
+  // ── Ver/recuperar o license.key de uma licença já existente ──
+  const [keyBusy, setKeyBusy] = useState<number | null>(null);
+  const [keyResult, setKeyResult] = useState<{ license_number: string; client_code: string; license_key: string } | null>(null);
+
+  const verLicenseKey = async (licenseId: number) => {
+    setKeyBusy(licenseId);
+    try {
+      const r = await axios.get(`clm/licenses/${licenseId}/key/`);
+      setKeyResult(r.data);
+    } catch {
+      alert('Erro ao obter o license.key.');
+    } finally {
+      setKeyBusy(null);
+    }
+  };
+
+  const descarregarLicenseKey = () => {
+    if (!keyResult) return;
+    const blob = new Blob([keyResult.license_key], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'license.key';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const fetchClients = async () => {
     try {
       const res = await axios.get('clm/clients/');
@@ -239,6 +266,8 @@ const ClientsList: React.FC = () => {
             <span key={lic.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${lic.id === activeLicense?.id ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-[#ddd] bg-[#f5f5f5] text-gray-500'}`}>
               {lic.id === activeLicense?.id && <span className="font-bold">ATIVA ·</span>}
               <b>{lic.license_number}</b> · {lic.plan} · {lic.created_at ? new Date(lic.created_at).toLocaleDateString('pt-PT') : '—'}
+              <button onClick={() => verLicenseKey(lic.id)} disabled={keyBusy === lic.id} title="Ver / recuperar o license.key"
+                className="text-gray-400 hover:text-blue-700 ml-1"><Key size={10} /></button>
               <button onClick={() => apagarLicenca(lic)} title="Apagar esta licença"
                 className="text-gray-400 hover:text-red-600 ml-1"><Trash2 size={10} /></button>
             </span>
@@ -443,6 +472,45 @@ const ClientsList: React.FC = () => {
 
             <div className="bg-[#e0e0e0] border-t border-[#b0b0b0] p-2 flex justify-end space-x-2">
               <button onClick={() => setShowAccessModal(false)}
+                className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white">
+                <X size={12} className="text-gray-600" />
+                <span className="font-bold">Fechar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: ver/recuperar o license.key de uma licença já existente */}
+      {keyResult && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+          <div className="bg-[#f0f0f0] border border-[#a0a0a0] w-[520px] shadow-md flex flex-col">
+            <div className="bg-[#333] text-white px-2 py-1 flex justify-between items-center">
+              <div className="flex items-center">
+                <Key size={14} className="mr-2" />
+                <span className="font-bold text-[11px]">license.key — {keyResult.license_number}</span>
+              </div>
+              <button onClick={() => setKeyResult(null)} className="hover:text-red-400 font-bold">x</button>
+            </div>
+            <div className="p-4 bg-[#f0f0f0] flex-1 space-y-3 text-[11px] font-sans">
+              <div className="bg-white border border-[#a0a0a0] p-3">
+                <div className="text-gray-600 mb-2">
+                  Copie o conteúdo abaixo (ou descarregue) e coloque-o, sem alterar nada, em{' '}
+                  <code className="bg-gray-100 px-1">{'{pasta da instalação}'}\app\license.key</code> do cliente{' '}
+                  <b>{keyResult.client_code}</b>. O servidor deteta sozinho em poucos segundos.
+                </div>
+                <textarea readOnly value={keyResult.license_key} rows={6}
+                  onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                  className="w-full border border-[#999] px-2 py-1 text-[10px] font-mono bg-white select-all break-all" />
+              </div>
+            </div>
+            <div className="bg-[#e0e0e0] border-t border-[#b0b0b0] p-2 flex justify-end space-x-2">
+              <button onClick={descarregarLicenseKey}
+                className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white">
+                <Key size={12} className="text-blue-700" />
+                <span className="font-bold text-blue-800">Descarregar license.key</span>
+              </button>
+              <button onClick={() => setKeyResult(null)}
                 className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white">
                 <X size={12} className="text-gray-600" />
                 <span className="font-bold">Fechar</span>
