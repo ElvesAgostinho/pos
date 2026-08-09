@@ -57,7 +57,10 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
   });
 
   const save = useMutation({
-    mutationFn: () => apiClient.patch(`org/pos/companies/${row.id}/`, d),
+    // Sem row.id: é um hotel a ser criado pela primeira vez (botão "Adicionar" da
+    // lista) — tentar PATCH num registo que ainda não existe dava sempre "404 Não
+    // encontrado", por mais que se gravasse. POST cria; PATCH só quando já existe.
+    mutationFn: () => row?.id ? apiClient.patch(`org/pos/companies/${row.id}/`, d) : apiClient.post('org/pos/companies/', d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['posc'] }); notifyGuide({ title: 'Empresa gravada', message: 'Os dados passam a sair nos documentos e nos terminais.' }); onClose(); },
     onError: notifyError,
   });

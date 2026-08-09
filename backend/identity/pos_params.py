@@ -9,7 +9,7 @@ hotéis dele:
 from rest_framework import viewsets, serializers
 from rest_framework.permissions import IsAuthenticated
 
-from .models import (EnterpriseGroup, GroupLanguage, GroupCurrency, Hotel,
+from .models import (EnterpriseGroup, Company, GroupLanguage, GroupCurrency, Hotel,
                      HotelGroupMembership, HotelCustomText)
 
 
@@ -96,6 +96,11 @@ class HotelCustomTextSerializer(serializers.ModelSerializer):
 
 
 class PosCompanySerializer(serializers.ModelSerializer):
+    # Opcional de propósito: ao criar o PRIMEIRO hotel de uma instalação nova, ainda
+    # não existe nenhuma Company — perform_create() cria-a sozinha. Sem "required=False"
+    # aqui, a validação da DRF rejeitava o pedido ANTES de perform_create() ter
+    # oportunidade de preencher isto, e o preenchimento automático nunca corria.
+    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all(), required=False)
     memberships = HotelMembershipSerializer(many=True, required=False)
     custom_texts = HotelCustomTextSerializer(many=True, required=False)
     license = serializers.SerializerMethodField()
@@ -144,6 +149,22 @@ class PosCompanySerializer(serializers.ModelSerializer):
             'swift': b.swift, 'bic': b.bic, 'sepa': b.sepa, 'is_default': b.is_default,
         } for b in CompanyBankAccount.objects.filter(is_active=True)]
 
+    def create(self, validated):
+        # Mesmo tratamento do update() para memberships/custom_texts — sem isto, criar
+        # um hotel novo com esses campos presentes (mesmo vazios) rebentava no
+        # Hotel.objects.create() da DRF, que não sabe lidar com dados aninhados.
+        mems = validated.pop('memberships', None)
+        texts = validated.pop('custom_texts', None)
+        instance = Hotel.objects.create(**validated)
+        for m in (mems or []):
+            m.pop('hotel', None)
+            HotelGroupMembership.objects.create(hotel=instance, **m)
+        for t in (texts or []):
+            t.pop('hotel', None)
+            HotelCustomText.objects.update_or_create(
+                hotel=instance, code=t.pop('code'), defaults=t)
+        return instance
+
     def update(self, instance, validated):
         mems = validated.pop('memberships', None)
         texts = validated.pop('custom_texts', None)
@@ -169,3 +190,19 @@ class PosCompanyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Hotel.objects.prefetch_related('memberships__group', 'custom_texts')
     serializer_class = PosCompanySerializer
+
+    def perform_create(self, serializer):
+        # A PROPRIEDADE É A UNIDADE DE LICENÇA — mesma regra do HotelViewSet
+        # "oficial" (identity/views.py): não se cria hotel a mais do que a licença
+        # permite, e a empresa-mãe (Company) é criada sozinha na primeira vez, para
+        # o dono não ter de configurar uma hierarquia que nem sabe que existe.
+        from licensing.limits import enforce
+        enforce('hotels')
+        if not serializer.validated_data.get('company'):
+            comp = Company.objects.first()
+            if not comp:
+                grp = EnterpriseGroup.objects.first() or EnterpriseGroup.objects.create(name='Grupo Principal')
+                comp = Company.objects.create(group=grp, name='Empresa Principal')
+            serializer.save(company=comp)
+        else:
+            serializer.save()
