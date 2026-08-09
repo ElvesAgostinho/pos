@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputCls, inputStyle } from './kit';
+import { Toolbar, inputCls, inputStyle, Box } from './kit';
 
 const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
 
@@ -52,7 +52,8 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
 
       <div className="flex-1 overflow-auto p-4">
         {/* Identificação */}
-        <div className="space-y-2 mb-4">
+        <Box title="Identificação" className="mb-4">
+          <div className="space-y-2 pt-1.5">
           <label className="flex items-start gap-3 text-[13px]">
             <span className="w-[110px] text-[#333] pt-1">Código:</span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)}
@@ -72,7 +73,8 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
             <span className="w-[110px] text-[#333]">Ativo:</span>
             <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
           </label>
-        </div>
+          </div>
+        </Box>
 
         {/* Línguas / Moedas */}
         <div className="flex">
@@ -84,7 +86,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
           ))}
         </div>
 
-        <div className="border border-[#c0c0c0] flex">
+        <div className="flex" style={{ border: '1.5px groove #c0c0c0' }}>
           <table className="flex-1 text-[12px] border-collapse">
             <thead>
               <tr className="bg-[#f4f4f4] text-[#333]">

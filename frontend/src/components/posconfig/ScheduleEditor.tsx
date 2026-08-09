@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -49,7 +49,9 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
         <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
       </div>
 
-      <div className="p-4 space-y-2 border-b border-[#e0e0e0]">
+      <div className="p-4 border-b border-[#e0e0e0]">
+        <Box title="Identificação">
+        <div className="space-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[13px]">
           <span className="w-[90px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[290px]`} style={inputStyle} />
@@ -63,6 +65,8 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
           <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
           Ativo
         </label>
+        </div>
+        </Box>
       </div>
 
       <div className="flex-1 overflow-auto p-3">

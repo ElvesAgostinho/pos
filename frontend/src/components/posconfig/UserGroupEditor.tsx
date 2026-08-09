@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 type Tab = 'tables' | 'documents' | 'shortcuts' | 'payments' | 'privacy';
@@ -91,7 +91,9 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
       <div className="flex-1 flex overflow-hidden">
         {/* Esquerda: identificação + funções do terminal */}
         <div className="flex-1 flex flex-col overflow-hidden border-r border-[#e0e0e0]">
-          <div className="p-4 space-y-2">
+          <div className="p-3">
+          <Box title="Identificação">
+          <div className="space-y-2 pt-1.5">
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-3 text-[13px]">
                 <span className="w-[70px] text-[#333]">Nr:</span>
@@ -124,6 +126,8 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
               <span className="w-[70px] text-[#333] pt-1">Memo:</span>
               <textarea value={d.memo || ''} onChange={(e) => set('memo', e.target.value)} rows={3} className={`${inp} flex-1`} style={inputStyle} />
             </label>
+          </div>
+          </Box>
           </div>
 
           <div className="flex border-b-2 border-[#2b2b2b] px-2 overflow-x-auto">

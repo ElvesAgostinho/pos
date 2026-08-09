@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
@@ -76,7 +76,9 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       {/* Identificação */}
-      <div className="grid grid-cols-2 gap-x-10 gap-y-2 px-4 py-3 border-b border-[#e0e0e0]">
+      <div className="px-4 py-3 border-b border-[#e0e0e0]">
+      <Box title="Identificação">
+      <div className="grid grid-cols-2 gap-x-10 gap-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[13px]">
           <span className="w-[90px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[220px]`} style={inputStyle} />
@@ -100,6 +102,8 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
             {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
           </select>
         </label>
+      </div>
+      </Box>
       </div>
 
       <div className="flex border-b-2 border-[#2b2b2b] bg-[#f7f7f7] px-2">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
@@ -62,7 +62,8 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2 max-w-[860px]">
+        <Box title="Identificação" className="max-w-[860px]">
+        <div className="space-y-2 pt-1.5">
           <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[160px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
@@ -99,9 +100,10 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
             </label>
           </div>
         </div>
+        </Box>
 
         {/* Versões com validade */}
-        <div className="flex mt-4 max-w-[860px] border border-[#c8c8c8]">
+        <div className="flex mt-4 max-w-[860px]" style={{ border: '1.5px groove #c0c0c0' }}>
           <div className="flex-1">
             <table className="w-full text-[12px] border-collapse">
               <thead><tr className="bg-[#f0f0f0]">
