@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { TOKENS } from '../../config/theme';
 import {
   Check as CheckIcon, X, Pencil, Copy, Minus, Plus, CirclePlus, Download, Printer,
   RefreshCw, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SquareCheck, Search,
@@ -224,11 +225,16 @@ export function Tab({ active, onClick, children }: any) {
   );
 }
 
-/** Caixa com título (o "group box" clássico do Windows). */
+/** Caixa com título (o "group box" clássico do Windows) — rebordo em relevo
+    (`groove`), o mesmo efeito 3D que os diálogos do Windows 98/XP sempre
+    tiveram e que a maioria das recriações "estilo clássico" nunca se dá ao
+    trabalho de reproduzir. É um detalhe pequeno, mas é o que faz a diferença
+    entre "parece antigo" e "parece a sério". */
 export function Box({ title, children, className = '' }: { title?: string; children: ReactNode; className?: string }) {
   return (
-    <fieldset className={`border border-[#c8c8c8] px-3 pb-3 pt-1 min-w-0 overflow-hidden ${className}`}>
-      {title && <legend className="px-1 text-[12px] font-semibold text-[#333]">{title}</legend>}
+    <fieldset className={`px-3 pb-3 pt-1 min-w-0 overflow-hidden ${className}`}
+      style={{ border: `1.5px groove ${TOKENS.line}` }}>
+      {title && <legend className="px-1.5 text-[12px] font-semibold" style={{ color: TOKENS.textOnLight }}>{title}</legend>}
       {children}
     </fieldset>
   );

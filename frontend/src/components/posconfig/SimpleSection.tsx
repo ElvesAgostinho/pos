@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputCls, inputStyle, Glyph } from './kit';
+import { Toolbar, inputCls, inputStyle, Glyph, Box } from './kit';
 
 export interface Col {
   key: string; label: string; width?: string; render?: (r: any) => any;
@@ -105,32 +105,34 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
         </div>
 
         <div className="flex-1 overflow-auto p-4">
-          <div className="space-y-2 max-w-[820px]">
-            {fields.map((f) => (
-              <label key={f.key} className={`flex gap-3 text-[13px] ${f.type === 'textarea' ? 'items-start' : 'items-center'}`}>
-                <span className={`w-[160px] flex-shrink-0 text-[#333] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
-                  {f.label}{f.required && <span className="text-[#a01818]">*</span>}
-                </span>
-                {f.type === 'textarea' ? (
-                  <textarea value={editing[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} rows={5}
-                    className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
-                ) : f.type === 'select' ? (
-                  <select value={editing[f.key] ?? ''} onChange={(e) => set(f.key, Number(e.target.value) || e.target.value || null)}
-                    className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle}>
-                    <option value="">—</option>
-                    {(f.options || []).map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
-                  </select>
-                ) : f.type === 'checkbox' ? (
-                  <input type="checkbox" checked={!!editing[f.key]} onChange={(e) => set(f.key, e.target.checked)} className="w-4 h-4" />
-                ) : (
-                  <input type={f.type || 'text'} value={editing[f.key] ?? ''}
-                    onChange={(e) => set(f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
-                    className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
-                )}
-                {f.help && <span className="text-[11px] text-[#888]">{f.help}</span>}
-              </label>
-            ))}
-          </div>
+          <Box title="Dados" className="max-w-[820px]">
+            <div className="space-y-2.5 pt-1.5">
+              {fields.map((f) => (
+                <label key={f.key} className={`flex gap-3 text-[13px] ${f.type === 'textarea' ? 'items-start' : 'items-center'}`}>
+                  <span className={`w-[160px] flex-shrink-0 text-[#333] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
+                    {f.label}{f.required && <span className="text-[#a01818]">*</span>}
+                  </span>
+                  {f.type === 'textarea' ? (
+                    <textarea value={editing[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} rows={5}
+                      className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
+                  ) : f.type === 'select' ? (
+                    <select value={editing[f.key] ?? ''} onChange={(e) => set(f.key, Number(e.target.value) || e.target.value || null)}
+                      className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle}>
+                      <option value="">—</option>
+                      {(f.options || []).map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
+                    </select>
+                  ) : f.type === 'checkbox' ? (
+                    <input type="checkbox" checked={!!editing[f.key]} onChange={(e) => set(f.key, e.target.checked)} className="w-4 h-4" />
+                  ) : (
+                    <input type={f.type || 'text'} value={editing[f.key] ?? ''}
+                      onChange={(e) => set(f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
+                      className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
+                  )}
+                  {f.help && <span className="text-[11px] text-[#888]">{f.help}</span>}
+                </label>
+              ))}
+            </div>
+          </Box>
         </div>
 
         <Toolbar actions={[
