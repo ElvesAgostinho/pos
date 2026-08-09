@@ -1,4 +1,4 @@
-import { Settings, X, Lock, LogOut } from 'lucide-react';
+import { Settings, X, Lock, LogOut, StickyNote, XCircle } from 'lucide-react';
 
 interface TabsBarProps {
   openTabs: string[];
@@ -13,7 +13,7 @@ interface TabsBarProps {
   userName?: string;
 }
 
-export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, onLogout, userName }: TabsBarProps) {
+export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, onToggleNotes, onCloseAllTabs, onLogout, userName }: TabsBarProps) {
   const activeMeta = viewMetadata[activeView] || { title: activeView, icon: Settings };
   const ActiveIcon = activeMeta.icon;
 
@@ -32,6 +32,24 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
           <span className="text-[#cfe3ff] text-[11px] mr-2 flex items-center">
             <span className="w-1.5 h-1.5 rounded-full bg-[#90c040] mr-1.5" /> {userName}
           </span>
+        )}
+        {onToggleNotes && (
+          <div
+            onClick={onToggleNotes}
+            title="Bloco de Notas"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#666]"
+          >
+            <StickyNote size={11} />
+          </div>
+        )}
+        {onCloseAllTabs && (
+          <div
+            onClick={onCloseAllTabs}
+            title="Fechar todos os separadores"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#666]"
+          >
+            <XCircle size={11} />
+          </div>
         )}
         {onLock && (
           <div

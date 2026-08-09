@@ -16,7 +16,6 @@ router.register('exemptions', views.TaxExemptionReasonViewSet, basename='fis-exe
 router.register('commercial-documents', views.CommercialDocumentViewSet, basename='fis-commercial')
 router.register('series', views.FiscalSeriesViewSet, basename='fis-series')
 router.register('documents', views.FiscalDocumentViewSet, basename='fis-document')
-router.register('submissions', views.SubmissionQueueViewSet, basename='fis-submission')
 router.register('audit', views.FiscalAuditLogViewSet, basename='fis-audit')
 router.register('connections', connectivity.AGTConnectionViewSet, basename='fis-connection')
 router.register('certificates', connectivity.DigitalCertificateViewSet, basename='fis-certificate')

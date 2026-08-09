@@ -20,7 +20,12 @@ def create_document(kind='BUDGET', customer_name=None, customer_tax_id=None,
     cfg = FiscalConfig.get()
     year = date.today().year
     prefix = CommercialDocument.PREFIX.get(kind, 'DOC')
-    seq = (CommercialDocument.objects.filter(kind=kind, year=year).count()) + 1
+    # select_for_update: dois operadores a criar um orçamento ao mesmo tempo não podem
+    # sair com o mesmo número — bloqueia as linhas existentes deste kind/ano até
+    # cometer, como o motor fiscal já faz para as séries de Fatura (services.py).
+    ultimo = (CommercialDocument.objects.select_for_update()
+              .filter(kind=kind, year=year).order_by('-seq').first())
+    seq = (ultimo.seq if ultimo else 0) + 1
     number = f"{prefix} {year}/{seq}"
     doc = CommercialDocument.objects.create(
         kind=kind, number=number, year=year, seq=seq, doc_date=date.today(),

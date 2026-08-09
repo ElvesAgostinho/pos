@@ -12,7 +12,7 @@ from .models import (FiscalConfig, FiscalDocType, FiscalSeries, FiscalDocument,
                      SubmissionQueue, FiscalAuditLog, TaxRate, TaxExemptionReason)
 from .serializers import (FiscalConfigSerializer, FiscalDocTypeSerializer,
                           FiscalSeriesSerializer, FiscalDocumentSerializer,
-                          SubmissionQueueSerializer, FiscalAuditLogSerializer,
+                          FiscalAuditLogSerializer,
                           TaxRateSerializer, TaxExemptionReasonSerializer)
 from . import services, saft
 
@@ -347,38 +347,6 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
             'print_mention': doc.print_mention,
             'hash': doc.doc_hash,
         })
-
-
-class SubmissionQueueViewSet(viewsets.ModelViewSet):
-    """Submission Queue — comunicação à AGT com fila e reenvio (modo offline seguro)."""
-    permission_classes = [IsAuthenticated]
-    queryset = SubmissionQueue.objects.select_related('document').all()
-    serializer_class = SubmissionQueueSerializer
-    http_method_names = ['get', 'post', 'head', 'options']
-
-    @action(detail=True, methods=['post'])
-    def process(self, request, pk=None):
-        """Processa um item da fila (envio à AGT). Integração real quando a API estiver ativa."""
-        item = self.get_object()
-        item.attempts += 1
-        item.status = 'ACK'  # ambiente de testes: aceite simulado
-        item.sent_at = timezone.now()
-        item.response = 'ACK · ambiente de testes (integração AGT pendente de credenciais)'
-        item.save()
-        # Sincroniza o ciclo de vida do documento.
-        item.document.agt_status = 'ACCEPTED'
-        item.document.save(update_fields=['agt_status'])
-        FiscalAuditLog.objects.create(event='SUBMIT', document_ref=item.document.invoice_no,
-                                      user=str(getattr(request.user, 'username', '') or ''),
-                                      ip_address=_client_ip(request), detail=item.status)
-        return Response(SubmissionQueueSerializer(item).data)
-
-    @action(detail=True, methods=['post'])
-    def retry(self, request, pk=None):
-        item = self.get_object()
-        item.status = 'RETRY'
-        item.save(update_fields=['status'])
-        return Response(SubmissionQueueSerializer(item).data)
 
 
 class FiscalAuditLogViewSet(viewsets.ReadOnlyModelViewSet):

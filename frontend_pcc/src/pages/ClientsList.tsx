@@ -25,6 +25,8 @@ const ClientsList: React.FC = () => {
   const [showProvModal, setShowProvModal] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedLicense, setGeneratedLicense] = useState<{terminal_id: string, activation_key: string} | null>(null);
+  const [assetType, setAssetType] = useState<'POS' | 'KIOSK'>('POS');
+  const [search, setSearch] = useState('');
 
   // ── Acessos (senha de instalação / senha do dono) da licença ativa do cliente ──
   const [showAccessModal, setShowAccessModal] = useState(false);
@@ -103,7 +105,7 @@ const ClientsList: React.FC = () => {
         client: selectedClient.id,
         terminal_id: terminalId,
         activation_key: activationKey,
-        asset_type: 'POS',
+        asset_type: assetType,
         status: 'CREATED'
       });
       
@@ -128,7 +130,8 @@ const ClientsList: React.FC = () => {
       <div className="flex items-center px-2 py-1 bg-[#e0e0e0] border-b border-[#a0a0a0]">
         <span className="mr-2 text-gray-700 font-bold">Gestão de Clientes</span>
         <div className="flex bg-white border border-[#999] h-[18px]">
-          <input type="text" className="px-1 text-[11px] outline-none w-48" placeholder="Pesquisar..." />
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+            className="px-1 text-[11px] outline-none w-48" placeholder="Pesquisar..." />
         </div>
       </div>
 
@@ -145,7 +148,11 @@ const ClientsList: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {clients.map((client, i) => {
+            {clients.filter((c) => {
+              const q = search.trim().toLowerCase();
+              if (!q) return true;
+              return (c.code || '').toLowerCase().includes(q) || (c.commercial_name || '').toLowerCase().includes(q);
+            }).map((client, i) => {
               const insts = client.installations || [];
               const ultima = insts.reduce((max: any, x: any) => (!max || (x.last_ping && x.last_ping > max.last_ping)) ? x : max, null);
               return (
@@ -263,9 +270,10 @@ const ClientsList: React.FC = () => {
                   </div>
                   <div className="flex items-center">
                     <label className="w-32 font-bold">Tipo de Licença:</label>
-                    <select className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none bg-white">
-                      <option>Terminal POS Operacional</option>
-                      <option>Kiosk Self-Service</option>
+                    <select value={assetType} onChange={(e) => setAssetType(e.target.value as 'POS' | 'KIOSK')}
+                      className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none bg-white">
+                      <option value="POS">Terminal POS Operacional</option>
+                      <option value="KIOSK">Kiosk Self-Service</option>
                     </select>
                   </div>
                   <div className="bg-[#e6f2ff] border border-[#b3d4ff] p-2 text-gray-700 mt-4">

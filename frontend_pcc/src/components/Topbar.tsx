@@ -57,18 +57,6 @@ export default function Topbar({ onSelectView, userName, onChangePassword, onLog
             )}
           </div>
 
-          {/* Utilitários Menu */}
-          <div className="relative">
-            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'UTL' ? 'bg-[#555] text-white' : 'hover:bg-[#444]'}`} onClick={() => handleMenuClick('UTL')}>
-              Utilitários <span className="text-[#f1c40f] text-[8px] ml-1.5">▼</span>
-            </div>
-            {openDropdown === 'UTL' && (
-              <div className="absolute top-full left-0 mt-0 w-48 bg-[#f0f0f0] border border-[#a0a0a0] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer">Configurações Base</div>
-              </div>
-            )}
-          </div>
-
         </div>
       </div>
       <div className="flex items-center space-x-3 text-gray-300 text-[11px]">

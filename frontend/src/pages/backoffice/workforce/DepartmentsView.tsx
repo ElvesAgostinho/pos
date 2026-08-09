@@ -14,7 +14,7 @@ const DepartmentsView: React.FC = () => {
 
   const fetchDepartments = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/workforce/departments/');
+      const res = await axios.get('workforce/departments/');
       setDepartments(res.data);
     } catch (err) {
       console.error("Error fetching departments:", err);
@@ -39,7 +39,7 @@ const DepartmentsView: React.FC = () => {
 
   const handleDeleteClick = async (item: any) => {
     if (confirm(`Tem a certeza que deseja apagar o departamento ${item.name}?`)) {
-      await axios.delete(`http://localhost:8000/api/workforce/departments/${item.id}/`);
+      await axios.delete(`workforce/departments/${item.id}/`);
       fetchDepartments();
     }
   };
@@ -48,9 +48,9 @@ const DepartmentsView: React.FC = () => {
     e.preventDefault();
     try {
       if (selectedDept?.id) {
-        await axios.put(`http://localhost:8000/api/workforce/departments/${selectedDept.id}/`, formData);
+        await axios.put(`workforce/departments/${selectedDept.id}/`, formData);
       } else {
-        await axios.post(`http://localhost:8000/api/workforce/departments/`, formData);
+        await axios.post(`workforce/departments/`, formData);
       }
       setMode('list');
       fetchDepartments();

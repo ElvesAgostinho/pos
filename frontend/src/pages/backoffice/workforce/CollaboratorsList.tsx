@@ -12,7 +12,7 @@ const CollaboratorsList: React.FC = () => {
 
   const fetchCollaborators = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/workforce/collaborators/');
+      const res = await axios.get('workforce/collaborators/');
       setCollaborators(res.data);
     } catch (e) {
       console.error(e);
@@ -25,7 +25,7 @@ const CollaboratorsList: React.FC = () => {
 
   const handleDeleteClick = async (item: any) => {
     if (confirm(`Tem a certeza que deseja apagar o colaborador ${item.name}?`)) {
-      await axios.delete(`http://localhost:8000/api/workforce/collaborators/${item.id}/`);
+      await axios.delete(`workforce/collaborators/${item.id}/`);
       fetchCollaborators();
     }
   };

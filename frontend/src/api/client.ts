@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-const baseURL = 'http://localhost:8000/api/'; // URL do Backend Django
+// Em produção (o .exe entregue ao cliente), o frontend é servido PELO MESMO Django que a
+// API — por isso um caminho relativo resolve sempre para o servidor certo, seja acedido
+// de "localhost:8000" (a própria máquina) ou de "http://IP-do-servidor:8000/pos" (outros
+// terminais da casa, tablets, segunda caixa — ver instalador/LEIA-ME.md). Um endereço fixo
+// aqui fazia esses outros terminais chamarem o SEU PRÓPRIO localhost:8000, onde nada corre.
+// Em dev (`npm run dev`, porta 5173 sem proxy para o 8000), mantém-se o endereço direto.
+const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8000/api/' : '/api/');
 
 export const apiClient = axios.create({
   baseURL,

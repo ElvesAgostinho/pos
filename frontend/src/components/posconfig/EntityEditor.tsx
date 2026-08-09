@@ -91,7 +91,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
   const { data: tipos = [] } = useQuery({ queryKey: ['ent-tipos'], queryFn: async () => (await apiClient.get('pos/config/customer-types/')).data?.results || (await apiClient.get('pos/config/customer-types/')).data || [] });
   const { data: cartoes = [] } = useQuery({ queryKey: ['ent-cards'], queryFn: async () => { const r = await apiClient.get('pos/config/member-cards/'); return r.data?.results || r.data || []; } });
   const { data: segs = [] } = useQuery({ queryKey: ['ent-segs'], queryFn: async () => { const r = await apiClient.get('pos/config/segments/'); return r.data?.results || r.data || []; } });
-  const { data: subsegs = [] } = useQuery({ queryKey: ['ent-subsegs'], queryFn: async () => { try { const r = await apiClient.get('pos/config/sub-segments/'); return r.data?.results || r.data || []; } catch { return []; } } });
+  const { data: subsegs = [] } = useQuery({ queryKey: ['ent-subsegs'], queryFn: async () => { try { const r = await apiClient.get('pos/config/subsegments/'); return r.data?.results || r.data || []; } catch { return []; } } });
   const { data: canais = [] } = useQuery({ queryKey: ['ent-canais'], queryFn: async () => { try { const r = await apiClient.get('pos/config/channels/'); return r.data?.results || r.data || []; } catch { return []; } } });
   // (8201) "Newsletter - Interesses": a newsletter geral filtra por estes códigos
   // quando o parâmetro tem algum preenchido — sem marcar aqui, o cliente não conta.
@@ -134,7 +134,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
   const Cx = C;
 
   return (
-    <div className="fixed inset-0 bg-black/45 z-[300] flex items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/45 z-[9500] flex items-center justify-center" onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()}
         className="w-[1200px] max-w-[96vw] bg-[#f0f0f0] border border-[#333] shadow-2xl flex flex-col"
         style={{ height: 'min(86vh, 760px)', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>

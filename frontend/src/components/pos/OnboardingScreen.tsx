@@ -19,7 +19,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSuccess }) => {
     setError(null);
     
     try {
-      const res = await axios.post('http://localhost:8000/api/workforce/workstations/activate_license/', {
+      const res = await axios.post('workforce/workstations/activate_license/', {
         activation_key: activationKey
       });
       

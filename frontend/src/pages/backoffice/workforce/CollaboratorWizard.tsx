@@ -42,9 +42,9 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
     const loadData = async () => {
       try {
         const [deps, profs, terms] = await Promise.all([
-          axios.get('http://localhost:8000/api/workforce/departments/'),
-          axios.get('http://localhost:8000/api/workforce/profiles/'),
-          axios.get('http://localhost:8000/api/workforce/workstations/')
+          axios.get('workforce/departments/'),
+          axios.get('workforce/profiles/'),
+          axios.get('workforce/workstations/')
         ]);
         setDepartments(deps.data);
         setProfiles(profs.data);
@@ -77,7 +77,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('http://localhost:8000/api/workforce/onboarding/', formData);
+      await axios.post('workforce/onboarding/', formData);
       onComplete();
     } catch (e) {
       console.error(e);
