@@ -39,6 +39,21 @@ if (Test-Path $urlsPath) {
     Write-Host "Contem _WEBAPP: $tem"
 } else { Write-Host "NAO EXISTE: $urlsPath" -ForegroundColor Red }
 
+Write-Host "`n=== Conta do dono (base de dados) ===" -ForegroundColor Cyan
+$pyExe = "$App\python\python.exe"
+if ((Test-Path $pyExe) -and (Test-Path "$App\app\manage.py")) {
+    $script = "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','erp_server.settings'); import django; django.setup(); from django.contrib.auth import get_user_model; U = get_user_model(); n = U.objects.count(); print(f'Utilizadores na base: {n}'); [print(f'  - {u.username} (staff={u.is_staff}, ativo={u.is_active})') for u in U.objects.all()]"
+    Push-Location "$App\app"
+    & $pyExe -c $script
+    Pop-Location
+    if ($LASTEXITCODE -ne 0) { Write-Host "Nao foi possivel consultar a base (ver erro acima)." -ForegroundColor Red }
+} else { Write-Host "Python embutido ou manage.py nao encontrados." -ForegroundColor Red }
+
+Write-Host "`n=== Log do configurador (instalacao/atualizacao) ===" -ForegroundColor Cyan
+$cfgLog = "$App\dados\logs\configurar.log"
+if (Test-Path $cfgLog) { Get-Content $cfgLog -Tail 30 }
+else { Write-Host "Sem log do configurador ainda (instalacoes anteriores a esta correcao nao o escrevem)." -ForegroundColor Yellow }
+
 Write-Host "`n=== Ultimas linhas do log do servico ===" -ForegroundColor Cyan
 $logDir = "$App\dados\logs"
 if (Test-Path $logDir) {

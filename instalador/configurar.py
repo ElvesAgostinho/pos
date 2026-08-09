@@ -25,6 +25,20 @@ PYTHON = RAIZ / 'python' / 'python.exe'           # o Python embutido
 DADOS = RAIZ / 'dados'                            # base, media, logs — sobrevive a updates
 
 
+class _Tee:
+    """Escreve em dois sítios ao mesmo tempo (consola + memória para o log)."""
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, data):
+        for s in self.streams:
+            s.write(data)
+
+    def flush(self):
+        for s in self.streams:
+            s.flush()
+
+
 def ler_escolha(caminho_ini):
     cfg = configparser.ConfigParser()
     cfg.read(caminho_ini, encoding='utf-8')
@@ -89,6 +103,11 @@ def correr(*args):
     """manage.py com o Python embutido — o cliente não tem (nem precisa de) Python."""
     r = subprocess.run([str(PYTHON), str(APP / 'manage.py'), *args],
                        cwd=str(APP), capture_output=True, text=True)
+    # Sempre para o log (sucesso ou falha) — antes só se via a saída quando FALHAVA;
+    # foi assim que "criar_dono correu mas não criou ninguém" ficou invisível.
+    print(f'$ manage.py {" ".join(args)}')
+    if r.stdout:
+        print(r.stdout.rstrip())
     if r.returncode != 0:
         # o instalador mostra isto se falhar — melhor um erro legível que um serviço
         # que arranca contra uma base a meio
@@ -124,9 +143,33 @@ def main():
         correr('criar_dono', '--username', dono.get('utilizador', 'dono'),
                '--password', dono['password'])
         print('Conta do dono pronta.')
+    else:
+        print(f'AVISO: sem secção [dono] (ou password vazia) em {ini} — '
+              'nenhuma conta de acesso foi criada.')
 
     print('Base de dados pronta. Os serviços podem arrancar.')
 
 
 if __name__ == '__main__':
-    main()
+    # Este script corria "runhidden" pelo Inno Setup — sem isto, uma falha aqui
+    # (ex.: instalacao.ini ainda sem a secção [dono] no momento exato em que
+    # correu) ficava invisível: nenhum ecrã de erro, nenhum registo em lado
+    # nenhum, só "a conta do dono nunca chegou a existir" descoberto dias
+    # depois pelo cliente a tentar entrar. Regista sempre, sucesso ou falha.
+    (DADOS / 'logs').mkdir(parents=True, exist_ok=True)
+    log_path = DADOS / 'logs' / 'configurar.log'
+    import io
+    import datetime
+    buf = io.StringIO()
+    real_stdout, real_stderr = sys.stdout, sys.stderr
+    try:
+        sys.stdout = sys.stderr = _Tee(real_stdout, buf)
+        main()
+    except Exception as e:
+        buf.write(f'ERRO: {e}\n')
+        raise
+    finally:
+        sys.stdout, sys.stderr = real_stdout, real_stderr
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(f'\n=== {datetime.datetime.now().isoformat(timespec="seconds")} ===\n')
+            f.write(buf.getvalue())

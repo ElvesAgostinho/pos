@@ -28,7 +28,11 @@ const CustomerLogin: React.FC = () => {
     apiClient.get('platform/branding/').then((r) => setMarca(r.data)).catch(() => {});
   }, []);
 
-  const company = getAppearance('companyName');
+  // O nome REAL da empresa (Administração → Empresa) tem prioridade sobre a
+  // personalização por aparelho — essa é só um placeholder de fábrica até o
+  // hotel estar configurado. Sem isto, o dropdown "Empresa" mostrava sempre
+  // "System Mwana Lodge" (o nome do PRODUTO), nunca o nome do cliente.
+  const company = marca?.name || getAppearance('companyName');
   const erpName = getAppearance('erpName');
   const welcome = getAppearance('welcome');
   const logo = getAppearance('logo') || marca?.logo_url || '';
