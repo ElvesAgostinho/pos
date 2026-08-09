@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient as axios } from '../api/client';
-import { Settings, Key, CheckCircle, X, Monitor, Lock, Wifi, WifiOff } from 'lucide-react';
+import { Settings, Key, CheckCircle, X, Monitor, Lock, Wifi, WifiOff, Trash2 } from 'lucide-react';
 
 // A sincronização é manual (o cliente clica "Sincronizar com o PCC" no
 // Suporte dele) — não é um heartbeat automático. Por isso "sincronizado
@@ -60,6 +60,31 @@ const ClientsList: React.FC = () => {
       alert('Erro ao gerar a senha.');
     } finally {
       setAccessBusy('');
+    }
+  };
+
+  // ── Apagar instalações/licenças antigas ──
+  const apagarInstalacao = async (id: number, nome: string) => {
+    if (!confirm(`Apagar a instalação "${nome}"? Deixa de mostrar o estado de sincronização dela.`)) return;
+    try {
+      await axios.delete(`clm/installations/${id}/`);
+      await fetchClients();
+    } catch {
+      alert('Erro ao apagar a instalação.');
+    }
+  };
+
+  const apagarLicenca = async (lic: any) => {
+    const ativa = lic.id === activeLicense?.id;
+    const aviso = ativa
+      ? `"${lic.license_number}" é a licença ATIVA deste cliente — apagá-la pode impedir a próxima sincronização e perder os acessos gerados nela. Apagar mesmo assim?`
+      : `Apagar a licença "${lic.license_number}"?`;
+    if (!confirm(aviso)) return;
+    try {
+      await axios.delete(`clm/licenses/${lic.id}/`);
+      await fetchClients();
+    } catch {
+      alert('Erro ao apagar a licença.');
     }
   };
 
@@ -170,6 +195,22 @@ const ClientsList: React.FC = () => {
             <span key={inst.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${inst.is_online ? 'border-green-300 bg-green-50 text-green-700' : 'border-[#ddd] bg-[#f5f5f5] text-gray-500'}`}>
               {inst.is_online ? <Wifi size={11} /> : <WifiOff size={11} />}
               <b>{inst.name}</b>{inst.server_ip ? ` · ${inst.server_ip}` : ''} · {tempoRelativo(inst.last_ping) || 'nunca sincronizou'}
+              <button onClick={() => apagarInstalacao(inst.id, inst.name)} title="Apagar esta instalação"
+                className="text-gray-400 hover:text-red-600 ml-1"><Trash2 size={10} /></button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {selectedClient && (selectedClient.licenses || []).length > 0 && (
+        <div className="px-2 py-1.5 bg-white border-b border-[#a0a0a0] text-[11px] flex items-center gap-4 flex-wrap">
+          <span className="font-bold text-gray-600">Licenças — {selectedClient.commercial_name}:</span>
+          {[...selectedClient.licenses].sort((a: any, b: any) => b.id - a.id).map((lic: any) => (
+            <span key={lic.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${lic.id === activeLicense?.id ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-[#ddd] bg-[#f5f5f5] text-gray-500'}`}>
+              {lic.id === activeLicense?.id && <span className="font-bold">ATIVA ·</span>}
+              <b>{lic.license_number}</b> · {lic.plan} · {lic.created_at ? new Date(lic.created_at).toLocaleDateString('pt-PT') : '—'}
+              <button onClick={() => apagarLicenca(lic)} title="Apagar esta licença"
+                className="text-gray-400 hover:text-red-600 ml-1"><Trash2 size={10} /></button>
             </span>
           ))}
         </div>
