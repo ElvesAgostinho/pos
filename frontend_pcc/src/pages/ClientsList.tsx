@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient as axios } from '../api/client';
-import { Settings, Key, CheckCircle, X, Monitor, Lock } from 'lucide-react';
+import { Settings, Key, CheckCircle, X, Monitor, Lock, Wifi, WifiOff } from 'lucide-react';
+
+// A sincronização é manual (o cliente clica "Sincronizar com o PCC" no
+// Suporte dele) — não é um heartbeat automático. Por isso "sincronizado
+// recentemente" (< 6h), não "online" a sério — não fingimos uma ligação
+// permanente que não existe.
+function tempoRelativo(iso?: string | null) {
+  if (!iso) return null;
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const min = Math.round(diffMs / 60000);
+  if (min < 1) return 'agora mesmo';
+  if (min < 60) return `há ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `há ${h}h`;
+  const d = Math.round(h / 24);
+  return `há ${d} dia(s)`;
+}
 
 const ClientsList: React.FC = () => {
   const [clients, setClients] = useState<any[]>([]);
@@ -99,29 +115,42 @@ const ClientsList: React.FC = () => {
               <th className="py-1 px-2 border-r border-[#ccc] font-normal w-24">Código</th>
               <th className="py-1 px-2 border-r border-[#ccc] font-normal">Nome do Cliente / Entidade</th>
               <th className="py-1 px-2 border-r border-[#ccc] font-normal w-32 text-center">País</th>
-              <th className="py-1 px-2 font-normal w-48 text-center">Ativo</th>
+              <th className="py-1 px-2 border-r border-[#ccc] font-normal w-32 text-center">Sincronização</th>
+              <th className="py-1 px-2 font-normal w-24 text-center">Ativo</th>
             </tr>
           </thead>
           <tbody>
-            {clients.map((client, i) => (
-              <tr 
-                key={client.id || i} 
+            {clients.map((client, i) => {
+              const insts = client.installations || [];
+              const ultima = insts.reduce((max: any, x: any) => (!max || (x.last_ping && x.last_ping > max.last_ping)) ? x : max, null);
+              return (
+              <tr
+                key={client.id || i}
                 onClick={() => setSelectedClient(client)}
                 className={`border-b border-[#eee] hover:bg-[#cce8ff] ${selectedClient?.id === client.id ? 'bg-[#cce8ff]' : ''}`}
               >
                 <td className="py-1 px-2 border-r border-[#eee]">{client.code}</td>
                 <td className="py-1 px-2 border-r border-[#eee]">{client.commercial_name}</td>
                 <td className="py-1 px-2 border-r border-[#eee] text-center">{client.country}</td>
+                <td className="py-1 px-2 border-r border-[#eee] text-center">
+                  {ultima?.last_ping ? (
+                    <span className={`inline-flex items-center gap-1 ${ultima.is_online ? 'text-green-700' : 'text-gray-500'}`} title={ultima.last_ping}>
+                      {ultima.is_online ? <Wifi size={11} /> : <WifiOff size={11} />} {tempoRelativo(ultima.last_ping)}
+                    </span>
+                  ) : <span className="text-gray-400">nunca</span>}
+                </td>
                 <td className="py-1 px-2 text-center">
                   {client.status === 'ACTIVE' ? (
                     <span className="text-green-600 font-bold text-sm leading-none">✓</span>
                   ) : <span className="text-gray-400">-</span>}
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {/* Empty rows to fill space */}
             {Array.from({ length: Math.max(0, 15 - clients.length) }).map((_, i) => (
               <tr key={`empty-${i}`} className="border-b border-[#eee]">
+                <td className="py-3 px-2 border-r border-[#eee]"></td>
                 <td className="py-3 px-2 border-r border-[#eee]"></td>
                 <td className="py-3 px-2 border-r border-[#eee]"></td>
                 <td className="py-3 px-2 border-r border-[#eee]"></td>
@@ -131,6 +160,20 @@ const ClientsList: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {selectedClient && (
+        <div className="px-2 py-1.5 bg-white border-b border-[#a0a0a0] text-[11px] flex items-center gap-4 flex-wrap">
+          <span className="font-bold text-gray-600">Instalações — {selectedClient.commercial_name}:</span>
+          {(selectedClient.installations || []).length === 0 ? (
+            <span className="text-gray-400">Ainda nenhuma sincronização recebida deste cliente.</span>
+          ) : (selectedClient.installations || []).map((inst: any) => (
+            <span key={inst.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${inst.is_online ? 'border-green-300 bg-green-50 text-green-700' : 'border-[#ddd] bg-[#f5f5f5] text-gray-500'}`}>
+              {inst.is_online ? <Wifi size={11} /> : <WifiOff size={11} />}
+              <b>{inst.name}</b>{inst.server_ip ? ` · ${inst.server_ip}` : ''} · {tempoRelativo(inst.last_ping) || 'nunca sincronizou'}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="bg-[#e0e0e0] border-t border-white p-1 flex justify-between items-center text-[11px] h-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
         <div className="flex space-x-4 px-2">

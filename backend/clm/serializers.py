@@ -32,18 +32,30 @@ class LicenseSerializer(serializers.ModelSerializer):
     def get_has_owner_password(self, o):
         return bool(o.owner_password_enc)
 
+class InstallationSerializer(serializers.ModelSerializer):
+    # "Online" é um cálculo, não um estado gravado — nunca fica desatualizado
+    # (ninguém tem de correr uma tarefa a apagar isto quando o cliente cai).
+    is_online = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Installation
+        fields = '__all__'
+
+    def get_is_online(self, o):
+        if not o.last_ping:
+            return False
+        from django.utils import timezone
+        from datetime import timedelta
+        return timezone.now() - o.last_ping < timedelta(hours=6)
+
 class ClientSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(many=True, read_only=True)
     commercial_data = CommercialDataSerializer(read_only=True)
     licenses = LicenseSerializer(many=True, read_only=True)
+    installations = InstallationSerializer(many=True, read_only=True)
 
     class Meta:
         model = Client
-        fields = '__all__'
-
-class InstallationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Installation
         fields = '__all__'
 
 class AuditLogCLMSerializer(serializers.ModelSerializer):

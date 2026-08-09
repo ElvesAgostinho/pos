@@ -62,7 +62,7 @@ class LicenseSyncView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        import os, json, base64, shutil
+        import os, json, base64, shutil, socket
         import requests as http
         from django.conf import settings
         from licensing.engine.crypto import verify_license
@@ -74,8 +74,12 @@ class LicenseSyncView(APIView):
             return Response({'detail': 'Não há licença instalada — a primeira instala-se '
                                        'com o ficheiro do PCC, não por sincronização.'}, status=400)
         try:
+            hostname = socket.gethostname()
+        except Exception:
+            hostname = ''
+        try:
             r = http.post(f'{pcc.rstrip("/")}/api/clm/licenses/latest/',
-                          json={'license_key': atual_raw}, timeout=20)
+                          json={'license_key': atual_raw, 'hostname': hostname}, timeout=20)
         except Exception as e:
             return Response({'detail': f'Sem ligação ao PCC ({pcc}): {e}'}, status=502)
         if r.status_code != 200:

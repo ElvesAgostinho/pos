@@ -112,12 +112,27 @@ class LicenseViewSet(viewsets.ModelViewSet):
                                        'Contacte o fornecedor.'}, status=403)
 
         from clm.engine.provisioning import ProvisioningWorkflow
+        from django.utils import timezone
         wf = ProvisioningWorkflow(admin_user='remote-sync')
         AuditLogCLM.objects.create(
             action='LICENSE_SYNC_PULL',
             details={'client': code, 'license': lic.license_number,
                      'presented': data.get('license_number')},
             user_identity='remote-sync')
+
+        # "ESTE CLIENTE ESTÁ ONLINE": não havia nenhum sítio a gravar isto —
+        # last_ping existia no modelo mas nada o escrevia. É AQUI que se sabe,
+        # a cada sincronização, que a instalação está viva; get_or_create para
+        # não obrigar a criar a Instalação à mão antes da primeira ligação.
+        hostname = (request.data.get('hostname') or '').strip()[:100]
+        installation, _ = Installation.objects.get_or_create(
+            client=lic.client, name=hostname or 'Servidor Produção',
+            defaults={'install_type': 'PRODUCTION'})
+        installation.last_ping = timezone.now()
+        ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR')
+        if ip:
+            installation.server_ip = ip
+        installation.save(update_fields=['last_ping', 'server_ip'])
         resp = {
             'license_number': lic.license_number,
             'valid_until': str(lic.valid_until) if lic.valid_until else None,
