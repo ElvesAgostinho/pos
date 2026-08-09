@@ -179,6 +179,40 @@ class LicenseSyncView(APIView):
         })
 
 
+class ApplyUpdateView(APIView):
+    """Aplica a atualização — um clique, sem senha nem assistente outra vez.
+
+    Não faz nada aqui dentro: lança atualizar.py como processo DESTACADO (sobrevive
+    ao próprio serviço do Django ser morto, que é exatamente o que a atualização
+    faz a seguir) e devolve logo. O ecrã volta a perguntar o estado até o serviço
+    responder outra vez, na versão nova.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        import subprocess
+        import sys
+        from .models import SupportSetting
+        if not request.user.is_staff:
+            return Response({'detail': 'Só o dono/administrador pode aplicar atualizações.'}, status=403)
+        ss = SupportSetting.get()
+        url = ss.latest_download_url
+        if not url or not url.lower().endswith('.zip'):
+            return Response({'detail': 'Sem pacote de atualização "um clique" disponível — '
+                                       'esta versão só tem instalador completo (.exe), tem de '
+                                       'ser corrido à mão.'}, status=400)
+        script = settings.BASE_DIR / 'atualizar.py'
+        python = sys.executable
+        kwargs = {}
+        if sys.platform == 'win32':
+            kwargs['creationflags'] = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+        subprocess.Popen([python, str(script), '--url', url], cwd=str(settings.BASE_DIR),
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         close_fds=True, **kwargs)
+        return Response({'detail': 'Atualização iniciada — o serviço vai parar e reiniciar em '
+                                   'breve. Não feche esta janela nem desligue o computador.'})
+
+
 class LicenseStatusView(APIView):
     """Estado da licença real (on-premises). Sem licença válida = sem acesso à plataforma."""
     permission_classes = [AllowAny]

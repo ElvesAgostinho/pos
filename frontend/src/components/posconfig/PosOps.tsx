@@ -361,6 +361,15 @@ export function PosDiagnostics() {
     onError: notifyError,
   });
 
+  // ATUALIZAR AGORA — um clique, sem senha nem assistente (só para pacotes .zip
+  // "leves"; um .exe continua a ter de ser corrido à mão). O servidor para,
+  // troca os ficheiros e reinicia sozinho — por isso a confirmação avisa disso.
+  const atualizar = useMutation({
+    mutationFn: () => apiClient.post('licensing/apply-update/', {}),
+    onSuccess: (r: any) => notifyGuide({ title: 'Atualização iniciada', message: r.data?.detail }),
+    onError: notifyError,
+  });
+
   // "Reset desktop icons position" do original: aqui não há ícones a arrastar
   // (a app não é um desktop) — o que existe DE FACTO é a aparência gravada no
   // navegador (tema/cor/papel de parede). Repor isso é o equivalente real.
@@ -516,10 +525,23 @@ export function PosDiagnostics() {
                   </div>
                   {d.update.notes && <div className="text-[#666] mt-1 whitespace-pre-wrap">{d.update.notes}</div>}
                 </div>
-                <a href={d.update.download_url} target="_blank" rel="noopener noreferrer"
-                  className="flex-shrink-0 px-4 py-2 bg-[#1f7a34] text-white text-[13px] font-bold">
-                  ⬇ Descarregar
-                </a>
+                <div className="flex-shrink-0 flex gap-2">
+                  {d.update.one_click ? (
+                    <button onClick={async () => {
+                      if (await confirmar(`Atualizar para a versão ${d.update.latest_version} agora?\n\nO serviço vai parar por alguns instantes e reiniciar sozinho — não desligue o computador nem feche esta janela durante esse tempo.`)) {
+                        atualizar.mutate();
+                      }
+                    }} disabled={atualizar.isPending}
+                      className="px-4 py-2 bg-[#1f7a34] text-white text-[13px] font-bold disabled:opacity-50">
+                      {atualizar.isPending ? 'A iniciar…' : '⟳ Atualizar agora'}
+                    </button>
+                  ) : (
+                    <a href={d.update.download_url} target="_blank" rel="noopener noreferrer"
+                      className="px-4 py-2 bg-[#1f7a34] text-white text-[13px] font-bold">
+                      ⬇ Descarregar (instalador completo — corre-se à mão)
+                    </a>
+                  )}
+                </div>
               </div>
             </Card>
           </div>

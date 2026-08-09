@@ -205,13 +205,17 @@ def _collect(request=None):
         # ---- Atualização — o que o PCC disse na última sincronização ----
         # (Sincronizar com o PCC, em Licença) grava isto; aqui só se compara.
         disponivel = bool(ss.latest_version and ss.latest_version != APP_VERSION)
+        url = ss.latest_download_url if disponivel else None
         data['update'] = {
             'current_version': APP_VERSION,
             'latest_version': ss.latest_version or None,
             'available': disponivel,
-            'download_url': ss.latest_download_url if disponivel else None,
+            'download_url': url,
             'notes': ss.latest_release_notes if disponivel else None,
             'checked_at': ss.version_checked_at.isoformat() if ss.version_checked_at else None,
+            # Só o pacote leve (.zip, sem Python/instalador) suporta "um clique" — um
+            # .exe é o instalador completo, continua a exigir senha e o assistente.
+            'one_click': bool(url and url.lower().endswith('.zip')),
         }
     except Exception:
         data['support'] = {}

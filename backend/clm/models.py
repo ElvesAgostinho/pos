@@ -219,7 +219,9 @@ class SystemRelease(models.Model):
     aplicar sozinho por cima de um serviço do Windows a correr é arriscado.
     """
     version = models.CharField(max_length=20, unique=True, help_text='Ex.: 1.1.0')
-    download_url = models.URLField(help_text='Onde o cliente descarrega o .exe desta versão.')
+    download_url = models.URLField(help_text='Onde o cliente descarrega esta versão — .exe '
+                                    '(instalador completo, manual) ou .zip (pacote leve, ativa '
+                                    'o botão "Atualizar agora" de um clique).')
     release_notes = models.TextField(blank=True, help_text='O que mudou — aparece no aviso do cliente.')
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.CharField(max_length=80, blank=True)
