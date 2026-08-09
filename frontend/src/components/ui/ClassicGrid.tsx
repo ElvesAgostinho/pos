@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
+import { TOKENS } from '../../config/theme';
 
 interface Column {
   header: string;
@@ -56,8 +57,12 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className="text-left py-1.5 px-2 border-r border-b border-[#9aa6b6] font-bold text-[#25405e] uppercase tracking-tight text-[10.5px]"
-                style={{ width: col.width, background: 'linear-gradient(to bottom, #f7f9fb 0%, #e4e9ef 60%, #d5dbe3 100%)', boxShadow: 'inset 0 1px 0 #fff' }}
+                className="text-left py-1.5 px-2 border-r border-b font-bold uppercase tracking-tight text-[10.5px]"
+                style={{
+                  width: col.width, borderColor: TOKENS.border, color: TOKENS.selectedText,
+                  background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)',
+                  boxShadow: 'inset 0 1px 0 #fff',
+                }}
               >
                 {col.header}
               </th>
@@ -72,9 +77,11 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
                 key={row[rowKey] || idx}
                 onClick={() => { setInnerSel(row[rowKey] ?? idx); onRowClick && onRowClick(row); }}
                 onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-                className={`border-b border-[#e0e0e0] cursor-pointer ${
-                  isSelected ? 'bg-[#cce8ff] text-black' : idx % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'
-                } hover:bg-[#e6f3ff]`}
+                className="border-b border-[#e0e0e0] cursor-pointer hover:brightness-[0.98]"
+                style={{
+                  background: isSelected ? TOKENS.selectedBg : idx % 2 === 0 ? TOKENS.surface : '#f7f8fa',
+                  color: isSelected ? TOKENS.selectedText : undefined,
+                }}
               >
                 {columns.map((col, cIdx) => (
                   <td key={cIdx} className="py-1 px-2 border-r border-[#e0e0e0] truncate">
