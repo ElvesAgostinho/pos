@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputCls, inputStyle, Glyph } from './kit';
+import { Toolbar, inputCls, inputStyle, Glyph, Box } from './kit';
 
 /**
  * FICHA DA SUB-FAMÍLIA.
@@ -64,7 +64,8 @@ export default function SubFamilyEditor({ row, families, onClose }:
 
       <div className="flex-1 overflow-auto p-4">
         {/* Identificação */}
-        <div className="space-y-2 mb-4">
+        <Box title="Identificação" className="mb-4">
+        <div className="space-y-2 pt-1.5">
           <label className="flex items-center gap-3 text-[13px]">
             <span className="w-[200px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inputCls} w-[290px] flex-none`} style={inputStyle} />
@@ -101,6 +102,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
             </span>
           </label>
         </div>
+        </Box>
 
         {isNew ? (
           <div className="text-[12px] text-[#a01818]">Grave a sub-família para poder configurar os mapeamentos por outlet.</div>
@@ -116,7 +118,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
               ))}
             </div>
 
-            <div className="border border-[#c0c0c0] p-3">
+            <div className="p-3" style={{ border: '1.5px groove #c0c0c0' }}>
               {/* Barra de aplicação em massa */}
               <div className="flex items-center gap-3 mb-3 text-[13px]">
                 <span>Pesquisar:</span>

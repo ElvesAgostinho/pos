@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputCls, inputStyle } from './kit';
+import { Toolbar, inputCls, inputStyle, Box } from './kit';
 
 /**
  * MENSAGEM DO POS — a pergunta que o terminal faz ao operador.
@@ -53,7 +53,8 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
       <div className="flex-1 overflow-auto p-4">
         {/* Cabeçalho: código, ordem, tipo */}
-        <div className="flex items-center gap-6 mb-4 text-[13px]">
+        <Box title="Identificação" className="mb-4">
+        <div className="flex items-center gap-6 pt-1.5 text-[13px]">
           <label className="flex items-center gap-3">
             <span className="w-[70px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
@@ -74,7 +75,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
           </label>
         </div>
 
-        <div className="flex items-center gap-6 mb-4 text-[13px]">
+        <div className="flex items-center gap-6 pt-2 text-[13px]">
           <label className="flex items-center gap-3">
             <span className="w-[70px] text-[#333]">Nome:</span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
@@ -88,8 +89,9 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
             <b>Perguntar ao lançar o artigo</b>
           </label>
         </div>
+        </Box>
 
-        <div className="border border-[#c0c0c0] mb-4">
+        <div className="mb-4" style={{ border: '1.5px groove #c0c0c0' }}>
           <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] border-b border-[#c0c0c0]">
             Artigos que fazem esta pergunta
             <span className="font-normal text-[#666] ml-2">
@@ -116,7 +118,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         </div>
 
         {/* Modelos (respostas) */}
-        <div className="border border-[#c0c0c0]">
+        <div style={{ border: '1.5px groove #c0c0c0' }}>
           <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] border-b border-[#c0c0c0]">Modelos</div>
           <div className="flex">
             <table className="flex-1 text-[12px] border-collapse">
