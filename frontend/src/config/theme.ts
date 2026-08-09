@@ -52,6 +52,26 @@ export const TOKENS = {
   warningBorder: '#e0c080',
 } as const;
 
+// Aclara/escurece um hex por `pct` (±255) — usado para montar o gradiente de uma
+// barra a partir de UMA cor só (ex.: TOKENS.accent, que muda por instalação).
+export function shade(hex: string, pct: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const r = Math.max(0, Math.min(255, (n >> 16) + pct));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + pct));
+  const b = Math.max(0, Math.min(255, (n & 255) + pct));
+  return `rgb(${r},${g},${b})`;
+}
+
+// Gradiente de barra de título a partir da cor institucional (3 tons, sempre a
+// mesma receita) — para não se escrever "linear-gradient(...#1e3f66...)" fixo
+// em cada ecrã: assim a personalização (Aparência → Cor da barra) chega a todo
+// o lado que usar isto, não só ao ecrã onde alguém se lembrou de a aplicar.
+export function accentGradient(accent: string = TOKENS.accent): string {
+  return `linear-gradient(to bottom, ${shade(accent, 24)} 0%, ${accent} 55%, ${shade(accent, -30)} 100%)`;
+}
+
 // Tema "clássico pesado" (light) — barras com relevo/gradiente, linhas fortes.
 // Reutilizado pelo DesktopShell (moldura do backoffice) e por qualquer ecrã que
 // precise da MESMA moldura (Configuração POS, Diagnóstico, etc.).

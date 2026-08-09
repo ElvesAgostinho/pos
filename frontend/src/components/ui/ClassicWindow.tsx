@@ -1,4 +1,5 @@
 import React from 'react';
+import { TOKENS, accentGradient, shade } from '../../config/theme';
 
 interface ClassicWindowProps {
   title?: string;
@@ -23,8 +24,8 @@ export default function ClassicWindow({ title, icon, children, footer, width, on
       {/* Barra de título */}
       {title && (
         <div
-          className="h-8 flex items-center justify-between px-3 flex-shrink-0 border border-b-0 border-[#2a4a66] text-white select-none"
-          style={{ background: 'linear-gradient(to bottom, #2a5488 0%, #1e3f66 55%, #183453 100%)' }}
+          className="h-8 flex items-center justify-between px-3 flex-shrink-0 border border-b-0 text-white select-none"
+          style={{ background: accentGradient(), borderColor: shade(TOKENS.accent, -15) }}
         >
           <div className="flex items-center gap-2 min-w-0">
             {icon}

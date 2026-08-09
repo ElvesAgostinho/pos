@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authApi, tokenStore } from '../api/auth';
 import { apiClient } from '../api/client';
 import { getAppearance } from '../config/appearance';
-import { TOKENS } from '../config/theme';
+import { TOKENS, shade } from '../config/theme';
 import { User, Lock, LogIn, Eye, EyeOff, Settings, Building2, X, Wifi } from 'lucide-react';
 
 // Login estilo Primavera / Windows clássico — janela retangular, barra de título,
@@ -233,16 +233,6 @@ const CustomerLogin: React.FC = () => {
 
 function Row({ label, value }: { label: string; value: string }) {
   return <div className="grid grid-cols-[130px_1fr] items-center gap-2"><span className="text-gray-600">{label}:</span><input readOnly value={value} className="h-8 px-2 bg-white border border-[#c0c0c0] text-gray-700 outline-none" /></div>;
-}
-
-function shade(hex: string, pct: number): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
-  if (!m) return hex;
-  const n = parseInt(m[1], 16);
-  const r = Math.max(0, Math.min(255, (n >> 16) + pct));
-  const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + pct));
-  const b = Math.max(0, Math.min(255, (n & 255) + pct));
-  return `rgb(${r},${g},${b})`;
 }
 
 export default CustomerLogin;
