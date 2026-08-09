@@ -90,6 +90,29 @@ const ClientsList: React.FC = () => {
     }
   };
 
+  // Apaga o cliente por inteiro — em cascata (CASCADE no modelo) leva consigo
+  // TODAS as instalações e licenças dele; sem licença, o servidor do cliente
+  // deixa de conseguir validar/sincronizar (fica preso na última que tinha
+  // offline, mas nunca mais renova). É irreversível, por isso pede o código
+  // do cliente escrito à mão — não basta um "sim".
+  const apagarCliente = async () => {
+    if (!selectedClient) return;
+    const confirmacao = prompt(
+      `Isto apaga "${selectedClient.commercial_name}" por inteiro — cliente, todas as instalações e todas as licenças (inválida a partir de agora). Não há como desfazer.\n\nEscreva o código do cliente para confirmar: ${selectedClient.code}`
+    );
+    if (confirmacao !== selectedClient.code) {
+      if (confirmacao !== null) alert('Código não coincide — nada foi apagado.');
+      return;
+    }
+    try {
+      await axios.delete(`clm/clients/${selectedClient.id}/`);
+      setSelectedClient(null);
+      await fetchClients();
+    } catch {
+      alert('Erro ao apagar o cliente.');
+    }
+  };
+
   const handleGenerateTerminal = async () => {
     if (!selectedClient) return;
     
@@ -245,6 +268,20 @@ const ClientsList: React.FC = () => {
               <Lock size={10} />
             </div>
             <span className="text-gray-700 ml-1 font-bold">Acessos (instalação / dono)</span>
+          </button>
+        </div>
+
+        <div className="flex space-x-4 px-2">
+          <button
+            disabled={!selectedClient}
+            onClick={apagarCliente}
+            title="Apaga o cliente, todas as instalações e todas as licenças — irreversível"
+            className={`flex items-center space-x-1 px-2 py-1 rounded ${!selectedClient ? 'opacity-50' : 'hover:bg-[#f5d0d0]'}`}
+          >
+            <div className="w-5 h-5 rounded-full border border-transparent flex justify-center items-center bg-[#c0392b] text-white">
+              <Trash2 size={10} />
+            </div>
+            <span className="text-red-700 ml-1 font-bold">Apagar Cliente</span>
           </button>
         </div>
       </div>
