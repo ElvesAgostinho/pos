@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputCls, inputStyle, Glyph, Box } from './kit';
+import { TOKENS } from '../../config/theme';
 
 export interface Col {
   key: string; label: string; width?: string; render?: (r: any) => any;
@@ -167,20 +168,33 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[13px] border-collapse">
+          {/* Cabeçalho estilo Explorer/Excel clássico: relevo em gradiente + divisórias
+              verticais entre colunas — é o detalhe que faz uma grelha parecer folha de
+              cálculo a sério, não uma lista HTML qualquer. */}
           <thead className="sticky top-0">
-            <tr style={{ background: '#efefef' }} className="text-[#333]">
-              {columns.map((c) => (
-                <th key={c.key} className="text-left font-normal px-3 py-2 border-b border-[#d0d0d0]"
-                  style={{ width: c.width }}>{c.label}</th>
+            <tr className="text-[#2a2a2a]" style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+              {columns.map((c, i) => (
+                <th key={c.key}
+                  className={`text-left font-semibold px-3 py-2 border-b-2 ${i > 0 ? 'border-l' : ''}`}
+                  style={{ width: c.width, borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6' }}>
+                  {c.label}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {view.map((r: any) => (
+            {view.map((r: any, i: number) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => !readOnly && setEditing({ ...r })}
-                className={`cursor-pointer border-b border-[#f0f0f0] ${sel === r.id ? 'bg-[#cfe2f3]' : 'hover:bg-[#f5f9ff]'}`}>
+                className="cursor-pointer border-b"
+                style={{
+                  borderColor: '#eef0f2',
+                  background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#f7f8fa' : TOKENS.surface,
+                  color: sel === r.id ? TOKENS.selectedText : undefined,
+                }}
+                onMouseEnter={(e) => { if (sel !== r.id) e.currentTarget.style.background = TOKENS.hover; }}
+                onMouseLeave={(e) => { if (sel !== r.id) e.currentTarget.style.background = i % 2 ? '#f7f8fa' : TOKENS.surface; }}>
                 {columns.map((c) => (
-                  <td key={c.key} className="px-3 py-1.5">
+                  <td key={c.key} className="px-3 py-[7px]">
                     {c.toggle ? (
                       <input type="checkbox" checked={!!r[c.key]} disabled={readOnly}
                         className="w-4 h-4 cursor-pointer"
