@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Check, Settings, Power } from 'lucide-react';
+import { X, Check, Settings, Power, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
@@ -229,12 +229,19 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           </div>
         ))}
 
-        <div className="ml-auto flex items-center gap-4 text-[13px]">
+        <div className="ml-auto flex items-center gap-3 text-[13px]">
           <span className="text-[#e05555] font-semibold">
             {clock.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
           </span>
           <span className="opacity-30">|</span>
           <span className="font-bold">{user?.username || 'operador'}</span>
+          {/* Terminar sessão vivia só escondido dentro do menu "Utilitários" — nem
+              todo o módulo tem esse menu, e mesmo quando tem, sair devia ser óbvio,
+              não uma caça ao tesouro. */}
+          <button onClick={(e) => { e.stopPropagation(); logout(); }} title="Terminar sessão"
+            className="w-7 h-7 flex items-center justify-center hover:bg-white/15 flex-shrink-0">
+            <LogOut size={15} />
+          </button>
         </div>
       </div>
 
