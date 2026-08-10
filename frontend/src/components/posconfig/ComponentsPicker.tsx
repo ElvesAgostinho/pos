@@ -61,7 +61,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="bg-white w-[1100px] max-w-[95vw] h-[720px] max-h-[92vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 bg-[#2b2b2b] text-white">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#18181B] text-white">
           <span className="text-[14px] font-bold">Componentes</span>
           <button onClick={onClose} className="text-white/80 hover:text-white"><Glyph icon="✕" size={16} /></button>
         </div>
@@ -102,7 +102,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
               placeholder="Código, nome, código de barras…" className={inp} />
           </label>
           <button onClick={pesquisar}
-            className="h-[30px] px-4 text-[12px] font-bold text-white bg-[#2b2b2b] hover:bg-[#3c3c3c]">
+            className="h-[30px] px-4 text-[12px] font-bold text-white bg-[#18181B] hover:bg-[#242428]">
             {isFetching ? 'A procurar…' : 'Pesquisar'}
           </button>
         </div>

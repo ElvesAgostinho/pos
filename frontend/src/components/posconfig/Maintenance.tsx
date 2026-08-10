@@ -186,7 +186,7 @@ export default function Maintenance() {
               </tbody>
             </table>
             <button onClick={addLine} className="flex items-center gap-2 m-2 text-[13px] text-[#333]">
-              <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center"><Glyph icon="＋" size={13} /></span>
+              <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center"><Glyph icon="＋" size={13} /></span>
               Acrescentar linha
             </button>
           </div>

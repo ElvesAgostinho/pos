@@ -25,11 +25,11 @@ export default function PmsInterface() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex border-b-2 border-[#2b2b2b] px-3 bg-[#f7f7f7]">
+      <div className="flex border-b-2 border-[#18181B] px-3 bg-[#f7f7f7]">
         {([['map', 'Mapeamentos'], ['multi', 'Ligações Multi Hotel'], ['ext', 'Ligações externas']] as const)
           .map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-4 py-2 text-[13px] font-semibold border-b-[3px] ${tab === k ? 'border-[#2b2b2b] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+              className={`px-4 py-2 text-[13px] font-semibold border-b-[3px] ${tab === k ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
               {l}
             </button>
           ))}
@@ -269,7 +269,7 @@ function MultiHotel() {
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#2b2b2b', onClick: () => setEdit({ is_active: true, hotel_id: '0', mode: 'SIMPLE' }) },
+        { icon: '＋', label: 'Adicionar', color: '#18181B', onClick: () => setEdit({ is_active: true, hotel_id: '0', mode: 'SIMPLE' }) },
         { icon: '✎', label: 'Editar', color: '#1a73c8', disabled: !sel, onClick: () => setEdit((links as any[]).find((l) => l.id === sel)) },
         { icon: '−', label: 'Apagar', color: '#c0392b', disabled: !sel, onClick: () => confirm('Apagar esta ligação?') && del.mutate(sel!) },
       ]} />
@@ -381,7 +381,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
+      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#242428' }}>
         <span>
           {isHotel
             ? `Ligações Multi Hotel - ${isNew ? 'Adicionar' : `Editar ${d.description || ''}`}`

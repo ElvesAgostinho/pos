@@ -134,7 +134,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
 
           <div className="w-[160px] bg-[#f4f4f4] border-l border-[#d5d5d5] py-2">
             <button onClick={addV} className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#e8e8e8]">
-              <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={delV} disabled={sel === null}
               className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#e8e8e8] disabled:opacity-35">

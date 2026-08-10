@@ -221,7 +221,7 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
 export function Tab({ active, onClick, children }: any) {
   return (
     <button onClick={onClick}
-      className={`px-3 py-1.5 text-[13px] font-semibold border-b-[3px] ${active ? 'border-[#2b2b2b] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+      className={`px-3 py-1.5 text-[13px] font-semibold border-b-[3px] ${active ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
       {children}
     </button>
   );

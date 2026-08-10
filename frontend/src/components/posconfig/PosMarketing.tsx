@@ -324,7 +324,7 @@ export function EntitySearch() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setObrig(false)} />
           <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#888] shadow-2xl w-[440px]">
-            <div className="px-3 py-2 bg-[#3c3c3c] text-white text-[13px] font-bold flex justify-between">
+            <div className="px-3 py-2 bg-[#242428] text-white text-[13px] font-bold flex justify-between">
               Campos obrigatórios <button onClick={() => setObrig(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[50vh] overflow-auto">
@@ -349,7 +349,7 @@ export function EntitySearch() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setDups(false)} />
           <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#888] shadow-2xl w-[620px]">
-            <div className="px-3 py-2 bg-[#3c3c3c] text-white text-[13px] font-bold flex justify-between">
+            <div className="px-3 py-2 bg-[#242428] text-white text-[13px] font-bold flex justify-between">
               Controlo de duplicação <button onClick={() => setDups(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[55vh] overflow-auto text-[12px]">

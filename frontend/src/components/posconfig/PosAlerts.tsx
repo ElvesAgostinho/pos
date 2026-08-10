@@ -107,7 +107,7 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
 
                     {a.screen && onOpen && (
                       <button onClick={() => onOpen(a.screen)}
-                        className="mt-1 px-4 py-1.5 bg-[#3c3c3c] text-white text-[12px] hover:bg-[#2b2b2b]">
+                        className="mt-1 px-4 py-1.5 bg-[#242428] text-white text-[12px] hover:bg-[#18181B]">
                         Ir tratar disto
                       </button>
                     )}

@@ -50,7 +50,7 @@ export default function ExemptionSection() {
             todas as faturas que a usam e o que a AGT lê no SAF-T.
           </span>
           <button onClick={() => setAsk(true)}
-            className="ml-auto px-3 py-1 bg-[#2b2b2b] text-white text-[12px] hover:bg-[#444]">
+            className="ml-auto px-3 py-1 bg-[#18181B] text-white text-[12px] hover:bg-[#444]">
             Desbloquear edição
           </button>
         </>
@@ -82,7 +82,7 @@ export default function ExemptionSection() {
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={fechar}>
           <div className="bg-[#f4f4f4] border border-[#888] w-[560px] shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold"
-              style={{ background: '#3c3c3c' }}>
+              style={{ background: '#242428' }}>
               <span>Password</span>
               <button onClick={fechar} className="w-5 h-5 bg-[#c0392b] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
             </div>

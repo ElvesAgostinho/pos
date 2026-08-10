@@ -47,12 +47,12 @@ export default function FnbUtilities() {
       <div className="w-[300px] flex-shrink-0 border-r border-[#d0d0d0] p-3 space-y-2 bg-[#fafafa]">
         <button onClick={() => setOp('recalc')}
           className={`w-full py-4 text-[14px] font-semibold ${op === 'recalc'
-            ? 'bg-[#2b2b2b] text-white' : 'bg-[#3c3c3c] text-white/80 hover:bg-[#2b2b2b]'}`}>
+            ? 'bg-[#18181B] text-white' : 'bg-[#242428] text-white/80 hover:bg-[#18181B]'}`}>
           Recalcular
         </button>
         <button onClick={() => setOp('saft')}
           className={`w-full py-4 text-[14px] font-semibold ${op === 'saft'
-            ? 'bg-[#2b2b2b] text-white' : 'bg-[#3c3c3c] text-white/80 hover:bg-[#2b2b2b]'}`}>
+            ? 'bg-[#18181B] text-white' : 'bg-[#242428] text-white/80 hover:bg-[#18181B]'}`}>
           SAF-T — Comunicação de Inventário
         </button>
       </div>
@@ -94,7 +94,7 @@ export default function FnbUtilities() {
                 </label>
 
                 <button onClick={() => correr.mutate()} disabled={nada || correr.isPending}
-                  className="px-8 py-4 bg-[#3c3c3c] text-white text-[14px] font-semibold hover:bg-[#2b2b2b] disabled:opacity-40">
+                  className="px-8 py-4 bg-[#242428] text-white text-[14px] font-semibold hover:bg-[#18181B] disabled:opacity-40">
                   {correr.isPending ? 'A recalcular…' : '⟳  Começar'}
                 </button>
               </div>

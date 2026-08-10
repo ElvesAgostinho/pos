@@ -125,7 +125,7 @@ export default function TimeBandEditor({ row, onClose }: { row: any; onClose: ()
 
           <div className="flex items-center gap-4 px-3 py-2 border-t border-[#d0d0d0] bg-[#f4f4f4]">
             <button onClick={addSlot} className="flex items-center gap-2 text-[13px] text-[#333] hover:bg-[#e8e8e8] px-1 py-1">
-              <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center">＋</span> Adicionar
+              <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
             <span className="w-px h-6 bg-[#d5d5d5]" />
             <button onClick={delSlot} disabled={sel === null}

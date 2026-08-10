@@ -178,13 +178,13 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
 
         <div className="max-w-[1100px] mt-2">
           {/* Línguas */}
-          <div className="flex border-b-2 border-[#2b2b2b] mt-3">
+          <div className="flex border-b-2 border-[#18181B] mt-3">
             {culturas.map((c) => {
               const tem = (d.texts || []).some((t: any) => t.culture === c && (t.subject || t.body));
               return (
                 <button key={c} onClick={() => setCultura(c)}
                   className={`px-6 py-1.5 text-[12px] font-semibold border-b-[3px] ${atual === c
-                    ? 'border-[#2b2b2b] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+                    ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
                   {c}
                   {!tem && <span className="ml-1 text-[#c0392b]" title="Sem texto nesta língua">●</span>}
                 </button>

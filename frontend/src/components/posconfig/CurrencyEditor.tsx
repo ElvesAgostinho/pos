@@ -199,7 +199,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
       {hist && <CurrencyHistory id={row.id} code={d.code} onClose={() => setHist(false)} />}
 
       <Toolbar actions={[
-        ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', color: '#2b2b2b', onClick: () => setHist(true) }]),
+        ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', color: '#18181B', onClick: () => setHist(true) }]),
         { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
       ]} />
@@ -221,7 +221,7 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
       <div className="bg-[#f4f4f4] border border-[#888] w-[1000px] max-w-[95vw] h-[65vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
+        <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#242428' }}>
           <span>{code} - Histórico</span>
           <button onClick={onClose} className="w-5 h-5 bg-[#c0392b] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
         </div>

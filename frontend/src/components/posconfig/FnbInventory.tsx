@@ -99,7 +99,7 @@ export default function FnbInventory() {
 
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f0f0]">
-        <div className="px-3 py-2 bg-[#3c3c3c] text-white text-[13px] font-bold">
+        <div className="px-3 py-2 bg-[#242428] text-white text-[13px] font-bold">
           {edit.id ? `Inventário ${edit.number}` : 'Novo documento'}
           {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#1f7a34] text-[11px]">LANÇADO</span>}
         </div>

@@ -47,7 +47,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="bg-white w-[900px] max-w-[95vw] h-[640px] max-h-[92vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 bg-[#2b2b2b] text-white">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#18181B] text-white">
           <span className="text-[14px] font-bold">Visualizar Logs{nome ? `: ${nome}` : ''}</span>
           <button onClick={onClose} className="text-white/80 hover:text-white"><Glyph icon="✕" size={16} /></button>
         </div>

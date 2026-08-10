@@ -203,10 +203,10 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
         </div>
 
         {/* Separadores */}
-        <div className="flex border-b-2 border-[#2b2b2b] px-3">
+        <div className="flex border-b-2 border-[#18181B] px-3">
           {TABS.map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#2b2b2b] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+              className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
               {label}
             </button>
           ))}
@@ -302,7 +302,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                   </div>
                   <div className="flex items-center gap-4 px-2 py-2 border-t border-[#d5d5d5] bg-[#f4f4f4]">
                     <button onClick={addLine} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-                      <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+                      <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
                     </button>
                     <button onClick={delLine} disabled={selLine === null}
                       className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1 disabled:opacity-35">
@@ -386,10 +386,10 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
               </div>
               <div className="flex items-center gap-4 px-3 py-2 bg-[#f4f4f4] border-t border-[#d5d5d5]">
                 <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-                  <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar - Sub-Famílias
+                  <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar - Sub-Famílias
                 </button>
                 <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-                  <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar - Artigos
+                  <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar - Artigos
                 </button>
               </div>
             </div>

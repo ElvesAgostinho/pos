@@ -130,10 +130,10 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
           </Box>
           </div>
 
-          <div className="flex border-b-2 border-[#2b2b2b] px-2 overflow-x-auto">
+          <div className="flex border-b-2 border-[#18181B] px-2 overflow-x-auto">
             {TABS.map(([k, label]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#2b2b2b] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+                className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
                 {label}
               </button>
             ))}

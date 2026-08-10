@@ -118,7 +118,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
               </div>
               <div className="space-y-2">
                 <button onClick={() => setPwModal('main')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#2b2b2b] text-white text-[13px] font-bold">
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#18181B] text-white text-[13px] font-bold">
                   <Glyph icon="🔑" size={14} /> Password
                 </button>
                 <label className="flex items-center gap-2 text-[12px]">
@@ -148,10 +148,10 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
         </div>
 
         {/* Separadores */}
-        <div className="flex border-b-2 border-[#2b2b2b] overflow-x-auto">
+        <div className="flex border-b-2 border-[#18181B] overflow-x-auto">
           {TABS.map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#2b2b2b] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+              className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
               {label}
             </button>
           ))}
@@ -316,7 +316,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                   Utilizar preço de custo
                 </label>
                 <button onClick={() => setPwModal('pos')}
-                  className="w-[250px] flex items-center justify-center gap-2 py-2.5 bg-[#2b2b2b] text-white text-[13px] font-bold">
+                  className="w-[250px] flex items-center justify-center gap-2 py-2.5 bg-[#18181B] text-white text-[13px] font-bold">
                   <Glyph icon="🔑" size={14} /> PIN do Terminal (POS)
                 </button>
                 <label className="flex items-center gap-2 text-[12px]">
@@ -392,10 +392,10 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
               </table>
               <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#e0e0e0]">
                 <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[13px] hover:bg-[#f0f0f0] px-1 py-1">
-                  <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center">＋</span> Adicionar - Sub-Famílias
+                  <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center">＋</span> Adicionar - Sub-Famílias
                 </button>
                 <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[13px] hover:bg-[#f0f0f0] px-1 py-1">
-                  <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center">＋</span> Adicionar - Artigos
+                  <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center">＋</span> Adicionar - Artigos
                 </button>
                 <span className="ml-auto text-[11px] text-[#666]">
                   É o que motiva a sala a vender a garrafa em vez do copo.
@@ -410,7 +410,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       {pwModal && (
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={() => setPwModal(null)}>
           <div className="bg-white border border-[#888] w-[440px] shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
+            <div className="px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#242428' }}>
               {pwModal === 'pos' ? 'PIN do Terminal' : 'Password'}
             </div>
             <div className="p-4 space-y-2">

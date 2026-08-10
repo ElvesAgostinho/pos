@@ -114,7 +114,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
   const Btn = ({ onClick, children, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-3 py-1.5 bg-[#3c3c3c] text-white text-[12px] hover:bg-[#4c4c4c] disabled:opacity-35">
+      className="flex items-center gap-2 px-3 py-1.5 bg-[#242428] text-white text-[12px] hover:bg-[#4c4c4c] disabled:opacity-35">
       {children}
     </button>
   );
@@ -122,7 +122,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-6" onClick={onClose}>
       <div className="bg-[#f0f0f0] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#3c3c3c' }}>
+        <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#242428' }}>
           <span>{mode === 'online' ? 'Mesas - Online' : 'Mesas'} — {sector.name}</span>
           <button onClick={onClose} className="text-white"><Glyph icon="✕" size={16} /></button>
         </div>
@@ -156,9 +156,9 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
               <div className="p-3 space-y-2 text-[12px]">
                 <button onClick={() => sel !== null && upd(sel, { table_number: prompt('Número da mesa:', S?.table_number) || S.table_number })}
-                  disabled={sel === null} className="w-full py-1.5 bg-[#3c3c3c] text-white disabled:opacity-35">Alterar número</button>
+                  disabled={sel === null} className="w-full py-1.5 bg-[#242428] text-white disabled:opacity-35">Alterar número</button>
                 <button onClick={() => sel !== null && upd(sel, { name: prompt('Texto da mesa:', S?.name || '') || '' })}
-                  disabled={sel === null} className="w-full py-1.5 bg-[#3c3c3c] text-white disabled:opacity-35">Alterar texto</button>
+                  disabled={sel === null} className="w-full py-1.5 bg-[#242428] text-white disabled:opacity-35">Alterar texto</button>
 
                 <label className="flex items-center gap-2"><input type="checkbox" checked={showNums} onChange={(e) => setShowNums(e.target.checked)} className="w-4 h-4" />Visualizar números</label>
 

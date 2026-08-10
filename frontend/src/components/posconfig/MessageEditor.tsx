@@ -162,7 +162,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
             <div className="w-[150px] flex-shrink-0 border-l border-[#e0e0e0] p-2 space-y-2">
               <button onClick={addOpt} className="flex items-center gap-2 text-[13px] text-[#333] hover:bg-[#f0f0f0] w-full px-1 py-1">
-                <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[14px]">＋</span>
+                <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[14px]">＋</span>
                 Adicionar
               </button>
               <button onClick={() => opts.length && delOpt(opts.length - 1)} disabled={!opts.length}

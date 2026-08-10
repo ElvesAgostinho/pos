@@ -138,7 +138,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
       <div onClick={(e) => e.stopPropagation()}
         className="w-[1200px] max-w-[96vw] bg-[#f0f0f0] border border-[#333] shadow-2xl flex flex-col"
         style={{ height: 'min(86vh, 760px)', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold bg-[#3c3c3c]">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold bg-[#242428]">
           <span>{eid ? `Entidade — ${d.name || d.code}` : 'Nova entidade'}</span>
           <button onClick={onClose} className="w-6 h-6 bg-[#c0140f] text-white text-[12px] flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
         </div>
@@ -320,7 +320,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <div className="flex gap-1 mb-2">
                 {(['passadas', 'futuras', 'journey', 'pos'] as const).map((t) => (
                   <button key={t} onClick={() => setHistTab(t)}
-                    className={`px-3 py-1.5 text-[12px] font-bold border border-[#c0c0c0] ${histTab === t ? 'bg-[#3c3c3c] text-white' : 'bg-white'}`}>
+                    className={`px-3 py-1.5 text-[12px] font-bold border border-[#c0c0c0] ${histTab === t ? 'bg-[#242428] text-white' : 'bg-white'}`}>
                     {{ passadas: 'Reservas passadas', futuras: 'Reservas futuras', journey: 'Guest Journey', pos: 'Faturação - POS' }[t]}
                   </button>))}
               </div>
@@ -365,7 +365,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                   const url = URL.createObjectURL(r.data); const a = document.createElement('a');
                   a.href = url; a.download = `entidade_${d.code}.json`; a.click(); URL.revokeObjectURL(url);
                 }} disabled={!eid}
-                  className="h-9 px-4 text-[13px] font-bold bg-[#3c3c3c] text-white disabled:opacity-40">Portabilidade de Dados</button>
+                  className="h-9 px-4 text-[13px] font-bold bg-[#242428] text-white disabled:opacity-40">Portabilidade de Dados</button>
                 <button onClick={async () => {
                   if (!await confirmar('ATENÇÃO! Remoção IRREVERSÍVEL (RGPD): os dados pessoais apagam-se e o nome vira um código anónimo. Os documentos fiscais mantêm-se, como a AGT exige. Continuar?')) return;
                   const r = await apiClient.post(`pos/marketing/entities/${eid}/anonymize/`, {});
@@ -470,7 +470,7 @@ function Comissoes({ eid, d: _d, T }: any) {
     {add && (
       <div className="fixed inset-0 bg-black/40 z-[400] flex items-center justify-center" onClick={() => setAdd(null)}>
         <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#f0f0f0] border border-[#333] shadow-2xl">
-          <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold bg-[#3c3c3c]">
+          <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold bg-[#242428]">
             <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#c0140f] flex items-center justify-center"><Glyph icon="✕" size={11} /></button></div>
           <div className="p-4 space-y-2">
             <Row l="Cód. Comissão:" w={110}><input value={add.codigo || ''} onChange={(e) => setAdd({ ...add, codigo: e.target.value })} className={inp} /></Row>

@@ -177,10 +177,10 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
 
         {/* Direita: quem o pode dar / a que artigos se aplica */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex border-b-2 border-[#2b2b2b] px-2">
+          <div className="flex border-b-2 border-[#18181B] px-2">
             {([['groups', 'Grupos de Utilizadores'], ['fnb', 'F&B']] as const).map(([k, l]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#2b2b2b] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+                className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
                 {l}
               </button>
             ))}
@@ -249,7 +249,7 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
               </div>
               <div className="flex items-center gap-4 px-3 py-2 bg-[#f4f4f4] border-t border-[#d0d0d0]">
                 <button onClick={() => setPicker(true)} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-                  <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+                  <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
                 </button>
                 <button onClick={() => set('item_ids', [])} disabled={iids.length === 0}
                   className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1 disabled:opacity-35">

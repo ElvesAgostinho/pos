@@ -18,14 +18,19 @@ import { getAppearance } from './appearance';
 
 export const TOKENS = {
   // Institucional — a cor de marca desta instalação (Aparência → Cor da barra).
-  get accent() { return getAppearance('barColor') || '#336699'; },
-  // Dourado — SÓ para o logótipo "ML" e realces de marca; nunca para texto/fundo.
-  gold: '#c9a400',
-  goldDark: '#8a6f00',
+  // Preto + branco + dourado discreto: o dourado é a marca, não decoração — por
+  // isso só entra em traços finos (rebordo, seleção, gradiente de barra de
+  // título), nunca como preenchimento grande.
+  get accent() { return getAppearance('barColor') || '#B08D3C'; },
+  // Dourado — o mesmo tom do accent por omissão; para o logótipo "ML" e realces
+  // de marca. Nunca para texto/fundo em grande área — é "discreto" de propósito.
+  gold: '#B08D3C',
+  goldDark: '#8a6a24',
 
-  // Neutros — a base de tudo (barras, fundos, linhas).
-  bar: '#2b2b2b',            // barra de menus / título de janela (escuro sempre, claro ou escuro)
-  barSoft: '#3c3c3c',        // barra secundária (título da secção, um tom mais claro que `bar`)
+  // Neutros — a base de tudo (barras, fundos, linhas). Preto quase puro, não
+  // cinzento — é a segunda cor da paleta (preto + branco + dourado).
+  bar: '#18181B',            // barra de menus / título de janela (escuro sempre, claro ou escuro)
+  barSoft: '#242428',        // barra secundária (título da secção, um tom mais claro que `bar`)
   canvas: '#f0f0f0',         // fundo da área de trabalho
   surface: '#ffffff',        // fundo dos formulários/grelhas
   toolbarBg: '#f4f4f4',      // fundo da barra de ferramentas (Toolbar do kit.tsx)
@@ -38,10 +43,11 @@ export const TOKENS = {
   textOnLight: '#1a2433',
   textMuted: '#666666',
 
-  // Seleção / destaque (linha escolhida numa grelha, item ativo numa árvore).
-  selectedBg: '#dbe7f3',
-  selectedText: '#1a4f8a',
-  hover: '#f5f9ff',
+  // Seleção / destaque (linha escolhida numa grelha, item ativo numa árvore) —
+  // dourado muito claro em vez do azul de antes, para ficar dentro da paleta.
+  selectedBg: '#f2ecdc',
+  selectedText: '#18181B',
+  hover: '#faf7f0',
 
   // Semântica — sempre as mesmas em todo o sistema, nunca variações locais.
   success: '#1f7a34',        // Gravar / confirmar
@@ -78,9 +84,9 @@ export function accentGradient(accent: string = TOKENS.accent): string {
 export function classicTheme(dark: boolean) {
   return dark
     ? {
-        bar: '#2b2b2b', barText: TOKENS.textOnDark, ribbon: '#333333', tree: '#252525',
+        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#202024', tree: '#1e1e21',
         treeText: '#dcdcdc', line: '#3a3a3a', body: '#1e1e1e', status: '#1b1b1b',
-        hover: '#3a3a3a', accent: '#4a9edb',
+        hover: '#3a3a3a', accent: TOKENS.gold,
       }
     : {
         bar: 'linear-gradient(to bottom, #fbfcfd 0%, #eceff2 55%, #dfe3e8 100%)',

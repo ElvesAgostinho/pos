@@ -200,7 +200,7 @@ export function PosDayClose() {
             if (await confirmar('Fechar todos os terminais (caixas abertas) agora?\n\nIsto NÃO fecha o dia de vendas — só desliga os postos.'))
               fecharTerminais.mutate();
           }} disabled={fecharTerminais.isPending}
-            className="px-3 py-1.5 bg-[#2b2b2b] text-white text-[12px] font-semibold disabled:opacity-50">
+            className="px-3 py-1.5 bg-[#18181B] text-white text-[12px] font-semibold disabled:opacity-50">
             {fecharTerminais.isPending ? 'A fechar…' : 'Fechar Terminais'}
           </button>
         </div>
@@ -451,7 +451,7 @@ export function PosDiagnostics() {
           )}
           {d.print.failed > 0 && (
             <button onClick={() => reenviar.mutate()}
-              className="mt-2 px-3 py-1.5 bg-[#2b2b2b] text-white text-[12px]">
+              className="mt-2 px-3 py-1.5 bg-[#18181B] text-white text-[12px]">
               Reenviar {d.print.failed} comanda(s) falhada(s)
             </button>
           )}
@@ -515,7 +515,7 @@ export function PosDiagnostics() {
           <L k="Endpoint" v={`POST /api/${d.sync?.endpoint || 'licensing/sync/'}`} />
           <div className="pt-2">
             <button onClick={() => sincronizar.mutate()} disabled={sincronizar.isPending}
-              className="px-3 py-1.5 bg-[#2b2b2b] text-white text-[12px] font-semibold disabled:opacity-50">
+              className="px-3 py-1.5 bg-[#18181B] text-white text-[12px] font-semibold disabled:opacity-50">
               {sincronizar.isPending ? 'A sincronizar…' : '⟳ Sincronizar agora'}
             </button>
           </div>

@@ -227,7 +227,7 @@ export default function PosCurrentAccounts() {
         </fieldset>
 
         <button onClick={pesquisar}
-          className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
+          className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#242428] text-white hover:bg-[#18181B]">
           <Glyph icon="🔄" size={26} />
           <span className="text-[13px]">Pesquisar</span>
         </button>

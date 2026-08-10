@@ -30,7 +30,7 @@ function ImagemUpload({ titulo, url, folder, onChange }: {
           <span className={`${inputCls} flex-1 min-w-0 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
             {url ? url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
           </span>
-          <span className="px-3 py-1 text-[12px] font-semibold bg-[#3c3c3c] text-white hover:bg-[#4c4c4c] flex-shrink-0">
+          <span className="px-3 py-1 text-[12px] font-semibold bg-[#242428] text-white hover:bg-[#4c4c4c] flex-shrink-0">
             Carregar…
           </span>
           <input type="file" accept="image/*" className="hidden"
@@ -221,7 +221,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
       </div>
 
       {/* Separadores */}
-      <div className="flex border-b-2 border-[#2b2b2b] bg-[#f7f7f7] px-2">
+      <div className="flex border-b-2 border-[#18181B] bg-[#f7f7f7] px-2">
         {TABS.map(([k, label]) => <Tab key={k} active={tab === k} onClick={() => setTab(k)}>{label}</Tab>)}
       </div>
 
@@ -634,7 +634,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                 <input value={newBc} onChange={(e) => setNewBc(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addBarcode()}
                   placeholder="Ler ou escrever o código de barras…" className="border border-[#8a95a3] px-2 py-1 text-[12px] flex-1" style={inputStyle} />
                 <button onClick={addBarcode} disabled={isNew}
-                  className="px-3 py-1 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#2b2b2b' }}>Adicionar</button>
+                  className="px-3 py-1 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#18181B' }}>Adicionar</button>
               </div>
               {isNew && <div className="text-[11px] text-[#a01818]">Grave o artigo antes de acrescentar códigos de barras.</div>}
               <table className="w-full text-[12px]">

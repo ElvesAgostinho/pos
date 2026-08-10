@@ -80,7 +80,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
         <div className="flex">
           {([['lang', 'Línguas'], ['cur', 'Moedas']] as const).map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-8 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#3c3c3c] text-white' : 'bg-[#e8e8e8] text-[#555] hover:bg-[#ddd]'}`}>
+              className={`px-8 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#242428] text-white' : 'bg-[#e8e8e8] text-[#555] hover:bg-[#ddd]'}`}>
               {label}
             </button>
           ))}
@@ -131,7 +131,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
 
           <div className="w-[150px] flex-shrink-0 border-l border-[#e0e0e0] p-2 space-y-1">
             <button onClick={add} className="flex items-center gap-2 text-[13px] w-full px-1 py-1 hover:bg-[#f0f0f0]">
-              <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center">＋</span> Adicionar
+              <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
             <button onClick={() => list.length && del(list.length - 1)} disabled={!list.length}
               className="flex items-center gap-2 text-[13px] w-full px-1 py-1 hover:bg-[#f0f0f0] disabled:opacity-35">

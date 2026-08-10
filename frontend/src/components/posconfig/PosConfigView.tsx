@@ -161,6 +161,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   // ecrã nem terminar sessão sem sair pelo Ambiente de Trabalho primeiro.
   const nav = useNavigate();
   const [locked, setLocked] = useState(false);
+  const [userMenu, setUserMenu] = useState(false);
   const logout = async () => { await authApi.logout(); nav('/backoffice/login'); };
   const { data: agt } = useAgtCertificate();
   // FAVORITOS — as secções que este utilizador usa todos os dias (ficam no browser dele).
@@ -334,10 +335,27 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
         </div>
         <div className="flex items-center gap-1 text-[12px] font-normal">
-          <span className="text-[#cfe3ff] text-[11px] mr-2 flex items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#90c040] mr-1.5" />
-            {JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}
-          </span>
+          {/* Clicar no nome também abre o Terminar Sessão — o mesmo sítio onde se
+              procura "sair" no Ambiente de Trabalho, não só o ícone ao lado. */}
+          <div className="relative">
+            <button onClick={(e) => { e.stopPropagation(); setUserMenu((s) => !s); }}
+              className={`text-[#cfe3ff] text-[11px] mr-2 flex items-center px-1.5 py-0.5 ${userMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#90c040] mr-1.5" />
+              {JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}
+            </button>
+            {userMenu && (
+              <div className="absolute right-0 top-[26px] min-w-[190px] bg-[#f0f0f0] border border-[#333] shadow-2xl z-[120] text-[13px]" onClick={(e) => e.stopPropagation()}>
+                <button onClick={() => { setUserMenu(false); setLocked(true); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[#dbe8ff] text-[#333]">
+                  <Lock size={14} /> Bloquear ecrã
+                </button>
+                <button onClick={() => { setUserMenu(false); logout(); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[#dbe8ff] text-[#a01818] font-semibold border-t border-[#e0e0e0]">
+                  <LogOut size={14} /> Terminar sessão
+                </button>
+              </div>
+            )}
+          </div>
           <div onClick={() => setLocked(true)} title="Bloquear ecrã"
             className="w-6 h-5 flex items-center justify-center cursor-pointer hover:bg-white/15">
             <Lock size={12} />
@@ -1486,7 +1504,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               {/* BARRA DE FERRAMENTAS */}
               <Toolbar
                 actions={[
-                  { icon: '＋', label: 'Adicionar', color: '#2b2b2b', onClick: () => setEditing('new') },
+                  { icon: '＋', label: 'Adicionar', color: '#18181B', onClick: () => setEditing('new') },
                   { icon: '✎', label: 'Editar', color: '#1a73c8', disabled: !sel, onClick: () => setEditing(sel!) },
                   { icon: '−', label: 'Apagar', color: '#c0392b', disabled: !sel, onClick: () => confirm(`Apagar "${selRow?.name}"? Fica registado na auditoria.`) && del.mutate(sel!) },
                   { icon: '⧉', label: 'Copiar', color: '#555', disabled: !sel, onClick: () => copy.mutate(sel!) },

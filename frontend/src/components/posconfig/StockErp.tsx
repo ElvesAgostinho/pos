@@ -73,8 +73,8 @@ export default function StockErp() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex border-b-2 border-[#2b2b2b] px-3 bg-[#f7f7f7]">
-        <span className="px-4 py-2 text-[13px] font-semibold border-b-[3px] border-[#2b2b2b] bg-white">
+      <div className="flex border-b-2 border-[#18181B] px-3 bg-[#f7f7f7]">
+        <span className="px-4 py-2 text-[13px] font-semibold border-b-[3px] border-[#18181B] bg-white">
           ERP Externo - Avançado
         </span>
       </div>
@@ -168,7 +168,7 @@ export default function StockErp() {
               </Row>
 
               <button onClick={() => sync.mutate()} disabled={off}
-                className="w-full py-3 bg-[#3c3c3c] text-white text-[13px] font-semibold hover:bg-[#2b2b2b] disabled:opacity-40 mt-2">
+                className="w-full py-3 bg-[#242428] text-white text-[13px] font-semibold hover:bg-[#18181B] disabled:opacity-40 mt-2">
                 {sync.isPending ? 'A atualizar…' : 'Stocks - Atualizar'}
               </button>
             </div>

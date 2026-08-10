@@ -124,7 +124,7 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
           </table>
           <div className="flex items-center justify-end gap-4 px-3 py-2 bg-[#f4f4f4] border-t border-[#d5d5d5]">
             <button onClick={addC} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={delC} disabled={sel === null}
               className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1 disabled:opacity-35">

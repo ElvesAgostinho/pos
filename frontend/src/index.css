@@ -9,14 +9,14 @@
    (TOKENS.accent) fica de fora de propósito — essa muda por instalação
    (Aparência → Cor da barra), não pode ser uma cor fixa no CSS. */
 @theme {
-  --color-brand-bar: #2b2b2b;
-  --color-brand-bar-soft: #3c3c3c;
-  --color-brand-gold: #c9a400;
-  --color-brand-gold-dark: #8a6f00;
+  --color-brand-bar: #18181B;
+  --color-brand-bar-soft: #242428;
+  --color-brand-gold: #B08D3C;
+  --color-brand-gold-dark: #8a6a24;
   --color-brand-border: #8a95a3;
   --color-brand-line: #c0c0c0;
-  --color-brand-selected-bg: #dbe7f3;
-  --color-brand-selected-text: #1a4f8a;
+  --color-brand-selected-bg: #f2ecdc;
+  --color-brand-selected-text: #18181B;
   --color-brand-success: #1f7a34;
   --color-brand-danger: #c0392b;
 }
@@ -64,7 +64,7 @@ select { background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgb
 
 /* Foco visível e consistente nos campos (aspeto enterprise) */
 input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 2px rgba(30,63,102,0.35); }
-::selection { background: #336699; color: #fff; }
+::selection { background: #B08D3C; color: #fff; }
 
 /* Impressão: esconde a moldura/menus, imprime só o conteúdo */
 @media print {

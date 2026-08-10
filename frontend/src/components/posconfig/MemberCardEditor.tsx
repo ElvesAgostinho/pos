@@ -147,7 +147,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                 </span>
               </div>
               <button onClick={() => setPicker('pack')} title="Escolher os artigos incluídos"
-                className="w-9 h-[28px] bg-[#3c3c3c] text-white flex items-center justify-center"><Glyph icon="👁" size={14} /></button>
+                className="w-9 h-[28px] bg-[#242428] text-white flex items-center justify-center"><Glyph icon="👁" size={14} /></button>
             </Row>
 
             <Row label="Happy Hour:">
@@ -210,10 +210,10 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
 
           <div className="flex items-center gap-4 px-3 py-2 bg-[#f4f4f4] border-t border-[#d0d0d0]">
             <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Sub-Famílias
+              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Sub-Famílias
             </button>
             <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Artigos
+              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Artigos
             </button>
           </div>
         </div>

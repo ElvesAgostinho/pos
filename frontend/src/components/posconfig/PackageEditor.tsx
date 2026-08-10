@@ -148,7 +148,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
 
           <div className="flex items-center gap-4 px-3 py-2 bg-[#f4f4f4] border-t border-[#d0d0d0]">
             <button onClick={() => setPicker(true)} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={() => { if (sel !== null) { set('lines', lines.filter((_, j) => j !== sel)); setSel(null); } }}
               disabled={sel === null}

@@ -183,7 +183,7 @@ export default function PosDocSearch() {
 
         <Toolbar actions={[
           { label: 'Voltar', icon: '◀', color: '#6b6b6b', onClick: () => setVer(null) },
-          { label: 'Imprimir', icon: '🖨', color: '#2b2b2b', onClick: imprimir },
+          { label: 'Imprimir', icon: '🖨', color: '#18181B', onClick: imprimir },
           {
             label: 'Anular (nota de crédito)', icon: '🚫', disabled: doc.voided,
             onClick: () => setAnular({ id: ver, number: doc.invoice_no }),
@@ -317,7 +317,7 @@ export default function PosDocSearch() {
 
       <Toolbar actions={[
         { label: 'Pré-visualizar', icon: '🔍', color: '#1a73c8', disabled: !sel, onClick: () => setVer(sel) },
-        { label: 'Imprimir', icon: '🖨', color: '#2b2b2b', disabled: !sel, onClick: () => setVer(sel) },
+        { label: 'Imprimir', icon: '🖨', color: '#18181B', disabled: !sel, onClick: () => setVer(sel) },
         {
           label: 'Anular', icon: '🚫', disabled: !sel || selRow?.voided,
           onClick: () => setAnular({ id: sel, number: selRow.number }),
@@ -336,7 +336,7 @@ function PopupAnular({ anular, setAnular, acao }: any) {
     <>
       <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setAnular(null)} />
       <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#888] shadow-2xl w-[460px]">
-        <div className="px-3 py-2 bg-[#3c3c3c] text-white text-[13px] font-bold flex justify-between">
+        <div className="px-3 py-2 bg-[#242428] text-white text-[13px] font-bold flex justify-between">
           Anular {anular.number} <button onClick={() => setAnular(null)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
         </div>
         <div className="p-4 space-y-3 text-[12px]">

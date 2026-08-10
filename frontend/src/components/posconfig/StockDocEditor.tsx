@@ -131,11 +131,11 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
 
         {/* Separadores */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex border-b-2 border-[#2b2b2b] px-2">
+          <div className="flex border-b-2 border-[#18181B] px-2">
             {TABS.map(([k, l]) => (
               <button key={k} onClick={() => setTab(k)}
                 className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k
-                  ? 'border-[#2b2b2b] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+                  ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
                 {l}
               </button>
             ))}
@@ -235,7 +235,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                     kind: 'Normal', code: String(pms.length + 1), description: 'Normal',
                     model_path: '', sort_order: pms.length + 1, is_active: true,
                   }])} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-                    <span className="w-5 h-5 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+                    <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
                   </button>
                   <button onClick={() => { if (sel !== null) { set('print_models', pms.filter((_, j) => j !== sel)); setSel(null); } }}
                     disabled={sel === null}

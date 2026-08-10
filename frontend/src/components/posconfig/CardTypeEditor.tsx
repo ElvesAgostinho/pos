@@ -158,7 +158,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
                 <input value={raw} onChange={(e) => setRaw(e.target.value)}
                   className={`${inp} flex-1 font-mono`} style={inputStyle} />
                 <button onClick={() => testar.mutate()} disabled={isNew}
-                  className="px-4 py-1.5 bg-[#2b2b2b] text-white text-[12px] font-semibold disabled:opacity-40">
+                  className="px-4 py-1.5 bg-[#18181B] text-white text-[12px] font-semibold disabled:opacity-40">
                   {testar.isPending ? 'A ler…' : 'Ler'}
                 </button>
               </div>

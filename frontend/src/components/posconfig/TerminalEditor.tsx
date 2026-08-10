@@ -63,7 +63,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
-      className={`px-5 py-1.5 text-[13px] font-semibold border-b-[3px] ${tab === id ? 'border-[#2b2b2b] text-[#111]' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+      className={`px-5 py-1.5 text-[13px] font-semibold border-b-[3px] ${tab === id ? 'border-[#18181B] text-[#111]' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
       {label}
     </button>
   );
@@ -106,7 +106,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       </Box>
       </div>
 
-      <div className="flex border-b-2 border-[#2b2b2b] bg-[#f7f7f7] px-2">
+      <div className="flex border-b-2 border-[#18181B] bg-[#f7f7f7] px-2">
         <Tab id="geral" label="Geral" /><Tab id="printers" label="Impressoras" /><Tab id="hardware" label="Hardware" />
       </div>
 
@@ -232,7 +232,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
               </tbody>
             </table>
             <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[13px] text-[#333] px-1 py-1 hover:bg-[#f0f0f0]">
-              <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center">＋</span> Adicionar
+              <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
           </div>
         )}

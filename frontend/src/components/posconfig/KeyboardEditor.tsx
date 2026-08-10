@@ -140,7 +140,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
 
   const Side = ({ onClick, color, children, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}
-      className="w-full flex items-center gap-2 px-2 py-1.5 bg-[#3c3c3c] text-white text-[12px] hover:bg-[#4c4c4c] disabled:opacity-35">
+      className="w-full flex items-center gap-2 px-2 py-1.5 bg-[#242428] text-white text-[12px] hover:bg-[#4c4c4c] disabled:opacity-35">
       <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px]" style={{ background: color }}>●</span>
       {children}
     </button>
@@ -196,8 +196,8 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
             <Side onClick={rename} color="#29b6f6" disabled={!sel}>Renomear tecla</Side>
             <Side onClick={sortKeys} color="#c9a400" disabled={!level}>Ordenar Teclas</Side>
             <div className="flex gap-1">
-              <button onClick={() => move(-1)} disabled={!sel} className="flex-1 py-1.5 bg-[#3c3c3c] text-white disabled:opacity-35">◀ Recuar</button>
-              <button onClick={() => move(1)} disabled={!sel} className="flex-1 py-1.5 bg-[#3c3c3c] text-white disabled:opacity-35">Avançar ▶</button>
+              <button onClick={() => move(-1)} disabled={!sel} className="flex-1 py-1.5 bg-[#242428] text-white disabled:opacity-35">◀ Recuar</button>
+              <button onClick={() => move(1)} disabled={!sel} className="flex-1 py-1.5 bg-[#242428] text-white disabled:opacity-35">Avançar ▶</button>
             </div>
           </div>
 

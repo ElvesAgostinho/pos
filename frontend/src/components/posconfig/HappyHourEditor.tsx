@@ -174,7 +174,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
           {d.kind === 'PRICE' ? (
             NIVEIS.map((n) => (
               <button key={n.v} onClick={() => setBrush(n.v)}
-                className={`w-full py-3 text-[13px] font-semibold border-b border-white ${brush === n.v ? 'ring-2 ring-inset ring-[#2b2b2b]' : ''}`}
+                className={`w-full py-3 text-[13px] font-semibold border-b border-white ${brush === n.v ? 'ring-2 ring-inset ring-[#18181B]' : ''}`}
                 style={{ background: n.bg, color: n.fg }}>
                 {n.label}
               </button>

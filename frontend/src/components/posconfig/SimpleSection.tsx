@@ -138,7 +138,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                         <span className={`${inputCls} flex-1 min-w-0 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
                           {editing[f.key] ? String(editing[f.key]).split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                         </span>
-                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#3c3c3c] text-white hover:bg-[#4c4c4c] flex-shrink-0">
+                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#242428] text-white hover:bg-[#4c4c4c] flex-shrink-0">
                           Carregar…
                         </span>
                         <input type="file" accept="image/*" className="hidden"
@@ -274,7 +274,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#2b2b2b', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
+        { icon: '＋', label: 'Adicionar', color: '#18181B', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
         { icon: '✎', label: 'Editar', color: '#1a73c8', disabled: !sel || readOnly, onClick: () => setEditing({ ...selRow }) },
         ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#5d4037', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
         { icon: '−', label: 'Apagar', color: '#c0392b', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },

@@ -83,7 +83,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
   const BTab = ({ id, label }: any) => (
     <button onClick={() => setBottom(id)}
-      className={`px-6 py-2 text-[13px] font-semibold ${bottom === id ? 'bg-[#3c3c3c] text-white' : 'bg-[#e8e8e8] text-[#555] hover:bg-[#ddd]'}`}>
+      className={`px-6 py-2 text-[13px] font-semibold ${bottom === id ? 'bg-[#242428] text-white' : 'bg-[#e8e8e8] text-[#555] hover:bg-[#ddd]'}`}>
       {label}
     </button>
   );
@@ -120,7 +120,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
             <div className="flex mt-2">
               {([['main', 'Main contacts'], ['sec', 'Secondary contacts']] as const).map(([k, label]) => (
                 <button key={k} onClick={() => setTab(k)}
-                  className={`px-6 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#3c3c3c] text-white' : 'bg-[#e8e8e8] text-[#555] hover:bg-[#ddd]'}`}>{label}</button>
+                  className={`px-6 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#242428] text-white' : 'bg-[#e8e8e8] text-[#555] hover:bg-[#ddd]'}`}>{label}</button>
               ))}
             </div>
             <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-1.5" style={{ border: '4px groove #c0c0c0' }}>
@@ -172,7 +172,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 <span className={`${inp} flex-1 min-w-0 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
                   {d.logo_url ? d.logo_url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                 </span>
-                <span className="px-3 py-1 text-[12px] font-semibold bg-[#3c3c3c] text-white hover:bg-[#4c4c4c] flex-shrink-0">
+                <span className="px-3 py-1 text-[12px] font-semibold bg-[#242428] text-white hover:bg-[#4c4c4c] flex-shrink-0">
                   Carregar…
                 </span>
                 <input type="file" accept="image/*" className="hidden"
@@ -258,7 +258,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   </div>
                 </div>
                 <div className="col-span-2 flex items-center gap-2 text-[11px] text-[#666] border-t border-[#eee] pt-2">
-                  <span className="w-6 h-6 rounded-full bg-[#3c3c3c] text-white flex items-center justify-center"><Glyph icon="🔑" size={13} /></span>
+                  <span className="w-6 h-6 rounded-full bg-[#242428] text-white flex items-center justify-center"><Glyph icon="🔑" size={13} /></span>
                   <span className="flex-1">
                     <b>Gestor de licenças</b> — os campos a cinzento vêm do ficheiro de licença assinado pelo fornecedor
                     e não são editáveis. Para alargar módulos, terminais ou validade, contacte o fornecedor.
@@ -308,10 +308,10 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 </tbody>
               </table>
               <div className="w-[170px] space-y-1">
-                {[['＋', 'Adicionar', '#2b2b2b', () => setPopup({ group: groups[0]?.id, sort_order: 100, is_active: true })],
+                {[['＋', 'Adicionar', '#18181B', () => setPopup({ group: groups[0]?.id, sort_order: 100, is_active: true })],
                   ['✎', 'Editar', '#1a73c8', () => mems[0] && setPopup({ ...mems[0], _i: 0 })],
                   ['−', 'Apagar', '#c0392b', () => set('memberships', mems.slice(0, -1))]].map(([ic, lb, c, fn]: any) => (
-                  <button key={lb} onClick={fn} className="flex items-center gap-2 w-full px-2 py-1.5 bg-[#3c3c3c] text-white text-[13px] hover:bg-[#4c4c4c]">
+                  <button key={lb} onClick={fn} className="flex items-center gap-2 w-full px-2 py-1.5 bg-[#242428] text-white text-[13px] hover:bg-[#4c4c4c]">
                     <span className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: c }}><Glyph icon={ic} size={13} /></span>{lb}
                   </button>
                 ))}
@@ -393,7 +393,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
               </table>
               <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#e0e0e0]">
                 <button onClick={() => addBank.mutate()} className="flex items-center gap-2 text-[13px] text-[#333] hover:bg-[#f0f0f0] px-1 py-1">
-                  <span className="w-6 h-6 rounded-full bg-[#2b2b2b] text-white flex items-center justify-center">＋</span> Adicionar
+                  <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center">＋</span> Adicionar
                 </button>
                 <span className="w-px h-6 bg-[#d5d5d5]" />
                 <button onClick={() => banks.length && confirm('Apagar a última conta?') && delBank.mutate(banks[banks.length - 1].id)}
@@ -411,7 +411,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       {popup && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" onClick={() => setPopup(null)}>
           <div className="bg-white border border-[#888] w-[560px] shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
+            <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#242428' }}>
               <span>A editar {groups.find((g: any) => g.id === popup.group)?.name || 'grupo'}</span>
               <button onClick={() => setPopup(null)} className="text-white inline-flex"><Glyph icon="✕" size={14} /></button>
             </div>
