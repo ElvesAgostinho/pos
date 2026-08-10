@@ -27,7 +27,7 @@ function ImagemUpload({ titulo, url, folder, onChange }: {
     <Box title={titulo}>
       <div className="flex items-center gap-2">
         <label className="flex-1 flex items-center gap-2 cursor-pointer min-w-0">
-          <span className={`${inputCls} flex-1 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
+          <span className={`${inputCls} flex-1 min-w-0 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
             {url ? url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
           </span>
           <span className="px-3 py-1 text-[12px] font-semibold bg-[#3c3c3c] text-white hover:bg-[#4c4c4c] flex-shrink-0">

@@ -168,8 +168,8 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 para fora (uma nuvem terceira, um link que pode morrer); um ficheiro
                 carregado fica no disco do próprio servidor do hotel, como tudo o resto. */}
             <Row label="Imagem do Hotel:" w="w-[100px]">
-              <label className="flex-1 flex items-center gap-2 cursor-pointer">
-                <span className={`${inp} flex-1 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
+              <label className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
+                <span className={`${inp} flex-1 min-w-0 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
                   {d.logo_url ? d.logo_url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                 </span>
                 <span className="px-3 py-1 text-[12px] font-semibold bg-[#3c3c3c] text-white hover:bg-[#4c4c4c] flex-shrink-0">

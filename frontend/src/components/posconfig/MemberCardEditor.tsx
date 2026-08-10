@@ -10,7 +10,7 @@ const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
-    <label className="flex items-center gap-3 text-[12px]">
+    <label className="flex items-center gap-3 text-[12px] min-w-0">
       <span className="w-[100px] flex-shrink-0 text-[#333]">{label}</span>
       {children}
     </label>
@@ -139,8 +139,8 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
             </div>
 
             <Row label="Packages:">
-              <div className={`${inp} flex-1 flex items-center gap-2 min-h-[28px]`} style={inputStyle}>
-                <span className="flex-1 truncate">
+              <div className={`${inp} flex-1 min-w-0 flex items-center gap-2 min-h-[28px]`} style={inputStyle}>
+                <span className="flex-1 min-w-0 truncate">
                   {packArtigos.length
                     ? packArtigos.map((a) => a.name).join(', ')
                     : <span className="text-[#999]">nenhum artigo incluído</span>}
