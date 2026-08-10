@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, Glyph } from './kit';
+import { Toolbar, inputStyle, Glyph, Box } from './kit';
 import { ItemPicker, SubFamilyPicker } from './Pickers';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
@@ -101,7 +101,9 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
       <div className="flex-1 flex overflow-hidden">
         {/* Esquerda: a ficha */}
         <div className="w-[58%] flex flex-col overflow-auto border-r border-[#e0e0e0]">
-          <div className="p-4 space-y-2">
+          <div className="p-4">
+          <Box title="Identificação">
+          <div className="space-y-2 pt-1.5">
             <Row label="Ativo:">
               <input type="checkbox" checked={!!d.is_active}
                 onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
@@ -161,6 +163,8 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                 "Desconto" ligado mas sem artigos na lista — o cartão não vai descontar nada.
               </div>
             )}
+          </div>
+          </Box>
           </div>
 
           {/* Lista de descontos */}

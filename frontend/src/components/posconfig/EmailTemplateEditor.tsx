@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -88,7 +88,8 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2 max-w-[1100px]">
+        <Box title="Identificação" className="max-w-[1100px]">
+        <div className="space-y-2 pt-1.5">
           <div className="flex items-center gap-8 pl-[120px]">
             <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
@@ -172,7 +173,10 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
               )}
             </div>
           </div>
+        </div>
+        </Box>
 
+        <div className="max-w-[1100px] mt-2">
           {/* Línguas */}
           <div className="flex border-b-2 border-[#2b2b2b] mt-3">
             {culturas.map((c) => {

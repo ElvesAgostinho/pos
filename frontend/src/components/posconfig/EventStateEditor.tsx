@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -60,7 +60,8 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
       <div className="flex-1 overflow-auto p-4">
         <div className="grid grid-cols-2 gap-10 items-start max-w-[1000px]">
-          <div className="space-y-2">
+          <Box title="Identificação">
+          <div className="space-y-2 pt-1.5">
             <Row label="Código:">
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 disabled={d.is_system && !isNew}
@@ -120,8 +121,10 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
               </div>
             </Row>
           </div>
+          </Box>
 
-          <div className="space-y-3">
+          <Box title="Opções">
+          <div className="space-y-3 pt-1.5">
             <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_system} onChange={(e) => set('is_system', e.target.checked)} className="w-4 h-4" />
               Sistema
@@ -146,6 +149,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
                 className={`${inp} w-[360px]`} style={inputStyle} />
             </Row>
           </div>
+          </Box>
         </div>
       </div>
 

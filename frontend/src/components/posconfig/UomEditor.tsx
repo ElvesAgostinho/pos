@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
@@ -61,7 +61,8 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        <div className="space-y-2 max-w-[820px]">
+        <Box title="Identificação" className="max-w-[820px]">
+        <div className="space-y-2 pt-1.5">
           <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[110px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
@@ -86,8 +87,9 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
             Ativo
           </label>
         </div>
+        </Box>
 
-        <div className="max-w-[820px] mt-4 border border-[#c8c8c8]">
+        <div className="max-w-[820px] mt-4" style={{ border: '3px groove #c0c0c0' }}>
           <table className="w-full text-[12px] border-collapse">
             <thead><tr className="bg-[#f0f0f0]">
               <th className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Código</th>

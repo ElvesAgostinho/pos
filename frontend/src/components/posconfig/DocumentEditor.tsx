@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, GridCheck } from './kit';
+import { Toolbar, inputStyle, GridCheck, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
@@ -91,8 +91,9 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
 
       <div className="flex-1 flex overflow-hidden">
         {/* Ficha da série */}
-        <div className="w-[46%] p-4 space-y-2 overflow-auto border-r border-[#e0e0e0]">
-          <div className="flex items-start gap-4">
+        <div className="w-[46%] p-4 space-y-3 overflow-auto border-r border-[#e0e0e0]">
+          <Box title="Identificação">
+          <div className="flex items-start gap-4 pt-1.5">
             <Row label="Código:">
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 className={`${inp} w-[180px]`} style={inputStyle} />
@@ -174,6 +175,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
             <input value={d.validation_code || ''} onChange={(e) => set('validation_code', e.target.value)}
               placeholder="atribuído pela AGT" className={`${inp} w-[300px]`} style={inputStyle} />
           </Row>
+          </Box>
 
           <div className="border-t border-[#e0e0e0] pt-2 mt-2 space-y-2">
             <Row label="Fatura Electrónica:">

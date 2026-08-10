@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, Box } from './kit';
 import { ItemPicker } from './Pickers';
 import PageDialog from './PageDialog';
 
@@ -168,15 +168,19 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
         <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
       </div>
 
-      <div className="flex items-center gap-6 px-4 py-2 border-b border-[#e0e0e0] text-[13px]">
-        <label className="flex items-center gap-3">
-          <span className="w-[70px] text-[#333]">Número:</span>
-          <input type="number" value={kb.number ?? 1} onChange={(e) => setKb({ ...kb, number: Number(e.target.value) })} className={`${inp} w-[110px]`} style={inputStyle} />
-        </label>
-        <label className="flex items-center gap-3 flex-1">
-          <span className="w-[75px] text-[#333]">Descrição:</span>
-          <input value={kb.name || ''} onChange={(e) => setKb({ ...kb, name: e.target.value })} className={`${inp} flex-1`} style={inputStyle} />
-        </label>
+      <div className="px-4 pt-2">
+        <Box title="Identificação">
+          <div className="flex items-center gap-6 pt-1.5 text-[13px]">
+            <label className="flex items-center gap-3">
+              <span className="w-[70px] text-[#333]">Número:</span>
+              <input type="number" value={kb.number ?? 1} onChange={(e) => setKb({ ...kb, number: Number(e.target.value) })} className={`${inp} w-[110px]`} style={inputStyle} />
+            </label>
+            <label className="flex items-center gap-3 flex-1">
+              <span className="w-[75px] text-[#333]">Descrição:</span>
+              <input value={kb.name || ''} onChange={(e) => setKb({ ...kb, name: e.target.value })} className={`${inp} flex-1`} style={inputStyle} />
+            </label>
+          </div>
+        </Box>
       </div>
 
       <div className="flex-1 flex overflow-hidden">

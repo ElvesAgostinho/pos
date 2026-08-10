@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
+import { Toolbar, inputStyle, GridCheck, Glyph, Box } from './kit';
 import { aviso } from '../../ui/dialogo';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
@@ -99,6 +99,8 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
         <div className="grid grid-cols-[1fr_340px] gap-4">
           {/* --------- Identificação + contactos --------- */}
           <div className="space-y-2 min-w-0">
+            <Box title="Identificação">
+            <div className="space-y-2 pt-1.5">
             <Row label="Platform ID:">
               <input value={src?.platform_id || ''} readOnly className={`${inp} flex-1 bg-[#eef0f2] text-[#666]`} style={inputStyle} />
             </Row>
@@ -111,6 +113,8 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
               <Row label="Nome Hotel:"><input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
               <Row label="Nome do Hotel 2:" w="w-[100px]"><input value={d.name2 || ''} onChange={(e) => set('name2', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
             </div>
+            </div>
+            </Box>
 
             {/* Contactos */}
             <div className="flex mt-2">
@@ -119,7 +123,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   className={`px-6 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#3c3c3c] text-white' : 'bg-[#e8e8e8] text-[#555] hover:bg-[#ddd]'}`}>{label}</button>
               ))}
             </div>
-            <div className="border border-[#c0c0c0] p-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
+            <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-1.5" style={{ border: '3px groove #c0c0c0' }}>
               {tab === 'main' ? (
                 <>
                   <Row label="Morada 1:"><input value={d.address || ''} onChange={(e) => set('address', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
@@ -151,7 +155,8 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
           </div>
 
           {/* --------- Aparência + logótipo --------- */}
-          <div className="space-y-2">
+          <Box title="Aparência">
+          <div className="space-y-2 pt-1.5">
             <Row label="Cor de Fundo:" w="w-[100px]">
               <input type="color" value={d.bg_color || '#808080'} onChange={(e) => set('bg_color', e.target.value)} className="w-10 h-7 border border-[#8a95a3]" />
               <input value={d.bg_color || ''} onChange={(e) => set('bg_color', e.target.value)} className={`${inp} flex-1`} style={inputStyle} />
@@ -201,6 +206,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
               Master (hotel principal desta instalação)
             </label>
           </div>
+          </Box>
         </div>
 
         {/* --------- Abas de baixo --------- */}
@@ -211,7 +217,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
           <BTab id="bank" label="Informação bancária" />
         </div>
 
-        <div className="border border-[#c0c0c0] p-3 min-h-[220px]">
+        <div className="p-3 min-h-[220px]" style={{ border: '3px groove #c0c0c0' }}>
           {bottom === 'license' && lic && (() => {
             // Os campos cinzentos vêm do ficheiro de licença ASSINADO — não se escrevem
             // aqui de propósito: se bastasse escrever "Máx. Terminais = 99", a licença

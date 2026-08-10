@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 import { SubFamilyPicker, ItemPicker } from './Pickers';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
@@ -133,7 +133,8 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
       <div className="flex-1 overflow-auto">
         {/* Cabeçalho */}
         <div className="flex gap-6 p-4">
-          <div className="w-[52%] space-y-2">
+          <Box title="Identificação" className="w-[52%]">
+          <div className="space-y-2 pt-1.5">
             <label className="flex items-center gap-3 text-[13px]">
               <span className="w-[100px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
@@ -186,6 +187,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
               </select>
             </label>
           </div>
+          </Box>
 
           <div className="flex-1 flex items-start gap-10 pt-1">
             <label className="flex items-center gap-2 text-[13px]">
@@ -213,7 +215,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
         <div className="p-3">
           {/* ---------------- Serviços ---------------- */}
           {tab === 'services' && (
-            <div className="border border-[#d5d5d5]">
+            <div style={{ border: '3px groove #c0c0c0' }}>
               <div className="flex items-center gap-3 px-3 py-2 bg-[#f4f4f4] border-b border-[#d5d5d5]">
                 <span className="text-[12px]">Filtro:</span>
                 <input value={srvFilter} onChange={(e) => setSrvFilter(e.target.value)} className={`${inp} w-[260px]`} style={inputStyle} />
@@ -270,7 +272,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
 
               <div className="flex gap-3">
                 {/* Turnos */}
-                <div className="w-[420px] border border-[#d5d5d5] flex flex-col">
+                <div className="w-[420px] flex flex-col" style={{ border: '3px groove #c0c0c0' }}>
                   <div className="px-2 py-1.5 bg-[#e9e9e9] text-[12px] font-bold border-b border-[#d5d5d5]">
                     Dias: {lines.length ? Array.from(workDays).sort().map((w) => DAYS[w]).join(', ') : '—'}
                   </div>
@@ -310,7 +312,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                 </div>
 
                 {/* Calendário derivado */}
-                <div className="flex-1 border border-[#d5d5d5] overflow-auto">
+                <div className="flex-1 overflow-auto" style={{ border: '3px groove #c0c0c0' }}>
                   <table className="text-[11px] border-collapse">
                     <thead><tr className="bg-[#f0f0f0]">
                       <th className="text-left font-normal px-2 py-1 border border-[#d5d5d5] sticky left-0 bg-[#f0f0f0] w-[90px]">Mês</th>
@@ -350,7 +352,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
 
           {/* ---------------- Comissões ---------------- */}
           {tab === 'commissions' && (
-            <div className="border border-[#d5d5d5]">
+            <div style={{ border: '3px groove #c0c0c0' }}>
               <div className="h-[280px] overflow-auto">
                 <table className="w-full text-[12px] border-collapse">
                   <thead className="sticky top-0"><tr className="bg-[#e9e9e9]">

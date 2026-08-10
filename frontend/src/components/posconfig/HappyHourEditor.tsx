@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle } from './kit';
+import { Toolbar, inputStyle, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -87,7 +87,9 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
         <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
       </div>
 
-      <div className="p-4 space-y-2 border-b border-[#e0e0e0]">
+      <div className="p-4 border-b border-[#e0e0e0]">
+        <Box title="Identificação">
+        <div className="space-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[110px] text-[#333]">Descrição:<span className="text-[#a01818]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
@@ -124,6 +126,8 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
             Ativo
           </label>
         </label>
+        </div>
+        </Box>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
