@@ -401,27 +401,31 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 <span>{grp.title}</span>
                 <span className="text-[13px] leading-none text-[#8a95a3]">{open[grp.key] ? '▾' : '▸'}</span>
               </button>
-              {open[grp.key] && grp.items.map((it) => {
-                const ativo = section === it.key;
-                return (
-                <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
-                  className="w-full flex items-center gap-2 pl-3 pr-3 py-1.5 text-[13px] text-left border-b border-l-[3px]"
-                  style={{
-                    borderBottomColor: '#f0f0f0',
-                    borderLeftColor: ativo ? TOKENS.accent : 'transparent',
-                    background: ativo ? TOKENS.selectedBg : 'transparent',
-                    color: ativo ? TOKENS.selectedText : '#444',
-                    fontWeight: ativo ? 700 : 400,
-                  }}
-                  onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = TOKENS.hover; }}
-                  onMouseLeave={(e) => { if (!ativo) e.currentTarget.style.background = 'transparent'; }}>
-                  {(it as any).icon
-                    ? <span className="w-5 flex items-center justify-center"><Glyph icon={(it as any).icon} size={15} /></span>
-                    : <span className="w-5 flex justify-center"><span className="w-1.5 h-1.5 rounded-full" style={{ background: ativo ? TOKENS.accent : '#999' }} /></span>}
-                  {it.label}
-                </button>
-                );
-              })}
+              {open[grp.key] && (
+                <div className="max-h-[260px] overflow-y-auto">
+                  {grp.items.map((it) => {
+                    const ativo = section === it.key;
+                    return (
+                    <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
+                      className="w-full flex items-center gap-2 pl-3 pr-3 py-1.5 text-[13px] text-left border-b border-l-[3px]"
+                      style={{
+                        borderBottomColor: '#f0f0f0',
+                        borderLeftColor: ativo ? TOKENS.accent : 'transparent',
+                        background: ativo ? TOKENS.selectedBg : 'transparent',
+                        color: ativo ? TOKENS.selectedText : '#444',
+                        fontWeight: ativo ? 700 : 400,
+                      }}
+                      onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = TOKENS.hover; }}
+                      onMouseLeave={(e) => { if (!ativo) e.currentTarget.style.background = 'transparent'; }}>
+                      {(it as any).icon
+                        ? <span className="w-5 flex items-center justify-center"><Glyph icon={(it as any).icon} size={15} /></span>
+                        : <span className="w-5 flex justify-center"><span className="w-1.5 h-1.5 rounded-full" style={{ background: ativo ? TOKENS.accent : '#999' }} /></span>}
+                      {it.label}
+                    </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             );
           })}
