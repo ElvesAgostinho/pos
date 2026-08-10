@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Glyph } from './kit';
+import { TOKENS } from '../../config/theme';
 
 const inp = 'border border-[#c8c8c8] px-1.5 py-1 text-[12px] w-full bg-white';
 
@@ -96,14 +97,14 @@ export default function Maintenance() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Dados comuns */}
-        <div className="w-[380px] flex-shrink-0 border-r border-[#d0d0d0] flex flex-col">
-          <div className="px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0] text-[13px] font-bold text-[#333]">Dados Comuns</div>
+        <div className="w-[380px] flex-shrink-0 flex flex-col m-3 mr-0" style={{ border: '4px groove #c0c0c0' }}>
+          <div className="px-3 py-1.5 border-b border-[#d0d0d0] text-[13px] font-bold" style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)', color: TOKENS.selectedText }}>Dados Comuns</div>
           <div className="flex-1 overflow-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-[#f7f7f7] text-[12px] text-[#333]">
-                  <th className="text-left px-2 py-1 border-b border-[#e0e0e0] font-normal">Descrição</th>
-                  <th className="text-left px-2 py-1 border-b border-[#e0e0e0] font-normal">Valor</th>
+                <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+                  <th className="text-left px-2 py-1 border-b-2 font-semibold" style={{ borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>Descrição</th>
+                  <th className="text-left px-2 py-1 border-b-2 border-l font-semibold" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>Valor</th>
                 </tr>
               </thead>
               <tbody>
@@ -154,29 +155,30 @@ export default function Maintenance() {
         </div>
 
         {/* Linhas */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-auto">
+        <div className="flex-1 flex flex-col overflow-hidden m-3">
+          <div className="flex-1 overflow-auto" style={{ border: '4px groove #c0c0c0' }}>
             <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
-                <tr className="bg-[#f0f0f0] text-[#333]">
-                  {['Código', 'Descrição', 'Código PLU', 'Preço 1', 'Preço 2', 'Preço 3', 'Preço 4', 'Preço 5'].map((h) => (
-                    <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#d5d5d5]">{h}</th>
+                <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+                  {['Código', 'Descrição', 'Código PLU', 'Preço 1', 'Preço 2', 'Preço 3', 'Preço 4', 'Preço 5'].map((h, i) => (
+                    <th key={h} className={`text-left font-semibold px-2 py-1.5 border-b-2 ${i > 0 ? 'border-l' : ''}`}
+                      style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>{h}</th>
                   ))}
-                  <th className="border border-[#d5d5d5] w-[40px]" />
+                  <th className="border-b-2 border-l w-[40px]" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6' }} />
                 </tr>
               </thead>
               <tbody>
                 {lines.map((l, i) => (
-                  <tr key={i}>
-                    <td className="border border-[#e5e5e5] p-0.5"><input value={l.code} onChange={(e) => setLine(i, 'code', e.target.value)} className={inp} /></td>
-                    <td className="border border-[#e5e5e5] p-0.5"><input value={l.name} onChange={(e) => setLine(i, 'name', e.target.value)} className={inp} /></td>
-                    <td className="border border-[#e5e5e5] p-0.5 w-[110px]"><input value={l.plu_code} onChange={(e) => setLine(i, 'plu_code', e.target.value)} className={inp} /></td>
+                  <tr key={i} className="border-b" style={{ borderColor: '#eef0f2', background: i % 2 ? '#f7f8fa' : TOKENS.surface }}>
+                    <td className="p-0.5"><input value={l.code} onChange={(e) => setLine(i, 'code', e.target.value)} className={inp} /></td>
+                    <td className="p-0.5"><input value={l.name} onChange={(e) => setLine(i, 'name', e.target.value)} className={inp} /></td>
+                    <td className="p-0.5 w-[110px]"><input value={l.plu_code} onChange={(e) => setLine(i, 'plu_code', e.target.value)} className={inp} /></td>
                     {[1, 2, 3, 4, 5].map((n) => (
-                      <td key={n} className="border border-[#e5e5e5] p-0.5 w-[90px]">
+                      <td key={n} className="p-0.5 w-[90px]">
                         <input type="number" value={l[`p${n}`]} onChange={(e) => setLine(i, `p${n}`, e.target.value)} className={`${inp} text-right`} />
                       </td>
                     ))}
-                    <td className="border border-[#e5e5e5] text-center">
+                    <td className="text-center">
                       <button onClick={() => delLine(i)} className="text-red-600 font-bold">−</button>
                     </td>
                   </tr>

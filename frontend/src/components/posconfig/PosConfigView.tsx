@@ -494,16 +494,16 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'photo_url', label: '', width: '52px',
                   render: (r: any) => r.photo_url
                     ? <img src={r.photo_url} alt="" className="w-7 h-7 object-contain" />
-                    : <span className="w-7 h-7 rounded-full bg-[#c0392b] text-white text-[10px] font-bold flex items-center justify-center">{r.code}</span> },
+                    : <span className="text-[10px] text-[#999]">sem foto</span> },
                 { key: 'code', label: 'Código', width: '18%' },
                 { key: 'name', label: 'Descrição' },
                 { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
               ]}
               fields={[
                 { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
-                { key: 'name', label: 'Descrição:', required: true, width: 'w-[720px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[560px]' },
                 { key: 'is_active', label: 'Ativo:', type: 'checkbox' },
-                { key: 'photo_url', label: 'Foto (URL):', width: 'w-[720px]',
+                { key: 'photo_url', label: 'Foto:', type: 'upload', folder: 'allergens',
                   help: 'A cozinha reconhece o símbolo mais depressa do que lê o texto.' },
               ]} />
           ) : section === 'messages' ? (
@@ -531,7 +531,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ]}
               fields={[
                 { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
-                { key: 'name', label: 'Descrição:', required: true, width: 'w-[720px]',
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[560px]',
                   help: 'Agrupa artigos de famílias diferentes para a análise de vendas.' },
                 { key: 'is_active', label: 'Ativo:', type: 'checkbox' },
               ]} />
@@ -676,8 +676,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ]}
               fields={[
                 { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
-                { key: 'name', label: 'Descrição:', required: true, width: 'w-[640px]' },
-                { key: 'notes', label: 'Observações:', type: 'textarea', width: 'w-[640px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[600px]' },
+                { key: 'notes', label: 'Observações:', type: 'textarea', width: 'w-[600px]' },
                 { key: 'is_active', label: 'Ativo', type: 'checkbox' },
               ]} />
           ) : section === 'u_hr' ? (
@@ -881,15 +881,15 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ]}
               fields={[
                 { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
-                { key: 'name', label: 'Descrição:', required: true, width: 'w-[640px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[600px]' },
                 { key: 'device_type', label: 'Tipo:', type: 'select', required: true, width: 'w-[290px]',
                   options: [
                     { value: 'CASHLOGY', label: 'Cashlogy' }, { value: 'CASHDRO', label: 'CashDro' },
                     { value: 'GLORY', label: 'Glory' }, { value: 'OTHER', label: 'Outro' },
                   ] },
-                { key: 'url_operations', label: 'URL - Operações:', width: 'w-[640px]',
+                { key: 'url_operations', label: 'URL - Operações:', width: 'w-[600px]',
                   help: 'Onde o POS manda pagar, dar troco e fazer sangria.' },
-                { key: 'url_menu', label: 'URL - Menu:', width: 'w-[640px]' },
+                { key: 'url_menu', label: 'URL - Menu:', width: 'w-[600px]' },
                 { key: 'username', label: 'Utilizador:', width: 'w-[290px]' },
                 { key: 'is_active', label: 'Ativo', type: 'checkbox' },
               ]} />
@@ -904,7 +904,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ]}
               fields={[
                 { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
-                { key: 'name', label: 'Descrição:', required: true, width: 'w-[640px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[600px]' },
                 { key: 'for_ems', label: 'Eventos', type: 'checkbox' },
                 { key: 'for_pos', label: 'POS', type: 'checkbox' },
                 { key: 'is_active', label: 'Ativo', type: 'checkbox' },
@@ -921,7 +921,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ]}
               fields={[
                 { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
-                { key: 'name', label: 'Descrição:', required: true, width: 'w-[640px]' },
+                { key: 'name', label: 'Descrição:', required: true, width: 'w-[600px]' },
                 { key: 'location', label: 'Localização:', type: 'select', required: true, width: 'w-[290px]',
                   options: [
                     { value: 'RESERVATION', label: 'Reserva (Detalhe)' }, { value: 'ENTITY', label: 'Entidade' },
@@ -1063,7 +1063,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'group_name', label: 'Grupo (descrição):', width: 'w-[360px]' },
                 { key: 'subgroup', label: 'Sub Grupo:', width: 'w-[240px]' },
                 { key: 'subgroup_name', label: 'Sub Grupo (descrição):', width: 'w-[360px]' },
-                { key: 'query', label: 'Query:', type: 'textarea', width: 'w-[720px]',
+                { key: 'query', label: 'Query:', type: 'textarea', width: 'w-[560px]',
                   help: 'Só SELECT — o servidor recusa tudo o que escreva ou apague dados.' },
                 { key: 'date_format', label: 'Formato Data:', width: 'w-[240px]', help: 'ex: ddd dd MMM yyyy' },
                 { key: 'is_table', label: 'Tabela', type: 'checkbox' },

@@ -71,9 +71,9 @@ export default function ExemptionSection() {
         fields={[
           { key: 'code', label: 'Código:', required: true, width: 'w-[200px]',
             help: 'M01, M07… — é o que vai no SAF-T.' },
-          { key: 'text', label: 'Texto:', required: true, width: 'w-[640px]',
+          { key: 'text', label: 'Texto:', required: true, width: 'w-[600px]',
             help: 'O que sai impresso na fatura.' },
-          { key: 'description', label: 'Descrição:', type: 'textarea', width: 'w-[640px]',
+          { key: 'description', label: 'Descrição:', type: 'textarea', width: 'w-[600px]',
             help: 'A norma completa (consulta interna).' },
           { key: 'is_active', label: 'Ativo', type: 'checkbox' },
         ]} />

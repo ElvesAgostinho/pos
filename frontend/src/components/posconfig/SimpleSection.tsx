@@ -13,8 +13,10 @@ export interface Col {
   readOnlyCheck?: boolean;
 }
 export interface FormField {
-  key: string; label: string; type?: 'text' | 'number' | 'select' | 'checkbox' | 'textarea';
+  key: string; label: string; type?: 'text' | 'number' | 'select' | 'checkbox' | 'textarea' | 'upload';
   options?: { value: any; label: string }[]; width?: string; required?: boolean; help?: string;
+  /** Só para type: 'upload' — pasta em platform/upload/ onde o ficheiro fica gravado. */
+  folder?: string;
 }
 
 /**
@@ -124,6 +126,40 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                     </select>
                   ) : f.type === 'checkbox' ? (
                     <input type="checkbox" checked={!!editing[f.key]} onChange={(e) => set(f.key, e.target.checked)} className="w-4 h-4" />
+                  ) : f.type === 'upload' ? (
+                    // SÓ por upload, de propósito (ver CompanyEditor/ArticleEditor): um URL
+                    // escrito à mão aponta para fora; um ficheiro carregado fica no disco
+                    // do próprio servidor do hotel, como tudo o resto.
+                    <div className={`flex items-center gap-2 ${f.width || 'w-[420px]'} flex-none min-w-0`}>
+                      {editing[f.key] && (
+                        <img src={editing[f.key]} alt="" className="w-8 h-8 object-contain border border-[#d0d0d0] bg-white flex-shrink-0" />
+                      )}
+                      <label className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
+                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#555] bg-[#f7f7f7]`} style={inputStyle}>
+                          {editing[f.key] ? String(editing[f.key]).split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
+                        </span>
+                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#3c3c3c] text-white hover:bg-[#4c4c4c] flex-shrink-0">
+                          Carregar…
+                        </span>
+                        <input type="file" accept="image/*" className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const fd = new FormData();
+                            fd.append('file', file);
+                            fd.append('folder', f.folder || 'uploads');
+                            try {
+                              const r = await apiClient.post('platform/upload/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+                              set(f.key, r.data.url);
+                            } catch (err) { notifyError(err); }
+                            e.target.value = '';
+                          }} />
+                      </label>
+                      {editing[f.key] && (
+                        <button onClick={() => set(f.key, '')} title="Remover imagem"
+                          className="px-2 py-1 text-[#a01818] hover:bg-[#fdecea] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
+                      )}
+                    </div>
                   ) : (
                     <input type={f.type || 'text'} value={editing[f.key] ?? ''}
                       onChange={(e) => set(f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
