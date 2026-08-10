@@ -177,7 +177,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       {/* ===== BARRA SUPERIOR ===== */}
       {/* A MESMA barra do POS: mesmo fundo, mesma altura, mesma tipografia. Ter duas
           barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
-      <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-white"
+      <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-[#18181B]"
         style={{ background: accentGradient(), fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
         {/* Logo = seletor de módulos. O logótipo próprio da instalação (Empresa →
             Imagem do Hotel) substitui o de fábrica automaticamente; sem ele, mostra-se
@@ -186,7 +186,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           title="Trocar de módulo"
           className={`flex items-center gap-2 px-2 py-1 pr-4 mr-2 leading-none ${modMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
           <img src={logoUrl || '/brand-logo.png'} alt="" className="h-10 w-10 object-contain flex-shrink-0" />
-          <span className="text-[10px] text-[#9a9a9a] pb-1">Mwana Lodge ▾</span>
+          <span className="text-[13px] text-[#18181B]">▾</span>
         </button>
         {modMenu && (
           <div className="absolute left-2 top-[46px] min-w-[240px] bg-[#f0f0f0] border border-[#333] shadow-2xl rounded-b-md overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
@@ -238,7 +238,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             </button>
             {userMenu && (
               <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#f0f0f0] border border-[#333] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
-                <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: accentGradient() }}>
+                <div className="px-3 py-2 text-[11px] font-bold text-[#18181B]" style={{ background: accentGradient() }}>
                   {user?.username || 'operador'}
                 </div>
                 <button onClick={() => { setUserMenu(false); logout(); }}
