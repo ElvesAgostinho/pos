@@ -125,7 +125,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
 
           <div className="pt-2">
             <div className="text-[12px] font-semibold text-[#333] mb-1">Botões:</div>
-            <div style={{ border: '3px groove #c0c0c0' }}>
+            <div style={{ border: '4px groove #c0c0c0' }}>
               {BOTOES.map(([k, l, ajuda]) => (
                 <label key={k} className="flex items-start gap-2 px-2 py-1.5 border-b border-[#eee] text-[12px] hover:bg-[#f7f9fb] cursor-pointer">
                   <input type="checkbox" checked={bts.includes(k)} onChange={() => toggleB(k)} className="w-4 h-4 mt-px" />
@@ -142,7 +142,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
 
           <div className="pt-2">
             <div className="text-[12px] font-semibold text-[#333] mb-1">Opções:</div>
-            <div style={{ border: '3px groove #c0c0c0' }}>
+            <div style={{ border: '4px groove #c0c0c0' }}>
               {OPCOES.map(([k, l]) => (
                 <label key={k} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#eee] text-[12px] hover:bg-[#f7f9fb] cursor-pointer">
                   <input type="checkbox" checked={!!opts[k]}
@@ -174,7 +174,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               className={`${inp} flex-1`} style={inputStyle} />
           </Row>
 
-          <div className="mt-3" style={{ border: '3px groove #c0c0c0' }}>
+          <div className="mt-3" style={{ border: '4px groove #c0c0c0' }}>
             <div className="px-3 py-1.5 bg-[#dbe7f3] text-[12px] font-bold text-[#1a4f8a] border-b border-[#c8c8c8]">
               Impressoras — as ativas substituem as de origem do pedido
             </div>

@@ -58,7 +58,7 @@ import PosReports from './PosReports';
 import PosOnline from './PosOnline';
 import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
-import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box } from './kit';
+import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton } from './kit';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
 import { TOKENS, accentGradient } from '../../config/theme';
 
@@ -1403,11 +1403,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   </Field>
                 </div>
 
-                <button onClick={search}
-                  className="w-[190px] flex flex-col items-center justify-center gap-1 text-white font-bold text-[14px]"
-                  style={{ background: TOKENS.bar }}>
-                  <span className="text-[22px]">⟳</span> Pesquisar
-                </button>
+                <SearchButton onClick={search} className="w-[190px]" />
               </div>
               </Box>
               </div>

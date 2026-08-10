@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
+import { Toolbar, inputStyle, GridCheck, Glyph, SearchButton } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -183,11 +183,7 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
               onKeyDown={(e) => e.key === 'Enter' && (setApplied({ ...f }), setPage(1))}
               className={sl} style={inputStyle} />
           </div>
-          <button onClick={() => { setApplied({ ...f }); setPage(1); }}
-            className="w-[150px] bg-[#3c3c3c] text-white flex flex-col items-center justify-center gap-1 hover:bg-[#2b2b2b]">
-            <span className="text-[20px]">⟳</span>
-            <span className="text-[13px]">Pesquisar</span>
-          </button>
+          <SearchButton onClick={() => { setApplied({ ...f }); setPage(1); }} className="w-[150px]" />
         </div>
 
         <div className={`px-3 py-1.5 text-[12px] font-bold ${over ? 'text-[#c0392b]' : 'text-[#333]'}`}>

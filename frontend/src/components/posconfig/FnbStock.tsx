@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money, Glyph } from './kit';
+import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[130px]', children }: any) => (
@@ -149,11 +149,7 @@ export default function FnbStock() {
           </label>
         </div>
 
-        <button onClick={pesquisar}
-          className="ml-auto w-[180px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-          <Glyph icon="🔄" size={22} />
-          <span className="text-[13px]">Pesquisar</span>
-        </button>
+        <SearchButton onClick={pesquisar} className="ml-auto" />
       </div>
 
       <div className="flex-1 overflow-auto bg-white">

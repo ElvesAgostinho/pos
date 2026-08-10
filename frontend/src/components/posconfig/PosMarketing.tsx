@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money, Glyph } from './kit';
+import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 import EntityEditor from './EntityEditor';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
@@ -21,7 +21,7 @@ function useList(ep: string, key: string) {
 
 /** Cabeçalho de painel cinzento, como no original. */
 const Painel = ({ title, children, right }: any) => (
-  <div className="bg-white" style={{ border: '3px groove #c0c0c0' }}>
+  <div className="bg-white" style={{ border: '4px groove #c0c0c0' }}>
     <div className="flex items-center justify-between px-3 py-1.5 bg-[#e4e4e4] border-b border-[#c8c8c8]">
       <span className="text-[12px] font-bold text-[#333]">{title}</span>
       {right}
@@ -254,11 +254,7 @@ export function EntitySearch() {
                 </div>
               )}
             </div>
-            <button onClick={pesquisar}
-              className="w-[200px] flex flex-col items-center justify-center gap-2 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-              <Glyph icon="🔄" size={26} />
-              <span className="text-[13px]">Pesquisar</span>
-            </button>
+            <SearchButton onClick={pesquisar} className="w-[200px]" />
           </div>
         </Painel>
       </div>

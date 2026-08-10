@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money, Glyph } from './kit';
+import { Toolbar, inputStyle, money, SearchButton } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
@@ -105,7 +105,7 @@ export default function FnbInventory() {
         </div>
 
         <div className="flex gap-3 p-3">
-          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '3px groove #c0c0c0' }}>
+          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '4px groove #c0c0c0' }}>
             <legend className="text-[12px] px-1 font-bold">Geral</legend>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="flex items-center gap-2">
@@ -144,7 +144,7 @@ export default function FnbInventory() {
             </div>
           </fieldset>
 
-          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '3px groove #c0c0c0' }}>
+          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '4px groove #c0c0c0' }}>
             <legend className="text-[12px] px-1 font-bold">Filtros</legend>
             <div className="flex gap-4">
               <div className="space-y-2">
@@ -183,7 +183,7 @@ export default function FnbInventory() {
                 ))}
               </div>
 
-              <button
+              <SearchButton
                 disabled={!edit.warehouse || edit.posted || gerar.isPending}
                 onClick={() => gerar.mutate({
                   warehouse: edit.warehouse,
@@ -194,10 +194,7 @@ export default function FnbInventory() {
                   exclude_inactive: edit.exclude_inactive ?? true,
                   start_zero: edit.start_zero ?? false,
                 })}
-                className="w-[140px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b] disabled:bg-[#b8b8b8]">
-                <Glyph icon="🔄" size={20} />
-                <span className="text-[12px]">{gerar.isPending ? 'A gerar…' : 'Atualizar'}</span>
-              </button>
+                label={gerar.isPending ? 'A gerar…' : 'Atualizar'} className="w-[140px]" />
             </div>
           </fieldset>
         </div>
@@ -345,11 +342,7 @@ export default function FnbInventory() {
               className={`${inp} w-[150px]`} style={inputStyle} />
           </div>
         </div>
-        <button onClick={() => setAplicado({ ...f })}
-          className="ml-auto w-[180px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-          <Glyph icon="🔄" size={22} />
-          <span className="text-[13px]">Pesquisar</span>
-        </button>
+        <SearchButton onClick={() => setAplicado({ ...f })} className="ml-auto" />
       </div>
 
       <div className="flex-1 overflow-auto bg-white">

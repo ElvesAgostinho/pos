@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { TOKENS } from '../../config/theme';
+import { TOKENS, accentGradient } from '../../config/theme';
 import {
   Check as CheckIcon, X, Pencil, Copy, Minus, Plus, CirclePlus, Download, Printer,
   RefreshCw, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SquareCheck, Search,
@@ -227,18 +227,44 @@ export function Tab({ active, onClick, children }: any) {
   );
 }
 
-/** Caixa com título (o "group box" clássico do Windows) — rebordo em relevo
-    (`groove`), o mesmo efeito 3D que os diálogos do Windows 98/XP sempre
-    tiveram e que a maioria das recriações "estilo clássico" nunca se dá ao
-    trabalho de reproduzir. É um detalhe pequeno, mas é o que faz a diferença
-    entre "parece antigo" e "parece a sério". */
+/** Caixa com título (o "group box" clássico dos PMS hoteleiros — Fidelio/
+    Micros) — rebordo em relevo (`groove`) mais grosso, fundo ligeiramente
+    recuado e sombra interior subtil, para parecer mesmo um PAINEL EMBUTIDO
+    na janela (não uma linha desenhada por cima). É um detalhe pequeno, mas
+    é o que faz a diferença entre "parece antigo" e "parece a sério". */
 export function Box({ title, children, className = '' }: { title?: string; children: ReactNode; className?: string }) {
   return (
-    <fieldset className={`px-3 pb-3 pt-1 min-w-0 overflow-hidden ${className}`}
-      style={{ border: `3px groove ${TOKENS.line}` }}>
-      {title && <legend className="px-1.5 text-[12px] font-semibold" style={{ color: TOKENS.textOnLight }}>{title}</legend>}
+    <fieldset className={`px-3 pb-3 pt-1.5 min-w-0 overflow-hidden ${className}`}
+      style={{
+        border: `4px groove ${TOKENS.line}`,
+        background: '#fafbfc',
+        boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.06)',
+      }}>
+      {title && (
+        <legend className="px-2 text-[12px] font-bold uppercase tracking-tight" style={{ color: TOKENS.selectedText }}>
+          {title}
+        </legend>
+      )}
       {children}
     </fieldset>
+  );
+}
+
+/** Botão de Pesquisar clássico — relevo 3D "outset" (o mesmo princípio do
+    `groove` acima, só que a fazer um botão parecer PRESSIONÁVEL em vez de
+    EMBUTIDO), sempre na cor institucional. Cada ecrã de pesquisa escrevia o
+    seu próprio botão preto à mão, com fundo e largura ligeiramente
+    diferentes um do outro — este substitui todos por um só. */
+export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', className = '', disabled }: {
+  onClick: () => void; label?: string; icon?: string; className?: string; disabled?: boolean;
+}) {
+  return (
+    <button onClick={onClick} disabled={disabled}
+      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-white font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default ${className}`}
+      style={{ background: accentGradient(), border: `3px outset ${TOKENS.accent}` }}>
+      <Glyph icon={icon} size={22} />
+      <span className="text-[13px]">{label}</span>
+    </button>
   );
 }
 

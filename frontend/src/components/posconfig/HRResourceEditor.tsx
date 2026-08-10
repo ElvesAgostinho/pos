@@ -215,7 +215,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
         <div className="p-3">
           {/* ---------------- Serviços ---------------- */}
           {tab === 'services' && (
-            <div style={{ border: '3px groove #c0c0c0' }}>
+            <div style={{ border: '4px groove #c0c0c0' }}>
               <div className="flex items-center gap-3 px-3 py-2 bg-[#f4f4f4] border-b border-[#d5d5d5]">
                 <span className="text-[12px]">Filtro:</span>
                 <input value={srvFilter} onChange={(e) => setSrvFilter(e.target.value)} className={`${inp} w-[260px]`} style={inputStyle} />
@@ -272,7 +272,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
 
               <div className="flex gap-3">
                 {/* Turnos */}
-                <div className="w-[420px] flex flex-col" style={{ border: '3px groove #c0c0c0' }}>
+                <div className="w-[420px] flex flex-col" style={{ border: '4px groove #c0c0c0' }}>
                   <div className="px-2 py-1.5 bg-[#e9e9e9] text-[12px] font-bold border-b border-[#d5d5d5]">
                     Dias: {lines.length ? Array.from(workDays).sort().map((w) => DAYS[w]).join(', ') : '—'}
                   </div>
@@ -312,7 +312,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                 </div>
 
                 {/* Calendário derivado */}
-                <div className="flex-1 overflow-auto" style={{ border: '3px groove #c0c0c0' }}>
+                <div className="flex-1 overflow-auto" style={{ border: '4px groove #c0c0c0' }}>
                   <table className="text-[11px] border-collapse">
                     <thead><tr className="bg-[#f0f0f0]">
                       <th className="text-left font-normal px-2 py-1 border border-[#d5d5d5] sticky left-0 bg-[#f0f0f0] w-[90px]">Mês</th>
@@ -352,7 +352,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
 
           {/* ---------------- Comissões ---------------- */}
           {tab === 'commissions' && (
-            <div style={{ border: '3px groove #c0c0c0' }}>
+            <div style={{ border: '4px groove #c0c0c0' }}>
               <div className="h-[280px] overflow-auto">
                 <table className="w-full text-[12px] border-collapse">
                   <thead className="sticky top-0"><tr className="bg-[#e9e9e9]">

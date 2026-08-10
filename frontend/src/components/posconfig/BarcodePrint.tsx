@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
-import { Toolbar, inputStyle, money } from './kit';
+import { Toolbar, inputStyle, money, SearchButton } from './kit';
 
 const MODELS = ['Barcode_Code39', 'Barcode_Code128', 'Barcode_EAN13', 'Etiqueta_Prateleira'];
 
@@ -100,10 +100,7 @@ export default function BarcodePrint() {
               className="border border-[#8a95a3] px-2 py-1 text-[12px] bg-white flex-1" style={inputStyle} />
           </label>
         </div>
-        <button onClick={() => { setApplied({ ...f }); setSel({}); }}
-          className="w-[180px] h-[62px] flex flex-col items-center justify-center gap-1 text-white font-bold" style={{ background: '#2b2b2b' }}>
-          <span className="text-[20px]">⟳</span> Pesquisar
-        </button>
+        <SearchButton onClick={() => { setApplied({ ...f }); setSel({}); }} className="h-[62px]" />
       </div>
 
       {/* Barra de seleção */}

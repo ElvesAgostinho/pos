@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, money, Glyph } from './kit';
+import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[100px]', children }: any) => (
@@ -140,7 +140,7 @@ export default function FnbPayables() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f0f0]">
       <div className="p-3">
-        <fieldset className="bg-white px-3 pb-3" style={{ border: '3px groove #c0c0c0' }}>
+        <fieldset className="bg-white px-3 pb-3" style={{ border: '4px groove #c0c0c0' }}>
           <legend className="text-[12px] px-1">Critérios de pesquisa</legend>
           <div className="flex gap-10">
             <div className="space-y-2">
@@ -153,11 +153,7 @@ export default function FnbPayables() {
               <Campo k="phone" label="Telefone:" />
               <Campo k="address" label="Morada:" />
             </div>
-            <button onClick={() => { setAplicado({ ...f }); setPage(1); }}
-              className="ml-auto w-[180px] flex flex-col items-center justify-center gap-1 bg-[#3c3c3c] text-white hover:bg-[#2b2b2b]">
-              <Glyph icon="🔄" size={22} />
-              <span className="text-[13px]">Pesquisar</span>
-            </button>
+            <SearchButton onClick={() => { setAplicado({ ...f }); setPage(1); }} className="ml-auto" />
           </div>
         </fieldset>
       </div>
