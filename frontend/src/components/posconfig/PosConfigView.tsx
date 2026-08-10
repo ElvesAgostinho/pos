@@ -58,7 +58,7 @@ import PosReports from './PosReports';
 import PosOnline from './PosOnline';
 import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
-import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph } from './kit';
+import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box } from './kit';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
 import { TOKENS } from '../../config/theme';
 
@@ -1339,7 +1339,9 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           ) : (
             <>
               {/* FILTROS */}
-              <div className="p-3 border-b border-[#c0c0c0] bg-white flex gap-6">
+              <div className="p-3 border-b border-[#c0c0c0] bg-white">
+              <Box title="Filtros">
+              <div className="flex gap-6 pt-1.5">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-2 flex-1">
                   <Field label="Grupo:">
                     <Sel value={f.group} onChange={(v) => setF({ ...f, group: v, family: '', subfamily: '' })}
@@ -1390,39 +1392,50 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   <span className="text-[22px]">⟳</span> Pesquisar
                 </button>
               </div>
+              </Box>
+              </div>
 
               {/* GRELHA */}
               <div className="flex-1 overflow-auto bg-white">
                 <table className="w-full text-[12px] border-collapse">
                   <thead className="sticky top-0">
-                    <tr style={{ background: '#e9e9e9' }} className="text-[#333]">
-                      {['Código', 'Descrição', 'Sub Família', 'Preço', 'Iva', 'Isenções', 'Stock', 'Impressoras', 'Unidades (Compra/Stock/Venda)', 'Ativo'].map((h) => (
-                        <th key={h} className="text-left font-bold px-2 py-1.5 border border-[#d0d0d0] whitespace-nowrap">{h}</th>
+                    <tr className="text-[#2a2a2a]" style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+                      {['Código', 'Descrição', 'Sub Família', 'Preço', 'Iva', 'Isenções', 'Stock', 'Impressoras', 'Unidades (Compra/Stock/Venda)', 'Ativo'].map((h, i) => (
+                        <th key={h}
+                          className={`text-left font-semibold px-3 py-2 border-b-2 whitespace-nowrap ${i > 0 ? 'border-l' : ''}`}
+                          style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {view.map((r) => (
+                    {view.map((r, i) => (
                       <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEditing(r.id)}
-                        className={`cursor-pointer border-b border-[#eee] ${sel === r.id ? 'bg-[#cfe2f3]' : 'hover:bg-[#f5f9ff]'}`}>
-                        <td className="px-2 py-1 border-r border-[#eee] whitespace-nowrap">{r.code}</td>
-                        <td className="px-2 py-1 border-r border-[#eee]">{r.name}</td>
-                        <td className="px-2 py-1 border-r border-[#eee]">{r.subfamily_name || '—'}</td>
-                        <td className="px-2 py-1 border-r border-[#eee] whitespace-nowrap">
+                        className="cursor-pointer border-b"
+                        style={{
+                          borderColor: '#eef0f2',
+                          background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#f7f8fa' : TOKENS.surface,
+                          color: sel === r.id ? TOKENS.selectedText : undefined,
+                        }}
+                        onMouseEnter={(e) => { if (sel !== r.id) e.currentTarget.style.background = TOKENS.hover; }}
+                        onMouseLeave={(e) => { if (sel !== r.id) e.currentTarget.style.background = i % 2 ? '#f7f8fa' : TOKENS.surface; }}>
+                        <td className="px-3 py-[7px] whitespace-nowrap">{r.code}</td>
+                        <td className="px-3 py-[7px]">{r.name}</td>
+                        <td className="px-3 py-[7px]">{r.subfamily_name || '—'}</td>
+                        <td className="px-3 py-[7px] whitespace-nowrap">
                           {(r.prices || []).length
                             ? r.prices.map((p: any) => `(${p.level}: ${money(p.price)})`).join(' ')
                             : '—'}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#eee] whitespace-nowrap">
+                        <td className="px-3 py-[7px] whitespace-nowrap">
                           <span className="text-[#1565c0] italic">IVA{r.tax_percentage} - {Number(r.tax_percentage).toFixed(2)}</span>
                         </td>
-                        <td className="px-2 py-1 border-r border-[#eee]">{r.exemption_code_1 || ''}</td>
-                        <td className={`px-2 py-1 border-r border-[#eee] text-right ${Number(r.stock_qty) < 0 ? 'text-red-600 font-bold' : ''}`}>
+                        <td className="px-3 py-[7px]">{r.exemption_code_1 || ''}</td>
+                        <td className={`px-3 py-[7px] text-right ${Number(r.stock_qty) < 0 ? 'text-red-600 font-bold' : ''}`}>
                           {Number(r.stock_qty).toFixed(2)}
                         </td>
-                        <td className="px-2 py-1 border-r border-[#eee] whitespace-nowrap">{r.printers_label || '—'}</td>
-                        <td className="px-2 py-1 border-r border-[#eee] whitespace-nowrap">{r.units_label}</td>
-                        <td className="px-2 py-1 text-center">
+                        <td className="px-3 py-[7px] whitespace-nowrap">{r.printers_label || '—'}</td>
+                        <td className="px-3 py-[7px] whitespace-nowrap">{r.units_label}</td>
+                        <td className="px-3 py-[7px] text-center">
                           <GridCheck checked={r.is_active} onChange={(v) => setActive.mutate({ id: r.id, v })}
                             title="Ativo — desligar tira o artigo da venda no POS (o histórico fica)" />
                         </td>
