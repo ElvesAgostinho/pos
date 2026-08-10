@@ -94,7 +94,7 @@ export default function StockErp() {
         )}
 
         <div className={`grid grid-cols-2 gap-6 items-start ${off ? 'opacity-55' : ''}`}>
-          <fieldset className="px-4 pb-4 pt-1" style={{ border: '1.5px groove #c0c0c0' }} disabled={off}>
+          <fieldset className="px-4 pb-4 pt-1" style={{ border: '3px groove #c0c0c0' }} disabled={off}>
             <legend className="text-[12px] px-1">Ligações externas</legend>
             <div className="space-y-2">
               <Row label="URL:">
@@ -121,7 +121,7 @@ export default function StockErp() {
             </div>
           </fieldset>
 
-          <fieldset className="px-4 pb-4 pt-1" style={{ border: '1.5px groove #c0c0c0' }} disabled={off}>
+          <fieldset className="px-4 pb-4 pt-1" style={{ border: '3px groove #c0c0c0' }} disabled={off}>
             <legend className="text-[12px] px-1">Tabelas</legend>
             <div className="space-y-2">
               <Row label="Grupo:">

@@ -98,7 +98,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       <div className="flex-1 overflow-auto p-3">
         {/* Dados de Login + Atribuir Caixa */}
         <div className="grid grid-cols-[1fr_300px] gap-4 mb-3">
-          <fieldset className="px-3 pb-3 pt-1" style={{ border: '1.5px groove #c0c0c0' }}>
+          <fieldset className="px-3 pb-3 pt-1" style={{ border: '3px groove #c0c0c0' }}>
             <legend className="px-1 text-[12px] font-semibold text-[#333]">Dados de Login</legend>
             <div className="grid grid-cols-[1fr_240px] gap-4">
               <div className="space-y-2">
@@ -134,7 +134,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
             </div>
           </fieldset>
 
-          <fieldset className="px-3 pb-3 pt-1" style={{ border: '1.5px groove #c0c0c0' }}>
+          <fieldset className="px-3 pb-3 pt-1" style={{ border: '3px groove #c0c0c0' }}>
             <legend className="px-1 text-[12px] font-semibold text-[#333]">Atribuir Caixa</legend>
             {['Caixa', 'IFC'].map((c) => (
               <label key={c} className="flex items-center gap-3 py-1.5 border-b border-[#eee] text-[12px]">

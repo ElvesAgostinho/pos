@@ -233,7 +233,7 @@ export function Tab({ active, onClick, children }: any) {
 export function Box({ title, children, className = '' }: { title?: string; children: ReactNode; className?: string }) {
   return (
     <fieldset className={`px-3 pb-3 pt-1 min-w-0 overflow-hidden ${className}`}
-      style={{ border: `1.5px groove ${TOKENS.line}` }}>
+      style={{ border: `3px groove ${TOKENS.line}` }}>
       {title && <legend className="px-1.5 text-[12px] font-semibold" style={{ color: TOKENS.textOnLight }}>{title}</legend>}
       {children}
     </fieldset>
