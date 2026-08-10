@@ -24,15 +24,15 @@ export default function ClassicWindow({ title, icon, children, footer, width, on
       {/* Barra de título */}
       {title && (
         <div
-          className="h-8 flex items-center justify-between px-3 flex-shrink-0 border border-b-0 text-white select-none"
+          className="h-8 flex items-center justify-between px-3 flex-shrink-0 border border-b-0 text-[#18181B] select-none"
           style={{ background: accentGradient(), borderColor: shade(TOKENS.accent, -15) }}
         >
           <div className="flex items-center gap-2 min-w-0">
             {icon}
-            <span className="font-bold text-[12px] tracking-tight truncate drop-shadow-sm">{title}</span>
+            <span className="font-bold text-[12px] tracking-tight truncate">{title}</span>
           </div>
           {onClose && (
-            <button onClick={onClose} className="w-5 h-5 flex items-center justify-center bg-white/10 hover:bg-[#c0392b] rounded-sm text-white text-[13px] leading-none">×</button>
+            <button onClick={onClose} className="w-5 h-5 flex items-center justify-center bg-black/10 hover:bg-[#c0392b] rounded-sm text-[#18181B] hover:text-white text-[13px] leading-none">×</button>
           )}
         </div>
       )}

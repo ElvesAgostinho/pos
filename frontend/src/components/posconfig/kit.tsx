@@ -260,7 +260,7 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-white font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default ${className}`}
+      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-[#18181B] font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default ${className}`}
       style={{ background: accentGradient(), border: `3px outset ${TOKENS.accent}` }}>
       <Glyph icon={icon} size={22} />
       <span className="text-[13px]">{label}</span>

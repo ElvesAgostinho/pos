@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Lock, LogOut } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
-import { authApi } from '../../api/auth';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import LockScreen from '../ui/LockScreen';
 import ArticleEditor from './ArticleEditor';
@@ -60,7 +58,7 @@ import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton } from './kit';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
-import { TOKENS, accentGradient } from '../../config/theme';
+import { TOKENS } from '../../config/theme';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -159,10 +157,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   // Sessão — o POS é o ÚNICO ecrã que a maioria dos utilizadores vê (é ecrã inteiro,
   // sem a moldura do resto do backoffice) — sem isto, não havia como bloquear o
   // ecrã nem terminar sessão sem sair pelo Ambiente de Trabalho primeiro.
-  const nav = useNavigate();
   const [locked, setLocked] = useState(false);
-  const [userMenu, setUserMenu] = useState(false);
-  const logout = async () => { await authApi.logout(); nav('/backoffice/login'); };
   const { data: agt } = useAgtCertificate();
   // FAVORITOS — as secções que este utilizador usa todos os dias (ficam no browser dele).
   const [favs, setFavs] = useState<any[]>(() => JSON.parse(localStorage.getItem('posc_favs') || '[]'));
@@ -321,13 +316,12 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         </div>
       </div>
 
-      {/* Título da janela — mesmos controlos de sessão/janela do PCC (bloquear,
-          terminar sessão, minimizar/maximizar decorativos, fechar). O POS é ecrã
-          inteiro (sem a moldura do resto do backoffice) — sem isto não havia
-          nenhuma forma de bloquear o ecrã nem sair sem passar pelo Ambiente de
-          Trabalho primeiro. */}
+      {/* Título da janela — controlos de janela (minimizar/maximizar decorativos,
+          fechar). Sessão (nome/bloquear/terminar sessão) só na barra de cima do
+          Ambiente de Trabalho agora — ter os dois era mostrar "dono" duas vezes
+          por ecrã. Preto, não dourado: o dourado é só a barra de cima. */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
-        style={{ background: accentGradient() }}>
+        style={{ background: TOKENS.barSoft }}>
         <div className="flex items-center gap-2">
           <span className="text-[#c9a400] inline-flex items-center">
             <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
@@ -335,44 +329,19 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
         </div>
         <div className="flex items-center gap-1 text-[12px] font-normal">
-          {/* Clicar no nome também abre o Terminar Sessão — o mesmo sítio onde se
-              procura "sair" no Ambiente de Trabalho, não só o ícone ao lado. */}
-          <div className="relative">
-            <button onClick={(e) => { e.stopPropagation(); setUserMenu((s) => !s); }}
-              className={`text-[#cfe3ff] text-[11px] mr-2 flex items-center px-1.5 py-0.5 ${userMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#90c040] mr-1.5" />
-              {JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}
-            </button>
-            {userMenu && (
-              <div className="absolute right-0 top-[26px] min-w-[190px] bg-[#f0f0f0] border border-[#333] shadow-2xl z-[120] text-[13px]" onClick={(e) => e.stopPropagation()}>
-                <button onClick={() => { setUserMenu(false); setLocked(true); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[#dbe8ff] text-[#333]">
-                  <Lock size={14} /> Bloquear ecrã
-                </button>
-                <button onClick={() => { setUserMenu(false); logout(); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-[#dbe8ff] text-[#a01818] font-semibold border-t border-[#e0e0e0]">
-                  <LogOut size={14} /> Terminar sessão
-                </button>
-              </div>
-            )}
-          </div>
           <div onClick={() => setLocked(true)} title="Bloquear ecrã"
-            className="w-6 h-5 flex items-center justify-center cursor-pointer hover:bg-white/15">
+            className="w-6 h-5 flex items-center justify-center cursor-pointer hover:bg-white/15 mr-1">
             <Lock size={12} />
           </div>
-          <div onClick={logout} title="Terminar sessão"
-            className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#e74c3c] border border-[#c0392b] hover:brightness-110 mr-1">
-            <LogOut size={12} />
+          <div title="Minimizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#18181B] border border-[#3a3a3e] hover:brightness-150">
+            <div className="w-2 h-[2px] bg-white mb-[-5px]" />
           </div>
-          <div title="Minimizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#f1c40f] border border-[#d4ac0d] hover:brightness-110">
-            <div className="w-2 h-[2px] bg-black mb-[-5px]" />
-          </div>
-          <div title="Maximizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#f1c40f] border border-[#d4ac0d] hover:brightness-110">
-            <div className="w-2 h-2 border border-black" />
+          <div title="Maximizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#18181B] border border-[#3a3a3e] hover:brightness-150">
+            <div className="w-2 h-2 border border-white" />
           </div>
           <div onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
             title="Voltar ao Ambiente de Trabalho"
-            className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#e74c3c] border border-[#c0392b] hover:brightness-110">
+            className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#18181B] border border-[#3a3a3e] hover:brightness-150">
             <Glyph icon="✕" size={12} />
           </div>
         </div>
@@ -417,7 +386,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 className="w-full flex items-center justify-between px-3 py-1.5 text-[12px] font-bold uppercase tracking-tight border-b-2 hover:brightness-[0.98]"
                 style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)', borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>
                 <span>{grp.title}</span>
-                <span className="text-[13px] leading-none text-[#8a95a3]">{open[grp.key] ? '▾' : '▸'}</span>
+                <span className="text-[16px] leading-none text-[#8a95a3]">{open[grp.key] ? '−' : '+'}</span>
               </button>
               {open[grp.key] && (
                 <div className="max-h-[260px] overflow-y-auto">
