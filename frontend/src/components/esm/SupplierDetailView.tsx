@@ -38,7 +38,7 @@ const Field = ({ label, children }: { label: string; children: React.ReactNode }
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="border border-[#a0a0a0] bg-white p-2">
-    <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">{title}</h3>
+    <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">{title}</h3>
     {children}
   </div>
 );
@@ -110,7 +110,7 @@ export default function SupplierDetailView({ supplierId, onBack }: Props) {
                 disabled={disabled}
                 onClick={() => setTab(t.id)}
                 className={`px-3 py-1 text-[11px] border border-b-0 mr-1 ${
-                  active ? 'bg-white border-[#a0a0a0] font-bold text-[#1e3f66]' : 'bg-[#f0f0f0] border-[#c0c0c0] text-gray-600'
+                  active ? 'bg-white border-[#a0a0a0] font-bold text-[#336699]' : 'bg-[#f0f0f0] border-[#c0c0c0] text-gray-600'
                 } ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#f8f8f8]'}`}
               >
                 {t.label}
@@ -366,7 +366,7 @@ function PerformanceTab({ supplier, onRecalc, recalculating }: { supplier?: Supp
   const Metric = ({ label, value, suffix = '%' }: { label: string; value: any; suffix?: string }) => (
     <div className="bg-white border border-[#c0c0c0] p-3">
       <div className="text-[10px] text-gray-600 mb-1">{label}</div>
-      <div className="text-xl font-bold text-[#1e3f66]">{value ?? '—'}{value != null && suffix}</div>
+      <div className="text-xl font-bold text-[#336699]">{value ?? '—'}{value != null && suffix}</div>
     </div>
   );
 

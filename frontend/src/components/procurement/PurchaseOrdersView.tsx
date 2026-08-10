@@ -56,7 +56,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
             {isNew && <ClassicButton icon={Save} label="Criar Ordem" onClick={save} />}
             {!isNew && po && (
               <>
-                <span className="text-[11px] text-gray-700">Total: <b className="text-[#1e3f66]">{fmt(po.total_amount)}</b></span>
+                <span className="text-[11px] text-gray-700">Total: <b className="text-[#336699]">{fmt(po.total_amount)}</b></span>
                 <select value={po.status} onChange={(e) => setStatus.mutate({ id: currentId!, status: e.target.value })} className="border border-[#a0a0a0] p-1 text-[11px] ml-3 bg-white">
                   {Object.entries(PO_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
@@ -69,7 +69,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
     >
       <div className="p-4 bg-[#f0f0f0] h-full overflow-y-auto text-[11px] space-y-4">
         <div className="border border-[#a0a0a0] bg-white p-2">
-          <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Cabeçalho</h3>
+          <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Cabeçalho</h3>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">
             <div className="flex items-center"><label className="w-32 font-bold">Nº Ordem *</label>
               <input value={form.po_number || ''} onChange={(e) => set({ po_number: e.target.value })} disabled={!isNew} className={inputCls} /></div>
@@ -92,7 +92,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
           <div className="border border-[#a0a0a0] bg-[#fffbe6] p-3 text-gray-700">Crie a ordem para adicionar linhas.</div>
         ) : (
           <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Linhas</h3>
+            <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Linhas</h3>
             <div className="flex flex-wrap items-end gap-2 mb-3 bg-[#f8f8f8] p-2 border border-[#e0e0e0]">
               <select value={line.item} onChange={(e) => setLine({ ...line, item: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
                 <option value="">— artigo —</option>
@@ -118,7 +118,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
                 { header: '', accessor: (r: any) => <button onClick={() => delLine.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '5%' },
               ]}
             />
-            <div className="flex justify-end mt-2 text-[12px] font-bold text-[#1e3f66] pr-2">Total da Ordem: {fmt(po?.total_amount)}</div>
+            <div className="flex justify-end mt-2 text-[12px] font-bold text-[#336699] pr-2">Total da Ordem: {fmt(po?.total_amount)}</div>
           </div>
         )}
       </div>
@@ -153,7 +153,7 @@ export default function PurchaseOrdersView() {
           { header: 'Fornecedor', accessor: 'supplier_name', width: '30%' },
           { header: 'Armazém', accessor: (r: any) => r.warehouse_name, width: '18%' },
           { header: 'Estado', accessor: (r: any) => PO_STATUS[r.status] || r.status, width: '16%' },
-          { header: 'Total', accessor: (r: any) => <b className="text-[#1e3f66]">{fmt(r.total_amount)}</b>, width: '15%' },
+          { header: 'Total', accessor: (r: any) => <b className="text-[#336699]">{fmt(r.total_amount)}</b>, width: '15%' },
           { header: '', accessor: (r: any) => <button onClick={(e) => { e.stopPropagation(); if (confirm(`Apagar a ordem ${r.po_number}?`)) del.mutate(r.id); }} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '5%' },
         ]}
       />

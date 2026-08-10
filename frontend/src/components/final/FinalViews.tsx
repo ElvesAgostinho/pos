@@ -28,7 +28,7 @@ function Card({ label, value, tone, sub }: any) {
   return (
     <div className="bg-white border border-[#a0a0a0] p-3">
       <div className="text-[10px] text-gray-500 uppercase">{label}</div>
-      <div className={`text-2xl font-bold ${tone || 'text-[#1e3f66]'}`}>{value ?? '—'}</div>
+      <div className={`text-2xl font-bold ${tone || 'text-[#336699]'}`}>{value ?? '—'}</div>
       {sub && <div className="text-[11px] text-gray-500">{sub}</div>}
     </div>
   );

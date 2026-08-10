@@ -76,7 +76,7 @@ export default function WarehousesView() {
           <form id="warehouse-form" onSubmit={handleSave} className="text-[11px] grid grid-cols-1 gap-4">
             
             <div className="border border-[#a0a0a0] bg-white p-2">
-              <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Identificação</h3>
+              <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Identificação</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Código *</label>
@@ -109,7 +109,7 @@ export default function WarehousesView() {
             </div>
 
             <div className="border border-[#a0a0a0] bg-white p-2 mt-2">
-              <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Regras de Motor WMS</h3>
+              <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Regras de Motor WMS</h3>
               <div className="flex flex-col space-y-2">
                 <label className="flex items-center space-x-2">
                   <input type="checkbox" checked={formData.allow_negative_stock} onChange={e => setFormData({...formData, allow_negative_stock: e.target.checked})} className="w-3 h-3" />

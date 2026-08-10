@@ -176,7 +176,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
         <button onClick={() => setStartOpen((o) => !o)}
           className="h-7 px-2.5 flex items-center gap-1.5 font-bold text-[13px] text-black active:translate-y-px"
           style={{ background: '#c0c0c0', boxShadow: startOpen ? 'inset -1px -1px 0 #fff, inset 1px 1px 0 #0a0a0a, inset -2px -2px 0 #dfdfdf, inset 2px 2px 0 #808080' : 'inset -1px -1px 0 #0a0a0a, inset 1px 1px 0 #fff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf' }}>
-          <span className="text-sm font-black leading-none"><span className="text-[#c9a400]">M</span><span className="text-[#1e3f66]">L</span></span> Iniciar
+          <span className="text-sm font-black leading-none"><span className="text-[#c9a400]">M</span><span className="text-[#336699]">L</span></span> Iniciar
         </button>
         <div className="flex-1 text-[10px] text-gray-700 px-2 truncate">System Mwana Lodge · Licenciado a {user?.name || 'Cliente Demo'}</div>
         <div className="h-7 px-3 flex items-center text-[12px] text-black" style={{ boxShadow: 'inset -1px -1px 0 #fff, inset 1px 1px 0 #808080' }}>
@@ -186,7 +186,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
           <div className="absolute left-1 bottom-9 w-64 bg-[#c0c0c0] py-1 z-40" onMouseLeave={() => setStartOpen(false)}
             style={{ boxShadow: 'inset -1px -1px 0 #0a0a0a, inset 1px 1px 0 #fff, inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf' }}>
             <div className="flex">
-              <div className="w-7 bg-[#1e3f66] flex items-end justify-center pb-2">
+              <div className="w-7 bg-[#336699] flex items-end justify-center pb-2">
                 <span className="text-white font-black text-xs" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>MÓDULOS</span>
               </div>
               <div className="flex-1 py-1">
@@ -213,9 +213,9 @@ function RoadmapPlaceholder({ id }: { id: string }) {
   return (
     <div className="h-full w-full flex items-center justify-center p-6">
       <div className="bg-white border border-[#c0c0c0] p-8 max-w-lg text-center shadow">
-        <div className="w-14 h-14 mx-auto mb-4 bg-[#f0f0f0] border border-[#c0c0c0] rounded-full flex items-center justify-center"><Construction size={26} className="text-[#1e3f66]" /></div>
+        <div className="w-14 h-14 mx-auto mb-4 bg-[#f0f0f0] border border-[#c0c0c0] rounded-full flex items-center justify-center"><Construction size={26} className="text-[#336699]" /></div>
         <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{MODULE_OF[id] || ''}</div>
-        <h2 className="text-lg font-bold text-[#1e3f66] mb-2">{title}</h2>
+        <h2 className="text-lg font-bold text-[#336699] mb-2">{title}</h2>
         <div className="inline-block text-[10px] font-bold text-[#8a6d1a] bg-[#fff4d6] border border-[#e0c877] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
         <p className="text-[12px] text-gray-600">Não é um erro. Esta função está a ser construída — o módulo está ativo na sua licença.</p>
       </div>

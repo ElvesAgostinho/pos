@@ -8,7 +8,7 @@ function Card({ icon, label, value, sub, tone }: any) {
   return (
     <div className="bg-white border border-[#a0a0a0] p-3 flex flex-col gap-1">
       <div className="flex items-center gap-2 text-gray-500 text-[10px] uppercase tracking-wide">{icon}{label}</div>
-      <div className={`text-2xl font-bold ${tone || 'text-[#1e3f66]'}`}>{value}</div>
+      <div className={`text-2xl font-bold ${tone || 'text-[#336699]'}`}>{value}</div>
       {sub && <div className="text-[11px] text-gray-500">{sub}</div>}
     </div>
   );

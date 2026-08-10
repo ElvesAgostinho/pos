@@ -17,7 +17,7 @@ function Panel({ title, icon: Icon, color, children }: any) {
     </div>
   );
 }
-function Stat({ label, value, tone = '#1e3f66' }: any) {
+function Stat({ label, value, tone = '#336699' }: any) {
   return <div className="flex flex-col"><span className="text-[10px] uppercase tracking-wide text-gray-500">{label}</span><span className="text-2xl font-bold" style={{ color: tone }}>{value}</span></div>;
 }
 

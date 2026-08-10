@@ -15,7 +15,7 @@ const DEFAULTS: Record<string, string> = {
   ui_company_name: 'System Mwana Lodge',
   ui_erp_name: 'System Mwana Lodge',
   ui_welcome_text: 'Bem-vindo. Inicie sessão para continuar.',
-  ui_bar_color: '#1e3f66',
+  ui_bar_color: '#336699',
 };
 
 export function getAppearance(key: keyof typeof APPEARANCE_KEYS): string {

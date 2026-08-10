@@ -37,7 +37,7 @@ export default function PaymentMethodsView() {
         footer={<><ClassicButton icon={Save} label="Gravar" onClick={save} /><ClassicButton label="Cancelar" onClick={() => setMode('list')} /></>}>
         <div className="p-4 bg-[#f0f0f0] h-full overflow-y-auto text-[11px]">
           <div className="border border-[#a0a0a0] bg-white p-2 max-w-2xl">
-            <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Método de Pagamento (Master Data)</h3>
+            <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Método de Pagamento (Master Data)</h3>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">
               <div className="flex items-center"><label className="w-28 font-bold">Código *</label><input value={form.code || ''} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className={inputCls} /></div>
               <div className="flex items-center"><label className="w-28 font-bold">Nome *</label><input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></div>

@@ -56,7 +56,7 @@ export default function ItemAdvancedView() {
           <div className="flex-1 grid grid-cols-2 gap-3 p-3 overflow-auto">
             {/* Variantes / Doses */}
             <div className="border border-[#c0c0c0] flex flex-col min-h-0">
-              <div className="bg-[#e8eef5] px-2 py-1 font-bold text-[#1e3f66] text-[11px]">Variantes / Doses (½ dose, garrafa, copo…)</div>
+              <div className="bg-[#e8eef5] px-2 py-1 font-bold text-[#336699] text-[11px]">Variantes / Doses (½ dose, garrafa, copo…)</div>
               <div className="flex flex-wrap items-end gap-1 p-2 text-[11px] border-b border-[#e0e0e0]">
                 <input placeholder="Código" value={vd.code} onChange={(e) => setVd({ ...vd, code: e.target.value.toUpperCase() })} className="border border-[#a0a0a0] p-1 w-20" />
                 <input placeholder="Nome" value={vd.name} onChange={(e) => setVd({ ...vd, name: e.target.value })} className="border border-[#a0a0a0] p-1 w-24" />
@@ -76,7 +76,7 @@ export default function ItemAdvancedView() {
 
             {/* Unidades com conversão */}
             <div className="border border-[#c0c0c0] flex flex-col min-h-0">
-              <div className="bg-[#e8eef5] px-2 py-1 font-bold text-[#1e3f66] text-[11px]">Unidades com conversão (comprar em Caixa, vender em Unidade)</div>
+              <div className="bg-[#e8eef5] px-2 py-1 font-bold text-[#336699] text-[11px]">Unidades com conversão (comprar em Caixa, vender em Unidade)</div>
               <div className="flex flex-wrap items-end gap-1 p-2 text-[11px] border-b border-[#e0e0e0]">
                 <select value={ud.uom} onChange={(e) => setUd({ ...ud, uom: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
                   <option value="">— unidade —</option>{uoms.map((u: any) => <option key={u.id} value={u.id}>{u.code} · {u.name}</option>)}
@@ -99,7 +99,7 @@ export default function ItemAdvancedView() {
 
             {/* Ficha técnica → custo */}
             <div className="col-span-2 border border-[#c0c0c0] p-3 text-[12px] bg-white">
-              <div className="font-bold text-[#1e3f66] mb-1">Ficha Técnica → Custo real</div>
+              <div className="font-bold text-[#336699] mb-1">Ficha Técnica → Custo real</div>
               {recipe ? (
                 <div className="flex items-center gap-4">
                   <span>Receita: <b>{recipe.name}</b> · Rendimento: {recipe.yield_quantity}</span>

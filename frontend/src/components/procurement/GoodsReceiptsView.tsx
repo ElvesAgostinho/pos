@@ -59,7 +59,7 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
     >
       <div className="p-4 bg-[#f0f0f0] h-full overflow-y-auto text-[11px] space-y-4">
         <div className="border border-[#a0a0a0] bg-white p-2">
-          <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Cabeçalho</h3>
+          <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Cabeçalho</h3>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">
             <div className="flex items-center"><label className="w-32 font-bold">Nº Receção *</label>
               <input value={form.receipt_number || ''} onChange={(e) => setForm({ ...form, receipt_number: e.target.value })} disabled={!isNew} className={inputCls} /></div>
@@ -78,7 +78,7 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
           <div className="border border-[#a0a0a0] bg-[#fffbe6] p-3 text-gray-700">Crie a receção para lançar as linhas recebidas. (Nota: escolher uma PO herda fornecedor e armazém.)</div>
         ) : (
           <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Linhas Recebidas</h3>
+            <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Linhas Recebidas</h3>
             {!validated && (
               <div className="flex flex-wrap items-end gap-2 mb-3 bg-[#f8f8f8] p-2 border border-[#e0e0e0]">
                 <select value={line.item} onChange={(e) => setLine({ ...line, item: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">

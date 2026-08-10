@@ -73,7 +73,7 @@ export function Field({ label, value, onChange, required, help, type = 'text', o
 
 export const btnPrimary = {
   className: 'px-4 py-1.5 text-[12px] font-bold text-white border border-[#16304a]',
-  style: { background: 'linear-gradient(to bottom, #2f5f92, #1e3f66)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
+  style: { background: 'linear-gradient(to bottom, #2f5f92, #336699)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
 };
 export const btnNormal = {
   className: 'px-3 py-1.5 text-[12px] font-semibold border border-[#7f8b9b] text-[#2a3543]',

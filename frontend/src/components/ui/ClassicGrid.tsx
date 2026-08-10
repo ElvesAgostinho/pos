@@ -57,7 +57,7 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className="text-left py-1.5 px-2 border-r border-b font-bold uppercase tracking-tight text-[10.5px]"
+                className="text-left py-1 px-2 border-r border-b font-bold uppercase tracking-tight text-[10.5px]"
                 style={{
                   width: col.width, borderColor: TOKENS.border, color: TOKENS.selectedText,
                   background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)',
@@ -84,7 +84,7 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
                 }}
               >
                 {columns.map((col, cIdx) => (
-                  <td key={cIdx} className="py-1 px-2 border-r border-[#e0e0e0] truncate">
+                  <td key={cIdx} className="py-0.5 px-2 border-r border-[#e0e0e0] truncate">
                     {typeof col.accessor === 'function' ? col.accessor(row) : row[col.accessor]}
                   </td>
                 ))}

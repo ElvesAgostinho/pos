@@ -11,7 +11,7 @@ const StatCard = ({ title, value, subtitle }: { title: string; value: React.Reac
   <div className="bg-[#f0f0f0] border-2 border-white border-b-[#a0a0a0] border-r-[#a0a0a0] p-4 flex flex-col justify-between">
     <div className="mb-2">
       <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
-      <div className="text-2xl font-bold text-[#1e3f66]">{value}</div>
+      <div className="text-2xl font-bold text-[#336699]">{value}</div>
     </div>
     {subtitle && <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>}
   </div>
@@ -62,7 +62,7 @@ export default function EsmDashboardView() {
                     {data!.top_suppliers.map((s) => (
                       <div key={s.id} className="flex items-center justify-between bg-white border border-[#c0c0c0] px-2 py-1.5">
                         <div className="flex items-center gap-2 min-w-0">
-                          <Award size={14} className="text-[#1e3f66] flex-shrink-0" />
+                          <Award size={14} className="text-[#336699] flex-shrink-0" />
                           <div className="min-w-0">
                             <div className="text-[11px] font-bold text-gray-800 truncate">{s.commercial_name}</div>
                             <div className="text-[10px] text-gray-500">[{s.code}] · Pontualidade {Number(s.punctuality).toFixed(0)}%</div>

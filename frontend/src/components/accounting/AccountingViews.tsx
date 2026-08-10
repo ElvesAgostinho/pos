@@ -25,7 +25,7 @@ function useCrud(resource: keyof typeof accApi, params?: any) {
 }
 const Card = ({ label, value, tone, sub }: any) => (
   <div className="bg-white border border-[#a0a0a0] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div>
-    <div className={`text-xl font-bold ${tone || 'text-[#1e3f66]'}`}>{value}</div>{sub && <div className="text-[11px] text-gray-500">{sub}</div>}</div>
+    <div className={`text-xl font-bold ${tone || 'text-[#336699]'}`}>{value}</div>{sub && <div className="text-[11px] text-gray-500">{sub}</div>}</div>
 );
 
 // ==================== Dashboard ====================
@@ -140,7 +140,7 @@ export function AccEntriesView() {
             </div>
           ) : (
             <div className="flex-1 overflow-auto p-2 text-[11px]">
-              <div className="font-bold text-[#1e3f66] mb-2">Novo lançamento</div>
+              <div className="font-bold text-[#336699] mb-2">Novo lançamento</div>
               <div className="flex flex-wrap items-end gap-2 mb-2">
                 <select value={hdr.journal} onChange={(e) => setHdr({ ...hdr, journal: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white"><option value="">Diário…</option>{journals.map((j: any) => <option key={j.id} value={j.id}>{j.code} · {j.name}</option>)}</select>
                 <input type="date" value={hdr.entry_date} onChange={(e) => setHdr({ ...hdr, entry_date: e.target.value })} className="border border-[#a0a0a0] p-1" />

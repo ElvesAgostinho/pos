@@ -6,7 +6,7 @@ import { FileText, Plus, Check, DollarSign, Trash2 } from 'lucide-react';
 import { useInvoices, useCreateInvoice, useIssueInvoice, useMarkInvoicePaid } from '../../hooks/useFinance';
 import { aviso } from '../../ui/dialogo';
 
-const ST: Record<string, string> = { DRAFT: 'text-gray-500', ISSUED: 'text-[#1e3f66] font-bold', PAID: 'text-green-700 font-bold', CANCELLED: 'text-red-600' };
+const ST: Record<string, string> = { DRAFT: 'text-gray-500', ISSUED: 'text-[#336699] font-bold', PAID: 'text-green-700 font-bold', CANCELLED: 'text-red-600' };
 const today = () => new Date().toISOString().slice(0, 10);
 const emptyLine = () => ({ description: '', quantity: '1', unit_price: '', tax_percentage: '14' });
 
@@ -40,7 +40,7 @@ export default function InvoicesView() {
             <input placeholder="NIF" value={taxId} onChange={(e) => setTaxId(e.target.value)} className="border border-[#a0a0a0] p-1 w-28" />
             <span className="font-bold text-gray-700">Total c/ IVA: {preview.toFixed(2)}</span>
             <ClassicButton icon={Plus} label="Criar Fatura (rascunho)" onClick={add} />
-            <button onClick={() => setLines([...lines, emptyLine()])} className="text-[#1e3f66] underline">+ linha</button>
+            <button onClick={() => setLines([...lines, emptyLine()])} className="text-[#336699] underline">+ linha</button>
           </div>
           {lines.map((l, i) => (
             <div key={i} className="flex items-center gap-1">
@@ -65,7 +65,7 @@ export default function InvoicesView() {
               { header: 'Estado', accessor: (r: any) => <span className={ST[r.status] || ''}>{r.status_display}</span>, width: '12%' },
               { header: 'Ações', accessor: (r: any) => (
                 <div className="flex gap-2">
-                  {r.status === 'DRAFT' && <button title="Emitir" onClick={() => issue.mutate(r.id)} className="text-[#1e3f66] hover:text-[#16304a]"><Check size={13} /></button>}
+                  {r.status === 'DRAFT' && <button title="Emitir" onClick={() => issue.mutate(r.id)} className="text-[#336699] hover:text-[#16304a]"><Check size={13} /></button>}
                   {r.status === 'ISSUED' && <button title="Marcar paga" onClick={() => markPaid.mutate(r.id)} className="text-green-700 hover:text-green-900"><DollarSign size={13} /></button>}
                 </div>), width: '12%' },
             ]}

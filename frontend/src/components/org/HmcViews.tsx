@@ -34,7 +34,7 @@ function HotelSelect({ value, onChange }: { value: string; onChange: (v: string)
 export function HmcDashboardView() {
   const { data: d, isLoading } = useQuery({ queryKey: ['hmc', 'dashboard'], queryFn: () => hmcApi.dashboard() });
   const Card = ({ label, value }: any) => (
-    <div className="bg-white border border-[#a0a0a0] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div><div className="text-2xl font-bold text-[#1e3f66]">{value ?? '—'}</div></div>
+    <div className="bg-white border border-[#a0a0a0] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div><div className="text-2xl font-bold text-[#336699]">{value ?? '—'}</div></div>
   );
   return (
     <ClassicWindow title="Hotel Management — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />}

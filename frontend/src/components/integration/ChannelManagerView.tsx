@@ -26,7 +26,7 @@ export default function ChannelManagerView() {
       <div className="p-4 space-y-3 bg-[#ececec] h-full overflow-auto">
         {/* ONDE OBTER AS CREDENCIAIS de cada plataforma */}
         <div className="bg-white border border-[#c0c0c0] p-3 text-[12px]">
-          <div className="font-bold text-[#1e3f66] mb-2">Onde obter as credenciais de cada plataforma</div>
+          <div className="font-bold text-[#336699] mb-2">Onde obter as credenciais de cada plataforma</div>
           <table className="w-full border-collapse text-[11px]">
             <thead>
               <tr className="bg-[#f0f0f0]">
@@ -53,7 +53,7 @@ export default function ChannelManagerView() {
               ))}
             </tbody>
           </table>
-          <div className="mt-2 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#1e3f66]">
+          <div className="mt-2 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#336699]">
             <div className="flex items-start gap-1.5"><Lightbulb size={14} className="flex-shrink-0 mt-px" /> <span><b>Como funciona:</b> preenche em baixo o canal, o <b>Property ID</b> e a <b>Chave API</b> → o sistema envia disponibilidade e tarifas, e recebe as reservas automaticamente (com <b>anti-overbooking</b>). As reservas entram no <b>PMS → Reservas</b>.</span></div>
             <div className="flex items-start gap-1.5 mt-1"><TriangleAlert size={14} className="flex-shrink-0 mt-px" /> <span>As OTAs só dão as credenciais a software <b>homologado</b> por elas — este é o passo comercial a fazer com cada plataforma.</span></div>
           </div>
@@ -91,7 +91,7 @@ export default function ChannelManagerView() {
 
         {/* Log de sincronização */}
         <div>
-          <div className="text-[11px] font-bold text-[#1e3f66] mb-1 uppercase flex items-center gap-1"><Link2 size={13} />Registo de sincronização</div>
+          <div className="text-[11px] font-bold text-[#336699] mb-1 uppercase flex items-center gap-1"><Link2 size={13} />Registo de sincronização</div>
           <div className="bg-white border border-[#c0c0c0] text-[12px]">
             <div className="grid grid-cols-[140px_100px_90px_1fr_130px] font-bold bg-[#f0f0f0] border-b border-[#ddd] px-2 py-1"><span>Canal</span><span>Direção</span><span>Evento</span><span>Resumo</span><span>Quando</span></div>
             {logs.map((l: any) => (

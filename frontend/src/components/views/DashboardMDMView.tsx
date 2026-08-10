@@ -29,7 +29,7 @@ export default function DashboardMDMView() {
     <div className="bg-[#f0f0f0] border-2 border-white border-b-[#a0a0a0] border-r-[#a0a0a0] p-4 flex flex-col justify-between">
       <div className="mb-2">
         <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
-        <div className="text-2xl font-bold text-[#1e3f66]">{value}</div>
+        <div className="text-2xl font-bold text-[#336699]">{value}</div>
       </div>
       <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>
     </div>
@@ -61,7 +61,7 @@ export default function DashboardMDMView() {
                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'black' }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'black' }} />
                 <RechartsTooltip contentStyle={{ borderRadius: 0, border: '1px solid black', backgroundColor: '#ffffaa', fontSize: 10 }} />
-                <Bar dataKey="artigos" fill="#1e3f66" />
+                <Bar dataKey="artigos" fill="#336699" />
               </BarChart>
             </ResponsiveContainer>
           </div>

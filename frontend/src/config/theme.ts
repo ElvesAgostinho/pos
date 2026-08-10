@@ -18,7 +18,7 @@ import { getAppearance } from './appearance';
 
 export const TOKENS = {
   // Institucional — a cor de marca desta instalação (Aparência → Cor da barra).
-  get accent() { return getAppearance('barColor') || '#1e3f66'; },
+  get accent() { return getAppearance('barColor') || '#336699'; },
   // Dourado — SÓ para o logótipo "ML" e realces de marca; nunca para texto/fundo.
   gold: '#c9a400',
   goldDark: '#8a6f00',

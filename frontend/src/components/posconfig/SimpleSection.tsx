@@ -167,7 +167,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
       {banner}
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           {/* Cabeçalho estilo Explorer/Excel clássico: relevo em gradiente + divisórias
               verticais entre colunas — é o detalhe que faz uma grelha parecer folha de
               cálculo a sério, não uma lista HTML qualquer. */}
@@ -175,7 +175,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
             <tr className="text-[#2a2a2a]" style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
               {columns.map((c, i) => (
                 <th key={c.key}
-                  className={`text-left font-semibold px-3 py-2 border-b-2 ${i > 0 ? 'border-l' : ''}`}
+                  className={`text-left font-semibold px-3 py-1 border-b-2 ${i > 0 ? 'border-l' : ''}`}
                   style={{ width: c.width, borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6' }}>
                   {c.label}
                 </th>
@@ -194,7 +194,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                 onMouseEnter={(e) => { if (sel !== r.id) e.currentTarget.style.background = TOKENS.hover; }}
                 onMouseLeave={(e) => { if (sel !== r.id) e.currentTarget.style.background = i % 2 ? '#f7f8fa' : TOKENS.surface; }}>
                 {columns.map((c) => (
-                  <td key={c.key} className="px-3 py-[7px]">
+                  <td key={c.key} className="px-3 py-1">
                     {c.toggle ? (
                       <input type="checkbox" checked={!!r[c.key]} disabled={readOnly}
                         className="w-4 h-4 cursor-pointer"

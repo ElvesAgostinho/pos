@@ -10,7 +10,7 @@ import type { MdItem } from '../../api/masterdata';
 
 const money = (v: any) => v == null || v === '' ? '—' : Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const typeLabel = (v: string) => ITEM_TYPES.find((t) => t.value === v)?.label || v;
-const inp = 'border border-[#a0a0a0] p-1 bg-white focus:outline-none focus:ring-1 focus:ring-[#1e3f66]';
+const inp = 'border border-[#a0a0a0] p-1 bg-white focus:outline-none focus:ring-1 focus:ring-[#336699]';
 
 function Field({ label, children, req }: any) {
   return (
@@ -65,7 +65,7 @@ export default function ItemsView() {
           {/* Separadores */}
           <div className="flex gap-0.5 px-2 pt-2 border-b border-[#a0a0a0]">
             {TABS.map((tt) => (
-              <button key={tt} onClick={() => setTab(tt)} className={`px-4 py-1.5 border border-b-0 rounded-t ${tab === tt ? 'bg-white border-[#a0a0a0] font-bold text-[#1e3f66]' : 'bg-[#dcdcdc] border-[#c0c0c0] text-gray-600'}`}>{tt}</button>
+              <button key={tt} onClick={() => setTab(tt)} className={`px-4 py-1.5 border border-b-0 rounded-t ${tab === tt ? 'bg-white border-[#a0a0a0] font-bold text-[#336699]' : 'bg-[#dcdcdc] border-[#c0c0c0] text-gray-600'}`}>{tt}</button>
             ))}
           </div>
           <div className="flex-1 overflow-auto p-4">

@@ -1402,7 +1402,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                     <tr className="text-[#2a2a2a]" style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
                       {['Código', 'Descrição', 'Sub Família', 'Preço', 'Iva', 'Isenções', 'Stock', 'Impressoras', 'Unidades (Compra/Stock/Venda)', 'Ativo'].map((h, i) => (
                         <th key={h}
-                          className={`text-left font-semibold px-3 py-2 border-b-2 whitespace-nowrap ${i > 0 ? 'border-l' : ''}`}
+                          className={`text-left font-semibold px-3 py-1 border-b-2 whitespace-nowrap ${i > 0 ? 'border-l' : ''}`}
                           style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6' }}>{h}</th>
                       ))}
                     </tr>
@@ -1418,24 +1418,24 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                         }}
                         onMouseEnter={(e) => { if (sel !== r.id) e.currentTarget.style.background = TOKENS.hover; }}
                         onMouseLeave={(e) => { if (sel !== r.id) e.currentTarget.style.background = i % 2 ? '#f7f8fa' : TOKENS.surface; }}>
-                        <td className="px-3 py-[7px] whitespace-nowrap">{r.code}</td>
-                        <td className="px-3 py-[7px]">{r.name}</td>
-                        <td className="px-3 py-[7px]">{r.subfamily_name || '—'}</td>
-                        <td className="px-3 py-[7px] whitespace-nowrap">
+                        <td className="px-3 py-1 whitespace-nowrap">{r.code}</td>
+                        <td className="px-3 py-1">{r.name}</td>
+                        <td className="px-3 py-1">{r.subfamily_name || '—'}</td>
+                        <td className="px-3 py-1 whitespace-nowrap">
                           {(r.prices || []).length
                             ? r.prices.map((p: any) => `(${p.level}: ${money(p.price)})`).join(' ')
                             : '—'}
                         </td>
-                        <td className="px-3 py-[7px] whitespace-nowrap">
+                        <td className="px-3 py-1 whitespace-nowrap">
                           <span className="text-[#1565c0] italic">IVA{r.tax_percentage} - {Number(r.tax_percentage).toFixed(2)}</span>
                         </td>
-                        <td className="px-3 py-[7px]">{r.exemption_code_1 || ''}</td>
-                        <td className={`px-3 py-[7px] text-right ${Number(r.stock_qty) < 0 ? 'text-red-600 font-bold' : ''}`}>
+                        <td className="px-3 py-1">{r.exemption_code_1 || ''}</td>
+                        <td className={`px-3 py-1 text-right ${Number(r.stock_qty) < 0 ? 'text-red-600 font-bold' : ''}`}>
                           {Number(r.stock_qty).toFixed(2)}
                         </td>
-                        <td className="px-3 py-[7px] whitespace-nowrap">{r.printers_label || '—'}</td>
-                        <td className="px-3 py-[7px] whitespace-nowrap">{r.units_label}</td>
-                        <td className="px-3 py-[7px] text-center">
+                        <td className="px-3 py-1 whitespace-nowrap">{r.printers_label || '—'}</td>
+                        <td className="px-3 py-1 whitespace-nowrap">{r.units_label}</td>
+                        <td className="px-3 py-1 text-center">
                           <GridCheck checked={r.is_active} onChange={(v) => setActive.mutate({ id: r.id, v })}
                             title="Ativo — desligar tira o artigo da venda no POS (o histórico fica)" />
                         </td>

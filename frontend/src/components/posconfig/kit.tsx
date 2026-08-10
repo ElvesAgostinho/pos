@@ -195,19 +195,21 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
   );
 }
 
-/** Barra de ferramentas inferior — ícones redondos, como nos ERP clássicos. */
+/** Barra de ferramentas inferior — fila compacta de ícones, como nos ERP
+    hoteleiros clássicos (Fidelio/Micros): ícone tingido na cor da ação, sem
+    bolha colorida à volta, moldura só aparece ao passar o rato por cima. */
 export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode }) {
   return (
-    <div className="flex items-center gap-1 px-3 py-2 border-t border-[#c0c0c0] flex-shrink-0" style={{ background: '#f4f4f4' }}>
+    <div className="flex items-center gap-0.5 px-2 py-1 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.line }}>
       {actions.map((a, i) => (
         <div key={a.label} className="flex items-center">
           <button onClick={a.onClick} disabled={a.disabled}
-            className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#333] disabled:opacity-35 disabled:cursor-default hover:bg-[#e8e8e8]">
-            <span className="w-7 h-7 rounded-full flex items-center justify-center text-white flex-shrink-0"
-              style={{ background: a.disabled ? '#b8b8b8' : a.color }}><Glyph icon={a.icon} /></span>
+            className="flex items-center gap-1.5 px-2 py-1 text-[12px] text-[#333] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#adc6e0] hover:bg-[#e6f0fa] rounded-[2px]">
+            <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
+              style={{ color: a.disabled ? '#aaa' : a.color }}><Glyph icon={a.icon} size={15} /></span>
             {a.label}
           </button>
-          {i < actions.length - 1 && <span className="w-px h-6 bg-[#d5d5d5]" />}
+          {i < actions.length - 1 && <span className="w-px h-5 bg-[#d5d5d5]" />}
         </div>
       ))}
       <div className="ml-auto">{right}</div>

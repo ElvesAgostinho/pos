@@ -105,7 +105,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
         <form onSubmit={handleSubmit} className="text-[11px] grid grid-cols-1 gap-4 max-w-2xl">
           
           <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Identificação</h3>
+            <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Identificação</h3>
             <div className="grid grid-cols-1 gap-y-2">
               <div className="flex items-center">
                 <label className="w-32 font-bold">Código</label>
@@ -138,7 +138,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
           </div>
 
           <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Acesso ao Sistema (ERP)</h3>
+            <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Acesso ao Sistema (ERP)</h3>
             <div className="flex items-center mb-2">
               <input type="checkbox" name="create_erp_account" checked={formData.create_erp_account} onChange={handleChange} className="mr-2" />
               <label className="font-bold">Criar Conta no Backoffice</label>
@@ -165,7 +165,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
           </div>
 
           <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#1e3f66] border-b border-[#a0a0a0] mb-2 pb-1">Acesso POS (Frente de Loja)</h3>
+            <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Acesso POS (Frente de Loja)</h3>
             <div className="flex items-center mb-2">
               <input type="checkbox" name="create_pos_operator" checked={formData.create_pos_operator} onChange={handleChange} className="mr-2" />
               <label className="font-bold">É Operador de POS</label>

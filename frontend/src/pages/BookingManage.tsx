@@ -18,7 +18,7 @@ export default function BookingManage() {
   const [phone, setPhone] = useState('');
 
   useEffect(() => { apiClient.get('pms/booking/config/', { params: { slug } }).then((r) => setCfg(r.data)).catch(() => {}); }, [slug]);
-  const color = cfg?.primary_color || '#1e3f66';
+  const color = cfg?.primary_color || '#336699';
 
   const lookup = async () => {
     setBusy(true); setMsg('');

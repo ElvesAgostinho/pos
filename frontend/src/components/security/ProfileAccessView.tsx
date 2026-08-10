@@ -62,7 +62,7 @@ export default function ProfileAccessView() {
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={full} onChange={(e) => setFull(e.target.checked)} /> Acesso total (vê tudo)</label>
               </div>
               <div className="flex-1 overflow-auto p-2">
-                <div className={`text-[11px] text-gray-500 mb-2 ${full ? '' : 'font-bold text-[#1e3f66]'}`}>
+                <div className={`text-[11px] text-gray-500 mb-2 ${full ? '' : 'font-bold text-[#336699]'}`}>
                   {full ? 'Este perfil vê todos os centros. Desmarque "Acesso total" para restringir.' : 'Escolha os centros que este perfil pode ver:'}
                 </div>
                 {!full && (

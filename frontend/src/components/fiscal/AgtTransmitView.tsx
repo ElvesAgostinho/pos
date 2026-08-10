@@ -102,7 +102,7 @@ export default function AgtTransmitView() {
           right={<div className="flex gap-2">
             <button onClick={() => check.mutate()} className={btn} style={btnStyle}><RefreshCw size={12} />Testar ligação</button>
             <button onClick={() => run.mutate()} disabled={run.isPending} className={btn}
-              style={{ ...btnStyle, background: 'linear-gradient(to bottom, #2f5f92, #1e3f66)', color: '#fff', borderColor: '#16304a' }}>
+              style={{ ...btnStyle, background: 'linear-gradient(to bottom, #2f5f92, #336699)', color: '#fff', borderColor: '#16304a' }}>
               <Send size={12} />{run.isPending ? 'A transmitir…' : 'Transmitir agora'}
             </button>
           </div>}>
@@ -179,7 +179,7 @@ export default function AgtTransmitView() {
               r.status !== 'ACK' ? (
                 <button onClick={(e: any) => { e.stopPropagation(); retry.mutate(r.id); }}
                   className="px-1.5 py-0.5 text-[10px] font-bold border border-[#16304a] text-white"
-                  style={{ background: 'linear-gradient(to bottom, #2f5f92, #1e3f66)' }}>Reenviar</button>
+                  style={{ background: 'linear-gradient(to bottom, #2f5f92, #336699)' }}>Reenviar</button>
               ) : null), width: '10%' },
           ]} />
         </Panel>

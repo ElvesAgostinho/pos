@@ -49,7 +49,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
       footer={<>
         <div className="flex items-center gap-2">
           {!paid && hasNewLines && <ClassicButton icon={ChefHat} label="Enviar p/ Cozinha" onClick={() => fire.mutate(ticketId)} />}
-          <span className="text-[11px]">Total: <b className="text-[#1e3f66] text-[13px]">{fmt(ticket?.grand_total)}</b> · Saldo: <b className={Number(ticket?.balance_due) > 0 ? 'text-red-600' : 'text-green-700'}>{fmt(ticket?.balance_due)}</b></span>
+          <span className="text-[11px]">Total: <b className="text-[#336699] text-[13px]">{fmt(ticket?.grand_total)}</b> · Saldo: <b className={Number(ticket?.balance_due) > 0 ? 'text-red-600' : 'text-green-700'}>{fmt(ticket?.balance_due)}</b></span>
         </div>
         <ClassicButton icon={ArrowLeft} label="Voltar" onClick={onBack} />
       </>}
@@ -63,7 +63,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
               <button key={p.id} disabled={paid} onClick={() => addLine.mutate({ id: ticketId, line: { item: p.item, quantity: 1 } })}
                 className={`border p-2 text-left text-[11px] ${paid ? 'opacity-50' : 'bg-white hover:bg-[#e6f2ff] border-[#c0c0c0] active:bg-[#cce8ff]'}`}>
                 <div className="font-bold text-gray-800 truncate">{p.item_name}</div>
-                <div className="text-[#1e3f66] font-bold">{fmt(p.effective_price)}</div>
+                <div className="text-[#336699] font-bold">{fmt(p.effective_price)}</div>
               </button>
             ))}
             {products.length === 0 && <div className="text-gray-500 text-[11px] col-span-2">Sem produtos configurados neste outlet (POS Config → Produtos POS).</div>}
@@ -88,7 +88,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
           <div className="border-t border-[#a0a0a0] bg-[#f0f0f0] p-2 text-[11px]">
             <div className="flex justify-between px-1"><span>Subtotal</span><span>{fmt(ticket?.subtotal)}</span></div>
             <div className="flex justify-between px-1"><span>IVA</span><span>{fmt(ticket?.tax_total)}</span></div>
-            <div className="flex justify-between px-1 font-bold text-[#1e3f66] text-[13px]"><span>TOTAL</span><span>{fmt(ticket?.grand_total)}</span></div>
+            <div className="flex justify-between px-1 font-bold text-[#336699] text-[13px]"><span>TOTAL</span><span>{fmt(ticket?.grand_total)}</span></div>
           </div>
 
           {/* Documentos (Motor 7) */}
@@ -171,7 +171,7 @@ export default function SalesView() {
               { header: 'Ticket', accessor: 'ticket_number', width: '20%' },
               { header: 'Outlet', accessor: 'outlet_name', width: '24%' },
               { header: 'Operador', accessor: 'operator_name', width: '18%' },
-              { header: 'Estado', accessor: (r: POSTicket) => <span className={r.status === 'PAID' ? 'text-green-700 font-bold' : r.status === 'VOID' ? 'text-gray-400' : 'text-[#1e3f66] font-bold'}>{r.status_display}</span>, width: '12%' },
+              { header: 'Estado', accessor: (r: POSTicket) => <span className={r.status === 'PAID' ? 'text-green-700 font-bold' : r.status === 'VOID' ? 'text-gray-400' : 'text-[#336699] font-bold'}>{r.status_display}</span>, width: '12%' },
               { header: 'Total', accessor: (r: POSTicket) => fmt(r.grand_total), width: '12%' },
               { header: '', accessor: (r: POSTicket) => r.status === 'PAID' ? (
                 <button className="text-red-600 hover:underline text-[11px]" title="Anular venda (emite Nota de Crédito)"

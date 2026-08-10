@@ -24,7 +24,7 @@ export default function QuickNotes({ onClose }: QuickNotesProps) {
 
   return (
     <div className="fixed top-12 right-4 w-80 bg-[#f9f9f9] border border-[#a0a0a0] shadow-[4px_4px_10px_rgba(0,0,0,0.3)] z-[9900] flex flex-col font-sans">
-      <div className="bg-[#1e3f66] text-white px-3 py-2 flex items-center justify-between cursor-move select-none">
+      <div className="bg-[#336699] text-white px-3 py-2 flex items-center justify-between cursor-move select-none">
         <div className="flex items-center text-xs font-bold">
           <FileText size={14} className="mr-2" />
           Bloco de Notas Rápido

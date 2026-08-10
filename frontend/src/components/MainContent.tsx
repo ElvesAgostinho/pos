@@ -20,10 +20,10 @@ function Placeholder({ id }: { id: string }) {
       <div className="h-full w-full bg-[#e6e6e6] flex items-center justify-center p-6">
         <div className="bg-[#f0f0f0] border-2 border-white border-b-[#a0a0a0] border-r-[#a0a0a0] p-8 max-w-lg text-center">
           <div className="w-14 h-14 mx-auto mb-4 bg-white border border-[#c0c0c0] rounded-full flex items-center justify-center">
-            <Construction size={26} className="text-[#1e3f66]" />
+            <Construction size={26} className="text-[#336699]" />
           </div>
           {moduleTitle && <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{moduleTitle}</div>}
-          <h2 className="text-lg font-bold text-[#1e3f66] mb-2">{title}</h2>
+          <h2 className="text-lg font-bold text-[#336699] mb-2">{title}</h2>
           <div className="inline-block text-[10px] font-bold text-[#8a6d1a] bg-[#fff4d6] border border-[#e0c877] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
           <p className="text-[12px] text-gray-600">
             Não é um erro. Este ecrã está a ser construído — o módulo <b>está ativo na sua licença</b>,
