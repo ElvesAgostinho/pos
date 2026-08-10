@@ -60,7 +60,7 @@ import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box } from './kit';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
-import { TOKENS } from '../../config/theme';
+import { TOKENS, accentGradient } from '../../config/theme';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -326,7 +326,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           nenhuma forma de bloquear o ecrã nem sair sem passar pelo Ambiente de
           Trabalho primeiro. */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
-        style={{ background: TOKENS.barSoft }}>
+        style={{ background: accentGradient() }}>
         <div className="flex items-center gap-2">
           <span className="text-[#c9a400] inline-flex items-center">
             <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
@@ -396,19 +396,32 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             return (
             <div key={grp.key}>
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
-                className="w-full flex items-center justify-between px-3 py-2 text-[13px] font-semibold text-[#333] border-b border-[#e0e0e0] hover:bg-[#f5f5f5]">
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[12px] font-bold uppercase tracking-tight border-b-2 hover:brightness-[0.98]"
+                style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)', borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>
                 <span>{grp.title}</span>
-                <span className="text-[16px] leading-none text-[#888]">{open[grp.key] ? '−' : '+'}</span>
+                <span className="text-[13px] leading-none text-[#8a95a3]">{open[grp.key] ? '▾' : '▸'}</span>
               </button>
-              {open[grp.key] && grp.items.map((it) => (
+              {open[grp.key] && grp.items.map((it) => {
+                const ativo = section === it.key;
+                return (
                 <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
-                  className={`w-full flex items-center gap-2 pl-4 pr-3 py-1.5 text-[13px] text-left border-b border-[#f0f0f0] ${section === it.key ? 'bg-[#dce9f7] font-bold text-[#0b4a8f]' : 'text-[#444] hover:bg-[#f7f7f7]'}`}>
+                  className="w-full flex items-center gap-2 pl-3 pr-3 py-1.5 text-[13px] text-left border-b border-l-[3px]"
+                  style={{
+                    borderBottomColor: '#f0f0f0',
+                    borderLeftColor: ativo ? TOKENS.accent : 'transparent',
+                    background: ativo ? TOKENS.selectedBg : 'transparent',
+                    color: ativo ? TOKENS.selectedText : '#444',
+                    fontWeight: ativo ? 700 : 400,
+                  }}
+                  onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = TOKENS.hover; }}
+                  onMouseLeave={(e) => { if (!ativo) e.currentTarget.style.background = 'transparent'; }}>
                   {(it as any).icon
                     ? <span className="w-5 flex items-center justify-center"><Glyph icon={(it as any).icon} size={15} /></span>
-                    : <span className="w-5 flex justify-center"><span className="w-1.5 h-1.5 rounded-full bg-[#666]" /></span>}
+                    : <span className="w-5 flex justify-center"><span className="w-1.5 h-1.5 rounded-full" style={{ background: ativo ? TOKENS.accent : '#999' }} /></span>}
                   {it.label}
                 </button>
-              ))}
+                );
+              })}
             </div>
             );
           })}
