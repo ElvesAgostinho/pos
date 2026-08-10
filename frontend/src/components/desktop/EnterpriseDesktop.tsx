@@ -179,20 +179,13 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
       <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-white"
         style={{ background: accentGradient(), fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-        {logoUrl && <img src={logoUrl} alt="" className="h-8 w-8 object-contain mr-1 flex-shrink-0" />}
-        {/* Logo 3D = seletor de módulos */}
+        {/* Logo = seletor de módulos. O logótipo próprio da instalação (Empresa →
+            Imagem do Hotel) substitui o de fábrica automaticamente; sem ele, mostra-se
+            o logótipo do sistema em vez de um "ML" escrito por cima da barra. */}
         <button onClick={(e) => { e.stopPropagation(); setModMenu((s) => !s); setTopMenu(null); }}
           title="Trocar de módulo"
           className={`flex items-center gap-2 px-2 py-1 pr-4 mr-2 leading-none ${modMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
-          <span className="text-[30px] font-black tracking-tight select-none"
-            style={{
-              background: 'linear-gradient(180deg,#ffd75e 0%,#c9a400 55%,#8a6f00 100%)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
-              textShadow: '0 1px 0 rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.55)',
-              filter: 'drop-shadow(0 2px 1px rgba(0,0,0,.6))',
-            }}>
-            {erpName}
-          </span>
+          <img src={logoUrl || '/brand-logo.png'} alt="" className="h-10 w-10 object-contain flex-shrink-0" />
           <span className="text-[10px] text-[#9a9a9a] pb-1">Mwana Lodge ▾</span>
         </button>
         {modMenu && (
