@@ -58,7 +58,7 @@ import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton } from './kit';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
-import { TOKENS } from '../../config/theme';
+import { TOKENS, accentGradient } from '../../config/theme';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -227,24 +227,16 @@ export default function PosConfigView({ onDesktop, onOpen }: {
 
   return (
     <div className="h-full flex flex-col" style={{ background: '#f0f0f0', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-      {/* ---------- BARRA DE MENUS (topo escuro) ---------- */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: TOKENS.bar, height: 56 }}>
-        {/* ML — é aqui que se troca de módulo (como o logótipo do original). */}
+      {/* ---------- BARRA DE MENUS (mesma barra do Ambiente de Trabalho — dourada,
+          com o logótipo, letra preta) ---------- */}
+      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-[#18181B]" style={{ background: accentGradient(), height: 56 }}>
+        {/* Logo — é aqui que se troca de módulo. */}
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')}
             title="Trocar de módulo"
-            className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
-            <span className="text-[30px] font-black tracking-tight select-none"
-              style={{
-                // "3D": relevo por sombras, sem imagem nenhuma.
-                background: 'linear-gradient(180deg,#ffd75e 0%,#c9a400 55%,#8a6f00 100%)',
-                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
-                textShadow: '0 1px 0 rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.55)',
-                filter: 'drop-shadow(0 2px 1px rgba(0,0,0,.6))',
-              }}>
-              ML
-            </span>
-            <span className="text-[10px] text-[#9a9a9a] pb-1">Mwana Lodge ▾</span>
+            className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-black/15' : 'hover:bg-black/10'}`}>
+            <img src="/brand-logo.png" alt="" className="h-10 w-10 object-contain flex-shrink-0" />
+            <span className="text-[13px] text-[#18181B]">▾</span>
           </button>
 
           {menu === '__ml' && (
