@@ -5,6 +5,7 @@ import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
 import type { DeskIcon } from '../../config/workspace';
 import { getAppearance } from '../../config/appearance';
+import { accentGradient } from '../../config/theme';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
@@ -176,7 +177,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       {/* A MESMA barra do POS: mesmo fundo, mesma altura, mesma tipografia. Ter duas
           barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
       <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-white"
-        style={{ background: '#2b2b2b', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+        style={{ background: accentGradient(), fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
         {logoUrl && <img src={logoUrl} alt="" className="h-8 w-8 object-contain mr-1 flex-shrink-0" />}
         {/* Logo 3D = seletor de módulos */}
         <button onClick={(e) => { e.stopPropagation(); setModMenu((s) => !s); setTopMenu(null); }}
