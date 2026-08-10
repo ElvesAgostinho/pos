@@ -316,10 +316,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         </div>
       </div>
 
-      {/* Título da janela — controlos de janela (minimizar/maximizar decorativos,
-          fechar). Sessão (nome/bloquear/terminar sessão) só na barra de cima do
-          Ambiente de Trabalho agora — ter os dois era mostrar "dono" duas vezes
-          por ecrã. Preto, não dourado: o dourado é só a barra de cima. */}
+      {/* Título da janela — preto. O dourado é só a barra de cima do Ambiente de
+          Trabalho, não esta. */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
         style={{ background: TOKENS.barSoft }}>
         <div className="flex items-center gap-2">
