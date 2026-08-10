@@ -316,8 +316,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         </div>
       </div>
 
-      {/* Título da janela — preto. O dourado é só a barra de cima do Ambiente de
-          Trabalho, não esta. */}
+      {/* Título da janela — preto. O dourado e o logótipo ficam só na barra de
+          cima do Ambiente de Trabalho. */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
         style={{ background: TOKENS.barSoft }}>
         <div className="flex items-center gap-2">
