@@ -184,7 +184,9 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
       </div>
 
       {/* Identificação (fixa em todos os separadores) */}
-      <div className="grid grid-cols-3 gap-x-6 gap-y-1 px-3 py-2 border-b border-[#d0d0d0] bg-white">
+      <div className="px-3 pt-2 pb-1 border-b border-[#d0d0d0] bg-white">
+      <Box title="Identificação">
+      <div className="grid grid-cols-3 gap-x-6 gap-y-1 pt-1.5">
         <Row label="Código:">
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={inputCls} style={inputStyle} />
           <Check checked={d.is_active} onChange={(v) => set('is_active', v)} label="Ativo" />
@@ -213,6 +215,8 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
             {groups.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
           </select>
         </Row>
+      </div>
+      </Box>
       </div>
 
       {/* Separadores */}
@@ -669,7 +673,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
         )}
 
         {tab === 'unidades' && (
-          <div className="max-w-[520px] space-y-1">
+          <Box title="Unidades" className="max-w-[520px]">
             {[['purchase_uom', 'Unidade Compra:'], ['stock_uom', 'Unidade de Stock:'], ['sale_uom', 'Unidade Venda:']].map(([k, label]) => (
               <Row key={k} label={label as string} w="w-[130px]">
                 <select value={d[k as string] || ''} onChange={(e) => set(k as string, Number(e.target.value) || null)} className={inputCls} style={inputStyle}>
@@ -684,7 +688,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
             <div className="text-[11px] text-[#666] pt-2">
               Compra-se à <b>caixa</b>, guarda-se em <b>unidades</b>, vende-se à <b>unidade</b> — o sistema converte sozinho.
             </div>
-          </div>
+          </Box>
         )}
 
         {tab === 'armazens' && (

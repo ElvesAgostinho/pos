@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
-import { Toolbar, inputStyle, GridCheck } from './kit';
+import { Toolbar, inputStyle, GridCheck, Box } from './kit';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
@@ -89,6 +89,8 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
       <div className="flex-1 flex overflow-hidden">
         {/* Esquerda */}
         <div className="w-[48%] p-4 space-y-2 overflow-auto border-r border-[#e0e0e0]">
+          <Box title="Identificação">
+          <div className="space-y-2 pt-1.5">
           <Row label="Código:">
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               className={`${inp} w-[280px]`} style={inputStyle} />
@@ -118,10 +120,12 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               ? 'Vê-se a mesa inteira — os pratos saem juntos.'
               : 'Cada prato solto — para postos de linha.'}
           </div>
+          </div>
+          </Box>
 
           <div className="pt-2">
             <div className="text-[12px] font-semibold text-[#333] mb-1">Botões:</div>
-            <div className="border border-[#d5d5d5]">
+            <div style={{ border: '3px groove #c0c0c0' }}>
               {BOTOES.map(([k, l, ajuda]) => (
                 <label key={k} className="flex items-start gap-2 px-2 py-1.5 border-b border-[#eee] text-[12px] hover:bg-[#f7f9fb] cursor-pointer">
                   <input type="checkbox" checked={bts.includes(k)} onChange={() => toggleB(k)} className="w-4 h-4 mt-px" />
@@ -138,7 +142,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
 
           <div className="pt-2">
             <div className="text-[12px] font-semibold text-[#333] mb-1">Opções:</div>
-            <div className="border border-[#d5d5d5]">
+            <div style={{ border: '3px groove #c0c0c0' }}>
               {OPCOES.map(([k, l]) => (
                 <label key={k} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#eee] text-[12px] hover:bg-[#f7f9fb] cursor-pointer">
                   <input type="checkbox" checked={!!opts[k]}
@@ -170,7 +174,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               className={`${inp} flex-1`} style={inputStyle} />
           </Row>
 
-          <div className="border border-[#c8c8c8] mt-3">
+          <div className="mt-3" style={{ border: '3px groove #c0c0c0' }}>
             <div className="px-3 py-1.5 bg-[#dbe7f3] text-[12px] font-bold text-[#1a4f8a] border-b border-[#c8c8c8]">
               Impressoras — as ativas substituem as de origem do pedido
             </div>

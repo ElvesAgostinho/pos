@@ -21,7 +21,7 @@ function useList(ep: string, key: string) {
 
 /** Cabeçalho de painel cinzento, como no original. */
 const Painel = ({ title, children, right }: any) => (
-  <div className="border border-[#c8c8c8] bg-white">
+  <div className="bg-white" style={{ border: '3px groove #c0c0c0' }}>
     <div className="flex items-center justify-between px-3 py-1.5 bg-[#e4e4e4] border-b border-[#c8c8c8]">
       <span className="text-[12px] font-bold text-[#333]">{title}</span>
       {right}
