@@ -279,7 +279,11 @@ export function Row({ label, children, w = 'w-[120px]' }: { label: string; child
 }
 
 export const inputCls = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white flex-1 min-w-0';
-export const inputStyle = { boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.10)' };
+// Campo "afundado" (sunken) clássico — tinha um valor mais fraco (0.10) do que a
+// regra global em index.css (0.16 + realce de baixo), e como é aplicado inline
+// (style={inputStyle}) GANHA da regra global em quase todos os formulários do
+// sistema — o campo ficava sistematicamente mais raso onde este objeto era usado.
+export const inputStyle = { boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.20), inset -1px -1px 0 rgba(255,255,255,0.6)' };
 
 export function Check({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (

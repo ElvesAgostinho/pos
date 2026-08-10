@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Glyph } from './kit';
+import { TOKENS } from '../../config/theme';
 
-const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#8a95a3] px-1.5 py-1 text-[12px] bg-white';
 
 /**
  * PARÂMETROS DO SISTEMA — é aqui que se liga e desliga o comportamento do POS.
@@ -91,22 +92,25 @@ export default function Parameters({ group }: { group?: string } = {}) {
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0 z-10">
-            <tr className="bg-[#efefef] text-[#333]">
-              <th className="text-left font-normal px-3 py-1.5 border-b border-[#d0d0d0]">Descrição</th>
-              <th className="text-left font-normal px-3 py-1.5 border-b border-[#d0d0d0] w-[38%]">Valor</th>
+            <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+              <th className="text-left font-semibold px-3 py-1.5 border-b-2" style={{ borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>Descrição</th>
+              <th className="text-left font-semibold px-3 py-1.5 border-b-2 border-l w-[38%]" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>Valor</th>
             </tr>
           </thead>
           <tbody>
             {shown.map((g: any) => (
               <Fragment key={g.group}>
-                <tr className="bg-[#e9e9e9]">
-                  <td colSpan={2} className="px-3 py-1.5 font-bold text-[#333] border-y border-[#d0d0d0]">{g.group}</td>
+                <tr style={{ background: 'linear-gradient(to bottom, #f2f4f6 0%, #e6e9ed 100%)' }}>
+                  <td colSpan={2} className="px-3 py-1.5 font-bold border-y" style={{ color: TOKENS.selectedText, borderColor: TOKENS.border }}>{g.group}</td>
                 </tr>
-                {g.params.map((p: any) => {
+                {g.params.map((p: any, i: number) => {
                   const v = vals[p.number];
                   const changed = dirty.has(p.number);
                   return (
-                    <tr key={p.number} className={`border-b border-[#eee] hover:bg-[#f7f9fb] ${changed ? 'bg-[#fffbe6]' : ''}`}>
+                    <tr key={p.number} className="border-b"
+                      style={{ borderColor: '#eef0f2', background: changed ? TOKENS.warningBg : i % 2 ? '#f7f8fa' : TOKENS.surface }}
+                      onMouseEnter={(e) => { if (!changed) e.currentTarget.style.background = TOKENS.hover; }}
+                      onMouseLeave={(e) => { if (!changed) e.currentTarget.style.background = i % 2 ? '#f7f8fa' : TOKENS.surface; }}>
                       <td className="px-3 py-1.5" title={p.help_text}>
                         <span className="text-[#666]">({p.number})</span> {p.name}
                         {p.help_text && <div className="text-[10px] text-[#888] mt-0.5">{p.help_text}</div>}

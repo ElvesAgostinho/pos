@@ -43,7 +43,7 @@ body {
    Não mexe no fundo (fica para as classes; preserva os inputs escuros do POS). */
 input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
 select, textarea {
-  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.16), inset -1px -1px 0 rgba(255,255,255,0.55);
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.20), inset -1px -1px 0 rgba(255,255,255,0.6);
   border-color: #7d8a9c;
 }
 select { background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(0,0,0,0.03)); }

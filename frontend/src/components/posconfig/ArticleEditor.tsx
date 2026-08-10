@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Tab, Box, Row, Check, Toolbar, inputCls, inputStyle, money, GridCheck, Glyph } from './kit';
+import { TOKENS } from '../../config/theme';
 import ComponentsPicker from './ComponentsPicker';
 import ArticleLogs from './ArticleLogs';
 
@@ -473,57 +474,59 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                 </button>
               </div>
 
-              <div className="flex-1 overflow-auto border border-[#c0c0c0]">
+              <div className="flex-1 overflow-auto" style={{ border: '4px groove #c0c0c0' }}>
                 <table className="text-[12px] border-collapse w-full">
-                  <thead className="sticky top-0 bg-[#eee] z-10">
-                    <tr>
-                      <th className="w-[28px] border border-[#ddd]"></th>
+                  <thead className="sticky top-0 z-10">
+                    <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+                      <th className="w-[28px] border-b-2" style={{ borderBottomColor: TOKENS.border }}></th>
                       {['Código', 'Descrição', 'Unidade', 'Quantidade', 'Desperdício%', 'Quantidade-',
                         'Custo', 'Custo Total', '%', 'Armazém', 'Tipo', 'Fornecedor', 'Stock Qtd.',
                         'Dose Qtd', 'Custo Dose'].map((h) => (
-                        <th key={h} className="text-left px-2 py-1 border border-[#ddd] whitespace-nowrap font-semibold">{h}</th>
+                        <th key={h} className="text-left px-2 py-1.5 border-b-2 border-l whitespace-nowrap font-semibold"
+                          style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {(receita.ingredients || []).map((ing: any) => {
+                    {(receita.ingredients || []).map((ing: any, i: number) => {
                       const totalCusto = (receita.ingredients || []).reduce(
                         (s: number, x: any) => s + Number(x.line_cost || 0), 0);
                       const pct = totalCusto > 0 ? (Number(ing.line_cost || 0) / totalCusto * 100) : 0;
                       const key = ing._key ?? ing.id;
+                      const sel = selRecIds.includes(key);
                       return (
-                        <tr key={key} className={selRecIds.includes(key) ? 'bg-[#fff3cd]' : ''}>
-                          <td className="text-center border border-[#eee]">
-                            <input type="checkbox" checked={selRecIds.includes(key)}
+                        <tr key={key} className="border-b" style={{ borderColor: '#eef0f2', background: sel ? TOKENS.warningBg : i % 2 ? '#f7f8fa' : TOKENS.surface }}>
+                          <td className="text-center">
+                            <input type="checkbox" checked={sel}
                               onChange={() => setSelRecIds((s) => s.includes(key) ? s.filter((x) => x !== key) : [...s, key])} />
                           </td>
-                          <td className="px-2 py-1 border border-[#eee]">{ing.item_code}</td>
-                          <td className="px-2 py-1 border border-[#eee]">{ing.item_name}</td>
-                          <td className="px-2 py-1 border border-[#eee]">{ing.uom_code}</td>
-                          <td className="px-1 py-1 border border-[#eee]">
+                          <td className="px-2 py-1">{ing.item_code}</td>
+                          <td className="px-2 py-1">{ing.item_name}</td>
+                          <td className="px-2 py-1">{ing.uom_code}</td>
+                          <td className="px-1 py-1">
                             <input type="number" step="0.0001" value={ing.quantity}
                               onChange={(e) => setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
                                 x === ing ? { ...x, quantity: e.target.value } : x) }))}
-                              className="w-[80px] border border-[#ccc] px-1 py-0.5" style={inputStyle} />
+                              className="w-[80px] border border-[#8a95a3] px-1 py-0.5" style={inputStyle} />
                           </td>
-                          <td className="px-1 py-1 border border-[#eee]">
+                          <td className="px-1 py-1">
                             <input type="number" step="0.01" value={ing.waste_percentage}
                               onChange={(e) => setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
                                 x === ing ? { ...x, waste_percentage: e.target.value } : x) }))}
-                              className="w-[64px] border border-[#ccc] px-1 py-0.5" style={inputStyle} />
+                              className="w-[64px] border border-[#8a95a3] px-1 py-0.5" style={inputStyle} />
                           </td>
-                          <td className="px-2 py-1 border border-[#eee] text-right">
+                          <td className="px-2 py-1 text-right">
                             {(Number(ing.quantity || 0) * (1 + Number(ing.waste_percentage || 0) / 100)).toFixed(4)}
                           </td>
-                          <td className="px-2 py-1 border border-[#eee] text-right">{money(Number(ing.unit_cost || 0).toFixed(2))}</td>
-                          <td className="px-2 py-1 border border-[#eee] text-right">{money(ing.line_cost)}</td>
-                          <td className="px-2 py-1 border border-[#eee] text-right">{pct.toFixed(1)}%</td>
-                          <td className="px-2 py-1 border border-[#eee]">{ing.warehouse_name || '—'}</td>
-                          <td className="px-2 py-1 border border-[#eee]">{ing.item_type}</td>
-                          <td className="px-2 py-1 border border-[#eee]">{ing.supplier || '—'}</td>
-                          <td className="px-2 py-1 border border-[#eee] text-right">{ing.stock_qty}</td>
-                          <td className="px-2 py-1 border border-[#eee] text-right">{ing.dose_qty}</td>
-                          <td className="px-2 py-1 border border-[#eee] text-right">{money(ing.dose_cost)}</td>
+                          <td className="px-2 py-1 text-right">{money(Number(ing.unit_cost || 0).toFixed(2))}</td>
+                          <td className="px-2 py-1 text-right">{money(ing.line_cost)}</td>
+                          <td className="px-2 py-1 text-right">{pct.toFixed(1)}%</td>
+                          <td className="px-2 py-1">{ing.warehouse_name || '—'}</td>
+                          <td className="px-2 py-1">{ing.item_type}</td>
+                          <td className="px-2 py-1">{ing.supplier || '—'}</td>
+                          <td className="px-2 py-1 text-right">{ing.stock_qty}</td>
+                          <td className="px-2 py-1 text-right">{ing.dose_qty}</td>
+                          <td className="px-2 py-1 text-right">{money(ing.dose_cost)}</td>
                         </tr>
                       );
                     })}
@@ -692,54 +695,60 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
         )}
 
         {tab === 'armazens' && (
+          <div style={{ border: '4px groove #c0c0c0' }}>
           <table className="w-full text-[12px] border-collapse">
             <thead>
-              <tr className="bg-[#eee]">
-                {['Armazém', 'Stock Qtd.', 'Pendente', 'Total Custo', 'Mínimo', 'Máximo'].map((h) => (
-                  <th key={h} className="text-left px-2 py-1.5 border border-[#d0d0d0] font-bold">{h}</th>
+              <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+                {['Armazém', 'Stock Qtd.', 'Pendente', 'Total Custo', 'Mínimo', 'Máximo'].map((h, i) => (
+                  <th key={h} className={`text-left px-3 py-1.5 border-b-2 font-semibold ${i > 0 ? 'border-l' : ''}`}
+                    style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {whs.map((w: any) => (
-                <tr key={w.warehouse} className="border-b border-[#eee]">
-                  <td className="px-2 py-1 border border-[#eee]">{w.warehouse_name}</td>
-                  <td className={`px-2 py-1 border border-[#eee] text-right ${w.negative ? 'text-red-600 font-bold' : ''}`}>{Number(w.quantity).toFixed(3)}</td>
-                  <td className="px-2 py-1 border border-[#eee] text-right">{Number(w.pending).toFixed(3)}</td>
-                  <td className="px-2 py-1 border border-[#eee] text-right">{money(w.total_cost)}</td>
-                  <td className="px-2 py-1 border border-[#eee] text-right">{Number(w.min_stock).toFixed(3)}</td>
-                  <td className="px-2 py-1 border border-[#eee] text-right">{Number(w.max_stock).toFixed(3)}</td>
+              {whs.map((w: any, i: number) => (
+                <tr key={w.warehouse} className="border-b" style={{ borderColor: '#eef0f2', background: i % 2 ? '#f7f8fa' : TOKENS.surface }}>
+                  <td className="px-3 py-1">{w.warehouse_name}</td>
+                  <td className={`px-3 py-1 text-right ${w.negative ? 'text-red-600 font-bold' : ''}`}>{Number(w.quantity).toFixed(3)}</td>
+                  <td className="px-3 py-1 text-right">{Number(w.pending).toFixed(3)}</td>
+                  <td className="px-3 py-1 text-right">{money(w.total_cost)}</td>
+                  <td className="px-3 py-1 text-right">{Number(w.min_stock).toFixed(3)}</td>
+                  <td className="px-3 py-1 text-right">{Number(w.max_stock).toFixed(3)}</td>
                 </tr>
               ))}
               {whs.length === 0 && <tr><td colSpan={6} className="text-center text-[#999] py-8">Sem armazéns.</td></tr>}
             </tbody>
           </table>
+          </div>
         )}
 
         {tab === 'fornecedores' && (
+          <div style={{ border: '4px groove #c0c0c0' }}>
           <table className="w-full text-[12px] border-collapse">
             <thead>
-              <tr className="bg-[#eee]">
-                {['Data', 'Fornecedor', 'Documento', 'Quantidade', 'Preço Líquido', 'Unidade', 'Desconto'].map((h) => (
-                  <th key={h} className="text-left px-2 py-1.5 border border-[#d0d0d0] font-bold">{h}</th>
+              <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+                {['Data', 'Fornecedor', 'Documento', 'Quantidade', 'Preço Líquido', 'Unidade', 'Desconto'].map((h, i) => (
+                  <th key={h} className={`text-left px-3 py-1.5 border-b-2 font-semibold ${i > 0 ? 'border-l' : ''}`}
+                    style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {sups.map((s: any, i: number) => (
-                <tr key={i} className="border-b border-[#eee]">
-                  <td className="px-2 py-1 border border-[#eee]">{s.date || '—'}</td>
-                  <td className="px-2 py-1 border border-[#eee]">{s.supplier}</td>
-                  <td className="px-2 py-1 border border-[#eee]">{s.document}</td>
-                  <td className="px-2 py-1 border border-[#eee] text-right">{s.quantity}</td>
-                  <td className="px-2 py-1 border border-[#eee] text-right">{money(s.price_net)}</td>
-                  <td className="px-2 py-1 border border-[#eee]">{s.uom}</td>
-                  <td className="px-2 py-1 border border-[#eee] text-right">{s.discount}</td>
+                <tr key={i} className="border-b" style={{ borderColor: '#eef0f2', background: i % 2 ? '#f7f8fa' : TOKENS.surface }}>
+                  <td className="px-3 py-1">{s.date || '—'}</td>
+                  <td className="px-3 py-1">{s.supplier}</td>
+                  <td className="px-3 py-1">{s.document}</td>
+                  <td className="px-3 py-1 text-right">{s.quantity}</td>
+                  <td className="px-3 py-1 text-right">{money(s.price_net)}</td>
+                  <td className="px-3 py-1">{s.uom}</td>
+                  <td className="px-3 py-1 text-right">{s.discount}</td>
                 </tr>
               ))}
               {sups.length === 0 && <tr><td colSpan={7} className="text-center text-[#999] py-8">Este artigo ainda não foi comprado a nenhum fornecedor.</td></tr>}
             </tbody>
           </table>
+          </div>
         )}
 
         {tab === 'dashboard' && dash && (
