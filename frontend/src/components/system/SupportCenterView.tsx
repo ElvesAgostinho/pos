@@ -20,7 +20,7 @@ function Row({ label, value, ok }: { label: string; value: any; ok?: boolean }) 
 function Section({ title, icon: Icon, children }: any) {
   return (
     <div className="bg-white border border-[#c0c0c0]">
-      <div className="px-3 py-1.5 bg-[#336699] text-white text-[12px] font-bold flex items-center gap-2"><Icon size={14} />{title}</div>
+      <div className="px-3 py-1.5 bg-[#B08D3C] text-white text-[12px] font-bold flex items-center gap-2"><Icon size={14} />{title}</div>
       {children}
     </div>
   );

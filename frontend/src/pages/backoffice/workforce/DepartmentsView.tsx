@@ -78,7 +78,7 @@ const DepartmentsView: React.FC = () => {
         <div className="p-4 bg-[#f0f0f0] h-full overflow-y-auto">
           <form onSubmit={handleSubmit} className="text-[11px] grid grid-cols-1 gap-4">
             <div className="border border-[#a0a0a0] bg-white p-2">
-              <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Detalhes</h3>
+              <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Detalhes</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Nome *</label>

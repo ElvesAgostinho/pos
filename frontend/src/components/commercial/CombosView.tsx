@@ -35,7 +35,7 @@ export default function CombosView() {
             <input placeholder="Nome do combo" value={name} onChange={(e) => setName(e.target.value)} className="border border-[#a0a0a0] p-1" />
             <input placeholder="Preço combo" type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="border border-[#a0a0a0] p-1 w-28" />
             <ClassicButton icon={Plus} label="Criar Combo" onClick={add} />
-            <button onClick={() => setLines([...lines, emptyLine()])} className="text-[#336699] underline">+ artigo</button>
+            <button onClick={() => setLines([...lines, emptyLine()])} className="text-[#B08D3C] underline">+ artigo</button>
           </div>
           {lines.map((l, i) => (
             <div key={i} className="flex items-center gap-1">

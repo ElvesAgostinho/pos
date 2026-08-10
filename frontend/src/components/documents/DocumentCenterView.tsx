@@ -92,7 +92,7 @@ export default function DocumentCenterView() {
         </div>
         {/* Dashboard */}
         <div className="flex flex-wrap gap-2 p-3 border-b border-[#c0c0c0] bg-[#f4f4f4]">
-          {[['Emitidos hoje', dash?.total_today, '#336699'], ['Faturas', dash?.invoices, '#c0392b'], ['Vendas POS', dash?.pos_sales, '#c9a400'], ['Check-ins', dash?.checkins, '#2980b9'], ['Compras', dash?.purchases, '#e67e22'], ['Mov. Stock', dash?.stock_moves, '#a0522d'], ['Anulados', dash?.voided, '#7f8c8d']].map(([l, v, c]: any) => (
+          {[['Emitidos hoje', dash?.total_today, '#B08D3C'], ['Faturas', dash?.invoices, '#c0392b'], ['Vendas POS', dash?.pos_sales, '#c9a400'], ['Check-ins', dash?.checkins, '#2980b9'], ['Compras', dash?.purchases, '#e67e22'], ['Mov. Stock', dash?.stock_moves, '#a0522d'], ['Anulados', dash?.voided, '#7f8c8d']].map(([l, v, c]: any) => (
             <div key={l} className="bg-white border border-[#c0c0c0] px-3 py-1"><div className="text-[9px] uppercase text-gray-500">{l}</div><div className="text-lg font-bold" style={{ color: c }}>{v ?? 0}</div></div>
           ))}
         </div>
@@ -117,7 +117,7 @@ export default function DocumentCenterView() {
             ))}
             <button type="button" onClick={() => setShowRS((s) => !s)} title="Windows Reporting Services"
               className={`flex flex-col items-center justify-center w-[54px] h-[46px] border border-[#c0c0c0] rounded-sm ${reportServer ? 'bg-[#eafaf0]' : 'bg-gradient-to-b from-white to-[#eee] hover:to-[#e0e0e0]'}`}>
-              <Server size={20} className="text-[#336699]" strokeWidth={1.7} /><span className="text-[10px] mt-0.5 text-gray-700">Servidor</span>
+              <Server size={20} className="text-[#B08D3C]" strokeWidth={1.7} /><span className="text-[10px] mt-0.5 text-gray-700">Servidor</span>
             </button>
           </div>
         </form>
@@ -134,7 +134,7 @@ export default function DocumentCenterView() {
         )}
         {showRS && (
           <div className="flex items-center gap-2 px-3 py-2 border-b border-[#c0c0c0] bg-[#eef4fb] text-[11px]">
-            <Server size={13} className="text-[#336699]" />
+            <Server size={13} className="text-[#B08D3C]" />
             <span className="text-gray-700">Windows Reporting Services:</span>
             <input value={reportServer} onChange={(e) => setReportServer(e.target.value)} placeholder="http://servidor/ReportServer" className="border border-[#a0a0a0] px-2 py-1 w-72" />
             <button onClick={() => { localStorage.setItem('report_server_url', reportServer); aviso('Servidor de relatórios guardado.'); }} className="px-2 py-1 border border-[#a0a0a0] bg-white hover:bg-[#f0f0f0]">Guardar</button>
@@ -188,7 +188,7 @@ function DocDetail({ sel, onClose, onOpen }: { sel: { module: string; id: string
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
       <div className="w-[560px] max-h-[85vh] bg-white border border-[#4a6785] shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="h-8 flex items-center justify-between px-2 bg-[#336699] text-white text-[13px] font-semibold flex-shrink-0">
+        <div className="h-8 flex items-center justify-between px-2 bg-[#B08D3C] text-white text-[13px] font-semibold flex-shrink-0">
           <span className="flex items-center gap-2"><FileText size={14} />{det.title || 'Documento'}</span>
           <button onClick={onClose} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
         </div>
@@ -199,14 +199,14 @@ function DocDetail({ sel, onClose, onOpen }: { sel: { module: string; id: string
             ))}
           </div>
           {det.items?.length ? (
-            <div className="mb-3"><div className="text-[11px] font-bold text-[#336699] uppercase mb-1">Itens</div>
+            <div className="mb-3"><div className="text-[11px] font-bold text-[#B08D3C] uppercase mb-1">Itens</div>
               <div className="bg-[#f7f7f7] border border-[#e0e0e0] p-2 space-y-0.5">{det.items.map((it: string, i: number) => <div key={i}>{it}</div>)}</div>
             </div>
           ) : null}
           {sel.module === 'fiscal' && det.printable && (
             <button onClick={() => printFiscalInvoice(Number(sel.id), false)} className="mb-3 px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] flex items-center gap-1.5"><Printer size={13} />Imprimir documento</button>
           )}
-          <div className="text-[11px] font-bold text-[#336699] uppercase mb-1 flex items-center gap-1"><Link2 size={13} />Documentos ligados ({links.length})</div>
+          <div className="text-[11px] font-bold text-[#B08D3C] uppercase mb-1 flex items-center gap-1"><Link2 size={13} />Documentos ligados ({links.length})</div>
           {links.length === 0 && <div className="text-gray-500">Sem ligações.</div>}
           {links.map((l: any, i: number) => (
             <button key={i} disabled={!l.module} onClick={() => l.module && onOpen({ module: l.module, id: l.id })}

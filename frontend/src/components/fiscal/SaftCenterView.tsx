@@ -98,7 +98,7 @@ export default function SaftCenterView() {
                   {busy === p.key ? 'A validar…' : 'Validar XML'}
                 </button>
                 <button onClick={() => exportar(p.key)} disabled={busy === p.key} className={`${btn} flex items-center gap-1`}
-                  style={{ ...btnStyle, background: 'linear-gradient(to bottom, #2f5f92, #336699)', color: '#fff', borderColor: '#16304a' }}>
+                  style={{ ...btnStyle, background: 'linear-gradient(to bottom, #2f5f92, #B08D3C)', color: '#fff', borderColor: '#16304a' }}>
                   <Download size={12} /> Exportar
                 </button>
               </div>

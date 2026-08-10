@@ -54,7 +54,7 @@ const RequireLicense = ({ children }: { children: JSX.Element }) => {
           <div className="p-4 text-[12px] text-gray-700 space-y-3">
             <p>Não foi possível contactar o servidor da aplicação (<b>localhost:8000</b>). Verifique se o serviço está a correr.</p>
             <div className="flex gap-2">
-              <button onClick={() => refetch()} className="px-3 py-1.5 bg-[#336699] text-white text-[12px] font-semibold">Tentar novamente</button>
+              <button onClick={() => refetch()} className="px-3 py-1.5 bg-[#B08D3C] text-white text-[12px] font-semibold">Tentar novamente</button>
               <button onClick={() => window.location.reload()} className="px-3 py-1.5 bg-[#f0f0f0] border border-[#a0a0a0] text-[12px]">Recarregar</button>
             </div>
           </div>

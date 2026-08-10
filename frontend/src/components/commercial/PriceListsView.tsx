@@ -50,7 +50,7 @@ export default function PriceListsView() {
         {/* Artigos da tabela selecionada */}
         <div className="flex-1 flex flex-col">
           <div className="bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px] flex flex-wrap items-end gap-2">
-            <span className="font-bold text-[#336699]">{active ? `Preços · ${active.name}` : 'Selecione uma tabela'}</span>
+            <span className="font-bold text-[#B08D3C]">{active ? `Preços · ${active.name}` : 'Selecione uma tabela'}</span>
             {active && <>
               <select value={line.item} onChange={(e) => setLine({ ...line, item: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white ml-auto">
                 <option value="">— artigo —</option>{items.map((i: any) => <option key={i.id} value={i.id}>[{i.code}] {i.name}</option>)}

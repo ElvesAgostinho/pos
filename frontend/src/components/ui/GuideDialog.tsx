@@ -39,7 +39,7 @@ export default function GuideDialog() {
           <div className="flex-1 text-[12px] text-[#243040]">
             <div className="whitespace-pre-line font-semibold leading-relaxed">{g.message}</div>
             {g.hint && (
-              <div className="mt-3 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#336699] flex gap-2">
+              <div className="mt-3 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#B08D3C] flex gap-2">
                 <Lightbulb size={14} className="flex-shrink-0 mt-px" /><span><b>O que fazer:</b> {g.hint}</span>
               </div>
             )}

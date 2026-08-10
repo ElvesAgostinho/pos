@@ -37,14 +37,14 @@ export default function AgtCertificationView() {
 
         {/* Menção estampada na fatura */}
         <div className="bg-white border border-[#a0a0a0] p-3">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#336699] mb-1"><Stamp size={13} /> Menção estampada na fatura</div>
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#B08D3C] mb-1"><Stamp size={13} /> Menção estampada na fatura</div>
           <div className="font-mono text-[11px] bg-[#f5f5f5] border border-[#e0e0e0] p-2">{data?.mention_preview || '—'}</div>
           <div className="text-[10px] text-gray-500 mt-1">Sai automaticamente no rodapé de cada fatura, no QR Code e no SAF-T.</div>
         </div>
 
         {/* Motor de assinatura */}
         <div className="bg-white border border-[#a0a0a0] p-3 text-[11px]">
-          <div className="flex items-center gap-1.5 font-bold text-[#336699] mb-2"><KeyRound size={13} /> Motor de assinatura</div>
+          <div className="flex items-center gap-1.5 font-bold text-[#B08D3C] mb-2"><KeyRound size={13} /> Motor de assinatura</div>
           <div className="grid grid-cols-2 gap-2">
             <div>Chave de assinatura instalada: <b className={data?.has_keys ? 'text-green-700' : 'text-red-600'}>{data?.has_keys ? 'sim' : 'não'}</b></div>
             <div>Versão da chave: <b>{data?.key_version ?? '—'}</b></div>

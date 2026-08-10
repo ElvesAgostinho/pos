@@ -170,7 +170,7 @@ export default function LocationsView() {
           <form id="location-form" onSubmit={handleSave} className="text-[11px] grid grid-cols-1 gap-4">
             
             <div className="border border-[#a0a0a0] bg-white p-2">
-              <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Identificação</h3>
+              <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Identificação</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Nível Logístico</label>
@@ -194,7 +194,7 @@ export default function LocationsView() {
             </div>
 
             <div className="border border-[#a0a0a0] bg-white p-2 mt-2">
-              <h3 className="font-bold text-[#336699] border-b border-[#a0a0a0] mb-2 pb-1">Capacidades & Restrições</h3>
+              <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Capacidades & Restrições</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Peso Máx. (Kg)</label>

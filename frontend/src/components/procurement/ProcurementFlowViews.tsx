@@ -10,7 +10,7 @@ import {
 import { useMdItems } from '../../hooks/useMasterData';
 import { aviso } from '../../ui/dialogo';
 
-const RST: Record<string, string> = { DRAFT: 'text-gray-500', SUBMITTED: 'text-[#336699] font-bold', APPROVED: 'text-green-700 font-bold', REJECTED: 'text-red-600' };
+const RST: Record<string, string> = { DRAFT: 'text-gray-500', SUBMITTED: 'text-[#B08D3C] font-bold', APPROVED: 'text-green-700 font-bold', REJECTED: 'text-red-600' };
 const money = (v: any) => Number(v || 0).toFixed(2);
 
 export function RequisitionsView() {
@@ -52,7 +52,7 @@ export function RequisitionsView() {
             { header: 'Estado', accessor: (r: any) => <span className={RST[r.status] || ''}>{r.status_display}</span>, width: '14%' },
             { header: 'Ações', accessor: (r: any) => (
               <div className="flex gap-2">
-                {r.status === 'DRAFT' && <button title="Submeter" onClick={() => act.mutate({ id: r.id, act: 'submit' })} className="text-[#336699]"><Send size={13} /></button>}
+                {r.status === 'DRAFT' && <button title="Submeter" onClick={() => act.mutate({ id: r.id, act: 'submit' })} className="text-[#B08D3C]"><Send size={13} /></button>}
                 {r.status === 'SUBMITTED' && <button title="Aprovar" onClick={() => act.mutate({ id: r.id, act: 'approve' })} className="text-green-700"><Check size={14} /></button>}
                 {r.status === 'SUBMITTED' && <button title="Rejeitar" onClick={() => act.mutate({ id: r.id, act: 'reject' })} className="text-red-600"><X size={14} /></button>}
                 {r.status === 'APPROVED' && <button title="Gerar RFQ" onClick={() => rfq.mutate(r.id, { onSuccess: (x: any) => aviso('RFQ criada: ' + x.number) })} className="text-[#b06a00] font-bold text-[11px] flex items-center gap-1"><FileText size={12} />RFQ</button>}
@@ -82,7 +82,7 @@ export function RfqComparisonView() {
       footer={<div className="text-gray-600">Preços vêm do catálogo do fornecedor · escolha a melhor proposta e gere a OC</div>}>
       <div className="flex h-full">
         <div className="w-56 border-r border-[#a0a0a0] overflow-auto">
-          <div className="bg-[#f0f0f0] border-b border-[#a0a0a0] px-2 py-1.5 font-bold text-[11px] text-[#336699]">RFQs</div>
+          <div className="bg-[#f0f0f0] border-b border-[#a0a0a0] px-2 py-1.5 font-bold text-[11px] text-[#B08D3C]">RFQs</div>
           {rfqs.map((r: any) => (
             <div key={r.id} onClick={() => setSel(r.id)} className={`px-3 py-2 text-[12px] cursor-pointer border-b border-[#e0e0e0] ${rfq?.id === r.id ? 'bg-[#cce8ff]' : 'hover:bg-[#f5f5f5]'}`}>
               <b>{r.number}</b><br /><span className="text-gray-500 text-[10px]">{r.status_display} · {r.quote_count || 0} cotações</span>
@@ -93,7 +93,7 @@ export function RfqComparisonView() {
 
         <div className="flex-1 flex flex-col">
           <div className="flex items-end gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px]">
-            <span className="font-bold text-[#336699]">{rfq ? `Comparação · ${rfq.number}` : 'Selecione uma RFQ'}</span>
+            <span className="font-bold text-[#B08D3C]">{rfq ? `Comparação · ${rfq.number}` : 'Selecione uma RFQ'}</span>
             {rfq && <>
               <select value={sup} onChange={(e) => setSup(e.target.value)} className="border border-[#a0a0a0] p-1 bg-white ml-auto">
                 <option value="">— fornecedor —</option>{suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.commercial_name}</option>)}
@@ -104,7 +104,7 @@ export function RfqComparisonView() {
           <div className="flex-1 overflow-auto p-2">
             {comp?.rows?.length ? (
               <table className="w-full text-[11px] border-collapse">
-                <thead><tr className="bg-[#e8eef5] text-[#336699]"><th className="text-left p-1 border border-[#c0c0c0]">Artigo</th><th className="p-1 border border-[#c0c0c0]">Qtd</th>
+                <thead><tr className="bg-[#e8eef5] text-[#B08D3C]"><th className="text-left p-1 border border-[#c0c0c0]">Artigo</th><th className="p-1 border border-[#c0c0c0]">Qtd</th>
                   {(comp.quote_totals || []).map((q: any) => <th key={q.quote} className="p-1 border border-[#c0c0c0]">{q.supplier}</th>)}
                   <th className="p-1 border border-[#c0c0c0]">Melhor</th></tr></thead>
                 <tbody>
@@ -131,7 +131,7 @@ export function RfqComparisonView() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {comp.quote_totals.map((q: any) => (
                   <button key={q.quote} onClick={() => convert.mutate(q.quote, { onSuccess: (po: any) => aviso('Ordem de Compra gerada: ' + po.po_number + ' · total ' + money(po.total_amount)) })}
-                    className="px-3 py-1.5 bg-[#336699] text-white rounded text-[11px] font-bold hover:bg-[#274d7a]">Gerar OC de {q.supplier} ({money(q.total)})</button>
+                    className="px-3 py-1.5 bg-[#B08D3C] text-white rounded text-[11px] font-bold hover:bg-[#274d7a]">Gerar OC de {q.supplier} ({money(q.total)})</button>
                 ))}
               </div>
             ) : null}

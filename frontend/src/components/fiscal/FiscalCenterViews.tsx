@@ -14,7 +14,7 @@ import { aviso } from '../../ui/dialogo';
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // ---------- helpers de UI clássica ----------
-function Kpi({ label, value, tone = '#336699', sub }: { label: string; value: any; tone?: string; sub?: string }) {
+function Kpi({ label, value, tone = '#B08D3C', sub }: { label: string; value: any; tone?: string; sub?: string }) {
   return (
     <div className="bg-white border border-[#c0c0c0] shadow-[inset_1px_1px_0_#fff] px-3 py-2 min-w-[150px]">
       <div className="text-[10px] uppercase tracking-wide text-gray-500">{label}</div>
@@ -26,7 +26,7 @@ function Kpi({ label, value, tone = '#336699', sub }: { label: string; value: an
 function Section({ title, children }: { title: string; children: any }) {
   return (
     <div>
-      <div className="text-[11px] font-bold text-[#336699] mb-2 uppercase">{title}</div>
+      <div className="text-[11px] font-bold text-[#B08D3C] mb-2 uppercase">{title}</div>
       {children}
     </div>
   );
@@ -165,7 +165,7 @@ function ProductPicker({ onPick }: { onPick: (item: any) => void }) {
   return (
     <div className="relative">
       <div className="flex items-center gap-1 border border-[#c0c0c0] bg-white px-2 py-1">
-        <Boxes size={14} className="text-[#336699]" />
+        <Boxes size={14} className="text-[#B08D3C]" />
         <input value={q} onFocus={() => setOpen(true)} onChange={e => { setQ(e.target.value); setOpen(true); }}
           placeholder="Filtrar e adicionar produto (código, nome, código de barras)…" className="flex-1 outline-none text-[12px]" />
         {q && <button onClick={() => setQ('')} className="text-gray-400 text-[11px]">limpar</button>}

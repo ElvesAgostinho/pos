@@ -68,7 +68,7 @@ export function UsersView() {
                     const on = (r.hotels || []).some((x: any) => x.id === h.id);
                     return (
                       <button key={h.id} onClick={() => toggleHotel(r, h.id)} title={on ? 'Retirar acesso' : 'Dar acesso'}
-                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#336699] text-white border-[#16304a]' : 'bg-white text-gray-500 border-[#c0c0c0]'}`}>
+                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#B08D3C] text-white border-[#16304a]' : 'bg-white text-gray-500 border-[#c0c0c0]'}`}>
                         {h.name}
                       </button>
                     );
@@ -80,7 +80,7 @@ export function UsersView() {
             { header: 'Admin', accessor: (r: any) => r.is_superuser ? 'Super' : (r.is_staff ? 'Staff' : '—'), width: '10%' },
             { header: 'Ações', accessor: (r: any) => (
               <div className="flex gap-2">
-                <button title="Palavra-passe" onClick={() => changePw(r.id)} className="text-[#336699] hover:text-black"><KeyRound size={13} /></button>
+                <button title="Palavra-passe" onClick={() => changePw(r.id)} className="text-[#B08D3C] hover:text-black"><KeyRound size={13} /></button>
                 <button title="Ativar/Inativar" onClick={() => toggle.mutate(r.id)} className="text-[#b06a00] hover:text-black"><Power size={13} /></button>
                 {!r.is_superuser && <button title="Apagar" onClick={() => del.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={13} /></button>}
               </div>), width: '20%' },

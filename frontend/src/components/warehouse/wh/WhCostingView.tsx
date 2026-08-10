@@ -9,7 +9,7 @@ export default function WhCostingView() {
   const { data: d, isLoading } = useWhCosting();
   return (
     <ClassicWindow title="Valorização de Stock (FIFO / FEFO)" icon={<Calculator size={14} className="text-gray-300" />}
-      footer={<div className="text-gray-600">Valor total imobilizado: <span className="font-bold text-[#336699]">{AOA(d?.total_value)}</span></div>}>
+      footer={<div className="text-gray-600">Valor total imobilizado: <span className="font-bold text-[#B08D3C]">{AOA(d?.total_value)}</span></div>}>
       <div className="p-3 space-y-3">
         {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
           <>

@@ -6,7 +6,7 @@ import { useAudit } from '../../hooks/usePosMgmt';
 import { AUDIT_EVENTS } from '../../api/posmgmt';
 
 const EVENT_COLOR: Record<string, string> = {
-  PAYMENT: 'text-green-700', DOC_ISSUE: 'text-[#336699]', TICKET_VOID: 'text-red-600',
+  PAYMENT: 'text-green-700', DOC_ISSUE: 'text-[#B08D3C]', TICKET_VOID: 'text-red-600',
   CASH_CLOSE: 'text-[#b06a00]', CASH_OPEN: 'text-[#b06a00]', CASH_MOVE: 'text-[#b06a00]',
 };
 

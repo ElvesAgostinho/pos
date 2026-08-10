@@ -475,7 +475,7 @@ function WelcomePanel({ tree, moduleName, onOpen, dark }:
   const card = dark ? 'bg-[#252525] border-[#3a3a3a] text-[#dcdcdc]' : 'bg-white border-[#9aa6b6] text-[#1a2a3a]';
   return (
     <div className="h-full overflow-auto p-4">
-      <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#dcdcdc' : '#336699' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>
+      <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#dcdcdc' : '#B08D3C' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {tree.map((f) => (
           <div key={f.key} className={`border ${card}`} style={{ boxShadow: 'inset 0 1px 0 #fff, 0 1px 3px rgba(0,0,0,0.12)' }}>

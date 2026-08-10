@@ -27,7 +27,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
     <div className="w-60 bg-[#f0f0f0] border-r border-[#a0a0a0] flex flex-col text-[11px] font-sans select-none overflow-y-auto">
       {/* Voltar ao ambiente de trabalho do módulo */}
       <button onClick={() => onSelectView && onSelectView(`home:${scopeKey || 'admin'}`)}
-        className="flex items-center gap-2 px-2 py-1.5 bg-[#336699] text-white hover:bg-[#274d7a] border-b border-[#16304a]">
+        className="flex items-center gap-2 px-2 py-1.5 bg-[#B08D3C] text-white hover:bg-[#274d7a] border-b border-[#16304a]">
         <LayoutGrid size={13} /> <span className="font-bold">Ambiente de trabalho</span>
       </button>
 
@@ -45,7 +45,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
             >
               <span onClick={(e) => { e.stopPropagation(); toggle(mod.key); }}
                 className="mr-2 text-gray-500 font-mono text-xs w-3 text-center hover:text-black">{isOpen ? '−' : '+'}</span>
-              <span className="text-[#336699] text-[11px] flex-1 font-bold">{mod.title}</span>
+              <span className="text-[#B08D3C] text-[11px] flex-1 font-bold">{mod.title}</span>
             </div>
 
             {isOpen && (

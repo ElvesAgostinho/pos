@@ -420,7 +420,7 @@ export function PosDiagnostics() {
         </span>
         <button onClick={() => enviarLogs.mutate()} disabled={enviarLogs.isPending}
           title="Envia o retrato do sistema para a empresa de suporte (parâmetro 9510)"
-          className="ml-4 px-3 py-1 text-[12px] font-semibold bg-[#336699] text-white
+          className="ml-4 px-3 py-1 text-[12px] font-semibold bg-[#B08D3C] text-white
             disabled:opacity-50">
           {enviarLogs.isPending ? 'A enviar…' : 'Enviar logs ao suporte'}
         </button>
@@ -502,7 +502,7 @@ export function PosDiagnostics() {
             <input value={testEmail} onChange={(e) => setTestEmail(e.target.value)}
               placeholder="destinatario@exemplo.com" className={`${inp} flex-1`} style={inputStyle} />
             <button onClick={() => testEmail.trim() && enviarTeste.mutate()} disabled={enviarTeste.isPending}
-              className="px-3 py-1.5 bg-[#336699] text-white text-[12px] font-semibold disabled:opacity-50">
+              className="px-3 py-1.5 bg-[#B08D3C] text-white text-[12px] font-semibold disabled:opacity-50">
               {enviarTeste.isPending ? 'A enviar…' : 'Enviar mensagem de teste'}
             </button>
           </div>

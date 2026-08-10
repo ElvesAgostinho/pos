@@ -28,7 +28,7 @@ export default function BookingSite() {
       .then((r) => setCfg(r.data)).catch(() => setNotFound(true));
   }, [slug]);
 
-  const color = cfg?.primary_color || '#336699';
+  const color = cfg?.primary_color || '#B08D3C';
   const search = async () => {
     setBusy(true); setRooms(null);
     try { const r = await apiClient.get('pms/booking/availability/', { params: { slug, check_in: ci, check_out: co, adults, children } }); setRooms(r.data.rooms || []); }

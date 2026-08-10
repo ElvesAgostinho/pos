@@ -23,7 +23,7 @@ export function exportCSV(rows: any[], cols: ExportcolList, name: string) {
 }
 
 function htmlTable(rows: any[], cols: ExportcolList, title: string) {
-  const th = cols.map((c) => `<th style="background:#336699;color:#fff;border:1px solid #999;padding:6px;text-align:left">${esc(c.header)}</th>`).join('');
+  const th = cols.map((c) => `<th style="background:#B08D3C;color:#fff;border:1px solid #999;padding:6px;text-align:left">${esc(c.header)}</th>`).join('');
   const tr = rows.map((r) => `<tr>${cols.map((c) => `<td style="border:1px solid #ccc;padding:5px">${esc(c.get(r))}</td>`).join('')}</tr>`).join('');
   return `<html><head><meta charset="utf-8"></head><body>
     <h2 style="font-family:Arial">${esc(title)}</h2>

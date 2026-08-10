@@ -36,8 +36,8 @@ export default function AccountsReceivableView() {
       footer={<div className="text-gray-600">Faturas em dívida: <b>{money(totalDue)}</b> · liquidadas por recebimentos que entram na tesouraria</div>}>
       <div className="flex flex-col h-full">
         <div className="flex items-center gap-1 bg-[#f0f0f0] border-b border-[#a0a0a0] px-2 pt-1 text-[11px]">
-          <button onClick={() => setTab('invoices')} className={`px-3 py-1.5 border border-b-0 font-bold ${tab === 'invoices' ? 'bg-white text-[#336699]' : 'bg-[#e0e0e0] text-gray-600'}`}>Faturas a receber</button>
-          <button onClick={() => setTab('customers')} className={`px-3 py-1.5 border border-b-0 font-bold flex items-center gap-1 ${tab === 'customers' ? 'bg-white text-[#336699]' : 'bg-[#e0e0e0] text-gray-600'}`}><Users size={12} />Conta corrente</button>
+          <button onClick={() => setTab('invoices')} className={`px-3 py-1.5 border border-b-0 font-bold ${tab === 'invoices' ? 'bg-white text-[#B08D3C]' : 'bg-[#e0e0e0] text-gray-600'}`}>Faturas a receber</button>
+          <button onClick={() => setTab('customers')} className={`px-3 py-1.5 border border-b-0 font-bold flex items-center gap-1 ${tab === 'customers' ? 'bg-white text-[#B08D3C]' : 'bg-[#e0e0e0] text-gray-600'}`}><Users size={12} />Conta corrente</button>
         </div>
         <div className="flex-1 overflow-hidden">
           {tab === 'invoices' ? (

@@ -3,8 +3,15 @@ import ClassicWindow from '../ui/ClassicWindow';
 import ClassicButton from '../ui/ClassicButton';
 import { Image, Upload, Trash2, Monitor, Type, Palette, Save } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
+import { getAppearance } from '../../config/appearance';
 
 const read = (k: string) => (typeof localStorage !== 'undefined' ? localStorage.getItem(k) : null) || '';
+// Cor por omissão real (a mesma fonte que o resto do sistema lê) — nunca
+// escrita à mão aqui outra vez. Já aconteceu esta caixa ter o SEU PRÓPRIO
+// azul (#336699) diferente do resto: bastava visitar este ecrã, ou carregar
+// em "repor", para gravar esse azul no localStorage e ele ganhar ao valor
+// por omissão do código para sempre — mesmo depois de mudar a paleta.
+const DEFAULT_BAR_COLOR = getAppearance('barColor');
 
 function ImagePicker({ label, storageKey, hint }: { label: string; storageKey: string; hint: string }) {
   const [val, setVal] = useState<string>(read(storageKey));
@@ -18,7 +25,7 @@ function ImagePicker({ label, storageKey, hint }: { label: string; storageKey: s
   const clear = () => { localStorage.removeItem(storageKey); setVal(''); };
   return (
     <div className="bg-[#f0f0f0] border border-[#c0c0c0] p-3">
-      <div className="flex items-center gap-2 mb-2 text-[#336699] font-bold text-[12px]"><Image size={14} />{label}</div>
+      <div className="flex items-center gap-2 mb-2 text-[#B08D3C] font-bold text-[12px]"><Image size={14} />{label}</div>
       <div className="flex gap-3">
         <div className="w-40 h-24 bg-white border border-[#a0a0a0] flex items-center justify-center overflow-hidden">
           {val ? <img src={val} alt="preview" className="max-w-full max-h-full object-contain" /> : <Monitor size={26} className="text-gray-300" />}
@@ -48,7 +55,7 @@ function TextSetting({ label, storageKey, placeholder }: { label: string; storag
 }
 
 export default function AppearanceView() {
-  const [bar, setBar] = useState<string>(read('ui_bar_color') || '#336699');
+  const [bar, setBar] = useState<string>(read('ui_bar_color') || DEFAULT_BAR_COLOR);
   const saveBar = (v: string) => { setBar(v); localStorage.setItem('ui_bar_color', v); };
   return (
     <ClassicWindow title="Personalização / Aparência" icon={<Image size={14} className="text-gray-300" />}
@@ -58,7 +65,7 @@ export default function AppearanceView() {
       </>}>
       <div className="p-4 space-y-4 bg-[#e6e6e6] h-full overflow-auto">
         <div className="bg-[#f0f0f0] border border-[#c0c0c0] p-3">
-          <div className="flex items-center gap-2 mb-3 text-[#336699] font-bold text-[12px]"><Type size={14} />Identidade</div>
+          <div className="flex items-center gap-2 mb-3 text-[#B08D3C] font-bold text-[12px]"><Type size={14} />Identidade</div>
           <div className="space-y-2">
             <TextSetting label="Nome da empresa" storageKey="ui_company_name" placeholder="System Mwana Lodge" />
             <TextSetting label="Nome do ERP" storageKey="ui_erp_name" placeholder="System Mwana Lodge" />
@@ -67,7 +74,7 @@ export default function AppearanceView() {
               <span className="w-40 text-right text-gray-700 flex items-center justify-end gap-1"><Palette size={13} />Cor da barra:</span>
               <input type="color" value={bar} onChange={(e) => saveBar(e.target.value)} className="w-12 h-8 border border-[#a0a0a0] bg-white" />
               <span className="text-gray-500">{bar}</span>
-              <button onClick={() => saveBar('#336699')} className="text-[#336699] hover:underline">repor</button>
+              <button onClick={() => saveBar(DEFAULT_BAR_COLOR)} className="text-[#B08D3C] hover:underline">repor</button>
             </label>
           </div>
         </div>

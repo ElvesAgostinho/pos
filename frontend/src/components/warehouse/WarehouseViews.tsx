@@ -106,7 +106,7 @@ export function StockMovementsView() {
         <form className="flex items-center gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-1.5 text-[11px]" onSubmit={(e) => { e.preventDefault(); setPage(1); setQ(search); }}>
           <input className="border border-[#a0a0a0] p-1 w-64" placeholder="Pesquisar artigo (código/nome) ou referência…" value={search} onChange={e => setSearch(e.target.value)} />
           <ClassicButton label="Pesquisar" onClick={() => { setPage(1); setQ(search); }} />
-          {q && <button type="button" className="text-[#336699] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
+          {q && <button type="button" className="text-[#B08D3C] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
         </form>
         <div className="flex-1 overflow-hidden">
           <ClassicGrid rowKey="id" data={moves} columns={[
