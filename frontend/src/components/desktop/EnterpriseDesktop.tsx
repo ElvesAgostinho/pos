@@ -218,7 +218,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             </button>
             {topMenu === m && (
               <div className="absolute left-0 top-full min-w-[260px] py-1 shadow-2xl z-[120]"
-                style={{ background: '#2b2b2b', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
+                style={{ background: '#18181B', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
                 {MENUS[m].map((it, i) => (
                   <button key={i} onClick={() => it.act ? (it.act(), setTopMenu(null)) : open(it.screen, it.label)}
                     className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
