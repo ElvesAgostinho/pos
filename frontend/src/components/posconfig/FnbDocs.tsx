@@ -245,7 +245,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
           {/* Entidade + Totais */}
           <div className="w-[42%] flex gap-3">
             {mode === 'PURCHASE' && (
-              <div className="flex-1 border border-[#c8c8c8] bg-white">
+              <div className="flex-1 bg-white" style={{ border: '3px groove #c0c0c0' }}>
                 <div className="px-2 py-1 bg-[#e4e4e4] text-[12px] font-bold border-b border-[#c8c8c8]">Entidade</div>
                 <div className="p-2 space-y-1">
                   <select value={edit.entity ?? ''} onChange={(e) => setEdit({ ...edit, entity: e.target.value })}
@@ -278,7 +278,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
               </div>
             )}
 
-            <div className="w-[220px] border border-[#c8c8c8] bg-white">
+            <div className="w-[220px] bg-white" style={{ border: '3px groove #c0c0c0' }}>
               <div className="px-2 py-1 bg-[#e4e4e4] text-[12px] font-bold border-b border-[#c8c8c8] text-right">Totais</div>
               <div className="p-2 text-[12px] space-y-1">
                 {[['Subtotal', sub], ['Desconto Artigo', descArt], ['Desconto', descGlobal], ['Tax', iva]].map(([k, v]: any) => (
@@ -295,7 +295,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
         </div>
 
         {/* Artigos */}
-        <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3 border border-[#c8c8c8] bg-white">
+        <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3 bg-white" style={{ border: '3px groove #c0c0c0' }}>
           <div className="px-2 py-1 bg-[#e4e4e4] text-[12px] font-bold border-b border-[#c8c8c8]">Artigos</div>
           <div className="flex items-center gap-2 px-2 py-1.5 border-b border-[#eee] text-[12px]">
             <span>Filtro:</span>
