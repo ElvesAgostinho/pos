@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
-import { inputStyle, Glyph } from './kit';
+import { inputStyle, Glyph, Box } from './kit';
 import { aviso, confirmar, pedir } from '../../ui/dialogo';
 
 /**
@@ -53,7 +53,7 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
   };
   if (!eid) return <div className="text-[12px] text-[#888] p-3">Grave primeiro a ficha — as listas ligam-se à entidade criada.</div>;
   return (
-    <div className="border border-[#d0d0d0]">
+    <div style={{ border: '3px groove #c0c0c0' }}>
       <div className="px-2 py-1 bg-[#e9e9e9] text-[12px] font-bold flex justify-between">
         <span>{titulo}</span>
         <span className="flex gap-2">
@@ -156,7 +156,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
           </div>
 
           <div className="flex-1 overflow-auto p-3 space-y-2">
-            {sec === 'perfil' && (<div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
+            {sec === 'perfil' && (<Box title="Perfil"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
               <T k="code" l="Nr. cliente:" /> <P k="internal_id" l="Id Interno:" />
               <S k="entity_type" l="Tipo de entidade:" opts={tipos} />
               <div className="flex gap-4 items-center"><C k="is_supplier" l="É fornecedor" /><Cx k="sync_enabled" l="Sincronizar" /><C k="is_active" l="Ativo" /></div>
@@ -176,9 +176,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <T k="billing_address" l="Morada 1:" /> <P k="billing_address2" l="Morada 2:" />
               <P k="billing_postal" l="Cód. Postal:" /> <P k="billing_city" l="Cidade:" />
               <P k="billing_country" l="País:" />
-            </div>)}
+            </div></Box>)}
 
-            {sec === 'ident' && (<div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
+            {sec === 'ident' && (<Box title="Dados de identificação"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
               <T k="birth_date" l="Data de nasc.:" tipo="date" /> <T k="doc_type" l="Tipo de doc.:" />
               <T k="birth_place" l="Local de nasc.:" /> <T k="id_number" l="Nr. de identif.:" />
               <T k="nationality" l="Nacionalidade:" /> <T k="doc_issue_date" l="Data emissão:" tipo="date" />
@@ -193,7 +193,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <div className="col-span-2 border-t border-[#ddd] pt-1 text-[12px] font-bold">Foto / Assinatura</div>
               <T k="photo_url" l="Foto (URL):" /> <T k="signature_url" l="Assinatura (URL):" />
               <div className="col-span-2 text-[11px] text-[#c0392b]">Por favor evitar imagens com tamanho superior a 200 KB.</div>
-            </div>)}
+            </div></Box>)}
 
             {sec === 'contactos' && (<>
               <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
@@ -239,7 +239,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               cols={[['nome', 'Nome'], ['tipo', 'Tipo'], ['subtipo', 'Sub tipo'], ['genero', 'Género'],
                      ['profissao', 'Profissão'], ['nascimento', 'Data de nasc.'], ['cidade', 'Cidade'], ['pais', 'País']]} />}
 
-            {sec === 'reserva' && (<div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
+            {sec === 'reserva' && (<Box title="Reserva"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
               <div className="col-span-2 text-[12px] font-bold">Preferências do hóspede</div>
               <T k="pref_complex" l="Complexo:" /> <T k="pref_price_list" l="Lista Preços:" />
               <T k="pref_category" l="Categoria:" /> <T k="pref_package" l="Package:" />
@@ -261,7 +261,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <T k="pay_tv" l="Pay-TV:" /> <T k="video" l="Video:" />
               <T k="minibar" l="Minibar:" />
               <div className="text-[11px] text-[#666]">Se "(nenhum)", usam-se os valores por defeito da interface.</div>
-            </div>)}
+            </div></Box>)}
 
             {sec === 'acordos' && (<>
               <RecGrid eid={eid} kind="AGREEMENT" titulo="Entidades associadas"
@@ -270,7 +270,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                 cols={[['nome', 'Nome'], ['instrucao', 'Instrução'], ['por', 'Por']]} />
             </>)}
 
-            {sec === 'salesmk' && (<div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
+            {sec === 'salesmk' && (<Box title="Sales &amp; Marketing"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
               <div className="col-span-2 flex gap-5"><C k="include_mailings" l="Incluir nos mailings" /></div>
               <div className="col-span-2 text-[12px] font-bold">Tipos de mailings</div>
               <div className="col-span-2 flex gap-5"><C k="mailing_general" l="Mailing Geral" /><C k="mailing_events" l="Mailing de Eventos" /><C k="mailing_birthday" l="Mailing de Aniversário" /></div>
@@ -300,11 +300,11 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <S k="sub_segment" l="Sub-Segmento:" opts={subsegs} /> <S k="channel" l="Canal de Dist.:" opts={canais} />
               <T k="vip_discount_percent" l="Desc. VIP (%):" />
               <div className="flex gap-4"><C k="is_vip" l="É VIP" /><C k="distinction_program" l="Incluído no programa de distinção" /></div>
-            </div>)}
+            </div></Box>)}
 
             {sec === 'comissoes' && <Comissoes eid={eid} d={d} T={T} />}
 
-            {sec === 'pagperm' && (<div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
+            {sec === 'pagperm' && (<Box title="Pagamentos / Permissões"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
               <div className="col-span-2 text-[12px] font-bold">Contas correntes</div>
               <C k="allow_cc_checkout" l="Permitir check-out para contas correntes" /> <T k="financial_number" l="Nº financeiro:" />
               <T k="cc_by" l="C. correntes por:" /> <T k="credit_days" l="Cond. crédito (dias):" tipo="number" />
@@ -314,7 +314,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <div className="col-span-2 text-[12px] font-bold border-t border-[#ddd] pt-1">Fatura Electrónica / Imposto Retido</div>
               <T k="einvoice_mode" l="Fatura Electrónica:" /> <T k="withholding_tax" l="Imposto Retido:" />
               <div className="col-span-2 text-[11px] text-[#666]">O limite é IMPOSTO pelo motor ao cobrar em conta corrente; bloqueada = crédito recusado.</div>
-            </div>)}
+            </div></Box>)}
 
             {sec === 'historico' && (<>
               <div className="flex gap-1 mb-2">
@@ -411,7 +411,7 @@ function InfoSeccoes({ eid }: { eid: number }) {
   };
   if (!eid) return <div className="text-[12px] text-[#888] p-2">Grave a ficha para escrever informação por secção.</div>;
   return (
-    <div className="border border-[#d0d0d0]">
+    <div style={{ border: '3px groove #c0c0c0' }}>
       <div className="px-2 py-1 bg-[#e9e9e9] text-[12px] font-bold">Informação para secção</div>
       <div className="flex" style={{ minHeight: 120 }}>
         <div className="w-[220px] border-r border-[#d0d0d0] bg-white">
@@ -452,7 +452,7 @@ function Comissoes({ eid, d: _d, T }: any) {
     <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 mb-2">
       <T k="commission_code" l="Cód. Comissão:" /> <T k="commission_pct" l="Percent. comissão:" tipo="number" />
     </div>
-    <div className="border border-[#d0d0d0]">
+    <div style={{ border: '3px groove #c0c0c0' }}>
       <div className="px-2 py-1 bg-[#e9e9e9] text-[12px] font-bold flex justify-between">
         <span>Outras Comissões</span>
         <button onClick={() => eid ? setAdd({ ativo: true }) : aviso('Grave primeiro a ficha.')} className="text-[#1a4f8a]">⊕ Adicionar</button>
