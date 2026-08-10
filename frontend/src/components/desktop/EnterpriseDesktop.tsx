@@ -65,6 +65,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
   const [modMenu, setModMenu] = useState(false);
   const [topMenu, setTopMenu] = useState<string | null>(null);
+  const [userMenu, setUserMenu] = useState(false);
   const [start, setStart] = useState(false);
   const [clock, setClock] = useState(new Date());
   useEffect(() => { const t = setInterval(() => setClock(new Date()), 15000); return () => clearInterval(t); }, []);
@@ -82,7 +83,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   };
   const openIcon = (ic: DeskIcon) => { if (ic.launch) window.open(ic.launch, '_blank', 'noopener'); else open(ic.screen, ic.label); };
   const logout = async () => { await authApi.logout(); nav('/backoffice/login'); };
-  const closeAll = () => { setModMenu(false); setTopMenu(null); setStart(false); };
+  const closeAll = () => { setModMenu(false); setTopMenu(null); setStart(false); setUserMenu(false); };
 
   const quick = ws.icons.filter((i) => i.quick);   // atalhos do ambiente de trabalho
 
@@ -234,14 +235,26 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             {clock.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
           </span>
           <span className="opacity-30">|</span>
-          <span className="font-bold">{user?.username || 'operador'}</span>
-          {/* Terminar sessão vivia só escondido dentro do menu "Utilitários" — nem
-              todo o módulo tem esse menu, e mesmo quando tem, sair devia ser óbvio,
-              não uma caça ao tesouro. */}
-          <button onClick={(e) => { e.stopPropagation(); logout(); }} title="Terminar sessão"
-            className="w-7 h-7 flex items-center justify-center hover:bg-white/15 flex-shrink-0">
-            <LogOut size={15} />
-          </button>
+          {/* Clicar no nome é o sítio óbvio para procurar "sair" — antes era só texto
+              inerte, e "Terminar sessão" vivia escondido dentro do menu "Utilitários"
+              (nem todo o módulo tem esse menu). Agora abre logo aqui. */}
+          <div className="relative">
+            <button onClick={(e) => { e.stopPropagation(); setUserMenu((s) => !s); setModMenu(false); setTopMenu(null); }}
+              className={`font-bold px-2 py-1 -mx-2 ${userMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+              {user?.username || 'operador'}
+            </button>
+            {userMenu && (
+              <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#f0f0f0] border border-[#333] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
+                <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: accentGradient() }}>
+                  {user?.username || 'operador'}
+                </div>
+                <button onClick={() => { setUserMenu(false); logout(); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] text-left hover:bg-[#dbe8ff] text-[#a01818] font-semibold">
+                  <LogOut size={14} /> Terminar sessão
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
