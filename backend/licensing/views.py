@@ -221,6 +221,100 @@ class LicenseStatusView(APIView):
         return Response(_real_license())
 
 
+class LicensePreflightView(APIView):
+    """DIAGNÓSTICO DA ATIVAÇÃO — sem precisar de login (não HÁ login possível sem
+    licença) nem de copiar scripts para a máquina do cliente: abre-se esta URL no
+    browser e vê-se a causa exata (ficheiro em falta, mal colocado, corrompido,
+    assinatura inválida, expirada) em vez do genérico "sem licença encontrada".
+
+    Nasceu de um caso real: técnico jurava ter posto o license.key no sítio certo,
+    o ecrã continuava preso, e não havia forma de saber PORQUÊ sem alguém ir lá
+    correr um script PowerShell à mão. Nunca devolve o conteúdo do ficheiro nem a
+    assinatura — só factos de diagnóstico, seguros de colar numa mensagem de suporte.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        import os
+        import json
+        import base64
+        from datetime import datetime, date
+
+        path = os.path.join(settings.BASE_DIR, 'license.key')
+        info = {'checked_path': str(path), 'exists': os.path.exists(path)}
+
+        if not info['exists']:
+            info['diagnosis'] = 'FICHEIRO_AUSENTE'
+            info['detail'] = (f'Não há nenhum ficheiro em "{path}". Confirme se é mesmo '
+                              'este o caminho da instalação — se o setup.exe não usou a '
+                              'pasta por omissão, o caminho é outro.')
+            return Response(info)
+
+        try:
+            st = os.stat(path)
+            info['size_bytes'] = st.st_size
+            info['modified_at'] = datetime.fromtimestamp(st.st_mtime).isoformat()
+        except Exception:
+            pass
+
+        try:
+            raw = open(path, 'r', encoding='utf-8').read().strip()
+        except Exception as e:
+            info['diagnosis'] = 'FICHEIRO_ILEGIVEL'
+            info['detail'] = f'Não foi possível ler o ficheiro como texto: {str(e)[:200]}'
+            return Response(info)
+
+        try:
+            data = json.loads(base64.b64decode(raw).decode('utf-8'))
+        except Exception:
+            info['diagnosis'] = 'CONTEUDO_CORROMPIDO'
+            info['detail'] = ('O ficheiro não decodifica como license.key válido. Foi '
+                              'provavelmente alterado no transporte (email/editor de texto '
+                              'que "corrige" quebras de linha ou codificação) — peça o '
+                              'ficheiro outra vez ao PCC e copie-o sem o abrir em nada.')
+            return Response(info)
+
+        sig = data.pop('signature', None)
+        info['client_code'] = data.get('client_code')
+        info['license_number'] = data.get('license_number')
+        info['valid_until'] = data.get('valid_until')
+
+        if not sig:
+            info['diagnosis'] = 'SEM_ASSINATURA'
+            info['detail'] = 'O ficheiro não tem assinatura — não foi gerado pelo PCC.'
+            return Response(info)
+
+        try:
+            from .engine.crypto import verify_license
+            ok = verify_license(data, sig)
+        except Exception as e:
+            info['diagnosis'] = 'ERRO_VERIFICACAO'
+            info['detail'] = str(e)[:200]
+            return Response(info)
+
+        if not ok:
+            info['diagnosis'] = 'ASSINATURA_INVALIDA'
+            info['detail'] = ('A assinatura não bate com a chave pública desta instalação. '
+                              'O ficheiro foi corrompido no transporte, ou pertence a outro '
+                              'cliente/instalação — peça-o de novo ao PCC.')
+            return Response(info)
+
+        if info['valid_until']:
+            try:
+                if date.fromisoformat(info['valid_until']) < date.today():
+                    info['diagnosis'] = 'EXPIRADA'
+                    info['detail'] = f'Licença válida até {info["valid_until"]} — já passou.'
+                    return Response(info)
+            except Exception:
+                pass
+
+        info['diagnosis'] = 'OK'
+        info['detail'] = ('O ficheiro é válido. Se o ecrã continua preso, recarregue a '
+                          'página (Ctrl+F5) — se persistir, reinicie o serviço "Mwana '
+                          'Lodge — Servidor".')
+        return Response(info)
+
+
 class LicenseLimitsView(APIView):
     """Consumo vs licenciado: propriedades, terminais e utilizadores.
 

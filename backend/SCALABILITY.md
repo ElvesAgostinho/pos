@@ -64,7 +64,13 @@ Escalar = adicionar mais instâncias atrás do load balancer (a app é stateless
 - ✅ Paginação DRF (`?page`), `select_related/prefetch_related` nos ViewSets críticos, JWT stateless.
 - ✅ Em produção só JSONRenderer (mais rápido), throttling, ligações persistentes+health checks.
 - ▢ Índices compostos nas tabelas mais consultadas (POSTicket, FiscalDocument, StockMovement, ledger) quando o volume o exigir.
-- ▢ Mover SAF-T/relatórios/emails/sync OTA para Celery (tirar do request).
+- ✅ Celery ligado (`erp_server/celery.py`, `pos/tasks.py`, `fiscal/tasks.py`), com fila
+  EMBUTIDA na própria base de dados (transporte SQLAlchemy do Kombu) — sem Redis nenhum por
+  omissão. Em produção o worker é obrigatório (`servicos/celery.xml`, terceiro serviço
+  Windows); e-mail e fila da AGT já passam por ele. `REDIS_URL` continua disponível como
+  override avançado (multi-instância a escala muito grande). SAF-T grande tem
+  `fiscal.tasks.generate_saft_task` pronta para invocar em fundo; falta ligar sync OTA
+  (Channel Manager) quando essa peça existir.
 - ▢ Migrar a pesquisa global (Document Center) para OpenSearch quando os documentos forem muitos.
 
 **Regra de ouro:** o gargalo a sério é sempre a **base de dados** — PgBouncer + réplicas de

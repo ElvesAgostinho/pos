@@ -268,6 +268,57 @@ if _REDIS_URL:
 else:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
+# FILA DE FUNDO (Celery) — a fila vive na PRÓPRIA base de dados (transporte
+# SQLAlchemy do Kombu), não em Redis: SQLite pequeno ganha um ficheiro dedicado
+# ao lado do seu (não o mesmo — este projeto já sofreu com "database is locked"
+# de escritores a mais no ficheiro principal); PostgreSQL usa a MESMA base já
+# configurada, o que cobre até vários servidores atrás de um load balancer,
+# porque o Postgres já é a base partilhada entre eles. Zero binário novo, zero
+# licença a verificar (Redis mudou de licença em 2024; SQLAlchemy é MIT), zero
+# pergunta ao cliente/técnico — REDIS_URL continua a funcionar como override
+# avançado, para quem um dia precisar mesmo do desempenho de um Redis dedicado.
+if _REDIS_URL:
+    CELERY_BROKER_URL = _REDIS_URL
+    CELERY_RESULT_BACKEND = _REDIS_URL
+elif not DEBUG:
+    if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+        from urllib.parse import quote_plus as _qp
+        _db = DATABASES["default"]
+        _pg_dsn = (f'postgresql+psycopg://{_qp(_db["USER"])}:{_qp(_db["PASSWORD"])}'
+                   f'@{_db["HOST"]}:{_db["PORT"]}/{_db["NAME"]}')
+        CELERY_BROKER_URL = f'sqla+{_pg_dsn}'
+        CELERY_RESULT_BACKEND = f'db+{_pg_dsn}'
+    else:
+        # ficheiro IRMÃO do db.sqlite3, nunca o mesmo ficheiro.
+        _fila_path = Path(str(DATABASES["default"]["NAME"])).with_name("fila_celery.sqlite3")
+        CELERY_BROKER_URL = f'sqla+sqlite:///{_fila_path}'
+        CELERY_RESULT_BACKEND = f'db+sqlite:///{_fila_path}'
+else:
+    # DEV (DEBUG=True, sem REDIS_URL): eager — nenhum worker é preciso para
+    # testar, as tarefas correm na hora, dentro do próprio pedido, como sempre.
+    CELERY_BROKER_URL = "memory://"
+    CELERY_RESULT_BACKEND = "cache+memory://"
+
+# Em produção há SEMPRE fila real (embutida ou Redis) — o celery.exe corre como
+# serviço obrigatório (instalador/servicos/celery.xml), tal como o Servidor e a
+# Impressão. Só fica eager em dev sem Redis configurada.
+CELERY_TASK_ALWAYS_EAGER = DEBUG and not _REDIS_URL
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TIMEZONE = "Africa/Luanda"  # igual ao TIME_ZONE, definido mais abaixo
+CELERY_TASK_TIME_LIMIT = 30 * 60
+# Fila da AGT (store-and-forward): o mesmo trabalho que o `agt_worker --once`
+# faz manualmente, agora automático a cada 30s enquanto o worker+beat correr.
+# O comando de gestão continua a existir (cron/instalação sem Celery).
+CELERY_BEAT_SCHEDULE = {
+    "processar-fila-agt": {
+        "task": "fiscal.tasks.process_agt_queue_task",
+        "schedule": 30.0,
+    },
+}
+
 # Hasher extra para o PIN do terminal POS (pos.PosPinHasher) — o login por PIN
 # percorre TODOS os operadores ativos a testar o hash de cada um; com o hasher
 # por omissão (~600 mil iterações) isso custava vários segundos por operador.

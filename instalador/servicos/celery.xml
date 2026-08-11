@@ -1,0 +1,40 @@
+<!--
+  O SERVIÇO DA FILA DE FUNDO — Celery (worker + agendador) como serviço do Windows.
+  TERCEIRO serviço obrigatório, ao lado do Servidor e da Impressão — instalado e
+  arrancado sempre pelo setup.iss, em toda e qualquer instalação.
+
+  Não depende de Redis: a fila vive na PRÓPRIA base de dados que o wizard já
+  escolheu (SQLite ou PostgreSQL) — ver o comentário "FILA DE FUNDO" em
+  backend/erp_server/settings.py. Sem este serviço a correr, o e-mail, o SAF-T
+  grande e a fila da AGT ficam parados EM FILA (não se perdem, mas não avançam)
+  até o serviço voltar — por isso é obrigatório, não opcional como antes.
+
+  -B embute o agendador (Beat) no mesmo processo: um hotel não precisa de dois
+  serviços Windows só para ter a fila da AGT a correr sozinha a cada 30s. Se um dia
+  for preciso escalar para vários workers numa instalação grande a sério, tira-se o
+  -B daqui e cria-se um segundo serviço "MwanaLodgeCeleryBeat" só com o agendador.
+
+  --pool=solo: no Windows o pool de processos por omissão do Celery (prefork) não
+  funciona. "solo" corre as tarefas uma a uma na mesma thread — chega perfeitamente
+  para o volume de e-mails/SAF-T/AGT de um hotel; se algum dia isso for pouco,
+  aumenta-se a concorrência com "--pool=threads --concurrency=4" em vez de "solo".
+-->
+<service>
+  <id>MwanaLodgeCelery</id>
+  <name>Mwana Lodge — Fila de Fundo (Celery)</name>
+  <description>Processa em fundo o envio de e-mail, a geração de SAF-T grande e a fila da AGT — serviço obrigatório, tal como o Servidor e a Impressão.</description>
+
+  <executable>%BASE%\..\python\python.exe</executable>
+  <arguments>-m celery -A erp_server worker -B -l info --pool=solo</arguments>
+  <workingdirectory>%BASE%\..\app</workingdirectory>
+
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+
+  <log mode="roll-by-size">
+    <logpath>%BASE%\..\dados\logs</logpath>
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
+  <startmode>Automatic</startmode>
+</service>

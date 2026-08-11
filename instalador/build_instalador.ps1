@@ -10,7 +10,7 @@
 #   2. copia o backend para o pacote (sem lixo: sem db de dev, sem .env, sem chaves)
 #   3. monta um Python EMBUTIDO com as dependências já instaladas — o cliente
 #      não instala Python, como não instala Java para usar a Primavera
-#   4. põe o WinSW como servidor.exe / impressao.exe ao lado dos XML
+#   4. põe o WinSW como servidor.exe / impressao.exe / celery.exe ao lado dos XML
 #   5. compila o setup.iss com o Inno Setup -> MwanaLodge-Setup-1.0.0.exe
 #
 # Precisa (só nesta máquina): node, python, Inno Setup 6, e internet no passo 3.
@@ -105,6 +105,11 @@ Copy-Item $WinSW "$Pacote\servicos\servidor.exe"
 Copy-Item $WinSW "$Pacote\servicos\impressao.exe"
 Copy-Item "$PSScriptRoot\servicos\servidor.xml"  "$Pacote\servicos\"
 Copy-Item "$PSScriptRoot\servicos\impressao.xml" "$Pacote\servicos\"
+# Celery (fila de fundo) — TERCEIRO serviço, instalado e arrancado pelo setup.iss
+# em toda e qualquer instalação (não precisa de Redis: a fila vive na própria
+# base de dados escolhida no wizard — ver settings.py).
+Copy-Item $WinSW "$Pacote\servicos\celery.exe"
+Copy-Item "$PSScriptRoot\servicos\celery.xml" "$Pacote\servicos\"
 
 Write-Host "== 6/6 Inno Setup =="
 $iscc = @('C:\Program Files (x86)\Inno Setup 6\ISCC.exe', 'C:\Program Files\Inno Setup 6\ISCC.exe',

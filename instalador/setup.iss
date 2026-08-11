@@ -4,8 +4,8 @@
 ; A experiência é a de uma Primavera V10: Seguinte → aceitar → escolher pasta →
 ; escolher a base de dados → instalar → terminar com o browser aberto no sistema.
 ; O cliente não vê Python, não vê Django, não vê npm: vê um programa a instalar-se
-; e dois SERVIÇOS do Windows a nascerem (o Servidor e a Impressão), que arrancam
-; sozinhos com a máquina — para sempre, sem ninguém abrir consolas.
+; e TRÊS SERVIÇOS do Windows a nascerem (Servidor, Impressão, Fila de Fundo), que
+; arrancam sozinhos com a máquina — para sempre, sem ninguém abrir consolas.
 ;
 ; Compila-se com o Inno Setup 6 (iscc.exe) na MÁQUINA DO FORNECEDOR, através do
 ; build_instalador.ps1 — o cliente recebe só o setup.exe final.
@@ -74,11 +74,17 @@ Name: "{group}\Desinstalar {#AppNome}"; Filename: "{uninstallexe}"
 ;    corre as migrações e prepara os estáticos — com uma janela de progresso.
 Filename: "{app}\python\python.exe"; Parameters: """{app}\configurar.py"" --ini ""{app}\instalacao.ini"""; \
   StatusMsg: "A preparar a base de dados…"; Flags: runhidden waituntilterminated
-; 2) os DOIS SERVIÇOS, como a Oracle instala os dela:
+; 2) os TRÊS SERVIÇOS, como a Oracle instala os dela:
 Filename: "{app}\servicos\servidor.exe";  Parameters: "install"; StatusMsg: "A instalar o serviço do Servidor…";  Flags: runhidden waituntilterminated
 Filename: "{app}\servicos\impressao.exe"; Parameters: "install"; StatusMsg: "A instalar o serviço de Impressão…"; Flags: runhidden waituntilterminated
 Filename: "{app}\servicos\servidor.exe";  Parameters: "start";   StatusMsg: "A arrancar o Servidor…";             Flags: runhidden waituntilterminated
 Filename: "{app}\servicos\impressao.exe"; Parameters: "start";   StatusMsg: "A arrancar a Impressão…";            Flags: runhidden waituntilterminated
+; 2b) A FILA DE FUNDO (Celery) — TERCEIRO serviço, sempre instalado, como os
+;     outros dois. Não precisa de Redis nem de pergunta nenhuma: a fila vive na
+;     própria base de dados que o wizard já escolheu (SQLite ou PostgreSQL) —
+;     ver o comentário "FILA DE FUNDO" em backend/erp_server/settings.py.
+Filename: "{app}\servicos\celery.exe"; Parameters: "install"; StatusMsg: "A instalar o serviço da Fila de Fundo…"; Flags: runhidden waituntilterminated
+Filename: "{app}\servicos\celery.exe"; Parameters: "start";   StatusMsg: "A arrancar a Fila de Fundo…";            Flags: runhidden waituntilterminated
 ; 3) firewall: os terminais POS da casa (tablets, outras caixas) ligam-se a este servidor
 Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""Mwana Lodge Servidor"" dir=in action=allow protocol=TCP localport=8000"; Flags: runhidden waituntilterminated
 ; 4) no fim, abre o sistema: sem licença ativa cai no ONBOARDING (ativar a licença,
@@ -91,6 +97,8 @@ Filename: "{app}\servicos\servidor.exe";  Parameters: "stop";      Flags: runhid
 Filename: "{app}\servicos\impressao.exe"; Parameters: "stop";      Flags: runhidden waituntilterminated; RunOnceId: "StopImp"
 Filename: "{app}\servicos\servidor.exe";  Parameters: "uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "DelSrv"
 Filename: "{app}\servicos\impressao.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "DelImp"
+Filename: "{app}\servicos\celery.exe"; Parameters: "stop";      Flags: runhidden waituntilterminated; RunOnceId: "StopCel"
+Filename: "{app}\servicos\celery.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "DelCel"
 
 [UninstallDelete]
 ; os DADOS não se apagam na desinstalação: a base de dados do cliente (vendas,

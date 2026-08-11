@@ -85,6 +85,12 @@ def escrever_env(bd):
         # binários; a base com as vendas vive onde os backups a encontram.
         linhas += [f'SQLITE_PATH={DADOS / "mwanalodge.sqlite3"}']
 
+    # FILA DE FUNDO (Celery): nada a escrever aqui — DJANGO_DEBUG=False (acima)
+    # já basta para o erp_server/settings.py construir sozinho uma fila embutida
+    # na própria base (SQLite ou PostgreSQL, a que ficou escolhida acima). Um
+    # técnico que precise mesmo de um Redis dedicado acrescenta REDIS_URL a
+    # este .env à mão — não é o caminho normal, por isso não tem pergunta no wizard.
+
     # O ENDEREÇO DO PCC — sem isto, "Sincronizar com o PCC" no cliente aponta
     # sempre para 127.0.0.1:8000 (o PRÓPRIO servidor do cliente, nunca o do
     # fornecedor). O build_instalador.ps1 grava-o em pcc_url.txt na raiz do

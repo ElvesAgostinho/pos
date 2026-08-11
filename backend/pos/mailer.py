@@ -78,26 +78,12 @@ def send(to, subject, body, reply_to=None, template=None, context_ref=None):
         reg.save(update_fields=['status'])
         return reg
 
-    try:
-        from django.core.mail import EmailMessage, get_connection
-        conn = get_connection(
-            host=host,
-            port=P.int(9501, 0) or getattr(settings, 'EMAIL_PORT', 587),
-            username=P.text(9502, '') or getattr(settings, 'EMAIL_HOST_USER', ''),
-            password=password,
-            use_tls=P.bool(9505, True),
-        )
-        remetente = (P.text(9504, '') or getattr(settings, 'DEFAULT_FROM_EMAIL', None))
-        msg = EmailMessage(subject=subject, body=body,
-                           from_email=remetente, connection=conn,
-                           to=to, reply_to=[reply_to] if reply_to else None)
-        msg.content_subtype = 'html'
-        msg.send(fail_silently=False)
-        reg.status = 'SENT'
-        reg.save(update_fields=['status'])
-    except Exception as e:                                    # nunca rebenta o fluxo que enviou
-        reg.status, reg.error = 'FAILED', str(e)[:500]
-        reg.save(update_fields=['status', 'error'])
+    # O registo fica QUEUED e a entrega em si (a parte que depende de rede/SMTP)
+    # vai para o Celery — sem fila real (sem REDIS_URL) corre na hora, na mesma
+    # linha, tal como antes; com fila real o pedido que chamou send() não fica
+    # à espera de um SMTP lento.
+    from .tasks import send_email_task
+    send_email_task.delay(reg.id, reply_to)
     return reg
 
 

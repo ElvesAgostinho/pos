@@ -23,4 +23,5 @@ gunicorn==23.0.0         # servidor WSGI multi-worker (Linux)
 uvicorn[standard]==0.34.0 # workers ASGI (async) para gunicorn -k uvicorn.workers.UvicornWorker
 redis==5.2.1             # cache/sessões/rate-limit partilhados (escala horizontal)
 celery==5.4.0            # tarefas assíncronas (SAF-T, relatórios, emails, sync OTA)
+SQLAlchemy>=2.0,<2.1     # fila do Celery embutida na própria BD (sqla+sqlite/postgresql) — sem Redis por omissão
 # Opcional: django-tenants (multi-tenant), opensearch-py (pesquisa à escala), sentry-sdk (observabilidade)

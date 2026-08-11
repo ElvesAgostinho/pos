@@ -1,6 +1,42 @@
 import React, { useEffect } from 'react';
-import { ShieldCheck, RefreshCcw, FolderOpen } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ShieldCheck, RefreshCcw, FolderOpen, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { apiClient } from '../api/client';
 import { useLicenseStatus } from '../hooks/useActiveModules';
+
+interface Preflight {
+  checked_path: string; exists: boolean; size_bytes?: number; modified_at?: string;
+  client_code?: string; license_number?: string; valid_until?: string;
+  diagnosis: string; detail: string;
+}
+
+const DIAGNOSIS_LABEL: Record<string, string> = {
+  FICHEIRO_AUSENTE: 'Ficheiro não encontrado',
+  FICHEIRO_ILEGIVEL: 'Ficheiro ilegível',
+  CONTEUDO_CORROMPIDO: 'Ficheiro corrompido',
+  SEM_ASSINATURA: 'Sem assinatura',
+  ERRO_VERIFICACAO: 'Erro a verificar',
+  ASSINATURA_INVALIDA: 'Assinatura inválida',
+  EXPIRADA: 'Licença expirada',
+  OK: 'Ficheiro válido',
+};
+
+// Diagnóstico da PRÓPRIA falha, sem precisar de login (não há login possível sem
+// licença) nem de copiar scripts para a máquina — só abrir este ecrã já diz a
+// causa exata. Pedido limpo, fora do apiClient (mesma razão do useLicenseStatus:
+// não colar um token velho a um pedido que tem de funcionar sem sessão nenhuma).
+const usePreflight = () =>
+  useQuery({
+    queryKey: ['licensing', 'preflight'],
+    queryFn: async (): Promise<Preflight> => {
+      const base = (apiClient.defaults.baseURL || '/api/').replace(/\/?$/, '/');
+      const r = await fetch(`${base}licensing/preflight/`);
+      if (!r.ok) throw new Error(`preflight: ${r.status}`);
+      return r.json();
+    },
+    staleTime: 10 * 1000,
+    retry: false,
+  });
 
 /**
  * Ecrã de primeiro arranque, quando ainda não há license.key nesta instalação.
@@ -16,14 +52,15 @@ import { useLicenseStatus } from '../hooks/useActiveModules';
  * Este ecrã espera, de forma honesta, pela licença verdadeira.
  */
 const Onboarding: React.FC = () => {
-  const { data, isLoading, refetch } = useLicenseStatus();
+  const { isLoading, refetch } = useLicenseStatus();
+  const { data: pre, refetch: refetchPre } = usePreflight();
 
   // Verifica sozinho a cada 10s — o técnico não precisa de clicar nada depois de
   // copiar o license.key; assim que o servidor o vê, este ecrã sai sozinho.
   useEffect(() => {
-    const t = setInterval(() => refetch(), 10000);
+    const t = setInterval(() => { refetch(); refetchPre(); }, 10000);
     return () => clearInterval(t);
-  }, [refetch]);
+  }, [refetch, refetchPre]);
 
   return (
     <div className="min-h-screen bg-[#111827] flex items-center justify-center p-4">
@@ -58,8 +95,31 @@ const Onboarding: React.FC = () => {
             </div>
           </div>
 
-          {data && !data.licensed && (
-            <div className="text-xs text-gray-400">Última verificação: sem licença encontrada.</div>
+          {pre && (
+            <div className={`border rounded p-4 text-sm space-y-2 ${
+              pre.diagnosis === 'OK' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+              <div className="flex items-start gap-2">
+                {pre.diagnosis === 'OK'
+                  ? <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" />
+                  : <AlertTriangle size={16} className="text-red-600 mt-0.5 shrink-0" />}
+                <div className="flex-1">
+                  <div className={`font-bold ${pre.diagnosis === 'OK' ? 'text-green-800' : 'text-red-800'}`}>
+                    Diagnóstico: {DIAGNOSIS_LABEL[pre.diagnosis] || pre.diagnosis}
+                  </div>
+                  <p className="text-gray-700 mt-1">{pre.detail}</p>
+                  <div className="mt-2 text-[11px] text-gray-500 font-mono bg-white/60 border border-gray-200 rounded p-2 space-y-0.5">
+                    <div>caminho: {pre.checked_path}</div>
+                    <div>existe: {String(pre.exists)}
+                      {pre.size_bytes != null && ` · ${pre.size_bytes} bytes`}
+                      {pre.modified_at && ` · modificado ${pre.modified_at}`}</div>
+                    {pre.client_code && <div>cliente: {pre.client_code} · licença: {pre.license_number} · válida até: {pre.valid_until}</div>}
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-2">
+                    Copie este quadro e envie ao suporte — não é preciso correr nenhum script.
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
           <button
