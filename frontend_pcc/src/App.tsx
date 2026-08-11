@@ -10,10 +10,11 @@ import Wizard from './pages/Wizard';
 import ClientsList from './pages/ClientsList';
 import AgtCertification from './pages/AgtCertification';
 import Versoes from './pages/Versoes';
+import ErrorReports from './pages/ErrorReports';
 import Login from './pages/Login';
 import ChangePassword from './pages/ChangePassword';
 import { pccAuth } from './api/auth';
-import { Shield, Users, Database, Stamp, UploadCloud } from 'lucide-react';
+import { Shield, Users, Database, Stamp, UploadCloud, AlertTriangle } from 'lucide-react';
 
 const VIEW_METADATA: Record<string, { title: string; icon: any }> = {
   'dashboard': { title: 'Dashboard PCC', icon: Database },
@@ -21,6 +22,7 @@ const VIEW_METADATA: Record<string, { title: string; icon: any }> = {
   'provisioning': { title: 'Novo Provisionamento', icon: Shield },
   'agt': { title: 'Certificação AGT', icon: Stamp },
   'releases': { title: 'Versões', icon: UploadCloud },
+  'errors': { title: 'Erros Automáticos', icon: AlertTriangle },
 };
 
 function MainContent({ activeView }: { activeView: string }) {
@@ -32,6 +34,7 @@ function MainContent({ activeView }: { activeView: string }) {
         {activeView === 'provisioning' && <Wizard />}
         {activeView === 'agt' && <AgtCertification />}
         {activeView === 'releases' && <Versoes />}
+        {activeView === 'errors' && <ErrorReports />}
       </div>
     </div>
   );

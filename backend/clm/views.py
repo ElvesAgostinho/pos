@@ -306,12 +306,12 @@ class SystemReleaseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
 
 
-class ErrorReportViewSet(viewsets.ReadOnlyModelViewSet):
-    """ERROS AUTOMÁTICOS — o fornecedor lê aqui (staff); os clientes só ESCREVEM,
-    e só pela ação `report` (prova de posse da licença, mesmo desenho de
-    `LicenseViewSet.latest`). Read-only para staff: a triagem faz-se com
-    `resolved`/`resolved_note`, mas isso é PATCH direto no admin do Django, não
-    por aqui — este endpoint é só para o cliente ENTREGAR o erro.
+class ErrorReportViewSet(viewsets.ModelViewSet):
+    """ERROS AUTOMÁTICOS — o fornecedor lê e faz a TRIAGEM aqui (staff, PATCH em
+    `resolved`/`resolved_note` — é o que o ecrã do PCC usa). Os clientes nunca
+    escrevem por aqui: entregam SEMPRE pela ação `report` (prova de posse da
+    licença, mesmo desenho de `LicenseViewSet.latest`), que ignora por completo
+    o serializer e os campos read-only abaixo.
     """
     queryset = ErrorReport.objects.select_related('installation', 'installation__client').all()
     serializer_class = ErrorReportSerializer
