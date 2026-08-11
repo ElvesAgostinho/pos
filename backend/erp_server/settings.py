@@ -377,6 +377,25 @@ if not DEBUG:
         import warnings
         warnings.warn("DJANGO_SECRET_KEY não definido em produção — usar um segredo forte via ambiente.")
 
+# RELATÓRIO DE ERRO AUTOMÁTICO — só em produção (dev não anda a mandar erros de
+# testes locais para o PCC a sério). Um cliente que não queira isto por alguma
+# razão pode desligar com ERROR_REPORTING_ENABLED=False no .env — por omissão
+# fica ligado, porque o buraco que isto tapa (bug que ninguém no fornecedor
+# sabe que existe até o cliente ligar) é maior que o incómodo de o desligar.
+ERROR_REPORTING_ENABLED = (not DEBUG) and os.environ.get(
+    "ERROR_REPORTING_ENABLED", "True").lower() not in ("0", "false", "no")
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        "pcc_error_report": {"class": "core.error_reporting.PccErrorHandler", "level": "ERROR"},
+    },
+    "loggers": {
+        "django": {"handlers": ["console", "pcc_error_report"], "level": "INFO", "propagate": True},
+    },
+}
+
 # SMTP — por variável de ambiente, com o SendGrid como omissão (era fixo no
 # código antes; quem usa outro fornecedor não conseguia mudar sem editar isto).
 # Sem EMAIL_HOST_PASSWORD definida, o envio de e-mail falha (ou, no POS, o

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Client, Contact, CommercialData, License, Installation, Equipment,
-    AuditLogCLM, TerminalLicense
+    AuditLogCLM, TerminalLicense, ErrorReport
 )
 
 
@@ -60,3 +60,16 @@ class AuditLogCLMAdmin(admin.ModelAdmin):
     list_display = ('action', 'user_identity', 'timestamp')
     list_filter = ('action', 'timestamp')
     search_fields = ('action', 'user_identity')
+
+
+@admin.register(ErrorReport)
+class ErrorReportAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'client_code', 'level', 'message_short', 'app_version', 'resolved')
+    list_filter = ('resolved', 'level', 'app_version')
+    search_fields = ('client_code', 'message', 'traceback', 'hostname')
+    readonly_fields = ('installation', 'client_code', 'level', 'logger_name', 'message',
+                       'traceback', 'path', 'app_version', 'hostname', 'created_at')
+
+    def message_short(self, obj):
+        return obj.message[:80]
+    message_short.short_description = 'Mensagem'

@@ -232,3 +232,35 @@ class SystemRelease(models.Model):
 
     def __str__(self):
         return f'v{self.version}'
+
+
+class ErrorReport(models.Model):
+    """ERROS AUTOMÁTICOS dos clientes — para saber de um bug SEM depender de o
+    cliente ligar. Cada instalação, quando algo rebenta, manda-nos aqui só o
+    essencial (tipo de erro, traceback, versão, máquina) — NUNCA dados de
+    negócio (sem nomes de hóspedes, valores, documentos). Autenticado pela
+    mesma prova de posse da sincronização de licença (LicenseViewSet.latest):
+    quem tem uma licença legítima pode reportar por ela, mais ninguém.
+    """
+    installation = models.ForeignKey(Installation, on_delete=models.CASCADE,
+                                     related_name='error_reports', null=True, blank=True)
+    client_code = models.CharField(max_length=50, blank=True, null=True)  # sobrevive mesmo sem installation
+    level = models.CharField(max_length=20, default='ERROR')
+    logger_name = models.CharField(max_length=100, blank=True, null=True)
+    message = models.TextField()
+    traceback = models.TextField(blank=True, null=True)
+    path = models.CharField(max_length=300, blank=True, null=True)
+    app_version = models.CharField(max_length=50, blank=True, null=True)
+    hostname = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Triagem — feita aqui no PCC, não do lado do cliente.
+    resolved = models.BooleanField(default=False)
+    resolved_note = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'clm_error_report'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.level}] {self.client_code or '?'}: {self.message[:60]}"

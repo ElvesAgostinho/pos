@@ -21,9 +21,11 @@ from django.http import HttpResponseForbidden
 
 logger = logging.getLogger('pcc_access')
 
-# Só este caminho responde a quem não está na lista — é o que as instalações
-# dos clientes chamam sozinhas, sem VPN nem lista de IPs do lado deles.
-PUBLIC_PATHS = ('/api/clm/licenses/latest/',)
+# Só estes caminhos respondem a quem não está na lista — são os que as
+# instalações dos clientes chamam sozinhas, sem VPN nem lista de IPs do lado
+# deles. Ambos verificam a assinatura da licença apresentada — essa é a
+# autenticação deles, não a rede.
+PUBLIC_PATHS = ('/api/clm/licenses/latest/', '/api/clm/error-reports/report/')
 
 
 def _client_ip(request):

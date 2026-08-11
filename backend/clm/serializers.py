@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Client, Contact, CommercialData, License, Installation, Equipment, AuditLogCLM, TerminalLicense, SystemRelease
+from .models import (Client, Contact, CommercialData, License, Installation, Equipment,
+                     AuditLogCLM, TerminalLicense, SystemRelease, ErrorReport)
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -80,4 +81,13 @@ class SystemReleaseSerializer(serializers.ModelSerializer):
         model = SystemRelease
         fields = '__all__'
         read_only_fields = ('created_at',)
+
+class ErrorReportSerializer(serializers.ModelSerializer):
+    installation_name = serializers.CharField(source='installation.name', read_only=True)
+
+    class Meta:
+        model = ErrorReport
+        fields = '__all__'
+        read_only_fields = ('installation', 'client_code', 'level', 'logger_name', 'message',
+                            'traceback', 'path', 'app_version', 'hostname', 'created_at')
 

@@ -28,11 +28,11 @@ class FeatureCatalogView(APIView):
     def get(self, request):
         return Response(FEATURES)
 
-from .models import Client, License, Installation, AuditLogCLM, TerminalLicense, SystemRelease
+from .models import Client, License, Installation, AuditLogCLM, TerminalLicense, SystemRelease, ErrorReport
 from .serializers import (
     ClientSerializer, LicenseSerializer, InstallationSerializer,
     AuditLogCLMSerializer, ProvisioningRequestSerializer, TerminalLicenseSerializer,
-    SystemReleaseSerializer
+    SystemReleaseSerializer, ErrorReportSerializer
 )
 from .engine.provisioning import ProvisioningWorkflow
 
@@ -304,6 +304,66 @@ class SystemReleaseViewSet(viewsets.ModelViewSet):
     queryset = SystemRelease.objects.all()
     serializer_class = SystemReleaseSerializer
     permission_classes = [IsAdminUser]
+
+
+class ErrorReportViewSet(viewsets.ReadOnlyModelViewSet):
+    """ERROS AUTOMÁTICOS — o fornecedor lê aqui (staff); os clientes só ESCREVEM,
+    e só pela ação `report` (prova de posse da licença, mesmo desenho de
+    `LicenseViewSet.latest`). Read-only para staff: a triagem faz-se com
+    `resolved`/`resolved_note`, mas isso é PATCH direto no admin do Django, não
+    por aqui — este endpoint é só para o cliente ENTREGAR o erro.
+    """
+    queryset = ErrorReport.objects.select_related('installation', 'installation__client').all()
+    serializer_class = ErrorReportSerializer
+    permission_classes = [IsAdminUser]
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def report(self, request):
+        """RECEÇÃO: a instalação do cliente manda aqui, sozinha, quando algo rebenta.
+
+        Mesma autenticação por PROVA DE POSSE da sincronização de licença — sem
+        segredo novo nenhum para gerir. Aceita licenças expiradas (saber que um
+        cliente com licença vencida ainda está a ter erros continua a interessar).
+        Nunca deve receber dados de negócio — só o que o cliente (pos.tasks/
+        core.error_reporting) já filtrou antes de enviar.
+        """
+        import json
+        import base64
+        from licensing.engine.crypto import verify_license
+
+        raw = (request.data.get('license_key') or '').strip()
+        try:
+            data = json.loads(base64.b64decode(raw).decode('utf-8'))
+            sig = data.pop('signature', None)
+            if not (sig and verify_license(data, sig)):
+                return Response({'detail': 'Licença inválida.'}, status=403)
+        except Exception:
+            return Response({'detail': 'Licença ilegível.'}, status=400)
+
+        code = data.get('client_code')
+        lic = License.objects.filter(client__code=code).order_by('-created_at').first()
+        if not lic:
+            return Response({'detail': f'Cliente "{code}" desconhecido.'}, status=404)
+
+        hostname = (request.data.get('hostname') or '').strip()[:100]
+        installation, _ = Installation.objects.get_or_create(
+            client=lic.client, name=hostname or 'Servidor Produção',
+            defaults={'install_type': 'PRODUCTION'})
+        from django.utils import timezone
+        installation.last_ping = timezone.now()
+        installation.save(update_fields=['last_ping'])
+
+        ErrorReport.objects.create(
+            installation=installation, client_code=code,
+            level=(request.data.get('level') or 'ERROR')[:20],
+            logger_name=(request.data.get('logger') or '')[:100],
+            message=(request.data.get('message') or '')[:2000],
+            traceback=(request.data.get('traceback') or '')[:8000],
+            path=(request.data.get('path') or '')[:300],
+            app_version=(request.data.get('app_version') or '')[:50],
+            hostname=hostname,
+        )
+        return Response({'detail': 'recebido'}, status=201)
 
     def perform_create(self, serializer):
         serializer.save(created_by=getattr(self.request.user, 'username', '') or 'PCC')
