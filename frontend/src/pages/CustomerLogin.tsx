@@ -4,7 +4,7 @@ import { authApi, tokenStore } from '../api/auth';
 import { apiClient } from '../api/client';
 import { getAppearance } from '../config/appearance';
 import { TOKENS, shade } from '../config/theme';
-import { User, Lock, LogIn, Eye, EyeOff, Settings, Building2, X, Wifi } from 'lucide-react';
+import { User, Lock, LogIn, Eye, EyeOff, Settings, Building2, X, Wifi, KeyRound } from 'lucide-react';
 
 // Login estilo Primavera / Windows clássico — janela retangular, barra de título,
 // imagem à esquerda, formulário à direita, barra de estado no rodapé.
@@ -56,6 +56,31 @@ const CustomerLogin: React.FC = () => {
   const [trocar, setTrocar] = useState(false);
   const [novaPw, setNovaPw] = useState('');
   const [confirmaPw, setConfirmaPw] = useState('');
+
+  // ESQUECI-ME DA PASSWORD: o dono pede ao fornecedor um código (PCC → Acessos →
+  // "Gerar código de reposição"), 30 min de validade, uso único. Sem isto, repor
+  // um acesso perdido exigia PowerShell na máquina do cliente — agora é só isto.
+  const [showReset, setShowReset] = useState(false);
+  const [resetCode, setResetCode] = useState('');
+  const [resetPw, setResetPw] = useState('');
+  const [resetPw2, setResetPw2] = useState('');
+  const [resetMsg, setResetMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [resetLoading, setResetLoading] = useState(false);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetMsg(null);
+    if (resetPw !== resetPw2) { setResetMsg({ ok: false, text: 'As duas passwords não coincidem.' }); return; }
+    if (resetPw.length < 8) { setResetMsg({ ok: false, text: 'Mínimo 8 caracteres.' }); return; }
+    setResetLoading(true);
+    try {
+      const r = await apiClient.post('licensing/reset-owner-password/', { code: resetCode.trim(), new_password: resetPw });
+      setResetMsg({ ok: true, text: r.data?.detail || 'Password reposta.' });
+      setResetCode(''); setResetPw(''); setResetPw2('');
+    } catch (err: any) {
+      setResetMsg({ ok: false, text: err?.response?.data?.detail || 'Não foi possível repor a password.' });
+    } finally { setResetLoading(false); }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,6 +200,10 @@ const CustomerLogin: React.FC = () => {
               <div className="pl-[118px] space-y-1 text-[12px] text-gray-700">
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Memorizar utilizador</label>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} /> Entrar automaticamente</label>
+                <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
+                  className="flex items-center gap-1 text-blue-700 hover:underline pt-1">
+                  <KeyRound size={12} /> Esqueci-me da password
+                </button>
               </div>
 
               {error && <div className="ml-[118px] text-[12px] text-red-700 bg-red-50 border border-red-200 px-2 py-1">{error}</div>}
@@ -224,6 +253,50 @@ const CustomerLogin: React.FC = () => {
               </div>
               <div className="text-[11px] text-gray-500 pt-1">Para personalizar logo/imagem/cores use Administração → Aparência.</div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Diálogo "Esqueci-me da password" */}
+      {showReset && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowReset(false)}>
+          <div className="w-[420px] bg-[#f0f0f0] border border-[#4a6785] shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+            <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: barColor }}>
+              <span className="flex items-center gap-2"><KeyRound size={14} />Repor password</span>
+              <button onClick={() => setShowReset(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
+            </div>
+            <form onSubmit={handleResetPassword} className="p-4 space-y-3 text-[13px]">
+              <p className="text-gray-600 text-[12px]">
+                Peça ao fornecedor um código (válido 30 min, só serve uma vez) e escreva-o aqui com a sua nova password.
+              </p>
+              <label className="block">
+                <span className="text-gray-700 block mb-1">Código do fornecedor:</span>
+                <input autoFocus value={resetCode} onChange={(e) => setResetCode(e.target.value)}
+                  className="w-full h-9 px-2 bg-white border border-[#7f9db9] outline-none font-mono tracking-wide" />
+              </label>
+              <label className="block">
+                <span className="text-gray-700 block mb-1">Nova password:</span>
+                <input type="password" value={resetPw} onChange={(e) => setResetPw(e.target.value)}
+                  className="w-full h-9 px-2 bg-white border border-[#7f9db9] outline-none" />
+              </label>
+              <label className="block">
+                <span className="text-gray-700 block mb-1">Confirmar:</span>
+                <input type="password" value={resetPw2} onChange={(e) => setResetPw2(e.target.value)}
+                  className="w-full h-9 px-2 bg-white border border-[#7f9db9] outline-none" />
+              </label>
+              {resetMsg && (
+                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                  {resetMsg.text}
+                </div>
+              )}
+              <div className="flex justify-end gap-2 pt-1">
+                <button type="button" onClick={() => setShowReset(false)} className={winBtn}>Fechar</button>
+                <button type="submit" disabled={resetLoading || !resetCode || !resetPw}
+                  className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#dbe8ff' }}>
+                  {resetLoading ? 'A repor…' : 'Repor password'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

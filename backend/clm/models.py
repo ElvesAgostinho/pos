@@ -133,6 +133,14 @@ class License(models.Model):
     owner_password_enc = models.TextField(blank=True, null=True)
     owner_password_set_at = models.DateTimeField(blank=True, null=True)
 
+    # REPOSIÇÃO AO VIVO — diferente do owner_password_enc acima (esse só vale para
+    # uma instalação NOVA, o wizard é que o lê). Isto é para uma instalação já a
+    # CORRER: o fornecedor gera um código curto aqui, dita-o ao telefone/WhatsApp,
+    # e o próprio cliente (já instalado) usa-o em "Esqueci-me da password" no login
+    # — sem PowerShell, sem ninguém ir à máquina. Código de uso único, expira sozinho.
+    owner_reset_code = models.CharField(max_length=12, blank=True, null=True)
+    owner_reset_expires_at = models.DateTimeField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 

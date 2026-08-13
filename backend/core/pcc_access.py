@@ -25,7 +25,8 @@ logger = logging.getLogger('pcc_access')
 # instalações dos clientes chamam sozinhas, sem VPN nem lista de IPs do lado
 # deles. Ambos verificam a assinatura da licença apresentada — essa é a
 # autenticação deles, não a rede.
-PUBLIC_PATHS = ('/api/clm/licenses/latest/', '/api/clm/error-reports/report/')
+PUBLIC_PATHS = ('/api/clm/licenses/latest/', '/api/clm/error-reports/report/',
+                '/api/clm/licenses/verify-reset-code/')
 
 
 def _client_ip(request):

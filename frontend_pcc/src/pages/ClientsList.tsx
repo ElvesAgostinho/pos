@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient as axios } from '../api/client';
-import { Settings, Key, CheckCircle, X, Monitor, Lock, Wifi, WifiOff, Trash2 } from 'lucide-react';
+import { Settings, Key, CheckCircle, X, Monitor, Lock, Wifi, WifiOff, Trash2, KeyRound } from 'lucide-react';
 
 // A sincronização é manual (o cliente clica "Sincronizar com o PCC" no
 // Suporte dele) — não é um heartbeat automático. Por isso "sincronizado
@@ -32,6 +32,26 @@ const ClientsList: React.FC = () => {
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessBusy, setAccessBusy] = useState<'' | 'install' | 'owner'>('');
   const [accessResult, setAccessResult] = useState<{ kind: string; username?: string; password: string } | null>(null);
+
+  // ── Código de reposição (repõe a password numa instalação JÁ A CORRER,
+  //     sem PowerShell — diferente de "Gerar senha do dono" acima, que só
+  //     vale para uma instalação nova ainda por fazer) ──
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetResult, setResetResult] = useState<{ code: string; username: string; expires_at: string } | null>(null);
+
+  const gerarCodigoReposicao = async () => {
+    if (!activeLicense) return;
+    setResetBusy(true);
+    setResetResult(null);
+    try {
+      const r = await axios.post(`clm/licenses/${activeLicense.id}/generate-reset-code/`);
+      setResetResult(r.data);
+    } catch {
+      alert('Erro ao gerar o código.');
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   // ── Ver/recuperar o license.key de uma licença já existente ──
   const [keyBusy, setKeyBusy] = useState<number | null>(null);
@@ -290,7 +310,7 @@ const ClientsList: React.FC = () => {
 
           <button
             disabled={!selectedClient}
-            onClick={() => { setAccessResult(null); setShowAccessModal(true); }}
+            onClick={() => { setAccessResult(null); setResetResult(null); setShowAccessModal(true); }}
             className={`flex items-center space-x-1 px-2 py-1 rounded ${!selectedClient ? 'opacity-50' : 'hover:bg-[#d0d0d0]'}`}
           >
             <div className="w-5 h-5 rounded-full border border-transparent flex justify-center items-center bg-[#5bc0de] text-white">
@@ -463,6 +483,29 @@ const ClientsList: React.FC = () => {
                         <div className="text-[10px] text-gray-600 mb-1">Utilizador: <b>{accessResult.username}</b></div>
                         <input readOnly value={accessResult.password} onClick={(e) => (e.target as HTMLInputElement).select()}
                           className="w-full border border-[#999] px-2 py-1 text-[11px] font-mono bg-white select-all" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-white border border-[#a0a0a0] p-3">
+                    <div className="font-bold text-gray-700 mb-1">Código de reposição (instalação já a correr)</div>
+                    <div className="text-gray-500 text-[10px] mb-2">
+                      Diferente da senha acima (essa só serve para uma instalação NOVA). Isto repõe a
+                      password AGORA, numa instalação já instalada — o dono usa "Esqueci-me da password"
+                      no login dele. Válido 30 min, uso único.
+                    </div>
+                    <button onClick={gerarCodigoReposicao} disabled={resetBusy}
+                      className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white disabled:opacity-50">
+                      <KeyRound size={11} className="text-blue-700" />
+                      <span className="font-bold text-blue-800">{resetBusy ? 'A gerar…' : 'Gerar código de reposição'}</span>
+                    </button>
+                    {resetResult && (
+                      <div className="mt-2 bg-[#fff8e1] border border-[#e0c080] p-2">
+                        <div className="text-[10px] font-bold text-[#8a6100] mb-1">
+                          ⚠ Válido até {new Date(resetResult.expires_at).toLocaleTimeString('pt-PT')} — dite ao dono ({resetResult.username}) por telefone/WhatsApp:
+                        </div>
+                        <input readOnly value={resetResult.code} onClick={(e) => (e.target as HTMLInputElement).select()}
+                          className="w-full border border-[#999] px-2 py-1 text-[13px] font-mono font-bold tracking-widest text-center bg-white select-all" />
                       </div>
                     )}
                   </div>

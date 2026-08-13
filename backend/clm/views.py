@@ -227,6 +227,70 @@ class LicenseViewSet(viewsets.ModelViewSet):
             details={'license': lic.license_number}, user_identity=str(request.user))
         return Response({'kind': 'owner', 'username': username, 'password': nova})
 
+    @action(detail=True, methods=['post'], url_path='generate-reset-code')
+    def generate_reset_code(self, request, pk=None):
+        """CÓDIGO DE REPOSIÇÃO — repõe a password do dono numa instalação JÁ A
+        CORRER, sem PowerShell nem ida à máquina. Diferente do `regenerate_access`
+        acima (esse só é lido por um instalador NOVO, via wizard): este código
+        dita-se ao telefone/WhatsApp e usa-se em "Esqueci-me da password" no login
+        da instalação já existente — expira sozinho, uso único (verify_reset_code
+        apaga-o ao validar).
+        """
+        from datetime import timedelta
+        from django.utils import timezone
+        from .secrets import gerar_senha
+        lic = self.get_object()
+        codigo = gerar_senha(8)
+        lic.owner_reset_code = codigo
+        lic.owner_reset_expires_at = timezone.now() + timedelta(minutes=30)
+        lic.save(update_fields=['owner_reset_code', 'owner_reset_expires_at'])
+        AuditLogCLM.objects.create(action='GENERATE_OWNER_RESET_CODE',
+            details={'license': lic.license_number}, user_identity=str(request.user))
+        return Response({'code': codigo, 'expires_at': lic.owner_reset_expires_at,
+                         'username': lic.owner_username or 'dono'})
+
+    @action(detail=False, methods=['post'], url_path='verify-reset-code', permission_classes=[AllowAny])
+    def verify_reset_code(self, request):
+        """RECEÇÃO: a instalação do cliente confirma aqui o código que o dono
+        recebeu por telefone, antes de repor a password LOCALMENTE (a password
+        em si nunca sai daqui — o PCC só diz "sim, pode repor", quem escreve a
+        nova password é o próprio servidor do cliente). Mesma prova de posse por
+        assinatura da licença dos outros endpoints públicos; código de uso único
+        (apagado logo que verificado, válido ou não o pedido)."""
+        import json
+        import base64
+        from django.utils import timezone
+        from licensing.engine.crypto import verify_license
+
+        raw = (request.data.get('license_key') or '').strip()
+        codigo = (request.data.get('code') or '').strip()
+        try:
+            data = json.loads(base64.b64decode(raw).decode('utf-8'))
+            sig = data.pop('signature', None)
+            if not (sig and verify_license(data, sig)):
+                return Response({'valid': False, 'detail': 'Licença inválida.'}, status=403)
+        except Exception:
+            return Response({'valid': False, 'detail': 'Licença ilegível.'}, status=400)
+
+        code_ = data.get('client_code')
+        lic = License.objects.filter(client__code=code_).order_by('-created_at').first()
+        if not lic or not lic.owner_reset_code:
+            return Response({'valid': False, 'detail': 'Sem código pendente para este cliente.'}, status=404)
+
+        valido = (codigo and codigo == lic.owner_reset_code
+                 and lic.owner_reset_expires_at and lic.owner_reset_expires_at >= timezone.now())
+        username = lic.owner_username or 'dono'
+        # uso único: desaparece ao ser verificado, valha ou não valha — nunca se
+        # tenta adivinhar o código à bruta contra o mesmo código repetidamente.
+        lic.owner_reset_code = None
+        lic.owner_reset_expires_at = None
+        lic.save(update_fields=['owner_reset_code', 'owner_reset_expires_at'])
+        AuditLogCLM.objects.create(action='OWNER_PASSWORD_RESET_USED' if valido else 'OWNER_PASSWORD_RESET_FAILED',
+            details={'license': lic.license_number}, user_identity='remote-reset')
+        if not valido:
+            return Response({'valid': False, 'detail': 'Código inválido ou expirado.'}, status=403)
+        return Response({'valid': True, 'username': username})
+
 
 class InstallationViewSet(viewsets.ModelViewSet):
     queryset = Installation.objects.all()

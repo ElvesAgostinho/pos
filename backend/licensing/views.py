@@ -179,6 +179,62 @@ class LicenseSyncView(APIView):
         })
 
 
+class OwnerPasswordResetView(APIView):
+    """"ESQUECI-ME DA PASSWORD" — repõe a password do dono numa instalação JÁ A
+    CORRER, sem PowerShell nem ida à máquina. O dono pede ao fornecedor um
+    código (PCC → Gestão de Clientes → Acessos → "Gerar código de reposição"),
+    recebe-o por telefone/WhatsApp, e usa-o aqui.
+
+    O PCC nunca escreve na base de dados DESTE cliente (é impossível, são bases
+    separadas) — só confirma "sim, este código é válido para esta licença".
+    Quem escreve a password nova é este servidor, na sua própria base, mesma
+    lógica do `core.management.commands.criar_dono`.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        import os
+        import requests as http
+        from django.conf import settings
+        from django.contrib.auth import get_user_model
+
+        codigo = (request.data.get('code') or '').strip()
+        nova_password = request.data.get('new_password') or ''
+        if not codigo:
+            return Response({'detail': 'Indique o código recebido do fornecedor.'}, status=400)
+        if len(nova_password) < 8:
+            return Response({'detail': 'A nova password tem de ter pelo menos 8 caracteres.'}, status=400)
+
+        caminho = os.path.join(settings.BASE_DIR, 'license.key')
+        if not os.path.exists(caminho):
+            return Response({'detail': 'Sem licença instalada nesta máquina — sem ela, '
+                                       'não há forma de confirmar a que cliente pertence.'}, status=400)
+        license_key = open(caminho, 'r', encoding='utf-8').read().strip()
+
+        pcc = os.environ.get('PCC_URL', getattr(settings, 'PCC_URL', ''))
+        if not pcc:
+            return Response({'detail': 'PCC_URL não configurado nesta instalação.'}, status=500)
+        try:
+            r = http.post(f'{pcc.rstrip("/")}/api/clm/licenses/verify-reset-code/',
+                          json={'license_key': license_key, 'code': codigo}, timeout=15)
+        except Exception as e:
+            return Response({'detail': f'Sem ligação ao PCC ({pcc}): {e}'}, status=502)
+
+        body = r.json() if r.headers.get('content-type', '').startswith('application/json') else {}
+        if r.status_code != 200 or not body.get('valid'):
+            return Response({'detail': body.get('detail') or 'Código inválido ou expirado.'},
+                            status=r.status_code if r.status_code != 200 else 403)
+
+        username = body.get('username') or 'dono'
+        User = get_user_model()
+        user, _ = User.objects.get_or_create(
+            username=username, defaults={'is_staff': True, 'is_superuser': True, 'is_active': True})
+        user.set_password(nova_password)
+        user.is_active = True
+        user.save(update_fields=['password', 'is_active'])
+        return Response({'detail': f'Password de "{username}" reposta — entre já com a nova.'})
+
+
 class ApplyUpdateView(APIView):
     """Aplica a atualização — um clique, sem senha nem assistente outra vez.
 
