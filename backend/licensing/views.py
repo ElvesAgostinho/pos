@@ -48,6 +48,46 @@ def _real_license():
     return {'licensed': False, 'modules': [], 'source': None}
 
 
+def _aplicar_dados_empresa(company):
+    """Preenche a ficha da Empresa a partir do que o PCC já sabe deste cliente.
+
+    Sem Hotel nenhum ainda (instalação mesmo a estrear): cria a hierarquia toda
+    (Grupo → Empresa → Hotel) já com os dados do PCC — o dono abre Configuração
+    POS → Empresa pela primeira vez e já está preenchido. Com um Hotel já a
+    existir: só escreve nos campos que ainda estão VAZIOS — nunca substitui o
+    que o dono já tenha escrito à mão. Devolve True se mudou alguma coisa.
+    """
+    nome = (company or {}).get('name')
+    if not nome:
+        return False
+    from identity.models import EnterpriseGroup, Company as Empresa, Hotel
+
+    hotel = Hotel.objects.filter(is_master=True).first() or Hotel.objects.order_by('id').first()
+    criado = hotel is None
+    if criado:
+        grupo, _ = EnterpriseGroup.objects.get_or_create(name=nome[:255])
+        empresa, _ = Empresa.objects.get_or_create(
+            group=grupo, name=nome[:255], defaults={'tax_id': (company.get('nif') or '')[:50]})
+        hotel = Hotel(company=empresa, name=nome[:255], is_master=True)
+
+    campos = {
+        'name2': company.get('name2'), 'nif': company.get('nif'), 'address': company.get('address'),
+        'city': company.get('city'), 'province': company.get('province'), 'country': company.get('country'),
+        'postal_code': company.get('postal_code'), 'phone': company.get('phone'),
+        'email': company.get('email'), 'website': company.get('website'),
+        'currency': company.get('currency'), 'timezone': company.get('timezone'),
+    }
+    mudou = False
+    for campo, valor in campos.items():
+        if valor and not getattr(hotel, campo, None):
+            setattr(hotel, campo, valor)
+            mudou = True
+    if criado or mudou:
+        hotel.save()
+        return True
+    return False
+
+
 class LicenseSyncView(APIView):
     """SINCRONIZAR COM O PCC — o botão do Gestor de licenças.
 
@@ -165,9 +205,22 @@ class LicenseSyncView(APIView):
                 return Response({'detail': f'Licença gravada, mas a ligação AGT falhou: {e}'},
                                 status=502)
 
+        # DADOS DA EMPRESA — o PCC já sabe nome/NIF/morada/telefone (foram escritos
+        # ao criar o cliente, "Novo Provisionamento"); em vez do dono ter de os
+        # escrever outra vez em Configuração POS → Empresa, aplicam-se sozinhos AQUI,
+        # na mesma sincronização. Sem logo (esse continua upload local, de propósito —
+        # nunca uma imagem por URL, mesmo princípio já seguido no resto do sistema).
+        # Falha nisto nunca deve travar a sincronização — é conveniência, não segurança.
+        empresa_aplicada = False
+        try:
+            empresa_aplicada = _aplicar_dados_empresa(r.json().get('company') or {})
+        except Exception:
+            pass
+
         return Response({
             'agt_applied': agt_aplicada,
             'agt_connection_applied': conexao_aplicada,
+            'company_applied': empresa_aplicada,
             'detail': 'Licença sincronizada com o PCC.',
             'license_number': nova.get('license_number'),
             'valid_until': nova.get('valid_until'),

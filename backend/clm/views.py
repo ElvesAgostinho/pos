@@ -191,6 +191,20 @@ class LicenseViewSet(viewsets.ModelViewSet):
         if rel:
             resp['release'] = {'version': rel.version, 'download_url': rel.download_url,
                                'notes': rel.release_notes}
+        # DADOS DA EMPRESA — os mesmos que o técnico já escreveu aqui ao criar o
+        # cliente (Novo Provisionamento). O cliente instalado usa isto para
+        # preencher sozinho a ficha "Configuração POS → Empresa" na primeira
+        # sincronização, em vez de o dono ter de escrever tudo outra vez. Não
+        # inclui logo_url de propósito: essa continua a ser sempre upload local
+        # (princípio já seguido no resto do sistema — nunca uma imagem por URL).
+        c = lic.client
+        resp['company'] = {
+            'name': c.commercial_name, 'name2': c.legal_name, 'nif': c.nif,
+            'address': c.address, 'city': c.city, 'province': c.province,
+            'country': c.country, 'postal_code': c.postal_code, 'phone': c.phone,
+            'email': c.general_email, 'website': c.website, 'currency': c.currency,
+            'timezone': c.timezone,
+        }
         return Response(resp)
 
     @action(detail=True, methods=['post'], url_path='regenerate-access')
