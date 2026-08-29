@@ -26,7 +26,7 @@ logger = logging.getLogger('pcc_access')
 # deles. Ambos verificam a assinatura da licença apresentada — essa é a
 # autenticação deles, não a rede.
 PUBLIC_PATHS = ('/api/clm/licenses/latest/', '/api/clm/error-reports/report/',
-                '/api/clm/licenses/verify-reset-code/')
+                '/api/clm/licenses/verify-reset-code/', '/api/clm/licenses/activate/')
 
 
 def _client_ip(request):

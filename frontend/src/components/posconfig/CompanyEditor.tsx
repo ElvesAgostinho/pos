@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph, Box } from './kit';
-import { aviso } from '../../ui/dialogo';
 
 const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
@@ -29,6 +28,9 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
   const [bottom, setBottom] = useState<Bottom>('license');
   const [d, setD] = useState<any>({ ...row });
   const [popup, setPopup] = useState<any>(null);   // popup "Membro de"
+  const [showLicenseManager, setShowLicenseManager] = useState(false);   // "Gestor de Licenças" (janela própria)
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const { data: full } = useQuery({
     queryKey: ['posc', 'company', row?.id],
@@ -70,6 +72,24 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
   const texts: any[] = d.custom_texts ?? src?.custom_texts ?? [];
   const banks: any[] = full?.bank_accounts || [];
   const lic = src?.license;
+
+  // "Load license from Internet" do Gestor de Licenças — o fornecedor é que emite
+  // (não se gera nada aqui): isto só PUXA a licença mais recente já emitida por ele
+  // no PCC, autenticado pela posse da que já está instalada (licensing/sync/).
+  const puxarLicencaPCC = async () => {
+    setSyncing(true); setSyncMsg(null);
+    try {
+      const r = await apiClient.post('licensing/sync/', {});
+      const d2 = r.data;
+      setSyncMsg({ ok: true, text: `${d2.detail} — válida até ${d2.valid_until}.`
+        + (d2.restart_needed ? ' ⚠ Módulos mudaram: reinicie o serviço para entrarem.' : '') });
+      qc.invalidateQueries({ queryKey: ['posc', 'company', row?.id] });
+    } catch (e: any) {
+      setSyncMsg({ ok: false, text: e?.response?.data?.detail || 'Não foi possível puxar a licença do PCC.' });
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const setText = (i: number, k: string, v: any) =>
     set('custom_texts', texts.map((t, j) => j === i ? { ...t, [k]: v } : t));
@@ -262,23 +282,8 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   <span className="flex-1">
                     <b>Gestor de licenças</b> — os campos a cinzento vêm do ficheiro de licença assinado pelo fornecedor
                     e não são editáveis. Para alargar módulos, terminais ou validade, contacte o fornecedor.
+                    Botão "Gestor de licenças" em baixo, junto do Gravar/Fechar.
                   </span>
-                  {/* O PCC liga/desliga remotamente: este botão pede a licença mais
-                      recente (autenticado pela posse da atual) e valida-a localmente. */}
-                  <button onClick={async () => {
-                    try {
-                      const r = await apiClient.post('licensing/sync/', {});
-                      const d2 = r.data;
-                      aviso(`${d2.detail}\n\nLicença: ${d2.license_number}\nVálida até: ${d2.valid_until}`
-                        + (d2.restart_needed ? '\n\n⚠ Os módulos mudaram — reinicie o serviço para entrarem.' : ''));
-                      window.location.reload();
-                    } catch (e: any) {
-                      aviso(e?.response?.data?.detail || 'Não foi possível sincronizar com o PCC.');
-                    }
-                  }}
-                    className="h-8 px-4 text-[12px] font-bold bg-[#dbe8ff] border border-[#8c8c8c] hover:bg-[#e8f0ff]">
-                    ⟳ Sincronizar com o PCC
-                  </button>
                 </div>
               </div>
             );
@@ -431,9 +436,89 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       )}
 
       <Toolbar actions={[
+        { icon: '🔑', label: 'Gestor de Licenças', color: '#1f6feb', disabled: !lic,
+          onClick: () => { setSyncMsg(null); setShowLicenseManager(true); } },
         { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
       ]} />
+
+      {/* GESTOR DE LICENÇAS — janela própria (como o "License Manager" que já se
+          conhece). O fornecedor é que EMITE a licença no PCC; esta janela nunca
+          gera nada, só mostra o que está ativo e permite PUXAR a mais recente já
+          emitida (mesma ação "Sincronizar com o PCC" de sempre, licensing/sync/,
+          autenticada pela posse da licença já instalada). */}
+      {showLicenseManager && lic && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowLicenseManager(false)}>
+          <div className="bg-white w-[680px] max-h-[85vh] rounded shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="px-4 py-2.5 flex items-center justify-between text-white" style={{ background: '#1f6feb' }}>
+              <span className="font-bold text-[13px] flex items-center gap-2"><Glyph icon="🔑" size={14} /> Gestor de Licenças</span>
+              <button onClick={() => setShowLicenseManager(false)} className="hover:text-red-200 text-[16px] leading-none">×</button>
+            </div>
+
+            <div className="p-4 overflow-y-auto flex-1 text-[12px] space-y-4">
+              {syncMsg && (
+                <div className={`px-2 py-1.5 rounded border text-[12px] ${syncMsg.ok ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                  {syncMsg.text}
+                </div>
+              )}
+
+              <table className="w-full border-collapse">
+                <tbody>
+                  {[
+                    ['Cliente', lic.client_code], ['Código Licença', lic.license_code],
+                    ['Válida até', lic.valid_until], ['Versão', lic.version],
+                    ['Máx. Quartos', lic.max_rooms],
+                    ['Máx. Terminais (interno)', lic.max_terminals_internal],
+                    ['Máx. Terminais (externo)', lic.max_terminals_external],
+                    ['Máx. Terminais (portátil)', lic.max_terminals_mobile],
+                  ].map(([label, value]) => (
+                    <tr key={String(label)} className="border-b border-[#eee]">
+                      <td className="py-1 pr-3 text-[#666] w-[190px]">{label}</td>
+                      <td className="py-1 font-bold text-[#222]">{value ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div>
+                <div className="font-bold text-[#333] mb-1.5 border-b border-[#eee] pb-1">
+                  Módulos Licenciados ({(lic.modules || []).length})
+                </div>
+                <div className="grid grid-cols-3 gap-x-3 gap-y-1">
+                  {(lic.modules || []).map((m: string) => (
+                    <div key={m} className="flex items-center gap-1.5 text-[11px] text-[#333]">
+                      <Glyph icon="✓" size={10} /> {m}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {(lic.limits && Object.keys(lic.limits).length > 0) && (
+                <div>
+                  <div className="font-bold text-[#333] mb-1.5 border-b border-[#eee] pb-1">Consumo</div>
+                  {Object.entries(lic.limits).map(([k, v]: any) => (
+                    <div key={k} className={`text-[11px] ${v.available === 0 ? 'text-[#a01818] font-bold' : 'text-[#555]'}`}>
+                      {v.label}: <b>{v.used}</b> em uso de <b>{v.licensed}</b> licenciado(s)
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-[#ddd] px-4 py-2.5 flex justify-between items-center bg-[#f7f7f7]">
+              <span className="text-[11px] text-[#888] max-w-[380px]">
+                Só o fornecedor emite/alarga módulos, terminais ou validade. Isto só puxa a
+                licença mais recente já emitida por ele.
+              </span>
+              <button onClick={puxarLicencaPCC} disabled={syncing}
+                className="h-8 px-4 text-[12px] font-bold text-white rounded disabled:opacity-50 flex-shrink-0"
+                style={{ background: '#1f6feb' }}>
+                {syncing ? 'A puxar…' : '🌐 Puxar licença do PCC'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

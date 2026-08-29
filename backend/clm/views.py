@@ -79,6 +79,82 @@ class ClientViewSet(viewsets.ModelViewSet):
             "total_licenses": total_licenses
         })
 
+def _build_license_response(lic, request, hostname):
+    """Monta a resposta de licença+AGT+empresa+versão que TANTO a sincronização
+    (`latest`, prova de posse) como a ativação remota (`activate`, senha de
+    instalação) devolvem — o cliente aplica-a exatamente da mesma forma nos
+    dois casos, por isso a resposta tem de ter a mesma forma nos dois casos.
+    """
+    from clm.engine.provisioning import ProvisioningWorkflow
+    from django.utils import timezone
+    wf = ProvisioningWorkflow(admin_user='remote-sync')
+
+    # "ESTE CLIENTE ESTÁ ONLINE": last_ping existia no modelo mas nada o escrevia.
+    # É AQUI que se sabe, a cada sincronização/ativação, que a instalação está
+    # viva; get_or_create para não obrigar a criar a Instalação à mão antes.
+    installation, _ = Installation.objects.get_or_create(
+        client=lic.client, name=hostname or 'Servidor Produção',
+        defaults={'install_type': 'PRODUCTION'})
+    installation.last_ping = timezone.now()
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR')
+    if ip:
+        installation.server_ip = ip
+    installation.save(update_fields=['last_ping', 'server_ip'])
+
+    resp = {
+        'license_number': lic.license_number,
+        'valid_until': str(lic.valid_until) if lic.valid_until else None,
+        'license_key': wf._generate_license_key_string(lic),
+    }
+    # CERTIFICAÇÃO AGT AUTOMÁTICA: se o PCC tem as credenciais desta licença
+    # (geradas em CLM › AGT), seguem no MESMO canal autenticado — o cliente
+    # ativa e as faturas saem logo com o nº de certificação, sem instalador
+    # a copiar ficheiros à mão. É tudo do FORNECEDOR: o cliente só recebe.
+    # HERANÇA: se a licença mais recente ainda não tiver as credenciais/ligação
+    # (ex.: renovação emitida depois de configurar a AGT), valem as da licença
+    # anterior DO MESMO CLIENTE — renovar nunca pode desligar a fatura eletrónica.
+    lic_cert = lic
+    if not (lic_cert.agt_certificate_number and lic_cert.agt_private_key):
+        lic_cert = (License.objects.filter(client=lic.client,
+                                           agt_certificate_number__isnull=False)
+                    .exclude(agt_private_key__isnull=True).exclude(agt_private_key='')
+                    .order_by('-created_at').first()) or lic
+    if lic_cert.agt_certificate_number and lic_cert.agt_private_key:
+        resp['agt'] = {
+            'certificate_number': lic_cert.agt_certificate_number,
+            'private_key': lic_cert.agt_private_key,
+            'public_key': lic_cert.agt_public_key,
+        }
+    # A LIGAÇÃO AGT (fatura eletrónica): endpoints + credenciais do contribuinte,
+    # configurados NO PCC e entregues pelo mesmo canal — o cliente não escreve URLs.
+    lic_con = lic if lic.agt_connection else (
+        License.objects.filter(client=lic.client)
+        .exclude(agt_connection={}).order_by('-created_at').first())
+    if lic_con and lic_con.agt_connection:
+        resp.setdefault('agt', {})['connection'] = lic_con.agt_connection
+    # VERSÃO MAIS RECENTE — a mesma resposta também diz "há uma versão nova aqui"
+    # (SystemRelease, publicada pelo fornecedor). O cliente é que decide se
+    # descarrega e quando corre o instalador — isto é só o aviso.
+    rel = SystemRelease.objects.order_by('-created_at').first()
+    if rel:
+        resp['release'] = {'version': rel.version, 'download_url': rel.download_url,
+                           'notes': rel.release_notes}
+    # DADOS DA EMPRESA — os mesmos que o técnico já escreveu aqui ao criar o
+    # cliente (Novo Provisionamento). O cliente instalado usa isto para
+    # preencher sozinho a ficha "Configuração POS → Empresa", em vez de o dono
+    # ter de escrever tudo outra vez. Não inclui logo_url de propósito: essa
+    # continua a ser sempre upload local (nunca uma imagem por URL).
+    c = lic.client
+    resp['company'] = {
+        'name': c.commercial_name, 'name2': c.legal_name, 'nif': c.nif,
+        'address': c.address, 'city': c.city, 'province': c.province,
+        'country': c.country, 'postal_code': c.postal_code, 'phone': c.phone,
+        'email': c.general_email, 'website': c.website, 'currency': c.currency,
+        'timezone': c.timezone,
+    }
+    return resp
+
+
 class LicenseViewSet(viewsets.ModelViewSet):
     queryset = License.objects.all().order_by('-created_at')
     serializer_class = LicenseSerializer
@@ -130,82 +206,44 @@ class LicenseViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'A conta deste cliente está suspensa no PCC. '
                                        'Contacte o fornecedor.'}, status=403)
 
-        from clm.engine.provisioning import ProvisioningWorkflow
-        from django.utils import timezone
-        wf = ProvisioningWorkflow(admin_user='remote-sync')
         AuditLogCLM.objects.create(
             action='LICENSE_SYNC_PULL',
             details={'client': code, 'license': lic.license_number,
                      'presented': data.get('license_number')},
             user_identity='remote-sync')
-
-        # "ESTE CLIENTE ESTÁ ONLINE": não havia nenhum sítio a gravar isto —
-        # last_ping existia no modelo mas nada o escrevia. É AQUI que se sabe,
-        # a cada sincronização, que a instalação está viva; get_or_create para
-        # não obrigar a criar a Instalação à mão antes da primeira ligação.
         hostname = (request.data.get('hostname') or '').strip()[:100]
-        installation, _ = Installation.objects.get_or_create(
-            client=lic.client, name=hostname or 'Servidor Produção',
-            defaults={'install_type': 'PRODUCTION'})
-        installation.last_ping = timezone.now()
-        ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR')
-        if ip:
-            installation.server_ip = ip
-        installation.save(update_fields=['last_ping', 'server_ip'])
-        resp = {
-            'license_number': lic.license_number,
-            'valid_until': str(lic.valid_until) if lic.valid_until else None,
-            'license_key': wf._generate_license_key_string(lic),
-        }
-        # CERTIFICAÇÃO AGT AUTOMÁTICA: se o PCC tem as credenciais desta licença
-        # (geradas em CLM › AGT), seguem no MESMO canal autenticado — o cliente
-        # ativa e as faturas saem logo com o nº de certificação, sem instalador
-        # a copiar ficheiros à mão. É tudo do FORNECEDOR: o cliente só recebe.
-        # HERANÇA: se a licença mais recente ainda não tiver as credenciais/ligação
-        # (ex.: renovação emitida depois de configurar a AGT), valem as da licença
-        # anterior DO MESMO CLIENTE — renovar nunca pode desligar a fatura eletrónica.
-        lic_cert = lic
-        if not (lic_cert.agt_certificate_number and lic_cert.agt_private_key):
-            lic_cert = (License.objects.filter(client=lic.client,
-                                               agt_certificate_number__isnull=False)
-                        .exclude(agt_private_key__isnull=True).exclude(agt_private_key='')
-                        .order_by('-created_at').first()) or lic
-        if lic_cert.agt_certificate_number and lic_cert.agt_private_key:
-            resp['agt'] = {
-                'certificate_number': lic_cert.agt_certificate_number,
-                'private_key': lic_cert.agt_private_key,
-                'public_key': lic_cert.agt_public_key,
-            }
-        # A LIGAÇÃO AGT (fatura eletrónica): endpoints + credenciais do contribuinte,
-        # configurados NO PCC e entregues pelo mesmo canal — o cliente não escreve URLs.
-        lic_con = lic if lic.agt_connection else (
-            License.objects.filter(client=lic.client)
-            .exclude(agt_connection={}).order_by('-created_at').first())
-        if lic_con and lic_con.agt_connection:
-            resp.setdefault('agt', {})['connection'] = lic_con.agt_connection
-        # VERSÃO MAIS RECENTE — a mesma sincronização que já traz licença/AGT
-        # também diz "há uma versão nova aqui" (SystemRelease, publicada pelo
-        # fornecedor). O cliente é que decide se descarrega e quando corre o
-        # instalador — isto é só o aviso.
-        rel = SystemRelease.objects.order_by('-created_at').first()
-        if rel:
-            resp['release'] = {'version': rel.version, 'download_url': rel.download_url,
-                               'notes': rel.release_notes}
-        # DADOS DA EMPRESA — os mesmos que o técnico já escreveu aqui ao criar o
-        # cliente (Novo Provisionamento). O cliente instalado usa isto para
-        # preencher sozinho a ficha "Configuração POS → Empresa" na primeira
-        # sincronização, em vez de o dono ter de escrever tudo outra vez. Não
-        # inclui logo_url de propósito: essa continua a ser sempre upload local
-        # (princípio já seguido no resto do sistema — nunca uma imagem por URL).
-        c = lic.client
-        resp['company'] = {
-            'name': c.commercial_name, 'name2': c.legal_name, 'nif': c.nif,
-            'address': c.address, 'city': c.city, 'province': c.province,
-            'country': c.country, 'postal_code': c.postal_code, 'phone': c.phone,
-            'email': c.general_email, 'website': c.website, 'currency': c.currency,
-            'timezone': c.timezone,
-        }
-        return Response(resp)
+        return Response(_build_license_response(lic, request, hostname))
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def activate(self, request):
+        """ATIVAÇÃO REMOTA — a primeira ativação, sem PowerShell nem copiar
+        ficheiros à mão. Diferente de `latest` (que exige já TER uma licença
+        para provar posse): aqui não há nenhuma ainda, por isso autentica-se
+        pela SENHA DE INSTALAÇÃO — a mesma que já se gera no PCC (Acessos) e se
+        entrega ao técnico para o setup.exe; reaproveitada, não é um segredo novo.
+        POST {client_code, install_password, hostname}.
+        """
+        from .secrets import decrypt
+        code = (request.data.get('client_code') or '').strip()
+        senha = request.data.get('install_password') or ''
+        if not (code and senha):
+            return Response({'detail': 'Indique o código do cliente e a senha de instalação.'}, status=400)
+
+        lic = License.objects.filter(client__code=code).order_by('-created_at').first()
+        if not lic:
+            return Response({'detail': f'Cliente "{code}" desconhecido no PCC.'}, status=404)
+        if lic.client.status in ('SUSPENDED', 'CANCELED'):
+            return Response({'detail': 'A conta deste cliente está suspensa no PCC. '
+                                       'Contacte o fornecedor.'}, status=403)
+        if not lic.install_password_enc or decrypt(lic.install_password_enc) != senha:
+            AuditLogCLM.objects.create(action='REMOTE_ACTIVATION_FAILED',
+                details={'client': code}, user_identity='remote-activation')
+            return Response({'detail': 'Código de cliente ou senha de instalação incorretos.'}, status=403)
+
+        AuditLogCLM.objects.create(action='REMOTE_ACTIVATION_OK',
+            details={'client': code, 'license': lic.license_number}, user_identity='remote-activation')
+        hostname = (request.data.get('hostname') or '').strip()[:100]
+        return Response(_build_license_response(lic, request, hostname))
 
     @action(detail=True, methods=['post'], url_path='regenerate-access')
     def regenerate_access(self, request, pk=None):

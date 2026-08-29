@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ShieldCheck, RefreshCcw, FolderOpen, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, RefreshCcw, FolderOpen, AlertTriangle, CheckCircle2, Wifi } from 'lucide-react';
 import { apiClient } from '../api/client';
 import { useLicenseStatus } from '../hooks/useActiveModules';
 
@@ -41,19 +41,50 @@ const usePreflight = () =>
 /**
  * Ecrã de primeiro arranque, quando ainda não há license.key nesta instalação.
  *
- * NÃO é um formulário de ativação — a ativação da licença do SERVIDOR ainda é manual
- * (o técnico copia o license.key gerado no PCC para {app}\app\license.key e reinicia o
- * serviço "Mwana Lodge — Servidor"; ver instalador/LEIA-ME.md). Um ecrã anterior aqui
- * pedia "Terminal ID + Activation Key" e chamava clm/terminals/activate/ — isso é o
- * licenciamento de TERMINAIS POS dentro de uma casa já licenciada (clm.TerminalLicense),
- * não tem nada a ver com a licença do servidor em si. Gravava um token que ninguém lia
- * (RequireLicense só confia em licensing/status/) e deixava o dono preso aqui em loop
- * infinito depois de "ativar" — foi exatamente o que aconteceu numa instalação real.
- * Este ecrã espera, de forma honesta, pela licença verdadeira.
+ * Tem DUAS formas de ativar — a automática (recomendada) e a manual (sempre
+ * disponível, para quando não há Internet). Um ecrã anterior aqui pedia
+ * "Terminal ID + Activation Key" e chamava clm/terminals/activate/ — isso era o
+ * licenciamento de TERMINAIS POS dentro de uma casa já licenciada
+ * (clm.TerminalLicense), não tinha nada a ver com a licença do servidor. Gravava
+ * um token que ninguém lia (RequireLicense só confia em licensing/status/) e
+ * deixava o dono preso aqui em loop infinito depois de "ativar" — aconteceu numa
+ * instalação real. A ativação automática de agora (RemoteActivationView) não
+ * repete esse erro: escreve o MESMO ficheiro license.key que o caminho manual
+ * sempre escreveu, assinado pelo PCC — é a fonte que licensing/status/ já lê,
+ * por isso este ecrã sai sozinho assim que funciona, tal como no caminho manual.
  */
 const Onboarding: React.FC = () => {
   const { isLoading, refetch } = useLicenseStatus();
   const { data: pre, refetch: refetchPre } = usePreflight();
+
+  // ATIVAÇÃO AUTOMÁTICA — o técnico já tem estes dois valores para correr o
+  // setup.exe (PCC → Gestão de Clientes → Acessos); reaproveitados aqui para
+  // puxar a licença pela Internet, sem copiar ficheiro nenhum à mão.
+  const [clientCode, setClientCode] = useState('');
+  const [installPassword, setInstallPassword] = useState('');
+  const [ativando, setAtivando] = useState(false);
+  const [ativarMsg, setAtivarMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const handleAtivar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAtivarMsg(null);
+    setAtivando(true);
+    try {
+      const base = (apiClient.defaults.baseURL || '/api/').replace(/\/?$/, '/');
+      const r = await fetch(`${base}licensing/activate-remote/`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_code: clientCode.trim(), install_password: installPassword }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) { setAtivarMsg({ ok: false, text: body.detail || `Falhou (HTTP ${r.status}).` }); return; }
+      setAtivarMsg({ ok: true, text: body.detail || 'Licença ativada.' });
+      refetch(); refetchPre();
+    } catch (err: any) {
+      setAtivarMsg({ ok: false, text: 'Sem ligação ao servidor.' });
+    } finally {
+      setAtivando(false);
+    }
+  };
 
   // Verifica sozinho a cada 10s — o técnico não precisa de clicar nada depois de
   // copiar o license.key; assim que o servidor o vê, este ecrã sai sozinho.
@@ -76,14 +107,44 @@ const Onboarding: React.FC = () => {
         <div className="p-6 space-y-4">
           <p className="text-sm text-gray-700">
             Este servidor está a correr, mas ainda não tem o ficheiro de licença desta
-            instalação. É o técnico que a coloca — não é um passo que se faça por aqui.
+            instalação. Ative-a de uma das duas formas abaixo.
           </p>
+
+          <form onSubmit={handleAtivar} className="bg-blue-50 border border-blue-200 rounded p-4 text-sm space-y-3">
+            <div className="flex items-start gap-2">
+              <Wifi size={16} className="text-blue-500 mt-0.5 shrink-0" />
+              <div className="font-bold text-blue-900">Ativação automática (recomendado)</div>
+            </div>
+            <p className="text-[12px] text-gray-600">
+              Os mesmos dois dados que já tem para correr o setup.exe (PCC → Gestão de Clientes
+              → Acessos) — sem copiar nenhum ficheiro à mão.
+            </p>
+            <label className="block">
+              <span className="text-gray-700 block mb-1 text-[13px]">Código do cliente (ex.: CLI-1234):</span>
+              <input autoFocus value={clientCode} onChange={(e) => setClientCode(e.target.value)}
+                className="w-full h-9 px-2 bg-white border border-gray-300 rounded outline-none font-mono" />
+            </label>
+            <label className="block">
+              <span className="text-gray-700 block mb-1 text-[13px]">Senha de instalação:</span>
+              <input type="password" value={installPassword} onChange={(e) => setInstallPassword(e.target.value)}
+                className="w-full h-9 px-2 bg-white border border-gray-300 rounded outline-none" />
+            </label>
+            {ativarMsg && (
+              <div className={`text-[12px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                {ativarMsg.text}
+              </div>
+            )}
+            <button type="submit" disabled={ativando || !clientCode || !installPassword}
+              className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 disabled:opacity-50">
+              {ativando ? 'A ativar…' : 'Ativar via Internet'}
+            </button>
+          </form>
 
           <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-700 space-y-2">
             <div className="flex items-start gap-2">
               <FolderOpen size={16} className="text-gray-400 mt-0.5 shrink-0" />
               <div>
-                <div className="font-bold">Para o técnico:</div>
+                <div className="font-bold">Manual (sem Internet, ou se a automática falhar):</div>
                 <ol className="list-decimal list-inside mt-1 space-y-1 text-gray-600">
                   <li>Vá ao PCC → Gestão de Clientes → selecione este cliente.</li>
                   <li>Copie o ficheiro <code className="bg-gray-200 px-1 rounded">license.key</code> gerado para

@@ -111,7 +111,17 @@ class ProvisioningWorkflow:
         Gera a string base64 (license.key) com o payload + assinatura RSA.
         É isto que o cliente cola no ERP local para ativar offline; a validade é
         garantida pela chave pública, sem contacto com o servidor.
+
+        A assinatura é SEMPRE recalculada na hora a partir dos campos atuais —
+        nunca lida de `license_obj.signature` (esse fica gravado só como registo
+        de quando a licença foi criada). Se ficasse a ler o campo gravado, editar
+        módulos/limites/validade de uma licença já existente no admin do Django
+        (caminho já documentado e usado) deixava a assinatura DESSINCRONIZADA do
+        payload — toda sincronização/ativação seguinte falhava com "assinatura
+        inválida", sem nada visível a dizer porquê. Recalcular elimina essa classe
+        de bug inteira: a assinatura devolvida bate sempre com o que a licença é
+        NESTE momento.
         """
         data = self._license_payload(license_obj)
-        data["signature"] = license_obj.signature
+        data["signature"] = self._generate_signature(license_obj)
         return base64.b64encode(json.dumps(data).encode('utf-8')).decode('utf-8')

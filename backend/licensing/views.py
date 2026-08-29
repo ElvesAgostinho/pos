@@ -88,6 +88,77 @@ def _aplicar_dados_empresa(company):
     return False
 
 
+def _aplicar_extras_pcc(body):
+    """Aplica os extras que vêm junto com a licença (versão, certificação AGT,
+    ligação AGT, dados da empresa) — o MESMO código para a sincronização
+    (renovação) e para a ativação remota (primeira vez), chamado depois de o
+    license_key já estar validado e gravado em disco nos dois casos.
+
+    Devolve (flags, erro). `erro` só vem preenchido se a certificação ou a
+    ligação AGT falharem a aplicar — são as únicas partes onde falhar importa
+    a sério (fatura eletrónica); a versão e a empresa são melhor-esforço, uma
+    falha aí nunca deve travar a licença já gravada.
+    """
+    flags = {'agt_applied': False, 'agt_connection_applied': False,
+             'company_applied': False, 'latest_version': None}
+
+    release = body.get('release') or {}
+    if release.get('version'):
+        from django.utils import timezone as _tz
+        from .models import SupportSetting
+        ss = SupportSetting.get()
+        ss.latest_version = release.get('version')
+        ss.latest_download_url = release.get('download_url') or ''
+        ss.latest_release_notes = release.get('notes') or ''
+        ss.version_checked_at = _tz.now()
+        ss.save(update_fields=['latest_version', 'latest_download_url',
+                               'latest_release_notes', 'version_checked_at'])
+        flags['latest_version'] = release.get('version')
+
+    # CERTIFICAÇÃO AGT: chaves de assinatura + nº de certificado, só se DIFERENTE
+    # do já instalado (trocar sem motivo partia a verificação de documentos antigos).
+    agt = body.get('agt') or {}
+    if agt.get('certificate_number'):
+        try:
+            from fiscal.models import FiscalConfig
+            from fiscal.certification import apply_certification
+            if FiscalConfig.get().certificate_number != agt['certificate_number']:
+                apply_certification(cert=agt['certificate_number'],
+                                    private_key=agt.get('private_key'),
+                                    public_key=agt.get('public_key'))
+                flags['agt_applied'] = True
+        except Exception as e:
+            return flags, f'a certificação AGT falhou: {e}'
+
+    # LIGAÇÃO da fatura eletrónica (endpoints + credenciais do contribuinte) —
+    # o cliente nunca escreve URLs, vem tudo do PCC pelo mesmo canal.
+    if agt.get('connection'):
+        try:
+            from fiscal.models import AGTConnection
+            con = agt['connection']
+            obj, _ = AGTConnection.objects.get_or_create(name='AGT')
+            for campo in ('url_auth', 'url_submit', 'url_query', 'url_cancel',
+                          'url_download', 'url_saft', 'url_health',
+                          'client_id', 'environment'):
+                if con.get(campo) is not None:
+                    setattr(obj, campo, con[campo])
+            if con.get('client_secret'):
+                from fiscal.secrets import encrypt
+                obj.client_secret_enc = encrypt(con['client_secret'])
+            obj.is_active = True
+            obj.save()
+            flags['agt_connection_applied'] = True
+        except Exception as e:
+            return flags, f'a ligação AGT falhou: {e}'
+
+    try:
+        flags['company_applied'] = _aplicar_dados_empresa(body.get('company') or {})
+    except Exception:
+        pass
+
+    return flags, None
+
+
 class LicenseSyncView(APIView):
     """SINCRONIZAR COM O PCC — o botão do Gestor de licenças.
 
@@ -147,80 +218,14 @@ class LicenseSyncView(APIView):
         with open(caminho, 'w') as f:
             f.write(nova_raw)
 
-        # VERSÃO — o PCC diz "a mais recente é a X" na MESMA resposta da licença.
-        # Só se guarda; quem decide descarregar é o dono, no Diagnóstico.
-        release = r.json().get('release') or {}
-        if release.get('version'):
-            from django.utils import timezone as _tz
-            from .models import SupportSetting
-            ss = SupportSetting.get()
-            ss.latest_version = release.get('version')
-            ss.latest_download_url = release.get('download_url') or ''
-            ss.latest_release_notes = release.get('notes') or ''
-            ss.version_checked_at = _tz.now()
-            ss.save(update_fields=['latest_version', 'latest_download_url',
-                                   'latest_release_notes', 'version_checked_at'])
-
-        # CERTIFICAÇÃO AGT AUTOMÁTICA: se o PCC mandou credenciais e o nº de
-        # certificado é DIFERENTE do instalado, aplica-as (chaves de assinatura +
-        # número nas faturas). Igual = não se mexe — trocar a chave sem motivo
-        # partia a verificação dos documentos antigos.
-        agt = r.json().get('agt') or {}
-        agt_aplicada = False
-        if agt.get('certificate_number'):
-            try:
-                from fiscal.models import FiscalConfig
-                from fiscal.certification import apply_certification
-                if FiscalConfig.get().certificate_number != agt['certificate_number']:
-                    apply_certification(cert=agt['certificate_number'],
-                                        private_key=agt.get('private_key'),
-                                        public_key=agt.get('public_key'))
-                    agt_aplicada = True
-            except Exception as e:
-                return Response({'detail': f'Licença gravada, mas a certificação AGT falhou: {e}'},
-                                status=502)
-
-        # A LIGAÇÃO da fatura eletrónica (endpoints + credenciais do contribuinte)
-        # também vem do PCC: escreve-se no AGTConnection do motor fiscal e o
-        # agt_worker sai do modo simulação sozinho. O cliente nunca digita URLs.
-        conexao_aplicada = False
-        if agt.get('connection'):
-            try:
-                from fiscal.models import AGTConnection
-                con = agt['connection']
-                obj, _ = AGTConnection.objects.get_or_create(name='AGT')
-                for campo in ('url_auth', 'url_submit', 'url_query', 'url_cancel',
-                              'url_download', 'url_saft', 'url_health',
-                              'client_id', 'environment'):
-                    if con.get(campo) is not None:
-                        setattr(obj, campo, con[campo])
-                # o segredo guarda-se ENCRIPTADO (fiscal.secrets) — nunca em claro
-                if con.get('client_secret'):
-                    from fiscal.secrets import encrypt
-                    obj.client_secret_enc = encrypt(con['client_secret'])
-                obj.is_active = True
-                obj.save()
-                conexao_aplicada = True
-            except Exception as e:
-                return Response({'detail': f'Licença gravada, mas a ligação AGT falhou: {e}'},
-                                status=502)
-
-        # DADOS DA EMPRESA — o PCC já sabe nome/NIF/morada/telefone (foram escritos
-        # ao criar o cliente, "Novo Provisionamento"); em vez do dono ter de os
-        # escrever outra vez em Configuração POS → Empresa, aplicam-se sozinhos AQUI,
-        # na mesma sincronização. Sem logo (esse continua upload local, de propósito —
-        # nunca uma imagem por URL, mesmo princípio já seguido no resto do sistema).
-        # Falha nisto nunca deve travar a sincronização — é conveniência, não segurança.
-        empresa_aplicada = False
-        try:
-            empresa_aplicada = _aplicar_dados_empresa(r.json().get('company') or {})
-        except Exception:
-            pass
+        flags, erro = _aplicar_extras_pcc(r.json())
+        if erro:
+            return Response({'detail': f'Licença gravada, mas {erro}'}, status=502)
 
         return Response({
-            'agt_applied': agt_aplicada,
-            'agt_connection_applied': conexao_aplicada,
-            'company_applied': empresa_aplicada,
+            'agt_applied': flags['agt_applied'],
+            'agt_connection_applied': flags['agt_connection_applied'],
+            'company_applied': flags['company_applied'],
             'detail': 'Licença sincronizada com o PCC.',
             'license_number': nova.get('license_number'),
             'valid_until': nova.get('valid_until'),
@@ -228,7 +233,87 @@ class LicenseSyncView(APIView):
             'modules': len(nova.get('modules') or []),
             # módulos novos só entram quando o serviço reinicia (INSTALLED_APPS)
             'restart_needed': mudou_modulos,
-            'latest_version': release.get('version'),
+            'latest_version': flags['latest_version'],
+        })
+
+
+class RemoteActivationView(APIView):
+    """ATIVAÇÃO REMOTA — a PRIMEIRA licença, puxada do PCC pela Internet, sem
+    copiar ficheiro nenhum à mão. O técnico só precisa do código do cliente e
+    da senha de instalação — as duas coisas que já tem para correr o setup.exe
+    (PCC → Gestão de Clientes → Acessos) — não escreve URLs nem mexe em pastas.
+
+    Só serve para a PRIMEIRA ativação (sem license.key ainda). Para renovar
+    uma instalação já ativa, o caminho continua a ser "Sincronizar com o PCC"
+    (LicenseSyncView) — essa exige prova de posse da licença atual; esta,
+    como ainda não há nenhuma, autentica-se pela senha de instalação.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        import os
+        import json
+        import base64
+        import socket
+        import requests as http
+        from django.conf import settings
+        from licensing.engine.crypto import verify_license
+
+        caminho = os.path.join(settings.BASE_DIR, 'license.key')
+        if os.path.exists(caminho):
+            return Response({'detail': 'Já há uma licença instalada nesta máquina — use '
+                                       '"Sincronizar com o PCC" para renovar, não a ativação.'}, status=400)
+
+        codigo = (request.data.get('client_code') or '').strip()
+        senha = request.data.get('install_password') or ''
+        if not (codigo and senha):
+            return Response({'detail': 'Indique o código do cliente e a senha de instalação.'}, status=400)
+
+        pcc = os.environ.get('PCC_URL', getattr(settings, 'PCC_URL', ''))
+        if not pcc:
+            return Response({'detail': 'PCC_URL não configurado nesta instalação.'}, status=500)
+        try:
+            hostname = socket.gethostname()
+        except Exception:
+            hostname = ''
+        try:
+            r = http.post(f'{pcc.rstrip("/")}/api/clm/licenses/activate/',
+                          json={'client_code': codigo, 'install_password': senha, 'hostname': hostname},
+                          timeout=20)
+        except Exception as e:
+            return Response({'detail': f'Sem ligação ao PCC ({pcc}): {e}'}, status=502)
+        if r.status_code != 200:
+            try:
+                return Response(r.json(), status=r.status_code)
+            except Exception:
+                return Response({'detail': f'PCC respondeu {r.status_code}.'}, status=502)
+
+        body = r.json()
+        raw = (body.get('license_key') or '').strip()
+        try:
+            data = json.loads(base64.b64decode(raw).decode('utf-8'))
+            sig = data.pop('signature', None)
+            if not (sig and verify_license(data, sig)):
+                return Response({'detail': 'O PCC devolveu uma licença com assinatura inválida — '
+                                           'nada foi ativado.'}, status=502)
+        except Exception:
+            return Response({'detail': 'Licença devolvida ilegível — nada foi ativado.'}, status=502)
+
+        with open(caminho, 'w') as f:
+            f.write(raw)
+
+        flags, erro = _aplicar_extras_pcc(body)
+        if erro:
+            return Response({'detail': f'Licença ativada, mas {erro}'}, status=502)
+
+        return Response({
+            'detail': 'Licença ativada com sucesso — o sistema já está pronto a usar.',
+            'license_number': data.get('license_number'),
+            'valid_until': data.get('valid_until'),
+            'modules': len(data.get('modules') or []),
+            'agt_applied': flags['agt_applied'],
+            'agt_connection_applied': flags['agt_connection_applied'],
+            'company_applied': flags['company_applied'],
         })
 
 

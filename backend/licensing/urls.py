@@ -1,9 +1,11 @@
 from django.urls import path
 from .views import (ActiveModulesView, LicenseStatusView, LicensePreflightView, LicenseLimitsView,
-                    FeaturesView, LicenseSyncView, ApplyUpdateView, OwnerPasswordResetView)
+                    FeaturesView, LicenseSyncView, ApplyUpdateView, OwnerPasswordResetView,
+                    RemoteActivationView)
 
 urlpatterns = [
     path('sync/', LicenseSyncView.as_view(), name='license-sync'),
+    path('activate-remote/', RemoteActivationView.as_view(), name='activate-remote'),
     path('active-modules/', ActiveModulesView.as_view(), name='active-modules'),
     path('features/', FeaturesView.as_view(), name='features'),
     path('status/', LicenseStatusView.as_view(), name='license-status'),
