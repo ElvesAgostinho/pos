@@ -134,11 +134,11 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   <Row label="E-Mail:"><input value={d.email || ''} onChange={(e) => set('email', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
                   <Row label="Cidade:"><input value={d.city || ''} onChange={(e) => set('city', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
                   <Row label="WebSite:"><input value={d.website || ''} onChange={(e) => set('website', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
-                  <Row label="País:"><input value={d.country_code || ''} onChange={(e) => set('country_code', e.target.value.toUpperCase())} className={`${inp} flex-1`} style={inputStyle} /></Row>
+                  <Row label="País:"><input value={d.country || ''} onChange={(e) => set('country', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
                   <Row label="Specific Timezone:" w="w-[120px]">
                     <input type="checkbox" checked={!!d.specific_timezone} onChange={(e) => set('specific_timezone', e.target.checked)} className="w-4 h-4" />
                   </Row>
-                  <Row label="Country description:" w="w-[110px]"><input value={d.country || ''} onChange={(e) => set('country', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
+                  <Row label="Country description:" w="w-[110px]"><input value={d.country_code || ''} onChange={(e) => set('country_code', e.target.value.toUpperCase())} maxLength={5} className={`${inp} flex-1`} style={inputStyle} /></Row>
                   <Row label="Timezone:">
                     <input value={d.timezone || ''} disabled={!d.specific_timezone} onChange={(e) => set('timezone', e.target.value)}
                       className={`${inp} flex-1 disabled:bg-[#eef0f2]`} style={inputStyle} />
