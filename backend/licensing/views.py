@@ -317,6 +317,76 @@ class RemoteActivationView(APIView):
         })
 
 
+class UploadLicenseView(APIView):
+    """CARREGAR O license.key — terceira forma de ativar/renovar, sem tocar na
+    pasta do servidor nem digitar nada. O dono já TEM o ficheiro (o técnico
+    entregou-o por email/WhatsApp/pen — está algures no computador dele, não
+    no servidor): escolhe-o no seletor de ficheiros do próprio browser e
+    carrega — o browser é que envia o conteúdo, este endpoint só valida a
+    assinatura e grava.
+
+    Diferente da ativação remota (RemoteActivationView, que PUXA do PCC pela
+    Internet): aqui não há nenhuma chamada ao PCC — serve também para quando o
+    servidor do cliente não tem rota à Internet, só o computador de quem está
+    a fazer o upload. Por essa razão não traz AGT/dados da empresa (isso vem
+    só na resposta do PCC) — se precisar disso, "Sincronizar com o PCC" a
+    seguir, quando houver ligação.
+
+    Serve TANTO para a primeira ativação como para renovar uma já instalada
+    (ex.: depois de pagar, o fornecedor manda um license.key novo) — ao
+    contrário da ativação remota, que só aceita a primeira vez.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        import os
+        import json
+        import base64
+        import shutil
+        from licensing.engine.crypto import verify_license
+
+        f = request.FILES.get('file')
+        if not f:
+            return Response({'detail': 'Escolha o ficheiro license.key.'}, status=400)
+        try:
+            raw = f.read().decode('utf-8').strip()
+        except Exception:
+            return Response({'detail': 'Ficheiro ilegível — não parece um license.key.'}, status=400)
+
+        try:
+            data = json.loads(base64.b64decode(raw).decode('utf-8'))
+            sig = data.pop('signature', None)
+            if not (sig and verify_license(data, sig)):
+                return Response({'detail': 'A assinatura deste ficheiro não é válida — não '
+                                           'foi gravado nada. Peça o ficheiro outra vez ao fornecedor.'}, status=400)
+        except Exception:
+            return Response({'detail': 'Ficheiro ilegível — não parece um license.key.'}, status=400)
+
+        caminho = os.path.join(settings.BASE_DIR, 'license.key')
+        if os.path.exists(caminho):
+            # RENOVAÇÃO: só se aceita se for do MESMO cliente — evita trocar por
+            # engano a identidade de uma instalação já ativa carregando o
+            # ficheiro errado.
+            try:
+                atual = json.loads(base64.b64decode(open(caminho).read().strip()).decode('utf-8'))
+                if atual.get('client_code') != data.get('client_code'):
+                    return Response({'detail': 'Este ficheiro é de OUTRO cliente — nada foi '
+                                               'alterado. Confirme que é o ficheiro certo.'}, status=400)
+            except Exception:
+                pass
+            shutil.copyfile(caminho, caminho + '.bak')
+
+        with open(caminho, 'w') as out:
+            out.write(raw)
+
+        return Response({
+            'detail': 'Licença carregada com sucesso.',
+            'license_number': data.get('license_number'),
+            'valid_until': data.get('valid_until'),
+            'modules': len(data.get('modules') or []),
+        })
+
+
 class OwnerPasswordResetView(APIView):
     """"ESQUECI-ME DA PASSWORD" — repõe a password do dono numa instalação JÁ A
     CORRER, sem PowerShell nem ida à máquina. O dono pede ao fornecedor um

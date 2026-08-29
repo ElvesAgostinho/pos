@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ShieldCheck, RefreshCcw, FolderOpen, AlertTriangle, CheckCircle2, Wifi } from 'lucide-react';
+import { ShieldCheck, RefreshCcw, FolderOpen, AlertTriangle, CheckCircle2, Wifi, Upload } from 'lucide-react';
 import { apiClient } from '../api/client';
 import { useLicenseStatus } from '../hooks/useActiveModules';
 
@@ -41,25 +41,63 @@ const usePreflight = () =>
 /**
  * Ecrã de primeiro arranque, quando ainda não há license.key nesta instalação.
  *
- * Tem DUAS formas de ativar — a automática (recomendada) e a manual (sempre
- * disponível, para quando não há Internet). Um ecrã anterior aqui pedia
- * "Terminal ID + Activation Key" e chamava clm/terminals/activate/ — isso era o
- * licenciamento de TERMINAIS POS dentro de uma casa já licenciada
- * (clm.TerminalLicense), não tinha nada a ver com a licença do servidor. Gravava
- * um token que ninguém lia (RequireLicense só confia em licensing/status/) e
- * deixava o dono preso aqui em loop infinito depois de "ativar" — aconteceu numa
- * instalação real. A ativação automática de agora (RemoteActivationView) não
- * repete esse erro: escreve o MESMO ficheiro license.key que o caminho manual
- * sempre escreveu, assinado pelo PCC — é a fonte que licensing/status/ já lê,
- * por isso este ecrã sai sozinho assim que funciona, tal como no caminho manual.
+ * Tem TRÊS formas de ativar — nenhuma delas obriga o dono a abrir a pasta do
+ * servidor (isso é o que se quer evitar: um cliente sem jeito para informática
+ * lá a mexer na pasta da instalação estraga mais do que resolve):
+ *   1. Carregar o ficheiro — o técnico já entregou o license.key por email/
+ *      WhatsApp/pen; o dono escolhe-o no seletor de ficheiros do SEU PRÓPRIO
+ *      computador (nunca no do servidor) e o browser envia o conteúdo.
+ *   2. Ativação automática — só um código + uma senha (os mesmos do setup.exe),
+ *      o servidor vai buscar a licença ao PCC sozinho, sem ficheiro nenhum.
+ *   3. Manual — para quando nenhuma das duas anteriores é possível (sem
+ *      Internet nem acesso ao browser do dono): aí sim, alguém com acesso ao
+ *      servidor copia o ficheiro à mão.
+ * Um ecrã anterior aqui pedia "Terminal ID + Activation Key" e chamava
+ * clm/terminals/activate/ — isso era o licenciamento de TERMINAIS POS dentro de
+ * uma casa já licenciada (clm.TerminalLicense), não tinha nada a ver com a
+ * licença do servidor. Gravava um token que ninguém lia (RequireLicense só
+ * confia em licensing/status/) e deixava o dono preso aqui em loop infinito
+ * depois de "ativar" — aconteceu numa instalação real. As três formas de agora
+ * não repetem esse erro: todas escrevem o MESMO ficheiro license.key que o
+ * caminho manual sempre escreveu, assinado pelo fornecedor — é a fonte que
+ * licensing/status/ já lê, por isso este ecrã sai sozinho assim que funciona.
  */
 const Onboarding: React.FC = () => {
   const { isLoading, refetch } = useLicenseStatus();
   const { data: pre, refetch: refetchPre } = usePreflight();
 
-  // ATIVAÇÃO AUTOMÁTICA — o técnico já tem estes dois valores para correr o
+  // 1) CARREGAR O FICHEIRO — o dono escolhe no computador DELE (nunca no
+  // servidor) o license.key que o técnico já lhe entregou; o browser envia.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [ficheiro, setFicheiro] = useState<File | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [enviarMsg, setEnviarMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const handleEnviarFicheiro = async () => {
+    if (!ficheiro) return;
+    setEnviarMsg(null);
+    setEnviando(true);
+    try {
+      const base = (apiClient.defaults.baseURL || '/api/').replace(/\/?$/, '/');
+      const formData = new FormData();
+      formData.append('file', ficheiro);
+      const r = await fetch(`${base}licensing/upload/`, { method: 'POST', body: formData });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) { setEnviarMsg({ ok: false, text: body.detail || `Falhou (HTTP ${r.status}).` }); return; }
+      setEnviarMsg({ ok: true, text: body.detail || 'Licença carregada.' });
+      setFicheiro(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      refetch(); refetchPre();
+    } catch {
+      setEnviarMsg({ ok: false, text: 'Sem ligação ao servidor.' });
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  // 2) ATIVAÇÃO AUTOMÁTICA — o técnico já tem estes dois valores para correr o
   // setup.exe (PCC → Gestão de Clientes → Acessos); reaproveitados aqui para
-  // puxar a licença pela Internet, sem copiar ficheiro nenhum à mão.
+  // puxar a licença pela Internet, sem ficheiro nenhum.
   const [clientCode, setClientCode] = useState('');
   const [installPassword, setInstallPassword] = useState('');
   const [ativando, setAtivando] = useState(false);
@@ -107,13 +145,37 @@ const Onboarding: React.FC = () => {
         <div className="p-6 space-y-4">
           <p className="text-sm text-gray-700">
             Este servidor está a correr, mas ainda não tem o ficheiro de licença desta
-            instalação. Ative-a de uma das duas formas abaixo.
+            instalação. Ative-a de uma das formas abaixo.
           </p>
+
+          <div className="bg-green-50 border border-green-200 rounded p-4 text-sm space-y-3">
+            <div className="flex items-start gap-2">
+              <Upload size={16} className="text-green-600 mt-0.5 shrink-0" />
+              <div className="font-bold text-green-900">Carregar o ficheiro (recomendado)</div>
+            </div>
+            <p className="text-[12px] text-gray-600">
+              O técnico já lhe entregou o <code className="bg-gray-200 px-1 rounded">license.key</code> (email,
+              WhatsApp, pen). Escolha-o aqui, no SEU computador — nunca precisa de abrir a pasta
+              do servidor.
+            </p>
+            <input ref={fileInputRef} type="file" accept=".key,text/plain"
+              onChange={(e) => setFicheiro(e.target.files?.[0] || null)}
+              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-green-600 file:text-white file:font-bold hover:file:bg-green-700 file:cursor-pointer" />
+            {enviarMsg && (
+              <div className={`text-[12px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                {enviarMsg.text}
+              </div>
+            )}
+            <button onClick={handleEnviarFicheiro} disabled={enviando || !ficheiro}
+              className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700 disabled:opacity-50">
+              {enviando ? 'A enviar…' : 'Submeter'}
+            </button>
+          </div>
 
           <form onSubmit={handleAtivar} className="bg-blue-50 border border-blue-200 rounded p-4 text-sm space-y-3">
             <div className="flex items-start gap-2">
               <Wifi size={16} className="text-blue-500 mt-0.5 shrink-0" />
-              <div className="font-bold text-blue-900">Ativação automática (recomendado)</div>
+              <div className="font-bold text-blue-900">Ativação automática (só código + senha, sem ficheiro)</div>
             </div>
             <p className="text-[12px] text-gray-600">
               Os mesmos dois dados que já tem para correr o setup.exe (PCC → Gestão de Clientes
@@ -144,7 +206,7 @@ const Onboarding: React.FC = () => {
             <div className="flex items-start gap-2">
               <FolderOpen size={16} className="text-gray-400 mt-0.5 shrink-0" />
               <div>
-                <div className="font-bold">Manual (sem Internet, ou se a automática falhar):</div>
+                <div className="font-bold">Manual (só se nenhuma das anteriores for possível):</div>
                 <ol className="list-decimal list-inside mt-1 space-y-1 text-gray-600">
                   <li>Vá ao PCC → Gestão de Clientes → selecione este cliente.</li>
                   <li>Copie o ficheiro <code className="bg-gray-200 px-1 rounded">license.key</code> gerado para

@@ -31,6 +31,11 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
   const [showLicenseManager, setShowLicenseManager] = useState(false);   // "Gestor de Licenças" (janela própria)
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  // Renovar por ficheiro (ex.: depois de pagar, o fornecedor manda um license.key
+  // novo) — o dono escolhe-o no SEU computador, nunca na pasta do servidor.
+  const [ficheiroLic, setFicheiroLic] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const { data: full } = useQuery({
     queryKey: ['posc', 'company', row?.id],
@@ -88,6 +93,23 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       setSyncMsg({ ok: false, text: e?.response?.data?.detail || 'Não foi possível puxar a licença do PCC.' });
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const enviarFicheiroLicenca = async () => {
+    if (!ficheiroLic) return;
+    setUploading(true); setUploadMsg(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', ficheiroLic);
+      const r = await apiClient.post('licensing/upload/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setUploadMsg({ ok: true, text: r.data?.detail || 'Licença carregada.' });
+      setFicheiroLic(null);
+      qc.invalidateQueries({ queryKey: ['posc', 'company', row?.id] });
+    } catch (e: any) {
+      setUploadMsg({ ok: false, text: e?.response?.data?.detail || 'Não foi possível carregar o ficheiro.' });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -503,6 +525,31 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   ))}
                 </div>
               )}
+
+              {/* Renovar por ficheiro — ex.: depois de pagar, o fornecedor manda um
+                  license.key novo por email/WhatsApp. Escolhe-se no computador de
+                  quem está a ver este ecrã, nunca na pasta do servidor. */}
+              <div className="border border-[#e0d090] bg-[#fffbea] rounded p-3">
+                <div className="font-bold text-[#7a5c00] mb-1">Renovar carregando um ficheiro</div>
+                <div className="text-[11px] text-[#8a6c00] mb-2">
+                  Recebeu um license.key novo do fornecedor (ex.: depois de pagar)? Escolha-o aqui.
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="file" accept=".key,text/plain"
+                    onChange={(e) => setFicheiroLic(e.target.files?.[0] || null)}
+                    className="flex-1 text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-[#c9a400] file:text-white file:font-bold file:cursor-pointer" />
+                  <button onClick={enviarFicheiroLicenca} disabled={uploading || !ficheiroLic}
+                    className="h-8 px-3 text-[12px] font-bold text-white rounded disabled:opacity-50 flex-shrink-0"
+                    style={{ background: '#c9a400' }}>
+                    {uploading ? 'A enviar…' : 'Submeter'}
+                  </button>
+                </div>
+                {uploadMsg && (
+                  <div className={`mt-2 text-[11px] px-2 py-1 rounded border ${uploadMsg.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                    {uploadMsg.text}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="border-t border-[#ddd] px-4 py-2.5 flex justify-between items-center bg-[#f7f7f7]">
