@@ -392,7 +392,14 @@ LOGGING = {
         "pcc_error_report": {"class": "core.error_reporting.PccErrorHandler", "level": "ERROR"},
     },
     "loggers": {
-        "django": {"handlers": ["console", "pcc_error_report"], "level": "INFO", "propagate": True},
+        # ERROR, não INFO: isto substitui por completo a config de logging por
+        # omissão do Django (que só imprime INFO+ na consola em DEBUG, via um
+        # filtro require_debug_true que este dict não tinha). Com INFO aqui, um
+        # serviço em produção (DEBUG=False) enchia o log continuamente com
+        # ruído INFO que antes ficava calado — ERROR mantém o mesmo silêncio de
+        # sempre em produção, e continua a apanhar tudo o que o relatório de
+        # erro automático (core.error_reporting) precisa.
+        "django": {"handlers": ["console", "pcc_error_report"], "level": "ERROR", "propagate": True},
     },
 }
 

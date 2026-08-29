@@ -325,7 +325,13 @@ class LicenseViewSet(viewsets.ModelViewSet):
             return Response({'valid': False, 'detail': 'Licença ilegível.'}, status=400)
 
         code_ = data.get('client_code')
-        lic = License.objects.filter(client__code=code_).order_by('-created_at').first()
+        # O código vive na LICENÇA em que foi gerado (generate_reset_code, via
+        # self.get_object() — uma licença concreta), não necessariamente a mais
+        # recente do cliente: se uma renovação criar uma licença nova entre gerar
+        # o código e o usar, "a mais recente" já não é a que tem o código pendente,
+        # e um código válido parecia "sem código nenhum". Procura-se a que TEM.
+        lic = (License.objects.filter(client__code=code_, owner_reset_code__isnull=False)
+               .order_by('-created_at').first())
         if not lic or not lic.owner_reset_code:
             return Response({'valid': False, 'detail': 'Sem código pendente para este cliente.'}, status=404)
 
@@ -421,6 +427,9 @@ class SystemReleaseViewSet(viewsets.ModelViewSet):
     serializer_class = SystemReleaseSerializer
     permission_classes = [IsAdminUser]
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=getattr(self.request.user, 'username', '') or 'PCC')
+
 
 class ErrorReportViewSet(viewsets.ModelViewSet):
     """ERROS AUTOMÁTICOS — o fornecedor lê e faz a TRIAGEM aqui (staff, PATCH em
@@ -460,6 +469,12 @@ class ErrorReportViewSet(viewsets.ModelViewSet):
         lic = License.objects.filter(client__code=code).order_by('-created_at').first()
         if not lic:
             return Response({'detail': f'Cliente "{code}" desconhecido.'}, status=404)
+        # Mesma regra de latest/activate: uma conta SUSPENDED/CANCELED não deve
+        # continuar a falar com o PCC indefinidamente com uma licença antiga —
+        # isto é sobre a CONTA estar fechada, diferente de licença EXPIRADA
+        # (essa continua aceite de propósito, ver docstring acima).
+        if lic.client.status in ('SUSPENDED', 'CANCELED'):
+            return Response({'detail': 'A conta deste cliente está suspensa no PCC.'}, status=403)
 
         hostname = (request.data.get('hostname') or '').strip()[:100]
         installation, _ = Installation.objects.get_or_create(
@@ -467,7 +482,10 @@ class ErrorReportViewSet(viewsets.ModelViewSet):
             defaults={'install_type': 'PRODUCTION'})
         from django.utils import timezone
         installation.last_ping = timezone.now()
-        installation.save(update_fields=['last_ping'])
+        ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR')
+        if ip:
+            installation.server_ip = ip
+        installation.save(update_fields=['last_ping', 'server_ip'])
 
         ErrorReport.objects.create(
             installation=installation, client_code=code,
@@ -480,6 +498,3 @@ class ErrorReportViewSet(viewsets.ModelViewSet):
             hostname=hostname,
         )
         return Response({'detail': 'recebido'}, status=201)
-
-    def perform_create(self, serializer):
-        serializer.save(created_by=getattr(self.request.user, 'username', '') or 'PCC')
