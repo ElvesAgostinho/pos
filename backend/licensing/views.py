@@ -196,9 +196,11 @@ class LicenseSyncView(APIView):
             hostname = socket.gethostname()
         except Exception:
             hostname = ''
+        from core.support import APP_VERSION
         try:
             r = http.post(f'{pcc.rstrip("/")}/api/clm/licenses/latest/',
-                          json={'license_key': atual_raw, 'hostname': hostname}, timeout=20)
+                          json={'license_key': atual_raw, 'hostname': hostname,
+                               'app_version': APP_VERSION}, timeout=20)
         except Exception as e:
             return Response({'detail': f'Sem ligação ao PCC ({pcc}): {e}'}, status=502)
         if r.status_code != 200:
@@ -284,9 +286,11 @@ class RemoteActivationView(APIView):
             hostname = socket.gethostname()
         except Exception:
             hostname = ''
+        from core.support import APP_VERSION
         try:
             r = http.post(f'{pcc.rstrip("/")}/api/clm/licenses/activate/',
-                          json={'client_code': codigo, 'install_password': senha, 'hostname': hostname},
+                          json={'client_code': codigo, 'install_password': senha, 'hostname': hostname,
+                               'app_version': APP_VERSION},
                           timeout=20)
         except Exception as e:
             return Response({'detail': f'Sem ligação ao PCC ({pcc}): {e}'}, status=502)

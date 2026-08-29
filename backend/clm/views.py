@@ -99,7 +99,15 @@ def _build_license_response(lic, request, hostname):
     ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR')
     if ip:
         installation.server_ip = ip
-    installation.save(update_fields=['last_ping', 'server_ip'])
+    # VERSÃO REAL — o campo já existia no modelo mas nada o escrevia (mesmo
+    # esquecimento do last_ping antes de o resolvermos): sem isto o PCC nunca
+    # sabia que build cada cliente tinha instalada, mesmo com "Versões
+    # publicadas" já a existir. Agora importa mais: tanto a sincronização como
+    # a ativação remota mandam a versão que estão a correr neste momento.
+    app_version = (request.data.get('app_version') or '').strip()[:50]
+    if app_version:
+        installation.version = app_version
+    installation.save(update_fields=['last_ping', 'server_ip', 'version'])
 
     resp = {
         'license_number': lic.license_number,
@@ -356,9 +364,15 @@ class InstallationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
 
 class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """Trilho de auditoria do PCC — quem fez o quê (provisionar cliente, gerar
+    acessos, reposição de password, ativação remota falhada, etc.). Só leitura
+    de propósito: um registo de auditoria que se pudesse editar não provava nada.
+    """
     queryset = AuditLogCLM.objects.all().order_by('-timestamp')
     serializer_class = AuditLogCLMSerializer
     permission_classes = [IsAdminUser]
+    search_fields = ['action', 'user_identity']
+    ordering_fields = ['timestamp', 'action']
 
 class TerminalLicenseViewSet(viewsets.ModelViewSet):
     queryset = TerminalLicense.objects.all().order_by('-created_at')
@@ -485,7 +499,10 @@ class ErrorReportViewSet(viewsets.ModelViewSet):
         ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or request.META.get('REMOTE_ADDR')
         if ip:
             installation.server_ip = ip
-        installation.save(update_fields=['last_ping', 'server_ip'])
+        app_version = (request.data.get('app_version') or '').strip()[:50]
+        if app_version:
+            installation.version = app_version
+        installation.save(update_fields=['last_ping', 'server_ip', 'version'])
 
         ErrorReport.objects.create(
             installation=installation, client_code=code,

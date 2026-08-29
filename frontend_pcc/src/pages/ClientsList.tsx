@@ -271,7 +271,7 @@ const ClientsList: React.FC = () => {
           ) : (selectedClient.installations || []).map((inst: any) => (
             <span key={inst.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${inst.is_online ? 'border-green-300 bg-green-50 text-green-700' : 'border-[#ddd] bg-[#f5f5f5] text-gray-500'}`}>
               {inst.is_online ? <Wifi size={11} /> : <WifiOff size={11} />}
-              <b>{inst.name}</b>{inst.server_ip ? ` · ${inst.server_ip}` : ''} · {tempoRelativo(inst.last_ping) || 'nunca sincronizou'}
+              <b>{inst.name}</b>{inst.server_ip ? ` · ${inst.server_ip}` : ''}{inst.version ? ` · v${inst.version}` : ''} · {tempoRelativo(inst.last_ping) || 'nunca sincronizou'}
               <button onClick={() => apagarInstalacao(inst.id, inst.name)} title="Apagar esta instalação"
                 className="text-gray-400 hover:text-red-600 ml-1"><Trash2 size={10} /></button>
             </span>
