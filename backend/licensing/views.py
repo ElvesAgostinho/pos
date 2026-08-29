@@ -35,11 +35,19 @@ def _real_license():
         pass
     # 2) Fallback offline — license.key assinada
     try:
-        from .offline_validator import get_license
+        from .offline_validator import get_license, _expired
         f = get_license(settings.BASE_DIR)
         if f:
+            # A VALIDADE tem de se impor AQUI também, não só no carregamento dos
+            # módulos opcionais (get_active_modules, settings.py). Sem isto, este
+            # caminho — o que quase toda instalação real usa, já que clm.License
+            # local fica vazio — dizia "licensed: true" para sempre, mesmo anos
+            # depois do contrato acabar: só os módulos desapareciam (e só depois
+            # de reiniciar o serviço), o ecrã de login continuava a abrir na
+            # mesma. Achado ao confirmar que a validade é mesmo imposta.
             return {
-                'licensed': True, 'client': f.get('client_code'), 'license_number': f.get('license_number'),
+                'licensed': not _expired(f), 'client': f.get('client_code'),
+                'license_number': f.get('license_number'),
                 'valid_until': f.get('valid_until'), 'modules': f.get('modules', []),
                 'limits': f.get('limits', {}), 'source': 'license.key',
             }
