@@ -146,6 +146,15 @@ def main():
     # tenha escolhido (só atualiza nome/grupo/texto de ajuda a cada versão nova).
     correr('seed_params')
 
+    # O CATÁLOGO FISCAL AGT (tipos de documento — FT/FR/FS/NC/ND/GT/RC/…, taxas
+    # de IVA, motivos de isenção, séries do ano). Sem isto, uma instalação nova
+    # não conseguia emitir NENHUM documento fiscal — o motor (fiscal/services.py
+    # issue_document) precisa de um FiscalDocType para saber o que assinar/
+    # imprimir, e a tabela ficava vazia. Achado a testar a emissão a sério numa
+    # instalação real: 0 tipos de documento configurados. Idempotente
+    # (update_or_create), como seed_params — nunca apaga o que o dono já mudou.
+    correr('seed_fiscal')
+
     # A CONTA DO DONO — utilizador/password que o técnico introduziu no wizard
     # (gerados no PCC). Numa atualização, o wizard volta a perguntar; se a
     # password vier vazia por algum motivo, não se mexe na conta existente —
