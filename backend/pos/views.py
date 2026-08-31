@@ -1271,6 +1271,14 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             if not cartao_dono or not cartao_dono.member_card_id:
                 return Response({'detail': 'Indique o titular do cartão de membro.',
                                  'requires_entity': True}, status=status.HTTP_400_BAD_REQUEST)
+            # Bloqueia o DONO DO CARTÃO: credit_of/debt_of/points_of somam os movimentos
+            # POR CLIENTE (um cartão pode ter vários titulares — `holders` — cada um com o
+            # seu próprio saldo). Duas contas a pagar em paralelo para o MESMO titular
+            # (dois terminais, ou duplo toque) liam o mesmo saldo/dívida/pontos ANTES de
+            # qualquer uma escrever o seu movimento — e as duas passavam o limite ao mesmo
+            # tempo (corrida TOCTOU). @transaction.atomic sozinho não chega: sem lock, uma
+            # leitura concorrente não espera pela escrita da outra.
+            cartao_dono = _C.objects.select_for_update().select_related('member_card').get(pk=cartao_dono.pk)
             cartao = cartao_dono.member_card
             if not cartao.is_active:
                 return Response({'detail': f'O cartão "{cartao.name}" está inativo.'},
