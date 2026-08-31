@@ -338,11 +338,22 @@ def r_comprovativos(p):
     from .models import POSTicketPayment
     from django.db.models import Q
     ini, fim = _periodo(p)
+    # PELO MENOS UM dos quatro campos tem de ter valor a sério (não nulo E não vazio).
+    # Isto tinha um .exclude(a='', b='', c='', d='') a seguir ao filter — mas exclude()
+    # com vários campos no MESMO exclude() só exclui a linha quando TODOS os quatro
+    # estão em branco ao mesmo tempo. Uma linha com bank_reference='' (vazio, não nulo)
+    # e os outros três nulos passava o filter (isnull=False bate em '') e não era
+    # excluída (nem todos os quatro estavam em branco) — entrava no relatório de
+    # reconciliação como uma "referência" que, na prática, está vazia.
+    tem_referencia = (
+        (Q(bank_reference__isnull=False) & ~Q(bank_reference='')) |
+        (Q(auth_code__isnull=False) & ~Q(auth_code='')) |
+        (Q(document_number__isnull=False) & ~Q(document_number='')) |
+        (Q(room_ref__isnull=False) & ~Q(room_ref=''))
+    )
     qs = (POSTicketPayment.objects
           .filter(ticket__closed_at__date__gte=ini, ticket__closed_at__date__lte=fim)
-          .filter(Q(bank_reference__isnull=False) | Q(auth_code__isnull=False)
-                  | Q(document_number__isnull=False) | Q(room_ref__isnull=False))
-          .exclude(bank_reference='', auth_code='', document_number='', room_ref='')
+          .filter(tem_referencia)
           .select_related('ticket', 'payment_method')
           .order_by('-created_at'))
     rows = []
@@ -1069,9 +1080,12 @@ def _periodo_anterior(ini, fim, modo):
 
 
 def _somas(dados):
+    # 'avg' (Ticket médio) fica de fora: usado pela comparação de períodos (compare(),
+    # abaixo) — somar as médias linha a linha inflava um "Ticket médio" que não quer
+    # dizer nada (30 dias a 500 Kz cada "davam" 15000 Kz na comparação).
     out = {}
     for c in dados['columns']:
-        if len(c) > 2 and c[2] == 'money':
+        if len(c) > 2 and c[2] == 'money' and c[0] != 'avg':
             out[c[0]] = sum((_num(r.get(c[0])) for r in dados['rows']), Decimal('0'))
     out['__linhas'] = Decimal(len(dados['rows']))
     return out
@@ -1332,6 +1346,19 @@ def _money_cols(cols):
     return [c[0] for c in cols if len(c) > 2 and c[2] == 'money']
 
 
+def _summable_money_cols(cols):
+    """Como _money_cols, mas exclui a coluna de MÉDIA ('avg', "Ticket médio").
+
+    Somar uma coluna de médias linha a linha não dá a média geral — dá um número
+    sem significado (30 dias a 500 Kz de ticket médio cada "somavam" para 15000 Kz
+    no rodapé/comparação/agrupamento). Usar SÓ nos sítios que SOMAM. O filtro de
+    intervalo de valor (secção 4, mais abaixo) continua a poder usar `_money_cols`
+    normal — aí não é soma, é comparar cada linha com um mínimo/máximo, e isso com
+    a média de cada linha faz sentido perfeito.
+    """
+    return [c for c in _money_cols(cols) if c != 'avg']
+
+
 def apply_advanced(dados, adv):
     """Aplica o filtro universal às linhas de um relatório já produzido."""
     if not adv:
@@ -1394,6 +1421,9 @@ def apply_advanced(dados, adv):
     #    Agrupar por DIA/MÊS/HORA usa a data da linha; por coluna, usa a coluna.
     grupo = adv.get('group_by')
     if grupo:
+        # Somável, não _money_cols: agrupar TAMBÉM soma (por grupo, em vez de por
+        # relatório inteiro) — a mesma média-somada-vira-lixo do rodapé aplicava-se aqui.
+        smcols = _summable_money_cols(cols)
         chaves = {}
         for r in linhas:
             if grupo in ('__day', '__month', '__hour', '__weekday'):
@@ -1412,7 +1442,7 @@ def apply_advanced(dados, adv):
                 k = str(r.get(grupo, '') or '—')
             g = chaves.setdefault(k, {'grupo': k, 'linhas': 0})
             g['linhas'] += 1
-            for m in mcols:
+            for m in smcols:
                 g[m] = (g.get(m) or Decimal('0')) + (_to_num(r.get(m)) or Decimal('0'))
 
         etiqueta = {'__day': 'Dia', '__month': 'Mês', '__hour': 'Hora',
@@ -1420,7 +1450,7 @@ def apply_advanced(dados, adv):
             grupo, next((c[1] for c in cols if c[0] == grupo), grupo))
 
         novas_cols = [('grupo', etiqueta), ('linhas', 'Registos')] + \
-                     [(m, next(c[1] for c in cols if c[0] == m), 'money') for m in mcols]
+                     [(m, next(c[1] for c in cols if c[0] == m), 'money') for m in smcols]
         linhas = [{k: (str(v) if isinstance(v, Decimal) else v) for k, v in g.items()}
                   for g in chaves.values()]
         cols = novas_cols
@@ -1446,7 +1476,7 @@ def apply_advanced(dados, adv):
 
     # 8) TOTAIS do que sobrou (o rodapé tem de falar do que está no ecrã)
     totais = {}
-    for m in [c[0] for c in cols if len(c) > 2 and c[2] == 'money']:
+    for m in _summable_money_cols(cols):
         totais[m] = str(sum((_to_num(r.get(m)) or Decimal('0') for r in linhas), Decimal('0')))
 
     dados['columns'] = cols
@@ -1467,7 +1497,11 @@ def apply_detail(dados, detailed):
     """
     if detailed in ('S', 'Sim', True, 'true', '1', 1):
         return dados
-    mcols = [c for c in dados['columns'] if len(c) > 2 and c[2] == 'money']
+    # Exclui 'avg' (Ticket médio): o totals do relatório original nunca teve essa
+    # chave (é uma média, não se soma) — sem esta exclusão, o resumo mostrava "Ticket
+    # médio: 0" (totais.get(c[0], '0') caía sempre no valor por omissão), um falso
+    # zero em vez de simplesmente não mostrar a coluna.
+    mcols = [c for c in dados['columns'] if len(c) > 2 and c[2] == 'money' and c[0] != 'avg']
     totais = dados.get('totals') or {}
     cols = [('n', 'Registos')] + [(c[0], c[1], 'money') for c in mcols]
     linha = {'n': len(dados['rows'])}
