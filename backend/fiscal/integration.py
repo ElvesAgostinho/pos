@@ -29,21 +29,34 @@ def _resolve_series(doc_type_code, outlet=None):
             escolhida = ((setor.params or {}).get(num)
                          or (setor.params or {}).get(int(num))) if setor else None
             if escolhida:
+                # Os MESMOS três filtros do caminho sem ficha (ativa + certificada + não
+                # fechada) — faltava aqui `certified`, a ficha do setor conseguia apontar
+                # para uma série ainda não certificada que o caminho sem ficha recusaria.
                 s = (FiscalSeries.objects
                      .filter(pk=escolhida, doc_type__code=doc_type_code,
-                             is_active=True, is_closed=False).first())
+                             is_active=True, is_closed=False, certified=True).first())
                 if s:
                     return s
         except Exception:
             pass
+    # Faltava `is_closed=False`: uma série fechada no fim do exercício (ecrã Financeiro >
+    # Documentos) continuava elegível aqui — só `validate_issue` a apanhava, tarde demais
+    # para dar um erro limpo em vez de uma falha de validação a meio da emissão.
     return (FiscalSeries.objects
-            .filter(doc_type__code=doc_type_code, is_active=True, certified=True)
+            .filter(doc_type__code=doc_type_code, is_active=True, certified=True, is_closed=False)
             .order_by('-year', 'code').first())
 
 
 def existing_for(source_module, source_ref):
+    """Devolve o documento fiscal já emitido para esta origem — ou None se ainda não há.
+
+    EXCLUI os ANULADOS (status='A'): um documento anulado (`void_document`) nunca é
+    apagado, mas deixa de valer como "já emitido" — senão uma venda cujo documento foi
+    corrigido por anulação ficava PARA SEMPRE impossível de voltar a faturar (todos os
+    pontos de emissão tratam "já existe" como definitivo e devolvem o mesmo documento).
+    """
     return FiscalDocument.objects.filter(source_module=source_module,
-                                         source_ref=str(source_ref)).first()
+                                         source_ref=str(source_ref)).exclude(status='A').first()
 
 
 def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None):

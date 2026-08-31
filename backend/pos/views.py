@@ -2079,7 +2079,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         já estornado — o caixa via um erro, carregava outra vez, e saía uma SEGUNDA
         nota de crédito da mesma venda.
         """
-        from fiscal.services import create_credit_note
+        from fiscal.services import create_credit_note, FiscalValidationError
         from fiscal.integration import existing_for
         ticket = POSTicket.objects.select_for_update().get(pk=pk)
         # (Modo de pagamento) "Permite estorno" — um voucher não se devolve em dinheiro.
@@ -2125,7 +2125,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 original.id, reason=motivo,
                 user=(request.user.username if request.user.is_authenticated else None),
                 ip=request.META.get('REMOTE_ADDR'))
-        except ValueError as e:
+        except (ValueError, FiscalValidationError) as e:
             return Response({'detail': str(e)}, status=400)
 
         ticket.status = 'REFUNDED'
@@ -2237,9 +2237,9 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         Agora há um só caminho: fiscal.services.issue_document. O mesmo que assina,
         encadeia e exporta.
         """
-        from fiscal.services import issue_document as fiscal_issue
+        from fiscal.services import issue_document as fiscal_issue, FiscalValidationError
         from fiscal.models import FiscalDocType, FiscalSeries
-        from fiscal.integration import existing_for
+        from fiscal.integration import existing_for, _resolve_series
 
         ticket = POSTicket.objects.select_for_update().get(pk=pk)
         if not ticket.lines.filter(is_void=False).exists():
@@ -2277,39 +2277,24 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         serie = None
         pedida = request.data.get('series')
         if pedida:
-            serie = FiscalSeries.objects.filter(pk=pedida, is_active=True, is_closed=False).first()
+            serie = FiscalSeries.objects.filter(pk=pedida, is_active=True, is_closed=False,
+                                                 certified=True).first()
             if not serie:
-                return Response({'detail': 'A série escolhida não existe, está fechada ou inativa.'},
+                return Response({'detail': 'A série escolhida não existe, está fechada, inativa '
+                                           'ou não certificada.'},
                                 status=status.HTTP_400_BAD_REQUEST)
             if serie.doc_type_id != tipo.id:
                 return Response({'detail': f'A série escolhida não é de "{codigo}". '
                                            f'Uma série numera um só tipo de documento.'},
                                 status=status.HTTP_400_BAD_REQUEST)
-        # A SÉRIE DA FICHA DO SETOR (parâmetros 8553-8589). É para isto que aquelas
-        # nove linhas existem: o Restaurante emite FR na série A, a Esplanada na série B.
-        # Estavam a ser gravadas e IGNORADAS — a emissão apanhava a primeira série ativa
-        # do tipo, e a ficha do setor era decorativa. Com uma só série por tipo o
-        # resultado coincidia por sorte; com duas, saía na errada.
+        # SEM ESCOLHA MANUAL: mesmo resolvedor da emissão automática (_resolve_series) —
+        # ficha do setor (parâmetros 8553-8589) primeiro, senão a série ativa mais
+        # recente do tipo. Antes disto havia aqui uma SEGUNDA cópia desta lógica, com
+        # filtros divergentes (faltava `certified` na ficha do setor, faltava `is_closed`
+        # no fallback) — o mesmo setor podia acabar a emitir em séries diferentes
+        # consoante o botão em que se tocava (automático vs. manual).
         if not serie:
-            MAPA_8553 = {'FR': '8557', 'NC': '8556', 'CM': '8555', 'FS': '8553',
-                         'VD': '8553', 'RC': '8558', 'FT': '8562',
-                         'GR': '8588', 'GT': '8588'}
-            num = MAPA_8553.get(codigo)
-            if num:
-                try:
-                    from .models import PosSector
-                    setor = PosSector.objects.filter(outlet=ticket.outlet).first()
-                    escolhida = ((setor.params or {}).get(num)
-                                 or (setor.params or {}).get(int(num))) if setor else None
-                    if escolhida:
-                        serie = FiscalSeries.objects.filter(
-                            pk=escolhida, doc_type=tipo,
-                            is_active=True, is_closed=False).first()
-                except Exception:
-                    serie = None
-        if not serie:
-            serie = (FiscalSeries.objects.filter(doc_type=tipo, is_active=True, is_closed=False)
-                     .order_by('-year').first())
+            serie = _resolve_series(codigo, outlet=ticket.outlet)
         if not serie:
             return Response({'detail': f'Sem série ativa para "{codigo}". '
                                        f'Crie-a em Configuração POS → Financeiro → Documentos.'},
@@ -2360,7 +2345,11 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 operator_name=ticket.operator_name,
                 place_ref=getattr(ticket, 'dest_label', None),
             )
-        except ValueError as e:
+        except (ValueError, FiscalValidationError) as e:
+            # FiscalValidationError (série fechada/não certificada, linha inválida, etc.)
+            # NÃO é um ValueError — só apanhar ValueError deixava estas validações
+            # passarem por aqui direto para um 500 sem tratamento, em vez do erro limpo
+            # que o operador ao balcão precisa de ver.
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         _print_document(ticket, doc)

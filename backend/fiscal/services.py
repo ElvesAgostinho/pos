@@ -267,14 +267,17 @@ def create_credit_note(original_doc_id, reason='', user=None, ip=None):
     if original.status == 'A':
         raise ValueError('Documento já anulado.')
 
-    from .models import FiscalDocType, FiscalSeries
+    from .models import FiscalDocType
     nc_type = FiscalDocType.objects.filter(code='NC', is_active=True).first()
     if not nc_type:
         raise ValueError('Tipo de documento "NC" (Nota de Crédito) não está configurado.')
-    nc_series = (FiscalSeries.objects.filter(doc_type=nc_type, is_active=True)
-                 .order_by('-year').first())
+    # Mesmo resolvedor do resto do motor fiscal (_resolve_series) — a cópia daqui ficava
+    # sem os filtros `is_closed`/`certified`: podia escolher uma série fechada ou não
+    # certificada, que só rebentava mais tarde dentro de `issue_document` (validate_issue).
+    from .integration import _resolve_series
+    nc_series = _resolve_series('NC')
     if not nc_series:
-        raise ValueError('Não há série de Nota de Crédito ativa. Crie-a no Centro Fiscal.')
+        raise ValueError('Não há série de Nota de Crédito ativa/certificada. Crie-a no Centro Fiscal.')
 
     lines = [{'description': l.description, 'quantity': l.quantity, 'unit_price': l.unit_price,
               'tax_percentage': l.tax_percentage, 'exemption_reason': l.exemption_reason}
