@@ -1730,9 +1730,17 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(outras, many=True).data)
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def fire_kitchen(self, request, pk=None):
-        """Envia as linhas NOVAS para produção (KDS): NEW -> FIRED. Ignora itens sem produção."""
-        ticket = self.get_object()
+        """Envia as linhas NOVAS para produção (KDS): NEW -> FIRED. Ignora itens sem produção.
+
+        TRANCA O TICKET (select_for_update): sem isto, dois "Enviar para Cozinha" quase
+        ao mesmo tempo (duplo toque, ou o ecrã que reenvia por não ter recebido resposta)
+        liam AMBOS as mesmas linhas NEW antes de qualquer um as marcar FIRED — e as duas
+        chamadas imprimiam a MESMA comanda, duplicada, na cozinha. O segundo pedido espera
+        aqui pelo primeiro e já não encontra nada por enviar.
+        """
+        ticket = POSTicket.objects.select_for_update().select_related('outlet', 'table').get(pk=pk)
         from collections import defaultdict
         from .models import PrintJob
         new_lines = list(ticket.lines.filter(kds_status='NEW').exclude(kds_station='NONE'))
