@@ -436,7 +436,13 @@ class POSTicket(models.Model):
                     discountable += line_gross
         self.subtotal = q(net)
         self.tax_total = q(tax)
-        # Desconto — só sobre as linhas que o permitem e que estão no âmbito.
+        # Desconto — só sobre as linhas que o permitem e que estão no âmbito. RECOMEÇA
+        # SEMPRE de 0: sem isto, uma conta que já teve um desconto (ex.: 15%, depois
+        # removido — discount_percent volta a 0) e voltasse a passar por aqui SEM que o
+        # chamador limpasse discount_total à mão, ficava com o desconto ANTIGO congelado
+        # (nem "VALUE" nem "PERCENT" tocam no campo quando não há desconto nenhum — o
+        # valor que lá estava antes ficava, silenciosamente, por cima do total novo).
+        self.discount_total = Decimal('0')
         if self.discount_id and self.discount.base == 'VALUE':
             # Desconto de VALOR fixo: nunca pode ultrapassar a base (senão o total ia a negativo).
             self.discount_total = q(min(self.discount.value, discountable))
