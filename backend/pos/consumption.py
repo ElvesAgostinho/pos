@@ -49,13 +49,21 @@ def _warehouse_for(item, outlet):
     As polpas vendidas no Restaurante saem do armazém do Restaurante; as mesmas
     polpas vendidas no Bar da Piscina saem do armazém do Bar. É o mapeamento por
     sub-família que manda — só se não houver é que se usa o armazém do outlet.
+
+    SEM mapeamento por sub-família E SEM armazém configurado no outlet, devolve
+    None — NÃO se adivinha um armazém qualquer. Isto tinha `or Warehouse.objects.
+    first()`: um outlet sem armazém escolhido (o ecrã "Outlets" trata "— nenhum —"
+    como opção válida) ia consumir stock de QUALQUER OUTRO armazém do sistema — o
+    primeiro por ordem, sem relação nenhuma com este ponto de venda — corrompendo
+    o stock de um armazém que a venda nem tocou. O chamador já sabe lidar com None
+    (salta a linha, "sem armazém configurado, não há stock a mover").
     """
-    from inventory.models import SubFamilyMapping, Warehouse
+    from inventory.models import SubFamilyMapping
     if item.subfamily_id:
         m = SubFamilyMapping.objects.filter(subfamily_id=item.subfamily_id, outlet=outlet).first()
         if m and m.warehouse_id:
             return m.warehouse
-    return outlet.warehouse or Warehouse.objects.first()
+    return outlet.warehouse
 
 
 def consume_ticket_stock(ticket, by=None):
