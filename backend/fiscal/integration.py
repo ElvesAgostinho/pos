@@ -145,6 +145,61 @@ def emit_table_consult(ticket, user=None, ip=None):
     )
 
 
+def emit_for_pms_folio(folio, charges, user=None, ip=None):
+    """Emite a Factura fiscal (AGT) do folio do PMS ao check-out/faturação.
+
+    `source_module='pms'` (já era um valor aceite no campo, à espera desde sempre —
+    ver `fiscal/saft.py`: o SAF-T sem filtro de módulo já mistura POS e PMS sozinho).
+    O quarto vai em `room_ref`, igual ao que o POS já faz para "Lançar em Quarto".
+
+    CHAMAR SEMPRE DENTRO DE transaction.atomic (o `select_for_update` da linha abaixo
+    exige-o): duas chamadas concorrentes para o mesmo folio (ex.: duplo-clique em
+    "Gerar Fatura") liam as duas "ainda não há documento" ao mesmo tempo e cada uma
+    emitia a SUA própria factura, assinada e numerada — duas facturas reais e
+    irreversíveis para a mesma conta. Bloquear a linha do folio primeiro serializa-as:
+    a segunda só continua depois da primeira ter gravado `existing_for`.
+    """
+    from .models import TaxRate
+    cfg = FiscalConfig.get()
+    FolioModel = type(folio)
+    folio = FolioModel.objects.select_for_update().get(pk=folio.pk)
+    existing = existing_for('pms', folio.id)
+    if existing:
+        return existing
+    if not charges:
+        return None
+    # Uma conta de EMPRESA/AGÊNCIA que ainda tem saldo por cobrar nasce POR RECEBER —
+    # a mesma regra que o POS já aplica em `emit_for_pos_ticket` (crédito -> FT). Antes,
+    # isto vinha sempre `settled=True` e sempre no tipo "paga" (FR/FS), fosse qual fosse
+    # o saldo: uma fatura de empresa emitida antes do pagamento saía a dizer à AGT que
+    # já tinha sido recebida, quando a conta corrente ainda devia tudo.
+    settled = folio.balance <= 0
+    doc_type_code = (cfg.pos_doc_type or 'FR') if settled else 'FT'
+    series = _resolve_series(doc_type_code)
+    if not series:
+        return None
+    default_rate = TaxRate.objects.filter(is_default=True, is_active=True).first()
+    tax_pct = default_rate.percentage if default_rate else 0
+    res = folio.reservation
+    guest = res.guest
+    lines = [{
+        'description': c.description, 'quantity': 1,
+        # Uma "Taxa" (ex.: taxa turística) já É o imposto — aplicar-lhe a taxa de IVA
+        # por cima seria imposto sobre imposto. Só os consumos normais levam IVA.
+        'unit_price': c.amount,
+        'tax_percentage': 0 if c.charge_type == 'TAX' else tax_pct,
+    } for c in charges]
+    return services.issue_document(
+        series_id=series.id,
+        customer_name=folio.payer_name or guest.name,
+        customer_tax_id=folio.payer_nif or guest.tax_id,
+        lines=lines, user=user, ip=ip,
+        source_module='pms', source_ref=folio.id,
+        room_ref=res.room.number if res.room else None,
+        customer=guest, settled=settled,
+    )
+
+
 def emit_for_finance_invoice(invoice, user=None, ip=None):
     """Emite uma Factura fiscal a partir de uma fatura do Financeiro (AR)."""
     cfg = FiscalConfig.get()
