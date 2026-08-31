@@ -407,6 +407,7 @@ class POSTableGroupViewSet(viewsets.ModelViewSet):
         outlet = self.request.query_params.get('outlet')
         return qs.filter(outlet_id=outlet) if outlet else qs
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         import uuid
         table_ids = request.data.get('table_ids') or []
@@ -418,9 +419,15 @@ class POSTableGroupViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'As mesas têm de ser do mesmo sector.'}, status=400)
         if any(t.group_id for t in tables):
             return Response({'detail': 'Alguma mesa já pertence a um grupo.'}, status=400)
+        primary = tables[0]
+        # O grupo abre uma conta nova na mesa principal: conta para o limite dela (8520)
+        # como qualquer outra conta — sem isto, agrupar mesas era uma porta lateral que
+        # nunca passava pelo limite de sub-contas.
+        erro = _enforce_table_ticket_cap(primary)
+        if erro:
+            return erro
         nums = '-'.join(str(t.table_number) for t in sorted(tables, key=lambda x: str(x.table_number)))
         group = POSTableGroup.objects.create(outlet=outlet, name=f'Grupo {nums}')
-        primary = tables[0]
         sess = CashSession.objects.filter(outlet=outlet, status='OPEN').first()
         ticket = POSTicket.objects.create(
             ticket_number=f"TCK-{uuid.uuid4().hex[:8].upper()}", outlet=outlet, table=primary,
@@ -487,6 +494,36 @@ def _resolve_destination(kind, ref):
     return None, None
 
 
+def _enforce_table_ticket_cap(table):
+    """Bloqueia a mesa e verifica o limite de contas abertas em simultâneo (parâmetro 8520).
+
+    Chamado em TODOS os pontos onde uma conta pode nascer ou voltar a ficar aberta numa
+    mesa — dividir, agrupar mesas, mudar o destino de uma conta para uma mesa, transferir
+    linhas, reabrir uma conta suspensa, sentar uma reserva. Antes, só `split()` verificava
+    isto: os outros caminhos abriam contas na mesa sem olhar ao limite — a mesma regra de
+    negócio a valer só às vezes, consoante o botão em que se tocava.
+
+    `select_for_update()` na PRÓPRIA MESA (não nos tickets) serializa pedidos concorrentes
+    na mesma mesa: sem isto, dois pedidos em paralelo liam a mesma contagem de contas
+    abertas e ambos a passavam ao mesmo tempo (corrida TOCTOU) — chamar isto DENTRO de uma
+    transação é obrigatório (`select_for_update` fora de `transaction.atomic` levanta erro).
+
+    Devolve uma Response de erro se o limite foi atingido, ou None se pode prosseguir.
+    """
+    if not table:
+        return None
+    limite = P.int(8520, 10)
+    if limite <= 0:
+        return None
+    POSTable.objects.select_for_update().get(pk=table.pk)
+    abertas = POSTicket.objects.filter(table=table, status='OPEN').count()
+    if abertas >= limite:
+        return Response({'detail': f'Esta mesa já tem {abertas} contas abertas — '
+                         f'limite de {limite} (parâmetro 8520). Feche alguma antes de abrir outra.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    return None
+
+
 class POSTicketViewSet(viewsets.ModelViewSet):
     serializer_class = POSTicketSerializer
     search_fields = ['ticket_number', 'operator_name', 'dest_label']
@@ -514,6 +551,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         return qs
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def set_destination(self, request, pk=None):
         """Define o destino do pedido (Mesa/Quarto/Destino genérico) + prioridade/observações."""
         ticket = self.get_object()
@@ -529,9 +567,15 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         ticket.dest_priority = request.data.get('dest_priority', 'NORMAL')
         # Mantém a FK de Mesa para o mapa de sala quando o destino é Mesa.
         if kind == 'TABLE' and ref:
+            if ticket.status == 'OPEN' and str(ticket.table_id or '') != str(ref):
+                # A conta está a "mudar de mesa": conta para o limite da mesa DE DESTINO
+                # (8520) como se estivesse a nascer lá — sem isto, mudar o destino era
+                # outra porta lateral que nunca via o limite de sub-contas.
+                erro = _enforce_table_ticket_cap(POSTable.objects.filter(pk=ref).first())
+                if erro:
+                    return erro
             ticket.table_id = ref
             # ... e a mesa fica mesmo OCUPADA (não só "com ticket aberto").
-            from .models import POSTable
             POSTable.objects.filter(pk=ref).exclude(status='OCCUPIED').update(status='OCCUPIED')
         else:
             # Mudou de mesa para quarto/destino: a mesa anterior fica livre.
@@ -1601,6 +1645,9 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                                 status=status.HTTP_400_BAD_REQUEST)
         if not destino:
             # A subconta nasce na MESMA mesa: continua a ser a mesma mesa a ser servida.
+            erro = _enforce_table_ticket_cap(origem.table)
+            if erro:
+                return erro
             import uuid
             destino = POSTicket.objects.create(
                 ticket_number=f"TCK-{uuid.uuid4().hex[:8].upper()}",
@@ -1943,10 +1990,17 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(self.get_queryset().get(pk=ticket.pk)).data)
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def reopen(self, request, pk=None):
         ticket = self.get_object()
         if ticket.status != 'SUSPENDED':
             return Response({'detail': 'Só tickets suspensos podem ser reabertos.'}, status=400)
+        # Reabrir volta a contar como conta aberta na mesa — sem isto, uma mesa que já
+        # tinha atingido o limite (8520) por outras contas continuava a aceitar reaberturas
+        # de contas suspensas à vontade, sem nunca ver o limite.
+        erro = _enforce_table_ticket_cap(ticket.table)
+        if erro:
+            return erro
         ticket.status = 'OPEN'
         ticket.save(update_fields=['status'])
         return Response(self.get_serializer(self.get_queryset().get(pk=ticket.pk)).data)
@@ -1957,6 +2011,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
     # um duplicado a fazer o motor dizer uma coisa e o terminal receber outra.
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def transfer_lines(self, request, pk=None):
         """Transferência PARCIAL: move as linhas indicadas para o ticket aberto de outra mesa."""
         import uuid
@@ -1972,6 +2027,13 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Mesa de destino inválida.'}, status=400)
         dest = POSTicket.objects.filter(table=tbl, status='OPEN').first()
         if not dest:
+            # Só entra aqui quando a mesa de destino não tinha NENHUMA conta aberta — mas
+            # passa sempre pelo mesmo portão do limite (8520), como qualquer outra conta
+            # nova, e o lock da mesa evita duas transferências em paralelo criarem duas
+            # contas para a mesma mesa vazia ao mesmo tempo.
+            erro = _enforce_table_ticket_cap(tbl)
+            if erro:
+                return erro
             dest = POSTicket.objects.create(
                 ticket_number=f"TCK-{uuid.uuid4().hex[:8].upper()}", outlet=ticket.outlet,
                 table=tbl, cash_session=ticket.cash_session, operator_name=ticket.operator_name,
@@ -2868,6 +2930,7 @@ class POSReservationViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(res).data)
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def seat(self, request, pk=None):
         """Senta a reserva: ocupa a mesa e ABRE o pedido (ticket) com o nº de pessoas."""
         import uuid
@@ -2888,6 +2951,11 @@ class POSReservationViewSet(viewsets.ModelViewSet):
             # Abre o pedido na mesa (ou reutiliza um já aberto).
             ticket = POSTicket.objects.filter(table=table, status='OPEN').first()
             if not ticket:
+                # Mesma regra de qualquer conta nova (8520) — sentar uma reserva não é um
+                # caminho especial que ignora o limite de sub-contas da mesa.
+                erro = _enforce_table_ticket_cap(table)
+                if erro:
+                    return erro
                 sess = CashSession.objects.filter(outlet=res.outlet, status='OPEN').first()
                 ticket = POSTicket.objects.create(
                     ticket_number=f"TCK-{uuid.uuid4().hex[:8].upper()}", outlet=res.outlet, table=table,
