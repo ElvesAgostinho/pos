@@ -2107,8 +2107,18 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             de_quarto = [p for p in ticket.payments.select_related('payment_method')
                          if p.payment_method and p.payment_method.method_type == 'ROOM']
             if de_quarto:
+                # Só o IMPORT falhar (PMS não instalado nesta licença) é razão para saltar
+                # a verificação. Antes, um "except Exception" à volta de TUDO — import E a
+                # própria pergunta ao folio — engolia qualquer erro na verificação em si
+                # (uma falha de query, por exemplo) como se fosse "PMS não instalado", e o
+                # estorno passava sem nunca confirmar se o folio ainda estava aberto. Uma
+                # verificação de segurança que falha em silêncio para "permitido" não é
+                # verificação nenhuma.
                 try:
                     from pms.models import Folio
+                except Exception:
+                    pass
+                else:
                     folio_aberto = Folio.objects.filter(
                         charges__description__icontains=ticket.ticket_number,
                         status='OPEN').exists()
@@ -2116,8 +2126,6 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                         return Response({'detail': 'Este talão foi lançado no quarto e a conta '
                                                    'PMS já está fechada — não se anula '
                                                    '(parâmetro 8174). Resolva no PMS.'}, status=400)
-                except Exception:
-                    pass
 
         if ticket.status != 'PAID':
             return Response({'detail': 'Só contas pagas podem ser estornadas '
