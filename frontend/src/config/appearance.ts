@@ -13,7 +13,7 @@ export const APPEARANCE_KEYS = {
 
 const DEFAULTS: Record<string, string> = {
   ui_company_name: 'System Mwana Lodge',
-  ui_erp_name: 'System Mwana Lodge',
+  ui_erp_name: 'ML',
   ui_welcome_text: 'Bem-vindo. Inicie sessão para continuar.',
   ui_bar_color: '#B08D3C',
 };

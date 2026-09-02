@@ -427,7 +427,9 @@ PARAMS_TERMINAL = [
     (8509, 'Geral', 'Código de IVA neste posto', I, [], '0',
      'Id de uma taxa (Fiscal › Taxas de IVA). Quando preenchido, ESTE terminal fatura '
      'tudo a essa taxa, por cima da taxa da ficha do artigo. 0 = usa sempre a do artigo.'),
-    (8520, 'Geral', 'Quantidade de sub-contas', I, [], '10', ''),
+    (8520, 'Geral', 'Quantidade de sub-contas', I, [], '10',
+     'Máximo de contas abertas em simultâneo na mesma mesa (divisões/subcontas). '
+     'Acima disto, "Dividir Conta" recusa criar mais uma. 0 = sem limite.'),
     (8534, 'Geral', 'Fechar janela de pagamentos quando pagamento aplicado', B, [], 'false',
      'LIGADO: fecha o painel de Pagamentos logo a seguir a aplicar um pagamento, sem '
      'esperar pelo recibo (reimprime-se depois a partir da conta).'),
