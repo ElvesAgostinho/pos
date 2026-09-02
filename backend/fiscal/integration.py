@@ -214,8 +214,16 @@ def emit_for_pms_folio(folio, charges, user=None, ip=None):
 
 
 def emit_for_finance_invoice(invoice, user=None, ip=None):
-    """Emite uma Factura fiscal a partir de uma fatura do Financeiro (AR)."""
+    """Emite uma Factura fiscal a partir de uma fatura do Financeiro (AR).
+
+    CHAMAR DENTRO DE transaction.atomic (select_for_update abaixo exige-o) — mesma
+    razão do lock em emit_for_pms_folio: duas chamadas quase ao mesmo tempo (duplo
+    clique em "Emitir") liam ambas "ainda não há documento" e cada uma emitia a sua
+    própria factura real e irreversível para a mesma fatura financeira.
+    """
     cfg = FiscalConfig.get()
+    InvoiceModel = type(invoice)
+    invoice = InvoiceModel.objects.select_for_update().get(pk=invoice.pk)
     existing = existing_for('finance', invoice.id)
     if existing:
         return existing

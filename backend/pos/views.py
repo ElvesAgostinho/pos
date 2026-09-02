@@ -2041,12 +2041,17 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         tbl = POSTable.objects.filter(pk=request.data.get('table'), outlet=ticket.outlet).first()
         if not tbl:
             return Response({'detail': 'Mesa de destino inválida.'}, status=400)
+        # TRANCA a mesa de destino ANTES de decidir se já tem conta aberta. Antes, o
+        # lock só acontecia DEPOIS de ler "esta mesa está vazia" (dentro do
+        # _enforce_table_ticket_cap, chamado só no ramo "not dest") — duas transferências
+        # quase ao mesmo tempo liam AMBAS "mesa vazia" antes de qualquer uma escrever, e
+        # cada uma criava a sua própria conta nova para a mesma mesa (duplicado). Trancar
+        # primeiro e SÓ DEPOIS reler serializa-as: a segunda já encontra a conta da primeira.
+        POSTable.objects.select_for_update().get(pk=tbl.pk)
         dest = POSTicket.objects.filter(table=tbl, status='OPEN').first()
         if not dest:
             # Só entra aqui quando a mesa de destino não tinha NENHUMA conta aberta — mas
-            # passa sempre pelo mesmo portão do limite (8520), como qualquer outra conta
-            # nova, e o lock da mesa evita duas transferências em paralelo criarem duas
-            # contas para a mesma mesa vazia ao mesmo tempo.
+            # passa sempre pelo mesmo portão do limite (8520), como qualquer outra conta nova.
             erro = _enforce_table_ticket_cap(tbl)
             if erro:
                 return erro
@@ -2212,18 +2217,26 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(self.get_queryset().get(pk=ticket.pk)).data)
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def redeem_gift(self, request, pk=None):
-        """Aplica o saldo de um gift card como pagamento do ticket."""
+        """Aplica o saldo de um gift card como pagamento do ticket.
+
+        TRANCA o ticket E o gift card: sem isto, duas aplicações do MESMO cartão quase
+        ao mesmo tempo (duplo toque, ou o cartão usado em duas contas em paralelo) liam
+        o mesmo saldo antes de qualquer uma escrever — o cartão podia gastar mais do
+        que tinha (mesma corrida do item 006, aqui no gift card em vez do cartão de
+        membro), e o ticket podia ser pago a dobrar pela mesma razão do pay().
+        """
         from mdm.models import PaymentMethod
-        ticket = self.get_object()
+        ticket = POSTicket.objects.select_for_update().get(pk=pk)
         if ticket.status != 'OPEN':
             return Response({'detail': 'Ticket não está aberto.'}, status=400)
-        card = GiftCard.objects.filter(code=request.data.get('code'), is_active=True).first()
+        card = (GiftCard.objects.select_for_update()
+                .filter(code=request.data.get('code'), is_active=True).first())
         if not card:
             return Response({'detail': 'Gift card inválido ou inativo.'}, status=404)
         if card.balance <= 0:
             return Response({'detail': 'Gift card sem saldo.'}, status=409)
-        ticket = POSTicket.objects.get(pk=ticket.pk)
         applied = min(card.balance, ticket.balance_due)
         pm = (PaymentMethod.objects.filter(name__icontains='gift').first()
               or PaymentMethod.objects.filter(method_type='VOUCHER').first()
@@ -2955,7 +2968,12 @@ class POSReservationViewSet(viewsets.ModelViewSet):
         table = None
         if table_id:
             try:
-                table = POSTable.objects.get(pk=table_id, outlet=res.outlet)
+                # TRANCA a mesa já aqui — sem isto, duas reservas a sentar quase ao mesmo
+                # tempo na mesma mesa liam ambas "sem conta aberta" antes de qualquer uma
+                # escrever, e cada uma criava a sua própria conta nova (duplicado). O
+                # _enforce_table_ticket_cap mais abaixo volta a trancar (idempotente,
+                # mesma transação) só quando é mesmo preciso criar uma conta nova.
+                table = POSTable.objects.select_for_update().get(pk=table_id, outlet=res.outlet)
             except POSTable.DoesNotExist:
                 return Response({'detail': 'Mesa inválida.'}, status=404)
             res.table = table

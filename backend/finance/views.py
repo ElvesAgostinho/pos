@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -163,8 +164,14 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def issue(self, request, pk=None):
-        inv = self.get_object()
+        # TRANCA a fatura antes de decidir se ainda é rascunho: sem isto, dois cliques
+        # em "Emitir" quase ao mesmo tempo liam ambos status=DRAFT antes de qualquer um
+        # escrever, e cada um emitia o SEU próprio documento fiscal — duas facturas reais
+        # e irreversíveis para a mesma fatura. emit_for_finance_invoice() já tranca a
+        # fatura outra vez lá dentro (idempotente, mesma transação) como segunda rede.
+        inv = Invoice.objects.select_for_update().get(pk=pk)
         if inv.status != 'DRAFT':
             return Response({'detail': 'Só rascunhos podem ser emitidos.'}, status=400)
         inv.recompute()
