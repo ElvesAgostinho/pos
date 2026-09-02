@@ -155,6 +155,14 @@ def main():
     # (update_or_create), como seed_params — nunca apaga o que o dono já mudou.
     correr('seed_fiscal')
 
+    # UNIDADES DE MEDIDA (Kg, L, Unidade, Caixa…) — sem isto, uma instalação nova não
+    # conseguia criar NENHUM artigo: Item.base_uom é obrigatório no modelo e a ficha
+    # do artigo (Configuração POS → Artigos) nem pergunta essa unidade diretamente
+    # (deriva-a da Unidade de Venda/Stock/Compra) — sem UMA UoM cadastrada, não há de
+    # onde derivar. Achado a investigar "não consigo criar artigo" num cliente real:
+    # 0 unidades de medida configuradas. Idempotente, como os outros seeds acima.
+    correr('seed_uoms')
+
     # A CONTA DO DONO — utilizador/password que o técnico introduziu no wizard
     # (gerados no PCC). Numa atualização, o wizard volta a perguntar; se a
     # password vier vazia por algum motivo, não se mexe na conta existente —

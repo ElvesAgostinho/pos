@@ -371,6 +371,29 @@ class PosItemViewSet(viewsets.ModelViewSet):
                 base += 1
                 codigo = f'{prefixo}{base:0{digitos}d}'
             request.data['code'] = codigo
+
+        # UNIDADE BASE (Item.base_uom) — campo obrigatório no modelo, mas esta ficha
+        # (separador "Unidades") só pergunta Compra/Stock/Venda; nunca pede a Unidade
+        # Base diretamente. Sem isto, TODO artigo novo falhava a validação com "base_uom:
+        # este campo é obrigatório" — um erro sobre um campo que não existe em lado
+        # nenhum do formulário, sem onde o corrigir. Deriva-se da Unidade de Venda (ou
+        # Stock, ou Compra) que o dono já escolheu; sem nenhuma, cai na primeira UoM
+        # cadastrada no sistema (get_units_label, mais acima, já trata base_uom como
+        # este mesmo "último recurso").
+        if not request.data.get('base_uom'):
+            derivado = (request.data.get('sale_uom') or request.data.get('stock_uom')
+                       or request.data.get('purchase_uom'))
+            if not derivado:
+                primeira = UnitOfMeasure.objects.filter(is_active=True).order_by('id').first()
+                derivado = primeira.id if primeira else None
+            if derivado:
+                request.data['base_uom'] = derivado
+            else:
+                return Response({'detail': 'Não há nenhuma Unidade de Medida cadastrada no '
+                                           'sistema — crie pelo menos uma antes de criar '
+                                           'artigos (separador "Unidades" desta ficha, ou '
+                                           'Configuração POS → Unidades de Medida).'},
+                                status=status.HTTP_400_BAD_REQUEST)
         return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
