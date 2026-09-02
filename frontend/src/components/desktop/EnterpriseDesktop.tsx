@@ -11,6 +11,7 @@ import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
 import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
+import { aviso } from '../../ui/dialogo';
 
 // Ícones de estado (SVG estilo Windows — não emoji).
 
@@ -47,7 +48,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   const nav = useNavigate();
   const { data: lic } = useActiveModules();
   const user = tokenStore.getUser();
-  const erpName = getAppearance('erpName') || 'System Mwana Lodge';
+  const erpName = getAppearance('erpName');
   const customBg = getAppearance('wallpaper') || getAppearance('loginBg');
   // Logótipo real da empresa (Administração → Empresa) — o ambiente de trabalho só
   // mostrava a palavra "System Mwana Lodge" estilizada, nunca a imagem que o dono
@@ -135,7 +136,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
     open('posc_config', 'Configuração POS');
   };
 
-  const MENUS: Record<string, { label: string; screen?: string; act?: () => void }[]> = {
+  const POS_MENUS: Record<string, { label: string; screen?: string; act?: () => void }[]> = {
     'F&B': [
       { label: 'Compras', act: () => abrirPos('x_purchases') },
       { label: 'Documentos Internos', act: () => abrirPos('x_internal') },
@@ -165,6 +166,76 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       { label: 'Terminar sessão', act: logout },
     ],
   };
+
+  // O PMS tem os SEUS PRÓPRIOS menus aqui — as 8 abas do PmsShell, espelhadas.
+  // Construído entra logo na secção certa (localStorage 'pms_section', mesmo
+  // padrão do 'posc_section' do abrirPos acima). O que ainda não foi construído
+  // avisa em vez de fingir que abre alguma coisa (mesma regra do PmsShell).
+  const abrirPms = (seccao: string) => {
+    localStorage.setItem('pms_section', seccao);
+    open('pms_home', 'PMS');
+  };
+  const emBreve = (label: string) => () => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
+  const PMS_MENUS: Record<string, { label: string; screen?: string; act?: () => void }[]> = {
+    Reserva: [
+      { label: 'Disponibilidade', act: () => abrirPms('availability') },
+      { label: 'Reservas', act: () => abrirPms('reservations') },
+      { label: 'Reservas de Grupo', act: () => abrirPms('group_reservations') },
+      { label: 'Blocos', act: () => abrirPms('blocks') },
+      { label: 'Blocos (disponibilidade)', act: emBreve('Blocos (disponibilidade)') },
+    ],
+    'Front Desk': [
+      { label: 'Estado Hotel', act: emBreve('Estado Hotel') },
+      { label: 'Reservas', act: () => abrirPms('reservations') },
+      { label: 'Planning', act: emBreve('Planning') },
+      { label: 'Quartos Livres / Mapa de Quartos', act: () => abrirPms('rooms') },
+      { label: 'Pesquisa de Entidades', act: emBreve('Pesquisa de Entidades') },
+      { label: 'Perdidos e Achados', act: emBreve('Perdidos e Achados') },
+      { label: 'Gestão de Quartos', act: emBreve('Gestão de Quartos') },
+      { label: 'Tarefas', act: emBreve('Tarefas') },
+      { label: 'Leitor de Documentos', act: emBreve('Leitor de Documentos') },
+      { label: 'Lista telefónica', act: emBreve('Lista telefónica') },
+    ],
+    Contas: [
+      { label: 'Check-Out', act: emBreve('Check-Out') },
+      { label: 'Lançamentos Gerais', act: emBreve('Lançamentos Gerais') },
+      { label: 'Extrato Mobile', act: emBreve('Extrato Mobile') },
+      { label: 'Contas Correntes (ver folio de uma reserva)', act: () => abrirPms('reservations') },
+    ],
+    'Gestão de Canais': [
+      { label: 'Rate Codes', act: () => abrirPms('rate_plans') },
+      { label: 'Configuração Guest Experience', act: emBreve('Configuração Guest Experience') },
+      { label: 'Booking Engine', act: emBreve('Booking Engine') },
+    ],
+    Marketing: [
+      { label: 'Pesquisa de Entidades', act: emBreve('Pesquisa de Entidades') },
+      { label: 'Lista de Eventos', act: emBreve('Lista de Eventos') },
+      { label: 'Gestão de Pontos', act: emBreve('Gestão de Pontos') },
+    ],
+    Reporting: [
+      { label: 'Relatórios', act: emBreve('Relatórios') },
+      { label: 'Informação Online', act: emBreve('Informação Online') },
+    ],
+    Utilitários: [
+      { label: 'Auditoria da Noite', act: emBreve('Auditoria da Noite') },
+      { label: 'POS Front Office', act: emBreve('POS Front Office') },
+      { label: 'Fecho do dia POS', act: emBreve('Fecho do dia POS') },
+      { label: 'SAFT-AO', act: emBreve('SAFT-AO') },
+      { label: 'Categorias de Quarto', act: () => abrirPms('room_types') },
+      { label: 'Tarifas (Rate Codes)', act: () => abrirPms('rate_plans') },
+      { label: 'Diagnóstico', act: emBreve('Diagnóstico') },
+      { label: 'Visualizar Logs', act: emBreve('Visualizar Logs') },
+      { label: 'Terminar sessão', act: logout },
+    ],
+    EMS: [
+      { label: 'EMS (Eventos)', act: emBreve('EMS (Eventos)') },
+      { label: 'Pesquisar EMS', act: emBreve('Pesquisar EMS') },
+      { label: 'Calendário EMS', act: emBreve('Calendário EMS') },
+      { label: 'Previsão EMS', act: emBreve('Previsão EMS') },
+    ],
+  };
+
+  const MENUS = wsKey === 'pms' ? PMS_MENUS : POS_MENUS;
 
   const bgStyle = customBg
     ? { backgroundImage: `linear-gradient(${ws.color}66, ${ws.colorDark}cc), url(${customBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -228,9 +299,6 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             {clock.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
           </span>
           <span className="opacity-30">|</span>
-          {/* Clicar no nome é o sítio óbvio para procurar "sair" — antes era só texto
-              inerte, e "Terminar sessão" vivia escondido dentro do menu "Utilitários"
-              (nem todo o módulo tem esse menu). Agora abre logo aqui. */}
           <div className="relative">
             <button onClick={(e) => { e.stopPropagation(); setUserMenu((s) => !s); setModMenu(false); setTopMenu(null); }}
               className={`font-bold px-2 py-1 -mx-2 ${userMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
@@ -258,8 +326,11 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           {quick.map((ic, i) => (
             <DesktopIcon key={i} ic={ic} accent={ws.accent} glow={ws.glow} onOpen={() => openIcon(ic)} />
           ))}
-          {/* MÓDULOS com "Mostrar no Desktop" — abrem como a ficha manda (open_as) */}
-          {modulos.map((m: any) => (
+          {/* MÓDULOS com "Mostrar no Desktop" — abrem como a ficha manda (open_as).
+              São do backoffice POS (Configuração POS › Módulo) — no ambiente de
+              trabalho do PMS não aparecem, o PMS é autossuficiente e traz só o seu
+              próprio ícone. */}
+          {wsKey !== 'pms' && modulos.map((m: any) => (
             <DesktopIcon key={m.module_id}
               ic={{ label: m.name, icon: 'app' } as any}
               accent={ws.accent} glow={ws.glow} onOpen={() => abrirModulo(m)} />

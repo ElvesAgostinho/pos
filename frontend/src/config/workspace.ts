@@ -29,6 +29,17 @@ export const WORKSPACES: Workspace[] = [
       { label: 'Abrir Terminal POS', icon: 'terminal', launch: '/pos', quick: true },   // frontoffice, janela separada
     ],
   },
+  {
+    key: 'pms', name: 'PMS',
+    color: '#1e3f66', colorDark: '#122942', accent: '#3f7fc0', glow: '#5fa8e6',
+    wallpaper: wp('#22496f', '#0d1f34'),
+    licenseModule: 'pms',
+    icons: [
+      // Um ecrã só (como o POS): abre logo no PmsShell, que tem o seu próprio
+      // cabeçalho/menus (Reserva/Front Desk/Contas/…), NUNCA a árvore clássica.
+      { label: 'PMS', icon: 'gear', screen: 'pms_home', quick: true },
+    ],
+  },
 ];
 
 export const workspaceByKey = (k: string) => WORKSPACES.find((w) => w.key === k);
@@ -41,7 +52,8 @@ export const workspaceByKey = (k: string) => WORKSPACES.find((w) => w.key === k)
  * os dos OUTROS módulos ficam ocultos, como se não existissem.
  */
 export const CENTER_MODULES: Record<string, string[]> = {
-  // O POS é autossuficiente — não há módulos de PMS nem de Restauração.
+  // O POS é autossuficiente — continua a funcionar sem o PMS. O PMS (Centro 11) é o
+  // seu próprio workspace, com a sua própria árvore (ver MODULE_TREE.pms).
   srm: ['pos'], procurement: ['pos'], warehouse: ['pos'],
   // POS (venda)
   posfront: ['pos'],
@@ -95,5 +107,11 @@ export const MODULE_TREE: Record<string, TreeFolder[]> = {
     // Não há árvore, não há pastas, não há ecrãs soltos: entrar no POS é entrar
     // já no ecrã (que ocupa a janela toda e tem o seu próprio menu lateral).
     { key: 'pos_config', title: 'POS', items: ['posc_config'] },
+  ],
+
+  // PMS é ecrã inteiro (FULLSCREEN_VIEWS) — nunca usa esta árvore clássica.
+  // Uma entrada mínima só por coerência com o 'pos' acima.
+  pms: [
+    { key: 'pms_home_folder', title: 'PMS', items: ['pms_home'] },
   ],
 };

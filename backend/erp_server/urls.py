@@ -46,7 +46,8 @@ if 'eae' in settings.INSTALLED_APPS:
     urlpatterns.append(path("api/eae/", include("eae.urls")))
 if 'workforce' in settings.INSTALLED_APPS:
     urlpatterns.append(path("api/workforce/", include("workforce.urls")))
-# (PMS eliminado — o POS é autossuficiente.)
+if 'pms' in settings.INSTALLED_APPS:
+    urlpatterns.append(path("api/pms/", include("pms.urls")))
 if 'finance' in settings.INSTALLED_APPS:
     urlpatterns.append(path("api/finance/", include("finance.urls")))
 if 'commercial' in settings.INSTALLED_APPS:

@@ -3591,7 +3591,7 @@ class EntityViewSet(viewsets.ModelViewSet):
         reservas = []
         try:
             from pms.models import Reservation
-            for r in Reservation.objects.filter(guest__full_name__iexact=c.name)[:100]:
+            for r in Reservation.objects.filter(guest=c)[:100]:
                 reservas.append({'number': r.id, 'status': r.status,
                                  'check_in': str(getattr(r, 'check_in', '')),
                                  'check_out': str(getattr(r, 'check_out', '')),
@@ -3664,7 +3664,9 @@ class EntityViewSet(viewsets.ModelViewSet):
             for valor, lista in vistos.items():
                 if len(lista) > 1:
                     grupos.append({'field': campo, 'value': valor,
-                                   'entities': [{'id': x.id, 'code': x.code, 'name': x.name}
+                                   'entities': [{'id': x.id, 'code': x.code, 'name': x.name,
+                                                 'contact': x.phone or x.email or None,
+                                                 'city': x.city or None}
                                                 for x in lista]})
         return Response({'groups': grupos, 'count': len(grupos)})
 
@@ -4767,7 +4769,7 @@ class PosGuestsView(APIView):
               .select_related('room', 'guest', 'room_type'))
         linhas = []
         for r in rs:
-            nome = getattr(r.guest, 'full_name', None) or str(getattr(r, 'guest', '') or '')
+            nome = getattr(r.guest, 'name', None) or str(getattr(r, 'guest', '') or '')
             quarto = getattr(r.room, 'number', None) or ''
             if q and q.lower() not in f'{nome} {quarto}'.lower():
                 continue
@@ -4785,7 +4787,7 @@ class PosGuestsView(APIView):
                 'folio': folio.id if folio else None,
                 'guest': nome,
                 # (8236) mostrar (ou não) o grupo/empresa na pesquisa de quartos
-                'entity': (getattr(getattr(r, 'company', None), 'name', None) or ''
+                'entity': (getattr(getattr(getattr(r, 'block', None), 'main_entity', None), 'name', None) or ''
                            if P.bool(8236, True) else ''),
                 'checkout': str(getattr(r, 'check_out', '') or ''),
                 # O REGIME não está na reserva: está na TARIFA do tipo de quarto (RatePlan).
@@ -4845,7 +4847,7 @@ class PosMealPlanView(APIView):
               .select_related('room', 'guest', 'room_type'))
         linhas = []
         for r in rs:
-            nome_q = f"{getattr(r.guest, 'full_name', '') or ''} {getattr(r.room, 'number', '') or ''}"
+            nome_q = f"{getattr(r.guest, 'name', '') or ''} {getattr(r.room, 'number', '') or ''}"
             if q and q.lower() not in nome_q.lower():
                 continue
             regime = _board_da_reserva(r)
@@ -4853,8 +4855,8 @@ class PosMealPlanView(APIView):
             linhas.append({
                 'room': getattr(r.room, 'number', ''),
                 'reservation': r.id,
-                'guest': getattr(r.guest, 'full_name', None) or str(getattr(r, 'guest', '')),
-                'entity': getattr(getattr(r, 'company', None), 'name', None) or '',
+                'guest': getattr(r.guest, 'name', None) or str(getattr(r, 'guest', '')),
+                'entity': getattr(getattr(getattr(r, 'block', None), 'main_entity', None), 'name', None) or '',
                 'board': regime,
                 'pax': getattr(r, 'adults', 1) or 1,
                 'meals': {c: (c in incluidas) for c, _ in self.REFEICOES},

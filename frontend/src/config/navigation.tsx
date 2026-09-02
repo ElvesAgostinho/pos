@@ -53,6 +53,8 @@ import PosConfigView from '../components/posconfig/PosConfigView';
 import AgtCertificationView from '../components/fiscal/AgtCertificationView';
 import SaftCenterViewNew from '../components/fiscal/SaftCenterView';
 import ProfileAccessView from '../components/security/ProfileAccessView';
+// PMS — Property Management System (Centro 11)
+import PmsShell from '../components/pms/PmsShell';
 // F&B Operations Center (Centro 10)
 // Warehouse Center (Centro 09)
 import WhDashboardView from '../components/warehouse/wh/WhDashboardView';
@@ -192,7 +194,11 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
 
   // 10 · F&B Operations Center — cérebro da restauração
 
-  // 11 · Front Office (PMS)
+  // 11 · Front Office (PMS) — ecrã inteiro, cabeçalho próprio, ver PmsShell.tsx.
+  // NUNCA registar os ecrãs pms_* individuais aqui — isso reabre a árvore
+  // clássica (Ficheiro/Editar/Ribbon) por cima do PMS, que é exatamente o que
+  // NÃO se quer (o PMS tem de manter SEMPRE o mesmo cabeçalho próprio).
+  pms_home: PmsShell,
 
   // 12 · POS Management Center (mais pequeno)
 
@@ -454,6 +460,13 @@ export const MODULES: NavModule[] = [
     ],
   },
   {
+    // PMS é ecrã inteiro (como a Configuração POS) — cabeçalho e menus PRÓPRIOS
+    // dentro do PmsShell, NUNCA a árvore clássica. Uma entrada só, de propósito.
+    key: 'pms', title: '11 · Front Office (PMS)', items: [
+      { id: 'pms_home', name: 'PMS' },
+    ],
+  },
+  {
     // O MÓDULO POS é a CONFIGURAÇÃO POS. Os antigos ecrãs soltos (Outlets, Terminais,
     // Operadores, Turnos, Impressoras, Product Config, Configuração Operacional…) foram
     // ELIMINADOS: tudo isso vive agora dentro deste ecrã, num só sítio, com CRUD real.
@@ -592,7 +605,7 @@ export const ITEM_MODULE_KEY: Record<string, string> = Object.fromEntries(
 export const MODULE_LICENSE: Record<string, string | null> = {
   admin: null, licensing: null, security: null, hotel: null, masterdata: null,
   commercial: 'commercial', srm: 'esm', procurement: 'procurement', warehouse: 'wms',
-  posmgmt: 'pos', posfront: 'pos',
+  posmgmt: 'pos', posfront: 'pos', pms: 'pms',
   financial: 'finance', fiscal: null, accounting: null, ops: null, reporting: null, workflow: null,
   documents: null, notifications: null, integration: null, system: null,
 };
