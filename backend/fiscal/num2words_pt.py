@@ -73,6 +73,15 @@ def _integer_to_words(n):
 
 def amount_to_words(amount, currency='Kwanzas', cents_name='cêntimos'):
     amount = Decimal(str(amount)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    # NEGATIVO (Nota de Crédito com allow_negative, ou qualquer documento com uma
+    # linha "Desconto em valor" a levar o total a negativo): sem isto, int()/divmod()
+    # com um Decimal negativo produzia lixo completo — "novecentos e noventa e nove
+    # mil milhões..." para -150,50 Kz — porque as tabelas UNITS/TENS/HUNDREDS e a
+    # aritmética de _integer_to_words só foram pensadas para 0..999 positivos, e
+    # divmod() com negativos em Python arredonda para baixo (floor), não para zero.
+    negativo = amount < 0
+    if negativo:
+        amount = -amount
     integer = int(amount)
     cents = int((amount - integer) * 100)
     cur = currency if integer != 1 else 'Kwanza'
@@ -83,4 +92,6 @@ def amount_to_words(amount, currency='Kwanzas', cents_name='cêntimos'):
     if cents:
         cent_word = cents_name if cents != 1 else 'cêntimo'
         text += f" e {_integer_to_words(cents)} {cent_word}"
+    if negativo:
+        text = f"menos {text}"
     return text.strip().capitalize()
