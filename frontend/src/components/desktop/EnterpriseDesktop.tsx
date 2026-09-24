@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Check, Settings, Power, LogOut } from 'lucide-react';
+import { X, Settings, Power, LogOut, ShieldCheck, Server, Wifi } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
@@ -13,34 +13,22 @@ import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
 import { aviso } from '../../ui/dialogo';
 
-// Ícones de estado (SVG estilo Windows — não emoji).
-
-// Fundo temático de hotel (SVG — funciona offline; sobreposto pela cor do módulo).
-function HotelBackdrop({ tint }: { tint: string }) {
-  const windows = [];
-  for (let r = 0; r < 9; r++) for (let c = 0; c < 6; c++) {
-    const lit = (r * 7 + c * 3) % 4 === 0;
-    windows.push(<rect key={`a${r}${c}`} x={640 + c * 26} y={230 + r * 34} width="14" height="20" fill={lit ? '#ffd98a' : '#2a3a52'} opacity={lit ? 0.9 : 0.5} />);
-  }
-  for (let r = 0; r < 6; r++) for (let c = 0; c < 4; c++) {
-    const lit = (r + c) % 3 === 0;
-    windows.push(<rect key={`b${r}${c}`} x={470 + c * 24} y={360 + r * 34} width="12" height="18" fill={lit ? '#ffd98a' : '#2a3a52'} opacity={lit ? 0.85 : 0.45} />);
-  }
+// Fundo ambiente do Ambiente de Trabalho — manchas de cor desfocadas (mesh gradient,
+// linguagem de dashboards modernos) nas cores do próprio módulo, com uma silhueta de
+// hotel em traço fino, subtil, só decorativa (não protagonista como antes: já não é
+// uma grelha de janelas pixeladas a competir com os ícones).
+function HotelBackdrop({ tint, accent, glow }: { tint: string; accent: string; glow: string }) {
   return (
-    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMax slice" style={{ opacity: 0.55 }}>
-      <defs><radialGradient id="glow" cx="50%" cy="100%" r="70%"><stop offset="0%" stopColor="#e6b45a" stopOpacity="0.35" /><stop offset="60%" stopColor={tint} stopOpacity="0" /></radialGradient></defs>
-      <rect x="0" y="0" width="1000" height="600" fill="url(#glow)" />
-      {/* prédios */}
-      <rect x="450" y="330" width="130" height="270" fill="#16233a" />
-      <rect x="620" y="190" width="200" height="410" fill="#1b2c46" />
-      <rect x="820" y="300" width="120" height="300" fill="#12203a" />
-      <rect x="620" y="170" width="200" height="22" fill="#0e1c30" />
-      {/* letreiro do hotel */}
-      <text x="720" y="215" fontSize="16" fill="#ffd98a" textAnchor="middle" fontFamily="Georgia" opacity="0.85" letterSpacing="2">HOTEL</text>
-      {windows}
-      {/* reflexo no chão */}
-      <rect x="0" y="560" width="1000" height="40" fill="#000" opacity="0.25" />
-    </svg>
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute rounded-full" style={{ width: 620, height: 620, left: '-8%', top: '-18%', background: glow, opacity: 0.22, filter: 'blur(120px)' }} />
+      <div className="absolute rounded-full" style={{ width: 560, height: 560, right: '-10%', top: '10%', background: accent, opacity: 0.18, filter: 'blur(130px)' }} />
+      <div className="absolute rounded-full" style={{ width: 480, height: 480, left: '30%', bottom: '-22%', background: tint, opacity: 0.28, filter: 'blur(140px)' }} />
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMax slice" style={{ opacity: 0.16 }}>
+        <path d="M470 600 V330 h130 V190 h60 V180 h140 V190 h60 V300 h120 V600"
+          fill="none" stroke="#ffffff" strokeWidth="2" strokeLinejoin="round" />
+        <text x="700" y="160" fontSize="15" fill="#ffffff" textAnchor="middle" fontFamily="Georgia" letterSpacing="3">HOTEL</text>
+      </svg>
+    </div>
   );
 }
 
@@ -243,7 +231,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
   return (
     <div className="h-screen w-screen overflow-hidden select-none font-sans relative flex flex-col" style={bgStyle} onClick={closeAll}>
-      {!customBg && <HotelBackdrop tint={ws.color} />}
+      {!customBg && <HotelBackdrop tint={ws.color} accent={ws.accent} glow={ws.glow} />}
 
       {/* ===== BARRA SUPERIOR ===== */}
       {/* A MESMA barra do POS: mesmo fundo, mesma altura, mesma tipografia. Ter duas
@@ -255,15 +243,15 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             o logótipo do sistema em vez de um "ML" escrito por cima da barra. */}
         <button onClick={(e) => { e.stopPropagation(); setModMenu((s) => !s); setTopMenu(null); }}
           title="Trocar de módulo"
-          className={`flex items-center gap-2 px-2 py-1 pr-4 mr-2 leading-none ${modMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
-          <img src={logoUrl || '/brand-logo.png'} alt="" className="h-10 w-10 object-contain flex-shrink-0" />
+          className={`flex items-center gap-2 px-2.5 py-1 pr-3.5 mr-2 leading-none rounded-full transition-colors ${modMenu ? 'bg-white/20' : 'hover:bg-white/10'}`}>
+          <img src={logoUrl || '/brand-logo.png'} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" />
           <span className="text-[13px] text-[#18181B]">▾</span>
         </button>
         {modMenu && (
-          <div className="absolute left-2 top-[46px] min-w-[240px] bg-[#f0f0f0] border border-[#333] shadow-2xl rounded-b-md overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#f0f0f0] border border-[#333] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
             <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: ws.color }}>{erpName} — Módulos</div>
             {licensed.map((m) => (
-              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] hover:bg-[#dbe8ff] text-left border-b border-[#e0e0e0]">
+              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] hover:bg-[#dbe8ff] text-left border-b border-[#e0e0e0] last:border-b-0">
                 <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ background: `radial-gradient(circle at 30% 30%, ${m.glow}, ${m.color})`, boxShadow: `0 0 6px ${m.glow}` }} />
                 <span className="font-bold" style={{ color: m.color }}>{m.name}</span>
                 {m.key === wsKey && <span className="ml-auto text-[11px] text-gray-500">● ativo</span>}
@@ -354,15 +342,16 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
         {/* Painel direito — só consultas rápidas */}
         <div className="absolute top-5 right-5 w-[220px] flex flex-col gap-2.5">
-          <div className="bg-black/40 backdrop-blur-sm border border-white/15 rounded-lg p-3 text-white text-center" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)' }}>
+          <div className="bg-black/35 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-white text-center" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.25)' }}>
             <div className="text-[30px] font-black leading-none" style={{ textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>{clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</div>
             <div className="text-[11px] text-white/70 mt-1">{clock.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
           </div>
-          <div className="bg-black/40 border border-white/15 rounded-lg p-3 text-white text-[12px] space-y-1.5">
+          <div className="bg-black/35 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-white text-[12px] space-y-2" style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
             <div className="font-bold text-[11px] uppercase text-white/60 mb-1">{ws.name} · Estado</div>
-            {[['Licença', true, 'ativa'], ['Servidor', false, 'online'], ['VPN', false, 'ligada']].map(([k, showCheck, v]) => (
-              <div key={k as string} className="flex justify-between"><span className="text-white/60">{k}</span>
-                <span className="text-[#9dffb0] flex items-center gap-1">{showCheck && <Check size={11} strokeWidth={3} />}{v}</span></div>
+            {[['Licença', ShieldCheck, 'ativa'], ['Servidor', Server, 'online'], ['VPN', Wifi, 'ligada']].map(([k, Icon, v]: any) => (
+              <div key={k as string} className="flex items-center justify-between">
+                <span className="text-white/60 flex items-center gap-1.5"><Icon size={13} strokeWidth={2} className="text-white/50" />{k}</span>
+                <span className="text-[#9dffb0] font-medium">{v}</span></div>
             ))}
           </div>
         </div>
@@ -371,8 +360,8 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       {/* ===== BARRA DE TAREFAS ===== */}
       <div className="h-[40px] flex items-center px-1.5 gap-1 flex-shrink-0 relative z-[100]"
         style={{ background: `linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.22)), linear-gradient(to bottom, ${ws.colorDark}, #070f18)`, borderTop: `2px solid ${ws.accent}`, boxShadow: `0 -3px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)` }}>
-        <button onClick={(e) => { e.stopPropagation(); setStart((s) => !s); }} className="flex items-center gap-1.5 px-3 h-[30px] rounded font-bold text-white text-[13px]"
-          style={{ background: `linear-gradient(to bottom, ${ws.glow}33, rgba(0,0,0,0.15))`, border: `1px solid ${ws.accent}66` }}>
+        <button onClick={(e) => { e.stopPropagation(); setStart((s) => !s); }} className="flex items-center gap-1.5 px-3.5 h-[30px] rounded-full font-bold text-white text-[13px] transition-colors"
+          style={{ background: start ? `${ws.accent}55` : `${ws.glow}26`, border: `1px solid ${ws.accent}66` }}>
           <span className="text-[15px]">⊞</span> Iniciar
         </button>
         <div className="w-px h-6 bg-white/20 mx-1" />
@@ -385,24 +374,27 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
       {/* ===== MENU INICIAR (todas as apps do módulo) ===== */}
       {start && (
-        <div className="absolute bottom-[40px] left-1.5 w-[320px] bg-[#f0f0f0] border border-[#333] shadow-2xl z-[130] rounded-t-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
-          <div className="px-4 py-3 text-white" style={{ background: `linear-gradient(to bottom, ${ws.accent}, ${ws.color})` }}>
+        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-[#f0f0f0] border border-[#333] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="px-4 py-3.5 text-white" style={{ background: `linear-gradient(to bottom, ${ws.accent}, ${ws.color})` }}>
             <div className="font-black text-[15px]">{erpName}</div>
             <div className="text-[11px] text-white/80">{user?.username} · {ws.name}</div>
           </div>
-          <div className="p-1.5">
-            <div className="text-[10px] uppercase text-gray-500 px-2 py-1">Aplicações — {ws.name}</div>
-            <div className="grid grid-cols-2 gap-0.5 max-h-[300px] overflow-auto">
+          <div className="p-2.5">
+            <div className="text-[10px] uppercase text-gray-500 px-1 py-1 font-semibold">Aplicações — {ws.name}</div>
+            <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-auto p-0.5">
               {ws.icons.map((ic, i) => (
-                <button key={i} onClick={() => openIcon(ic)} className="flex items-center gap-2 px-2 py-1.5 text-[12px] hover:bg-[#dbe8ff] text-left rounded">
-                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ws.accent }} />{ic.label}
+                <button key={i} onClick={() => openIcon(ic)} className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-[11px] hover:bg-[#dbe8ff] text-center rounded-xl transition-colors">
+                  <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: `linear-gradient(155deg, ${ws.accent}, ${ws.color})` }}>
+                    <ClassicIcon name={ic.icon} size={18} />
+                  </span>
+                  <span className="leading-tight text-[#333]">{ic.label}</span>
                 </button>
               ))}
             </div>
           </div>
           <div className="border-t border-[#d0d0d0] flex">
-            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2 text-[12px] hover:bg-[#e4e4e4] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
-            <button onClick={logout} className="px-4 py-2 text-[12px] hover:bg-[#c0392b] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
+            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2.5 text-[12px] hover:bg-[#e4e4e4] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
+            <button onClick={logout} className="px-4 py-2.5 text-[12px] hover:bg-[#c0392b] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
           </div>
         </div>
       )}
@@ -410,16 +402,25 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   );
 }
 
-// Ícone de desktop 3D/gloss clássico.
+// Ícone do Ambiente de Trabalho — tile plano moderno (fundo translúcido + vidro fosco),
+// sem o bisel/gloss 3D de antes.
 function DesktopIcon({ ic, accent, glow, onOpen }: { ic: DeskIcon; accent: string; glow: string; onOpen: () => void }) {
   return (
-    <button onClick={onOpen} className="w-[96px] flex flex-col items-center gap-1.5 group focus:outline-none" title={ic.label}>
-      <div className="relative w-[66px] h-[66px] rounded-[15px] flex items-center justify-center transition-all group-active:scale-95 group-hover:scale-[1.06]"
-        style={{ background: `linear-gradient(160deg, ${glow} 0%, ${accent} 45%, ${accent} 62%, rgba(0,0,0,0.35) 100%)`, boxShadow: '0 4px 8px rgba(0,0,0,0.5), inset 0 1.5px 1px rgba(255,255,255,0.7), inset 0 -4px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(0,0,0,0.45)' }}>
-        <div className="absolute top-0 left-1 right-1 h-[26px] rounded-t-[13px] pointer-events-none" style={{ background: 'linear-gradient(rgba(255,255,255,0.45), rgba(255,255,255,0))' }} />
-        {ic.img ? <img src={`/icons/${ic.img}`} alt="" className="w-11 h-11 relative" /> : <div className="relative"><ClassicIcon name={ic.icon} /></div>}
+    <button onClick={onOpen} className="w-[96px] flex flex-col items-center gap-2 group focus:outline-none" title={ic.label}>
+      <div className="relative w-[64px] h-[64px] rounded-[18px] flex items-center justify-center transition-all duration-150 group-active:scale-95 group-hover:-translate-y-0.5"
+        style={{
+          background: `linear-gradient(155deg, ${accent}3d, ${accent}1a)`,
+          backdropFilter: 'blur(6px)',
+          border: `1px solid ${accent}66`,
+          boxShadow: `0 6px 16px rgba(0,0,0,0.35)`,
+        }}>
+        <div className="absolute inset-0 rounded-[18px] opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ boxShadow: `0 0 0 1px ${glow}aa, 0 6px 20px ${glow}55` }} />
+        {ic.img
+          ? <img src={`/icons/${ic.img}`} alt="" className="w-9 h-9 relative object-contain" />
+          : <span className="relative text-white"><ClassicIcon name={ic.icon} size={28} /></span>}
       </div>
-      <span className="text-white text-[11px] text-center leading-tight px-0.5 font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95)' }}>{ic.label}</span>
+      <span className="text-white text-[11.5px] text-center leading-tight px-0.5 font-medium" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}>{ic.label}</span>
     </button>
   );
 }
