@@ -56,10 +56,23 @@ if 'clm' in settings.INSTALLED_APPS:
     # Se estiver no modo Platform Control Center
     urlpatterns.append(path("api/clm/", include("clm.urls")))
 
-# Servir os ficheiros carregados (logótipos, imagens) em desenvolvimento.
+# Servir os ficheiros carregados (logótipos, imagens de artigos…).
+#
+# NÃO é o helper `django.conf.urls.static.static()` de propósito: esse só regista a
+# rota quando DEBUG=True (a app do Django assume que, em produção, há um nginx/CDN à
+# frente a servir /media/). Esta instalação NÃO TEM nada disso — é o mesmo processo
+# do Windows (waitress) que serve tudo, API e ficheiros, e o cliente corre sempre com
+# DJANGO_DEBUG=False (configurar.py). Com o helper normal, a rota nunca existia em
+# produção: qualquer logótipo ou imagem carregada dava 404 sempre — foi assim que o
+# logótipo "não aparece depois de instalar" apareceu. Mesmo padrão já usado 20 linhas
+# abaixo para servir `assets/` do frontend compilado (serve() chamado direto, sem o
+# atalho gated por DEBUG) — só faltava aplicá-lo também aqui.
 from django.conf import settings  # noqa: E402
-from django.conf.urls.static import static  # noqa: E402
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+from django.urls import re_path as _media_re_path  # noqa: E402
+from django.views.static import serve as _media_serve  # noqa: E402
+urlpatterns += [
+    _media_re_path(r'^media/(?P<path>.*)$', _media_serve, {'document_root': settings.MEDIA_ROOT}),
+]
 
 # ── O SITE INSTALADO (produção on-premises) ──────────────────────────────────
 # Na instalação do cliente não há Vite nem nginx: o MESMO serviço do Windows que
