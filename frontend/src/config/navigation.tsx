@@ -22,7 +22,7 @@ import KDSView from '../components/posmgmt/KDSView';
 import AuditView from '../components/posmgmt/AuditView';
 import EdcInboxView from '../components/views/EdcInboxView';
 import GiftCardsView from '../components/posmgmt/GiftCardsView';
-import AppearanceView from '../components/admin/AppearanceView';
+import DesktopWallpaperView from '../components/admin/DesktopWallpaperView';
 import FeatureFlagsView from '../components/admin/FeatureFlagsView';
 import { CompaniesView, HotelsView, DepartmentsOrgView, AreasView } from '../components/org/OrgViews';
 import { CurrenciesView, CountriesView, BanksView, LanguagesView, CustomersView } from '../components/masterdata/CadastrosViews';
@@ -113,7 +113,7 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   adm_dashboard: DashboardMDMView,
   adm_audit: AuditView,
   adm_documents: EdcInbox,
-  adm_appearance: AppearanceView,
+  adm_appearance: DesktopWallpaperView,
   adm_features: FeatureFlagsView,
 
   // 03 · Security
@@ -352,7 +352,7 @@ export const MODULES: NavModule[] = [
       { id: 'adm_monitor', name: 'Monitorização' },
       { id: 'adm_audit', name: 'Auditoria' },
       { id: 'adm_documents', name: 'Documentos' },
-      { id: 'adm_appearance', name: 'Personalização' },
+      { id: 'adm_appearance', name: 'Papel de Parede' },
       { id: 'adm_logs', name: 'Logs' },
     ],
   },

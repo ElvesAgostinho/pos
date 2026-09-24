@@ -189,7 +189,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
     ],
     'Ferramentas': [
       { label: 'Voltar ao Ambiente de Trabalho', act: () => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); } },
-      { label: 'Aparência', act: () => onOpen('adm_appearance') },
+      { label: 'Papel de Parede', act: () => onOpen('adm_appearance') },
     ],
     'Ajuda': [{ label: 'Sobre a Plataforma', act: () => aviso('System Mwana Lodge · v1.0') }],
   };
