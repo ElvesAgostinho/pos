@@ -150,6 +150,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       { label: 'Contas Correntes', act: () => abrirPos('x_accounts') },
       { label: 'SAFT-AO', act: () => abrirPos('x_saft') },
       { label: 'Configuração POS', act: () => abrirPos('articles') },
+      { label: 'Aparência (papel de parede, cores, logótipo)', act: () => open('adm_appearance', 'Personalização') },
       { label: 'Diagnóstico', act: () => abrirPos('x_diag') },
       { label: 'Terminar sessão', act: logout },
     ],
@@ -211,6 +212,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       { label: 'SAFT-AO', act: emBreve('SAFT-AO') },
       { label: 'Categorias de Quarto', act: () => abrirPms('room_types') },
       { label: 'Tarifas (Rate Codes)', act: () => abrirPms('rate_plans') },
+      { label: 'Aparência (papel de parede, cores, logótipo)', act: () => open('adm_appearance', 'Personalização') },
       { label: 'Diagnóstico', act: emBreve('Diagnóstico') },
       { label: 'Visualizar Logs', act: emBreve('Visualizar Logs') },
       { label: 'Terminar sessão', act: logout },
@@ -245,7 +247,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           title="Trocar de módulo"
           className={`flex items-center gap-2 px-2.5 py-1 pr-3.5 mr-2 leading-none rounded-full transition-colors ${modMenu ? 'bg-white/20' : 'hover:bg-white/10'}`}>
           <img src={logoUrl || '/brand-logo.png'} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" />
-          <span className="text-[13px] text-[#062A31]">▾</span>
+          <span className="text-[13px] text-white">▾</span>
         </button>
         {modMenu && (
           <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#F7FAFA] border border-[#041F24] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
