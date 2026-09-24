@@ -2337,18 +2337,12 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                                        f'Crie-a em Configuração POS → Financeiro → Documentos.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        # O desconto do ticket reduz proporcionalmente as linhas (como na fatura automática).
-        fator = Decimal('1')
-        if ticket.discount_total and ticket.grand_total:
-            bruto = ticket.grand_total + ticket.discount_total
-            if bruto > 0:
-                fator = ticket.grand_total / bruto
-        linhas = [{
-            'description': l.description,
-            'quantity': l.quantity,
-            'unit_price': Decimal(str(l.unit_price)) * fator,
-            'tax_percentage': l.tax_percentage,
-        } for l in ticket.lines.filter(is_void=False).select_related('item')]
+        # O desconto do ticket reduz as linhas — SÓ as elegíveis (respeita "Não
+        # permite desconto"/âmbito/Happy Hour), a mesma regra do recompute(). Um
+        # fator médio (grand_total/(grand_total+discount_total)) aplicado a TODAS
+        # as linhas por igual descontava também os artigos protegidos — o documento
+        # fiscal declarava à AGT menos receita do que o dinheiro que entrou na caixa.
+        linhas = ticket.fiscal_lines()
 
         # A ENTIDADE — quem leva a fatura. Vem do pedido ou da conta. Sem a LIGAÇÃO ao
         # cadastro (e não só o nome escrito à mão), a fatura de uma empresa nunca

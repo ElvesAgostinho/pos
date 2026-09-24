@@ -454,6 +454,72 @@ class POSTicket(models.Model):
         if save:
             self.save(update_fields=['subtotal', 'tax_total', 'discount_total', 'grand_total'])
 
+    def fiscal_lines(self):
+        """Linhas prontas para o motor fiscal (fiscal.services.issue_document), com o
+        desconto já aplicado — SÓ às linhas elegíveis, com a MESMA regra de
+        elegibilidade do recompute() acima (artigo "Não permite desconto", âmbito do
+        desconto, Happy Hour ativo).
+
+        emit_for_pos_ticket()/POSTicketViewSet.issue_document() tinham cada um a sua
+        própria conta: um FATOR MÉDIO (ex.: grand_total/(grand_total+discount_total))
+        aplicado a TODAS as linhas por igual, incluindo as protegidas por
+        "Não permite desconto". Resultado: o documento fiscal (o que vai para a AGT)
+        descontava artigos que a conta do cliente nunca descontou — declarava MENOS
+        receita do que o dinheiro que entrou mesmo na caixa. Achado a auditar os
+        cálculos que vão para a AGT: uma conta com um artigo normal (1000) + um
+        protegido (500) e 20% de desconto manual cobrava 1300 ao cliente
+        (grand_total, respeitando a proteção) mas o documento fiscal saía a 1200
+        (o factor médio de 20% descontava os 500 do artigo protegido também).
+
+        Usa o MESMO rácio (desconto ÷ base descontável) que o recompute() calcula —
+        para um desconto de PERCENTAGEM isto reproduz exatamente discount_percent%;
+        para um desconto de VALOR fixo (capado pela base), reproduz a mesma fração
+        efetiva — e aplica-o só às linhas elegíveis.
+        """
+        from decimal import Decimal
+        from .params import P
+        scope_ids = None
+        if self.discount_id:
+            ids = list(self.discount.items.values_list('id', flat=True))
+            scope_ids = set(ids) if ids else None
+        codigos_hh = {c.strip() for c in P.text(8369, '').split(',') if c.strip()}
+        hh_ativo = False
+        if codigos_hh:
+            nome_hh = P.text(9369, '')
+            if nome_hh:
+                hh = HappyHour.objects.filter(name=nome_hh, is_active=True).first()
+                hh_ativo = bool(hh and hh.value_now())
+
+        linhas = list(self.lines.filter(is_void=False).select_related('item'))
+        elegivel = {}
+        discountable = Decimal('0')
+        for l in linhas:
+            if l.item and getattr(l.item, 'is_value_discount', False):
+                elegivel[l.id] = False
+                continue
+            excluido_hh = hh_ativo and l.item and l.item.code in codigos_hh
+            e = (not (l.item and getattr(l.item, 'no_discount', False)) and not excluido_hh
+                 and (scope_ids is None or (l.item_id in scope_ids)))
+            elegivel[l.id] = e
+            if e:
+                discountable += l.line_total
+
+        desconto = Decimal('0')
+        if self.discount_id and self.discount.base == 'VALUE':
+            desconto = min(self.discount.value, discountable)
+        elif self.discount_percent:
+            desconto = discountable * self.discount_percent / Decimal('100')
+        racio = (desconto / discountable) if discountable > 0 else Decimal('0')
+
+        out = []
+        for l in linhas:
+            preco = Decimal(str(l.unit_price))
+            if elegivel.get(l.id) and racio > 0:
+                preco = preco * (Decimal('1') - racio)
+            out.append({'description': l.description, 'quantity': l.quantity,
+                        'unit_price': preco, 'tax_percentage': l.tax_percentage})
+        return out
+
     @property
     def paid_amount(self):
         from decimal import Decimal

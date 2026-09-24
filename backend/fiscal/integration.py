@@ -76,17 +76,9 @@ def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None
     series = _resolve_series('FT' if credito else cfg.pos_doc_type, outlet=ticket.outlet)
     if not series:
         return None  # sem série configurada -> não bloqueia a venda
-    # Desconto (VIP/manual) reduz proporcionalmente os preços das linhas na fatura.
-    from decimal import Decimal
-    factor = Decimal('1')
-    if getattr(ticket, 'discount_percent', 0):
-        factor = Decimal('1') - (Decimal(str(ticket.discount_percent)) / Decimal('100'))
-    lines = [{
-        'description': l.description,
-        'quantity': l.quantity,
-        'unit_price': Decimal(str(l.unit_price)) * factor,
-        'tax_percentage': l.tax_percentage,
-    } for l in ticket.lines.all()]
+    # Desconto (VIP/manual) — aplicado SÓ às linhas elegíveis (respeita "Não permite
+    # desconto"/âmbito/Happy Hour), a mesma regra do recompute(). Ver fiscal_lines().
+    lines = ticket.fiscal_lines()
     if not lines:
         return None
     # Contexto operacional para a fatura: destino (Mesa/Quarto/Piscina...), forma de pagamento.
@@ -132,16 +124,11 @@ def emit_table_consult(ticket, user=None, ip=None):
     series = _resolve_series('CM', outlet=ticket.outlet)
     if not series:
         return None            # sem série CM configurada -> a consulta mostra-se sem documento
-    from decimal import Decimal
-    factor = Decimal('1')
-    if getattr(ticket, 'discount_percent', 0):
-        factor = Decimal('1') - (Decimal(str(ticket.discount_percent)) / Decimal('100'))
-    lines = [{
-        'description': l.description,
-        'quantity': l.quantity,
-        'unit_price': Decimal(str(l.unit_price)) * factor,
-        'tax_percentage': l.tax_percentage,
-    } for l in ticket.lines.filter(is_void=False)]
+    # Mesma regra de elegibilidade do recompute()/fiscal_lines() — o mesmo bug do
+    # factor médio aplicado a tudo (ver emit_for_pos_ticket) também aqui: a consulta
+    # de mesa é um documento fiscal a sério (CM), tem de bater com o que a conta
+    # realmente vai cobrar.
+    lines = ticket.fiscal_lines()
     if not lines:
         return None
     place = getattr(ticket, 'dest_label', None)
