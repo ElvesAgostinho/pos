@@ -167,9 +167,17 @@ def _sales_invoices(docs):
     if not inv:
         return ''
     body = ''.join(_doc_xml(d, 'Invoice', 'InvoiceNo') for d in inv)
-    total_credit = sum((d.gross_total for d in inv), Decimal('0'))
+    # Convenção SAF-T (OECD/AT, a mesma família do SAF-T-AO): a Nota de Crédito é um
+    # DÉBITO à receita — reduz o que a casa vendeu, não soma como se fosse mais uma
+    # venda. O resto (faturas normais + Nota de Débito, que aumenta o que se deve) é
+    # CRÉDITO. Antes, TUDO ia para TotalCredit e TotalDebit ficava sempre "0.00" —
+    # um período com estornos inflacionava o total de vendas declarado à AGT.
+    debito = [d for d in inv if d.doc_type.code == 'NC']
+    credito = [d for d in inv if d.doc_type.code != 'NC']
+    total_debit = sum((d.gross_total for d in debito), Decimal('0'))
+    total_credit = sum((d.gross_total for d in credito), Decimal('0'))
     return ("<SalesInvoices>" + _e('NumberOfEntries', len(inv))
-            + _e('TotalDebit', '0.00') + _e('TotalCredit', total_credit) + body + "</SalesInvoices>")
+            + _e('TotalDebit', total_debit) + _e('TotalCredit', total_credit) + body + "</SalesInvoices>")
 
 
 def _working_documents(docs):
@@ -187,14 +195,19 @@ def document_xml(doc):
     cfg = FiscalConfig.get()
     wrapper, no_tag = ('Invoice', 'InvoiceNo') if doc.doc_type.saft_type != 'WorkingDocument' else ('WorkDocument', 'DocumentNumber')
     section = 'SalesInvoices' if wrapper == 'Invoice' else 'WorkingDocuments'
+    # Mesma convenção de _sales_invoices: uma Nota de Crédito sozinha vai para
+    # TotalDebit, não TotalCredit.
+    e_debito = doc.doc_type.code == 'NC'
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         f'<AuditFile xmlns="{NS}">'
         + _header(cfg, doc.doc_date, doc.doc_date)
         + "<MasterFiles>" + _customers([doc]) + "</MasterFiles>"
         + "<SourceDocuments>"
-        + f"<{section}>" + _e('NumberOfEntries', 1) + _e('TotalDebit', '0.00')
-        + _e('TotalCredit', doc.gross_total) + _doc_xml(doc, wrapper, no_tag) + f"</{section}>"
+        + f"<{section}>" + _e('NumberOfEntries', 1)
+        + _e('TotalDebit', doc.gross_total if e_debito else '0.00')
+        + _e('TotalCredit', '0.00' if e_debito else doc.gross_total)
+        + _doc_xml(doc, wrapper, no_tag) + f"</{section}>"
         + "</SourceDocuments>"
         + "</AuditFile>"
     )
