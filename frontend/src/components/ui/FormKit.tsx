@@ -15,7 +15,7 @@ export function FormSection({ title, hint, children, cols = 2 }:
   { title: string; hint?: string; children: ReactNode; cols?: 1 | 2 | 3 }) {
   return (
     <div className="bg-white border border-[#7FA9B1] mb-3" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.10)' }}>
-      <div className="px-3 py-1.5 border-b border-[#CFE3E6] text-[12px] font-bold text-[#0B4F5C]"
+      <div className="px-3 py-1.5 border-b border-[#CFE3E6] text-[12px] font-bold text-[#062A31]"
         style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA)' }}>
         {title}
         {hint && <span className="ml-2 font-normal text-[11px] text-gray-500">{hint}</span>}
@@ -27,7 +27,7 @@ export function FormSection({ title, hint, children, cols = 2 }:
   );
 }
 
-const inputCls = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white w-full outline-none focus:border-[#0B4F5C]';
+const inputCls = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white w-full outline-none focus:border-[#062A31]';
 const inputStyle = { boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.12)' };
 
 interface FieldProps {
@@ -72,11 +72,11 @@ export function Field({ label, value, onChange, required, help, type = 'text', o
 }
 
 export const btnPrimary = {
-  className: 'px-4 py-1.5 text-[12px] font-bold text-white border border-[#06333C]',
-  style: { background: 'linear-gradient(to bottom, #0B4F5C, #5C8891)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
+  className: 'px-4 py-1.5 text-[12px] font-bold text-white border border-[#041F24]',
+  style: { background: 'linear-gradient(to bottom, #062A31, #5C8891)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
 };
 export const btnNormal = {
-  className: 'px-3 py-1.5 text-[12px] font-semibold border border-[#7FA9B1] text-[#06333C]',
+  className: 'px-3 py-1.5 text-[12px] font-semibold border border-[#7FA9B1] text-[#041F24]',
   style: {
     background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA 48%, #EEF4F5 52%, #EEF4F5)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',

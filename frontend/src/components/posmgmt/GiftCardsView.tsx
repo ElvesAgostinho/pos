@@ -35,7 +35,7 @@ export default function GiftCardsView() {
             columns={[
               { header: 'Código', accessor: 'code', width: '26%' },
               { header: 'Valor inicial', accessor: (r: any) => Number(r.initial_balance).toFixed(2), width: '20%' },
-              { header: 'Saldo atual', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#0B4F5C] font-bold' : 'text-gray-400'}>{Number(r.balance).toFixed(2)}</span>, width: '20%' },
+              { header: 'Saldo atual', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#062A31] font-bold' : 'text-gray-400'}>{Number(r.balance).toFixed(2)}</span>, width: '20%' },
               { header: 'Ativo', accessor: (r: any) => r.is_active ? 'Sim' : 'Não', width: '14%' },
               { header: 'Emitido', accessor: (r: any) => r.created_at ? new Date(r.created_at).toLocaleDateString('pt-PT') : '—', width: '20%' },
             ]}

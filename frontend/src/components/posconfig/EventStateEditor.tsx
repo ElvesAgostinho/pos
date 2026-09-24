@@ -9,7 +9,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-start gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#06333C] pt-1">{label}</span>
+      <span className="w-[120px] flex-shrink-0 text-[#041F24] pt-1">{label}</span>
       {children}
     </label>
   );
@@ -30,7 +30,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
   const isNew = !row?.id;
   const [d, setD] = useState<any>({
     is_active: true, is_system: false, is_auto_reservation: false, sort_order: 0,
-    bg_color: '#0B4F5C', text_color: '#FFFFFF', equivalent: '', ...row,
+    bg_color: '#062A31', text_color: '#FFFFFF', equivalent: '', ...row,
   });
 
   const save = useMutation({
@@ -54,7 +54,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo estado' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo estado' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -85,7 +85,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
                   <option value="CHECKIN">Check-in</option>
                   <option value="CHECKOUT">Check-out</option>
                 </select>
-                <div className={`text-[11px] mt-1 max-w-[290px] ${bloqueia ? 'text-[#B0392B]' : 'text-[#0B4F5C]'}`}>
+                <div className={`text-[11px] mt-1 max-w-[290px] ${bloqueia ? 'text-[#B0392B]' : 'text-[#062A31]'}`}>
                   {bloqueia
                     ? 'Este estado BLOQUEIA o espaço — a sala sai do mercado.'
                     : 'Este estado NÃO bloqueia o espaço — a sala continua a poder ser vendida.'}
@@ -99,7 +99,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
             <Row label="Cor de Fundo:">
               <div className="flex items-center gap-2">
-                <input type="color" value={d.bg_color || '#0B4F5C'}
+                <input type="color" value={d.bg_color || '#062A31'}
                   onChange={(e) => set('bg_color', e.target.value)} className="w-10 h-8 border border-[#7FA9B1]" />
                 <input value={d.bg_color || ''} onChange={(e) => set('bg_color', e.target.value)}
                   className={`${inp} w-[130px] font-mono`} style={inputStyle} />
@@ -154,7 +154,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

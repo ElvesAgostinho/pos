@@ -29,13 +29,13 @@ export async function openGuestInfoWindow(reservation: any) {
   w.document.open();
   w.document.write(`<!doctype html><html><head><title>Guest Info - ${guest.name}</title><style>
     body{background:#062A31;color:#EEF4F5;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:20px}
-    .card{background:#06333C;border-radius:4px;margin-bottom:16px}
+    .card{background:#041F24;border-radius:4px;margin-bottom:16px}
     .head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-weight:bold;font-size:16px}
     .close{background:#B0392B;color:#FFFFFF;border:none;padding:6px 14px;border-radius:3px;cursor:pointer}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px}
     .row b{color:#FFFFFF}
     table{width:100%;border-collapse:collapse;margin:0 16px 16px;width:calc(100% - 32px)}
-    th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #0B4F5C;font-size:13px}
+    th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #062A31;font-size:13px}
   </style></head><body>
     <div class="card">
       <div class="head">${guest.name}<button class="close" onclick="window.close()">Close</button></div>

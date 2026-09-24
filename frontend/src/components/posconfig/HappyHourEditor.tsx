@@ -9,12 +9,12 @@ const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 /** As cores dos níveis de preço — as mesmas do original, para o olho reconhecer. */
 const NIVEIS = [
-  { v: 0, label: 'Preço por Omissão', bg: '#FFFFFF', fg: '#06333C' },
+  { v: 0, label: 'Preço por Omissão', bg: '#FFFFFF', fg: '#041F24' },
   { v: 1, label: 'Preço 1', bg: '#CFE3E6', fg: '#FFFFFF' },
-  { v: 2, label: 'Preço 2', bg: '#7FA9B1', fg: '#06333C' },
-  { v: 3, label: 'Preço 3', bg: '#CFE3E6', fg: '#06333C' },
-  { v: 4, label: 'Preço 4', bg: '#CFE3E6', fg: '#06333C' },
-  { v: 5, label: 'Preço 5', bg: '#EEF4F5', fg: '#06333C' },
+  { v: 2, label: 'Preço 2', bg: '#7FA9B1', fg: '#041F24' },
+  { v: 3, label: 'Preço 3', bg: '#CFE3E6', fg: '#041F24' },
+  { v: 4, label: 'Preço 4', bg: '#CFE3E6', fg: '#041F24' },
+  { v: 5, label: 'Preço 5', bg: '#EEF4F5', fg: '#041F24' },
 ];
 
 /**
@@ -83,7 +83,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white" onMouseUp={() => setPainting(false)}>
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo Happy Hour' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo Happy Hour' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -91,13 +91,13 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
         <Box title="Identificação">
         <div className="space-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[12px]">
-          <span className="w-[110px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
+          <span className="w-[110px] text-[#041F24]">Descrição:<span className="text-[#B0392B]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
             placeholder="Happy Hour de Verão" className={`${inp} w-[420px]`} style={inputStyle} />
         </label>
 
         <div className="flex items-center gap-8 text-[12px]">
-          <span className="w-[110px] text-[#06333C]">Tipo:</span>
+          <span className="w-[110px] text-[#041F24]">Tipo:</span>
           <label className="flex items-center gap-2">
             <input type="radio" checked={d.kind === 'PRICE'} onChange={() => set('kind', 'PRICE')} className="w-4 h-4" />
             Preço
@@ -109,13 +109,13 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
         </div>
 
         <label className="flex items-center gap-3 text-[12px]">
-          <span className="w-[110px] text-[#06333C]">Mostrar Meias Horas:</span>
+          <span className="w-[110px] text-[#041F24]">Mostrar Meias Horas:</span>
           <input type="checkbox" checked={!!d.show_half_hours}
             onChange={(e) => set('show_half_hours', e.target.checked)} className="w-4 h-4" />
         </label>
 
         <label className="flex items-center gap-3 text-[12px]">
-          <span className="w-[110px] text-[#06333C]">Ponto de venda:</span>
+          <span className="w-[110px] text-[#041F24]">Ponto de venda:</span>
           <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)}
             className={`${inp} w-[280px]`} style={inputStyle}>
             <option value="">(todos)</option>
@@ -141,7 +141,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
             <tbody>
               {slots.map((s) => (
                 <tr key={s}>
-                  <td className="px-2 py-1 border border-[#EEF4F5] whitespace-nowrap text-[#0B4F5C]">{label(s)}</td>
+                  <td className="px-2 py-1 border border-[#EEF4F5] whitespace-nowrap text-[#062A31]">{label(s)}</td>
                   {DIAS.map((_, dia) => {
                     const v = cells[`${dia}-${s}`];
                     const c = d.kind === 'PRICE' ? corDe(v) : null;
@@ -154,7 +154,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
                         style={{
                           minWidth: 74, height: 26,
                           background: v ? (c ? c.bg : '#CFE3E6') : '#FFFFFF',
-                          color: c ? c.fg : '#06333C',
+                          color: c ? c.fg : '#041F24',
                         }}>
                         {v ? (d.kind === 'PRICE' ? '' : `-${v}%`) : ''}
                       </td>
@@ -168,7 +168,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
 
         {/* Paleta */}
         <div className="w-[220px] flex-shrink-0 border-l border-[#EEF4F5] bg-[#FFFFFF]">
-          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#06333C] border-b border-[#EEF4F5]">
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#041F24] border-b border-[#EEF4F5]">
             {d.kind === 'PRICE' ? 'Preço' : 'Desconto'}
           </div>
           {d.kind === 'PRICE' ? (
@@ -201,7 +201,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

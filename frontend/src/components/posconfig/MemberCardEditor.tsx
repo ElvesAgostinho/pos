@@ -11,7 +11,7 @@ const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className="w-[100px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[100px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -94,7 +94,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo cartão' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo cartão' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -131,7 +131,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                  ['has_points', 'Pontos', 'acumula pontos por consumo'],
                  ['has_discount', 'Desconto', 'desconta nos artigos da lista abaixo']] as const).map(([k, l, ajuda]) => (
                 <label key={k} className="flex items-center gap-3 text-[12px]">
-                  <span className="w-[100px] text-[#06333C]">{l}:</span>
+                  <span className="w-[100px] text-[#041F24]">{l}:</span>
                   <input type="checkbox" checked={!!d[k]} onChange={(e) => set(k, e.target.checked)} className="w-4 h-4" />
                   <span className="text-[11px] text-[#5C8891]">{ajuda}</span>
                 </label>
@@ -147,7 +147,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                 </span>
               </div>
               <button onClick={() => setPicker('pack')} title="Escolher os artigos incluídos"
-                className="w-9 h-[28px] bg-[#06333C] text-white flex items-center justify-center"><Glyph icon="👁" size={14} /></button>
+                className="w-9 h-[28px] bg-[#041F24] text-white flex items-center justify-center"><Glyph icon="👁" size={14} /></button>
             </Row>
 
             <Row label="Happy Hour:">
@@ -159,7 +159,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
             </Row>
 
             {d.has_discount && ds.length === 0 && (
-              <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1">
+              <div className="text-[11px] text-[#062A31] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1">
                 "Desconto" ligado mas sem artigos na lista — o cartão não vai descontar nada.
               </div>
             )}
@@ -194,7 +194,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                     <td className="text-center w-[60px]">
                       {row?.id && x.item && (
                         <button onClick={() => simular.mutate(x.item)} title="Quanto fica este artigo com o cartão?"
-                          className="text-[#0B4F5C] text-[11px] font-bold">Simular</button>
+                          className="text-[#062A31] text-[11px] font-bold">Simular</button>
                       )}
                       <button onClick={() => set('discounts', ds.filter((_, j) => j !== ds.indexOf(x)))}
                         className="text-[#B0392B] text-[11px] font-bold ml-2">×</button>
@@ -220,12 +220,12 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
 
         {/* Direita: agenda do happy hour + simulação */}
         <div className="flex-1 flex flex-col overflow-auto">
-          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] border-b border-[#CFE3E6]">
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#062A31] border-b border-[#CFE3E6]">
             Agenda (Happy Hour)
           </div>
           <div className="p-3">
             {d.happy_hour ? (
-              <div className="text-[12px] text-[#06333C]">
+              <div className="text-[12px] text-[#041F24]">
                 <b>{(happys as any[]).find((h) => h.id === Number(d.happy_hour))?.name}</b>
                 <div className="text-[11px] text-[#5C8891] mt-1">
                   As horas marcadas nesse Happy Hour valem para quem tem este cartão.
@@ -239,7 +239,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
 
           {sim && (
             <div className="m-3 border border-[#CFE3E6]">
-              <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] border-b border-[#CFE3E6]">
+              <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#062A31] border-b border-[#CFE3E6]">
                 Com este cartão…
               </div>
               <div className="p-3 text-[12px] space-y-1">
@@ -247,7 +247,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                 <div>
                   Preço normal: <b className="line-through text-[#7FA9B1]">{Number(sim.base_price).toFixed(2)}</b>
                   {' → '}
-                  <b className="text-[15px] text-[#0B4F5C]">{Number(sim.final_price).toFixed(2)}</b>
+                  <b className="text-[15px] text-[#062A31]">{Number(sim.final_price).toFixed(2)}</b>
                 </div>
                 <div className="text-[11px] text-[#5C8891]">{sim.detail}</div>
               </div>
@@ -271,7 +271,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

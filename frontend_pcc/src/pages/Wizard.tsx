@@ -111,7 +111,7 @@ const Wizard: React.FC = () => {
     return (
       <div className="p-4 bg-[#F7FAFA] h-full overflow-auto text-black font-sans text-xs flex justify-center items-center">
         <div className="bg-[#F7FAFA] border border-[#7FA9B1] p-4 w-[500px] shadow-md">
-          <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center mb-4">
+          <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center mb-4">
             <span className="font-bold text-[11px]">Deploy Concluído</span>
           </div>
           <div className="flex mb-4">
@@ -131,7 +131,7 @@ const Wizard: React.FC = () => {
           </div>
 
           <div className="bg-[#F7FAFA] border border-[#CFE3E6] p-3 mb-3">
-            <div className="text-[10px] font-bold text-[#0B4F5C] mb-2">
+            <div className="text-[10px] font-bold text-[#062A31] mb-2">
               ⚠ Estas duas senhas só aparecem UMA VEZ. Copie-as agora — depois só é possível gerar novas, não reler as atuais.
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -151,7 +151,7 @@ const Wizard: React.FC = () => {
           </div>
 
           <div className="flex justify-end border-t border-[#EEF4F5] pt-2 mt-2">
-            <button onClick={() => { setSuccess(false); setStep(1); }} className="px-4 py-1 border border-[#06333C] bg-[#06333C] text-white hover:bg-[#0B4F5C]">
+            <button onClick={() => { setSuccess(false); setStep(1); }} className="px-4 py-1 border border-[#041F24] bg-[#041F24] text-white hover:bg-[#062A31]">
               Concluir
             </button>
           </div>
@@ -163,7 +163,7 @@ const Wizard: React.FC = () => {
   return (
     <div className="p-4 bg-[#F7FAFA] h-full overflow-auto text-black font-sans text-xs">
       <div className="border-b border-[#EEF4F5] pb-2 mb-4">
-        <h1 className="text-lg font-bold text-[#06333C]">Novo Cliente - Provisioning Engine</h1>
+        <h1 className="text-lg font-bold text-[#041F24]">Novo Cliente - Provisioning Engine</h1>
       </div>
 
       {/* Stepper */}
@@ -171,7 +171,7 @@ const Wizard: React.FC = () => {
         {steps.map((s, i) => (
           <div key={i} className="flex items-center mr-4">
             <div className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[9px] mr-1
-              ${step > i + 1 ? 'bg-[#5C8891] text-white' : step === i + 1 ? 'bg-[#06333C] text-white' : 'bg-[#EEF4F5] text-[#5C8891]'}`}>
+              ${step > i + 1 ? 'bg-[#5C8891] text-white' : step === i + 1 ? 'bg-[#041F24] text-white' : 'bg-[#EEF4F5] text-[#5C8891]'}`}>
               {step > i + 1 ? '✓' : i + 1}
             </div>
             <span className={`${step >= i + 1 ? 'text-black font-bold' : 'text-gray-500'}`}>{s}</span>
@@ -221,7 +221,7 @@ const Wizard: React.FC = () => {
 
               {/* Núcleo (sempre incluído) */}
               <div className="border border-[#EEF4F5] bg-[#F7FAFA]">
-                <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#0B4F5C] border-b border-[#EEF4F5]">
+                <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#062A31] border-b border-[#EEF4F5]">
                   NÚCLEO (sempre incluído)
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-1 p-2">
@@ -237,7 +237,7 @@ const Wizard: React.FC = () => {
               {/* Opcionais por categoria */}
               {Object.entries(optionalByCategory).map(([cat, mods]) => (
                 <div key={cat} className="border border-[#EEF4F5] bg-[#FFFFFF]">
-                  <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#06333C] border-b border-[#EEF4F5] uppercase tracking-wide">
+                  <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#041F24] border-b border-[#EEF4F5] uppercase tracking-wide">
                     {cat}
                   </div>
                   <div className="p-2 space-y-1">
@@ -245,7 +245,7 @@ const Wizard: React.FC = () => {
                       <label key={m.code} className="flex items-start p-1 hover:bg-[#F7FAFA] cursor-pointer rounded">
                         <input type="checkbox" className="mr-2 mt-0.5" checked={selected.includes(m.code)} onChange={() => toggle(m.code)} />
                         <div>
-                          <span className="font-bold text-[#06333C]">{m.name}</span>
+                          <span className="font-bold text-[#041F24]">{m.name}</span>
                           <span className="ml-2 text-[9px] text-gray-400 font-mono">[{m.code}]</span>
                           {m.description && <div className="text-[9px] text-gray-500">{m.description}</div>}
                         </div>
@@ -265,15 +265,15 @@ const Wizard: React.FC = () => {
               </p>
               {Object.entries(featuresByModule).map(([mod, feats]) => (
                 <div key={mod} className="border border-[#EEF4F5] bg-[#FFFFFF]">
-                  <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#06333C] border-b border-[#EEF4F5] uppercase tracking-wide">{mod}</div>
+                  <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#041F24] border-b border-[#EEF4F5] uppercase tracking-wide">{mod}</div>
                   <div className="p-2 space-y-1">
                     {feats.map((f: any) => (
                       <label key={f.key} className="flex items-start p-1 hover:bg-[#F7FAFA] cursor-pointer rounded">
                         <input type="checkbox" className="mr-2 mt-0.5" checked={selectedFeatures.includes(f.key)} onChange={() => toggleFeature(f.key)} />
                         <div>
-                          <span className="font-bold text-[#06333C]">{f.name}</span>
+                          <span className="font-bold text-[#041F24]">{f.name}</span>
                           <span className="ml-2 text-[9px] text-gray-400 font-mono">[{f.key}]</span>
-                          {!f.default_on && <span className="ml-2 text-[8px] font-bold text-[#0B4F5C] bg-[#F7FAFA] px-1 rounded">PREMIUM</span>}
+                          {!f.default_on && <span className="ml-2 text-[8px] font-bold text-[#062A31] bg-[#F7FAFA] px-1 rounded">PREMIUM</span>}
                         </div>
                       </label>
                     ))}
@@ -344,7 +344,7 @@ const Wizard: React.FC = () => {
         <div className="flex space-x-4 px-2">
           <button onClick={handleBack} disabled={step === 1 || loading}
             className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-2 py-1 rounded disabled:opacity-50">
-            <div className="w-5 h-5 rounded-full border-2 border-[#0B4F5C] flex justify-center items-center font-bold text-[#0B4F5C] pb-[2px]">&lt;</div>
+            <div className="w-5 h-5 rounded-full border-2 border-[#062A31] flex justify-center items-center font-bold text-[#062A31] pb-[2px]">&lt;</div>
             <span className="text-gray-700 font-medium ml-1">Anterior</span>
           </button>
 

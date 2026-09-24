@@ -45,7 +45,7 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
       <div className="w-[1100px] max-h-[80vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           Atribuição rápida de quartos
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
@@ -86,13 +86,13 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
             <textarea readOnly rows={2} className="border border-[#7FA9B1] p-1 bg-white resize-none"
               value={selRes ? `${selRes.confirmation} · ${selRes.guest_name} · ${selRes.room_type_name} · ${selRes.check_in} → ${selRes.check_out}` : ''} />
           </label>
-          <div className="text-[#0B4F5C]">
+          <div className="text-[#062A31]">
             <b>Instructions:</b>
             <div>1) Select one reservation from the left panel</div>
             <div>2) Select the desired room from the right panel</div>
             <div>3) The room will be assigned to the reservation immediately</div>
           </div>
-          <button onClick={onClose} className="flex items-start gap-1.5 font-semibold text-[#06333C] hover:text-black flex-shrink-0">
+          <button onClick={onClose} className="flex items-start gap-1.5 font-semibold text-[#041F24] hover:text-black flex-shrink-0">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white flex-shrink-0">
               <X size={9} strokeWidth={3} />
             </span>

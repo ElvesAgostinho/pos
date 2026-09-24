@@ -36,8 +36,8 @@ export function AccDashboardView() {
       <div className="p-3 grid grid-cols-4 gap-2">
         {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Total do Ativo" value={AOA(d.total_assets)} /><Card label="Total do Passivo" value={AOA(d.total_liabilities)} />
-          <Card label="Proveitos" value={AOA(d.total_income)} tone="text-[#0B4F5C]" /><Card label="Custos" value={AOA(d.total_expense)} tone="text-[#0B4F5C]" />
-          <Card label="Resultado líquido" value={AOA(d.net_result)} tone={d.net_result >= 0 ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'} sub={d.net_result >= 0 ? 'Lucro' : 'Prejuízo'} />
+          <Card label="Proveitos" value={AOA(d.total_income)} tone="text-[#062A31]" /><Card label="Custos" value={AOA(d.total_expense)} tone="text-[#062A31]" />
+          <Card label="Resultado líquido" value={AOA(d.net_result)} tone={d.net_result >= 0 ? 'text-[#062A31]' : 'text-[#8C2B1F]'} sub={d.net_result >= 0 ? 'Lucro' : 'Prejuízo'} />
           <Card label="Contas de movimento" value={d.movement_accounts} /><Card label="Lançamentos" value={d.entries_posted} sub={`${d.entries_draft} rascunhos`} /><Card label="Diários" value={d.journals} />
         </>}
       </div>
@@ -115,7 +115,7 @@ export function AccEntriesView() {
             <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '22%' }, { header: 'Data', accessor: 'entry_date', width: '20%' },
               { header: 'Descrição', accessor: 'description', width: '36%' },
-              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'POSTED' ? 'text-[#0B4F5C] font-bold' : r.status === 'REVERSED' ? 'text-gray-500' : 'text-[#0B4F5C]'}>{r.status_display}</span>, width: '22%' },
+              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'POSTED' ? 'text-[#062A31] font-bold' : r.status === 'REVERSED' ? 'text-gray-500' : 'text-[#062A31]'}>{r.status_display}</span>, width: '22%' },
             ]} />
           </div>
         </div>
@@ -161,7 +161,7 @@ export function AccEntriesView() {
               </table>
               <div className="flex items-center justify-between mt-2">
                 <ClassicButton icon={Plus} label="Linha" onClick={() => setLines([...lines, emptyLine()])} />
-                <div className={`font-bold flex items-center gap-1 ${balanced ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'}`}>
+                <div className={`font-bold flex items-center gap-1 ${balanced ? 'text-[#062A31]' : 'text-[#8C2B1F]'}`}>
                   D: {AOA(totD)} · C: {AOA(totC)} {balanced ? <><Check size={13} strokeWidth={3} /> Salda</> : <><X size={13} strokeWidth={3} /> Não salda</>}
                 </div>
               </div>
@@ -202,7 +202,7 @@ export function AccJournalsView() {
           <div className="p-2 bg-[#F7FAFA] border-b border-[#7FA9B1] text-[11px] font-bold">Exercícios contabilísticos</div>
           <div className="flex-1 overflow-hidden"><ClassicGrid rowKey="id" data={p.rows} columns={[
             { header: 'Exercício', accessor: 'name', width: '28%' }, { header: 'Início', accessor: 'start_date', width: '24%' }, { header: 'Fim', accessor: 'end_date', width: '24%' },
-            { header: 'Estado', accessor: (r: any) => <button onClick={() => toggleClose(r.id)} className={`flex items-center gap-1 ${r.is_closed ? 'text-[#8C2B1F]' : 'text-[#0B4F5C]'}`}>{r.is_closed ? <><Lock size={11} />Fechado</> : <><Unlock size={11} />Aberto</>}</button>, width: '24%' },
+            { header: 'Estado', accessor: (r: any) => <button onClick={() => toggleClose(r.id)} className={`flex items-center gap-1 ${r.is_closed ? 'text-[#8C2B1F]' : 'text-[#062A31]'}`}>{r.is_closed ? <><Lock size={11} />Fechado</> : <><Unlock size={11} />Aberto</>}</button>, width: '24%' },
           ]} /></div>
         </div>
       </div>
@@ -240,7 +240,7 @@ export function AccTrialBalanceView() {
   const rows = data?.rows ?? [];
   const t = data?.totals;
   return (
-    <ClassicWindow title="Balancete" icon={<Scale size={14} className="text-gray-300" />} footer={<div className="text-gray-600">{t ? <>Total D: {AOA(t.debit)} · C: {AOA(t.credit)} · {data.balanced ? <span className="text-[#0B4F5C] font-bold">Balanceado ✓</span> : <span className="text-[#8C2B1F] font-bold">Desequilibrado</span>}</> : '—'}</div>}>
+    <ClassicWindow title="Balancete" icon={<Scale size={14} className="text-gray-300" />} footer={<div className="text-gray-600">{t ? <>Total D: {AOA(t.debit)} · C: {AOA(t.credit)} · {data.balanced ? <span className="text-[#062A31] font-bold">Balanceado ✓</span> : <span className="text-[#8C2B1F] font-bold">Desequilibrado</span>}</> : '—'}</div>}>
       <div className="p-2 h-full"><ClassicGrid rowKey="code" data={rows} columns={[
         { header: 'Conta', accessor: (r: any) => `${r.code} · ${r.name}`, width: '40%' },
         { header: 'Débito', accessor: (r: any) => AOA(r.debit), width: '15%' }, { header: 'Crédito', accessor: (r: any) => AOA(r.credit), width: '15%' },
@@ -328,7 +328,7 @@ export function AccStatementsView() {
             <div className="text-[10px] text-gray-500 uppercase mt-2">Custos</div>
             {is_.expense.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Total Custos" value={is_.total_expense} bold />
-            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${is_.net_result >= 0 ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'}`}><span>Resultado ({is_.result_label})</span><span>{AOA(is_.net_result)}</span></div>
+            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${is_.net_result >= 0 ? 'text-[#062A31]' : 'text-[#8C2B1F]'}`}><span>Resultado ({is_.result_label})</span><span>{AOA(is_.net_result)}</span></div>
           </> : <div className="text-gray-400">A carregar…</div>}
         </Panel>
         <Panel title="Balanço">
@@ -343,7 +343,7 @@ export function AccStatementsView() {
             {bs.equity.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Resultado do exercício" value={bs.net_result} />
             <Line label="Total Fundos Próprios" value={bs.total_equity} bold />
-            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${bs.balanced ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'}`}><span className="flex items-center gap-1">Passivo + Fundos Próprios {bs.balanced ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}</span><span>{AOA(bs.total_liabilities_equity)}</span></div>
+            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${bs.balanced ? 'text-[#062A31]' : 'text-[#8C2B1F]'}`}><span className="flex items-center gap-1">Passivo + Fundos Próprios {bs.balanced ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}</span><span>{AOA(bs.total_liabilities_equity)}</span></div>
           </> : <div className="text-gray-400">A carregar…</div>}
         </Panel>
       </div>

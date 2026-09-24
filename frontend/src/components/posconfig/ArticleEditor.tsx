@@ -27,10 +27,10 @@ function ImagemUpload({ titulo, url, folder, onChange }: {
     <Box title={titulo}>
       <div className="flex items-center gap-2">
         <label className="flex-1 flex items-center gap-2 cursor-pointer min-w-0">
-          <span className={`${inputCls} flex-1 min-w-0 truncate text-[#0B4F5C] bg-[#F7FAFA]`} style={inputStyle}>
+          <span className={`${inputCls} flex-1 min-w-0 truncate text-[#062A31] bg-[#F7FAFA]`} style={inputStyle}>
             {url ? url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
           </span>
-          <span className="px-3 py-1 text-[12px] font-semibold bg-[#06333C] text-white hover:bg-[#0B4F5C] flex-shrink-0">
+          <span className="px-3 py-1 text-[12px] font-semibold bg-[#041F24] text-white hover:bg-[#062A31] flex-shrink-0">
             Carregar…
           </span>
           <input type="file" accept="image/*" className="hidden"
@@ -178,7 +178,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'A criar novo artigo' : `A editar ${d.name || ''}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'A criar novo artigo' : `A editar ${d.name || ''}`}</span>
         <span className="text-[11px] italic text-[#5C8891]">
           {d.updated_by && `Última alteração: ${d.updated_by}`}{d.created_by && ` | Criado por: ${d.created_by}`}
         </span>
@@ -238,7 +238,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   ['Iva - Compra:', 'purchase_tax_percentage', 'purchase_exemption_code'],
                 ].map(([label, taxKey, exKey]) => (
                   <div key={taxKey} className="grid grid-cols-[92px_1fr_66px_1fr] items-center gap-2 py-[3px] text-[12px]">
-                    <span className="text-[#06333C]">{label}</span>
+                    <span className="text-[#041F24]">{label}</span>
                     <select value={d[taxKey] ?? ''} onChange={(e) => set(taxKey, e.target.value)}
                       className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white w-full" style={inputStyle}>
                       <option value="">(nenhum)</option>
@@ -246,7 +246,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                         <option key={t.id} value={t.rate}>{t.name || t.code} — {Number(t.rate).toFixed(2)}%</option>
                       ))}
                     </select>
-                    <span className="text-[#06333C]">Isenção:</span>
+                    <span className="text-[#041F24]">Isenção:</span>
                     <input value={d[exKey] || ''} onChange={(e) => set(exKey, e.target.value)} placeholder="(nenhum)"
                       className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white w-full" style={inputStyle} />
                   </div>
@@ -262,7 +262,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                       const p = prices.find((x) => x.level === lvl);
                       return (
                         <tr key={lvl}>
-                          <td className="px-2 py-0.5 border border-[#F7FAFA] italic text-[#0B4F5C]">
+                          <td className="px-2 py-0.5 border border-[#F7FAFA] italic text-[#062A31]">
                             {lvl}{lvl === 1 ? ' (preço base do POS)' : ''}
                           </td>
                           <td className="border border-[#F7FAFA]">
@@ -429,7 +429,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                           title="Ligar põe o artigo neste teclado do terminal; desligar tira-o" />
                       </td>
                       <td className="px-2 py-1 border border-[#F7FAFA] font-bold">{kb.name}</td>
-                      <td className="px-2 py-1 border border-[#F7FAFA] italic text-[#0B4F5C]">
+                      <td className="px-2 py-1 border border-[#F7FAFA] italic text-[#062A31]">
                         {on
                           ? <>{d.group ? groups.find((g: any) => g.id === Number(d.group))?.name : '—'} ⇒{' '}
                               {d.family ? families.find((x: any) => x.id === Number(d.family))?.name : '—'} ⇒{' '}
@@ -468,8 +468,8 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                     className="border border-[#7FA9B1] px-2 py-1 text-[12px] w-[70px]" style={inputStyle} />
                 </Row>
                 <button onClick={() => setVerLogs(true)}
-                  className="flex items-center gap-1 text-[12px] text-[#0B4F5C] font-semibold hover:underline">
-                  <span className="w-4 h-4 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center text-[10px]">↻</span>
+                  className="flex items-center gap-1 text-[12px] text-[#062A31] font-semibold hover:underline">
+                  <span className="w-4 h-4 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[10px]">↻</span>
                   Histórico
                 </button>
               </div>
@@ -554,7 +554,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   <span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[13px]">−</span>
                   Apagar
                 </button>
-                <span className="text-[12px] text-[#0B4F5C] ml-2">Multiplicar:</span>
+                <span className="text-[12px] text-[#062A31] ml-2">Multiplicar:</span>
                 <input value={multiplicador} onChange={(e) => setMultiplicador(e.target.value)}
                   className="w-[60px] border border-[#7FA9B1] px-2 py-1 text-[12px]" style={inputStyle} />
                 <button onClick={() => {
@@ -563,8 +563,8 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
                     selRecIds.includes(x._key ?? x.id) ? { ...x, quantity: (Number(x.quantity) * f).toFixed(4) } : x) }));
                 }} disabled={!selRecIds.length}
-                  className="flex items-center gap-1 text-[12px] font-semibold text-[#0B4F5C] hover:underline disabled:opacity-30 disabled:no-underline">
-                  <span className="w-4 h-4 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={9} /></span>
+                  className="flex items-center gap-1 text-[12px] font-semibold text-[#062A31] hover:underline disabled:opacity-30 disabled:no-underline">
+                  <span className="w-4 h-4 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={9} /></span>
                   Aplicar
                 </button>
                 <button onClick={() => {
@@ -581,11 +581,11 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                     <tbody>${linhas}</tbody></table></body></html>`);
                   w.document.close();
                   w.print();
-                }} className="flex items-center gap-1 text-[12px] font-semibold text-[#0B4F5C] hover:underline">
-                  <span className="w-4 h-4 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="🖶" size={9} /></span>
+                }} className="flex items-center gap-1 text-[12px] font-semibold text-[#062A31] hover:underline">
+                  <span className="w-4 h-4 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="🖶" size={9} /></span>
                   Imprimir
                 </button>
-                <div className="ml-auto text-[12px] text-[#06333C] text-right leading-tight">
+                <div className="ml-auto text-[12px] text-[#041F24] text-right leading-tight">
                   <div>Total Custo: <b>{money((receita.ingredients || []).reduce((s: number, x: any) => s + Number(x.line_cost || 0), 0))}</b></div>
                   <div>Dose: <b>{money((receita.ingredients || []).reduce((s: number, x: any) => s + Number(x.line_cost || 0), 0) / (receita.doses || 1))}</b></div>
                 </div>
@@ -625,7 +625,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
           <div>
             <Row label="Valor de Medição Base:" w="w-[150px]">
               <input type="number" value={d.base_measure_value ?? 0} onChange={(e) => set('base_measure_value', e.target.value)} className="border border-[#7FA9B1] px-2 py-1 text-[12px] w-[140px]" style={inputStyle} />
-              <span className="text-[12px] text-[#0B4F5C] ml-2">
+              <span className="text-[12px] text-[#062A31] ml-2">
                 1 {d.sale_uom ? uoms.find((u: any) => u.id === d.sale_uom)?.code : 'UNI'} = (1: {money(prices.find((p) => p.level === 1)?.price)})
               </span>
             </Row>
@@ -786,19 +786,19 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
       {/* Barra inferior — "Visualizar Logs" à esquerda (como na referência), Gravar/Fechar à direita. */}
       <Toolbar
         actions={isNew ? [] : [
-          { icon: '☰', label: 'Visualizar Logs', color: '#0B4F5C', onClick: () => setVerLogs(true) },
+          { icon: '☰', label: 'Visualizar Logs', color: '#062A31', onClick: () => setVerLogs(true) },
         ]}
         right={
           <div className="flex items-center gap-1">
             <button onClick={() => save.mutate()} disabled={save.isPending}
-              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#06333C] disabled:opacity-35 hover:bg-[#F7FAFA]">
+              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#041F24] disabled:opacity-35 hover:bg-[#F7FAFA]">
               <span className="w-7 h-7 rounded-full flex items-center justify-center text-white"
-                style={{ background: '#0B4F5C' }}><Glyph icon="✔" size={15} /></span>
+                style={{ background: '#062A31' }}><Glyph icon="✔" size={15} /></span>
               {save.isPending ? 'A gravar…' : 'Gravar'}
             </button>
             <span className="w-px h-6 bg-[#EEF4F5]" />
             <button onClick={onClose}
-              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#06333C] hover:bg-[#F7FAFA]">
+              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#041F24] hover:bg-[#F7FAFA]">
               <span className="w-7 h-7 rounded-full flex items-center justify-center text-white"
                 style={{ background: '#B0392B' }}><Glyph icon="✖" size={15} /></span>
               Fechar

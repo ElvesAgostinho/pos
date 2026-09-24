@@ -279,7 +279,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
     <div ref={shellRef} className="h-screen w-screen flex flex-col overflow-hidden font-sans select-none" style={{ background: t.body }}>
       {/* ================= BARRA DE MENUS ================= */}
       <div className="flex items-center h-[26px] px-1 text-[12px] flex-shrink-0 border-b" style={{ background: t.bar, color: t.barText, borderColor: t.line }}>
-        <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }} title="Voltar ao Ambiente de Trabalho" className="font-black tracking-tight px-2 hover:bg-black/10 h-[26px]"><span className="text-[#0B4F5C]">M</span><span style={{ color: t.accent }}>L</span></button>
+        <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }} title="Voltar ao Ambiente de Trabalho" className="font-black tracking-tight px-2 hover:bg-black/10 h-[26px]"><span className="text-[#062A31]">M</span><span style={{ color: t.accent }}>L</span></button>
         {Object.keys(MENUS).map((m) => (
           <div key={m} className="menu-root relative">
             <button onClick={() => setMenu((o) => (o === m ? null : m))}
@@ -313,7 +313,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
       </div>
 
       {/* ================= CONTROLOS DE JANELA (estilo clássico, igual ao PCC) ================= */}
-      <div className="flex items-center justify-between bg-[#0B4F5C] h-7 px-2 select-none border-b border-[#06333C] flex-shrink-0">
+      <div className="flex items-center justify-between bg-[#062A31] h-7 px-2 select-none border-b border-[#041F24] flex-shrink-0">
         <div className="flex items-center text-white text-[12px] font-medium truncate">{ITEM_TITLES[activeView] || ''}</div>
         <div className="flex items-center space-x-1 pr-1">
           <span className="text-[#F7FAFA] text-[11px] mr-2 flex items-center">
@@ -366,7 +366,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
           <div className="fixed inset-0 z-40" onClick={() => setExportOpen(false)} />
           <div className="absolute z-50 shadow-lg border rounded-sm overflow-hidden" style={{ top: 80, left: 360, background: t.tree, borderColor: t.line, color: t.treeText }}>
             <div className="px-3 py-1.5 text-[10px] uppercase opacity-60 border-b" style={{ borderColor: t.line }}>Exportar a grelha visível</div>
-            {[['pdf', 'PDF', '#B0392B'], ['excel', 'Excel', '#0B4F5C'], ['word', 'Word', '#0B4F5C'], ['csv', 'CSV', '#0B4F5C'], ['json', 'JSON', '#0B4F5C']].map(([f, label, c]: any) => (
+            {[['pdf', 'PDF', '#B0392B'], ['excel', 'Excel', '#062A31'], ['word', 'Word', '#062A31'], ['csv', 'CSV', '#062A31'], ['json', 'JSON', '#062A31']].map(([f, label, c]: any) => (
               <button key={f} onClick={() => exportAs(f)} className="w-full flex items-center gap-2 px-4 py-2 text-[12px] hover:bg-black/10 text-left">
                 <Download size={14} style={{ color: c }} /> {label}
               </button>
@@ -399,12 +399,12 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
                   {newGroup && !treeQuery && (
                     <div className="flex items-center gap-2 px-2 pt-2.5 pb-1 select-none">
                       <span className="text-[9px] font-bold tracking-widest opacity-45">{grp}</span>
-                      <span className="flex-1 h-px" style={{ background: dark ? '#06333C' : '#EEF4F5' }} />
+                      <span className="flex-1 h-px" style={{ background: dark ? '#041F24' : '#EEF4F5' }} />
                     </div>
                   )}
                   <button onClick={() => setExpanded((e) => ({ ...e, [f.key]: !open }))}
                     className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[12px] font-bold hover:bg-black/5 border-b"
-                    style={{ background: f.key === activeFolder ? t.hover : 'transparent', borderColor: dark ? '#06333C' : '#F7FAFA' }}>
+                    style={{ background: f.key === activeFolder ? t.hover : 'transparent', borderColor: dark ? '#041F24' : '#F7FAFA' }}>
                     {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                     {open ? <FolderOpen size={14} style={{ color: '#5C8891' }} /> : <Folder size={14} style={{ color: '#5C8891' }} />}
                     <span className="truncate">{f.title}</span>
@@ -472,14 +472,14 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
 // Página inicial do módulo — mostra as PASTAS por tarefa e os seus ecrãs.
 function WelcomePanel({ tree, moduleName, onOpen, dark }:
   { tree: { key: string; title: string; items: { id: string; name: string }[] }[]; moduleName?: string; onOpen: (id: string) => void; dark: boolean }) {
-  const card = dark ? 'bg-[#06333C] border-[#06333C] text-[#EEF4F5]' : 'bg-white border-[#7FA9B1] text-[#06333C]';
+  const card = dark ? 'bg-[#041F24] border-[#041F24] text-[#EEF4F5]' : 'bg-white border-[#7FA9B1] text-[#041F24]';
   return (
     <div className="h-full overflow-auto p-4">
       <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#EEF4F5' : '#5C8891' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {tree.map((f) => (
           <div key={f.key} className={`border ${card}`} style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
-            <div className="px-3 py-2 border-b text-[12px] font-bold" style={{ borderColor: dark ? '#06333C' : '#EEF4F5', background: dark ? '#06333C' : 'linear-gradient(to bottom,#FFFFFF,#F7FAFA)' }}>
+            <div className="px-3 py-2 border-b text-[12px] font-bold" style={{ borderColor: dark ? '#041F24' : '#EEF4F5', background: dark ? '#041F24' : 'linear-gradient(to bottom,#FFFFFF,#F7FAFA)' }}>
               {f.title}
             </div>
             <div className="p-2">
@@ -494,7 +494,7 @@ function WelcomePanel({ tree, moduleName, onOpen, dark }:
           </div>
         ))}
       </div>
-      <div className="mt-3 text-[11px] opacity-60" style={{ color: dark ? '#7FA9B1' : '#0B4F5C' }}>
+      <div className="mt-3 text-[11px] opacity-60" style={{ color: dark ? '#7FA9B1' : '#062A31' }}>
         Atalhos: F5 atualizar · Ctrl+P imprimir · Ctrl+N novo · Esc fechar menus.
       </div>
     </div>

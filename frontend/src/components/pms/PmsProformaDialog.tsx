@@ -36,7 +36,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
       <div className="w-[560px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
           Fatura Proforma para a reserva {r.confirmation}
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
@@ -57,10 +57,10 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
           </label>
         </div>
         <div className="flex items-center gap-3 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
-          <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#06333C] hover:text-black"><Printer size={14} /> Imprimir</button>
+          <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black"><Printer size={14} /> Imprimir</button>
           <button onClick={() => aviso('"Enviar E-mail" ainda não está construído nesta fase do PMS.')}
             className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400"><Mail size={14} /> Enviar E-mail</button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#06333C] hover:text-black ml-auto">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black ml-auto">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>

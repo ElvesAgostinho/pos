@@ -30,14 +30,14 @@ const POSApp: React.FC = () => {
 
   // If token exists, render the actual Frontoffice POS
   return (
-    <div className="h-screen w-screen bg-[#0B4F5C] p-4 flex flex-col">
+    <div className="h-screen w-screen bg-[#062A31] p-4 flex flex-col">
       <ClassicWindow 
         title={`Frente de Loja - ${terminalName}`} 
         icon={<ShoppingBag size={14} className="text-gray-300" />}
       >
         <div className="flex-1 flex items-center justify-center bg-[#CFE3E6]">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-[#0B4F5C] mb-4">POS Frontoffice</h1>
+            <h1 className="text-4xl font-bold text-[#062A31] mb-4">POS Frontoffice</h1>
             <p className="text-xl">Terminal Ativo: {terminalName}</p>
             <p className="text-sm mt-8 text-gray-600">A Interface Tátil Clássica será implementada aqui.</p>
             

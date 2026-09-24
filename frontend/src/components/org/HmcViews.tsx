@@ -149,7 +149,7 @@ export function HmcResourcesView() {
   const { rows, create, remove } = useCrud('resources');
   const [f, setF] = useState<any>({ hotel: '', code: '', name: '', resource_type: 'EQUIPMENT', location: '', status: 'ACTIVE' });
   const add = () => { if (!f.code || !f.name) return; create.mutate({ ...f, hotel: f.hotel ? Number(f.hotel) : undefined }, { onSuccess: () => setF({ hotel: f.hotel, code: '', name: '', resource_type: 'EQUIPMENT', location: '', status: 'ACTIVE' }) }); };
-  const tone = (s: string) => s === 'ACTIVE' ? 'text-[#0B4F5C]' : s === 'MAINTENANCE' ? 'text-[#0B4F5C]' : 'text-gray-500';
+  const tone = (s: string) => s === 'ACTIVE' ? 'text-[#062A31]' : s === 'MAINTENANCE' ? 'text-[#062A31]' : 'text-gray-500';
   return (
     <ClassicWindow title="Recursos & Equipamentos" icon={<Wrench size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Recursos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">

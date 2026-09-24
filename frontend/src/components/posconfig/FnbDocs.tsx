@@ -6,7 +6,7 @@ import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
 const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[120px]', children }: any) => (
-  <span className={`text-[12px] text-[#06333C] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#041F24] ${w} flex-shrink-0`}>{children}</span>
 );
 
 function useList(ep: string, key: string) {
@@ -142,9 +142,9 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
 
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
-        <div className="px-3 py-2 bg-[#06333C] text-white text-[13px] font-bold">
+        <div className="px-3 py-2 bg-[#041F24] text-white text-[13px] font-bold">
           {edit.id ? `Documento ${edit.number}` : 'Novo documento'}
-          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#0B4F5C] text-[11px]">LANÇADO NO STOCK</span>}
+          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#062A31] text-[11px]">LANÇADO NO STOCK</span>}
         </div>
 
         <div className="flex gap-3 p-3">
@@ -391,7 +391,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
             </table>
           </div>
           {mode === 'INVENTORY' && (
-            <div className="px-3 py-2 text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border-t border-[#CFE3E6]">
+            <div className="px-3 py-2 text-[11px] text-[#062A31] bg-[#F7FAFA] border-t border-[#CFE3E6]">
               A <b>Contagem</b> é o que existe MESMO na prateleira. Ao lançar, o sistema faz o
               acerto contra o que julgava ter — a diferença é o que desapareceu (ou apareceu).
             </div>
@@ -408,13 +408,13 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
             }),
           },
           {
-            label: 'Lançar no stock', icon: '▶', color: '#0B4F5C', disabled: !edit.id || edit.posted,
+            label: 'Lançar no stock', icon: '▶', color: '#062A31', disabled: !edit.id || edit.posted,
             onClick: () => lancar.mutate(edit.id),
           },
           { label: 'Fechar', icon: '✖', color: '#5C8891', onClick: () => setEdit(null) },
         ]} right={
           edit.posted
-            ? <span className="text-[11px] text-[#0B4F5C]">Já lançado — para corrigir, anule e faça outro.</span>
+            ? <span className="text-[11px] text-[#062A31]">Já lançado — para corrigir, anule e faça outro.</span>
             : <span className="text-[11px] text-[#5C8891]">Gravar não mexe no stock. Só "Lançar" é que mexe.</span>
         } />
       </div>
@@ -502,8 +502,8 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
           <tbody>
             {vista.map((r) => {
               const estado = r.voided ? ['Anulado', '#F7FAFA', '#B0392B']
-                : r.posted ? ['Lançado', '#F7FAFA', '#0B4F5C']
-                  : ['Por lançar', '#F7FAFA', '#0B4F5C'];
+                : r.posted ? ['Lançado', '#F7FAFA', '#062A31']
+                  : ['Por lançar', '#F7FAFA', '#062A31'];
               return (
                 <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
                   className={`border-b border-[#F7FAFA] cursor-pointer ${sel === r.id ? 'bg-[#F7FAFA]' : 'hover:bg-[#FFFFFF]'}`}>
@@ -573,8 +573,8 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
               anular.mutate(sel!);
           },
         },
-        { label: 'Copiar', icon: '⧉', color: '#0B4F5C', disabled: !sel, onClick: () => copiar.mutate(sel!) },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#0B4F5C', onClick: exportar },
+        { label: 'Copiar', icon: '⧉', color: '#062A31', disabled: !sel, onClick: () => copiar.mutate(sel!) },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#062A31', onClick: exportar },
       ]} />
     </div>
   );

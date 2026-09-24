@@ -46,12 +46,12 @@ const LocationNode = ({
           {node.location_type}
         </span>
         
-        <span className="font-bold text-[#06333C] mr-2 w-16">{node.code}</span>
+        <span className="font-bold text-[#041F24] mr-2 w-16">{node.code}</span>
         <span className="text-gray-800 flex-1">{node.name}</span>
         
         <div className="flex space-x-2 mr-2">
           {node.location_type !== 'BIN' && (
-            <button onClick={() => onAddChild(node)} className="text-[#5C8891] hover:text-[#06333C]" title="Adicionar Sub-localização">
+            <button onClick={() => onAddChild(node)} className="text-[#5C8891] hover:text-[#041F24]" title="Adicionar Sub-localização">
               <Plus size={12} />
             </button>
           )}

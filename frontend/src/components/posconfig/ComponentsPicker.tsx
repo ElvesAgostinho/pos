@@ -67,42 +67,42 @@ export default function ComponentsPicker({ onClose, onPick }: {
         </div>
 
         <div className="p-3 border-b border-[#EEF4F5] grid grid-cols-4 gap-2 items-end">
-          <label className="text-[11px] text-[#0B4F5C] flex flex-col gap-0.5">Grupo:
+          <label className="text-[11px] text-[#062A31] flex flex-col gap-0.5">Grupo:
             <select value={grupo} onChange={(e) => { setGrupo(e.target.value); setFamilia(''); setSubfamilia(''); }} className={inp}>
               <option value="">(Todos)</option>
               {groups.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
           </label>
-          <label className="text-[11px] text-[#0B4F5C] flex flex-col gap-0.5">Família:
+          <label className="text-[11px] text-[#062A31] flex flex-col gap-0.5">Família:
             <select value={familia} onChange={(e) => { setFamilia(e.target.value); setSubfamilia(''); }} className={inp}>
               <option value="">(Todas)</option>
               {families.filter((f: any) => !grupo || f.group === Number(grupo)).map((f: any) => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
           </label>
-          <label className="text-[11px] text-[#0B4F5C] flex flex-col gap-0.5">Sub Família:
+          <label className="text-[11px] text-[#062A31] flex flex-col gap-0.5">Sub Família:
             <select value={subfamilia} onChange={(e) => setSubfamilia(e.target.value)} className={inp}>
               <option value="">(Todas)</option>
               {subfamilies.filter((s: any) => !familia || s.family === Number(familia)).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </label>
-          <label className="text-[11px] text-[#0B4F5C] flex flex-col gap-0.5">Tipo:
+          <label className="text-[11px] text-[#062A31] flex flex-col gap-0.5">Tipo:
             <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={inp}>
               {TIPOS.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
             </select>
           </label>
-          <label className="text-[11px] text-[#0B4F5C] flex flex-col gap-0.5">Estado:
+          <label className="text-[11px] text-[#062A31] flex flex-col gap-0.5">Estado:
             <select value={estado} onChange={(e) => setEstado(e.target.value)} className={inp}>
               <option value="">(Todos)</option>
               <option value="ACTIVE">Ativo</option>
               <option value="INACTIVE">Inativo</option>
             </select>
           </label>
-          <label className="text-[11px] text-[#0B4F5C] flex flex-col gap-0.5 col-span-2">Pesquisa por texto livre:
+          <label className="text-[11px] text-[#062A31] flex flex-col gap-0.5 col-span-2">Pesquisa por texto livre:
             <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
               placeholder="Código, nome, código de barras…" className={inp} />
           </label>
           <button onClick={pesquisar}
-            className="h-[30px] px-4 text-[12px] font-bold text-white bg-[#062A31] hover:bg-[#06333C]">
+            className="h-[30px] px-4 text-[12px] font-bold text-white bg-[#062A31] hover:bg-[#041F24]">
             {isFetching ? 'A procurar…' : 'Pesquisar'}
           </button>
         </div>
@@ -156,7 +156,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
 
         <div className="flex justify-between px-3 py-2 border-t border-[#EEF4F5]">
           <button onClick={() => sel && onPick(sel)} disabled={!sel}
-            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#0B4F5C' }}>
+            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#062A31' }}>
             <Glyph icon="✔" size={14} /> OK
           </button>
           <button onClick={onClose}

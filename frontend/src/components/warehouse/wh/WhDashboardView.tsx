@@ -22,14 +22,14 @@ export default function WhDashboardView() {
       <div className="p-3">
         {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
           <div className="grid grid-cols-4 gap-2">
-            <Card icon={<Warehouse size={12} />} label="Valor em stock" value={AOA(d.stock_value)} tone="text-[#0B4F5C]" />
+            <Card icon={<Warehouse size={12} />} label="Valor em stock" value={AOA(d.stock_value)} tone="text-[#062A31]" />
             <Card icon={<Warehouse size={12} />} label="Armazéns / Localizações" value={`${d.warehouses} / ${d.locations}`} />
             <Card label="SKUs em stock" value={d.skus_in_stock} />
-            <Card icon={<AlertTriangle size={12} />} label="Alertas stock mínimo" value={d.low_stock_alerts} tone={d.low_stock_alerts ? 'text-[#8C2B1F]' : 'text-[#0B4F5C]'} />
+            <Card icon={<AlertTriangle size={12} />} label="Alertas stock mínimo" value={d.low_stock_alerts} tone={d.low_stock_alerts ? 'text-[#8C2B1F]' : 'text-[#062A31]'} />
             <Card icon={<PackageX size={12} />} label="Movimentos hoje" value={d.movements_today} />
-            <Card icon={<ArrowLeftRight size={12} />} label="Transferências abertas" value={d.open_transfers} tone={d.open_transfers ? 'text-[#0B4F5C]' : undefined} />
-            <Card icon={<ClipboardList size={12} />} label="Inventários abertos" value={d.open_counts} tone={d.open_counts ? 'text-[#0B4F5C]' : undefined} />
-            <Card icon={<AlertTriangle size={12} />} label="Lotes a expirar (30d)" value={`${d.lots_expiring_30d}`} sub={d.lots_expired ? `${d.lots_expired} já expirados` : undefined} tone={d.lots_expiring_30d ? 'text-[#0B4F5C]' : 'text-[#0B4F5C]'} />
+            <Card icon={<ArrowLeftRight size={12} />} label="Transferências abertas" value={d.open_transfers} tone={d.open_transfers ? 'text-[#062A31]' : undefined} />
+            <Card icon={<ClipboardList size={12} />} label="Inventários abertos" value={d.open_counts} tone={d.open_counts ? 'text-[#062A31]' : undefined} />
+            <Card icon={<AlertTriangle size={12} />} label="Lotes a expirar (30d)" value={`${d.lots_expiring_30d}`} sub={d.lots_expired ? `${d.lots_expired} já expirados` : undefined} tone={d.lots_expiring_30d ? 'text-[#062A31]' : 'text-[#062A31]'} />
           </div>
         )}
       </div>

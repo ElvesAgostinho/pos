@@ -65,18 +65,18 @@ export default function BookingManage() {
             <div className="space-y-3">
               <div className="flex justify-between items-start">
                 <div><div className="text-xs text-gray-400">Código</div><div className="font-mono font-bold">{res.confirmation}</div></div>
-                <span className="text-xs px-2 py-1 rounded-full text-white" style={{ background: res.status_code === 'CANCELLED' ? '#B0392B' : res.status_code === 'CHECKED_IN' ? '#0B4F5C' : color }}>{res.status}</span>
+                <span className="text-xs px-2 py-1 rounded-full text-white" style={{ background: res.status_code === 'CANCELLED' ? '#B0392B' : res.status_code === 'CHECKED_IN' ? '#062A31' : color }}>{res.status}</span>
               </div>
               <Line label="Hóspede" value={res.guest} />
               <Line label="Quarto" value={`${res.room_type}${res.room ? ` · Quarto ${res.room}` : ''}`} />
               <Line label="Estadia" value={`${res.check_in} → ${res.check_out} (${res.nights} noite(s))`} />
               <Line label="Pessoas" value={`${res.adults} adulto(s), ${res.children} criança(s)`} />
               <Line label="Total" value={money(res.total, cfg?.currency)} bold />
-              {res.online_checkin && <p className="text-[#0B4F5C] text-sm text-center bg-[#F7FAFA] rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Check-in online concluído</p>}
+              {res.online_checkin && <p className="text-[#062A31] text-sm text-center bg-[#F7FAFA] rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Check-in online concluído</p>}
               {res.status_code === 'BOOKED' && Number(cfg?.deposit_percent) > 0 && (
                 res.deposit_paid
-                  ? <p className="text-[#0B4F5C] text-sm text-center bg-[#F7FAFA] rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Adiantamento pago</p>
-                  : <button onClick={payDeposit} disabled={busy} className="w-full py-2 rounded-lg text-white font-semibold" style={{ background: '#0B4F5C' }}>Pagar adiantamento ({money(Number(res.total) * Number(cfg?.deposit_percent) / 100, cfg?.currency)})</button>
+                  ? <p className="text-[#062A31] text-sm text-center bg-[#F7FAFA] rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Adiantamento pago</p>
+                  : <button onClick={payDeposit} disabled={busy} className="w-full py-2 rounded-lg text-white font-semibold" style={{ background: '#062A31' }}>Pagar adiantamento ({money(Number(res.total) * Number(cfg?.deposit_percent) / 100, cfg?.currency)})</button>
               )}
 
               {res.status_code === 'BOOKED' && (

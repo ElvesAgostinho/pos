@@ -40,7 +40,7 @@ export default function AccountsView() {
               { header: 'Nome', accessor: 'name', width: '32%' },
               { header: 'Tipo', accessor: 'account_type_display', width: '14%' },
               { header: 'Moeda', accessor: 'currency', width: '12%' },
-              { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) < 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#0B4F5C] font-bold'}>{Number(r.balance).toFixed(2)}</span>, width: '28%' },
+              { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) < 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#062A31] font-bold'}>{Number(r.balance).toFixed(2)}</span>, width: '28%' },
             ]}
           />
         </div>

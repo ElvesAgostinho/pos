@@ -53,10 +53,10 @@ export default function ArticleLogs({ id, nome, onClose }: {
         </div>
 
         <div className="p-3 border-b border-[#EEF4F5] flex items-end gap-3">
-          <label className="text-[11px] text-[#0B4F5C] flex flex-col gap-0.5">De data:
+          <label className="text-[11px] text-[#062A31] flex flex-col gap-0.5">De data:
             <input type="date" value={de} onChange={(e) => { setDe(e.target.value); setPage(1); }} className={inp} />
           </label>
-          <label className="text-[11px] text-[#0B4F5C] flex flex-col gap-0.5">Até à data:
+          <label className="text-[11px] text-[#062A31] flex flex-col gap-0.5">Até à data:
             <input type="date" value={ate} onChange={(e) => { setAte(e.target.value); setPage(1); }} className={inp} />
           </label>
           <span className="text-[11px] text-[#7FA9B1] ml-auto">{isFetching ? 'A atualizar…' : `${total} registo(s)`}</span>
@@ -78,7 +78,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
                   <td className="px-2 py-1 border border-[#F7FAFA]">{l.changed_by}</td>
                   <td className="px-2 py-1 border border-[#F7FAFA] font-mono">{l.field_name}</td>
                   <td className="px-2 py-1 border border-[#F7FAFA] text-[#B0392B]">{l.old_value || '(nenhum)'}</td>
-                  <td className="px-2 py-1 border border-[#F7FAFA] text-[#0B4F5C]">{l.new_value || '(nenhum)'}</td>
+                  <td className="px-2 py-1 border border-[#F7FAFA] text-[#062A31]">{l.new_value || '(nenhum)'}</td>
                 </tr>
               ))}
               {!isFetching && linhas.length === 0 && (
@@ -98,7 +98,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
 
         <div className="flex justify-between px-3 py-2 border-t border-[#EEF4F5]">
           <button onClick={exportar}
-            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#0B4F5C' }}>
+            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#062A31' }}>
             <Glyph icon="⬇" size={13} /> Exportar para Excel
           </button>
           <button onClick={onClose}

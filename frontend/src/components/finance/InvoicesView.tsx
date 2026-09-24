@@ -6,7 +6,7 @@ import { FileText, Plus, Check, DollarSign, Trash2 } from 'lucide-react';
 import { useInvoices, useCreateInvoice, useIssueInvoice, useMarkInvoicePaid } from '../../hooks/useFinance';
 import { aviso } from '../../ui/dialogo';
 
-const ST: Record<string, string> = { DRAFT: 'text-gray-500', ISSUED: 'text-[#5C8891] font-bold', PAID: 'text-[#0B4F5C] font-bold', CANCELLED: 'text-[#8C2B1F]' };
+const ST: Record<string, string> = { DRAFT: 'text-gray-500', ISSUED: 'text-[#5C8891] font-bold', PAID: 'text-[#062A31] font-bold', CANCELLED: 'text-[#8C2B1F]' };
 const today = () => new Date().toISOString().slice(0, 10);
 const emptyLine = () => ({ description: '', quantity: '1', unit_price: '', tax_percentage: '14' });
 
@@ -65,8 +65,8 @@ export default function InvoicesView() {
               { header: 'Estado', accessor: (r: any) => <span className={ST[r.status] || ''}>{r.status_display}</span>, width: '12%' },
               { header: 'Ações', accessor: (r: any) => (
                 <div className="flex gap-2">
-                  {r.status === 'DRAFT' && <button title="Emitir" onClick={() => issue.mutate(r.id)} className="text-[#5C8891] hover:text-[#06333C]"><Check size={13} /></button>}
-                  {r.status === 'ISSUED' && <button title="Marcar paga" onClick={() => markPaid.mutate(r.id)} className="text-[#0B4F5C] hover:text-[#062A31]"><DollarSign size={13} /></button>}
+                  {r.status === 'DRAFT' && <button title="Emitir" onClick={() => issue.mutate(r.id)} className="text-[#5C8891] hover:text-[#041F24]"><Check size={13} /></button>}
+                  {r.status === 'ISSUED' && <button title="Marcar paga" onClick={() => markPaid.mutate(r.id)} className="text-[#062A31] hover:text-[#062A31]"><DollarSign size={13} /></button>}
                 </div>), width: '12%' },
             ]}
           />

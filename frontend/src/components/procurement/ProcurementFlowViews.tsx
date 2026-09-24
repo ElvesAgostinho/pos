@@ -10,7 +10,7 @@ import {
 import { useMdItems } from '../../hooks/useMasterData';
 import { aviso } from '../../ui/dialogo';
 
-const RST: Record<string, string> = { DRAFT: 'text-gray-500', SUBMITTED: 'text-[#5C8891] font-bold', APPROVED: 'text-[#0B4F5C] font-bold', REJECTED: 'text-[#8C2B1F]' };
+const RST: Record<string, string> = { DRAFT: 'text-gray-500', SUBMITTED: 'text-[#5C8891] font-bold', APPROVED: 'text-[#062A31] font-bold', REJECTED: 'text-[#8C2B1F]' };
 const money = (v: any) => Number(v || 0).toFixed(2);
 
 export function RequisitionsView() {
@@ -53,9 +53,9 @@ export function RequisitionsView() {
             { header: 'Ações', accessor: (r: any) => (
               <div className="flex gap-2">
                 {r.status === 'DRAFT' && <button title="Submeter" onClick={() => act.mutate({ id: r.id, act: 'submit' })} className="text-[#5C8891]"><Send size={13} /></button>}
-                {r.status === 'SUBMITTED' && <button title="Aprovar" onClick={() => act.mutate({ id: r.id, act: 'approve' })} className="text-[#0B4F5C]"><Check size={14} /></button>}
+                {r.status === 'SUBMITTED' && <button title="Aprovar" onClick={() => act.mutate({ id: r.id, act: 'approve' })} className="text-[#062A31]"><Check size={14} /></button>}
                 {r.status === 'SUBMITTED' && <button title="Rejeitar" onClick={() => act.mutate({ id: r.id, act: 'reject' })} className="text-[#8C2B1F]"><X size={14} /></button>}
-                {r.status === 'APPROVED' && <button title="Gerar RFQ" onClick={() => rfq.mutate(r.id, { onSuccess: (x: any) => aviso('RFQ criada: ' + x.number) })} className="text-[#0B4F5C] font-bold text-[11px] flex items-center gap-1"><FileText size={12} />RFQ</button>}
+                {r.status === 'APPROVED' && <button title="Gerar RFQ" onClick={() => rfq.mutate(r.id, { onSuccess: (x: any) => aviso('RFQ criada: ' + x.number) })} className="text-[#062A31] font-bold text-[11px] flex items-center gap-1"><FileText size={12} />RFQ</button>}
               </div>), width: '26%' },
           ]} />
         </div>
@@ -115,7 +115,7 @@ export function RfqComparisonView() {
                       {(comp.quote_totals || []).map((q: any) => {
                         const off = row.offers.find((o: any) => o.supplier === q.supplier);
                         const isBest = off && row.best_supplier === q.supplier;
-                        return <td key={q.quote} className={`p-1 border border-[#EEF4F5] text-right ${isBest ? 'bg-[#EEF4F5] font-bold text-[#06333C]' : ''}`}>{off ? money(off.unit_price) : '—'}</td>;
+                        return <td key={q.quote} className={`p-1 border border-[#EEF4F5] text-right ${isBest ? 'bg-[#EEF4F5] font-bold text-[#041F24]' : ''}`}>{off ? money(off.unit_price) : '—'}</td>;
                       })}
                       <td className="p-1 border border-[#EEF4F5] text-center font-bold">{row.best_supplier || '—'}</td>
                     </tr>
@@ -131,7 +131,7 @@ export function RfqComparisonView() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {comp.quote_totals.map((q: any) => (
                   <button key={q.quote} onClick={() => convert.mutate(q.quote, { onSuccess: (po: any) => aviso('Ordem de Compra gerada: ' + po.po_number + ' · total ' + money(po.total_amount)) })}
-                    className="px-3 py-1.5 bg-[#5C8891] text-white rounded text-[11px] font-bold hover:bg-[#0B4F5C]">Gerar OC de {q.supplier} ({money(q.total)})</button>
+                    className="px-3 py-1.5 bg-[#5C8891] text-white rounded text-[11px] font-bold hover:bg-[#062A31]">Gerar OC de {q.supplier} ({money(q.total)})</button>
                 ))}
               </div>
             ) : null}

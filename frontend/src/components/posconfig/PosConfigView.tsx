@@ -229,21 +229,21 @@ export default function PosConfigView({ onDesktop, onOpen }: {
     <div className="h-full flex flex-col" style={{ background: '#F7FAFA', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* ---------- BARRA DE MENUS (mesma barra do Ambiente de Trabalho — dourada,
           com o logótipo, letra preta) ---------- */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-[#062A31]" style={{ background: accentGradient(), height: 56 }}>
+      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: accentGradient(), height: 56 }}>
         {/* Logo — é aqui que se troca de módulo. */}
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')}
             title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-black/15' : 'hover:bg-black/10'}`}>
             <img src="/brand-logo.png" alt="" className="h-10 w-10 object-contain flex-shrink-0" />
-            <span className="text-[13px] text-[#062A31]">▾</span>
+            <span className="text-[13px] text-white">▾</span>
           </button>
 
           {menu === '__ml' && (
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
               <div className="absolute left-0 top-full z-[61] min-w-[230px] py-1 shadow-2xl"
-                style={{ background: TOKENS.bar, border: '1px solid #0B4F5C' }}>
+                style={{ background: TOKENS.bar, border: '1px solid #062A31' }}>
                 <button onClick={() => { setMenu(null); onDesktop?.(); }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891]">
                   <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>Ambiente de Trabalho
@@ -264,9 +264,9 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 {/* clicar fora fecha */}
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
                 <div className="absolute left-0 top-full z-[61] min-w-[250px] py-1 shadow-2xl"
-                  style={{ background: TOKENS.bar, border: '1px solid #0B4F5C' }}>
+                  style={{ background: TOKENS.bar, border: '1px solid #062A31' }}>
                   {m.items.map((it: any, i: number) => it.sep ? (
-                    <div key={i} className="my-1 border-t border-[#0B4F5C]" />
+                    <div key={i} className="my-1 border-t border-[#062A31]" />
                   ) : (
                     <button key={i}
                       onClick={() => {
@@ -302,7 +302,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           </div>
         ))}
         <div className="ml-auto flex items-center gap-4 text-[13px]">
-          <span className="text-[#B0392B] font-semibold">{new Date().toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
+          <span className="font-semibold">{new Date().toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
           <span className="opacity-30">|</span>
           <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
         </div>
@@ -313,7 +313,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
         style={{ background: TOKENS.barSoft }}>
         <div className="flex items-center gap-2">
-          <span className="text-[#0B4F5C] inline-flex items-center">
+          <span className="text-[#062A31] inline-flex items-center">
             <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
           </span>{' '}
           {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
@@ -323,15 +323,15 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             className="w-6 h-5 flex items-center justify-center cursor-pointer hover:bg-white/15 mr-1">
             <Lock size={12} />
           </div>
-          <div title="Minimizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#06333C] hover:brightness-150">
+          <div title="Minimizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#041F24] hover:brightness-150">
             <div className="w-2 h-[2px] bg-white mb-[-5px]" />
           </div>
-          <div title="Maximizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#06333C] hover:brightness-150">
+          <div title="Maximizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#041F24] hover:brightness-150">
             <div className="w-2 h-2 border border-white" />
           </div>
           <div onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
             title="Voltar ao Ambiente de Trabalho"
-            className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#06333C] hover:brightness-150">
+            className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#041F24] hover:brightness-150">
             <Glyph icon="✕" size={12} />
           </div>
         </div>
@@ -347,12 +347,12 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         <div className="w-[236px] flex-shrink-0 border-r border-[#CFE3E6] bg-white overflow-auto">
           {favs.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[13px] font-semibold text-[#0B4F5C] bg-[#F7FAFA] border-b border-[#CFE3E6] flex items-center gap-1.5">
+              <div className="px-3 py-2 text-[13px] font-semibold text-[#062A31] bg-[#F7FAFA] border-b border-[#CFE3E6] flex items-center gap-1.5">
                 <Glyph icon="♥" size={13} /> Favoritos
               </div>
               {favs.map((f) => (
                 <div key={f.key}
-                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[13px] border-b border-[#F7FAFA] cursor-pointer ${section === f.key ? 'bg-[#F7FAFA] text-[#0B4F5C] font-bold' : 'text-[#06333C] hover:bg-[#FFFFFF]'}`}>
+                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[13px] border-b border-[#F7FAFA] cursor-pointer ${section === f.key ? 'bg-[#F7FAFA] text-[#062A31] font-bold' : 'text-[#041F24] hover:bg-[#FFFFFF]'}`}>
                   <span className="flex-1" onClick={() => { setSection(f.key); setEditing(null); }}>{f.label}</span>
                   <button title="Tirar dos favoritos"
                     onClick={() => {
@@ -389,7 +389,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                         borderBottomColor: '#F7FAFA',
                         borderLeftColor: ativo ? TOKENS.accent : 'transparent',
                         background: ativo ? TOKENS.selectedBg : 'transparent',
-                        color: ativo ? TOKENS.selectedText : '#0B4F5C',
+                        color: ativo ? TOKENS.selectedText : '#062A31',
                         fontWeight: ativo ? 700 : 400,
                       }}
                       onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = TOKENS.hover; }}
@@ -774,7 +774,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   render: (r: any) => r.kind === 'PRICE' ? 'Preço' : 'Desconto' },
                 { key: 'active_now', label: 'Em vigor agora', width: '18%',
                   render: (r: any) => r.active_now
-                    ? <span className="text-[#0B4F5C] font-bold">{r.kind === 'PRICE' ? `Preço ${r.active_now}` : `-${r.active_now}%`}</span>
+                    ? <span className="text-[#062A31] font-bold">{r.kind === 'PRICE' ? `Preço ${r.active_now}` : `-${r.active_now}%`}</span>
                     : <span className="text-[#7FA9B1]">—</span> },
                 { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
               ]}
@@ -1389,7 +1389,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               <div className="flex-1 overflow-auto bg-white">
                 <table className="w-full text-[12px] border-collapse">
                   <thead className="sticky top-0">
-                    <tr className="text-[#06333C]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
+                    <tr className="text-[#041F24]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
                       {['Código', 'Descrição', 'Sub Família', 'Preço', 'Iva', 'Isenções', 'Stock', 'Impressoras', 'Unidades (Compra/Stock/Venda)', 'Ativo'].map((h, i) => (
                         <th key={h}
                           className={`text-left font-semibold px-3 py-1 border-b-2 whitespace-nowrap ${i > 0 ? 'border-l' : ''}`}
@@ -1455,7 +1455,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="▶" size={14} /></button>
                   <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="⏭" size={14} /></button>
                 </div>
-                <span className="ml-auto text-[#0B4F5C]">
+                <span className="ml-auto text-[#062A31]">
                   Nº registos a visualizar {rows.length ? (page - 1) * pageSize + 1 : 0} - {Math.min(page * pageSize, rows.length)} de {rows.length}
                 </span>
               </div>
@@ -1466,10 +1466,10 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   { icon: '＋', label: 'Adicionar', color: '#062A31', onClick: () => setEditing('new') },
                   { icon: '✎', label: 'Editar', color: '#5C8891', disabled: !sel, onClick: () => setEditing(sel!) },
                   { icon: '−', label: 'Apagar', color: '#B0392B', disabled: !sel, onClick: () => confirm(`Apagar "${selRow?.name}"? Fica registado na auditoria.`) && del.mutate(sel!) },
-                  { icon: '⧉', label: 'Copiar', color: '#0B4F5C', disabled: !sel, onClick: () => copy.mutate(sel!) },
-                  { icon: '🖶', label: 'Imprimir', color: '#06333C', onClick: () => window.print() },
-                  { icon: '⤓', label: 'Exportar para Excel', color: '#0B4F5C', onClick: exportExcel },
-                  { icon: '⤒', label: 'Importar', color: '#06333C', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
+                  { icon: '⧉', label: 'Copiar', color: '#062A31', disabled: !sel, onClick: () => copy.mutate(sel!) },
+                  { icon: '🖶', label: 'Imprimir', color: '#041F24', onClick: () => window.print() },
+                  { icon: '⤓', label: 'Exportar para Excel', color: '#062A31', onClick: exportExcel },
+                  { icon: '⤒', label: 'Importar', color: '#041F24', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
                 ]}
               />
             </>

@@ -24,7 +24,7 @@ const NAV = [
 
 function Row({ l, children, w = 110 }: any) {
   return <label className="flex items-center gap-2 text-[12px]">
-    <span className="text-[#06333C] flex-shrink-0 text-right" style={{ width: w }}>{l}</span>{children}</label>;
+    <span className="text-[#041F24] flex-shrink-0 text-right" style={{ width: w }}>{l}</span>{children}</label>;
 }
 
 /** Grelha genérica dos SATÉLITES (registos): colunas + Adicionar/Apagar. */
@@ -57,7 +57,7 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
       <div className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold flex justify-between">
         <span>{titulo}</span>
         <span className="flex gap-2">
-          <button onClick={add} className="flex items-center gap-1 text-[#0B4F5C]"><Glyph icon="⊕" size={13} /> Adicionar</button>
+          <button onClick={add} className="flex items-center gap-1 text-[#062A31]"><Glyph icon="⊕" size={13} /> Adicionar</button>
         </span>
       </div>
       <table className="w-full text-[12px]">
@@ -136,9 +136,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
   return (
     <div className="fixed inset-0 bg-black/45 z-[9500] flex items-center justify-center" onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()}
-        className="w-[1200px] max-w-[96vw] bg-[#F7FAFA] border border-[#06333C] shadow-2xl flex flex-col"
+        className="w-[1200px] max-w-[96vw] bg-[#F7FAFA] border border-[#041F24] shadow-2xl flex flex-col"
         style={{ height: 'min(86vh, 760px)', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold bg-[#06333C]">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold bg-[#041F24]">
           <span>{eid ? `Entidade — ${d.name || d.code}` : 'Nova entidade'}</span>
           <button onClick={onClose} className="w-6 h-6 bg-[#B0392B] text-white text-[12px] flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
         </div>
@@ -149,7 +149,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
             {NAV.map(([k, ico, l]) => (
               <button key={k} onClick={() => setSec(k)}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 text-[13px] text-left border-b border-[#F7FAFA]
-                  ${sec === k ? 'bg-[#F7FAFA] font-bold text-[#0B4F5C]' : 'hover:bg-[#F7FAFA]'}`}>
+                  ${sec === k ? 'bg-[#F7FAFA] font-bold text-[#062A31]' : 'hover:bg-[#F7FAFA]'}`}>
                 <span className="w-6 flex items-center justify-center"><Glyph icon={ico} size={15} /></span>{l}
               </button>
             ))}
@@ -320,7 +320,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <div className="flex gap-1 mb-2">
                 {(['passadas', 'futuras', 'journey', 'pos'] as const).map((t) => (
                   <button key={t} onClick={() => setHistTab(t)}
-                    className={`px-3 py-1.5 text-[12px] font-bold border border-[#CFE3E6] ${histTab === t ? 'bg-[#06333C] text-white' : 'bg-white'}`}>
+                    className={`px-3 py-1.5 text-[12px] font-bold border border-[#CFE3E6] ${histTab === t ? 'bg-[#041F24] text-white' : 'bg-white'}`}>
                     {{ passadas: 'Reservas passadas', futuras: 'Reservas futuras', journey: 'Guest Journey', pos: 'Faturação - POS' }[t]}
                   </button>))}
               </div>
@@ -331,8 +331,8 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                 <tbody>{(hist?.invoices || []).map((f: any, i: number) => (
                   <tr key={i} className="border-b border-[#F7FAFA]"><td className="px-2 py-1">{f.number}</td><td className="px-2 py-1">{f.date}</td><td className="px-2 py-1">{f.type}</td><td className="px-2 py-1 text-right">{f.total}</td><td className="px-2 py-1">{f.voided ? 'Sim' : ''}</td>
                     <td className="px-2 py-1 flex gap-2">
-                      <button className="text-[#0B4F5C] flex items-center gap-1" onClick={async () => { const r = await apiClient.get(`pos/reports/documents/${f.id}/`); aviso(JSON.stringify(r.data, null, 1).slice(0, 1200)); }}><Glyph icon="🔍" size={13} /> Pré-visualizar</button>
-                      <button className="text-[#0B4F5C] flex items-center gap-1" onClick={async () => { const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'print' }); aviso(r.data.detail); }}><Glyph icon="🖨" size={13} /> Imprimir</button>
+                      <button className="text-[#062A31] flex items-center gap-1" onClick={async () => { const r = await apiClient.get(`pos/reports/documents/${f.id}/`); aviso(JSON.stringify(r.data, null, 1).slice(0, 1200)); }}><Glyph icon="🔍" size={13} /> Pré-visualizar</button>
+                      <button className="text-[#062A31] flex items-center gap-1" onClick={async () => { const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'print' }); aviso(r.data.detail); }}><Glyph icon="🖨" size={13} /> Imprimir</button>
                       {!f.voided && <button className="text-[#B0392B] flex items-center gap-1" onClick={async () => { const m = await pedir('Anular emite NOTA DE CRÉDITO. Motivo:'); if (!m) return; const r = await apiClient.post(`pos/reports/documents/${f.id}/`, { action: 'void', reason: m }); aviso(r.data.detail); }}><Glyph icon="✖" size={13} /> Anular</button>}
                     </td></tr>))}
                   {!(hist?.invoices || []).length && <tr><td colSpan={6} className="text-center text-[#7FA9B1] py-3">Não foram encontrados dados.</td></tr>}
@@ -365,7 +365,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                   const url = URL.createObjectURL(r.data); const a = document.createElement('a');
                   a.href = url; a.download = `entidade_${d.code}.json`; a.click(); URL.revokeObjectURL(url);
                 }} disabled={!eid}
-                  className="h-9 px-4 text-[13px] font-bold bg-[#06333C] text-white disabled:opacity-40">Portabilidade de Dados</button>
+                  className="h-9 px-4 text-[13px] font-bold bg-[#041F24] text-white disabled:opacity-40">Portabilidade de Dados</button>
                 <button onClick={async () => {
                   if (!await confirmar('ATENÇÃO! Remoção IRREVERSÍVEL (RGPD): os dados pessoais apagam-se e o nome vira um código anónimo. Os documentos fiscais mantêm-se, como a AGT exige. Continuar?')) return;
                   const r = await apiClient.post(`pos/marketing/entities/${eid}/anonymize/`, {});
@@ -383,7 +383,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
           <span className="text-[#5C8891] flex items-center gap-1"><Glyph icon="⎇" size={14} /> Sincronizar</span>
           <button onClick={() => window.print()} className="hover:underline flex items-center gap-1"><Glyph icon="🖨" size={14} /> Imprimir</button>
           <div className="flex-1" />
-          <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
+          <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
           <button onClick={onClose} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center"><Glyph icon="✕" size={12} /></span> Fechar</button>
         </div>
       </div>
@@ -455,7 +455,7 @@ function Comissoes({ eid, d: _d, T }: any) {
     <div style={{ border: '4px groove #CFE3E6' }}>
       <div className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold flex justify-between">
         <span>Outras Comissões</span>
-        <button onClick={() => eid ? setAdd({ ativo: true }) : aviso('Grave primeiro a ficha.')} className="text-[#0B4F5C]">⊕ Adicionar</button>
+        <button onClick={() => eid ? setAdd({ ativo: true }) : aviso('Grave primeiro a ficha.')} className="text-[#062A31]">⊕ Adicionar</button>
       </div>
       <table className="w-full text-[12px]"><thead><tr className="bg-[#F7FAFA]">
         {['Cód. Comissão', 'De data', 'Até à data', 'Ativo', ''].map((h, i) => <th key={i} className="text-left font-normal px-2 py-1 border-b border-[#EEF4F5]">{h}</th>)}</tr></thead>
@@ -469,8 +469,8 @@ function Comissoes({ eid, d: _d, T }: any) {
     </div>
     {add && (
       <div className="fixed inset-0 bg-black/40 z-[400] flex items-center justify-center" onClick={() => setAdd(null)}>
-        <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#F7FAFA] border border-[#06333C] shadow-2xl">
-          <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold bg-[#06333C]">
+        <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#F7FAFA] border border-[#041F24] shadow-2xl">
+          <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold bg-[#041F24]">
             <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#B0392B] flex items-center justify-center"><Glyph icon="✕" size={11} /></button></div>
           <div className="p-4 space-y-2">
             <Row l="Cód. Comissão:" w={110}><input value={add.codigo || ''} onChange={(e) => setAdd({ ...add, codigo: e.target.value })} className={inp} /></Row>
@@ -479,7 +479,7 @@ function Comissoes({ eid, d: _d, T }: any) {
             <label className="flex items-center gap-1.5 text-[12px] pl-[118px]"><input type="checkbox" checked={!!add.ativo} onChange={(e) => setAdd({ ...add, ativo: e.target.checked })} className="w-4 h-4" />Ativo</label>
           </div>
           <div className="h-11 flex items-center justify-between px-4 bg-[#EEF4F5] border-t border-[#CFE3E6] text-[13px]">
-            <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
+            <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
             <button onClick={() => setAdd(null)} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center"><Glyph icon="✕" size={12} /></span> Fechar</button>
           </div>
         </div>

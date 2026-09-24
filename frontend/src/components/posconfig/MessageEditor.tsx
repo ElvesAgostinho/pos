@@ -47,7 +47,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Nova mensagem' : `A editar ${d.code}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Nova mensagem' : `A editar ${d.code}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -56,12 +56,12 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         <Box title="Identificação" className="mb-4">
         <div className="flex items-center gap-6 pt-1.5 text-[13px]">
           <label className="flex items-center gap-3">
-            <span className="w-[70px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[70px] text-[#041F24]">Código:<span className="text-[#B0392B]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               placeholder="GELADO, TEMP, PONTO…" className={`${inputCls} w-[290px] flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3">
-            <span className="text-[#06333C]">Ordem:</span>
+            <span className="text-[#041F24]">Ordem:</span>
             <input type="number" value={d.sort_order ?? 0} onChange={(e) => set('sort_order', Number(e.target.value))}
               className={`${inputCls} w-[110px] flex-none`} style={inputStyle} />
           </label>
@@ -77,7 +77,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
         <div className="flex items-center gap-6 pt-2 text-[13px]">
           <label className="flex items-center gap-3">
-            <span className="w-[70px] text-[#06333C]">Nome:</span>
+            <span className="w-[70px] text-[#041F24]">Nome:</span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
               placeholder="GELO, FRUTA, Confecao…"
               className={`${inputCls} w-[290px] flex-none`} style={inputStyle} />
@@ -92,7 +92,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         </Box>
 
         <div className="mb-4" style={{ border: '4px groove #CFE3E6' }}>
-          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-b border-[#CFE3E6]">
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#041F24] border-b border-[#CFE3E6]">
             Artigos que fazem esta pergunta
             <span className="font-normal text-[#5C8891] ml-2">
               (nenhum escolhido = todos os artigos)
@@ -119,11 +119,11 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
         {/* Modelos (respostas) */}
         <div style={{ border: '4px groove #CFE3E6' }}>
-          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-b border-[#CFE3E6]">Modelos</div>
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#041F24] border-b border-[#CFE3E6]">Modelos</div>
           <div className="flex">
             <table className="flex-1 text-[12px] border-collapse">
               <thead>
-                <tr className="bg-[#F7FAFA] text-[#06333C]">
+                <tr className="bg-[#F7FAFA] text-[#041F24]">
                   {['Código', 'Texto (tecla e comanda)', 'Ordem', 'Ativo'].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{h}</th>
                   ))}
@@ -161,12 +161,12 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
             </table>
 
             <div className="w-[150px] flex-shrink-0 border-l border-[#EEF4F5] p-2 space-y-2">
-              <button onClick={addOpt} className="flex items-center gap-2 text-[13px] text-[#06333C] hover:bg-[#F7FAFA] w-full px-1 py-1">
+              <button onClick={addOpt} className="flex items-center gap-2 text-[13px] text-[#041F24] hover:bg-[#F7FAFA] w-full px-1 py-1">
                 <span className="w-6 h-6 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[14px]">＋</span>
                 Adicionar
               </button>
               <button onClick={() => opts.length && delOpt(opts.length - 1)} disabled={!opts.length}
-                className="flex items-center gap-2 text-[13px] text-[#06333C] hover:bg-[#F7FAFA] w-full px-1 py-1 disabled:opacity-35">
+                className="flex items-center gap-2 text-[13px] text-[#041F24] hover:bg-[#F7FAFA] w-full px-1 py-1 disabled:opacity-35">
                 <span className="w-6 h-6 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[14px]">−</span>
                 Apagar
               </button>
@@ -182,7 +182,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

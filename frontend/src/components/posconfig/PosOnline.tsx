@@ -22,7 +22,7 @@ export default function PosOnline() {
   const Card = ({ label, value, sub, color }: any) => (
     <div className="bg-white px-4 py-3 flex-1" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
       <div className="text-[11px] text-[#5C8891] uppercase tracking-wide">{label}</div>
-      <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#06333C' }}>{value}</div>
+      <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#041F24' }}>{value}</div>
       {sub && <div className="text-[11px] text-[#5C8891]">{sub}</div>}
     </div>
   );
@@ -37,7 +37,7 @@ export default function PosOnline() {
   return (
     <div className="flex-1 overflow-auto bg-[#F7FAFA] p-4">
       <div className="flex items-center mb-3">
-        <span className="text-[16px] font-bold text-[#06333C]">Informação Online</span>
+        <span className="text-[16px] font-bold text-[#041F24]">Informação Online</span>
         <span className="ml-3 text-[11px] text-[#5C8891]">
           em tempo real · {new Date(d.now).toLocaleTimeString('pt-PT')}
         </span>
@@ -45,13 +45,13 @@ export default function PosOnline() {
 
       <div className="flex gap-3 mb-3">
         <Card label="Vendas de hoje" value={`${money(d.today.total)} Kz`}
-          sub={`${d.today.tickets} conta(s) fechadas`} color="#0B4F5C" />
+          sub={`${d.today.tickets} conta(s) fechadas`} color="#062A31" />
         <Card label="Ticket médio" value={`${money(d.today.avg)} Kz`} />
         <Card label="Contas abertas" value={d.open_tickets.length}
-          sub="por cobrar" color={d.open_tickets.length ? '#B0392B' : '#06333C'} />
+          sub="por cobrar" color={d.open_tickets.length ? '#B0392B' : '#041F24'} />
         <Card label="Mesas ocupadas" value={`${ocupadas}`} sub={`${livres} livre(s)`} />
         <Card label="Cozinha" value={d.kitchen_queue}
-          sub="comandas na fila" color={d.kitchen_queue > 5 ? '#B0392B' : '#06333C'} />
+          sub="comandas na fila" color={d.kitchen_queue > 5 ? '#B0392B' : '#041F24'} />
         <Card label="Caixas abertas" value={d.open_cash} />
       </div>
 
@@ -79,7 +79,7 @@ export default function PosOnline() {
                 </tr>
               ))}
               {d.open_tickets.length === 0 && (
-                <tr><td colSpan={5} className="text-center text-[#0B4F5C] py-6 font-semibold">
+                <tr><td colSpan={5} className="text-center text-[#062A31] py-6 font-semibold">
                   <span className="inline-flex items-center gap-1.5"><Glyph icon="✔" size={14} /> Nada por cobrar.</span>
                 </td></tr>
               )}

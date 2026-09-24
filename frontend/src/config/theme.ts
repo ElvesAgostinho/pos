@@ -21,18 +21,18 @@ export const TOKENS = {
   // Azul petróleo + branco: só duas cores em todo o sistema (pedido do dono).
   // O vermelho de "apagar/erro" (danger, abaixo) é a ÚNICA exceção — é o único
   // sítio onde a cor É o aviso, sempre acompanhada de ícone+texto, nunca sozinha.
-  get accent() { return getAppearance('barColor') || '#0B4F5C'; },
+  get accent() { return getAppearance('barColor') || '#062A31'; },
   // Mantido com o nome "gold" por compatibilidade (dezenas de ecrãs já leem
   // TOKENS.gold) — mas já não é dourado: é o mesmo azul petróleo institucional,
   // para o logótipo "ML" e realces de marca não destoarem do resto da paleta.
-  gold: '#0B4F5C',
-  goldDark: '#06333C',
+  gold: '#062A31',
+  goldDark: '#041F24',
 
   // Neutros — a base de tudo (barras, fundos, linhas), agora dentro da família
   // azul-petróleo em vez de cinzento neutro: bordas/linhas/fundos claros usam
   // tons muito diluídos do mesmo azul, para lerem como a MESMA cor, não uma 3ª.
-  bar: '#06333C',            // barra de menus / título de janela (petróleo escuro)
-  barSoft: '#0F3D47',        // barra secundária (título da secção, um tom mais claro que `bar`)
+  bar: '#041F24',            // barra de menus / título de janela (petróleo escuro)
+  barSoft: '#0B4F5C',        // barra secundária (título da secção, um tom mais claro que `bar`)
   canvas: '#EEF4F5',         // fundo da área de trabalho (petróleo muito diluído)
   surface: '#ffffff',        // fundo dos formulários/grelhas
   toolbarBg: '#F7FAFA',      // fundo da barra de ferramentas (Toolbar do kit.tsx)
@@ -47,16 +47,16 @@ export const TOKENS = {
 
   // Seleção / destaque (linha escolhida numa grelha, item ativo numa árvore).
   selectedBg: '#CFE3E6',
-  selectedText: '#06333C',
+  selectedText: '#041F24',
   hover: '#E4F0F1',
 
   // Semântica — o vermelho é a ÚNICA cor fora da família azul-petróleo/branco,
   // e só para apagar/cancelar/erro (nunca decoração). "Sucesso"/"aviso" deixaram
   // de ter cor própria — usam a mesma família petróleo (sempre com ícone+texto).
-  success: '#0B4F5C',        // Gravar / confirmar
+  success: '#062A31',        // Gravar / confirmar
   danger: '#B0392B',         // Apagar / cancelar
   dangerSoft: '#8C2B1F',     // texto de erro sobre fundo claro
-  warning: '#0B4F5C',
+  warning: '#062A31',
   warningBg: '#EEF4F5',
   warningBorder: '#5C8891',
 } as const;
@@ -74,7 +74,7 @@ export function shade(hex: string, pct: number): string {
 }
 
 // Gradiente de barra de título a partir da cor institucional (3 tons, sempre a
-// mesma receita) — para não se escrever "linear-gradient(...#0B4F5C...)" fixo
+// mesma receita) — para não se escrever "linear-gradient(...#062A31...)" fixo
 // em cada ecrã: assim a personalização (Aparência → Cor da barra) chega a todo
 // o lado que usar isto, não só ao ecrã onde alguém se lembrou de a aplicar.
 export function accentGradient(accent: string = TOKENS.accent): string {

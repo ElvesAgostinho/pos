@@ -25,7 +25,7 @@ const LEGEND: { key: string; label: string; color: string }[] = [
   { key: 'booked', label: 'Reservado', color: '#FDECEA' },
   { key: 'fds', label: 'FdS', color: '#5C8891' },
   { key: 'option', label: 'Opção', color: '#7FA9B1' },
-  { key: 'waitlist', label: 'Lista Espera', color: '#0B4F5C' },
+  { key: 'waitlist', label: 'Lista Espera', color: '#062A31' },
   { key: 'dayuse', label: 'Day Use', color: '#7FA9B1' },
   { key: 'overbook', label: 'Overbook', color: '#B0392B' },
   { key: 'allotment', label: 'Allotment', color: '#5C8891' },
@@ -93,7 +93,7 @@ export default function PmsAvailabilityView() {
         <div className="w-[240px] border-r border-[#7FA9B1] bg-white flex flex-col flex-shrink-0">
           <div className="px-2 py-1.5 font-bold text-[11px] border-b border-[#CFE3E6] bg-[#F7FAFA] flex items-center justify-between">
             Categorias dos Hotéis
-            <button onClick={() => setCatOpen(false)} title="Encolher" className="text-[#7FA9B1] hover:text-[#06333C]">
+            <button onClick={() => setCatOpen(false)} title="Encolher" className="text-[#7FA9B1] hover:text-[#041F24]">
               <ChevronsLeft size={13} />
             </button>
           </div>
@@ -105,12 +105,12 @@ export default function PmsAvailabilityView() {
           {treeOpen && (
             <>
               <button onClick={() => setRoomType('')}
-                className={`text-left pl-8 pr-3 py-1.5 text-[12px] ${!roomType ? 'bg-[#0B4F5C] text-white' : 'hover:bg-[#F7FAFA]'}`}>
+                className={`text-left pl-8 pr-3 py-1.5 text-[12px] ${!roomType ? 'bg-[#062A31] text-white' : 'hover:bg-[#F7FAFA]'}`}>
                 (Todas as categorias)
               </button>
               {list.map((rt: any) => (
                 <button key={rt.id} onClick={() => setRoomType(String(rt.id))}
-                  className={`text-left pl-8 pr-3 py-1.5 text-[12px] flex items-center gap-1.5 ${roomType === String(rt.id) ? 'bg-[#0B4F5C] text-white' : 'text-[#0B4F5C] hover:bg-[#F7FAFA]'}`}>
+                  className={`text-left pl-8 pr-3 py-1.5 text-[12px] flex items-center gap-1.5 ${roomType === String(rt.id) ? 'bg-[#062A31] text-white' : 'text-[#062A31] hover:bg-[#F7FAFA]'}`}>
                   <Bed size={12} /> {rt.name}
                 </button>
               ))}
@@ -164,11 +164,11 @@ export default function PmsAvailabilityView() {
                   </label>
                   <div className="flex gap-1 mt-0.5">
                     <button onClick={() => mover(-nDias)}
-                      className="flex-1 flex items-center justify-center gap-1 text-white font-bold py-1.5" style={{ background: '#06333C' }}>
+                      className="flex-1 flex items-center justify-center gap-1 text-white font-bold py-1.5" style={{ background: '#041F24' }}>
                       <ChevronLeft size={13} /> Anterior
                     </button>
                     <button onClick={() => mover(nDias)}
-                      className="flex-1 flex items-center justify-center gap-1 text-white font-bold py-1.5" style={{ background: '#06333C' }}>
+                      className="flex-1 flex items-center justify-center gap-1 text-white font-bold py-1.5" style={{ background: '#041F24' }}>
                       Próx. <ChevronRight size={13} />
                     </button>
                   </div>
@@ -184,7 +184,7 @@ export default function PmsAvailabilityView() {
                       <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#5C8891] pointer-events-none" />
                     </span>
                     <button onClick={() => setShowBlockPicker(true)} title="Procurar bloco"
-                      className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#06333C] text-white"><Plus size={13} /></button>
+                      className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#041F24] text-white"><Plus size={13} /></button>
                   </label>
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input type="checkbox" checked={includeAllotment} onChange={(e) => setIncludeAllotment(e.target.checked)} />
@@ -201,7 +201,7 @@ export default function PmsAvailabilityView() {
 
             <button onClick={() => refetch()}
               className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] m-2"
-              style={{ background: '#06333C' }}>
+              style={{ background: '#041F24' }}>
               <RefreshCw size={20} /> Pesquisar
             </button>
           </div>
@@ -213,27 +213,27 @@ export default function PmsAvailabilityView() {
           ) : isLoading ? <div className="text-gray-400 text-[12px]">A carregar…</div> : (
             <ResponsiveContainer width="100%" height={420}>
               <BarChart data={chartData} barCategoryGap="8%" barGap={0}>
-                <XAxis dataKey="dia" tick={{ fontSize: 11 }} axisLine={{ stroke: '#06333C' }} />
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={{ stroke: '#06333C' }} />
+                <XAxis dataKey="dia" tick={{ fontSize: 11 }} axisLine={{ stroke: '#041F24' }} />
+                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={{ stroke: '#041F24' }} />
                 <Tooltip />
-                <Bar dataKey="Livres" stackId="a" fill="#5C8891" stroke="#0B4F5C" strokeWidth={1}>
+                <Bar dataKey="Livres" stackId="a" fill="#5C8891" stroke="#062A31" strokeWidth={1}>
                   <LabelList dataKey="Livres" position="insideTop" style={{ fontWeight: 700, fontSize: 15, fill: '#041F24' }}
                     formatter={(v: any) => (v ? String(v) : '')} />
                 </Bar>
                 <Bar dataKey="Reservado" stackId="a" fill="#FDECEA" stroke="#B0392B" strokeWidth={1}>
-                  <LabelList dataKey="Reservado" position="top" style={{ fontWeight: 700, fontSize: 12, fill: '#06333C' }}
+                  <LabelList dataKey="Reservado" position="top" style={{ fontWeight: 700, fontSize: 12, fill: '#041F24' }}
                     formatter={(v: any) => (v ? String(v) : '')} />
                 </Bar>
                 <Bar dataKey="Opção" stackId="a" fill="#7FA9B1" stroke="#5C8891" strokeWidth={1} />
-                <Bar dataKey="Lista Espera" stackId="a" fill="#0B4F5C" stroke="#06333C" strokeWidth={1} />
-                <Bar dataKey="Allotment" stackId="a" fill="#5C8891" stroke="#0B4F5C" strokeWidth={1} />
+                <Bar dataKey="Lista Espera" stackId="a" fill="#062A31" stroke="#041F24" strokeWidth={1} />
+                <Bar dataKey="Allotment" stackId="a" fill="#5C8891" stroke="#062A31" strokeWidth={1} />
                 <Bar dataKey="Overbook" stackId="a" fill="#B0392B" stroke="#B0392B" strokeWidth={1} />
               </BarChart>
             </ResponsiveContainer>
           )}
           {/* Legenda — 8 cores fiéis ao PMS de referência; "FdS" e "Day Use" ainda
               não têm nenhum lançamento real por trás nesta fase (não inventam dados). */}
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 mt-2 text-[11px] text-[#06333C]">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 mt-2 text-[11px] text-[#041F24]">
             {LEGEND.map((l) => (
               <span key={l.key} className="flex items-center gap-1.5">
                 <span className="w-3.5 h-3.5 inline-block" style={{ background: l.color }} /> {l.label}
@@ -243,7 +243,7 @@ export default function PmsAvailabilityView() {
         </div>
 
         <div className="flex items-center justify-between px-2 py-1.5 border-t border-[#CFE3E6] bg-[#F7FAFA] text-[11px] text-gray-600">
-          <button onClick={() => setShowNewRes(true)} className="flex items-center gap-2 text-[#06333C] hover:text-black">
+          <button onClick={() => setShowNewRes(true)} className="flex items-center gap-2 text-[#041F24] hover:text-black">
             <span className="w-7 h-7 rounded-full flex items-center justify-center text-white" style={{ background: '#5C8891' }}>
               <BedDouble size={14} />
             </span>

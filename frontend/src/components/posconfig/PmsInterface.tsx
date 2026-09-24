@@ -103,7 +103,7 @@ function Mapeamentos({ qc }: { qc: any }) {
     <>
       <div className="flex-1 overflow-auto">
         {/* Mapeamento de parâmetros (setores) */}
-        <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-b border-[#EEF4F5]">
+        <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#041F24] border-b border-[#EEF4F5]">
           Mapeamento de Parâmetros
         </div>
         <table className="w-full text-[12px] border-collapse">
@@ -136,7 +136,7 @@ function Mapeamentos({ qc }: { qc: any }) {
         </table>
 
         {/* Mapeamento de sub-famílias */}
-        <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-y border-[#EEF4F5] mt-2">
+        <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#041F24] border-y border-[#EEF4F5] mt-2">
           Mapeamento de sub-famílias
         </div>
         <div className="flex items-center gap-3 px-3 py-2 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[12px]">
@@ -147,7 +147,7 @@ function Mapeamentos({ qc }: { qc: any }) {
             className={`${inp} w-[240px]`} style={inputStyle} />
           <button onClick={aplicar} disabled={!encargo || sel.length === 0}
             className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7FAFA] disabled:opacity-35">
-            <span className="w-5 h-5 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
+            <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
             Aplicar à seleção ({sel.length})
           </button>
           <label className="flex items-center gap-2 ml-auto">
@@ -185,7 +185,7 @@ function Mapeamentos({ qc }: { qc: any }) {
                           className={cell} />
                         <input value={c.tax || ''} placeholder="—" title="Taxa do encargo"
                           onChange={(e) => setCell(r.id, o.id, 'tax', e.target.value)}
-                          className="w-[54px] border-0 px-1 py-1 text-[12px] bg-transparent outline-none text-[#0B4F5C]" />
+                          className="w-[54px] border-0 px-1 py-1 text-[12px] bg-transparent outline-none text-[#062A31]" />
                       </div>
                     </td>
                   );
@@ -199,14 +199,14 @@ function Mapeamentos({ qc }: { qc: any }) {
         </table>
       </div>
 
-      <div className="px-3 py-1 text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border-t border-[#CFE3E6]">
+      <div className="px-3 py-1 text-[11px] text-[#062A31] bg-[#F7FAFA] border-t border-[#CFE3E6]">
         As células a <b>laranja</b> não têm encargo: nesse ponto de venda, o consumo do hóspede
         <b> não consegue entrar no folio</b>.
       </div>
 
       <Toolbar actions={[
         { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${Object.keys(dirty).length ? ` (${Object.keys(dirty).length})` : ''}`,
-          color: '#0B4F5C', onClick: () => save.mutate() },
+          color: '#062A31', onClick: () => save.mutate() },
       ]} />
     </>
   );
@@ -254,7 +254,7 @@ function MultiHotel() {
                 <td className="px-2 py-1.5">{l.mode === 'FULL' ? 'Completo' : 'Simples'}</td>
                 <td className="px-2 py-1.5">
                   {!l.last_test_at ? <span className="text-[#5C8891]">Desconhecido</span>
-                    : l.last_test_ok ? <span className="text-[#0B4F5C] font-bold">Ligado</span>
+                    : l.last_test_ok ? <span className="text-[#062A31] font-bold">Ligado</span>
                       : <span className="text-[#B0392B] font-bold">Sem resposta</span>}
                 </td>
               </tr>
@@ -312,7 +312,7 @@ function Externas() {
                 <td className="px-2 py-1.5 text-[#5C8891]">{l.has_password ? '- - - - -' : '—'}</td>
                 <td className="text-center"><GridCheck checked={l.trusted} /></td>
                 <td className="px-2 py-1.5">
-                  {l.status === 'Ligado' ? <span className="text-[#0B4F5C] font-bold">Ligado</span>
+                  {l.status === 'Ligado' ? <span className="text-[#062A31] font-bold">Ligado</span>
                     : l.status === 'Sem resposta' ? <span className="text-[#B0392B] font-bold">Sem resposta</span>
                       : <span className="text-[#5C8891]">Desconhecido</span>}
                 </td>
@@ -374,14 +374,14 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
   const set = (k: string, v: any) => setD((o: any) => ({ ...o, [k]: v }));
   const Row = ({ label, children }: any) => (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[120px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
         <span>
           {isHotel
             ? `Ligações Multi Hotel - ${isNew ? 'Adicionar' : `Editar ${d.description || ''}`}`
@@ -465,7 +465,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
         {!isNew && d.last_test_detail && (
           <div className={`text-[11px] px-2 py-1 border mt-2 ${d.last_test_ok
-            ? 'bg-[#F7FAFA] border-[#CFE3E6] text-[#0B4F5C]'
+            ? 'bg-[#F7FAFA] border-[#CFE3E6] text-[#062A31]'
             : 'bg-[#F7FAFA] border-[#B0392B] text-[#B0392B]'}`}>
             Último teste: {d.last_test_detail}
           </div>
@@ -477,9 +477,9 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
       </div>
 
       <Toolbar actions={[
-        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#0B4F5C',
+        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#062A31',
           disabled: isNew, onClick: () => test.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

@@ -10,7 +10,7 @@ import { notifyError } from '../../utils/friendlyError';
 function Panel({ title, children, right }: any) {
   return (
     <div className="bg-white border border-[#7FA9B1]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
-      <div className="px-3 py-1.5 border-b border-[#CFE3E6] flex items-center justify-between text-[12px] font-bold text-[#0B4F5C]"
+      <div className="px-3 py-1.5 border-b border-[#CFE3E6] flex items-center justify-between text-[12px] font-bold text-[#062A31]"
         style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA)' }}>
         <span>{title}</span>{right}
       </div>
@@ -19,7 +19,7 @@ function Panel({ title, children, right }: any) {
   );
 }
 
-const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#7FA9B1] text-[#06333C]';
+const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#7FA9B1] text-[#041F24]';
 const btnStyle = {
   background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA 48%, #EEF4F5 52%, #EEF4F5)',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
@@ -68,9 +68,9 @@ export default function SaftCenterView() {
           {f ? (
             <div className="flex items-center gap-4 text-[12px]">
               <div className={`flex items-center gap-2 px-3 py-2 border ${f.certified ? 'bg-[#F7FAFA] border-[#CFE3E6]' : 'bg-[#F7FAFA] border-[#CFE3E6]'}`}>
-                {f.certified ? <ShieldCheck size={22} className="text-[#0B4F5C]" /> : <ShieldAlert size={22} className="text-[#0B4F5C]" />}
+                {f.certified ? <ShieldCheck size={22} className="text-[#062A31]" /> : <ShieldAlert size={22} className="text-[#062A31]" />}
                 <div>
-                  <div className={`font-bold ${f.certified ? 'text-[#06333C]' : 'text-[#06333C]'}`}>
+                  <div className={`font-bold ${f.certified ? 'text-[#041F24]' : 'text-[#041F24]'}`}>
                     {f.certified ? `Certificado AGT nº ${f.certificate_number}` : 'Não certificado (ambiente de testes)'}
                   </div>
                   <div className="text-[11px] text-gray-600">{f.company_name} · NIF {f.company_nif} · SAF-T v{f.saft_version} · {f.environment === 'PROD' ? 'Produção' : 'Testes'}</div>
@@ -98,18 +98,18 @@ export default function SaftCenterView() {
                   {busy === p.key ? 'A validar…' : 'Validar XML'}
                 </button>
                 <button onClick={() => exportar(p.key)} disabled={busy === p.key} className={`${btn} flex items-center gap-1`}
-                  style={{ ...btnStyle, background: 'linear-gradient(to bottom, #0B4F5C, #5C8891)', color: '#FFFFFF', borderColor: '#06333C' }}>
+                  style={{ ...btnStyle, background: 'linear-gradient(to bottom, #062A31, #5C8891)', color: '#FFFFFF', borderColor: '#041F24' }}>
                   <Download size={12} /> Exportar
                 </button>
               </div>
               {check?.key === p.key && (
                 <div className={`mt-2 p-2 border text-[11px] ${check.valid ? 'bg-[#F7FAFA] border-[#CFE3E6]' : 'bg-[#F7FAFA] border-[#B0392B]'}`}>
                   <div className="flex items-center gap-1.5 font-bold">
-                    {check.valid ? <CheckCircle2 size={13} className="text-[#0B4F5C]" /> : <XCircle size={13} className="text-[#8C2B1F]" />}
+                    {check.valid ? <CheckCircle2 size={13} className="text-[#062A31]" /> : <XCircle size={13} className="text-[#8C2B1F]" />}
                     {check.valid ? 'XML válido' : 'XML com problemas'} · {check.elements} elementos · {(check.size_bytes / 1024).toFixed(1)} KB
                   </div>
                   {(check.problems || []).map((pr: string, i: number) => (
-                    <div key={i} className={pr.startsWith('Aviso') ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'}>• {pr}</div>
+                    <div key={i} className={pr.startsWith('Aviso') ? 'text-[#062A31]' : 'text-[#8C2B1F]'}>• {pr}</div>
                   ))}
                 </div>
               )}
@@ -124,7 +124,7 @@ export default function SaftCenterView() {
             { header: 'Período', accessor: (r: any) => `${r.start_date} → ${r.end_date}`, width: '20%' },
             { header: 'Ficheiro', accessor: 'filename', width: '26%' },
             { header: 'Tamanho', accessor: (r: any) => `${(r.size_bytes / 1024).toFixed(1)} KB`, width: '9%' },
-            { header: 'Válido', accessor: (r: any) => r.is_valid ? <CheckCircle2 size={14} className="text-[#0B4F5C]" /> : <XCircle size={14} className="text-[#8C2B1F]" />, width: '7%' },
+            { header: 'Válido', accessor: (r: any) => r.is_valid ? <CheckCircle2 size={14} className="text-[#062A31]" /> : <XCircle size={14} className="text-[#8C2B1F]" />, width: '7%' },
             { header: 'Impressão digital (SHA-256)', accessor: (r: any) => <span className="font-mono text-[10px]">{(r.sha256 || '').slice(0, 20)}…</span>, width: '18%' },
           ]} />
         </Panel>

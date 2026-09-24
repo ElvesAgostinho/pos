@@ -78,7 +78,7 @@ export default function BookingEngineView() {
             <div className="text-[11px] text-gray-500">Fluxo: Site → Booking Engine → <b>API (esta chave)</b> → PMS → SQL.</div>
           </div>
         ) : (
-          <div className="bg-[#F7FAFA] border border-[#CFE3E6] p-3 text-[11px] text-[#0B4F5C]">Guarde a configuração acima para gerar o link do site público e a chave da API.</div>
+          <div className="bg-[#F7FAFA] border border-[#CFE3E6] p-3 text-[11px] text-[#062A31]">Guarde a configuração acima para gerar o link do site público e a chave da API.</div>
         )}
 
         {/* ---- Como apontar o SEU domínio para o sistema (passo a passo) ---- */}

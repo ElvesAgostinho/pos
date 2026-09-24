@@ -85,7 +85,7 @@ export default function SectorWarehouseMap() {
         </select>
         <button onClick={aplicar} disabled={!armazem || sel.length === 0}
           className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7FAFA] disabled:opacity-35">
-          <span className="w-5 h-5 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
+          <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
           Aplicar à seleção ({sel.length})
         </button>
       </div>
@@ -141,7 +141,7 @@ export default function SectorWarehouseMap() {
 
       <Toolbar actions={[
         { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${Object.keys(dirty).length ? ` (${Object.keys(dirty).length})` : ''}`,
-          color: '#0B4F5C', onClick: () => save.mutate() },
+          color: '#062A31', onClick: () => save.mutate() },
       ]} />
     </div>
   );

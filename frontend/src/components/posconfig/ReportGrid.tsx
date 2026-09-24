@@ -161,7 +161,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       {/* ── barra de filtros ── */}
       <div className="flex items-center gap-2 mb-2 text-[12px]">
         <button onClick={() => setPainel(!painel)}
-          className={`px-3 py-1 border ${conds.length ? 'border-[#5C8891] bg-[#F7FAFA] text-[#0B4F5C] font-semibold' : 'border-[#CFE3E6] bg-white'}`}>
+          className={`px-3 py-1 border ${conds.length ? 'border-[#5C8891] bg-[#F7FAFA] text-[#062A31] font-semibold' : 'border-[#CFE3E6] bg-white'}`}>
           <span className="inline-flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtros avançados{conds.length ? ` (${conds.length})` : ''}</span>
         </button>
         <button onClick={() => setColsPainel(!colsPainel)}
@@ -180,7 +180,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
         )}
         <span className="ml-auto text-[#5C8891]">
           {filtrado
-            ? <><b className="text-[#0B4F5C]">{capadas.length}</b> de {d.rows.length} linha(s)</>
+            ? <><b className="text-[#062A31]">{capadas.length}</b> de {d.rows.length} linha(s)</>
             : <>{d.rows.length} linha(s)</>}
           {totalPaginas > 1 ? ` · página ${paginaAtual} de ${totalPaginas} (${vista.length} nesta página)` : ''}
         </span>

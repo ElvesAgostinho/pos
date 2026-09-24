@@ -41,9 +41,9 @@ export function WfcDashboardView() {
     <ClassicWindow title="Workflow — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Centro 19 · fluxos e tarefas</div>}>
       <div className="p-3 grid grid-cols-4 gap-2">
         {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
-          <Card label="Fluxos ativos" value={d.flows} /><Card label="Tarefas pendentes" value={d.tasks_pending} tone="text-[#0B4F5C]" />
-          <Card label="Em curso" value={d.tasks_in_progress} /><Card label="Concluídas" value={d.tasks_done} tone="text-[#0B4F5C]" />
-          <Card label="Urgentes por fechar" value={d.tasks_urgent} tone={d.tasks_urgent ? 'text-[#8C2B1F]' : 'text-[#0B4F5C]'} /><Card label="Total tarefas" value={d.tasks_total} />
+          <Card label="Fluxos ativos" value={d.flows} /><Card label="Tarefas pendentes" value={d.tasks_pending} tone="text-[#062A31]" />
+          <Card label="Em curso" value={d.tasks_in_progress} /><Card label="Concluídas" value={d.tasks_done} tone="text-[#062A31]" />
+          <Card label="Urgentes por fechar" value={d.tasks_urgent} tone={d.tasks_urgent ? 'text-[#8C2B1F]' : 'text-[#062A31]'} /><Card label="Total tarefas" value={d.tasks_total} />
         </>}
       </div>
     </ClassicWindow>
@@ -82,7 +82,7 @@ export function WfcTasksView() {
   const PR: Record<string, string> = { LOW: 'Baixa', NORMAL: 'Normal', HIGH: 'Alta', URGENT: 'Urgente' };
   const [f, setF] = useState<any>({ title: '', assignee: '', priority: 'NORMAL', flow: '', due_date: '' });
   const add = () => { if (!f.title) return; create.mutate({ ...f, flow: f.flow ? Number(f.flow) : null, due_date: f.due_date || null }, { onSuccess: () => setF({ title: '', assignee: '', priority: 'NORMAL', flow: '', due_date: '' }) }); };
-  const ptone = (p: string) => p === 'URGENT' ? 'text-[#8C2B1F] font-bold' : p === 'HIGH' ? 'text-[#0B4F5C]' : 'text-gray-700';
+  const ptone = (p: string) => p === 'URGENT' ? 'text-[#8C2B1F] font-bold' : p === 'HIGH' ? 'text-[#062A31]' : 'text-gray-700';
   return (
     <ClassicWindow title="Workflow — Tarefas" icon={<ListTodo size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Tarefas: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
@@ -119,7 +119,7 @@ export function ProcDashboardView() {
         {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Requisições" value={sum(d.requisitions)} /><Card label="Encomendas" value={sum(d.purchase_orders)} />
           <Card label="Receções (GRN)" value={d.goods_receipts} /><Card label="Devoluções" value={sum(d.returns)} />
-          <Card label="A aguardar aprovação" value={d.pending_approval} tone={d.pending_approval ? 'text-[#0B4F5C]' : 'text-[#0B4F5C]'} />
+          <Card label="A aguardar aprovação" value={d.pending_approval} tone={d.pending_approval ? 'text-[#062A31]' : 'text-[#062A31]'} />
         </>}
       </div>
     </ClassicWindow>
@@ -151,7 +151,7 @@ export function ProcReturnsView() {
           <div className="flex-1 overflow-hidden">
             <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '20%' }, { header: 'Fornecedor', accessor: 'supplier_name', width: '40%' },
-              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#0B4F5C] font-bold' : 'text-[#0B4F5C]'}>{r.status_display}</span>, width: '28%' },
+              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#062A31] font-bold' : 'text-[#062A31]'}>{r.status_display}</span>, width: '28%' },
               { header: '', accessor: (r: any) => r.status !== 'CONFIRMED' ? <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button> : null, width: '12%' },
             ]} />
           </div>
@@ -160,7 +160,7 @@ export function ProcReturnsView() {
           {sel ? <>
             <div className="flex items-center justify-between p-2 bg-[#F7FAFA] border-b border-[#7FA9B1] text-[11px]">
               <span className="font-bold">{sel.number} · {sel.supplier_name}</span>
-              {sel.status !== 'CONFIRMED' ? <ClassicButton icon={CheckCircle} label="Confirmar (saída stock)" onClick={() => doConfirm(sel.id)} /> : <span className="text-[#0B4F5C] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
+              {sel.status !== 'CONFIRMED' ? <ClassicButton icon={CheckCircle} label="Confirmar (saída stock)" onClick={() => doConfirm(sel.id)} /> : <span className="text-[#062A31] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
             </div>
             {sel.status !== 'CONFIRMED' && <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7FAFA] border-b border-[#7FA9B1] text-[11px]">
               <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white max-w-[160px]"><option value="">Artigo…</option>{items.map((i: any) => <option key={i.id} value={i.id}>{i.name}</option>)}</select>
@@ -188,7 +188,7 @@ export function ProcPlanningView() {
         <ClassicGrid rowKey="code" data={rows} columns={[
           { header: 'Artigo', accessor: (r: any) => `${r.code} · ${r.item}`, width: '32%' }, { header: 'Armazém', accessor: 'warehouse', width: '18%' },
           { header: 'Em stock', accessor: (r: any) => <span className="text-[#8C2B1F] font-bold">{r.on_hand}</span>, width: '12%' }, { header: 'Mínimo', accessor: 'min', width: '10%' },
-          { header: 'Sugerido', accessor: (r: any) => <span className="text-[#0B4F5C] font-bold">{r.suggested_qty}</span>, width: '12%' }, { header: 'Custo est.', accessor: (r: any) => AOA(r.est_cost), width: '16%' },
+          { header: 'Sugerido', accessor: (r: any) => <span className="text-[#062A31] font-bold">{r.suggested_qty}</span>, width: '12%' }, { header: 'Custo est.', accessor: (r: any) => AOA(r.est_cost), width: '16%' },
         ]} />
         {rows.length === 0 && <div className="text-center text-gray-400 text-[12px] py-8">Nenhum artigo abaixo do mínimo. Defina stock mínimo nos níveis de stock.</div>}
       </div>
@@ -205,7 +205,7 @@ export function ComDashboardView() {
         {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Promoções ativas" value={d.promotions_active} sub={`${d.promotions_total} no total`} /><Card label="Combos" value={d.combos} />
           <Card label="Programas fidelização" value={d.loyalty_programs} /><Card label="Escalões" value={d.loyalty_tiers} />
-          <Card label="Gift cards ativos" value={d.giftcards_active} /><Card label="Saldo gift cards" value={d.giftcards_balance != null ? AOA(d.giftcards_balance) : '—'} tone="text-[#0B4F5C]" />
+          <Card label="Gift cards ativos" value={d.giftcards_active} /><Card label="Saldo gift cards" value={d.giftcards_balance != null ? AOA(d.giftcards_balance) : '—'} tone="text-[#062A31]" />
         </>}
       </div>
     </ClassicWindow>
@@ -280,14 +280,14 @@ export function FinReconciliationView() {
           {acc && <span className="text-gray-600">Sistema: <b>{AOA(acc.balance)}</b></span>}
           <input type="date" value={f.statement_date} onChange={(e) => setF({ ...f, statement_date: e.target.value })} className="border border-[#7FA9B1] p-1" />
           <input type="number" placeholder="Saldo extrato" value={f.statement_balance} onChange={(e) => setF({ ...f, statement_balance: e.target.value })} className="border border-[#7FA9B1] p-1 w-28" />
-          {acc && f.statement_balance !== '' && <span className={Math.abs(diff) < 0.01 ? 'text-[#0B4F5C] font-bold' : 'text-[#8C2B1F] font-bold'}>Dif: {AOA(diff)}</span>}
+          {acc && f.statement_balance !== '' && <span className={Math.abs(diff) < 0.01 ? 'text-[#062A31] font-bold' : 'text-[#8C2B1F] font-bold'}>Dif: {AOA(diff)}</span>}
           <ClassicButton icon={Plus} label="Reconciliar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
           <ClassicGrid rowKey="id" data={rows} columns={[
             { header: 'Data', accessor: 'statement_date', width: '16%' }, { header: 'Conta', accessor: 'account_name', width: '24%' },
             { header: 'Extrato', accessor: (r: any) => AOA(r.statement_balance), width: '18%' }, { header: 'Sistema', accessor: (r: any) => AOA(r.system_balance), width: '18%' },
-            { header: 'Diferença', accessor: (r: any) => <span className={Math.abs(Number(r.difference)) < 0.01 ? 'text-[#0B4F5C] font-bold' : 'text-[#8C2B1F] font-bold'}>{AOA(r.difference)}</span>, width: '18%' },
+            { header: 'Diferença', accessor: (r: any) => <span className={Math.abs(Number(r.difference)) < 0.01 ? 'text-[#062A31] font-bold' : 'text-[#8C2B1F] font-bold'}>{AOA(r.difference)}</span>, width: '18%' },
             { header: 'Estado', accessor: (r: any) => r.status_display, width: '6%' },
           ]} />
         </div>
@@ -328,7 +328,7 @@ export function AdmModuleStatusView() {
     <ClassicWindow title="Administração — Estado dos Módulos" icon={<ShieldCheck size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Módulos e funcionalidades licenciadas</div>}>
       <div className="p-3 grid grid-cols-2 gap-3">
         <div className="bg-white border border-[#7FA9B1]"><div className="bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-1.5 text-[11px] font-bold">Módulos ativos ({modules.length})</div>
-          <div className="p-2 text-[12px]">{modules.length ? modules.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F7FAFA] flex items-center gap-1"><Check size={12} strokeWidth={3} className="text-[#0B4F5C]" /> {typeof m === 'string' ? m : (m.name || m.code || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem informação.</div>}</div>
+          <div className="p-2 text-[12px]">{modules.length ? modules.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F7FAFA] flex items-center gap-1"><Check size={12} strokeWidth={3} className="text-[#062A31]" /> {typeof m === 'string' ? m : (m.name || m.code || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem informação.</div>}</div>
         </div>
         <div className="bg-white border border-[#7FA9B1]"><div className="bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-1.5 text-[11px] font-bold">Funcionalidades ({features.length})</div>
           <div className="p-2 text-[12px]">{features.length ? features.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F7FAFA]">• {typeof m === 'string' ? m : (m.name || m.key || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem restrições / sem informação.</div>}</div>

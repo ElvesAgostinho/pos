@@ -37,7 +37,7 @@ export default function FeatureFlagsView() {
                   <div className="font-semibold">{f.name}</div>
                   <div className="text-[10px] text-gray-500 font-mono">{f.key}</div>
                 </div>
-                <button onClick={() => toggle(f.key, !f.active)} className="flex items-center gap-1.5 font-bold" style={{ color: f.active ? '#0B4F5C' : '#7FA9B1' }}>
+                <button onClick={() => toggle(f.key, !f.active)} className="flex items-center gap-1.5 font-bold" style={{ color: f.active ? '#062A31' : '#7FA9B1' }}>
                   {f.active ? <ToggleRight size={26} /> : <ToggleLeft size={26} />}{f.active ? 'Ativa' : 'Desligada'}
                 </button>
               </div>

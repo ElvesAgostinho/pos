@@ -8,7 +8,7 @@ import { useAccounts } from '../../hooks/useFinance';
 import { aviso, pedir } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toFixed(2);
-const ST: Record<string, string> = { ISSUED: 'text-[#8C2B1F] font-bold', PARTIAL: 'text-[#0B4F5C] font-bold', PAID: 'text-[#0B4F5C] font-bold', DRAFT: 'text-gray-500', CANCELLED: 'text-gray-400' };
+const ST: Record<string, string> = { ISSUED: 'text-[#8C2B1F] font-bold', PARTIAL: 'text-[#062A31] font-bold', PAID: 'text-[#062A31] font-bold', DRAFT: 'text-gray-500', CANCELLED: 'text-gray-400' };
 
 export default function AccountsReceivableView() {
   const qc = useQueryClient();
@@ -47,16 +47,16 @@ export default function AccountsReceivableView() {
               { header: 'Data', accessor: 'date', width: '12%' },
               { header: 'Total', accessor: (r: any) => money(r.total), width: '12%' },
               { header: 'Recebido', accessor: (r: any) => money(r.paid_amount), width: '12%' },
-              { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#0B4F5C]'}>{money(r.balance)}</span>, width: '12%' },
+              { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#062A31]'}>{money(r.balance)}</span>, width: '12%' },
               { header: 'Estado', accessor: (r: any) => <span className={ST[r.status] || ''}>{r.status_display}</span>, width: '10%' },
-              { header: '', accessor: (r: any) => !['DRAFT', 'CANCELLED', 'PAID'].includes(r.status) ? <button title="Receber" onClick={() => doReceive(r)} className="text-[#0B4F5C] hover:text-[#062A31]"><DollarSign size={14} /></button> : null, width: '8%' },
+              { header: '', accessor: (r: any) => !['DRAFT', 'CANCELLED', 'PAID'].includes(r.status) ? <button title="Receber" onClick={() => doReceive(r)} className="text-[#062A31] hover:text-[#062A31]"><DollarSign size={14} /></button> : null, width: '8%' },
             ]} />
           ) : (
             <ClassicGrid rowKey="customer" data={customers} columns={[
               { header: 'Cliente', accessor: 'customer', width: '44%' },
               { header: 'Faturado', accessor: (r: any) => money(r.invoiced), width: '18%' },
               { header: 'Recebido', accessor: (r: any) => money(r.received), width: '18%' },
-              { header: 'Saldo em dívida', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#0B4F5C]'}>{money(r.balance)}</span>, width: '20%' },
+              { header: 'Saldo em dívida', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#062A31]'}>{money(r.balance)}</span>, width: '20%' },
             ]} />
           )}
         </div>

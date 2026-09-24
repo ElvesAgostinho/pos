@@ -45,7 +45,7 @@ export function FiscalDashboardView() {
       <div className="p-4 space-y-4 bg-[#F7FAFA] h-full overflow-auto">
         <Section title="Emissão">
           <div className="flex flex-wrap gap-2">
-            <Kpi label="Emitidos hoje" value={d?.issued_today ?? 0} tone="#0B4F5C" />
+            <Kpi label="Emitidos hoje" value={d?.issued_today ?? 0} tone="#062A31" />
             <Kpi label="Total emitidos" value={d?.issued_total ?? 0} />
             <Kpi label="Anulados" value={d?.voided ?? 0} tone="#B0392B" />
             <Kpi label="Séries ativas" value={d?.active_series ?? 0} />
@@ -55,7 +55,7 @@ export function FiscalDashboardView() {
         <Section title="Comunicação AGT (fila)">
           <div className="flex flex-wrap gap-2">
             <Kpi label="Pendentes" value={d?.queue_pending ?? 0} tone="#5C8891" />
-            <Kpi label="Enviados / aceites" value={d?.queue_sent ?? 0} tone="#0B4F5C" />
+            <Kpi label="Enviados / aceites" value={d?.queue_sent ?? 0} tone="#062A31" />
             <Kpi label="Rejeitados" value={d?.queue_rejected ?? 0} tone="#B0392B" />
             <Kpi label="Ligação AGT" value={m?.agt_connection?.configured ? (m?.agt_connection?.health || '—') : 'Por configurar'} />
           </div>
@@ -64,20 +64,20 @@ export function FiscalDashboardView() {
           <div className="flex flex-wrap gap-2">
             <Kpi label="Rascunhos" value={d?.commercial?.drafts ?? 0} tone="#5C8891" />
             <Kpi label="Em curso (enviado/aceite)" value={d?.commercial?.open ?? 0} tone="#5C8891" />
-            <Kpi label="Convertidos em fatura" value={d?.commercial?.converted ?? 0} tone="#0B4F5C" />
+            <Kpi label="Convertidos em fatura" value={d?.commercial?.converted ?? 0} tone="#062A31" />
           </div>
         </Section>
         <Section title="Ciclo de vida fiscal">
           <div className="flex flex-wrap gap-2">
-            <Kpi label="Pagos" value={d?.lifecycle?.paid ?? 0} tone="#0B4F5C" />
-            <Kpi label="Arquivados" value={d?.lifecycle?.archived ?? 0} tone="#06333C" />
+            <Kpi label="Pagos" value={d?.lifecycle?.paid ?? 0} tone="#062A31" />
+            <Kpi label="Arquivados" value={d?.lifecycle?.archived ?? 0} tone="#041F24" />
           </div>
         </Section>
         <Section title="Certificados & Chaves">
           <div className="flex flex-wrap gap-2">
             <Kpi label="Certificados ativos" value={m?.certificates?.active ?? 0} />
             <Kpi label="Expirados" value={m?.certificates?.expired ?? 0} tone="#B0392B" />
-            <Kpi label="Motor de chaves RSA" value={m?.keys_engine_ok ? 'OK' : 'FALHA'} tone={m?.keys_engine_ok ? '#0B4F5C' : '#B0392B'} />
+            <Kpi label="Motor de chaves RSA" value={m?.keys_engine_ok ? 'OK' : 'FALHA'} tone={m?.keys_engine_ok ? '#062A31' : '#B0392B'} />
           </div>
         </Section>
       </div>
@@ -131,7 +131,7 @@ export function FiscalSeriesView() {
           </div>
           {verify.data && (
             <div className="mt-2 text-[12px] bg-white border border-[#CFE3E6] p-2">
-              Cadeia {verify.data.all_ok ? <span className="text-[#0B4F5C] font-bold">ÍNTEGRA</span> : <span className="text-[#8C2B1F] font-bold">COMPROMETIDA</span>} · {verify.data.count} documentos verificados
+              Cadeia {verify.data.all_ok ? <span className="text-[#062A31] font-bold">ÍNTEGRA</span> : <span className="text-[#8C2B1F] font-bold">COMPROMETIDA</span>} · {verify.data.count} documentos verificados
             </div>
           )}
         </Section>
@@ -242,7 +242,7 @@ export function FiscalDocumentsView() {
             </div>
             {err && <div className="text-[#8C2B1F] font-bold">{err}</div>}
             <button className={btn} disabled={!hdr.series || issue.isPending} onClick={() => issue.mutate()}><Send size={13} /> Emitir & assinar</button>
-            {issue.data && <div className="text-[#06333C] bg-[#F7FAFA] border border-[#EEF4F5] px-2 py-1">Emitido <b>{issue.data.invoice_no}</b> · total {money(issue.data.gross_total)} · {issue.data.print_mention}</div>}
+            {issue.data && <div className="text-[#041F24] bg-[#F7FAFA] border border-[#EEF4F5] px-2 py-1">Emitido <b>{issue.data.invoice_no}</b> · total {money(issue.data.gross_total)} · {issue.data.print_mention}</div>}
           </div>
         </Section>
         <Section title="Documentos emitidos">
@@ -333,7 +333,7 @@ export function CommercialDocumentsView() {
               <div className="px-2 py-1"><button className="text-[#5C8891] flex items-center gap-1" onClick={() => setLines(ls => [...ls, { description: '', quantity: 1, unit_price: 0, tax_code: 'IVA14' }])}><Plus size={13} /> linha</button></div>
             </div>
             <button className={btn} disabled={create.isPending} onClick={() => create.mutate()}><Plus size={13} /> Criar rascunho</button>
-            {msg && <div className="text-[#06333C] bg-[#F7FAFA] border border-[#EEF4F5] px-2 py-1">{msg}</div>}
+            {msg && <div className="text-[#041F24] bg-[#F7FAFA] border border-[#EEF4F5] px-2 py-1">{msg}</div>}
           </div>
         </Section>
         <Section title="Documentos">
@@ -347,7 +347,7 @@ export function CommercialDocumentsView() {
                 <span className="flex flex-wrap gap-1">
                   {r.state === 'DRAFT' && <button className="text-[#5C8891] hover:underline" onClick={() => act.mutate({ id: r.id, action: 'send' })}>Enviar</button>}
                   {(r.state === 'SENT' || r.state === 'APPROVED') && <button className="text-[#5C8891] hover:underline" onClick={() => act.mutate({ id: r.id, action: 'accept' })}>Aceitar</button>}
-                  {r.state !== 'CONVERTED' && <button className="text-[#0B4F5C] font-bold hover:underline" onClick={() => act.mutate({ id: r.id, action: 'convert' })}>→ Fatura</button>}
+                  {r.state !== 'CONVERTED' && <button className="text-[#062A31] font-bold hover:underline" onClick={() => act.mutate({ id: r.id, action: 'convert' })}>→ Fatura</button>}
                   <button className="text-gray-600 hover:underline" onClick={() => act.mutate({ id: r.id, action: 'duplicate' })}>Duplicar</button>
                   <button className="text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => printCommercialDocument(r.id)}><Printer size={12} /> Imprimir</button>
                 </span>
@@ -521,7 +521,7 @@ export function FiscalConnectivityView() {
             {test.data && (
               <div className="space-y-1 pt-1">
                 {row('keys', 'Chaves RSA')}{row('signature', 'Assinatura')}{row('saft', 'SAF-T')}{row('xml', 'XML')}{row('qr', 'QR Code')}{row('agt', 'Ligação AGT')}
-                <div className="text-[12px] pt-1 font-bold">{test.data.overall_ok ? <span className="text-[#0B4F5C]">Todos os testes OK</span> : <span className="text-[#5C8891]">Há itens por configurar</span>}</div>
+                <div className="text-[12px] pt-1 font-bold">{test.data.overall_ok ? <span className="text-[#062A31]">Todos os testes OK</span> : <span className="text-[#5C8891]">Há itens por configurar</span>}</div>
               </div>
             )}
           </div>

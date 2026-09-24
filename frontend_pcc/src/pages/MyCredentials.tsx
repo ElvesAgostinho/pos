@@ -36,7 +36,7 @@ const MyCredentials: React.FC<Props> = ({ onClose, onSaved }) => {
   return (
     <div className="fixed inset-0 bg-black/30 z-[60] flex items-center justify-center">
       <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[400px] shadow-[4px_4px_10px_rgba(0,0,0,0.35)]">
-        <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center">
+        <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
           <div className="flex items-center">
             <UserCog size={13} className="mr-2 text-[#5C8891]" />
             <span className="font-bold text-[11px]">As Minhas Credenciais</span>
@@ -52,11 +52,11 @@ const MyCredentials: React.FC<Props> = ({ onClose, onSaved }) => {
               <div className="w-12 h-12 bg-[#5C8891] text-white flex items-center justify-center text-2xl font-bold border border-black mx-auto mb-3">
                 ✓
               </div>
-              <p className="font-bold text-[#06333C] text-[12px]">Credenciais alteradas com sucesso!</p>
+              <p className="font-bold text-[#041F24] text-[12px]">Credenciais alteradas com sucesso!</p>
               <p className="text-[10px] text-gray-600 mt-1">Use o novo nome de utilizador no próximo login.</p>
               <button
                 onClick={onClose}
-                className="mt-4 px-4 py-1 border border-[#06333C] bg-[#06333C] text-white hover:bg-[#0B4F5C] text-[11px]"
+                className="mt-4 px-4 py-1 border border-[#041F24] bg-[#041F24] text-white hover:bg-[#062A31] text-[11px]"
               >
                 Concluir
               </button>

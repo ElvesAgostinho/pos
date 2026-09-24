@@ -52,7 +52,7 @@ export default function TimeBandEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo período' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo período' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -60,23 +60,23 @@ export default function TimeBandEditor({ row, onClose }: { row: any; onClose: ()
         {/* Identificação */}
         <div className="w-[52%] p-6 space-y-3 border-r border-[#EEF4F5]">
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[90px] text-[#041F24]">Código:<span className="text-[#B0392B]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[90px] text-[#041F24]">Descrição:<span className="text-[#B0392B]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} placeholder="08:01 as 10:00"
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#06333C]">Cor:</span>
+            <span className="w-[90px] text-[#041F24]">Cor:</span>
             <input type="color" value={d.color || '#5C8891'} onChange={(e) => set('color', e.target.value)}
               className="w-10 h-8 border border-[#7FA9B1]" />
             <input value={d.color || ''} onChange={(e) => set('color', e.target.value)}
               className={`${inp} w-[230px] font-mono`} style={{ ...inputStyle, background: d.color, color: '#FFFFFF' }} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#06333C]">Ordem:</span>
+            <span className="w-[90px] text-[#041F24]">Ordem:</span>
             <input type="number" value={d.sort_order ?? 0} onChange={(e) => set('sort_order', Number(e.target.value))}
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
@@ -92,11 +92,11 @@ export default function TimeBandEditor({ row, onClose }: { row: any; onClose: ()
 
         {/* Períodos */}
         <div className="flex-1 flex flex-col">
-          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-b border-[#EEF4F5]">Períodos</div>
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#041F24] border-b border-[#EEF4F5]">Períodos</div>
           <div className="flex-1 overflow-auto">
             <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
-                <tr className="bg-[#F7FAFA] text-[#06333C]">
+                <tr className="bg-[#F7FAFA] text-[#041F24]">
                   <th className="text-left font-normal px-3 py-1.5 border-b border-[#EEF4F5]">De</th>
                   <th className="text-left font-normal px-3 py-1.5 border-b border-[#EEF4F5]">Até</th>
                 </tr>
@@ -117,19 +117,19 @@ export default function TimeBandEditor({ row, onClose }: { row: any; onClose: ()
           </div>
 
           {overlap && (
-            <div className="px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] text-[11px] text-[#0B4F5C]">
+            <div className="px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] text-[11px] text-[#062A31]">
               <b>Atenção:</b> há períodos sobrepostos. Nos relatórios, as vendas dessas horas
               seriam contadas duas vezes.
             </div>
           )}
 
           <div className="flex items-center gap-4 px-3 py-2 border-t border-[#EEF4F5] bg-[#F7FAFA]">
-            <button onClick={addSlot} className="flex items-center gap-2 text-[13px] text-[#06333C] hover:bg-[#F7FAFA] px-1 py-1">
+            <button onClick={addSlot} className="flex items-center gap-2 text-[13px] text-[#041F24] hover:bg-[#F7FAFA] px-1 py-1">
               <span className="w-6 h-6 rounded-full bg-[#062A31] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
             <span className="w-px h-6 bg-[#EEF4F5]" />
             <button onClick={delSlot} disabled={sel === null}
-              className="flex items-center gap-2 text-[13px] text-[#06333C] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
+              className="flex items-center gap-2 text-[13px] text-[#041F24] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
               <span className="w-6 h-6 rounded-full bg-[#B0392B] text-white flex items-center justify-center">−</span> Apagar
             </button>
           </div>
@@ -137,7 +137,7 @@ export default function TimeBandEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

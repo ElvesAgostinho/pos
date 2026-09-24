@@ -87,7 +87,7 @@ export default function ItemsView() {
                 <Field label="IVA %"><input type="number" value={form.tax_percentage ?? 0} onChange={(e) => set({ tax_percentage: e.target.value })} className={`${inp} w-24 text-right`} /></Field>
                 <Field label="Custo médio atual"><span className="font-mono">{money(form.current_average_cost)} Kz</span> <span className="text-gray-400 ml-2">(calculado pelo motor de stock)</span></Field>
                 {form.sale_price && form.current_average_cost != null && Number(form.current_average_cost) > 0 && (
-                  <Field label="Margem"><span className="font-bold text-[#0B4F5C]">{((1 - Number(form.current_average_cost) / Number(form.sale_price)) * 100).toFixed(1)}%</span></Field>
+                  <Field label="Margem"><span className="font-bold text-[#062A31]">{((1 - Number(form.current_average_cost) / Number(form.sale_price)) * 100).toFixed(1)}%</span></Field>
                 )}
               </>}
               {tab === 'Stock & Compras' && <>

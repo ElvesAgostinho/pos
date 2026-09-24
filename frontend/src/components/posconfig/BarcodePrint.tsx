@@ -53,7 +53,7 @@ export default function BarcodePrint() {
       .n{font-size:11px;font-weight:bold;height:26px;overflow:hidden}
       .p{font-size:15px;font-weight:bold;margin-top:2px}
       .bc{font-family:'Libre Barcode 39',monospace;font-size:26px;letter-spacing:1px}
-      .c{font-size:9px;color:#0B4F5C}
+      .c{font-size:9px;color:#062A31}
     </style></head><body>
     ${chosen.flatMap((r: any) => Array.from({ length: sel[r.id] || 1 }).map(() => `
       <div class="lbl">
@@ -82,7 +82,7 @@ export default function BarcodePrint() {
       <div className="flex items-start gap-6 px-4 py-3 border-b border-[#EEF4F5] text-[13px]">
         <div className="grid grid-cols-2 gap-x-6 gap-y-2 flex-1">
           <label className="flex items-center gap-2">
-            <span className="w-[90px] text-[#06333C]">Sub Família:</span>
+            <span className="w-[90px] text-[#041F24]">Sub Família:</span>
             <select value={f.subfamily} onChange={(e) => setF({ ...f, subfamily: e.target.value })}
               className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white flex-1" style={inputStyle}>
               <option value="">(Todos)</option>
@@ -90,12 +90,12 @@ export default function BarcodePrint() {
             </select>
           </label>
           <label className="flex items-center gap-2">
-            <span className="w-[90px] text-[#06333C]">Nível de Preço:</span>
+            <span className="w-[90px] text-[#041F24]">Nível de Preço:</span>
             <input type="number" min={1} max={6} value={f.level} onChange={(e) => setF({ ...f, level: Number(e.target.value) })}
               className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white w-[80px]" style={inputStyle} />
           </label>
           <label className="flex items-center gap-2">
-            <span className="w-[90px] text-[#06333C]">Pesquisar:</span>
+            <span className="w-[90px] text-[#041F24]">Pesquisar:</span>
             <input value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })}
               className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white flex-1" style={inputStyle} />
           </label>
@@ -121,14 +121,14 @@ export default function BarcodePrint() {
             {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </label>
-        <span className="ml-auto text-[#0B4F5C]">{Object.keys(sel).length} artigo(s) selecionado(s)</span>
+        <span className="ml-auto text-[#062A31]">{Object.keys(sel).length} artigo(s) selecionado(s)</span>
       </div>
 
       {/* Grelha */}
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0">
-            <tr className="bg-[#F7FAFA] text-[#06333C]">
+            <tr className="bg-[#F7FAFA] text-[#041F24]">
               <th className="w-[40px] border border-[#EEF4F5]" />
               {['Código de Barras', 'Código', 'Descrição', 'Preço', 'Unidade Venda', 'Quantidade'].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#EEF4F5]">{h}</th>
@@ -163,8 +163,8 @@ export default function BarcodePrint() {
       </div>
 
       <Toolbar actions={[
-        { icon: '🖶', label: 'Imprimir', color: '#06333C', disabled: !Object.keys(sel).length, onClick: print },
-        { icon: '⤓', label: 'Exportar', color: '#0B4F5C', disabled: !Object.keys(sel).length, onClick: exportCsv },
+        { icon: '🖶', label: 'Imprimir', color: '#041F24', disabled: !Object.keys(sel).length, onClick: print },
+        { icon: '⤓', label: 'Exportar', color: '#062A31', disabled: !Object.keys(sel).length, onClick: exportCsv },
       ]} />
     </div>
   );

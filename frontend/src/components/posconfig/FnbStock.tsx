@@ -6,7 +6,7 @@ import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
 const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[130px]', children }: any) => (
-  <span className={`text-[12px] text-[#06333C] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#041F24] ${w} flex-shrink-0`}>{children}</span>
 );
 
 function useList(ep: string, key: string, params?: any) {
@@ -164,7 +164,7 @@ export default function FnbStock() {
               ? Object.entries(grupos).map(([arm, lista]) => (
                 <>
                   <tr key={arm} className="bg-[#EEF4F5]">
-                    <td colSpan={6} className="px-2 py-1 font-bold text-[#06333C]">
+                    <td colSpan={6} className="px-2 py-1 font-bold text-[#041F24]">
                       {arm} — {money(lista.reduce((s, r) => s + Number(r.value), 0))} Kz
                     </td>
                   </tr>
@@ -199,7 +199,7 @@ export default function FnbStock() {
           label: recalcular.isPending ? 'A recalcular…' : 'Recalcular o stock', icon: '⟳', color: '#5C8891',
           onClick: () => recalcular.mutate(),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#0B4F5C', onClick: exportar },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#062A31', onClick: exportar },
       ]} right={
         <span className="text-[11px] text-[#5C8891]">
           O valor é a quantidade ao custo médio — é o dinheiro parado dentro do armazém.

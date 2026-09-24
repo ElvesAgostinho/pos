@@ -11,9 +11,9 @@ const STATUS_LABELS: Record<string, string> = {
   ACTIVE: 'Ativo', BLOCKED: 'Bloqueado', EVALUATION: 'Em Avaliação',
 };
 const STATUS_CLS: Record<string, string> = {
-  ACTIVE: 'text-[#0B4F5C]', BLOCKED: 'text-[#8C2B1F]', EVALUATION: 'text-[#0B4F5C]',
+  ACTIVE: 'text-[#062A31]', BLOCKED: 'text-[#8C2B1F]', EVALUATION: 'text-[#062A31]',
 };
-const scoreColor = (s: number) => (s >= 80 ? 'text-[#0B4F5C]' : s >= 50 ? 'text-[#5C8891]' : 'text-[#8C2B1F]');
+const scoreColor = (s: number) => (s >= 80 ? 'text-[#062A31]' : s >= 50 ? 'text-[#5C8891]' : 'text-[#8C2B1F]');
 
 export default function SupplierListView() {
   const [mode, setMode] = useState<'list' | 'detail'>('list');

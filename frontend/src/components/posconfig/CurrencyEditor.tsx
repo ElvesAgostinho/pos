@@ -9,7 +9,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 function Fieldset({ title, children }: { title: string; children: any }) {
   return (
     <fieldset className="px-4 pb-3 pt-1 min-w-0" style={{ border: '4px groove #CFE3E6' }}>
-      <legend className="text-[12px] text-[#06333C] px-1">{title}</legend>
+      <legend className="text-[12px] text-[#041F24] px-1">{title}</legend>
       <div className="space-y-2">{children}</div>
     </fieldset>
   );
@@ -17,7 +17,7 @@ function Fieldset({ title, children }: { title: string; children: any }) {
 function Row({ label, children, w = 'w-[150px]' }: { label: string; children: any; w?: string }) {
   return (
     <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className={`${w} flex-shrink-0 text-[#06333C]`}>{label}</span>
+      <span className={`${w} flex-shrink-0 text-[#041F24]`}>{label}</span>
       {children}
     </label>
   );
@@ -86,7 +86,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Nova moeda' : `A editar ${d.code}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Nova moeda' : `A editar ${d.code}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -99,7 +99,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
                 maxLength={8} className={`${inp} flex-1`} style={inputStyle} />
             </Row>
             <label className="flex items-start gap-3 text-[12px]">
-              <span className="w-[110px] flex-shrink-0 text-[#06333C] pt-1">Descrição:</span>
+              <span className="w-[110px] flex-shrink-0 text-[#041F24] pt-1">Descrição:</span>
               <textarea value={d.name || ''} onChange={(e) => set('name', e.target.value)} rows={3}
                 className={`${inp} flex-1`} style={inputStyle} />
             </label>
@@ -119,7 +119,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
               Imprimir nos documentos de POS
             </label>
             {d.is_local && (
-              <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1">
+              <div className="text-[11px] text-[#062A31] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1">
                 Só pode haver <b>uma</b> moeda local — ao gravar, as outras deixam de o ser.
                 É nela que a contabilidade fecha.
               </div>
@@ -200,7 +200,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
 
       <Toolbar actions={[
         ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', color: '#062A31', onClick: () => setHist(true) }]),
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
@@ -221,7 +221,7 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
       <div className="bg-[#F7FAFA] border border-[#5C8891] w-[1000px] max-w-[95vw] h-[65vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+        <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
           <span>{code} - Histórico</span>
           <button onClick={onClose} className="w-5 h-5 bg-[#B0392B] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
         </div>

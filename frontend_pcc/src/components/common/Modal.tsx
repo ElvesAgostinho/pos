@@ -17,7 +17,7 @@ export default function Modal({ title, isOpen, onClose, children, width = 'w-[60
       <div className={`${width} bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl flex flex-col`}>
         {/* Title Bar */}
         <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF4F5] border-b border-[#7FA9B1] cursor-default select-none">
-          <span className="text-xs font-bold text-[#06333C]">{title}</span>
+          <span className="text-xs font-bold text-[#041F24]">{title}</span>
           <button 
             onClick={onClose}
             className="p-0.5 hover:bg-[#B0392B] hover:text-white rounded-sm text-gray-700"

@@ -113,7 +113,7 @@ const CustomerLogin: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4"
-      style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif", background: loginBg ? undefined : 'linear-gradient(135deg,#5C8891 0%,#06333C 100%)' }}>
+      style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif", background: loginBg ? undefined : 'linear-gradient(135deg,#5C8891 0%,#041F24 100%)' }}>
       {loginBg && <img src={loginBg} alt="" className="fixed inset-0 w-full h-full object-cover -z-10" />}
       {loginBg && <div className="fixed inset-0 bg-black/30 -z-10" />}
 
@@ -130,7 +130,7 @@ const CustomerLogin: React.FC = () => {
           <div className="hidden md:flex w-64 flex-shrink-0 flex-col items-center justify-center gap-4 p-6 border-r border-[#CFE3E6]"
             style={{ background: loginBg ? 'rgba(255,255,255,0.06)' : `linear-gradient(160deg, ${shade(barColor, 12)} 0%, ${shade(barColor, -24)} 100%)` }}>
             {logo ? <img src={logo} alt="Logo" className="max-h-24 max-w-[180px] object-contain" />
-              : <div className="text-5xl font-black"><span className="text-[#0B4F5C]">M</span><span className="text-white">L</span></div>}
+              : <div className="text-5xl font-black"><span className="text-[#062A31]">M</span><span className="text-white">L</span></div>}
             <div className="text-center text-white">
               <div className="text-lg font-bold leading-tight">{company}</div>
               <div className="text-[11px] opacity-80 mt-1">{erpName}</div>
@@ -201,7 +201,7 @@ const CustomerLogin: React.FC = () => {
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Memorizar utilizador</label>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} /> Entrar automaticamente</label>
                 <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
-                  className="flex items-center gap-1 text-[#0B4F5C] hover:underline pt-1">
+                  className="flex items-center gap-1 text-[#062A31] hover:underline pt-1">
                   <KeyRound size={12} /> Esqueci-me da password
                 </button>
               </div>
@@ -230,7 +230,7 @@ const CustomerLogin: React.FC = () => {
           <div className="flex-1" />
           <span className="flex items-center gap-1">
             <Wifi size={12} className={online === false ? 'text-[#8C2B1F]' : 'text-[#5C8891]'} />
-            Ligação: <b className={online === false ? 'text-[#8C2B1F]' : 'text-[#0B4F5C]'}>{online === null ? '…' : online ? 'Online' : 'Offline'}</b>
+            Ligação: <b className={online === false ? 'text-[#8C2B1F]' : 'text-[#062A31]'}>{online === null ? '…' : online ? 'Online' : 'Offline'}</b>
           </span>
         </div>
       </div>
@@ -285,7 +285,7 @@ const CustomerLogin: React.FC = () => {
                   className="w-full h-9 px-2 bg-white border border-[#7FA9B1] outline-none" />
               </label>
               {resetMsg && (
-                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-[#0B4F5C] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
+                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-[#062A31] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
                   {resetMsg.text}
                 </div>
               )}

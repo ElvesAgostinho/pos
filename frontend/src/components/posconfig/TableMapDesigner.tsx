@@ -56,7 +56,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
     setTables([...tables, {
       table_number: `M${n}`, shape, pos_x: 40, pos_y: 40,
       width: shape === 'ROUND' ? 100 : 90, height: shape === 'ROUND' ? 100 : 110,
-      color: '#0B4F5C', text_color: '#FFFFFF', seats: 4,
+      color: '#062A31', text_color: '#FFFFFF', seats: 4,
       online_reservation: false, min_seats: 0, max_seats: 0, preferred_seats: 0,
     }]);
     setSel(tables.length);
@@ -114,7 +114,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
   const Btn = ({ onClick, children, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-3 py-1.5 bg-[#06333C] text-white text-[12px] hover:bg-[#0B4F5C] disabled:opacity-35">
+      className="flex items-center gap-2 px-3 py-1.5 bg-[#041F24] text-white text-[12px] hover:bg-[#062A31] disabled:opacity-35">
       {children}
     </button>
   );
@@ -122,7 +122,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-6" onClick={onClose}>
       <div className="bg-[#F7FAFA] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#06333C' }}>
+        <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#041F24' }}>
           <span>{mode === 'online' ? 'Mesas - Online' : 'Mesas'} — {sector.name}</span>
           <button onClick={onClose} className="text-white"><Glyph icon="✕" size={16} /></button>
         </div>
@@ -150,15 +150,15 @@ export default function TableMapDesigner({ sector, mode, onClose }:
               <div className="flex gap-2 p-3 border-b border-[#EEF4F5]">
                 {[['SQUARE', 'rounded-none w-12 h-12'], ['RECT', 'rounded-none w-12 h-9'], ['ROUND', 'rounded-full w-12 h-12']].map(([shape, cls]) => (
                   <button key={shape} onClick={() => addTable(shape)} title="Arraste para a sala"
-                    className={`${cls} border border-[#06333C]`} style={{ background: '#0B4F5C' }} />
+                    className={`${cls} border border-[#041F24]`} style={{ background: '#062A31' }} />
                 ))}
               </div>
 
               <div className="p-3 space-y-2 text-[12px]">
                 <button onClick={() => sel !== null && upd(sel, { table_number: prompt('Número da mesa:', S?.table_number) || S.table_number })}
-                  disabled={sel === null} className="w-full py-1.5 bg-[#06333C] text-white disabled:opacity-35">Alterar número</button>
+                  disabled={sel === null} className="w-full py-1.5 bg-[#041F24] text-white disabled:opacity-35">Alterar número</button>
                 <button onClick={() => sel !== null && upd(sel, { name: prompt('Texto da mesa:', S?.name || '') || '' })}
-                  disabled={sel === null} className="w-full py-1.5 bg-[#06333C] text-white disabled:opacity-35">Alterar texto</button>
+                  disabled={sel === null} className="w-full py-1.5 bg-[#041F24] text-white disabled:opacity-35">Alterar texto</button>
 
                 <label className="flex items-center gap-2"><input type="checkbox" checked={showNums} onChange={(e) => setShowNums(e.target.checked)} className="w-4 h-4" />Visualizar números</label>
 
@@ -173,7 +173,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
                 {S && (
                   <div className="pt-2 border-t border-[#EEF4F5] space-y-1.5">
-                    <div className="font-bold text-[#0B4F5C]">Mesa {S.table_number}</div>
+                    <div className="font-bold text-[#062A31]">Mesa {S.table_number}</div>
                     <label className="flex items-center gap-2">Cor:
                       <input type="color" value={S.color} onChange={(e) => upd(sel!, { color: e.target.value })} className="w-9 h-7 border border-[#7FA9B1]" />
                     </label>
@@ -202,7 +202,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                   left: t.pos_x, top: t.pos_y, width: t.width, height: t.height,
                   background: t.color,
                   borderRadius: t.shape === 'ROUND' ? '50%' : 0,
-                  outline: sel === i ? '3px solid #0B4F5C' : 'none',
+                  outline: sel === i ? '3px solid #062A31' : 'none',
                   color: txt,
                 }}>
                 {mode === 'design' && (
@@ -265,7 +265,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
         </div>
 
         <Toolbar actions={[
-          { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+          { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
           { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
         ]} />
       </div>

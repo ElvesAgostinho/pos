@@ -73,14 +73,14 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[640px] max-h-[80vh] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl flex flex-col">
-        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #0B4F5C, #06333C)' }}>
+        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #062A31, #041F24)' }}>
           <span className="flex items-center gap-1.5"><Wallet size={13} /> Conta — {folio?.confirmation}</span>
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>
 
         {folio?.sibling_folios?.length > 0 && (
           <div className="flex gap-1 px-2 py-1 bg-[#F7FAFA] border-b border-[#CFE3E6]">
-            <button onClick={() => setFolioId(folio.id)} className="px-2 py-0.5 text-[10px] font-bold bg-[#0B4F5C] text-white">{folio.label}</button>
+            <button onClick={() => setFolioId(folio.id)} className="px-2 py-0.5 text-[10px] font-bold bg-[#062A31] text-white">{folio.label}</button>
             {folio.sibling_folios.map((s: any) => (
               <button key={s.id} onClick={() => setFolioId(s.id)} className="px-2 py-0.5 text-[10px] font-bold bg-white border border-[#CFE3E6] hover:bg-[#F7FAFA]">{s.label}</button>
             ))}
@@ -89,7 +89,7 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
 
         <div className="px-3 py-2 bg-white border-b border-[#EEF4F5] flex items-center justify-between text-[11px]">
           <span>{folio?.label} · {folio?.status_display} · {folio?.room_number ? `Quarto ${folio.room_number}` : ''}</span>
-          <span className="font-bold text-[14px] text-[#0B4F5C]">Saldo: {folio?.balance}</span>
+          <span className="font-bold text-[14px] text-[#062A31]">Saldo: {folio?.balance}</span>
         </div>
 
         <div className="flex-1 overflow-auto">
@@ -100,7 +100,7 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
             { header: 'Valor', accessor: (r: any) => r.amount, width: '13%' },
             { header: '', accessor: (r: any) => (r.is_void || r.charge_type === 'PAYMENT') ? null : (
               <div className="flex gap-1">
-                <button title="Transferir" onClick={() => transferCharge(r.id)} className="text-[#0B4F5C] hover:text-[#062A31]"><ArrowRightLeft size={12} /></button>
+                <button title="Transferir" onClick={() => transferCharge(r.id)} className="text-[#062A31] hover:text-[#062A31]"><ArrowRightLeft size={12} /></button>
                 <button title="Estornar" onClick={() => reverseCharge(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Undo2 size={12} /></button>
               </div>
             ), width: '12%' },

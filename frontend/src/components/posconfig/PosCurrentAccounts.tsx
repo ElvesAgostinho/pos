@@ -62,7 +62,7 @@ export default function PosCurrentAccounts() {
 
   const Campo = ({ k, label }: any) => (
     <div className="flex items-center gap-2">
-      <span className="text-[12px] text-[#06333C] w-[100px]">{label}</span>
+      <span className="text-[12px] text-[#041F24] w-[100px]">{label}</span>
       <input value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
         onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
         className={`${inp} w-[190px]`} style={inputStyle} />
@@ -74,7 +74,7 @@ export default function PosCurrentAccounts() {
     const porLiquidar = det.documents.filter((d: any) => !d.settled && !d.rectifying);
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-3 py-2 bg-[#F7FAFA] text-[#0B4F5C] text-[13px] font-bold border-b border-[#CFE3E6] flex items-center gap-3">
+        <div className="px-3 py-2 bg-[#F7FAFA] text-[#062A31] text-[13px] font-bold border-b border-[#CFE3E6] flex items-center gap-3">
           <span>{det.entity.name} — [{det.entity.code}] NIF {det.entity.tax_id || '—'}</span>
           {det.entity.blocked && (
             <span className="px-2 py-0.5 bg-[#B0392B] text-white text-[11px]">
@@ -105,7 +105,7 @@ export default function PosCurrentAccounts() {
                     <td className="px-2 py-1 text-right font-bold">{money(d.total)}</td>
                     <td className="px-2 py-1">
                       <span className={`px-2 py-0.5 text-[11px] font-semibold ${d.settled
-                        ? 'bg-[#F7FAFA] text-[#0B4F5C]' : 'bg-[#F7FAFA] text-[#B0392B]'}`}>
+                        ? 'bg-[#F7FAFA] text-[#062A31]' : 'bg-[#F7FAFA] text-[#B0392B]'}`}>
                         {d.settled ? 'Liquidado' : 'Por receber'}
                       </span>
                     </td>
@@ -113,13 +113,13 @@ export default function PosCurrentAccounts() {
                       {!d.settled && !d.rectifying && (
                         <>
                           <button onClick={() => acao.mutate({ id: conta, action: 'settle', document: d.id })}
-                            className="text-[11px] text-[#0B4F5C] hover:underline">Receber</button>
+                            className="text-[11px] text-[#062A31] hover:underline">Receber</button>
                           <button
                             disabled={Number(det.advance_balance) < Number(d.total)}
                             title={Number(det.advance_balance) < Number(d.total)
                               ? 'O adiantamento não chega' : 'Liquidar com o depósito da entidade'}
                             onClick={() => acao.mutate({ id: conta, action: 'settle', document: d.id, from_deposit: true })}
-                            className="text-[11px] text-[#0B4F5C] hover:underline ml-3 disabled:text-[#CFE3E6] disabled:no-underline">
+                            className="text-[11px] text-[#062A31] hover:underline ml-3 disabled:text-[#CFE3E6] disabled:no-underline">
                             Usar depósito
                           </button>
                         </>
@@ -151,7 +151,7 @@ export default function PosCurrentAccounts() {
                 const v = (document.getElementById('dep') as HTMLInputElement).value;
                 const m = (document.getElementById('depm') as HTMLInputElement).value;
                 acao.mutate({ id: conta, action: 'deposit', kind: 'IN', amount: v, reason: m });
-              }} className="px-3 py-1.5 bg-[#0B4F5C] text-white text-[12px]">Depositar</button>
+              }} className="px-3 py-1.5 bg-[#062A31] text-white text-[12px]">Depositar</button>
               <button onClick={() => {
                 const v = (document.getElementById('dep') as HTMLInputElement).value;
                 acao.mutate({ id: conta, action: 'deposit', kind: 'OUT', amount: v, reason: 'Devolução' });
@@ -164,7 +164,7 @@ export default function PosCurrentAccounts() {
                     <td className="px-2 py-1">{new Date(x.created_at).toLocaleDateString('pt-PT')}</td>
                     <td className="px-2 py-1">{x.kind_display}</td>
                     <td className="px-2 py-1 text-[#5C8891]">{x.reason || ''}</td>
-                    <td className={`px-2 py-1 text-right font-bold ${x.kind === 'IN' ? 'text-[#0B4F5C]' : 'text-[#B0392B]'}`}>
+                    <td className={`px-2 py-1 text-right font-bold ${x.kind === 'IN' ? 'text-[#062A31]' : 'text-[#B0392B]'}`}>
                       {x.kind === 'IN' ? '+' : '−'}{money(x.amount)}
                     </td>
                   </tr>
@@ -187,7 +187,7 @@ export default function PosCurrentAccounts() {
     <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
       <div className="flex gap-3 p-3">
         <fieldset className="bg-white px-3 pb-3 w-[220px]" style={{ border: '4px groove #CFE3E6' }}>
-          <legend className="text-[12px] text-[#06333C] px-1">Tipo de pesquisa</legend>
+          <legend className="text-[12px] text-[#041F24] px-1">Tipo de pesquisa</legend>
           {[['CC', 'Clientes (Conta Corrente)'], ['ALL', 'Clientes (Todos)']].map(([k, t]) => (
             <label key={k} className="flex items-start gap-2 py-1 text-[12px] cursor-pointer">
               <input type="radio" checked={scope === k} onChange={() => setScope(k)} className="mt-0.5" />
@@ -197,7 +197,7 @@ export default function PosCurrentAccounts() {
         </fieldset>
 
         <fieldset className="bg-white flex-1 px-3 pb-3" style={{ border: '4px groove #CFE3E6' }}>
-          <legend className="text-[12px] text-[#06333C] px-1">Critérios de pesquisa</legend>
+          <legend className="text-[12px] text-[#041F24] px-1">Critérios de pesquisa</legend>
           <div className="flex gap-6">
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-[12px] cursor-pointer">
@@ -205,7 +205,7 @@ export default function PosCurrentAccounts() {
                 Só com depósitos
               </label>
               <div className="flex items-center gap-2">
-                <span className="text-[12px] text-[#06333C] w-[100px]">Tipo de entidade:</span>
+                <span className="text-[12px] text-[#041F24] w-[100px]">Tipo de entidade:</span>
                 <select value={f.entity_type ?? ''} onChange={(e) => setF({ ...f, entity_type: e.target.value })}
                   className={`${inp} w-[170px]`} style={inputStyle}>
                   <option value="">Todos</option>
@@ -227,7 +227,7 @@ export default function PosCurrentAccounts() {
         </fieldset>
 
         <button onClick={pesquisar}
-          className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#06333C] text-white hover:bg-[#062A31]">
+          className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#041F24] text-white hover:bg-[#062A31]">
           <Glyph icon="🔄" size={26} />
           <span className="text-[13px]">Pesquisar</span>
         </button>
@@ -252,11 +252,11 @@ export default function PosCurrentAccounts() {
                 <td className="px-2 py-1.5">{r.contact || '—'}</td>
                 <td className="px-2 py-1.5 text-[#5C8891]">{r.other || '—'}</td>
                 <td className="px-2 py-1.5 text-right font-bold"
-                  style={{ color: Number(r.cc_balance) > 0 ? '#B0392B' : '#06333C' }}>
+                  style={{ color: Number(r.cc_balance) > 0 ? '#B0392B' : '#041F24' }}>
                   {money(r.cc_balance)}
                 </td>
                 <td className="px-2 py-1.5 text-right font-bold"
-                  style={{ color: Number(r.advance_balance) > 0 ? '#0B4F5C' : '#06333C' }}>
+                  style={{ color: Number(r.advance_balance) > 0 ? '#062A31' : '#041F24' }}>
                   {money(r.advance_balance)}
                 </td>
               </tr>
@@ -280,13 +280,13 @@ export default function PosCurrentAccounts() {
         <span className="ml-auto">
           Por receber: <b className="text-[#B0392B]">{money(data?.total_due || 0)} Kz</b>
           <span className="mx-2 text-[#EEF4F5]">|</span>
-          Adiantado: <b className="text-[#0B4F5C]">{money(data?.total_advance || 0)} Kz</b>
+          Adiantado: <b className="text-[#062A31]">{money(data?.total_advance || 0)} Kz</b>
         </span>
       </div>
 
       <Toolbar actions={[
         { label: 'Contas Correntes', icon: '▸', color: '#5C8891', disabled: !sel, onClick: () => setConta(sel) },
-        { label: 'Cash Advance', icon: '▸', color: '#0B4F5C', disabled: !sel, onClick: () => setConta(sel) },
+        { label: 'Cash Advance', icon: '▸', color: '#062A31', disabled: !sel, onClick: () => setConta(sel) },
       ]} right={
         <span className="flex items-center gap-2">
           <span className="text-[11px] text-[#5C8891]">

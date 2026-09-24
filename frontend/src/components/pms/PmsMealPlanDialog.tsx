@@ -42,7 +42,7 @@ export default function PmsMealPlanDialog({ reservation: r, onClose }: { reserva
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
       <div className="w-[97vw] h-[88vh] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           Mapa de Refeições
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
@@ -97,7 +97,7 @@ export default function PmsMealPlanDialog({ reservation: r, onClose }: { reserva
               </table>
             </div>
             <div className="px-2 py-1.5 border-t border-[#CFE3E6] bg-[#F7FAFA] flex-shrink-0">
-              <button onClick={() => setShowEdit(true)} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#0B4F5C] hover:underline">
+              <button onClick={() => setShowEdit(true)} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#062A31] hover:underline">
                 <span className="w-5 h-5 rounded-full flex items-center justify-center text-white" style={{ background: '#5C8891' }}><Pencil size={11} /></span>
                 Editar
               </button>
@@ -132,7 +132,7 @@ export default function PmsMealPlanDialog({ reservation: r, onClose }: { reserva
           </div>
         </div>
         <div className="flex justify-end px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#06333C] hover:text-black">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
@@ -181,7 +181,7 @@ function MealEditDialog({ reservation: r, onClose, onSaved }: { reservation: any
   return (
     <div className="fixed inset-0 z-[9300] flex items-center justify-center bg-black/40">
       <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
           Refeição
           <button onClick={onClose} className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={12} strokeWidth={3} /></button>
         </div>
@@ -208,11 +208,11 @@ function MealEditDialog({ reservation: r, onClose, onSaved }: { reservation: any
           </div>
         </div>
         <div className="flex items-center gap-2 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
-          <button onClick={gravar} disabled={saving} className="flex items-center gap-2 text-[12px] font-semibold text-[#06333C] disabled:opacity-50">
+          <button onClick={gravar} disabled={saving} className="flex items-center gap-2 text-[12px] font-semibold text-[#041F24] disabled:opacity-50">
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: '#5C8891' }}>✓</span>
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#06333C] hover:text-black ml-auto">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black ml-auto">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>

@@ -20,7 +20,7 @@ export default function WhLotsView() {
       { onSuccess: () => setF({ item: '', warehouse: f.warehouse, lot_number: '', quantity: '', expiry_date: '' }) });
   };
 
-  const tone = (d: number | null) => d == null ? '' : d < 0 ? 'text-[#8C2B1F] font-bold' : d <= 30 ? 'text-[#0B4F5C] font-bold' : 'text-gray-700';
+  const tone = (d: number | null) => d == null ? '' : d < 0 ? 'text-[#8C2B1F] font-bold' : d <= 30 ? 'text-[#062A31] font-bold' : 'text-gray-700';
 
   return (
     <ClassicWindow title="Lotes & Validades (FEFO)" icon={<CalendarX size={14} className="text-gray-300" />}

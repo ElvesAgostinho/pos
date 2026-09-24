@@ -24,7 +24,7 @@ const OPCOES: [string, string][] = [
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[110px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[110px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -82,7 +82,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo monitor' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo monitor' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -124,7 +124,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
           </Box>
 
           <div className="pt-2">
-            <div className="text-[12px] font-semibold text-[#06333C] mb-1">Botões:</div>
+            <div className="text-[12px] font-semibold text-[#041F24] mb-1">Botões:</div>
             <div style={{ border: '4px groove #CFE3E6' }}>
               {BOTOES.map(([k, l, ajuda]) => (
                 <label key={k} className="flex items-start gap-2 px-2 py-1.5 border-b border-[#F7FAFA] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
@@ -134,14 +134,14 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               ))}
             </div>
             {bts.length === 0 && (
-              <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1 mt-1">
+              <div className="text-[11px] text-[#062A31] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1 mt-1">
                 Sem botões, o cozinheiro não consegue avançar nenhum pedido.
               </div>
             )}
           </div>
 
           <div className="pt-2">
-            <div className="text-[12px] font-semibold text-[#06333C] mb-1">Opções:</div>
+            <div className="text-[12px] font-semibold text-[#041F24] mb-1">Opções:</div>
             <div style={{ border: '4px groove #CFE3E6' }}>
               {OPCOES.map(([k, l]) => (
                 <label key={k} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F7FAFA] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
@@ -175,7 +175,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
           </Row>
 
           <div className="mt-3" style={{ border: '4px groove #CFE3E6' }}>
-            <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] border-b border-[#CFE3E6]">
+            <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#062A31] border-b border-[#CFE3E6]">
               Impressoras — as ativas substituem as de origem do pedido
             </div>
             <table className="w-full text-[12px] border-collapse">
@@ -209,7 +209,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

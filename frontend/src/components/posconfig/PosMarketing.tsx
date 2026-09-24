@@ -6,7 +6,7 @@ import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 import EntityEditor from './EntityEditor';
 
 const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
-const lbl = 'text-[12px] text-[#06333C] w-[120px] flex-shrink-0';
+const lbl = 'text-[12px] text-[#041F24] w-[120px] flex-shrink-0';
 
 /** Lista simples de um endpoint (as tabelas que o POS já tem). */
 function useList(ep: string, key: string) {
@@ -23,7 +23,7 @@ function useList(ep: string, key: string) {
 const Painel = ({ title, children, right }: any) => (
   <div className="bg-white" style={{ border: '4px groove #CFE3E6' }}>
     <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF4F5] border-b border-[#CFE3E6]">
-      <span className="text-[12px] font-bold text-[#06333C]">{title}</span>
+      <span className="text-[12px] font-bold text-[#041F24]">{title}</span>
       {right}
     </div>
     {children}
@@ -155,14 +155,14 @@ export function EntitySearch() {
               </div>
             </div>
             {req.size > 0 && (
-              <div className="px-4 pb-3 text-[11px] text-[#0B4F5C]">
+              <div className="px-4 pb-3 text-[11px] text-[#062A31]">
                 Obrigatórios nesta casa: {regras.filter((r: any) => r.is_required).map((r: any) => r.label).join(', ')}.
               </div>
             )}
           </Painel>
         </div>
         <Toolbar actions={[
-          { label: 'Gravar', icon: '✔', color: '#0B4F5C', onClick: () => gravar.mutate(edit) },
+          { label: 'Gravar', icon: '✔', color: '#062A31', onClick: () => gravar.mutate(edit) },
           { label: 'Fechar', icon: '✖', color: '#5C8891', onClick: () => setEdit(null) },
         ]} />
       </div>
@@ -187,7 +187,7 @@ export function EntitySearch() {
             {[['S', 'Pesquisa simples'], ['A', 'Pesquisa Avançada']].map(([k, t]) => (
               <button key={k} onClick={() => setTab(k as any)}
                 className={`px-4 py-1.5 text-[12px] border-b-2 ${tab === k
-                  ? 'border-[#5C8891] font-bold text-[#0B4F5C] bg-white'
+                  ? 'border-[#5C8891] font-bold text-[#062A31] bg-white'
                   : 'border-transparent text-[#5C8891] hover:bg-[#F7FAFA]'}`}>
                 {t}
               </button>
@@ -324,7 +324,7 @@ export function EntitySearch() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setObrig(false)} />
           <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#5C8891] shadow-2xl w-[440px]">
-            <div className="px-3 py-2 bg-[#06333C] text-white text-[13px] font-bold flex justify-between">
+            <div className="px-3 py-2 bg-[#041F24] text-white text-[13px] font-bold flex justify-between">
               Campos obrigatórios <button onClick={() => setObrig(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[50vh] overflow-auto">
@@ -349,12 +349,12 @@ export function EntitySearch() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setDups(false)} />
           <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#5C8891] shadow-2xl w-[620px]">
-            <div className="px-3 py-2 bg-[#06333C] text-white text-[13px] font-bold flex justify-between">
+            <div className="px-3 py-2 bg-[#041F24] text-white text-[13px] font-bold flex justify-between">
               Controlo de duplicação <button onClick={() => setDups(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[55vh] overflow-auto text-[12px]">
               {(duplicados?.groups || []).length === 0 ? (
-                <div className="text-center text-[#0B4F5C] py-8 font-bold flex items-center justify-center gap-1.5">
+                <div className="text-center text-[#062A31] py-8 font-bold flex items-center justify-center gap-1.5">
                   <Glyph icon="✔" size={15} /> Nenhuma entidade repetida.
                 </div>
               ) : (duplicados.groups.map((g: any, i: number) => (
@@ -374,7 +374,7 @@ export function EntitySearch() {
         { label: 'Adicionar', icon: '➕', onClick: () => setEdit({ is_blocked: false }) },
         { label: 'Editar', icon: '✏', disabled: !sel, onClick: () => setEdit({ ...rows.find((r) => r.id === sel) }) },
         { label: 'Campos obrigatórios', icon: '☑', color: '#5C8891', onClick: () => setObrig(true) },
-        { label: 'Controlo de duplicação', icon: '⧉', color: '#0B4F5C', onClick: () => setDups(true) },
+        { label: 'Controlo de duplicação', icon: '⧉', color: '#062A31', onClick: () => setDups(true) },
       ]} />
     </div>
   );
@@ -493,7 +493,7 @@ export function EventRequests() {
                   rows={3} className={`${inp} w-[620px]`} style={inputStyle} />
               </div>
             </div>
-            <div className="px-4 pb-3 text-[11px] text-[#0B4F5C]">
+            <div className="px-4 pb-3 text-[11px] text-[#062A31]">
               O <b>Estado da reserva</b> decide se o espaço fica bloqueado: um Confirmado tira a sala do
               mercado e o sistema recusa outro à mesma hora; uma Opção não bloqueia.
               Marcar <b>Respondido</b> tira o pedido da lista de trabalho do comercial.
@@ -501,7 +501,7 @@ export function EventRequests() {
           </Painel>
         </div>
         <Toolbar actions={[
-          { label: 'Gravar', icon: '✔', color: '#0B4F5C', onClick: () => gravar.mutate(edit) },
+          { label: 'Gravar', icon: '✔', color: '#062A31', onClick: () => gravar.mutate(edit) },
           {
             label: 'Cancelar evento', icon: '🚫', disabled: !edit.id,
             onClick: () => {
@@ -521,7 +521,7 @@ export function EventRequests() {
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center gap-3 px-3 py-2 border-b border-[#EEF4F5] bg-[#F7FAFA] text-[12px]">
         <button onClick={exportar} className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7FAFA]">
-          <span className="text-[#0B4F5C]"><Glyph icon="📊" size={15} /></span> Exportar para Excel
+          <span className="text-[#062A31]"><Glyph icon="📊" size={15} /></span> Exportar para Excel
         </button>
         <span className="ml-2">Estado:</span>
         <select value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1); }}
@@ -547,7 +547,7 @@ export function EventRequests() {
                 <td className="px-2 py-1">{dt(r.created_at)}</td>
                 <td className="px-2 py-1 font-semibold">{r.customer_name || r.contact_name || r.title}</td>
                 <td className="px-2 py-1">
-                  <span className="px-1.5 py-0.5" style={{ background: r.state_bg || '#F7FAFA', color: r.state_fg || '#06333C' }}>
+                  <span className="px-1.5 py-0.5" style={{ background: r.state_bg || '#F7FAFA', color: r.state_fg || '#041F24' }}>
                     {r.space_name}{r.blocks_space && <Glyph icon="🔒" size={11} />}
                   </span>
                 </td>
@@ -559,7 +559,7 @@ export function EventRequests() {
                 <td className="px-2 py-1 text-[#5C8891] max-w-[220px] truncate">{r.notes || ''}</td>
                 <td className="px-2 py-1">
                   <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.answered
-                    ? 'bg-[#F7FAFA] text-[#0B4F5C]' : 'bg-[#F7FAFA] text-[#0B4F5C]'}`}>
+                    ? 'bg-[#F7FAFA] text-[#062A31]' : 'bg-[#F7FAFA] text-[#062A31]'}`}>
                     {r.answered ? 'Respondido' : 'Não Respondido'}
                   </span>
                 </td>

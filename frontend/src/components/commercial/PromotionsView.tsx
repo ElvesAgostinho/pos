@@ -63,7 +63,7 @@ export default function PromotionsView() {
               { header: 'Âmbito', accessor: (r: any) => r.scope === 'ITEM' ? r.item_name : r.scope === 'CATEGORY' ? r.category_name : 'Todos', width: '18%' },
               { header: 'Desconto', accessor: (r: any) => r.discount_type === 'PERCENT' ? `${r.value}%` : `${r.value}`, width: '12%' },
               { header: 'Happy Hour', accessor: (r: any) => r.happy_start && r.happy_end ? `${r.happy_start.slice(0, 5)}–${r.happy_end.slice(0, 5)}` : '—', width: '15%' },
-              { header: 'Agora?', accessor: (r: any) => <span className={r.active_now ? 'text-[#0B4F5C] font-bold' : 'text-gray-400'}>{r.active_now ? 'ATIVA' : 'inativa'}</span>, width: '11%' },
+              { header: 'Agora?', accessor: (r: any) => <span className={r.active_now ? 'text-[#062A31] font-bold' : 'text-gray-400'}>{r.active_now ? 'ATIVA' : 'inativa'}</span>, width: '11%' },
               { header: 'Ligada', accessor: (r: any) => <input type="checkbox" checked={!!r.is_active} onChange={() => update.mutate({ id: r.id, data: { is_active: !r.is_active } })} />, width: '10%' },
               { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '8%' },
             ]}

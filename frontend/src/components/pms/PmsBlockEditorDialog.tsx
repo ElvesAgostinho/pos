@@ -67,7 +67,7 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[900px] max-w-[97vw] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl flex flex-col" style={{ height: 'min(85vh, 700px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           {selId ? `Bloco — ${form.code}` : copyFrom ? 'Copiar Reserva de Grupo' : 'Nova Reserva de Grupo'}
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
@@ -81,7 +81,7 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
         <div className="flex border-b border-[#7FA9B1] bg-[#F7FAFA] flex-shrink-0">
           {TABS.map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-3 py-1.5 text-[11px] font-bold border-r border-[#CFE3E6] ${tab === t ? 'bg-white text-[#0B4F5C]' : 'text-gray-600 hover:bg-white/60'}`}>
+              className={`px-3 py-1.5 text-[11px] font-bold border-r border-[#CFE3E6] ${tab === t ? 'bg-white text-[#062A31]' : 'text-gray-600 hover:bg-white/60'}`}>
               {t}
             </button>
           ))}
@@ -105,7 +105,7 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
               <div className="flex gap-4 items-center col-span-2">
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={form.is_guaranteed} onChange={(e) => setForm({ ...form, is_guaranteed: e.target.checked })} /> Garantido</label>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={form.is_elastic} onChange={(e) => setForm({ ...form, is_elastic: e.target.checked })} /> Elastic block</label>
-                <label className="flex items-center gap-1.5">Cor<input type="color" value={form.color || '#0B4F5C'} onChange={(e) => setForm({ ...form, color: e.target.value })} className="border border-[#7FA9B1] h-7 w-14" /></label>
+                <label className="flex items-center gap-1.5">Cor<input type="color" value={form.color || '#062A31'} onChange={(e) => setForm({ ...form, color: e.target.value })} className="border border-[#7FA9B1] h-7 w-14" /></label>
               </div>
             </div>
           )}
@@ -166,7 +166,7 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
 
         <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
           <button onClick={onClose} className="px-3 py-1 text-[12px] border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA]">Cancelar</button>
-          <button onClick={save} className="px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#0B4F5C' }}>Gravar</button>
+          <button onClick={save} className="px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#062A31' }}>Gravar</button>
         </div>
       </div>
     </div>

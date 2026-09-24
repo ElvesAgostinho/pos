@@ -49,7 +49,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
       footer={<>
         <div className="flex items-center gap-2">
           {!paid && hasNewLines && <ClassicButton icon={ChefHat} label="Enviar p/ Cozinha" onClick={() => fire.mutate(ticketId)} />}
-          <span className="text-[11px]">Total: <b className="text-[#5C8891] text-[13px]">{fmt(ticket?.grand_total)}</b> · Saldo: <b className={Number(ticket?.balance_due) > 0 ? 'text-[#8C2B1F]' : 'text-[#0B4F5C]'}>{fmt(ticket?.balance_due)}</b></span>
+          <span className="text-[11px]">Total: <b className="text-[#5C8891] text-[13px]">{fmt(ticket?.grand_total)}</b> · Saldo: <b className={Number(ticket?.balance_due) > 0 ? 'text-[#8C2B1F]' : 'text-[#062A31]'}>{fmt(ticket?.balance_due)}</b></span>
         </div>
         <ClassicButton icon={ArrowLeft} label="Voltar" onClick={onBack} />
       </>}
@@ -121,7 +121,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
               </div>
             </div>
           ) : (
-            <div className="border-t border-[#7FA9B1] bg-[#F7FAFA] p-2 text-center text-[#0B4F5C] font-bold text-[12px] flex items-center justify-center gap-1"><Check size={13} strokeWidth={3} /> Ticket pago</div>
+            <div className="border-t border-[#7FA9B1] bg-[#F7FAFA] p-2 text-center text-[#062A31] font-bold text-[12px] flex items-center justify-center gap-1"><Check size={13} strokeWidth={3} /> Ticket pago</div>
           )}
         </div>
       </div>
@@ -171,7 +171,7 @@ export default function SalesView() {
               { header: 'Ticket', accessor: 'ticket_number', width: '20%' },
               { header: 'Outlet', accessor: 'outlet_name', width: '24%' },
               { header: 'Operador', accessor: 'operator_name', width: '18%' },
-              { header: 'Estado', accessor: (r: POSTicket) => <span className={r.status === 'PAID' ? 'text-[#0B4F5C] font-bold' : r.status === 'VOID' ? 'text-gray-400' : 'text-[#5C8891] font-bold'}>{r.status_display}</span>, width: '12%' },
+              { header: 'Estado', accessor: (r: POSTicket) => <span className={r.status === 'PAID' ? 'text-[#062A31] font-bold' : r.status === 'VOID' ? 'text-gray-400' : 'text-[#5C8891] font-bold'}>{r.status_display}</span>, width: '12%' },
               { header: 'Total', accessor: (r: POSTicket) => fmt(r.grand_total), width: '12%' },
               { header: '', accessor: (r: POSTicket) => r.status === 'PAID' ? (
                 <button className="text-[#8C2B1F] hover:underline text-[11px]" title="Anular venda (emite Nota de Crédito)"

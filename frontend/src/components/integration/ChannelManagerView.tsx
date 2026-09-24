@@ -6,8 +6,8 @@ import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb,
 
 const btn = 'px-3 py-1.5 text-[12px] border border-[#CFE3E6] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] active:translate-y-px flex items-center gap-1.5';
 const PROVIDERS: [string, string][] = [['BOOKING', 'Booking.com'], ['EXPEDIA', 'Expedia'], ['AIRBNB', 'Airbnb'], ['AGODA', 'Agoda'], ['HOTELS', 'Hotels.com'], ['TRIVAGO', 'Trivago'], ['GOOGLE', 'Google Hotels'], ['OTHER', 'Outro']];
-const PROV_COLOR: Record<string, string> = { BOOKING: '#0B4F5C', EXPEDIA: '#06333C', AIRBNB: '#B0392B', AGODA: '#0B4F5C', HOTELS: '#B0392B', TRIVAGO: '#B0392B', GOOGLE: '#7FA9B1', OTHER: '#5C8891' };
-const ST_COLOR: Record<string, string> = { CONNECTED: '#0B4F5C', ERROR: '#B0392B', DISABLED: '#7FA9B1' };
+const PROV_COLOR: Record<string, string> = { BOOKING: '#062A31', EXPEDIA: '#041F24', AIRBNB: '#B0392B', AGODA: '#062A31', HOTELS: '#B0392B', TRIVAGO: '#B0392B', GOOGLE: '#7FA9B1', OTHER: '#5C8891' };
+const ST_COLOR: Record<string, string> = { CONNECTED: '#062A31', ERROR: '#B0392B', DISABLED: '#7FA9B1' };
 
 export default function ChannelManagerView() {
   const qc = useQueryClient();
@@ -99,7 +99,7 @@ export default function ChannelManagerView() {
                 <span className="font-bold">{l.channel_name}</span>
                 <span>{l.direction === 'PUSH' ? '↑ Enviado' : '↓ Recebido'}</span>
                 <span>{l.event}</span>
-                <span className="truncate" title={l.summary}>{l.summary} {l.status.includes('SIMULADO') && <em className="text-[#0B4F5C]">· {l.status}</em>}</span>
+                <span className="truncate" title={l.summary}>{l.summary} {l.status.includes('SIMULADO') && <em className="text-[#062A31]">· {l.status}</em>}</span>
                 <span className="text-gray-500">{new Date(l.created_at).toLocaleString('pt-PT')}</span>
               </div>
             ))}

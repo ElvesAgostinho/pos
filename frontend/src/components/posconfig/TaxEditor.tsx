@@ -57,7 +57,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo imposto' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo imposto' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -65,22 +65,22 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
         <Box title="Identificação" className="max-w-[860px]">
         <div className="space-y-2 pt-1.5">
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[160px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[160px] text-[#041F24]">Código:<span className="text-[#B0392B]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[160px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[160px] text-[#041F24]">Descrição:<span className="text-[#B0392B]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
               className={`${inp} flex-1`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[160px] text-[#06333C]">Conta de Contabilidade:</span>
+            <span className="w-[160px] text-[#041F24]">Conta de Contabilidade:</span>
             <input value={d.accounting_account || ''} onChange={(e) => set('accounting_account', e.target.value)}
               placeholder="34.3.1 (IVA liquidado)" className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[160px] text-[#06333C]">Classe IVA:</span>
+            <span className="w-[160px] text-[#041F24]">Classe IVA:</span>
             <input value={d.tax_class || ''} onChange={(e) => set('tax_class', e.target.value)}
               placeholder="NOR · RED · ISE (SAF-T)" className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
@@ -144,7 +144,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
         </div>
 
         {overlap && (
-          <div className="max-w-[860px] mt-2 px-3 py-2 bg-[#F7FAFA] border border-[#CFE3E6] text-[11px] text-[#0B4F5C]">
+          <div className="max-w-[860px] mt-2 px-3 py-2 bg-[#F7FAFA] border border-[#CFE3E6] text-[11px] text-[#062A31]">
             <b>Atenção:</b> há períodos sobrepostos — duas taxas válidas no mesmo dia.
             O sistema usa a mais recente, mas isto costuma ser um erro de datas.
           </div>
@@ -157,7 +157,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

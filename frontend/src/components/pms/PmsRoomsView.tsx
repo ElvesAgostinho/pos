@@ -6,8 +6,8 @@ import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 
 const STATUS_STYLE: Record<string, string> = {
-  VACANT_CLEAN: 'bg-[#F7FAFA] border-[#CFE3E6] text-[#06333C]',
-  VACANT_DIRTY: 'bg-[#F7FAFA] border-[#CFE3E6] text-[#06333C]',
+  VACANT_CLEAN: 'bg-[#F7FAFA] border-[#CFE3E6] text-[#041F24]',
+  VACANT_DIRTY: 'bg-[#F7FAFA] border-[#CFE3E6] text-[#041F24]',
   OCCUPIED: 'bg-[#F7FAFA] border-[#B0392B] text-[#8C2B1F]',
   OOO: 'bg-[#F7FAFA] border-[#CFE3E6] text-gray-500',
 };
@@ -61,7 +61,7 @@ export default function PmsRoomsView() {
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
           <div className="w-[360px] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl">
-            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #0B4F5C, #06333C)' }}>Novo Quarto</div>
+            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #062A31, #041F24)' }}>Novo Quarto</div>
             <div className="p-3 space-y-2 text-[11px]">
               <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>
               <label className="flex flex-col">Categoria

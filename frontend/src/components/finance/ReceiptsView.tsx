@@ -6,7 +6,7 @@ import { ArrowDownCircle, Plus, Check } from 'lucide-react';
 import { useReceipts, useCreateReceipt, useConfirmReceipt, useAccounts } from '../../hooks/useFinance';
 import { aviso } from '../../ui/dialogo';
 
-const ST: Record<string, string> = { DRAFT: 'text-gray-500', CONFIRMED: 'text-[#0B4F5C] font-bold', CANCELLED: 'text-[#8C2B1F]' };
+const ST: Record<string, string> = { DRAFT: 'text-gray-500', CONFIRMED: 'text-[#062A31] font-bold', CANCELLED: 'text-[#8C2B1F]' };
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function ReceiptsView() {
@@ -46,7 +46,7 @@ export default function ReceiptsView() {
               { header: 'Valor', accessor: (r: any) => Number(r.amount).toFixed(2), width: '14%' },
               { header: 'Data', accessor: 'date', width: '12%' },
               { header: 'Estado', accessor: (r: any) => <span className={ST[r.status] || ''}>{r.status_display}</span>, width: '10%' },
-              { header: '', accessor: (r: any) => r.status === 'DRAFT' ? <button title="Confirmar" onClick={() => confirm.mutate(r.id)} className="text-[#0B4F5C] hover:text-[#062A31]"><Check size={13} /></button> : null, width: '8%' },
+              { header: '', accessor: (r: any) => r.status === 'DRAFT' ? <button title="Confirmar" onClick={() => confirm.mutate(r.id)} className="text-[#062A31] hover:text-[#062A31]"><Check size={13} /></button> : null, width: '8%' },
             ]}
           />
         </div>

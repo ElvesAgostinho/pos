@@ -6,8 +6,8 @@ import { useAudit } from '../../hooks/usePosMgmt';
 import { AUDIT_EVENTS } from '../../api/posmgmt';
 
 const EVENT_COLOR: Record<string, string> = {
-  PAYMENT: 'text-[#0B4F5C]', DOC_ISSUE: 'text-[#5C8891]', TICKET_VOID: 'text-[#8C2B1F]',
-  CASH_CLOSE: 'text-[#0B4F5C]', CASH_OPEN: 'text-[#0B4F5C]', CASH_MOVE: 'text-[#0B4F5C]',
+  PAYMENT: 'text-[#062A31]', DOC_ISSUE: 'text-[#5C8891]', TICKET_VOID: 'text-[#8C2B1F]',
+  CASH_CLOSE: 'text-[#062A31]', CASH_OPEN: 'text-[#062A31]', CASH_MOVE: 'text-[#062A31]',
 };
 
 export default function AuditView() {

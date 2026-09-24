@@ -236,7 +236,7 @@ const ClientsList: React.FC = () => {
                 <td className="py-1 px-2 border-r border-[#F7FAFA] text-center">{client.country}</td>
                 <td className="py-1 px-2 border-r border-[#F7FAFA] text-center">
                   {ultima?.last_ping ? (
-                    <span className={`inline-flex items-center gap-1 ${ultima.is_online ? 'text-[#0B4F5C]' : 'text-gray-500'}`} title={ultima.last_ping}>
+                    <span className={`inline-flex items-center gap-1 ${ultima.is_online ? 'text-[#062A31]' : 'text-gray-500'}`} title={ultima.last_ping}>
                       {ultima.is_online ? <Wifi size={11} /> : <WifiOff size={11} />} {tempoRelativo(ultima.last_ping)}
                     </span>
                   ) : <span className="text-gray-400">nunca</span>}
@@ -269,7 +269,7 @@ const ClientsList: React.FC = () => {
           {(selectedClient.installations || []).length === 0 ? (
             <span className="text-gray-400">Ainda nenhuma sincronização recebida deste cliente.</span>
           ) : (selectedClient.installations || []).map((inst: any) => (
-            <span key={inst.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${inst.is_online ? 'border-[#CFE3E6] bg-[#F7FAFA] text-[#0B4F5C]' : 'border-[#EEF4F5] bg-[#F7FAFA] text-gray-500'}`}>
+            <span key={inst.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${inst.is_online ? 'border-[#CFE3E6] bg-[#F7FAFA] text-[#062A31]' : 'border-[#EEF4F5] bg-[#F7FAFA] text-gray-500'}`}>
               {inst.is_online ? <Wifi size={11} /> : <WifiOff size={11} />}
               <b>{inst.name}</b>{inst.server_ip ? ` · ${inst.server_ip}` : ''}{inst.version ? ` · v${inst.version}` : ''} · {tempoRelativo(inst.last_ping) || 'nunca sincronizou'}
               <button onClick={() => apagarInstalacao(inst.id, inst.name)} title="Apagar esta instalação"
@@ -283,11 +283,11 @@ const ClientsList: React.FC = () => {
         <div className="px-2 py-1.5 bg-white border-b border-[#7FA9B1] text-[11px] flex items-center gap-4 flex-wrap">
           <span className="font-bold text-gray-600">Licenças — {selectedClient.commercial_name}:</span>
           {[...selectedClient.licenses].sort((a: any, b: any) => b.id - a.id).map((lic: any) => (
-            <span key={lic.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${lic.id === activeLicense?.id ? 'border-[#CFE3E6] bg-[#F7FAFA] text-[#0B4F5C]' : 'border-[#EEF4F5] bg-[#F7FAFA] text-gray-500'}`}>
+            <span key={lic.id} className={`inline-flex items-center gap-1 px-2 py-0.5 border ${lic.id === activeLicense?.id ? 'border-[#CFE3E6] bg-[#F7FAFA] text-[#062A31]' : 'border-[#EEF4F5] bg-[#F7FAFA] text-gray-500'}`}>
               {lic.id === activeLicense?.id && <span className="font-bold">ATIVA ·</span>}
               <b>{lic.license_number}</b> · {lic.plan} · {lic.created_at ? new Date(lic.created_at).toLocaleDateString('pt-PT') : '—'}
               <button onClick={() => verLicenseKey(lic.id)} disabled={keyBusy === lic.id} title="Ver / recuperar o license.key"
-                className="text-gray-400 hover:text-[#0B4F5C] ml-1"><Key size={10} /></button>
+                className="text-gray-400 hover:text-[#062A31] ml-1"><Key size={10} /></button>
               <button onClick={() => apagarLicenca(lic)} title="Apagar esta licença"
                 className="text-gray-400 hover:text-[#8C2B1F] ml-1"><Trash2 size={10} /></button>
             </span>
@@ -339,7 +339,7 @@ const ClientsList: React.FC = () => {
       {showProvModal && selectedClient && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
           <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[450px] shadow-md flex flex-col">
-            <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center">
+            <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
               <div className="flex items-center">
                 <Settings size={14} className="mr-2" />
                 <span className="font-bold text-[11px]">Gerar Código de Ativação do Terminal</span>
@@ -370,14 +370,14 @@ const ClientsList: React.FC = () => {
                 <div className="space-y-4 text-[11px] font-sans bg-white border border-[#7FA9B1] p-4">
                   <div className="bg-[#F7FAFA] border border-[#CFE3E6] p-3 text-center mb-4">
                     <Key size={24} className="mx-auto text-[#5C8891] mb-2" />
-                    <p className="font-bold text-[#06333C] text-sm">Chave Gerada e Guardada!</p>
+                    <p className="font-bold text-[#041F24] text-sm">Chave Gerada e Guardada!</p>
                     <p className="text-gray-600 mt-1">Forneça estas credenciais ao cliente ou técnico de instalação.</p>
                   </div>
                   
                   <div className="space-y-3">
                     <div>
                       <label className="block text-gray-500 font-bold mb-1">Terminal ID (Fixo)</label>
-                      <input value={generatedLicense.terminal_id} readOnly className="w-full border border-[#7FA9B1] p-2 bg-[#FFFFFF] font-mono font-bold text-[#06333C]" />
+                      <input value={generatedLicense.terminal_id} readOnly className="w-full border border-[#7FA9B1] p-2 bg-[#FFFFFF] font-mono font-bold text-[#041F24]" />
                     </div>
                     <div>
                       <label className="block text-gray-500 font-bold mb-1">Activation Key (Uso Único)</label>
@@ -396,7 +396,7 @@ const ClientsList: React.FC = () => {
                   className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white"
                 >
                   <CheckCircle size={12} className="text-[#5C8891]" />
-                  <span className="font-bold text-[#0B4F5C]">{generating ? 'Gerando...' : 'Gerar e Guardar'}</span>
+                  <span className="font-bold text-[#062A31]">{generating ? 'Gerando...' : 'Gerar e Guardar'}</span>
                 </button>
               )}
               <button
@@ -415,7 +415,7 @@ const ClientsList: React.FC = () => {
       {showAccessModal && selectedClient && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
           <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[460px] shadow-md flex flex-col">
-            <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center">
+            <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
               <div className="flex items-center">
                 <Lock size={14} className="mr-2" />
                 <span className="font-bold text-[11px]">Acessos — {selectedClient.commercial_name}</span>
@@ -442,14 +442,14 @@ const ClientsList: React.FC = () => {
                     )}
                     <button onClick={() => regenerateAccess('install')} disabled={accessBusy !== ''}
                       className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white disabled:opacity-50">
-                      <Key size={11} className="text-[#0B4F5C]" />
-                      <span className="font-bold text-[#06333C]">
+                      <Key size={11} className="text-[#062A31]" />
+                      <span className="font-bold text-[#041F24]">
                         {accessBusy === 'install' ? 'A gerar…' : activeLicense.has_install_password ? 'Gerar nova (substitui a atual)' : 'Gerar senha de instalação'}
                       </span>
                     </button>
                     {accessResult?.kind === 'install' && (
                       <div className="mt-2 bg-[#F7FAFA] border border-[#CFE3E6] p-2">
-                        <div className="text-[10px] font-bold text-[#0B4F5C] mb-1">
+                        <div className="text-[10px] font-bold text-[#062A31] mb-1">
                           ⚠ Só aparece agora — copie e entregue ao técnico:
                         </div>
                         <input readOnly value={accessResult.password} onClick={(e) => (e.target as HTMLInputElement).select()}
@@ -470,14 +470,14 @@ const ClientsList: React.FC = () => {
                     )}
                     <button onClick={() => regenerateAccess('owner')} disabled={accessBusy !== ''}
                       className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white disabled:opacity-50">
-                      <Key size={11} className="text-[#0B4F5C]" />
-                      <span className="font-bold text-[#06333C]">
+                      <Key size={11} className="text-[#062A31]" />
+                      <span className="font-bold text-[#041F24]">
                         {accessBusy === 'owner' ? 'A gerar…' : activeLicense.has_owner_password ? 'Gerar nova (substitui a atual)' : 'Gerar senha do dono'}
                       </span>
                     </button>
                     {accessResult?.kind === 'owner' && (
                       <div className="mt-2 bg-[#F7FAFA] border border-[#CFE3E6] p-2">
-                        <div className="text-[10px] font-bold text-[#0B4F5C] mb-1">
+                        <div className="text-[10px] font-bold text-[#062A31] mb-1">
                           ⚠ Só aparece agora — copie e entregue ao técnico:
                         </div>
                         <div className="text-[10px] text-gray-600 mb-1">Utilizador: <b>{accessResult.username}</b></div>
@@ -496,12 +496,12 @@ const ClientsList: React.FC = () => {
                     </div>
                     <button onClick={gerarCodigoReposicao} disabled={resetBusy}
                       className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white disabled:opacity-50">
-                      <KeyRound size={11} className="text-[#0B4F5C]" />
-                      <span className="font-bold text-[#06333C]">{resetBusy ? 'A gerar…' : 'Gerar código de reposição'}</span>
+                      <KeyRound size={11} className="text-[#062A31]" />
+                      <span className="font-bold text-[#041F24]">{resetBusy ? 'A gerar…' : 'Gerar código de reposição'}</span>
                     </button>
                     {resetResult && (
                       <div className="mt-2 bg-[#F7FAFA] border border-[#CFE3E6] p-2">
-                        <div className="text-[10px] font-bold text-[#0B4F5C] mb-1">
+                        <div className="text-[10px] font-bold text-[#062A31] mb-1">
                           ⚠ Válido até {new Date(resetResult.expires_at).toLocaleTimeString('pt-PT')} — dite ao dono ({resetResult.username}) por telefone/WhatsApp:
                         </div>
                         <input readOnly value={resetResult.code} onClick={(e) => (e.target as HTMLInputElement).select()}
@@ -528,7 +528,7 @@ const ClientsList: React.FC = () => {
       {keyResult && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
           <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[520px] shadow-md flex flex-col">
-            <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center">
+            <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
               <div className="flex items-center">
                 <Key size={14} className="mr-2" />
                 <span className="font-bold text-[11px]">license.key — {keyResult.license_number}</span>
@@ -550,8 +550,8 @@ const ClientsList: React.FC = () => {
             <div className="bg-[#EEF4F5] border-t border-[#CFE3E6] p-2 flex justify-end space-x-2">
               <button onClick={descarregarLicenseKey}
                 className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white">
-                <Key size={12} className="text-[#0B4F5C]" />
-                <span className="font-bold text-[#06333C]">Descarregar license.key</span>
+                <Key size={12} className="text-[#062A31]" />
+                <span className="font-bold text-[#041F24]">Descarregar license.key</span>
               </button>
               <button onClick={() => setKeyResult(null)}
                 className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white">

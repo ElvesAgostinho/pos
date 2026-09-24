@@ -236,7 +236,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       {/* ===== BARRA SUPERIOR ===== */}
       {/* A MESMA barra do POS: mesmo fundo, mesma altura, mesma tipografia. Ter duas
           barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
-      <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-[#062A31]"
+      <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-white"
         style={{ background: accentGradient(), fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
         {/* Logo = seletor de módulos. O logótipo próprio da instalação (Empresa →
             Imagem do Hotel) substitui o de fábrica automaticamente; sem ele, mostra-se
@@ -248,7 +248,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           <span className="text-[13px] text-[#062A31]">▾</span>
         </button>
         {modMenu && (
-          <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#F7FAFA] border border-[#06333C] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#F7FAFA] border border-[#041F24] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
             <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: ws.color }}>{erpName} — Módulos</div>
             {licensed.map((m) => (
               <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] hover:bg-[#F7FAFA] text-left border-b border-[#EEF4F5] last:border-b-0">
@@ -270,11 +270,11 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             </button>
             {topMenu === m && (
               <div className="absolute left-0 top-full min-w-[260px] py-1 shadow-2xl z-[120]"
-                style={{ background: '#062A31', border: '1px solid #0B4F5C' }} onClick={(e) => e.stopPropagation()}>
+                style={{ background: '#062A31', border: '1px solid #062A31' }} onClick={(e) => e.stopPropagation()}>
                 {MENUS[m].map((it, i) => (
                   <button key={i} onClick={() => it.act ? (it.act(), setTopMenu(null)) : open(it.screen, it.label)}
                     className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891]">
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#0B4F5C]" />{it.label}
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#062A31]" />{it.label}
                   </button>
                 ))}
               </div>
@@ -293,8 +293,8 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
               {user?.username || 'operador'}
             </button>
             {userMenu && (
-              <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#F7FAFA] border border-[#06333C] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
-                <div className="px-3 py-2 text-[11px] font-bold text-[#062A31]" style={{ background: accentGradient() }}>
+              <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#F7FAFA] border border-[#041F24] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
+                <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: accentGradient() }}>
                   {user?.username || 'operador'}
                 </div>
                 <button onClick={() => { setUserMenu(false); logout(); }}
@@ -374,7 +374,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
       {/* ===== MENU INICIAR (todas as apps do módulo) ===== */}
       {start && (
-        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-[#F7FAFA] border border-[#06333C] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-[#F7FAFA] border border-[#041F24] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="px-4 py-3.5 text-white" style={{ background: `linear-gradient(to bottom, ${ws.accent}, ${ws.color})` }}>
             <div className="font-black text-[15px]">{erpName}</div>
             <div className="text-[11px] text-white/80">{user?.username} · {ws.name}</div>
@@ -387,7 +387,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
                   <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: `linear-gradient(155deg, ${ws.accent}, ${ws.color})` }}>
                     <ClassicIcon name={ic.icon} size={18} />
                   </span>
-                  <span className="leading-tight text-[#06333C]">{ic.label}</span>
+                  <span className="leading-tight text-[#041F24]">{ic.label}</span>
                 </button>
               ))}
             </div>

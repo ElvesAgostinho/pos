@@ -46,7 +46,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -55,22 +55,22 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
         <Box title="Identificação" className="mb-4">
           <div className="space-y-2 pt-1.5">
           <label className="flex items-start gap-3 text-[13px]">
-            <span className="w-[110px] text-[#06333C] pt-1">Código:</span>
+            <span className="w-[110px] text-[#041F24] pt-1">Código:</span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)}
               className={`${inputCls} w-[640px] flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-start gap-3 text-[13px]">
-            <span className="w-[110px] text-[#06333C] pt-1">Descrição:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[110px] text-[#041F24] pt-1">Descrição:<span className="text-[#B0392B]">*</span></span>
             <textarea value={d.name || ''} onChange={(e) => set('name', e.target.value)} rows={3}
               className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white w-[640px]" style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[110px] text-[#06333C]">Ordem:</span>
+            <span className="w-[110px] text-[#041F24]">Ordem:</span>
             <input type="number" value={d.sort_order ?? 100} onChange={(e) => set('sort_order', Number(e.target.value))}
               className={`${inputCls} w-[160px] flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[110px] text-[#06333C]">Ativo:</span>
+            <span className="w-[110px] text-[#041F24]">Ativo:</span>
             <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
           </label>
           </div>
@@ -80,7 +80,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
         <div className="flex">
           {([['lang', 'Línguas'], ['cur', 'Moedas']] as const).map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-8 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#06333C] text-white' : 'bg-[#F7FAFA] text-[#0B4F5C] hover:bg-[#EEF4F5]'}`}>
+              className={`px-8 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#041F24] text-white' : 'bg-[#F7FAFA] text-[#062A31] hover:bg-[#EEF4F5]'}`}>
               {label}
             </button>
           ))}
@@ -89,7 +89,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
         <div className="flex" style={{ border: '4px groove #CFE3E6' }}>
           <table className="flex-1 text-[12px] border-collapse">
             <thead>
-              <tr className="bg-[#F7FAFA] text-[#06333C]">
+              <tr className="bg-[#F7FAFA] text-[#041F24]">
                 {(tab === 'lang'
                   ? ['Código de Cultura', 'Descrição', 'Ordem', 'Legacy Code', 'Por omissão']
                   : ['Código', 'Descrição', 'Símbolo', 'Taxa', 'Por omissão']
@@ -148,7 +148,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

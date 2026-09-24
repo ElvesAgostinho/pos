@@ -8,7 +8,7 @@ import { useAccounts } from '../../hooks/useFinance';
 import { aviso, pedir } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toFixed(2);
-const ST: Record<string, string> = { OPEN: 'text-[#8C2B1F] font-bold', PARTIAL: 'text-[#0B4F5C] font-bold', PAID: 'text-[#0B4F5C] font-bold', CANCELLED: 'text-gray-400' };
+const ST: Record<string, string> = { OPEN: 'text-[#8C2B1F] font-bold', PARTIAL: 'text-[#062A31] font-bold', PAID: 'text-[#062A31] font-bold', CANCELLED: 'text-gray-400' };
 
 export default function AccountsPayableView() {
   const qc = useQueryClient();
@@ -48,9 +48,9 @@ export default function AccountsPayableView() {
             { header: 'Data', accessor: 'date', width: '11%' },
             { header: 'Valor', accessor: (r: any) => money(r.amount), width: '11%' },
             { header: 'Pago', accessor: (r: any) => money(r.paid_amount), width: '10%' },
-            { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#0B4F5C]'}>{money(r.balance)}</span>, width: '11%' },
+            { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#062A31]'}>{money(r.balance)}</span>, width: '11%' },
             { header: 'Estado', accessor: (r: any) => <span className={ST[r.status] || ''}>{r.status_display}</span>, width: '10%' },
-            { header: '', accessor: (r: any) => r.status !== 'PAID' && r.status !== 'CANCELLED' ? <button title="Pagar" onClick={() => doPay(r)} className="text-[#0B4F5C] hover:text-[#062A31]"><DollarSign size={14} /></button> : null, width: '8%' },
+            { header: '', accessor: (r: any) => r.status !== 'PAID' && r.status !== 'CANCELLED' ? <button title="Pagar" onClick={() => doPay(r)} className="text-[#062A31] hover:text-[#062A31]"><DollarSign size={14} /></button> : null, width: '8%' },
           ]} />
         </div>
       </div>

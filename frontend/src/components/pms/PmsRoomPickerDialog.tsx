@@ -32,7 +32,7 @@ export default function PmsRoomPickerDialog({ mode, reservation, onClose, onDone
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[520px] max-h-[70vh] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl flex flex-col">
-        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #0B4F5C, #06333C)' }}>
+        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #062A31, #041F24)' }}>
           {mode === 'assign' ? 'Atribuição Rápida de Quartos' : 'Mudança de Quarto'}
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>

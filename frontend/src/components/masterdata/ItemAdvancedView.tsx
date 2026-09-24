@@ -104,7 +104,7 @@ export default function ItemAdvancedView() {
                 <div className="flex items-center gap-4">
                   <span>Receita: <b>{recipe.name}</b> · Rendimento: {recipe.yield_quantity}</span>
                   <span>Custo do lote: <b>{money(recipe.theoretical_cost)}</b></span>
-                  <span>Custo/unidade: <b className="text-[#0B4F5C]">{money(recipe.cost_per_yield_unit ?? (recipe.theoretical_cost / recipe.yield_quantity))}</b></span>
+                  <span>Custo/unidade: <b className="text-[#062A31]">{money(recipe.cost_per_yield_unit ?? (recipe.theoretical_cost / recipe.yield_quantity))}</b></span>
                   <ClassicButton icon={RefreshCw} label="Recalcular custo" onClick={() => recalc.mutate(recipe.id)} />
                 </div>
               ) : <div className="text-gray-500">Este artigo não tem ficha técnica. Crie uma em Hospitality → Receitas para o custo real ser calculado automaticamente.</div>}

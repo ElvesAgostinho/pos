@@ -221,11 +221,11 @@ export default function SupportCenterView() {
               </div>
               <div className="flex items-center gap-2 pt-1 border-t border-[#F7FAFA]">
                 <ShieldCheck size={15} className={sup.remote_assist ? 'text-[#5C8891]' : 'text-gray-400'} />
-                Assistência remota: <b className={sup.remote_assist ? 'text-[#0B4F5C]' : 'text-gray-600'}>{sup.remote_assist ? `AUTORIZADA (código ${sup.remote_assist_code})` : 'Desativada'}</b>
+                Assistência remota: <b className={sup.remote_assist ? 'text-[#062A31]' : 'text-gray-600'}>{sup.remote_assist ? `AUTORIZADA (código ${sup.remote_assist_code})` : 'Desativada'}</b>
                 {sup.remote_assist && <span className="text-gray-500">até {new Date(sup.remote_assist_until).toLocaleString('pt-PT')}</span>}
                 <div className="flex-1" />
                 {!sup.remote_assist
-                  ? <button onClick={() => act({ action: 'remote_assist', hours: 2 })} className="px-3 py-1.5 bg-[#0B4F5C] text-white rounded font-bold">Autorizar (2h)</button>
+                  ? <button onClick={() => act({ action: 'remote_assist', hours: 2 })} className="px-3 py-1.5 bg-[#062A31] text-white rounded font-bold">Autorizar (2h)</button>
                   : <button onClick={() => act({ action: 'revoke' })} className="px-3 py-1.5 bg-[#B0392B] text-white rounded font-bold">Revogar</button>}
                 <button onClick={backup} className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] flex items-center gap-1"><HardDriveDownload size={13} />Criar Backup</button>
               </div>

@@ -24,7 +24,7 @@ function Panel({ title, children, className = '' }: { title: string; children: a
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-2">
-      <span className="w-[110px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[110px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -122,7 +122,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[1180px] max-w-[97vw] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           {editing ? `${reservation.confirmation}, ${reservation.guest_name}, - Reserva` : 'Nova Reserva'}
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
@@ -225,14 +225,14 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
                 <input readOnly value={allotment ? allotment.code : '(nenhum)'} className={inp} />
                 {allotment && <button onClick={() => setAllotment(null)} className="border border-[#7FA9B1] px-1.5 bg-white">×</button>}
                 <button onClick={() => setShowBlockPicker(true)} title="Procurar bloco"
-                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#06333C] text-white"><Plus size={13} /></button>
+                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#041F24] text-white"><Plus size={13} /></button>
               </div>
             </Row>
             <Row label="Quarto:">
               <div className="flex gap-1 flex-1">
                 <input readOnly value={room ? room.number : ''} className={inp} />
                 <button onClick={() => setShowRoomPicker(true)} disabled={!roomType} title="Mostrar quartos livres"
-                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#0B4F5C] text-white disabled:opacity-40"><Plus size={13} /></button>
+                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#062A31] text-white disabled:opacity-40"><Plus size={13} /></button>
                 <button onClick={() => setRoom(null)} disabled={!room} title="Limpar"
                   className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#B0392B] text-white disabled:opacity-40"><Minus size={13} /></button>
               </div>
@@ -332,12 +332,12 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
         </div>
 
         <div className="flex justify-end gap-2 px-3 py-1.5 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#06333C] hover:text-black px-2">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black px-2">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
           <button onClick={save} disabled={saving}
-            className="px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-50" style={{ background: '#0B4F5C' }}>
+            className="px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-50" style={{ background: '#062A31' }}>
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
         </div>

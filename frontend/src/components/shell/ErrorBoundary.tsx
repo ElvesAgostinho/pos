@@ -44,7 +44,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                   <RefreshCw size={12} /> Tentar novamente
                 </button>
                 <button onClick={() => window.location.reload()}
-                  className="px-3 py-1.5 bg-[#5C8891] text-white text-[11px] hover:bg-[#0B4F5C]">Recarregar sistema</button>
+                  className="px-3 py-1.5 bg-[#5C8891] text-white text-[11px] hover:bg-[#062A31]">Recarregar sistema</button>
               </div>
             </div>
           </div>

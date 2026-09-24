@@ -155,7 +155,7 @@ export function SrmSlaView() {
 // ---------------- Avaliações / Performance ----------------
 export function SrmEvaluationView() {
   const { data: rows = [] } = useQuery({ queryKey: ['srm', 'performance'], queryFn: () => esmApi.listPerformance() });
-  const tone = (s: number) => s >= 85 ? 'text-[#0B4F5C] font-bold' : s >= 60 ? 'text-[#0B4F5C] font-bold' : 'text-[#8C2B1F] font-bold';
+  const tone = (s: number) => s >= 85 ? 'text-[#062A31] font-bold' : s >= 60 ? 'text-[#062A31] font-bold' : 'text-[#8C2B1F] font-bold';
   return (
     <ClassicWindow title="Avaliação de Fornecedores (Scorecard)" icon={<Gauge size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Avaliados: {rows.length} · pontualidade, conformidade e devoluções</div>}>

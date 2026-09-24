@@ -35,7 +35,7 @@ export default function Topbar({ onSelectView, userName, onChangePassword, onEdi
   };
 
   return (
-    <div ref={topbarRef} className="flex items-center justify-between bg-[#06333C] text-white h-10 px-4 text-sm font-sans select-none relative z-50">
+    <div ref={topbarRef} className="flex items-center justify-between bg-[#041F24] text-white h-10 px-4 text-sm font-sans select-none relative z-50">
       <div className="flex items-center space-x-6">
         <div className="flex items-center text-white font-bold text-xl tracking-tight leading-none">
           <div className="flex flex-col items-center">
@@ -47,7 +47,7 @@ export default function Topbar({ onSelectView, userName, onChangePassword, onEdi
           
           {/* Licensing Menu */}
           <div className="relative">
-            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'LIC' ? 'bg-[#0B4F5C] text-white' : 'hover:bg-[#0B4F5C]'}`} onClick={() => handleMenuClick('LIC')}>
+            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'LIC' ? 'bg-[#062A31] text-white' : 'hover:bg-[#062A31]'}`} onClick={() => handleMenuClick('LIC')}>
               Licenciamento <span className="text-[#5C8891] text-[8px] ml-1.5">▼</span>
             </div>
             {openDropdown === 'LIC' && (
@@ -64,7 +64,7 @@ export default function Topbar({ onSelectView, userName, onChangePassword, onEdi
         <span className="text-[#B0392B] font-semibold">| Admin Console |</span>
         <div className="relative">
           <div
-            className={`flex items-center space-x-1 cursor-pointer px-2 py-1 rounded ${openDropdown === 'USR' ? 'bg-[#0B4F5C] text-white' : 'hover:bg-[#0B4F5C]'}`}
+            className={`flex items-center space-x-1 cursor-pointer px-2 py-1 rounded ${openDropdown === 'USR' ? 'bg-[#062A31] text-white' : 'hover:bg-[#062A31]'}`}
             onClick={() => handleMenuClick('USR')}
           >
             <User size={12} />

@@ -79,7 +79,7 @@ const Dashboard: React.FC = () => {
                     </td>
                     <td className="py-1 px-2 text-center">
                       {ultima?.last_ping ? (
-                        <span className={`inline-flex items-center gap-1 ${ultima.is_online ? 'text-[#0B4F5C]' : 'text-gray-500'}`}>
+                        <span className={`inline-flex items-center gap-1 ${ultima.is_online ? 'text-[#062A31]' : 'text-gray-500'}`}>
                           {ultima.is_online ? <Wifi size={11} /> : <WifiOff size={11} />} {tempoRelativo(ultima.last_ping)}
                         </span>
                       ) : <span className="text-gray-400">nunca</span>}

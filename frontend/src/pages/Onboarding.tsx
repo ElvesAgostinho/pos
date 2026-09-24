@@ -134,7 +134,7 @@ const Onboarding: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#062A31] flex items-center justify-center p-4">
       <div className="bg-white max-w-lg w-full rounded shadow-2xl overflow-hidden">
-        <div className="bg-[#06333C] text-white p-6 flex items-center gap-3">
+        <div className="bg-[#041F24] text-white p-6 flex items-center gap-3">
           <ShieldCheck size={28} className="text-[#5C8891]" />
           <div>
             <h1 className="text-lg font-bold">System Mwana Lodge</h1>
@@ -160,14 +160,14 @@ const Onboarding: React.FC = () => {
             </p>
             <input ref={fileInputRef} type="file" accept=".key,text/plain"
               onChange={(e) => setFicheiro(e.target.files?.[0] || null)}
-              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#5C8891] file:text-white file:font-bold hover:file:bg-[#0B4F5C] file:cursor-pointer" />
+              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#5C8891] file:text-white file:font-bold hover:file:bg-[#062A31] file:cursor-pointer" />
             {enviarMsg && (
-              <div className={`text-[12px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-[#0B4F5C] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
+              <div className={`text-[12px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-[#062A31] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
                 {enviarMsg.text}
               </div>
             )}
             <button onClick={handleEnviarFicheiro} disabled={enviando || !ficheiro}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-[#5C8891] text-white rounded font-bold hover:bg-[#0B4F5C] disabled:opacity-50">
+              className="w-full flex items-center justify-center gap-2 py-2 bg-[#5C8891] text-white rounded font-bold hover:bg-[#062A31] disabled:opacity-50">
               {enviando ? 'A enviar…' : 'Submeter'}
             </button>
           </div>
@@ -192,12 +192,12 @@ const Onboarding: React.FC = () => {
                 className="w-full h-9 px-2 bg-white border border-gray-300 rounded outline-none" />
             </label>
             {ativarMsg && (
-              <div className={`text-[12px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-[#0B4F5C] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
+              <div className={`text-[12px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-[#062A31] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
                 {ativarMsg.text}
               </div>
             )}
             <button type="submit" disabled={ativando || !clientCode || !installPassword}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-[#5C8891] text-white rounded font-bold hover:bg-[#0B4F5C] disabled:opacity-50">
+              className="w-full flex items-center justify-center gap-2 py-2 bg-[#5C8891] text-white rounded font-bold hover:bg-[#062A31] disabled:opacity-50">
               {ativando ? 'A ativar…' : 'Ativar via Internet'}
             </button>
           </form>
@@ -226,7 +226,7 @@ const Onboarding: React.FC = () => {
                   ? <CheckCircle2 size={16} className="text-[#5C8891] mt-0.5 shrink-0" />
                   : <AlertTriangle size={16} className="text-[#8C2B1F] mt-0.5 shrink-0" />}
                 <div className="flex-1">
-                  <div className={`font-bold ${pre.diagnosis === 'OK' ? 'text-[#06333C]' : 'text-[#8C2B1F]'}`}>
+                  <div className={`font-bold ${pre.diagnosis === 'OK' ? 'text-[#041F24]' : 'text-[#8C2B1F]'}`}>
                     Diagnóstico: {DIAGNOSIS_LABEL[pre.diagnosis] || pre.diagnosis}
                   </div>
                   <p className="text-gray-700 mt-1">{pre.detail}</p>
@@ -248,7 +248,7 @@ const Onboarding: React.FC = () => {
           <button
             onClick={() => refetch()}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#062A31] text-white rounded font-bold hover:bg-[#06333C] transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#062A31] text-white rounded font-bold hover:bg-[#041F24] transition-colors disabled:opacity-50"
           >
             <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
             {isLoading ? 'A verificar…' : 'Verificar agora'}

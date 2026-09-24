@@ -9,7 +9,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 function Row({ label, children, w = 'w-[150px]' }: { label: string; children: any; w?: string }) {
   return (
     <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className={`${w} flex-shrink-0 text-[#06333C]`}>{label}</span>
+      <span className={`${w} flex-shrink-0 text-[#041F24]`}>{label}</span>
       {children}
     </label>
   );
@@ -89,7 +89,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo modo de pagamento' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo modo de pagamento' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -171,14 +171,14 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
               </label>
             </div>
             <div className="flex items-center gap-6 text-[12px] mb-3">
-              <span className="w-[80px] text-[#06333C]">Módulos:</span>
+              <span className="w-[80px] text-[#041F24]">Módulos:</span>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_ems} onChange={(e) => set('for_ems', e.target.checked)} className="w-4 h-4" />Eventos</label>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_pos} onChange={(e) => set('for_pos', e.target.checked)} className="w-4 h-4" />POS</label>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_fnb} onChange={(e) => set('for_fnb', e.target.checked)} className="w-4 h-4" />F&B (contas a pagar)</label>
             </div>
 
             <div style={{ border: '4px groove #CFE3E6' }}>
-              <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#06333C] border-b border-[#EEF4F5]">Detalhes</div>
+              <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#041F24] border-b border-[#EEF4F5]">Detalhes</div>
               <div className="p-3 space-y-2">
                 <CheckRow on={d.tip_from_change} onToggle={(v: boolean) => set('tip_from_change', v)}
                   label="Converter troco para gratificação">{artigo('tip_item')}</CheckRow>
@@ -273,7 +273,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
             </div>
 
             {d.internal_consumption && (
-              <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1 mt-2">
+              <div className="text-[11px] text-[#062A31] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1 mt-2">
                 Só os utilizadores com <b>"Consumo interno"</b> na ficha o podem lançar — o servidor recusa aos outros.
               </div>
             )}
@@ -282,7 +282,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

@@ -249,26 +249,26 @@ export default function PosReports() {
           <div className="max-w-[1400px]">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <div className="text-[20px] font-bold text-[#06333C]">
+                <div className="text-[20px] font-bold text-[#041F24]">
                   {d.title}
                   {d.grouped_by && (
-                    <span className="ml-2 text-[13px] font-normal text-[#0B4F5C]">
+                    <span className="ml-2 text-[13px] font-normal text-[#062A31]">
                       · agrupado por {d.grouped_by}
                     </span>
                   )}
                 </div>
-                <div className="text-[12px] text-[#0B4F5C] mt-1"><b>{d.company}</b> · NIF {d.tax_id}</div>
-                <div className="text-[12px] text-[#0B4F5C]">{d.folder}</div>
+                <div className="text-[12px] text-[#062A31] mt-1"><b>{d.company}</b> · NIF {d.tax_id}</div>
+                <div className="text-[12px] text-[#062A31]">{d.folder}</div>
                 {d.params?.from && (
-                  <div className="text-[12px] text-[#0B4F5C]">
+                  <div className="text-[12px] text-[#062A31]">
                     De data: {d.params.from} — A data: {d.params.to}
                   </div>
                 )}
-                <div className="text-[12px] text-[#0B4F5C]">
+                <div className="text-[12px] text-[#062A31]">
                   Incluir detalhes? <b>{d.params?.detailed || 'Não'}</b>
                 </div>
                 {outrosParams.map((x: any) => (
-                  <div key={x.key} className="text-[12px] text-[#0B4F5C]">
+                  <div key={x.key} className="text-[12px] text-[#062A31]">
                     {x.label}: {d.params[x.key]}
                   </div>
                 ))}
@@ -317,7 +317,7 @@ export default function PosReports() {
               <div className="grid grid-cols-2 gap-x-10 gap-y-4">
                 {rep.params.map((x: any) => (
                   <div key={x.key} className="flex items-center gap-3">
-                    <span className="w-[170px] flex-shrink-0 text-[13px] text-[#06333C]">{x.label}:</span>
+                    <span className="w-[170px] flex-shrink-0 text-[13px] text-[#041F24]">{x.label}:</span>
                     <Campo x={x} params={params} setParams={setParams} armazens={armazens as any[]} />
                   </div>
                 ))}
@@ -360,7 +360,7 @@ export default function PosReports() {
                 className="flex items-start gap-3 w-full text-left p-2 hover:bg-[#FFFFFF]">
                 <span className="w-5 h-6 flex-shrink-0 bg-white border border-[#7FA9B1]" />
                 <span>
-                  <span className="text-[13px] text-[#06333C]">{r.name}</span>
+                  <span className="text-[13px] text-[#041F24]">{r.name}</span>
                   <span className="block text-[11px] text-[#5C8891]">{r.folder.code} {r.folder.name}</span>
                 </span>
               </button>
@@ -376,7 +376,7 @@ export default function PosReports() {
                   <span className="absolute inset-x-1 top-3 h-px bg-[#EEF4F5]" />
                   <span className="absolute inset-x-1 top-[18px] h-px bg-[#EEF4F5]" />
                 </span>
-                <span className="text-[13px] text-[#06333C] leading-5">{r.name}</span>
+                <span className="text-[13px] text-[#041F24] leading-5">{r.name}</span>
               </button>
             ))}
           </div>
@@ -391,7 +391,7 @@ export default function PosReports() {
                   <span className="absolute left-0 top-0 w-4 h-2 bg-[#7FA9B1] border border-[#5C8891] border-b-0" />
                 </span>
                 <span>
-                  <span className="text-[14px] text-[#06333C]">{f.code} {f.name}</span>
+                  <span className="text-[14px] text-[#041F24]">{f.code} {f.name}</span>
                   <span className="block text-[11px] text-[#5C8891]">{f.count} relatório(s)</span>
                 </span>
               </button>

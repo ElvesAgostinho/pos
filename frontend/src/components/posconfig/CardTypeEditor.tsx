@@ -9,7 +9,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[110px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[110px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -63,7 +63,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">
+        <span className="text-[13px] font-bold text-[#041F24]">
           {isNew ? 'Novo tipo de cartão' : `A editar ${d.name}`}
         </span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
@@ -103,18 +103,18 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
 
           {/* Detalhes da pista */}
           <fieldset className="border border-[#CFE3E6] mt-3">
-            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] w-full">
+            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#062A31] w-full">
               Detalhes da Pista
             </legend>
             <div className="flex items-center gap-6 p-3">
               <label className="flex items-center gap-3 text-[12px]">
-                <span className="w-[110px] text-[#06333C]">Start Sentinel:</span>
+                <span className="w-[110px] text-[#041F24]">Start Sentinel:</span>
                 <input value={d.start_sentinel || ''} maxLength={4}
                   onChange={(e) => set('start_sentinel', e.target.value)}
                   placeholder=";" className={`${inp} w-[130px] font-mono`} style={inputStyle} />
               </label>
               <label className="flex items-center gap-3 text-[12px]">
-                <span className="text-[#06333C]">End Sentinel:</span>
+                <span className="text-[#041F24]">End Sentinel:</span>
                 <input value={d.end_sentinel || ''} maxLength={4}
                   onChange={(e) => set('end_sentinel', e.target.value)}
                   placeholder="?" className={`${inp} w-[130px] font-mono`} style={inputStyle} />
@@ -124,18 +124,18 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
 
           {/* Posição */}
           <fieldset className="border border-[#CFE3E6]">
-            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] w-full">
+            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#062A31] w-full">
               Posição
             </legend>
             <div className="flex items-center gap-6 p-3">
               <label className="flex items-center gap-3 text-[12px]">
-                <span className="w-[110px] text-[#06333C]">Início:</span>
+                <span className="w-[110px] text-[#041F24]">Início:</span>
                 <input type="number" value={d.pos_start ?? 0}
                   onChange={(e) => set('pos_start', Number(e.target.value))}
                   className={`${inp} w-[130px]`} style={inputStyle} />
               </label>
               <label className="flex items-center gap-3 text-[12px]">
-                <span className="text-[#06333C]">Fim:</span>
+                <span className="text-[#041F24]">Fim:</span>
                 <input type="number" value={d.pos_end ?? 0}
                   onChange={(e) => set('pos_end', Number(e.target.value))}
                   className={`${inp} w-[130px]`} style={inputStyle} />
@@ -146,7 +146,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
 
           {/* Testar a leitura */}
           <fieldset className="border border-[#CFE3E6] mt-3">
-            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] w-full">
+            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#062A31] w-full">
               Testar a leitura
             </legend>
             <div className="p-3 space-y-2">
@@ -163,11 +163,11 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
                 </button>
               </div>
               {isNew && (
-                <div className="text-[11px] text-[#0B4F5C]">Grave primeiro — depois pode testar.</div>
+                <div className="text-[11px] text-[#062A31]">Grave primeiro — depois pode testar.</div>
               )}
               {resultado && (
                 <div className={`text-[12px] px-3 py-2 border ${resultado.ok
-                  ? 'bg-[#F7FAFA] border-[#CFE3E6] text-[#0B4F5C]'
+                  ? 'bg-[#F7FAFA] border-[#CFE3E6] text-[#062A31]'
                   : 'bg-[#F7FAFA] border-[#B0392B] text-[#B0392B]'}`}>
                   {resultado.ok
                     ? <>Número lido: <b className="font-mono text-[14px]">{resultado.number}</b></>
@@ -180,7 +180,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

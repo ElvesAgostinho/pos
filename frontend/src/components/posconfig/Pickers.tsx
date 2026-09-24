@@ -17,7 +17,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 
 function Head({ title, onClose }: { title: string; onClose: () => void }) {
   return (
-    <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+    <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
       <span>{title}</span>
       <button onClick={onClose} className="w-5 h-5 bg-[#B0392B] text-white leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
     </div>
@@ -49,7 +49,7 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
         <Head title="Adicionar - Sub Família" onClose={onClose} />
 
         <div className="flex items-center gap-3 px-3 py-2 bg-white border-b border-[#EEF4F5]">
-          <span className="text-[12px] text-[#06333C]">Pesquisar:</span>
+          <span className="text-[12px] text-[#041F24]">Pesquisar:</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus className={`${inp} w-[240px]`} style={inputStyle} />
           <label className="flex items-center gap-2 text-[12px] ml-3">
             <input type="checkbox" checked={allOn}
@@ -72,7 +72,7 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
                     <input type="checkbox" checked={sel.includes(s.id)} onChange={() => toggle(s.id)}
                       onClick={(e) => e.stopPropagation()} className="w-4 h-4" />
                   </td>
-                  <td className="px-2 py-1.5 text-[#0B4F5C]">{s.code} ({s.name})</td>
+                  <td className="px-2 py-1.5 text-[#062A31]">{s.code} ({s.name})</td>
                 </tr>
               ))}
               {rows.length === 0 && <tr><td colSpan={2} className="text-center text-[#7FA9B1] py-8">Sem sub-famílias.</td></tr>}
@@ -84,7 +84,7 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
           {sel.length} selecionada(s) de {rows.length}
         </div>
         <Toolbar actions={[
-          { icon: '✔', label: 'Selecionar', color: '#0B4F5C',
+          { icon: '✔', label: 'Selecionar', color: '#062A31',
             onClick: () => onPick(rows.filter((r) => sel.includes(r.id))) },
           { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
         ]} />
@@ -186,7 +186,7 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
           <SearchButton onClick={() => { setApplied({ ...f }); setPage(1); }} className="w-[150px]" />
         </div>
 
-        <div className={`px-3 py-1.5 text-[12px] font-bold ${over ? 'text-[#B0392B]' : 'text-[#06333C]'}`}>
+        <div className={`px-3 py-1.5 text-[12px] font-bold ${over ? 'text-[#B0392B]' : 'text-[#041F24]'}`}>
           (Selecionado: {sel.length}) (Máximo: {max}){over && ' — reduza a seleção'}
         </div>
 
@@ -213,7 +213,7 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
                   <td className="px-2 py-1.5">{i.family_name}</td>
                   <td className="px-2 py-1.5">{i.subfamily_name}</td>
                   <td className="px-2 py-1.5 whitespace-nowrap">(1: {Number(i.sale_price || 0).toFixed(2)})</td>
-                  <td className="px-2 py-1.5 text-[#0B4F5C] whitespace-nowrap italic">{Number(i.tax_percentage || 0).toFixed(2)}</td>
+                  <td className="px-2 py-1.5 text-[#062A31] whitespace-nowrap italic">{Number(i.tax_percentage || 0).toFixed(2)}</td>
                   <td className="px-2 py-1.5 text-[11px] text-[#5C8891]">{i.printers_label}</td>
                   <td className="text-center">
                     <GridCheck checked={i.is_active} onChange={(v) => setActive.mutate({ id: i.id, v })}
@@ -245,13 +245,13 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
           <span>de {pages}</span>
           <button onClick={() => setPage((p) => Math.min(pages, p + 1))} disabled={page === pages} className="px-1 disabled:opacity-30">▶</button>
           <button onClick={() => setPage(pages)} disabled={page === pages} className="px-1 disabled:opacity-30">⏭</button>
-          <span className="ml-auto text-[#0B4F5C]">
+          <span className="ml-auto text-[#062A31]">
             Nº registos a visualizar {rows.length ? (page - 1) * size + 1 : 0} - {Math.min(page * size, rows.length)} de {rows.length}
           </span>
         </div>
 
         <Toolbar actions={[
-          { icon: '✔', label: 'OK', color: over ? '#7FA9B1' : '#0B4F5C',
+          { icon: '✔', label: 'OK', color: over ? '#7FA9B1' : '#062A31',
             onClick: () => { if (!over) onPick(rows.filter((r) => sel.includes(r.id))); } },
           { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
         ]} />

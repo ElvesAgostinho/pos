@@ -6,7 +6,7 @@ import { Toolbar, inputStyle, money, SearchButton } from './kit';
 
 const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
-  <span className={`text-[12px] text-[#06333C] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#041F24] ${w} flex-shrink-0`}>{children}</span>
 );
 const hoje = () => new Date().toISOString().slice(0, 10);
 
@@ -99,9 +99,9 @@ export default function FnbInventory() {
 
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
-        <div className="px-3 py-2 bg-[#06333C] text-white text-[13px] font-bold">
+        <div className="px-3 py-2 bg-[#041F24] text-white text-[13px] font-bold">
           {edit.id ? `Inventário ${edit.number}` : 'Novo documento'}
-          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#0B4F5C] text-[11px]">LANÇADO</span>}
+          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#062A31] text-[11px]">LANÇADO</span>}
         </div>
 
         <div className="flex gap-3 p-3">
@@ -205,7 +205,7 @@ export default function FnbInventory() {
             <input value={filtro} onChange={(e) => setFiltro(e.target.value)}
               className={`${inp} w-[240px]`} style={inputStyle} />
             <span className="ml-auto">
-              Diferença total: <b style={{ color: difQtd < 0 ? '#B0392B' : '#0B4F5C' }}>
+              Diferença total: <b style={{ color: difQtd < 0 ? '#B0392B' : '#062A31' }}>
                 {difQtd.toFixed(3)} un · {money(difVal)} Kz
               </b>
             </span>
@@ -249,11 +249,11 @@ export default function FnbInventory() {
                       <td className="px-2 py-1 text-right text-[#5C8891]">{money(tC)}</td>
                       <td className="px-2 py-1 text-right text-[#5C8891]">{money(tQ * tC)}</td>
                       <td className="px-2 py-1 text-right font-bold"
-                        style={{ color: dQ < 0 ? '#B0392B' : dQ > 0 ? '#0B4F5C' : '#7FA9B1' }}>
+                        style={{ color: dQ < 0 ? '#B0392B' : dQ > 0 ? '#062A31' : '#7FA9B1' }}>
                         {dQ.toFixed(3)}
                       </td>
                       <td className="px-2 py-1 text-right font-bold"
-                        style={{ color: dV < 0 ? '#B0392B' : dV > 0 ? '#0B4F5C' : '#7FA9B1' }}>
+                        style={{ color: dV < 0 ? '#B0392B' : dV > 0 ? '#062A31' : '#7FA9B1' }}>
                         {money(dV)}
                       </td>
                     </tr>
@@ -267,7 +267,7 @@ export default function FnbInventory() {
               </tbody>
             </table>
           </div>
-          <div className="px-3 py-2 text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border-t border-[#CFE3E6]">
+          <div className="px-3 py-2 text-[11px] text-[#062A31] bg-[#F7FAFA] border-t border-[#CFE3E6]">
             Ao <b>lançar</b>, o stock passa a ser o que se contou. A diferença fica como movimento
             de ajuste no histórico, com o nome do responsável — quebras não desaparecem em silêncio.
           </div>
@@ -355,8 +355,8 @@ export default function FnbInventory() {
           <tbody>
             {rows.map((r) => {
               const estado = r.voided ? ['Anulado', '#F7FAFA', '#B0392B']
-                : r.posted ? ['Lançado', '#F7FAFA', '#0B4F5C']
-                  : ['Em contagem', '#F7FAFA', '#0B4F5C'];
+                : r.posted ? ['Lançado', '#F7FAFA', '#062A31']
+                  : ['Em contagem', '#F7FAFA', '#062A31'];
               return (
                 <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
                   className={`border-b border-[#F7FAFA] cursor-pointer ${sel === r.id ? 'bg-[#F7FAFA]' : 'hover:bg-[#FFFFFF]'}`}>

@@ -25,7 +25,7 @@ export default function Sidebar({ activeView = 'dashboard', onSelectView }: Side
         onClick={() => setOpen(!isOpen)}
       >
         <span className="mr-2 text-gray-500 font-monospace text-xs w-3 text-center">{isOpen ? '-' : '+'}</span>
-        <span className="text-[#06333C] text-[11px] flex-1 font-medium">{title}</span>
+        <span className="text-[#041F24] text-[11px] flex-1 font-medium">{title}</span>
       </div>
       
       {isOpen && (

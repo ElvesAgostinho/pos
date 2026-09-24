@@ -66,7 +66,7 @@ export default function HotelProfileView() {
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
-      className={`px-4 py-1.5 text-[12px] font-bold border border-b-0 ${tab === id ? 'bg-white text-[#0B4F5C] border-[#7FA9B1]' : 'bg-[#EEF4F5] text-gray-600 border-[#CFE3E6]'}`}>
+      className={`px-4 py-1.5 text-[12px] font-bold border border-b-0 ${tab === id ? 'bg-white text-[#062A31] border-[#7FA9B1]' : 'bg-[#EEF4F5] text-gray-600 border-[#CFE3E6]'}`}>
       {label}
     </button>
   );
@@ -79,13 +79,13 @@ export default function HotelProfileView() {
         {/* Completude — o que falta e porquê */}
         {c && (
           <div className={`m-3 mb-0 p-2.5 border flex items-start gap-2 text-[12px] ${c.missing.length ? 'bg-[#F7FAFA] border-[#CFE3E6]' : 'bg-[#F7FAFA] border-[#CFE3E6]'}`}>
-            {c.missing.length ? <AlertTriangle size={18} className="text-[#0B4F5C] flex-shrink-0 mt-0.5" />
-              : <CheckCircle2 size={18} className="text-[#0B4F5C] flex-shrink-0 mt-0.5" />}
+            {c.missing.length ? <AlertTriangle size={18} className="text-[#062A31] flex-shrink-0 mt-0.5" />
+              : <CheckCircle2 size={18} className="text-[#062A31] flex-shrink-0 mt-0.5" />}
             <div className="flex-1">
               <div className="font-bold flex items-center gap-2">
                 Ficha {c.percent}% completa
                 <span className="inline-block w-40 h-2 bg-[#EEF4F5] border border-[#CFE3E6]">
-                  <span className="block h-full" style={{ width: `${c.percent}%`, background: c.missing.length ? '#5C8891' : '#0B4F5C' }} />
+                  <span className="block h-full" style={{ width: `${c.percent}%`, background: c.missing.length ? '#5C8891' : '#062A31' }} />
                 </span>
               </div>
               {c.missing.length > 0 && (
@@ -178,7 +178,7 @@ export default function HotelProfileView() {
                 hint="é por aqui que o cliente lhe paga — sem isto, ele recebe a fatura e não sabe para onde transferir">
                 <table className="w-full text-[12px] border-collapse">
                   <thead>
-                    <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA)' }} className="text-[#0B4F5C]">
+                    <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA)' }} className="text-[#062A31]">
                       {['Banco', 'IBAN', 'Nº de conta', 'SWIFT', 'Moeda', 'Sai na fatura', ''].map((x) => (
                         <th key={x} className="text-left font-bold px-2 py-1 border-b border-[#CFE3E6]">{x}</th>
                       ))}
@@ -233,9 +233,9 @@ export default function HotelProfileView() {
             <FormSection title="Certificação AGT" cols={1}
               hint="pertence ao software — instalada pelo fornecedor">
               <div className={`p-3 border flex items-center gap-3 ${cert?.certified ? 'bg-[#F7FAFA] border-[#CFE3E6]' : 'bg-[#F7FAFA] border-[#CFE3E6]'}`}>
-                {cert?.certified ? <ShieldCheck size={26} className="text-[#0B4F5C]" /> : <ShieldAlert size={26} className="text-[#0B4F5C]" />}
+                {cert?.certified ? <ShieldCheck size={26} className="text-[#062A31]" /> : <ShieldAlert size={26} className="text-[#062A31]" />}
                 <div className="text-[12px]">
-                  <div className={`font-bold ${cert?.certified ? 'text-[#06333C]' : 'text-[#06333C]'}`}>
+                  <div className={`font-bold ${cert?.certified ? 'text-[#041F24]' : 'text-[#041F24]'}`}>
                     {cert?.certified ? `Certificado AGT nº ${cert.certificate_number}` : 'Ainda não certificado (ambiente de testes)'}
                   </div>
                   <div className="text-gray-600 text-[11px]">

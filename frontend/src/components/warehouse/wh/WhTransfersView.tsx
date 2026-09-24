@@ -54,7 +54,7 @@ export default function WhTransfersView() {
             <ClassicGrid rowKey="id" data={transfers} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '20%' },
               { header: 'Origem → Destino', accessor: (r: any) => `${r.source_name} → ${r.destination_name}`, width: '46%' },
-              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#0B4F5C] font-bold' : 'text-[#0B4F5C]'}>{r.status_display}</span>, width: '22%' },
+              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#062A31] font-bold' : 'text-[#062A31]'}>{r.status_display}</span>, width: '22%' },
               { header: '', accessor: (r: any) => r.status !== 'CONFIRMED' ? <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button> : null, width: '12%' },
             ]} />
           </div>
@@ -68,7 +68,7 @@ export default function WhTransfersView() {
                 <span className="font-bold">{sel.number} · {sel.source_name} → {sel.destination_name}</span>
                 {sel.status !== 'CONFIRMED'
                   ? <ClassicButton icon={CheckCircle} label="Confirmar" onClick={() => confirm.mutate(sel.id!)} />
-                  : <span className="text-[#0B4F5C] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
+                  : <span className="text-[#062A31] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
               </div>
               {sel.status !== 'CONFIRMED' && (
                 <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7FAFA] border-b border-[#7FA9B1] text-[11px]">

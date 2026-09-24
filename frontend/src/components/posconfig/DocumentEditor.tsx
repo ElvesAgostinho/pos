@@ -10,7 +10,7 @@ const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-start gap-3 text-[12px]">
-      <span className="w-[130px] flex-shrink-0 text-[#06333C] pt-1">{label}</span>
+      <span className="w-[130px] flex-shrink-0 text-[#041F24] pt-1">{label}</span>
       {children}
     </label>
   );
@@ -83,7 +83,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">
+        <span className="text-[13px] font-bold text-[#041F24]">
           {isNew ? 'Nova série' : `A editar ${d.name || d.type_name || d.code}`}
         </span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
@@ -116,7 +116,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
             <div>
               <input value={d.current_number ?? 0} readOnly
                 className={`${inp} w-[240px] bg-[#F7FAFA] text-[#5C8891]`} style={inputStyle} />
-              <div className="text-[11px] text-[#0B4F5C] mt-1 max-w-[240px]">
+              <div className="text-[11px] text-[#062A31] mt-1 max-w-[240px]">
                 Só de leitura: é o último nº emitido. Reescrevê-lo <b>partia a sequência</b>,
                 que é o que a AGT confere.
               </div>
@@ -197,7 +197,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
           </div>
 
           {d.is_closed && (
-            <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1">
+            <div className="text-[11px] text-[#062A31] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1">
               Série <b>fechada</b>: o servidor recusa emitir nela. Abra uma nova série para continuar.
             </div>
           )}
@@ -236,7 +236,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
                         </td>
                         <td className="p-0.5 w-[70px]"><input value={m.code} onChange={(e) => setPm(i, 'code', e.target.value)} className={cell} /></td>
                         <td className="p-0.5"><input value={m.description || ''} onChange={(e) => setPm(i, 'description', e.target.value)} className={cell} /></td>
-                        <td className="p-0.5 w-[150px]"><input value={m.model_name} onChange={(e) => setPm(i, 'model_name', e.target.value)} className={`${cell} text-[#0B4F5C]`} /></td>
+                        <td className="p-0.5 w-[150px]"><input value={m.model_name} onChange={(e) => setPm(i, 'model_name', e.target.value)} className={`${cell} text-[#062A31]`} /></td>
                         <td className="p-0.5 w-[60px]"><input type="number" value={m.copies} onChange={(e) => setPm(i, 'copies', Number(e.target.value))} className={cell} /></td>
                         <td className="p-0.5 w-[70px]"><input type="number" value={m.max_copies} onChange={(e) => setPm(i, 'max_copies', Number(e.target.value))} className={cell} /></td>
                         <td className="p-0.5 w-[60px]"><input type="number" value={m.sort_order} onChange={(e) => setPm(i, 'sort_order', Number(e.target.value))} className={cell} /></td>
@@ -262,7 +262,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
                 </button>
                 <button onClick={copyPm} disabled={sel === null}
                   className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
-                  <span className="w-5 h-5 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center text-[11px]">⧉</span> Copiar
+                  <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[11px]">⧉</span> Copiar
                 </button>
                 <button onClick={delPm} disabled={sel === null}
                   className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
@@ -274,7 +274,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
             <div className="flex-1 overflow-auto p-4 space-y-3">
               {[0, 1, 2, 3, 4].map((i) => (
                 <label key={i} className="flex items-center gap-3 text-[13px]">
-                  <span className="w-[24px] text-[#06333C]">{i + 1}:</span>
+                  <span className="w-[24px] text-[#041F24]">{i + 1}:</span>
                   <input value={texts[i] || ''} className={`${inp} flex-1`} style={inputStyle}
                     onChange={(e) => {
                       const t = [...texts];
@@ -293,7 +293,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

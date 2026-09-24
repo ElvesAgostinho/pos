@@ -6,7 +6,7 @@ import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
 const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[100px]', children }: any) => (
-  <span className={`text-[12px] text-[#06333C] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#041F24] ${w} flex-shrink-0`}>{children}</span>
 );
 
 /**
@@ -87,7 +87,7 @@ export default function FnbPayables() {
   if (aberta) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-3 py-2 bg-[#F7FAFA] text-[#0B4F5C] text-[13px] font-bold border-b border-[#CFE3E6] flex">
+        <div className="px-3 py-2 bg-[#F7FAFA] text-[#062A31] text-[13px] font-bold border-b border-[#CFE3E6] flex">
           <span>{aberta.name} — NIF {aberta.other || '—'}</span>
           <span className="ml-auto">
             Saldo: <b className="text-[16px] text-[#B0392B]">{money(aberta.balance)} Kz</b>
@@ -114,13 +114,13 @@ export default function FnbPayables() {
                     <td className="px-2 py-1 text-right font-bold">{money(d.total)}</td>
                     <td className="px-2 py-1">
                       <span className={`px-2 py-0.5 text-[11px] ${d.posted
-                        ? 'bg-[#F7FAFA] text-[#0B4F5C]' : 'bg-[#F7FAFA] text-[#0B4F5C]'}`}>
+                        ? 'bg-[#F7FAFA] text-[#062A31]' : 'bg-[#F7FAFA] text-[#062A31]'}`}>
                         {d.posted ? 'Lançado' : 'Por lançar'}
                       </span>
                     </td>
                     <td className="px-2 py-1 text-right">
                       <button onClick={() => pagar.mutate(d.id)}
-                        className="text-[11px] text-[#0B4F5C] hover:underline">Marcar como pago</button>
+                        className="text-[11px] text-[#062A31] hover:underline">Marcar como pago</button>
                     </td>
                   </tr>
                 );

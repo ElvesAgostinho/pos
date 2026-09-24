@@ -31,18 +31,18 @@ const Login: React.FC<Props> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[#0B4F5C] flex items-center justify-center font-sans text-[11px] select-none">
+    <div className="h-screen w-screen bg-[#062A31] flex items-center justify-center font-sans text-[11px] select-none">
       {/* Janela clássica */}
       <div className="w-[380px] bg-[#F7FAFA] border border-[#7FA9B1] shadow-[4px_4px_10px_rgba(0,0,0,0.35)]">
         {/* Barra de título */}
-        <div className="bg-gradient-to-b from-[#0B4F5C] to-[#06333C] text-white px-2 py-1 flex items-center">
+        <div className="bg-gradient-to-b from-[#062A31] to-[#041F24] text-white px-2 py-1 flex items-center">
           <Shield size={14} className="mr-2 text-[#5C8891]" />
           <span className="font-bold text-[12px]">Platform Control Center — Autenticação</span>
         </div>
 
         <div className="p-5">
           <div className="text-center mb-5">
-            <div className="text-[#06333C] text-2xl font-extrabold tracking-tight">
+            <div className="text-[#041F24] text-2xl font-extrabold tracking-tight">
               PCC<span className="text-[#5C8891]">.</span>
             </div>
             <p className="text-gray-500 mt-1">Consola de Licenciamento &amp; Provisionamento</p>

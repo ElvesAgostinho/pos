@@ -25,9 +25,9 @@ export default function AgtCertificationView() {
       <div className="p-4 space-y-3 max-w-3xl">
         {/* Estado */}
         <div className={`border p-3 flex items-center gap-3 ${certified ? 'bg-[#F7FAFA] border-[#CFE3E6]' : 'bg-[#F7FAFA] border-[#CFE3E6]'}`}>
-          {certified ? <ShieldCheck size={28} className="text-[#0B4F5C]" /> : <ShieldAlert size={28} className="text-[#0B4F5C]" />}
+          {certified ? <ShieldCheck size={28} className="text-[#062A31]" /> : <ShieldAlert size={28} className="text-[#062A31]" />}
           <div className="flex-1">
-            <div className={`font-bold text-[13px] ${certified ? 'text-[#06333C]' : 'text-[#06333C]'}`}>{data?.status_label || '—'}</div>
+            <div className={`font-bold text-[13px] ${certified ? 'text-[#041F24]' : 'text-[#041F24]'}`}>{data?.status_label || '—'}</div>
             <div className="text-[11px] text-gray-600">
               {data?.company_name} · NIF {data?.company_nif} · Ambiente: <b>{data?.environment === 'PROD' ? 'Produção' : 'Testes'}</b>
               {certified && <> · Certificado nº <b>{data?.certificate_number}</b></>}
@@ -46,18 +46,18 @@ export default function AgtCertificationView() {
         <div className="bg-white border border-[#7FA9B1] p-3 text-[11px]">
           <div className="flex items-center gap-1.5 font-bold text-[#5C8891] mb-2"><KeyRound size={13} /> Motor de assinatura</div>
           <div className="grid grid-cols-2 gap-2">
-            <div>Chave de assinatura instalada: <b className={data?.has_keys ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'}>{data?.has_keys ? 'sim' : 'não'}</b></div>
+            <div>Chave de assinatura instalada: <b className={data?.has_keys ? 'text-[#062A31]' : 'text-[#8C2B1F]'}>{data?.has_keys ? 'sim' : 'não'}</b></div>
             <div>Versão da chave: <b>{data?.key_version ?? '—'}</b></div>
             <div>Algoritmo: <b>RSA-SHA1</b> (norma AGT)</div>
-            <div>Encadeamento de documentos: <b className="text-[#0B4F5C]">ativo</b></div>
+            <div>Encadeamento de documentos: <b className="text-[#062A31]">ativo</b></div>
           </div>
         </div>
 
         {/* Porque é que isto não se edita aqui */}
         <div className="bg-[#F7FAFA] border border-[#7FA9B1] p-3 text-[11px] flex items-start gap-2">
-          <Lock size={16} className="text-[#0B4F5C] flex-shrink-0 mt-0.5" />
+          <Lock size={16} className="text-[#062A31] flex-shrink-0 mt-0.5" />
           <div>
-            <div className="font-bold text-[#0B4F5C]">Porque é que não pode alterar isto</div>
+            <div className="font-bold text-[#062A31]">Porque é que não pode alterar isto</div>
             <div className="text-gray-700 mt-1">
               O certificado da AGT é atribuído ao <b>programa</b>, não à empresa: um só número serve todos os
               clientes deste software. A chave que assina as suas faturas é a chave do programa e <b>nunca esteve

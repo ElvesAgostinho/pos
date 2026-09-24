@@ -9,7 +9,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[130px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[130px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -86,7 +86,7 @@ export default function StockErp() {
         </label>
 
         {off && (
-          <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-3 py-2 mb-3 max-w-[900px]">
+          <div className="text-[11px] text-[#062A31] bg-[#F7FAFA] border border-[#CFE3E6] px-3 py-2 mb-3 max-w-[900px]">
             Desligada: o <b>stock é gerido pelo motor interno</b> do sistema — que já desconta a
             mercadoria em cada venda e faz o custo médio. Ligue isto só se a verdade do stock
             estiver mesmo num ERP de fora; caso contrário fica com dois números para a mesma garrafa.
@@ -168,7 +168,7 @@ export default function StockErp() {
               </Row>
 
               <button onClick={() => sync.mutate()} disabled={off}
-                className="w-full py-3 bg-[#06333C] text-white text-[13px] font-semibold hover:bg-[#062A31] disabled:opacity-40 mt-2">
+                className="w-full py-3 bg-[#041F24] text-white text-[13px] font-semibold hover:bg-[#062A31] disabled:opacity-40 mt-2">
                 {sync.isPending ? 'A atualizar…' : 'Stocks - Atualizar'}
               </button>
             </div>
@@ -177,7 +177,7 @@ export default function StockErp() {
 
         {d.last_test_detail && (
           <div className={`text-[11px] px-3 py-2 border mt-3 max-w-[900px] ${d.last_test_ok
-            ? 'bg-[#F7FAFA] border-[#CFE3E6] text-[#0B4F5C]'
+            ? 'bg-[#F7FAFA] border-[#CFE3E6] text-[#062A31]'
             : 'bg-[#F7FAFA] border-[#B0392B] text-[#B0392B]'}`}>
             Último teste: {d.last_test_detail}
           </div>
@@ -185,9 +185,9 @@ export default function StockErp() {
       </div>
 
       <Toolbar actions={[
-        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#0B4F5C',
+        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#062A31',
           disabled: !d.id, onClick: () => test.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
       ]} />
     </div>
   );

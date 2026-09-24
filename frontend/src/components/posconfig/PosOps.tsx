@@ -68,17 +68,17 @@ export function PosDayClose() {
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="px-4 py-3 bg-[#F7FAFA] border-b border-[#EEF4F5]">
         <div className="flex items-start gap-6">
-          <div className="text-[#06333C]"><Glyph icon="🌙" size={34} /></div>
+          <div className="text-[#041F24]"><Glyph icon="🌙" size={34} /></div>
           <div>
-            <div className="text-[16px] font-bold text-[#06333C]">{d.company || 'Fecho do Dia'}</div>
+            <div className="text-[16px] font-bold text-[#041F24]">{d.company || 'Fecho do Dia'}</div>
             {d.hotel && <div className="text-[13px] text-[#5C8891]">{d.hotel}</div>}
-            <div className="text-[12px] text-[#06333C] mt-2 flex gap-6">
+            <div className="text-[12px] text-[#041F24] mt-2 flex gap-6">
               <span>Data Actual: <b>{new Date(d.date).toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</b></span>
               <span>Data do último fecho: <b>
                 {ultimo ? `${new Date(ultimo.at).toLocaleString('pt-PT')} (${ultimo.hours}h ${ultimo.minutes}m)` : 'Nunca'}
               </b></span>
             </div>
-            <div className="text-[12px] text-[#06333C] mt-1">
+            <div className="text-[12px] text-[#041F24] mt-1">
               Vendas de hoje: <b>{d.sales_today.count}</b> conta(s) · <b>{money(d.sales_today.total)} Kz</b>
             </div>
           </div>
@@ -135,7 +135,7 @@ export function PosDayClose() {
                 </div>
               ))}
               {(d.sectors || []).length === 0 && (
-                <div className="text-center text-[#0B4F5C] py-6 text-[12px] font-bold">Sem mesas abertas.</div>
+                <div className="text-center text-[#062A31] py-6 text-[12px] font-bold">Sem mesas abertas.</div>
               )}
             </>
           </Painel>
@@ -157,12 +157,12 @@ export function PosDayClose() {
             Contas por cobrar ({d.open_tickets.length})
           </div>
           {d.open_tickets.length === 0 ? (
-            <div className="text-center text-[#0B4F5C] py-10 text-[13px] font-bold flex items-center justify-center gap-1.5">
+            <div className="text-center text-[#062A31] py-10 text-[13px] font-bold flex items-center justify-center gap-1.5">
               <Glyph icon="✔" size={14} /> Nada por cobrar. O dia pode fechar.
             </div>
           ) : (
             <>
-              <div className="px-3 py-2 text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border-b border-[#CFE3E6]">
+              <div className="px-3 py-2 text-[11px] text-[#062A31] bg-[#F7FAFA] border-b border-[#CFE3E6]">
                 Fechar o dia com contas abertas é dar comida sem receber. Cobre-as ou anule-as primeiro.
               </div>
               <table className="w-full text-[12px] border-collapse">
@@ -209,7 +209,7 @@ export function PosDayClose() {
             porquê — e o motivo aqui é sempre o mesmo: há contas por cobrar. */}
         <button onClick={() => fechar.mutate()} disabled={!d.can_close || fechar.isPending}
           title={d.blocker || 'Fecha as caixas e o dia de vendas do POS'}
-          className="px-6 py-2 bg-[#0B4F5C] text-white text-[14px] font-bold disabled:bg-[#CFE3E6] disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+          className="px-6 py-2 bg-[#062A31] text-white text-[14px] font-bold disabled:bg-[#CFE3E6] disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
           {fechar.isPending ? 'A fechar…' : d.can_close ? <><Glyph icon="▶" size={13} /> Fechar o Dia</> : <><Glyph icon="🔒" size={13} /> Fechar o Dia</>}
         </button>
       </div>
@@ -250,7 +250,7 @@ export function PosSaft() {
         <img src="/agt-logo.png" alt="AGT — Administração Geral Tributária" className="h-20 w-auto flex-shrink-0" />
         <div>
           <div className="text-[20px] font-bold text-[#5C8891]">Administração Geral Tributária — Ficheiro SAF-T</div>
-          <div className="text-[13px] text-[#06333C] mt-1">Versão do ficheiro: <b>{d?.version || '1.01_01'}</b></div>
+          <div className="text-[13px] text-[#041F24] mt-1">Versão do ficheiro: <b>{d?.version || '1.01_01'}</b></div>
         </div>
         <div className="ml-auto"><PermissoesBotao right={20003} titulo="Utilitários" /></div>
       </div>
@@ -303,7 +303,7 @@ export function PosSaft() {
           {criar.isPending ? 'A criar…' : <span className="inline-flex items-center gap-1.5"><Glyph icon="▶" size={13} /> Criar ficheiro</span>}
         </button>
         {!d?.documents && (
-          <div className="text-[11px] text-[#0B4F5C]">
+          <div className="text-[11px] text-[#062A31]">
             Sem documentos do POS no período — um SAF-T vazio não se entrega.
           </div>
         )}
@@ -413,7 +413,7 @@ export function PosDiagnostics() {
 
   return (
     <div className="flex-1 overflow-auto bg-[#F7FAFA] p-4">
-      <div className="text-[16px] font-bold text-[#06333C] mb-3">
+      <div className="text-[16px] font-bold text-[#041F24] mb-3">
         Diagnóstico do POS
         <span className="ml-3 text-[11px] font-normal text-[#5C8891]">
           atualiza sozinho · {new Date(d.server_time).toLocaleTimeString('pt-PT')}
@@ -466,7 +466,7 @@ export function PosDiagnostics() {
         <Card title="Licença">
           <div className="flex flex-wrap gap-1">
             {d.license.modules.map((m: string) => (
-              <span key={m} className="px-2 py-0.5 bg-[#F7FAFA] text-[#0B4F5C] text-[11px] font-semibold">{m}</span>
+              <span key={m} className="px-2 py-0.5 bg-[#F7FAFA] text-[#062A31] text-[11px] font-semibold">{m}</span>
             ))}
           </div>
         </Card>
@@ -542,12 +542,12 @@ export function PosDiagnostics() {
                         atualizar.mutate();
                       }
                     }} disabled={atualizar.isPending}
-                      className="px-4 py-2 bg-[#0B4F5C] text-white text-[13px] font-bold disabled:opacity-50">
+                      className="px-4 py-2 bg-[#062A31] text-white text-[13px] font-bold disabled:opacity-50">
                       {atualizar.isPending ? 'A iniciar…' : '⟳ Atualizar agora'}
                     </button>
                   ) : (
                     <a href={d.update.download_url} target="_blank" rel="noopener noreferrer"
-                      className="px-4 py-2 bg-[#0B4F5C] text-white text-[13px] font-bold">
+                      className="px-4 py-2 bg-[#062A31] text-white text-[13px] font-bold">
                       ⬇ Descarregar (instalador completo — corre-se à mão)
                     </a>
                   )}

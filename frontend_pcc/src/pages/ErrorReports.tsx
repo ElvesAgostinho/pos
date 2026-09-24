@@ -115,7 +115,7 @@ const ErrorReports: React.FC = () => {
       {selected && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
           <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[640px] max-h-[80vh] shadow-md flex flex-col">
-            <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center">
+            <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
               <div className="flex items-center">
                 <AlertTriangle size={14} className="mr-2 text-[#7FA9B1]" />
                 <span className="font-bold text-[11px]">{selected.client_code} — {selected.level}</span>
@@ -158,7 +158,7 @@ const ErrorReports: React.FC = () => {
                 <button onClick={() => marcarResolvido(selected, true)} disabled={saving}
                   className="flex items-center gap-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white disabled:opacity-50">
                   <CheckCircle size={12} className="text-[#5C8891]" />
-                  <span className="font-bold text-[#0B4F5C]">{saving ? 'A guardar…' : 'Marcar resolvido'}</span>
+                  <span className="font-bold text-[#062A31]">{saving ? 'A guardar…' : 'Marcar resolvido'}</span>
                 </button>
               )}
               <button onClick={() => setSelected(null)}

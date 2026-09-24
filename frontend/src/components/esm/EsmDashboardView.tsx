@@ -5,7 +5,7 @@ import { useEsmDashboard } from '../../hooks/useEsm';
 import { AlertTriangle, RefreshCw, Award } from 'lucide-react';
 
 const scoreColor = (score: number) =>
-  score >= 80 ? 'text-[#0B4F5C]' : score >= 50 ? 'text-[#5C8891]' : 'text-[#8C2B1F]';
+  score >= 80 ? 'text-[#062A31]' : score >= 50 ? 'text-[#5C8891]' : 'text-[#8C2B1F]';
 
 const StatCard = ({ title, value, subtitle }: { title: string; value: React.ReactNode; subtitle?: string }) => (
   <div className="bg-[#F7FAFA] border-2 border-white border-b-[#7FA9B1] border-r-[#7FA9B1] p-4 flex flex-col justify-between">
@@ -92,7 +92,7 @@ export default function EsmDashboardView() {
                           <div className="font-bold text-gray-800 truncate">{d.title}</div>
                           <div className="text-[10px] text-gray-500 truncate">{d.supplier_name} · {d.document_type}</div>
                         </div>
-                        <span className="text-[#0B4F5C] font-bold ml-2 flex-shrink-0">{d.expiration_date}</span>
+                        <span className="text-[#062A31] font-bold ml-2 flex-shrink-0">{d.expiration_date}</span>
                       </div>
                     ))}
                   </div>
@@ -111,7 +111,7 @@ export default function EsmDashboardView() {
                           <div className="font-bold text-gray-800 truncate">{c.reference}</div>
                           <div className="text-[10px] text-gray-500 truncate">{c.supplier_name}</div>
                         </div>
-                        <span className="text-[#0B4F5C] font-bold ml-2 flex-shrink-0">{c.end_date}</span>
+                        <span className="text-[#062A31] font-bold ml-2 flex-shrink-0">{c.end_date}</span>
                       </div>
                     ))}
                   </div>

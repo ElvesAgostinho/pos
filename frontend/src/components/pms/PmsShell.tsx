@@ -133,13 +133,13 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   return (
     <div className="h-full flex flex-col" style={{ background: '#F7FAFA', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* Barra de menus (topo escuro) — cabeçalho próprio do PMS */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#06333C', height: 56 }}>
+      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#041F24', height: 56 }}>
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
             <span className="text-[30px] font-black tracking-tight select-none"
               style={{
-                background: 'linear-gradient(180deg,#CFE3E6 0%,#0B4F5C 55%,#0B4F5C 100%)',
+                background: 'linear-gradient(180deg,#CFE3E6 0%,#062A31 55%,#062A31 100%)',
                 WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
                 textShadow: '0 1px 0 rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.55)',
                 filter: 'drop-shadow(0 2px 1px rgba(0,0,0,.6))',
@@ -151,7 +151,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           {menu === '__ml' && (
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full z-[61] min-w-[230px] py-1 shadow-2xl" style={{ background: '#06333C', border: '1px solid #0B4F5C' }}>
+              <div className="absolute left-0 top-full z-[61] min-w-[230px] py-1 shadow-2xl" style={{ background: '#041F24', border: '1px solid #062A31' }}>
                 <button onClick={() => { setMenu(null); localStorage.removeItem('ui_shell'); onDesktop?.(); }}
                   className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891]">
                   <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>
@@ -172,7 +172,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
             {menu === m.title && (
               <>
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full z-[61] min-w-[260px] py-1 shadow-2xl" style={{ background: '#06333C', border: '1px solid #0B4F5C' }}>
+                <div className="absolute left-0 top-full z-[61] min-w-[260px] py-1 shadow-2xl" style={{ background: '#041F24', border: '1px solid #062A31' }}>
                   {m.items.map((it, i) => (
                     <button key={i}
                       onClick={() => {
@@ -201,8 +201,8 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
       </div>
 
       {/* Título da secção ativa */}
-      <div className="flex items-center gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#06333C' }}>
-        <span className="text-[#0B4F5C] inline-flex items-center"><Glyph icon={cur.icon} size={17} /></span>
+      <div className="flex items-center gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+        <span className="text-[#062A31] inline-flex items-center"><Glyph icon={cur.icon} size={17} /></span>
         {cur.label}{hotelName && ` - ${hotelName}`}
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
           className="ml-auto w-6 h-6 rounded flex items-center justify-center text-[#CFE3E6] hover:text-white hover:bg-white/10">
@@ -216,9 +216,9 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
 
       {/* Barra 1 — ação do ecrã + hora + fechar */}
       <div className="h-8 flex items-center justify-between px-3 flex-shrink-0 border-t border-[#CFE3E6] text-[11px]" style={{ background: '#F7FAFA' }}>
-        <span className="text-[#0B4F5C]">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+        <span className="text-[#062A31]">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
         <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-          className="flex items-center gap-1.5 text-[#06333C] font-semibold hover:text-black" title="Fechar (volta ao Ambiente de Trabalho)">
+          className="flex items-center gap-1.5 text-[#041F24] font-semibold hover:text-black" title="Fechar (volta ao Ambiente de Trabalho)">
           <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white">
             <X size={10} strokeWidth={3} />
           </span>
@@ -227,7 +227,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
       </div>
 
       {/* Barra 2 — separador (tarefa aberta) + versão + hotel ativo */}
-      <div className="h-7 flex items-center px-2 gap-2 flex-shrink-0 text-white text-[11px]" style={{ background: '#06333C' }}>
+      <div className="h-7 flex items-center px-2 gap-2 flex-shrink-0 text-white text-[11px]" style={{ background: '#041F24' }}>
         <span className="flex items-center gap-1.5 px-2 py-0.5 bg-[#5C8891]">
           <Glyph icon={cur.icon} size={11} /> {cur.label}
         </span>
@@ -235,7 +235,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         <span className="opacity-60">ML · PMS v1.0</span>
         {hotels.length > 1 && (
           <select value={hotelId || String(hotels[0]?.id)} onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
-            className="h-[20px] text-[11px] px-1 border border-[#0B4F5C] bg-[#062A31] text-white">
+            className="h-[20px] text-[11px] px-1 border border-[#062A31] bg-[#062A31] text-white">
             {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
         )}

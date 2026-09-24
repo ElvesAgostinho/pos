@@ -105,7 +105,7 @@ const AuditLog: React.FC = () => {
       {selected && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center" onClick={() => setSelected(null)}>
           <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[520px] shadow-md flex flex-col" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center">
+            <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
               <span className="font-bold text-[11px]">{ACTION_LABEL[selected.action] || selected.action}</span>
               <button onClick={() => setSelected(null)} className="hover:text-[#B0392B] font-bold">×</button>
             </div>

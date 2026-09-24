@@ -19,7 +19,7 @@ const TABS: [Tab, string][] = [
 function R({ label, children, w = 'w-[110px]' }: any) {
   return (
     <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className={`${w} flex-shrink-0 text-[#06333C]`}>{label}</span>
+      <span className={`${w} flex-shrink-0 text-[#041F24]`}>{label}</span>
       {children}
     </label>
   );
@@ -91,7 +91,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo' : `A editar ${d.first_name || ''} ${d.last_name || ''}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo' : `A editar ${d.first_name || ''} ${d.last_name || ''}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -99,7 +99,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
         {/* Dados de Login + Atribuir Caixa */}
         <div className="grid grid-cols-[1fr_300px] gap-4 mb-3">
           <fieldset className="px-3 pb-3 pt-1" style={{ border: '4px groove #CFE3E6' }}>
-            <legend className="px-1 text-[12px] font-semibold text-[#06333C]">Dados de Login</legend>
+            <legend className="px-1 text-[12px] font-semibold text-[#041F24]">Dados de Login</legend>
             <div className="grid grid-cols-[1fr_240px] gap-4">
               <div className="space-y-2">
                 <R label="Código:">
@@ -135,7 +135,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
           </fieldset>
 
           <fieldset className="px-3 pb-3 pt-1" style={{ border: '4px groove #CFE3E6' }}>
-            <legend className="px-1 text-[12px] font-semibold text-[#06333C]">Atribuir Caixa</legend>
+            <legend className="px-1 text-[12px] font-semibold text-[#041F24]">Atribuir Caixa</legend>
             {['Caixa', 'IFC'].map((c) => (
               <label key={c} className="flex items-center gap-3 py-1.5 border-b border-[#F7FAFA] text-[12px]">
                 <input type="checkbox" checked={!!(d.cash_registers || {})[c]}
@@ -213,7 +213,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
           {tab === 'complex' && (
             <div className="max-w-[700px]">
               <label className="flex items-center gap-3 text-[12px] mb-3">
-                <span className="w-[130px] text-[#06333C]">Todos os complexos:</span>
+                <span className="w-[130px] text-[#041F24]">Todos os complexos:</span>
                 <input type="checkbox" checked={!!d.all_complexes} onChange={(e) => set('all_complexes', e.target.checked)} className="w-4 h-4" />
               </label>
               <table className="w-full text-[12px] border-collapse">
@@ -410,7 +410,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       {pwModal && (
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={() => setPwModal(null)}>
           <div className="bg-white border border-[#5C8891] w-[440px] shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+            <div className="px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
               {pwModal === 'pos' ? 'PIN do Terminal' : 'Password'}
             </div>
             <div className="p-4 space-y-2">
@@ -423,7 +423,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
               </div>
             </div>
             <Toolbar actions={[
-              { icon: '✔', label: 'Definir', color: '#0B4F5C', onClick: applyPw },
+              { icon: '✔', label: 'Definir', color: '#062A31', onClick: applyPw },
               { icon: '✖', label: 'Cancelar', color: '#B0392B', onClick: () => { setPw(''); setPwModal(null); } },
             ]} />
           </div>
@@ -441,7 +441,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

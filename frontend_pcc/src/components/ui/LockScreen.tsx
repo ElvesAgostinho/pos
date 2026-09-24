@@ -32,8 +32,8 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#06333C]">
-      <div className="w-80 bg-[#06333C] border border-[#0B4F5C] rounded-sm p-8 flex flex-col items-center shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#041F24]">
+      <div className="w-80 bg-[#041F24] border border-[#062A31] rounded-sm p-8 flex flex-col items-center shadow-2xl">
         <Lock size={48} className="text-[#7FA9B1] mb-6" />
         <h2 className="text-white text-lg font-bold mb-1">Consola Bloqueada</h2>
         <p className="text-[#7FA9B1] text-xs mb-4 flex items-center gap-1">
@@ -47,12 +47,12 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
             value={password}
             onChange={(e) => { setPassword(e.target.value); if (error) setError(''); }}
             placeholder="A sua password"
-            className={`w-full h-11 px-3 mb-3 bg-[#0B4F5C] text-white text-sm rounded-sm border ${error ? 'border-[#B0392B]' : 'border-[#0B4F5C]'} focus:outline-none focus:border-[#7FA9B1]`}
+            className={`w-full h-11 px-3 mb-3 bg-[#062A31] text-white text-sm rounded-sm border ${error ? 'border-[#B0392B]' : 'border-[#062A31]'} focus:outline-none focus:border-[#7FA9B1]`}
           />
           <button
             type="submit"
             disabled={loading || !password}
-            className="w-full h-11 bg-[#0B4F5C] text-white text-sm font-medium rounded-sm hover:bg-[#0B4F5C] border border-[#06333C] flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full h-11 bg-[#062A31] text-white text-sm font-medium rounded-sm hover:bg-[#062A31] border border-[#041F24] flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <Unlock size={16} /> {loading ? 'A verificar…' : 'Desbloquear'}
           </button>

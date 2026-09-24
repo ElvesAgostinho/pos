@@ -12,7 +12,7 @@ const when = (v: any) => (v ? new Date(v).toLocaleString('pt-PT', { day: '2-digi
 function Panel({ title, children, right }: any) {
   return (
     <div className="bg-white border border-[#7FA9B1]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
-      <div className="px-3 py-1.5 border-b border-[#CFE3E6] flex items-center justify-between text-[12px] font-bold text-[#0B4F5C]"
+      <div className="px-3 py-1.5 border-b border-[#CFE3E6] flex items-center justify-between text-[12px] font-bold text-[#062A31]"
         style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA)' }}>
         <span>{title}</span>{right}
       </div>
@@ -21,7 +21,7 @@ function Panel({ title, children, right }: any) {
   );
 }
 
-const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#7FA9B1] text-[#06333C] flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#7FA9B1] text-[#041F24] flex items-center gap-1.5';
 const btnStyle = {
   background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA 48%, #EEF4F5 52%, #EEF4F5)',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
@@ -31,7 +31,7 @@ const STATUS: Record<string, { label: string; bg: string; icon: any }> = {
   QUEUED: { label: 'Em fila', bg: '#5C8891', icon: Clock },
   SENDING: { label: 'A enviar', bg: '#5C8891', icon: Send },
   RETRY: { label: 'A reenviar', bg: '#5C8891', icon: RefreshCw },
-  ACK: { label: 'Aceite pela AGT', bg: '#0B4F5C', icon: CheckCircle2 },
+  ACK: { label: 'Aceite pela AGT', bg: '#062A31', icon: CheckCircle2 },
   REJECTED: { label: 'Rejeitado', bg: '#B0392B', icon: XCircle },
   FAILED: { label: 'Falhou', bg: '#8C2B1F', icon: AlertTriangle },
   SENT: { label: 'Enviado', bg: '#5C8891', icon: Send },
@@ -88,7 +88,7 @@ export default function AgtTransmitView() {
   const Kpi = ({ label, value, color }: any) => (
     <div className="flex-1 bg-white border border-[#7FA9B1] px-3 py-2" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
       <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
-      <div className="text-[22px] font-black leading-tight" style={{ color: color || '#0B4F5C' }}>{value ?? '—'}</div>
+      <div className="text-[22px] font-black leading-tight" style={{ color: color || '#062A31' }}>{value ?? '—'}</div>
     </div>
   );
 
@@ -102,15 +102,15 @@ export default function AgtTransmitView() {
           right={<div className="flex gap-2">
             <button onClick={() => check.mutate()} className={btn} style={btnStyle}><RefreshCw size={12} />Testar ligação</button>
             <button onClick={() => run.mutate()} disabled={run.isPending} className={btn}
-              style={{ ...btnStyle, background: 'linear-gradient(to bottom, #0B4F5C, #5C8891)', color: '#FFFFFF', borderColor: '#06333C' }}>
+              style={{ ...btnStyle, background: 'linear-gradient(to bottom, #062A31, #5C8891)', color: '#FFFFFF', borderColor: '#041F24' }}>
               <Send size={12} />{run.isPending ? 'A transmitir…' : 'Transmitir agora'}
             </button>
           </div>}>
           {c?.simulation ? (
             <div className="flex items-start gap-2 p-2 bg-[#F7FAFA] border border-[#CFE3E6] text-[12px]">
-              <ShieldAlert size={20} className="text-[#0B4F5C] flex-shrink-0" />
+              <ShieldAlert size={20} className="text-[#062A31] flex-shrink-0" />
               <div>
-                <div className="font-bold text-[#06333C]">Modo simulação — ainda não está a comunicar com a AGT a sério</div>
+                <div className="font-bold text-[#041F24]">Modo simulação — ainda não está a comunicar com a AGT a sério</div>
                 <div className="text-gray-700 mt-0.5">
                   Toda a infraestrutura está pronta (fila, transmissor, reenvio, idempotência, prova de envio).
                   Falta apenas o que <b>só a AGT pode dar ao contribuinte</b>: o <b>URL de submissão</b> e as <b>credenciais</b>.
@@ -122,9 +122,9 @@ export default function AgtTransmitView() {
           ) : (
             <div className="flex items-center gap-3 text-[12px]">
               <div className="flex items-center gap-2 px-3 py-2 bg-[#F7FAFA] border border-[#CFE3E6]">
-                <ShieldCheck size={20} className="text-[#0B4F5C]" />
+                <ShieldCheck size={20} className="text-[#062A31]" />
                 <div>
-                  <div className="font-bold text-[#06333C]">Ligada · {c?.environment === 'PROD' ? 'Produção' : 'Sandbox'}</div>
+                  <div className="font-bold text-[#041F24]">Ligada · {c?.environment === 'PROD' ? 'Produção' : 'Sandbox'}</div>
                   <div className="text-[11px] text-gray-600">{c?.url_submit}</div>
                 </div>
               </div>
@@ -142,10 +142,10 @@ export default function AgtTransmitView() {
 
         {/* Fila */}
         <div className="flex gap-2">
-          <Kpi label="Por enviar" value={q?.pending} color={q?.pending ? '#5C8891' : '#0B4F5C'} />
-          <Kpi label="Aceites pela AGT" value={q?.acked} color="#0B4F5C" />
-          <Kpi label="Rejeitados" value={q?.rejected} color={q?.rejected ? '#B0392B' : '#0B4F5C'} />
-          <Kpi label="Falhados" value={q?.failed} color={q?.failed ? '#B0392B' : '#0B4F5C'} />
+          <Kpi label="Por enviar" value={q?.pending} color={q?.pending ? '#5C8891' : '#062A31'} />
+          <Kpi label="Aceites pela AGT" value={q?.acked} color="#062A31" />
+          <Kpi label="Rejeitados" value={q?.rejected} color={q?.rejected ? '#B0392B' : '#062A31'} />
+          <Kpi label="Falhados" value={q?.failed} color={q?.failed ? '#B0392B' : '#062A31'} />
           <Kpi label="Total" value={q?.total} />
           <Kpi label="Mais antigo por enviar" value={q?.oldest_pending_at ? when(q.oldest_pending_at) : '—'} />
         </div>
@@ -178,8 +178,8 @@ export default function AgtTransmitView() {
             { header: '', accessor: (r: any) => (
               r.status !== 'ACK' ? (
                 <button onClick={(e: any) => { e.stopPropagation(); retry.mutate(r.id); }}
-                  className="px-1.5 py-0.5 text-[10px] font-bold border border-[#06333C] text-white"
-                  style={{ background: 'linear-gradient(to bottom, #0B4F5C, #5C8891)' }}>Reenviar</button>
+                  className="px-1.5 py-0.5 text-[10px] font-bold border border-[#041F24] text-white"
+                  style={{ background: 'linear-gradient(to bottom, #062A31, #5C8891)' }}>Reenviar</button>
               ) : null), width: '10%' },
           ]} />
         </Panel>

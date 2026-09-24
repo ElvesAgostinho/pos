@@ -13,7 +13,7 @@ import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => (v == null ? '—' : Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 const CAT_ICON: Record<string, any> = { FATURACAO: FileText, POS: Receipt, PMS: BedDouble, COMPRAS: ShoppingCart, STOCK: Boxes, TESOURARIA: Coins, CONTABILIDADE: BookText };
-const CAT_COLOR: Record<string, string> = { FATURACAO: '#B0392B', POS: '#0B4F5C', PMS: '#5C8891', COMPRAS: '#5C8891', STOCK: '#5C8891', TESOURARIA: '#0B4F5C', CONTABILIDADE: '#0B4F5C' };
+const CAT_COLOR: Record<string, string> = { FATURACAO: '#B0392B', POS: '#062A31', PMS: '#5C8891', COMPRAS: '#5C8891', STOCK: '#5C8891', TESOURARIA: '#062A31', CONTABILIDADE: '#062A31' };
 
 // Colunas de exportação (todas as áreas, formato comum).
 const EXPORT_COLS = [
@@ -56,10 +56,10 @@ export default function DocumentCenterView() {
   const expTitle = `Document Center — ${cat || 'Todas as áreas'}`;
   const EXPORTS = [
     { label: 'PDF', icon: FileType2, color: '#B0392B', run: () => exportPDF(filtered, EXPORT_COLS, expName, expTitle) },
-    { label: 'Excel', icon: FileSpreadsheet, color: '#0B4F5C', run: () => exportExcel(filtered, EXPORT_COLS, expName, expTitle) },
-    { label: 'Word', icon: FileText, color: '#0B4F5C', run: () => exportWord(filtered, EXPORT_COLS, expName, expTitle) },
-    { label: 'CSV', icon: FileDown, color: '#0B4F5C', run: () => exportCSV(filtered, EXPORT_COLS, expName) },
-    { label: 'JSON', icon: FileJson, color: '#0B4F5C', run: () => exportJSON(filtered, EXPORT_COLS, expName) },
+    { label: 'Excel', icon: FileSpreadsheet, color: '#062A31', run: () => exportExcel(filtered, EXPORT_COLS, expName, expTitle) },
+    { label: 'Word', icon: FileText, color: '#062A31', run: () => exportWord(filtered, EXPORT_COLS, expName, expTitle) },
+    { label: 'CSV', icon: FileDown, color: '#062A31', run: () => exportCSV(filtered, EXPORT_COLS, expName) },
+    { label: 'JSON', icon: FileJson, color: '#062A31', run: () => exportJSON(filtered, EXPORT_COLS, expName) },
   ];
 
   // O repositório tem DUAS metades: os DOCUMENTOS (o que foi emitido) e o TRILHO
@@ -70,7 +70,7 @@ export default function DocumentCenterView() {
         <div className="flex gap-1 px-3 pt-2 bg-[#EEF4F5] border-b border-[#7FA9B1]">
           <button onClick={() => setView('docs')}
             className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#EEF4F5] text-gray-600 border-[#CFE3E6]">Documentos</button>
-          <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#0B4F5C] border-[#7FA9B1]">
+          <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#062A31] border-[#7FA9B1]">
             Trilho de Auditoria (tudo o que aconteceu)
           </button>
         </div>
@@ -84,7 +84,7 @@ export default function DocumentCenterView() {
       footer={<div className="text-gray-600">Todos os documentos de todos os módulos · pesquisa global (nº, cliente, mesa, quarto, valor) · {data?.count ?? 0} resultado(s)</div>}>
       <div className="flex flex-col h-full bg-[#F7FAFA]">
         <div className="flex gap-1 px-3 pt-2 bg-[#EEF4F5] border-b border-[#7FA9B1]">
-          <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#0B4F5C] border-[#7FA9B1]">Documentos</button>
+          <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#062A31] border-[#7FA9B1]">Documentos</button>
           <button onClick={() => setView('trail')}
             className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#EEF4F5] text-gray-600 border-[#CFE3E6] hover:bg-[#F7FAFA]">
             Trilho de Auditoria (tudo o que aconteceu)
@@ -92,7 +92,7 @@ export default function DocumentCenterView() {
         </div>
         {/* Dashboard */}
         <div className="flex flex-wrap gap-2 p-3 border-b border-[#CFE3E6] bg-[#F7FAFA]">
-          {[['Emitidos hoje', dash?.total_today, '#5C8891'], ['Faturas', dash?.invoices, '#B0392B'], ['Vendas POS', dash?.pos_sales, '#0B4F5C'], ['Check-ins', dash?.checkins, '#5C8891'], ['Compras', dash?.purchases, '#5C8891'], ['Mov. Stock', dash?.stock_moves, '#5C8891'], ['Anulados', dash?.voided, '#5C8891']].map(([l, v, c]: any) => (
+          {[['Emitidos hoje', dash?.total_today, '#5C8891'], ['Faturas', dash?.invoices, '#B0392B'], ['Vendas POS', dash?.pos_sales, '#062A31'], ['Check-ins', dash?.checkins, '#5C8891'], ['Compras', dash?.purchases, '#5C8891'], ['Mov. Stock', dash?.stock_moves, '#5C8891'], ['Anulados', dash?.voided, '#5C8891']].map(([l, v, c]: any) => (
             <div key={l} className="bg-white border border-[#CFE3E6] px-3 py-1"><div className="text-[9px] uppercase text-gray-500">{l}</div><div className="text-lg font-bold" style={{ color: c }}>{v ?? 0}</div></div>
           ))}
         </div>
@@ -145,7 +145,7 @@ export default function DocumentCenterView() {
         <div className="flex flex-1 overflow-hidden">
           {/* Pastas por área */}
           <div className="w-52 flex-shrink-0 bg-white border-r border-[#CFE3E6] overflow-auto py-1">
-            <button onClick={() => setCat('')} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left hover:bg-[#F7FAFA] ${cat === '' ? 'bg-[#F7FAFA] font-bold' : ''}`}><Folder size={14} className="text-[#0B4F5C]" />Todos os documentos</button>
+            <button onClick={() => setCat('')} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left hover:bg-[#F7FAFA] ${cat === '' ? 'bg-[#F7FAFA] font-bold' : ''}`}><Folder size={14} className="text-[#062A31]" />Todos os documentos</button>
             {cats.map((c: any) => {
               const Icon = CAT_ICON[c.key] || Folder;
               return (

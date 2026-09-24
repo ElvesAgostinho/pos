@@ -18,7 +18,7 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
   const ActiveIcon = activeMeta.icon;
 
   return (
-    <div className="flex items-center justify-between bg-[#0B4F5C] h-7 px-2 select-none border-b border-[#06333C]">
+    <div className="flex items-center justify-between bg-[#062A31] h-7 px-2 select-none border-b border-[#041F24]">
 
       {/* Window Title */}
       <div className="flex items-center text-white text-[12px] font-medium">

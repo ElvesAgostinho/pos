@@ -101,7 +101,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
         <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-          <span className="text-[13px] font-bold text-[#06333C]">
+          <span className="text-[13px] font-bold text-[#041F24]">
             {editing.id ? `A editar ${editing.name || ''}` : `Novo ${title.toLowerCase()}`}
           </span>
           <button onClick={() => setEditing(null)} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
@@ -112,7 +112,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
             <div className="space-y-2.5 pt-1.5">
               {fields.map((f) => (
                 <label key={f.key} className={`flex gap-3 text-[13px] ${f.type === 'textarea' ? 'items-start' : 'items-center'}`}>
-                  <span className={`w-[160px] flex-shrink-0 text-[#06333C] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
+                  <span className={`w-[160px] flex-shrink-0 text-[#041F24] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
                     {f.label}{f.required && <span className="text-[#B0392B]">*</span>}
                   </span>
                   {f.type === 'textarea' ? (
@@ -135,10 +135,10 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                         <img src={editing[f.key]} alt="" className="w-8 h-8 object-contain border border-[#EEF4F5] bg-white flex-shrink-0" />
                       )}
                       <label className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#0B4F5C] bg-[#F7FAFA]`} style={inputStyle}>
+                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#062A31] bg-[#F7FAFA]`} style={inputStyle}>
                           {editing[f.key] ? String(editing[f.key]).split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                         </span>
-                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#06333C] text-white hover:bg-[#0B4F5C] flex-shrink-0">
+                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#041F24] text-white hover:bg-[#062A31] flex-shrink-0">
                           Carregar…
                         </span>
                         <input type="file" accept="image/*" className="hidden"
@@ -174,7 +174,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
         <Toolbar actions={[
           {
-            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C',
+            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31',
             onClick: () => missing.length
               ? notifyGuide({ title: 'Faltam campos', message: `Preencha: ${missing.map((m) => m.label).join(', ')}.` })
               : save.mutate(editing),
@@ -192,7 +192,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center gap-3 px-3 py-2 border-b border-[#EEF4F5] bg-[#F7FAFA] text-[13px]">
-        <span className="text-[#06333C]">Pesquisar:</span>
+        <span className="text-[#041F24]">Pesquisar:</span>
         <div className="flex items-center border border-[#7FA9B1] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
             className="px-2 py-1 text-[12px] outline-none w-[220px]" />
@@ -208,7 +208,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
               verticais entre colunas — é o detalhe que faz uma grelha parecer folha de
               cálculo a sério, não uma lista HTML qualquer. */}
           <thead className="sticky top-0">
-            <tr className="text-[#06333C]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
+            <tr className="text-[#041F24]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
               {columns.map((c, i) => (
                 <th key={c.key}
                   className={`text-left font-semibold px-3 py-1 border-b-2 ${i > 0 ? 'border-l' : ''}`}
@@ -268,7 +268,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-1.5 disabled:opacity-30">▶</button>
           <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-1.5 disabled:opacity-30">⏭</button>
         </div>
-        <span className="ml-auto text-[#0B4F5C]">
+        <span className="ml-auto text-[#062A31]">
           Nº registos a visualizar {filtered.length ? (page - 1) * pageSize + 1 : 0} - {Math.min(page * pageSize, filtered.length)} de {filtered.length}
         </span>
       </div>
@@ -276,10 +276,10 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
       <Toolbar actions={[
         { icon: '＋', label: 'Adicionar', color: '#062A31', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
         { icon: '✎', label: 'Editar', color: '#5C8891', disabled: !sel || readOnly, onClick: () => setEditing({ ...selRow }) },
-        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#0B4F5C', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
+        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#062A31', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
         { icon: '−', label: 'Apagar', color: '#B0392B', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },
-        { icon: '🖶', label: 'Imprimir', color: '#06333C', onClick: () => window.print() },
-        { icon: '⤓', label: 'Exportar para Excel', color: '#0B4F5C', onClick: exportCsv },
+        { icon: '🖶', label: 'Imprimir', color: '#041F24', onClick: () => window.print() },
+        { icon: '⤓', label: 'Exportar para Excel', color: '#062A31', onClick: exportCsv },
       ]} />
     </div>
   );

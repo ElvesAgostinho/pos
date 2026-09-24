@@ -29,7 +29,7 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
       <div className="w-[900px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
           Controlo de duplicação
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
@@ -43,7 +43,7 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
           </label>
           <button onClick={() => refetch()}
             className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] py-2"
-            style={{ background: '#06333C' }}>
+            style={{ background: '#041F24' }}>
             <RefreshCw size={18} /> Pesquisar
           </button>
         </div>

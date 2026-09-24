@@ -46,10 +46,10 @@ function pickEmoji(id: string, name: string): string {
 }
 
 // Cor por módulo (ponto no dropdown de módulos).
-const ICON_COLORS = ['#B0392B', '#5C8891', '#5C8891', '#5C8891', '#0B4F5C', '#5C8891', '#5C8891', '#5C8891', '#0B4F5C', '#0B4F5C', '#5C8891', '#B0392B'];
+const ICON_COLORS = ['#B0392B', '#5C8891', '#5C8891', '#5C8891', '#062A31', '#5C8891', '#5C8891', '#5C8891', '#062A31', '#062A31', '#5C8891', '#B0392B'];
 
 const ML = ({ cls = 'text-2xl' }: { cls?: string }) => (
-  <span className={`font-black tracking-tight ${cls}`}><span className="text-[#0B4F5C]">M</span><span className="text-white">L</span></span>
+  <span className={`font-black tracking-tight ${cls}`}><span className="text-[#062A31]">M</span><span className="text-white">L</span></span>
 );
 
 interface Props { moduleKey: string; activeView: string; onOpen: (id: string) => void; }
@@ -85,15 +85,15 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
         onMouseLeave={() => setOpenGroup(null)}>
         {/* ML — switcher de módulos */}
         <div className="relative mr-2">
-          <button onClick={() => licensed.length > 1 && setSwitcher((o) => !o)} className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-[#06333C]">
+          <button onClick={() => licensed.length > 1 && setSwitcher((o) => !o)} className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-[#041F24]">
             <ML /> {licensed.length > 1 && <ChevronDown size={14} className="text-gray-400" />}
           </button>
           {switcher && (
-            <div className="absolute left-0 top-11 bg-[#062A31] border border-[#06333C] min-w-[280px] shadow-2xl py-1 z-40 max-h-[75vh] overflow-auto">
-              <div className="px-3 py-1.5 flex items-center gap-2 border-b border-[#06333C]"><ML cls="text-base" /><span className="text-[10px] uppercase tracking-widest text-gray-500">Os seus módulos</span></div>
+            <div className="absolute left-0 top-11 bg-[#062A31] border border-[#041F24] min-w-[280px] shadow-2xl py-1 z-40 max-h-[75vh] overflow-auto">
+              <div className="px-3 py-1.5 flex items-center gap-2 border-b border-[#041F24]"><ML cls="text-base" /><span className="text-[10px] uppercase tracking-widest text-gray-500">Os seus módulos</span></div>
               {licensed.map((m) => (
                 <button key={m.key} onClick={() => { setSwitcher(false); onOpen(`home:${m.key}`); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-[#06333C] ${m.key === moduleKey ? 'bg-[#062A31]' : ''}`}>
+                  className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-[#041F24] ${m.key === moduleKey ? 'bg-[#062A31]' : ''}`}>
                   <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: ICON_COLORS[MODULES.indexOf(m) % ICON_COLORS.length] }} />
                   <span className="text-gray-200 text-sm text-left flex-1">{m.title.replace(/^\d+\s·\s/, '')}</span>
                 </button>
@@ -103,21 +103,21 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
         </div>
         {/* Voltar ao ambiente de trabalho */}
         <button onClick={() => onOpen(`home:${moduleKey}`)} title="Ambiente de trabalho"
-          className="px-2 h-12 text-gray-400 hover:bg-[#06333C] hover:text-white flex items-center"><Home size={16} /></button>
+          className="px-2 h-12 text-gray-400 hover:bg-[#041F24] hover:text-white flex items-center"><Home size={16} /></button>
 
         {/* Menus reais (submódulos por área) */}
         <nav className="flex items-center gap-0.5 flex-1 overflow-x-auto">
           {groups ? groups.map((g) => (
             <div key={g.label} className="relative">
               <button onClick={() => setOpenGroup((o) => (o === g.label ? null : g.label))}
-                className={`px-3 h-12 text-sm whitespace-nowrap flex items-center gap-1 hover:bg-[#06333C] ${openGroup === g.label ? 'bg-[#06333C] text-white' : 'text-gray-100'}`}>
+                className={`px-3 h-12 text-sm whitespace-nowrap flex items-center gap-1 hover:bg-[#041F24] ${openGroup === g.label ? 'bg-[#041F24] text-white' : 'text-gray-100'}`}>
                 {g.label} <ChevronDown size={13} className="opacity-70" />
               </button>
               {openGroup === g.label && (
-                <div className="absolute left-0 top-12 bg-[#062A31] border border-[#06333C] min-w-[230px] shadow-xl py-1 z-30">
+                <div className="absolute left-0 top-12 bg-[#062A31] border border-[#041F24] min-w-[230px] shadow-xl py-1 z-30">
                   {g.items.filter((id) => byId[id]).map((id) => (
                     <button key={id} onClick={() => pick(id)}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-[#06333C] flex items-center justify-between ${VIEW_REGISTRY[id] ? 'text-white' : 'text-gray-500'}`}>
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-[#041F24] flex items-center justify-between ${VIEW_REGISTRY[id] ? 'text-white' : 'text-gray-500'}`}>
                       {byId[id].name}{VIEW_REGISTRY[id] && <span className="w-1.5 h-1.5 rounded-full bg-[#5C8891]" />}
                     </button>
                   ))}
@@ -125,7 +125,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
               )}
             </div>
           )) : items.slice(0, 9).map((it) => (
-            <button key={it.id} onClick={() => pick(it.id)} className={`px-3 h-12 text-sm whitespace-nowrap hover:bg-[#06333C] ${VIEW_REGISTRY[it.id] ? 'text-white' : 'text-gray-500'}`}>{it.name}</button>
+            <button key={it.id} onClick={() => pick(it.id)} className={`px-3 h-12 text-sm whitespace-nowrap hover:bg-[#041F24] ${VIEW_REGISTRY[it.id] ? 'text-white' : 'text-gray-500'}`}>{it.name}</button>
           ))}
         </nav>
 
@@ -138,7 +138,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
 
       {/* ================= CONTEÚDO ================= */}
       {isDesktop ? (
-        <div className="flex-1 overflow-auto relative" style={{ backgroundColor: '#06333C' }}>
+        <div className="flex-1 overflow-auto relative" style={{ backgroundColor: '#041F24' }}>
           <div className="absolute inset-0 pointer-events-none bg-cover bg-center" style={{ backgroundImage: `url('${wallpaper}')` }} />
           <div className="relative p-6">
             <div className="mb-4 text-white/90 text-sm font-bold uppercase tracking-wide" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.6)' }}>{mod.title}</div>
@@ -153,7 +153,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
                       style={{ opacity: real ? 1 : 0.4, filter: real ? 'none' : 'grayscale(70%)' }}>
                       {emoji}
                     </div>
-                    <span className="text-[11px] text-center leading-tight px-1 text-white group-hover:bg-[#0B4F5C]" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.85)' }}>{item.name}</span>
+                    <span className="text-[11px] text-center leading-tight px-1 text-white group-hover:bg-[#062A31]" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.85)' }}>{item.name}</span>
                   </button>
                 );
               })}
@@ -176,7 +176,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
         <button onClick={() => setStartOpen((o) => !o)}
           className="h-7 px-2.5 flex items-center gap-1.5 font-bold text-[13px] text-black active:translate-y-px"
           style={{ background: '#CFE3E6', boxShadow: startOpen ? 'inset -1px -1px 0 #FFFFFF, inset 1px 1px 0 #041F24, inset -2px -2px 0 #EEF4F5, inset 2px 2px 0 #5C8891' : 'inset -1px -1px 0 #041F24, inset 1px 1px 0 #FFFFFF, inset -2px -2px 0 #5C8891, inset 2px 2px 0 #EEF4F5' }}>
-          <span className="text-sm font-black leading-none"><span className="text-[#0B4F5C]">M</span><span className="text-[#5C8891]">L</span></span> Iniciar
+          <span className="text-sm font-black leading-none"><span className="text-[#062A31]">M</span><span className="text-[#5C8891]">L</span></span> Iniciar
         </button>
         <div className="flex-1 text-[10px] text-gray-700 px-2 truncate">System Mwana Lodge · Licenciado a {user?.name || 'Cliente Demo'}</div>
         <div className="h-7 px-3 flex items-center text-[12px] text-black" style={{ boxShadow: 'inset -1px -1px 0 #FFFFFF, inset 1px 1px 0 #5C8891' }}>
@@ -192,12 +192,12 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
               <div className="flex-1 py-1">
                 {licensed.map((m) => (
                   <button key={m.key} onClick={() => { setStartOpen(false); onOpen(`home:${m.key}`); }}
-                    className={`w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12px] hover:bg-[#0B4F5C] hover:text-white ${m.key === moduleKey ? 'font-bold' : ''}`}>
+                    className={`w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12px] hover:bg-[#062A31] hover:text-white ${m.key === moduleKey ? 'font-bold' : ''}`}>
                     <LayoutGrid size={13} className="text-gray-600" />{m.title.replace(/^\d+\s·\s/, '')}
                   </button>
                 ))}
                 <div className="border-t border-[#5C8891] mt-1 pt-1">
-                  <button onClick={logout} className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12px] hover:bg-[#0B4F5C] hover:text-white"><Power size={13} />Terminar sessão</button>
+                  <button onClick={logout} className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12px] hover:bg-[#062A31] hover:text-white"><Power size={13} />Terminar sessão</button>
                 </div>
               </div>
             </div>
@@ -216,7 +216,7 @@ function RoadmapPlaceholder({ id }: { id: string }) {
         <div className="w-14 h-14 mx-auto mb-4 bg-[#F7FAFA] border border-[#CFE3E6] rounded-full flex items-center justify-center"><Construction size={26} className="text-[#5C8891]" /></div>
         <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{MODULE_OF[id] || ''}</div>
         <h2 className="text-lg font-bold text-[#5C8891] mb-2">{title}</h2>
-        <div className="inline-block text-[10px] font-bold text-[#0B4F5C] bg-[#F7FAFA] border border-[#7FA9B1] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
+        <div className="inline-block text-[10px] font-bold text-[#062A31] bg-[#F7FAFA] border border-[#7FA9B1] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
         <p className="text-[12px] text-gray-600">Não é um erro. Esta função está a ser construída — o módulo está ativo na sua licença.</p>
       </div>
     </div>

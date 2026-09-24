@@ -34,7 +34,7 @@ export default function WhInventoryView() {
     update.mutate({ id: sel.id!, data: { lines } as any });
   };
 
-  const vTone = (v: any) => Number(v) === 0 ? 'text-gray-500' : Number(v) > 0 ? 'text-[#0B4F5C] font-bold' : 'text-[#8C2B1F] font-bold';
+  const vTone = (v: any) => Number(v) === 0 ? 'text-gray-500' : Number(v) > 0 ? 'text-[#062A31] font-bold' : 'text-[#8C2B1F] font-bold';
 
   return (
     <ClassicWindow title="Inventários Físicos (Stocktake)" icon={<ClipboardList size={14} className="text-gray-300" />}
@@ -51,7 +51,7 @@ export default function WhInventoryView() {
             <ClassicGrid rowKey="id" data={counts} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '22%' },
               { header: 'Armazém', accessor: 'warehouse_name', width: '40%' },
-              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#0B4F5C] font-bold' : 'text-[#0B4F5C]'}>{r.status_display}</span>, width: '26%' },
+              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#062A31] font-bold' : 'text-[#062A31]'}>{r.status_display}</span>, width: '26%' },
               { header: '', accessor: (r: any) => r.status !== 'CONFIRMED' ? <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button> : null, width: '12%' },
             ]} />
           </div>
@@ -64,7 +64,7 @@ export default function WhInventoryView() {
                 <span className="font-bold">{sel.number} · {sel.warehouse_name}</span>
                 {sel.status !== 'CONFIRMED'
                   ? <ClassicButton icon={CheckCircle} label="Confirmar (ajustar stock)" onClick={() => confirm.mutate(sel.id!)} />
-                  : <span className="text-[#0B4F5C] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmado</span>}
+                  : <span className="text-[#062A31] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmado</span>}
               </div>
               {sel.status !== 'CONFIRMED' && (
                 <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7FAFA] border-b border-[#7FA9B1] text-[11px]">

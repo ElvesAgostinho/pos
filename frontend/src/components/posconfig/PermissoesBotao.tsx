@@ -54,14 +54,14 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
   return (
     <>
       <button onClick={() => setAberto(true)} title={`Permissões: ${titulo}`}
-        className="w-8 h-8 flex items-center justify-center bg-[#F7FAFA] border border-[#CFE3E6] hover:bg-[#EEF4F5] text-[#06333C]">
+        className="w-8 h-8 flex items-center justify-center bg-[#F7FAFA] border border-[#CFE3E6] hover:bg-[#EEF4F5] text-[#041F24]">
         <Users size={16} />
       </button>
 
       {aberto && (
         <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center">
           <div className="w-[420px] bg-white border border-[#7FA9B1] shadow-xl">
-            <div className="px-3 py-2 bg-[#06333C] text-white text-[14px] font-bold flex items-center justify-between">
+            <div className="px-3 py-2 bg-[#041F24] text-white text-[14px] font-bold flex items-center justify-between">
               <span>Permissões — {titulo}</span>
               <button onClick={() => setAberto(false)} className="w-6 h-6 bg-[#B0392B] text-white font-bold flex items-center justify-center"><X size={14} /></button>
             </div>
@@ -82,7 +82,7 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
             </div>
             <div className="grid grid-cols-2 gap-1 p-1 bg-[#F7FAFA]">
               <button onClick={gravar} disabled={gravando || !data}
-                className="py-1.5 bg-[#0B4F5C] text-white text-[13px] font-bold disabled:opacity-50">
+                className="py-1.5 bg-[#062A31] text-white text-[13px] font-bold disabled:opacity-50">
                 {gravando ? 'A gravar…' : 'Gravar'}
               </button>
               <button onClick={() => setAberto(false)} className="py-1.5 bg-[#5C8891] text-white text-[13px] font-bold">Fechar</button>

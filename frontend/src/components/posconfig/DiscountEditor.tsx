@@ -10,7 +10,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[130px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[130px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -77,7 +77,7 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo desconto' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo desconto' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -85,7 +85,7 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
         {/* Esquerda: a ficha */}
         <div className="w-[54%] p-4 space-y-2 overflow-auto border-r border-[#EEF4F5]">
           <div className="flex items-center gap-6 text-[12px]">
-            <span className="w-[130px] text-[#06333C]">Módulos:</span>
+            <span className="w-[130px] text-[#041F24]">Módulos:</span>
             <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_pms} onChange={(e) => set('for_pms', e.target.checked)} className="w-4 h-4" />PMS</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_ems} onChange={(e) => set('for_ems', e.target.checked)} className="w-4 h-4" />Eventos</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_pos} onChange={(e) => set('for_pos', e.target.checked)} className="w-4 h-4" />POS</label>
@@ -169,7 +169,7 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
           </label>
 
           {gids.length === 0 && (
-            <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1 mt-2">
+            <div className="text-[11px] text-[#062A31] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1 mt-2">
               Sem nenhum grupo marcado, <b>ninguém</b> consegue aplicar este desconto no POS.
             </div>
           )}
@@ -268,7 +268,7 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

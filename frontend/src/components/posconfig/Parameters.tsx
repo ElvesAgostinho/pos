@@ -142,7 +142,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
 
       <Toolbar
         actions={[
-          { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${dirty.size ? ` (${dirty.size})` : ''}`, color: '#0B4F5C', disabled: !dirty.size, onClick: () => save.mutate() },
+          { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${dirty.size ? ` (${dirty.size})` : ''}`, color: '#062A31', disabled: !dirty.size, onClick: () => save.mutate() },
         ]}
         right={<span className="text-[11px] text-[#5C8891] pr-2">
           Os parâmetros são lidos pelo sistema em tempo real — entram em vigor em segundos.

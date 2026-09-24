@@ -41,7 +41,7 @@ async function printDocumentFrom(url: string, params: any = {}) {
     body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #062A31; margin: 0; padding: 24px 32px; }
     .head { display: flex; justify-content: space-between; align-items: flex-start; }
     .brand { font-size: 20px; font-weight: bold; }
-    .muted { color: #0B4F5C; }
+    .muted { color: #062A31; }
     .doc-title { font-weight: bold; font-size: 13px; }
     table { width: 100%; border-collapse: collapse; }
     .items { margin-top: 14px; }
@@ -51,11 +51,11 @@ async function printDocumentFrom(url: string, params: any = {}) {
     .rowbox { display: flex; gap: 24px; margin-top: 14px; }
     .vat th, .vat td { border: 1px solid #7FA9B1; padding: 3px 6px; font-size: 11px; }
     .totals td { padding: 3px 8px; }
-    .totals .lbl { color: #06333C; } .totals .val { text-align: right; font-weight: bold; }
+    .totals .lbl { color: #041F24; } .totals .val { text-align: right; font-weight: bold; }
     .words { margin-top: 10px; font-style: italic; }
-    .mention { margin-top: 18px; font-size: 10px; color: #06333C; border-top: 1px solid #EEF4F5; padding-top: 6px; }
-    .foot { margin-top: 40px; font-size: 10px; color: #06333C; }
-    .sign { margin-top: 34px; border-top: 1px solid #06333C; width: 240px; text-align: center; font-size: 10px; padding-top: 3px; }
+    .mention { margin-top: 18px; font-size: 10px; color: #041F24; border-top: 1px solid #EEF4F5; padding-top: 6px; }
+    .foot { margin-top: 40px; font-size: 10px; color: #041F24; }
+    .sign { margin-top: 34px; border-top: 1px solid #041F24; width: 240px; text-align: center; font-size: 10px; padding-top: 3px; }
     @media print { body { padding: 10mm; } }
   </style></head><body onload="window.print()">
     <div class="head">

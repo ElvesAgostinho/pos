@@ -44,8 +44,8 @@ export default function EdcInboxView(_props: Props) {
               { header: 'Tarefa', accessor: 'title', width: '34%' },
               { header: 'Fluxo', accessor: (r: any) => r.flow_name || '—', width: '20%' },
               { header: 'Responsável', accessor: (r: any) => r.assignee || '—', width: '18%' },
-              { header: 'Prioridade', accessor: (r: any) => <span className={r.priority === 'URGENT' ? 'text-[#8C2B1F] font-bold' : r.priority === 'HIGH' ? 'text-[#0B4F5C]' : ''}>{r.priority_display}</span>, width: '14%' },
-              { header: '', accessor: (r: any) => <button onClick={() => complete.mutate(r.id)} title="Concluir" className="text-[#0B4F5C] hover:text-[#062A31] flex items-center gap-1 text-[11px]"><CheckCircle size={12} /> Concluir</button>, width: '14%' },
+              { header: 'Prioridade', accessor: (r: any) => <span className={r.priority === 'URGENT' ? 'text-[#8C2B1F] font-bold' : r.priority === 'HIGH' ? 'text-[#062A31]' : ''}>{r.priority_display}</span>, width: '14%' },
+              { header: '', accessor: (r: any) => <button onClick={() => complete.mutate(r.id)} title="Concluir" className="text-[#062A31] hover:text-[#062A31] flex items-center gap-1 text-[11px]"><CheckCircle size={12} /> Concluir</button>, width: '14%' },
             ]} />
             {tasks.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3 flex items-center justify-center gap-1"><Check size={12} /> Sem tarefas pendentes</div>}
           </div>

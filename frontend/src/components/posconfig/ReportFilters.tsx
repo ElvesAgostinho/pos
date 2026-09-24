@@ -58,7 +58,7 @@ export default function ReportFilters({
     <div className="border border-[#CFE3E6] bg-white">
       <button onClick={() => setAberto(!aberto)}
         className="w-full flex items-center gap-2 px-3 py-2 bg-[#EEF4F5] border-b border-[#CFE3E6] text-left">
-        <span className="text-[12px] font-bold text-[#06333C] flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtro avançado</span>
+        <span className="text-[12px] font-bold text-[#041F24] flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtro avançado</span>
         {ativos > 0 && (
           <span className="px-2 py-0.5 bg-[#5C8891] text-white text-[11px] font-semibold">
             {ativos} ativo(s)
@@ -74,7 +74,7 @@ export default function ReportFilters({
             <div className="flex flex-wrap items-center gap-x-8 gap-y-2 pb-3 border-b border-[#F7FAFA]">
               {params.map((x: any) => (
                 <div key={x.key} className="flex items-center gap-2">
-                  <span className="text-[12px] text-[#06333C]">{x.label}:</span>
+                  <span className="text-[12px] text-[#041F24]">{x.label}:</span>
                   {x.type === 'warehouse' ? (
                     <select value={values[x.key] ?? ''}
                       onChange={(e) => setValues?.({ ...values, [x.key]: e.target.value })}
@@ -94,7 +94,7 @@ export default function ReportFilters({
                 </div>
               ))}
               {preset && (
-                <span className="text-[11px] text-[#0B4F5C]">
+                <span className="text-[11px] text-[#062A31]">
                   As datas estão a ser dadas pelo período rápido.
                 </span>
               )}
@@ -103,7 +103,7 @@ export default function ReportFilters({
 
           {/* PERÍODO RÁPIDO */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[12px] text-[#06333C] w-[130px]">Período rápido:</span>
+            <span className="text-[12px] text-[#041F24] w-[130px]">Período rápido:</span>
             {presets.map((p: any) => (
               <button key={p.value}
                 onClick={() => setPreset(preset === p.value ? '' : p.value)}
@@ -118,12 +118,12 @@ export default function ReportFilters({
 
           {/* COMPARAÇÃO — um número sozinho não diz nada. */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[12px] text-[#06333C] w-[130px]">Comparar com:</span>
+            <span className="text-[12px] text-[#041F24] w-[130px]">Comparar com:</span>
             {compares.map((c: any) => (
               <button key={c.value}
                 onClick={() => set('compare', adv.compare === c.value ? '' : c.value)}
                 className={`px-3 py-1 text-[12px] border ${adv.compare === c.value
-                  ? 'bg-[#0B4F5C] text-white border-[#0B4F5C] font-semibold'
+                  ? 'bg-[#062A31] text-white border-[#062A31] font-semibold'
                   : 'bg-white border-[#CFE3E6] hover:bg-[#F7FAFA]'}`}>
                 {c.label}
               </button>
@@ -135,7 +135,7 @@ export default function ReportFilters({
 
           {/* JANELA HORÁRIA */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[12px] text-[#06333C] w-[130px]">Só entre as horas:</span>
+            <span className="text-[12px] text-[#041F24] w-[130px]">Só entre as horas:</span>
             <select value={adv.hour_from ?? ''} onChange={(e) => set('hour_from', e.target.value)}
               className={`${inp} w-[90px]`} style={inputStyle}>
               <option value="">—</option>
@@ -158,13 +158,13 @@ export default function ReportFilters({
 
           {/* DIAS DA SEMANA */}
           <div className="flex items-center gap-2">
-            <span className="text-[12px] text-[#06333C] w-[130px]">Dias da semana:</span>
+            <span className="text-[12px] text-[#041F24] w-[130px]">Dias da semana:</span>
             {DIAS.map((d, i) => (
               <button key={i}
                 onClick={() => set('weekdays', dias.includes(i)
                   ? dias.filter((x) => x !== i) : [...dias, i])}
                 className={`w-[46px] py-1 text-[12px] border ${dias.includes(i)
-                  ? 'bg-[#0B4F5C] text-white border-[#0B4F5C] font-semibold'
+                  ? 'bg-[#062A31] text-white border-[#062A31] font-semibold'
                   : 'bg-white border-[#CFE3E6] hover:bg-[#FFFFFF]'}`}>
                 {d}
               </button>
@@ -177,7 +177,7 @@ export default function ReportFilters({
 
           {/* VALOR */}
           <div className="flex items-center gap-2">
-            <span className="text-[12px] text-[#06333C] w-[130px]">Valor entre:</span>
+            <span className="text-[12px] text-[#041F24] w-[130px]">Valor entre:</span>
             <input type="number" value={adv.min ?? ''} onChange={(e) => set('min', e.target.value)}
               placeholder="mínimo" className={`${inp} w-[130px]`} style={inputStyle} />
             <span className="text-[12px]">e</span>
@@ -188,7 +188,7 @@ export default function ReportFilters({
 
           {/* TEXTO LIVRE */}
           <div className="flex items-center gap-2">
-            <span className="text-[12px] text-[#06333C] w-[130px]">Contém o texto:</span>
+            <span className="text-[12px] text-[#041F24] w-[130px]">Contém o texto:</span>
             <input value={adv.q ?? ''} onChange={(e) => set('q', e.target.value)}
               placeholder="nome, documento, artigo, IP…"
               className={`${inp} w-[320px]`} style={inputStyle} />
@@ -197,21 +197,21 @@ export default function ReportFilters({
 
           {/* AGRUPAR / ORDENAR / LIMITAR */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[12px] text-[#06333C] w-[130px]">Agrupar e somar por:</span>
+            <span className="text-[12px] text-[#041F24] w-[130px]">Agrupar e somar por:</span>
             <select value={adv.group_by ?? ''} onChange={(e) => set('group_by', e.target.value)}
               className={`${inp} w-[170px]`} style={inputStyle}>
               <option value="">(não agrupar)</option>
               {groupOpts.map((g: any) => <option key={g.value} value={g.value}>{g.label}</option>)}
             </select>
 
-            <span className="text-[12px] text-[#06333C] ml-4">Ordenar:</span>
+            <span className="text-[12px] text-[#041F24] ml-4">Ordenar:</span>
             <select value={adv.sort_dir ?? 'desc'} onChange={(e) => set('sort_dir', e.target.value)}
               className={`${inp} w-[130px]`} style={inputStyle}>
               <option value="desc">Maior primeiro</option>
               <option value="asc">Menor primeiro</option>
             </select>
 
-            <span className="text-[12px] text-[#06333C] ml-4">Mostrar só:</span>
+            <span className="text-[12px] text-[#041F24] ml-4">Mostrar só:</span>
             <select value={adv.limit ?? ''} onChange={(e) => set('limit', e.target.value)}
               className={`${inp} w-[130px]`} style={inputStyle}>
               <option value="">Todas as linhas</option>

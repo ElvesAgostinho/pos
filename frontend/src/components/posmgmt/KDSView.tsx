@@ -22,15 +22,15 @@ import { KDS_STATIONS } from '../../api/posmgmt';
 const ESTADOS: Record<string, { label: string; cor: string; fundo: string; borda: string }> = {
   FIRED: { label: 'Em espera', cor: '#5C8891', fundo: '#F7FAFA', borda: '#5C8891' },
   PREPARING: { label: 'A preparar', cor: '#5C8891', fundo: '#F7FAFA', borda: '#5C8891' },
-  READY: { label: 'Pronto', cor: '#0B4F5C', fundo: '#F7FAFA', borda: '#0B4F5C' },
+  READY: { label: 'Pronto', cor: '#062A31', fundo: '#F7FAFA', borda: '#062A31' },
   CANCELLED: { label: 'ANULADO', cor: '#B0392B', fundo: '#FFFFFF', borda: '#B0392B' },
 };
 
 /** Que botão avança este estado (e como se chama para o cozinheiro). */
 const AVANCO: Record<string, { label: string; cor: string }> = {
   FIRED: { label: 'Iniciar', cor: '#5C8891' },
-  PREPARING: { label: 'Pronto', cor: '#0B4F5C' },
-  READY: { label: 'Entregue', cor: '#0B4F5C' },
+  PREPARING: { label: 'Pronto', cor: '#062A31' },
+  READY: { label: 'Entregue', cor: '#062A31' },
   CANCELLED: { label: 'Confirmar anulação', cor: '#B0392B' },
 };
 
@@ -95,7 +95,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
   return (
     <div className="h-full flex flex-col" style={{ background: '#062A31', color: '#F7FAFA' }}>
       {/* Barra de topo */}
-      <div className="flex items-center gap-4 px-5 py-3 flex-shrink-0" style={{ background: '#06333C', borderBottom: '2px solid #0B4F5C' }}>
+      <div className="flex items-center gap-4 px-5 py-3 flex-shrink-0" style={{ background: '#041F24', borderBottom: '2px solid #062A31' }}>
         <ChefHat size={26} className="text-[#7FA9B1]" />
         <div>
           <div className="text-[18px] font-black leading-tight">
@@ -135,7 +135,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
           {KDS_STATIONS.map((s) => (
             <button key={s.value} onClick={() => setStation(s.value)}
               className={`px-5 py-2 text-[13px] font-bold rounded-t-lg ${station === s.value
-                ? 'bg-[#06333C] text-white' : 'bg-[#062A31] text-slate-500 hover:text-slate-300'}`}>
+                ? 'bg-[#041F24] text-white' : 'bg-[#062A31] text-slate-500 hover:text-slate-300'}`}>
               {s.label}
             </button>
           ))}
@@ -273,7 +273,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
 
       {/* Rodapé */}
       <div className="flex items-center gap-3 px-5 py-2 text-[12px] flex-shrink-0"
-        style={{ background: '#06333C', borderTop: '2px solid #0B4F5C', color: '#7FA9B1' }}>
+        style={{ background: '#041F24', borderTop: '2px solid #062A31', color: '#7FA9B1' }}>
         <span>{pedidos.length} pedido(s) · {(queue as any[]).length} artigo(s)</span>
         <span className="opacity-40">|</span>
         <span>Atualiza sozinho</span>

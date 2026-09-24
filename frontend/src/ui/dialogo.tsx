@@ -83,7 +83,7 @@ const NUMEROS = [['7', '8', '9'], ['4', '5', '6'], ['1', '2', '3'], ['.', '0', '
 
 const RELEVO = 'border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),'
   + 'inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]';
-const CINZA = 'bg-gradient-to-b from-[#0B4F5C] to-[#06333C]';
+const CINZA = 'bg-gradient-to-b from-[#062A31] to-[#041F24]';
 
 /**
  * MONTA-SE UMA VEZ, no arranque (main.tsx). Sem isto os diálogos não aparecem — e os
@@ -150,7 +150,7 @@ export default function DialogoHost() {
   return (
     <div className="fixed inset-0 z-[9000] bg-black/65 flex items-center justify-center p-4"
       onClick={() => fechar(atual.tipo === 'CONFIRMAR' ? false : null)}>
-      <div ref={ref} className="max-w-[95vw] bg-[#06333C] border-2 border-black shadow-2xl"
+      <div ref={ref} className="max-w-[95vw] bg-[#041F24] border-2 border-black shadow-2xl"
         style={{
           width: atual.tipo === 'PEDIR' ? 860 : 620,
           ...(pos ? { position: 'fixed' as const, left: pos.x, top: pos.y, margin: 0 } : {}),
@@ -158,7 +158,7 @@ export default function DialogoHost() {
         onClick={(e) => e.stopPropagation()}>
         {/* PEGA — o teclado move-se: fixo, tapava o campo que se esta a preencher. */}
         <div onMouseDown={pegar} onTouchStart={pegar}
-          className="h-[34px] flex items-center px-3 gap-1 bg-[#06333C] border-b-2 border-black
+          className="h-[34px] flex items-center px-3 gap-1 bg-[#041F24] border-b-2 border-black
             cursor-grab active:cursor-grabbing select-none">
           <span className="w-[42px] flex flex-col gap-[3px] opacity-50">
             <span className="h-[2px] bg-white rounded" />
@@ -171,7 +171,7 @@ export default function DialogoHost() {
 
         <div className={`h-[62px] flex items-center justify-center border-b-2 border-black
           ${perigo ? 'bg-gradient-to-b from-[#B0392B] to-[#8C2B1F]'
-            : 'bg-gradient-to-b from-[#0B4F5C] to-[#06333C]'}`}>
+            : 'bg-gradient-to-b from-[#062A31] to-[#041F24]'}`}>
           <span className="text-white text-[23px] font-bold">{atual.titulo}</span>
         </div>
 
@@ -213,7 +213,7 @@ export default function DialogoHost() {
                 <div className="grid gap-1" style={{ gridTemplateColumns: '1.4fr 5fr 1fr 1fr 1fr 1fr' }}>
                   <button onClick={() => setMaiusc(!maiusc)}
                     className={`h-[54px] rounded-[3px] text-[19px] font-bold ${RELEVO}
-                      ${maiusc ? 'bg-gradient-to-b from-[#5C8891] to-[#0B4F5C] text-white' : `${CINZA} text-white`}`}>
+                      ${maiusc ? 'bg-gradient-to-b from-[#5C8891] to-[#062A31] text-white' : `${CINZA} text-white`}`}>
                     ABC
                   </button>
                   <button onClick={() => setTexto(texto + ' ')}
@@ -246,7 +246,7 @@ export default function DialogoHost() {
               : atual.tipo === 'CONFIRMAR' ? true : undefined)}
             className={`h-[66px] rounded-[3px] text-white text-[19px] font-bold ${RELEVO}
               ${perigo ? 'bg-gradient-to-b from-[#B0392B] to-[#8C2B1F]'
-                : 'bg-gradient-to-b from-[#0B4F5C] to-[#06333C]'}`}>
+                : 'bg-gradient-to-b from-[#062A31] to-[#041F24]'}`}>
             {atual.tipo === 'AVISO' ? 'OK' : 'Confirmar'}
           </button>
         </div>

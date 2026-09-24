@@ -11,7 +11,7 @@ export default function PmsSaveSearchDialog({ initial, onCancel, onConfirm }: {
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
       <div className="w-[380px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[13px] font-bold" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[13px] font-bold" style={{ background: '#041F24' }}>
           Nova pesquisa
           <button onClick={onCancel} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
@@ -29,7 +29,7 @@ export default function PmsSaveSearchDialog({ initial, onCancel, onConfirm }: {
         <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
           <button onClick={onCancel} className="px-3 py-1 text-[12px] border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA]">Cancelar</button>
           <button onClick={() => nome.trim() && onConfirm(nome.trim())} disabled={!nome.trim()}
-            className="px-3 py-1 text-[12px] font-semibold text-white disabled:opacity-50" style={{ background: '#0B4F5C' }}>
+            className="px-3 py-1 text-[12px] font-semibold text-white disabled:opacity-50" style={{ background: '#062A31' }}>
             OK
           </button>
         </div>

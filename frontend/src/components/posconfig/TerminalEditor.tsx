@@ -71,7 +71,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -80,11 +80,11 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       <Box title="Identificação">
       <div className="grid grid-cols-2 gap-x-10 gap-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[90px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
+          <span className="w-[90px] text-[#041F24]">Código:<span className="text-[#B0392B]">*</span></span>
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[220px]`} style={inputStyle} />
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[70px] text-[#06333C]">Tipo:</span>
+          <span className="w-[70px] text-[#041F24]">Tipo:</span>
           <select value={d.terminal_type} onChange={(e) => set('terminal_type', e.target.value)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="NORMAL">Normal</option>
             <option value="VIRTUAL">Virtual</option>
@@ -92,11 +92,11 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
           </select>
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[90px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
+          <span className="w-[90px] text-[#041F24]">Descrição:<span className="text-[#B0392B]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inp} w-[300px]`} style={inputStyle} />
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[70px] text-[#06333C]">Outlet:</span>
+          <span className="w-[70px] text-[#041F24]">Outlet:</span>
           <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="">—</option>
             {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
@@ -231,7 +231,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                 {hw.length === 0 && <tr><td colSpan={6} className="text-center text-[#7FA9B1] py-8">Sem periféricos ligados a este terminal.</td></tr>}
               </tbody>
             </table>
-            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[13px] text-[#06333C] px-1 py-1 hover:bg-[#F7FAFA]">
+            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[13px] text-[#041F24] px-1 py-1 hover:bg-[#F7FAFA]">
               <span className="w-6 h-6 rounded-full bg-[#062A31] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
           </div>
@@ -239,7 +239,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

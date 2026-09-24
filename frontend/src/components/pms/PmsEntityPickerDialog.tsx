@@ -56,7 +56,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
 
   const Adv = ({ k, label }: { k: string; label: string }) => (
     <label className="flex items-center gap-2">
-      <span className="w-[110px] text-[#06333C]">{label}</span>
+      <span className="w-[110px] text-[#041F24]">{label}</span>
       <input value={adv[k] || ''} onChange={(e) => setAdv((a: any) => ({ ...a, [k]: e.target.value }))}
         className="border border-[#7FA9B1] p-1 bg-white flex-1" />
     </label>
@@ -65,7 +65,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[1000px] max-h-[85vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
           Entidades
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
@@ -79,18 +79,18 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
         <div className="bg-white border-b border-[#EEF4F5] text-[12px]">
           <div className="flex border-b border-[#EEF4F5]">
             <button onClick={() => setTab('S')}
-              className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#06333C]' : 'bg-[#F7FAFA] text-[#5C8891]'}`}>
+              className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#041F24]' : 'bg-[#F7FAFA] text-[#5C8891]'}`}>
               Pesquisa simples
             </button>
             <button onClick={() => setTab('A')}
-              className={`px-4 py-1.5 font-semibold ${tab === 'A' ? 'bg-white border-b-2 border-[#06333C]' : 'bg-[#F7FAFA] text-[#5C8891]'}`}>
+              className={`px-4 py-1.5 font-semibold ${tab === 'A' ? 'bg-white border-b-2 border-[#041F24]' : 'bg-[#F7FAFA] text-[#5C8891]'}`}>
               Pesquisa Avançada
             </button>
           </div>
           <div className="p-2 flex gap-3">
             <div className="flex-1">
               <label className="flex items-center gap-2 mb-1.5">
-                <span className="w-[110px] text-[#06333C]">Tipo de entidade:</span>
+                <span className="w-[110px] text-[#041F24]">Tipo de entidade:</span>
                 <select value={entityType} onChange={(e) => setEntityType(e.target.value)}
                   className="border border-[#7FA9B1] p-1 bg-white flex-1">
                   <option value="">(Todos)</option>
@@ -99,7 +99,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
               </label>
               {tab === 'S' ? (
                 <label className="flex items-center gap-2">
-                  <span className="w-[110px] text-[#06333C]">Pesquisa livre:</span>
+                  <span className="w-[110px] text-[#041F24]">Pesquisa livre:</span>
                   <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus
                     onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
                     className="border border-[#7FA9B1] p-1 bg-white flex-1" />
@@ -119,7 +119,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
             </div>
             <button onClick={pesquisar}
               className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px]"
-              style={{ background: '#06333C' }}>
+              style={{ background: '#041F24' }}>
               <RefreshCw size={20} /> Pesquisar
             </button>
           </div>

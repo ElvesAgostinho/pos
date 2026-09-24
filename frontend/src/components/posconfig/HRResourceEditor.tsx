@@ -124,7 +124,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">
+        <span className="text-[13px] font-bold text-[#041F24]">
           {isNew ? 'Novo recurso' : `A editar ${d.first_name || ''}`}
         </span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
@@ -136,22 +136,22 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
           <Box title="Identificação" className="w-[52%]">
           <div className="space-y-2 pt-1.5">
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
+              <span className="w-[100px] text-[#041F24]">Código:<span className="text-[#B0392B]">*</span></span>
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 className={`${inp} w-[290px]`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#06333C]">Nome:<span className="text-[#B0392B]">*</span></span>
+              <span className="w-[100px] text-[#041F24]">Nome:<span className="text-[#B0392B]">*</span></span>
               <input value={d.first_name || ''} onChange={(e) => set('first_name', e.target.value)}
                 className={`${inp} flex-1`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#06333C]">Apelido:</span>
+              <span className="w-[100px] text-[#041F24]">Apelido:</span>
               <input value={d.last_name || ''} onChange={(e) => set('last_name', e.target.value)}
                 className={`${inp} flex-1`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#06333C]">Tipo:<span className="text-[#B0392B]">*</span></span>
+              <span className="w-[100px] text-[#041F24]">Tipo:<span className="text-[#B0392B]">*</span></span>
               <select value={d.hr_type || ''} onChange={(e) => set('hr_type', Number(e.target.value) || null)}
                 className={`${inp} w-[290px]`} style={inputStyle}>
                 <option value="">(nenhum)</option>
@@ -159,7 +159,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
               </select>
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#06333C]">Género:</span>
+              <span className="w-[100px] text-[#041F24]">Género:</span>
               <select value={d.gender || ''} onChange={(e) => set('gender', e.target.value || null)}
                 className={`${inp} w-[290px]`} style={inputStyle}>
                 <option value="">—</option>
@@ -169,17 +169,17 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
               </select>
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#06333C]">Ordem:</span>
+              <span className="w-[100px] text-[#041F24]">Ordem:</span>
               <input type="number" value={d.sort_order ?? 0} onChange={(e) => set('sort_order', Number(e.target.value))}
                 className={`${inp} w-[290px]`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#06333C]">Código Licença:</span>
+              <span className="w-[100px] text-[#041F24]">Código Licença:</span>
               <input value={d.license_code || ''} onChange={(e) => set('license_code', e.target.value)}
                 placeholder="cédula profissional" className={`${inp} w-[290px]`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#06333C]">Espaço:</span>
+              <span className="w-[100px] text-[#041F24]">Espaço:</span>
               <select value={d.space || ''} onChange={(e) => set('space', Number(e.target.value) || null)}
                 className={`${inp} w-[290px]`} style={inputStyle}>
                 <option value="">(nenhum)</option>
@@ -332,7 +332,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                             return (
                               <td key={i} title={`${day} · ${DAYS_LONG[wd]}${on ? ' — trabalha' : ' — folga'}`}
                                 className="text-center border border-[#EEF4F5]"
-                                style={{ background: on ? '#CFE3E6' : '#FFFFFF', color: '#06333C' }}>
+                                style={{ background: on ? '#CFE3E6' : '#FFFFFF', color: '#041F24' }}>
                                 {String(day).padStart(2, '0')}
                               </td>
                             );
@@ -407,7 +407,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

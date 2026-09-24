@@ -177,7 +177,7 @@ export const SECTIONS = [
 export function Field({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
     <label className="flex items-center gap-2 text-[12px]">
-      <span className={`text-[#06333C] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
+      <span className={`text-[#041F24] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
@@ -204,7 +204,7 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
       {actions.map((a, i) => (
         <div key={a.label} className="flex items-center">
           <button onClick={a.onClick} disabled={a.disabled}
-            className="flex items-center gap-1.5 px-2 py-1 text-[12px] text-[#06333C] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">
+            className="flex items-center gap-1.5 px-2 py-1 text-[12px] text-[#041F24] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">
             <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
               style={{ color: a.disabled ? '#7FA9B1' : a.color }}><Glyph icon={a.icon} size={15} /></span>
             {a.label}
@@ -260,7 +260,7 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-[#062A31] font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default ${className}`}
+      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-white font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default ${className}`}
       style={{ background: accentGradient(), border: `3px outset ${TOKENS.accent}` }}>
       <Glyph icon={icon} size={22} />
       <span className="text-[13px]">{label}</span>
@@ -272,7 +272,7 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 export function Row({ label, children, w = 'w-[120px]' }: { label: string; children: ReactNode; w?: string }) {
   return (
     <label className="flex items-center gap-2 text-[12px] py-[3px] min-w-0">
-      <span className={`text-[#06333C] ${w} flex-shrink-0`}>{label}</span>
+      <span className={`text-[#041F24] ${w} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );

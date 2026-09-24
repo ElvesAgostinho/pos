@@ -24,7 +24,7 @@ function Placeholder({ id }: { id: string }) {
           </div>
           {moduleTitle && <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{moduleTitle}</div>}
           <h2 className="text-lg font-bold text-[#5C8891] mb-2">{title}</h2>
-          <div className="inline-block text-[10px] font-bold text-[#0B4F5C] bg-[#F7FAFA] border border-[#7FA9B1] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
+          <div className="inline-block text-[10px] font-bold text-[#062A31] bg-[#F7FAFA] border border-[#7FA9B1] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
           <p className="text-[12px] text-gray-600">
             Não é um erro. Este ecrã está a ser construído — o módulo <b>está ativo na sua licença</b>,
             mas esta função específica ainda vai ser disponibilizada.

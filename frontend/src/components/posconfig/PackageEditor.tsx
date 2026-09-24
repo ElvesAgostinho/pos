@@ -11,7 +11,7 @@ const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[100px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[100px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -69,7 +69,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo package' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo package' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -109,7 +109,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
 
         {/* Artigos */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#06333C] border-b border-[#EEF4F5]">
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#041F24] border-b border-[#EEF4F5]">
             Artigos
           </div>
           <div className="flex-1 overflow-auto">
@@ -155,7 +155,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
               className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
               <span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[11px]">−</span> Apagar
             </button>
-            <span className="ml-auto text-[16px] font-black text-[#0B4F5C]">Total: {money(total)}</span>
+            <span className="ml-auto text-[16px] font-black text-[#062A31]">Total: {money(total)}</span>
           </div>
         </div>
       </div>
@@ -166,7 +166,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

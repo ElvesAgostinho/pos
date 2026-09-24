@@ -27,7 +27,7 @@ export function WarehousesView() {
           <ClassicGrid rowKey="id" data={whs} columns={[
             { header: 'Armazém', accessor: 'name', width: '50%' },
             { header: 'Hotel', accessor: (r: any) => r.hotel_name || '—', width: '35%' },
-            { header: 'Principal', accessor: (r: any) => (r.is_main ? <Check size={13} className="text-[#0B4F5C]" /> : '—'), width: '15%' },
+            { header: 'Principal', accessor: (r: any) => (r.is_main ? <Check size={13} className="text-[#062A31]" /> : '—'), width: '15%' },
           ]} />
         </div>
       </div>
@@ -90,7 +90,7 @@ export function StockLevelsView() {
   );
 }
 
-const MTC: Record<string, string> = { IN: 'text-[#0B4F5C]', GRN: 'text-[#0B4F5C]', OUT: 'text-[#8C2B1F]', ADJUST: 'text-[#0B4F5C]', TRANSFER_IN: 'text-[#0B4F5C]', TRANSFER_OUT: 'text-[#0B4F5C]' };
+const MTC: Record<string, string> = { IN: 'text-[#062A31]', GRN: 'text-[#062A31]', OUT: 'text-[#8C2B1F]', ADJUST: 'text-[#062A31]', TRANSFER_IN: 'text-[#062A31]', TRANSFER_OUT: 'text-[#062A31]' };
 export function StockMovementsView() {
   const PAGE = 25;
   const [page, setPage] = useState(1);

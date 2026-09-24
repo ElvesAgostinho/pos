@@ -73,7 +73,7 @@ export default function Maintenance() {
 
   const Common = ({ label, children }: any) => (
     <tr className="border-b border-[#F7FAFA]">
-      <td className="px-2 py-1 text-[12px] text-[#06333C] w-[120px] border-r border-[#F7FAFA]">{label}</td>
+      <td className="px-2 py-1 text-[12px] text-[#041F24] w-[120px] border-r border-[#F7FAFA]">{label}</td>
       <td className="px-2 py-1">{children}</td>
     </tr>
   );
@@ -82,7 +82,7 @@ export default function Maintenance() {
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       {/* Tipo */}
       <div className="flex items-center gap-8 px-4 py-3 border-b border-[#EEF4F5] text-[13px]">
-        <span className="text-[#06333C]">Tipo:</span>
+        <span className="text-[#041F24]">Tipo:</span>
         {([['create', 'Criação rápida de artigos'], ['update', 'Alteração rápida de artigos'], ['prices', 'Alterações de Preço']] as const).map(([k, label]) => (
           <label key={k} className="flex items-center gap-2 cursor-pointer">
             <input type="radio" checked={mode === k} onChange={() => setMode(k)} className="w-4 h-4" />
@@ -91,7 +91,7 @@ export default function Maintenance() {
         ))}
       </div>
 
-      <div className="px-4 py-2 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[13px] font-bold text-[#06333C]">
+      <div className="px-4 py-2 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[13px] font-bold text-[#041F24]">
         {mode === 'create' ? 'Criação rápida de artigos' : mode === 'update' ? 'Alteração rápida de artigos' : 'Alterações de Preço'}
       </div>
 
@@ -185,7 +185,7 @@ export default function Maintenance() {
                 ))}
               </tbody>
             </table>
-            <button onClick={addLine} className="flex items-center gap-2 m-2 text-[13px] text-[#06333C]">
+            <button onClick={addLine} className="flex items-center gap-2 m-2 text-[13px] text-[#041F24]">
               <span className="w-6 h-6 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="＋" size={13} /></span>
               Acrescentar linha
             </button>
@@ -193,14 +193,14 @@ export default function Maintenance() {
 
           <div className="flex items-center gap-4 px-3 py-2 border-t border-[#EEF4F5] bg-[#F7FAFA] text-[13px]">
             <button onClick={() => run.mutate()} disabled={run.isPending}
-              className="flex items-center gap-2 font-semibold text-[#0B4F5C] disabled:opacity-50">
-              <span className="w-7 h-7 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={14} /></span>
+              className="flex items-center gap-2 font-semibold text-[#062A31] disabled:opacity-50">
+              <span className="w-7 h-7 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={14} /></span>
               {run.isPending ? 'A gravar…' : 'Gravar'}
             </button>
             <span className="opacity-30">|</span>
             <span>Estado:</span>
             <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#7FA9B1] text-white text-[11px] flex items-center justify-center">·</span>{lines.length}</span>
-            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>{result.ok}</span>
+            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>{result.ok}</span>
             <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center"><Glyph icon="✖" size={11} /></span>{result.fail}</span>
             <button onClick={() => { setLines([{ code: '', name: '', plu_code: '', p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }]); setResult({ ok: 0, fail: 0, errors: [] }); }}
               className="ml-auto flex items-center gap-2 text-[#B0392B] font-semibold">

@@ -32,7 +32,7 @@ const TABS = ['Detalhe selecionado', 'Grupo', 'Funções', 'Documentos', 'Outras
 function TabBtn({ active, onClick, children }: any) {
   return (
     <button onClick={onClick}
-      className={`px-3 py-1.5 text-[12px] font-semibold border-b-2 ${active ? 'border-[#06333C] text-[#062A31]' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
+      className={`px-3 py-1.5 text-[12px] font-semibold border-b-2 ${active ? 'border-[#041F24] text-[#062A31]' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
       {children}
     </button>
   );
@@ -45,7 +45,7 @@ function Placeholder({ label }: { label: string }) {
 function Act({ icon: Icon, label, onClick, disabled }: any) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-1.5 px-2 py-1.5 text-[12px] text-[#06333C] whitespace-nowrap flex-shrink-0 hover:bg-[#EEF4F5] disabled:opacity-35 disabled:cursor-default disabled:hover:bg-transparent">
+      className="flex items-center gap-1.5 px-2 py-1.5 text-[12px] text-[#041F24] whitespace-nowrap flex-shrink-0 hover:bg-[#EEF4F5] disabled:opacity-35 disabled:cursor-default disabled:hover:bg-transparent">
       <Icon size={13} /> {label}
     </button>
   );
@@ -124,7 +124,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[1150px] max-w-[97vw] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#06333C' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           Reserva {res.confirmation} - {hotelName}
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
@@ -176,7 +176,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                 <div className="p-3 border-b border-[#EEF4F5]">
                   <div className="font-bold text-[15px] flex items-center gap-1.5">{res.guest_name}</div>
                   <div className="flex justify-between text-[11px] mt-1">
-                    <span className="text-[#0B4F5C]">{fmtD(res.check_in)}</span>
+                    <span className="text-[#062A31]">{fmtD(res.check_in)}</span>
                     <span className="text-[#8C2B1F]">{fmtD(res.check_out)}</span>
                   </div>
                   <div className="text-center text-[11px] text-gray-500">{res.nights} noite(s)</div>
@@ -209,7 +209,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                   <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={6}
                     className="border border-[#7FA9B1] p-2 text-[12px]" />
                   <button onClick={gravarNotas} disabled={savingNotes}
-                    className="self-start flex items-center gap-1.5 px-3 py-1 bg-[#0B4F5C] text-white text-[12px] font-semibold disabled:opacity-50">
+                    className="self-start flex items-center gap-1.5 px-3 py-1 bg-[#062A31] text-white text-[12px] font-semibold disabled:opacity-50">
                     <Save size={13} /> {savingNotes ? 'A gravar…' : 'Gravar notas'}
                   </button>
                 </label>
@@ -339,7 +339,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
           <Act icon={Utensils} label="Mapa de Refeições" onClick={() => setShowMealPlan(true)} />
           <Act icon={User} label="Guest Info" onClick={() => openGuestInfoWindow(res)} />
           <div className="flex-1 min-w-2" />
-          <button onClick={onClose} className="flex items-center gap-1.5 px-2 py-1 font-semibold text-[#06333C] hover:text-black flex-shrink-0 whitespace-nowrap">
+          <button onClick={onClose} className="flex items-center gap-1.5 px-2 py-1 font-semibold text-[#041F24] hover:text-black flex-shrink-0 whitespace-nowrap">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>

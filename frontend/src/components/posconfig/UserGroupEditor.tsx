@@ -84,7 +84,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -96,7 +96,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
           <div className="space-y-2 pt-1.5">
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-3 text-[13px]">
-                <span className="w-[70px] text-[#06333C]">Nr:</span>
+                <span className="w-[70px] text-[#041F24]">Nr:</span>
                 <input type="number" value={d.number ?? 0} onChange={(e) => set('number', Number(e.target.value))} className={`${inp} w-[130px]`} style={inputStyle} />
               </label>
               <label className="flex items-center gap-2 text-[13px] ml-auto">
@@ -106,11 +106,11 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
             </div>
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-3 text-[13px]">
-                <span className="w-[70px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
+                <span className="w-[70px] text-[#041F24]">Código:<span className="text-[#B0392B]">*</span></span>
                 <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())} className={`${inp} w-[160px]`} style={inputStyle} />
               </label>
               <label className="flex items-center gap-3 text-[13px] ml-auto">
-                <span className="text-[#06333C]">Por defeito:</span>
+                <span className="text-[#041F24]">Por defeito:</span>
                 <select value={d.default_module || ''} onChange={(e) => set('default_module', e.target.value)} className={`${inp} w-[190px]`} style={inputStyle}>
                   <option value="">—</option>
                   {(cat?.modules || ['POS']).map((m: string) => <option key={m} value={m}>{m}</option>)}
@@ -119,11 +119,11 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
               </label>
             </div>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[70px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
+              <span className="w-[70px] text-[#041F24]">Descrição:<span className="text-[#B0392B]">*</span></span>
               <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inp} flex-1`} style={inputStyle} />
             </label>
             <label className="flex items-start gap-3 text-[13px]">
-              <span className="w-[70px] text-[#06333C] pt-1">Memo:</span>
+              <span className="w-[70px] text-[#041F24] pt-1">Memo:</span>
               <textarea value={d.memo || ''} onChange={(e) => set('memo', e.target.value)} rows={3} className={`${inp} flex-1`} style={inputStyle} />
             </label>
           </div>
@@ -181,7 +181,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
 
         {/* Direita: permissões numeradas */}
         <div className="w-[420px] flex-shrink-0 flex flex-col">
-          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-b border-[#EEF4F5]">Permissões</div>
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#041F24] border-b border-[#EEF4F5]">Permissões</div>
           <div className="flex-1 overflow-auto">
             {roots.map((r) => {
               const kids = rights.filter((k) => k.parent === r.id);
@@ -212,7 +212,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

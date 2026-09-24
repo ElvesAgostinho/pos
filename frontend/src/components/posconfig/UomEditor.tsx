@@ -56,7 +56,7 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Nova unidade' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Nova unidade' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -64,17 +64,17 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
         <Box title="Identificação" className="max-w-[820px]">
         <div className="space-y-2 pt-1.5">
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[110px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[110px] text-[#041F24]">Código:<span className="text-[#B0392B]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[110px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[110px] text-[#041F24]">Descrição:<span className="text-[#B0392B]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
               className={`${inp} flex-1`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[110px] text-[#06333C]">Arredondar:</span>
+            <span className="w-[110px] text-[#041F24]">Arredondar:</span>
             <input type="number" min={0} max={4} value={d.rounding ?? 0}
               onChange={(e) => set('rounding', Number(e.target.value))}
               className={`${inp} w-[130px]`} style={inputStyle} />
@@ -135,7 +135,7 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

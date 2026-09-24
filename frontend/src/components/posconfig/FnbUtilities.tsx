@@ -48,12 +48,12 @@ export default function FnbUtilities() {
       <div className="w-[300px] flex-shrink-0 border-r border-[#EEF4F5] p-3 space-y-2 bg-[#FFFFFF]">
         <button onClick={() => setOp('recalc')}
           className={`w-full py-4 text-[14px] font-semibold ${op === 'recalc'
-            ? 'bg-[#062A31] text-white' : 'bg-[#06333C] text-white/80 hover:bg-[#062A31]'}`}>
+            ? 'bg-[#062A31] text-white' : 'bg-[#041F24] text-white/80 hover:bg-[#062A31]'}`}>
           Recalcular
         </button>
         <button onClick={() => setOp('saft')}
           className={`w-full py-4 text-[14px] font-semibold ${op === 'saft'
-            ? 'bg-[#062A31] text-white' : 'bg-[#06333C] text-white/80 hover:bg-[#062A31]'}`}>
+            ? 'bg-[#062A31] text-white' : 'bg-[#041F24] text-white/80 hover:bg-[#062A31]'}`}>
           SAF-T — Comunicação de Inventário
         </button>
       </div>
@@ -82,7 +82,7 @@ export default function FnbUtilities() {
                   </div>
 
                   <label className="text-[12px]">
-                    <div className="text-[#06333C] mb-1">Armazém:</div>
+                    <div className="text-[#041F24] mb-1">Armazém:</div>
                     <select multiple value={warehouses.map(String)} size={4}
                       onChange={(e) => setWarehouses(Array.from(e.target.selectedOptions, (o) => Number(o.value)))}
                       className={`${inp} w-[240px]`} style={inputStyle}>
@@ -96,7 +96,7 @@ export default function FnbUtilities() {
                 </div>
 
                 {nada && (
-                  <div className="text-[11px] text-[#0B4F5C] mt-3">
+                  <div className="text-[11px] text-[#062A31] mt-3">
                     Escolha o que quer recalcular. Nada é feito às cegas.
                   </div>
                 )}
@@ -110,7 +110,7 @@ export default function FnbUtilities() {
             <div className="flex-1 overflow-auto">
               {resultado ? (
                 <>
-                  <div className="px-3 py-2 text-[12px] bg-[#F7FAFA] text-[#0B4F5C] border-b border-[#CFE3E6]">
+                  <div className="px-3 py-2 text-[12px] bg-[#F7FAFA] text-[#062A31] border-b border-[#CFE3E6]">
                     {resultado.detail}
                   </div>
                   {resultado.changes?.length > 0 && (
@@ -127,7 +127,7 @@ export default function FnbUtilities() {
                             <td className="px-2 py-1">{c.warehouse}</td>
                             <td className="px-2 py-1">{c.field}</td>
                             <td className="px-2 py-1 text-right text-[#B0392B] line-through">{c.before}</td>
-                            <td className="px-2 py-1 text-right font-bold text-[#0B4F5C]">{c.after}</td>
+                            <td className="px-2 py-1 text-right font-bold text-[#062A31]">{c.after}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -182,7 +182,7 @@ function InventarioAgt() {
   return (
     <div className="flex-1 p-4">
       <Box title="SAF-T — Comunicação de Inventário (AGT)" className="max-w-[700px]">
-        <div className="space-y-3 text-[12px] text-[#06333C] pt-1.5">
+        <div className="space-y-3 text-[12px] text-[#041F24] pt-1.5">
           <p>A AGT exige a comunicação anual das existências. O ficheiro sai <b>daqui</b>,
             do stock real dos armazéns, valorizado ao custo médio.</p>
           <div className="flex items-end gap-3">

@@ -51,7 +51,7 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
             {!isNew && !validated && (
               <ClassicButton icon={CheckCircle} label="Validar Receção" onClick={() => validate.mutate(currentId!)} />
             )}
-            {validated && <span className="text-[#0B4F5C] font-bold text-[11px] flex items-center gap-1"><Check size={12} strokeWidth={3} /> Validada — performance do fornecedor atualizada</span>}
+            {validated && <span className="text-[#062A31] font-bold text-[11px] flex items-center gap-1"><Check size={12} strokeWidth={3} /> Validada — performance do fornecedor atualizada</span>}
           </div>
           <ClassicButton icon={ArrowLeft} label="Voltar à Lista" onClick={onBack} />
         </>
@@ -138,7 +138,7 @@ export default function GoodsReceiptsView() {
           { header: 'Nº Receção', accessor: 'receipt_number', width: '18%' },
           { header: 'Fornecedor', accessor: 'supplier_name', width: '28%' },
           { header: 'PO', accessor: (r: any) => r.po_number || '—', width: '16%' },
-          { header: 'Estado', accessor: (r: any) => <span className={r.status === 'Validated' ? 'text-[#0B4F5C] font-bold' : ''}>{GRN_STATUS[r.status] || r.status}</span>, width: '20%' },
+          { header: 'Estado', accessor: (r: any) => <span className={r.status === 'Validated' ? 'text-[#062A31] font-bold' : ''}>{GRN_STATUS[r.status] || r.status}</span>, width: '20%' },
           { header: '', accessor: (r: any) => <button onClick={(e) => { e.stopPropagation(); if (confirm(`Apagar a receção ${r.receipt_number}?`)) del.mutate(r.id); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
         ]}
       />

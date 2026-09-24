@@ -27,7 +27,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
     <div className="w-60 bg-[#F7FAFA] border-r border-[#7FA9B1] flex flex-col text-[11px] font-sans select-none overflow-y-auto">
       {/* Voltar ao ambiente de trabalho do módulo */}
       <button onClick={() => onSelectView && onSelectView(`home:${scopeKey || 'admin'}`)}
-        className="flex items-center gap-2 px-2 py-1.5 bg-[#5C8891] text-white hover:bg-[#0B4F5C] border-b border-[#06333C]">
+        className="flex items-center gap-2 px-2 py-1.5 bg-[#5C8891] text-white hover:bg-[#062A31] border-b border-[#041F24]">
         <LayoutGrid size={13} /> <span className="font-bold">Ambiente de trabalho</span>
       </button>
 

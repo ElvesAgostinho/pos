@@ -6,7 +6,7 @@ import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
 const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
-  <span className={`text-[12px] text-[#06333C] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#041F24] ${w} flex-shrink-0`}>{children}</span>
 );
 
 /**
@@ -88,9 +88,9 @@ export default function PosDocSearch() {
       <html><head><title>${doc.invoice_no}</title><style>
         body{font-family:'Segoe UI',sans-serif;font-size:12px;padding:24px;max-width:700px}
         h1{font-size:16px;margin:0} .muted{color:#5C8891} table{width:100%;border-collapse:collapse;margin-top:12px}
-        th{text-align:left;border-bottom:1px solid #06333C;padding:4px} td{padding:4px;border-bottom:1px solid #F7FAFA}
+        th{text-align:left;border-bottom:1px solid #041F24;padding:4px} td{padding:4px;border-bottom:1px solid #F7FAFA}
         .r{text-align:right} .tot{font-size:15px;font-weight:bold}
-        .mention{margin-top:16px;font-size:10px;color:#0B4F5C}
+        .mention{margin-top:16px;font-size:10px;color:#062A31}
       </style></head><body>
       <h1>${doc.company}</h1><div class="muted">NIF: ${doc.company_tax_id}</div>
       <h2>${doc.type} ${doc.invoice_no}${doc.print_count > 0 ? ' — 2ª VIA' : ''}</h2>
@@ -146,7 +146,7 @@ export default function PosDocSearch() {
             </div>
 
             <table className="w-full text-[12px] mt-4">
-              <thead><tr className="border-b border-[#06333C]">
+              <thead><tr className="border-b border-[#041F24]">
                 <th className="text-left py-1">Artigo</th>
                 <th className="text-right">Qtd</th>
                 <th className="text-right">Preço</th>
@@ -171,7 +171,7 @@ export default function PosDocSearch() {
               <div>IVA: {money(doc.tax)}</div>
               <div className="text-[17px] font-bold">TOTAL: {money(doc.gross)} Kz</div>
             </div>
-            <div className="mt-2 text-[12px] italic text-[#0B4F5C]">
+            <div className="mt-2 text-[12px] italic text-[#062A31]">
               Valor por extenso: {doc.amount_in_words}
             </div>
             <div className="mt-6 text-[10px] text-[#5C8891] break-all">
@@ -288,7 +288,7 @@ export default function PosDocSearch() {
                 <td className="px-2 py-1">
                   <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.voided
                     ? 'bg-[#F7FAFA] text-[#B0392B]'
-                    : r.settled ? 'bg-[#F7FAFA] text-[#0B4F5C]' : 'bg-[#F7FAFA] text-[#0B4F5C]'}`}>
+                    : r.settled ? 'bg-[#F7FAFA] text-[#062A31]' : 'bg-[#F7FAFA] text-[#062A31]'}`}>
                     {r.voided ? 'Anulado' : r.settled ? 'Liquidado' : 'Por receber'}
                   </span>
                 </td>
@@ -322,7 +322,7 @@ export default function PosDocSearch() {
           label: 'Anular', icon: '🚫', disabled: !sel || selRow?.voided,
           onClick: () => setAnular({ id: sel, number: selRow.number }),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#0B4F5C', onClick: exportar },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#062A31', onClick: exportar },
       ]} />
 
       {anular && <PopupAnular anular={anular} setAnular={setAnular} acao={acao} />}
@@ -336,11 +336,11 @@ function PopupAnular({ anular, setAnular, acao }: any) {
     <>
       <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setAnular(null)} />
       <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#5C8891] shadow-2xl w-[460px]">
-        <div className="px-3 py-2 bg-[#06333C] text-white text-[13px] font-bold flex justify-between">
+        <div className="px-3 py-2 bg-[#041F24] text-white text-[13px] font-bold flex justify-between">
           Anular {anular.number} <button onClick={() => setAnular(null)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
         </div>
         <div className="p-4 space-y-3 text-[12px]">
-          <div className="text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1.5">
+          <div className="text-[#062A31] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1.5">
             O documento não é apagado: é emitida uma <b>nota de crédito</b>, assinada e
             encadeada. É o que a AGT exige.
           </div>

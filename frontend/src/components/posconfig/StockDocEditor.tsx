@@ -12,7 +12,7 @@ type Tab = 'geral' | 'stocks' | 'print' | 'states';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[120px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -75,7 +75,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo documento' : `A editar ${d.name}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo documento' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -220,7 +220,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                         <td className="p-0.5"><input value={m.kind} onChange={(e) => setPm(i, 'kind', e.target.value)} className={cell} /></td>
                         <td className="p-0.5 w-[70px]"><input value={m.code} onChange={(e) => setPm(i, 'code', e.target.value)} className={cell} /></td>
                         <td className="p-0.5"><input value={m.description || ''} onChange={(e) => setPm(i, 'description', e.target.value)} className={cell} /></td>
-                        <td className="p-0.5"><input value={m.model_path || ''} onChange={(e) => setPm(i, 'model_path', e.target.value)} className={`${cell} text-[#0B4F5C]`} /></td>
+                        <td className="p-0.5"><input value={m.model_path || ''} onChange={(e) => setPm(i, 'model_path', e.target.value)} className={`${cell} text-[#062A31]`} /></td>
                         <td className="p-0.5 w-[70px]"><input type="number" value={m.sort_order} onChange={(e) => setPm(i, 'sort_order', Number(e.target.value))} className={cell} /></td>
                         <td className="text-center w-[60px]"><GridCheck checked={m.is_active} onChange={(v) => setPm(i, 'is_active', v)} /></td>
                       </tr>
@@ -276,7 +276,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

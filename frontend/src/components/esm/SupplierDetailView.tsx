@@ -27,7 +27,7 @@ const TABS: { id: TabId; label: string }[] = [
 ];
 
 const inputCls = 'flex-1 border border-[#7FA9B1] p-1 focus:outline-none bg-white';
-const scoreColor = (s: number) => (s >= 80 ? 'text-[#0B4F5C]' : s >= 50 ? 'text-[#5C8891]' : 'text-[#8C2B1F]');
+const scoreColor = (s: number) => (s >= 80 ? 'text-[#062A31]' : s >= 50 ? 'text-[#5C8891]' : 'text-[#8C2B1F]');
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex items-center">
@@ -347,7 +347,7 @@ function ContractsDocsTab({ supplierId, contracts, documents }: { supplierId: nu
                 if (!r.expiration_date) return '—';
                 const exp = new Date(r.expiration_date);
                 const soon = (exp.getTime() - Date.now()) / 86400000;
-                const cls = soon < 0 ? 'text-[#8C2B1F] font-bold' : soon < 30 ? 'text-[#0B4F5C] font-bold' : '';
+                const cls = soon < 0 ? 'text-[#8C2B1F] font-bold' : soon < 30 ? 'text-[#062A31] font-bold' : '';
                 return <span className={cls}>{r.expiration_date}</span>;
               }, width: '30%' },
             { header: '', accessor: (r: any) => <button onClick={() => delDoc.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '10%' },

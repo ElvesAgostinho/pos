@@ -9,7 +9,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#06333C]">{label}</span>
+      <span className="w-[120px] flex-shrink-0 text-[#041F24]">{label}</span>
       {children}
     </label>
   );
@@ -83,7 +83,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo modelo' : `A editar ${d.code}`}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo modelo' : `A editar ${d.code}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -199,7 +199,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
                   className={`${inp} flex-1`} style={inputStyle} />
               </Row>
               <label className="flex items-start gap-3 text-[12px]">
-                <span className="w-[120px] flex-shrink-0 text-[#06333C] pt-1">Texto:</span>
+                <span className="w-[120px] flex-shrink-0 text-[#041F24] pt-1">Texto:</span>
                 <textarea value={texto.body || ''} onChange={(e) => setTexto('body', e.target.value)} rows={10}
                   className={`${inp} flex-1 font-mono`} style={inputStyle} />
               </label>
@@ -216,7 +216,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
                     {(variaveis as any[]).slice(0, 200).map((v) => (
                       <tr key={v.id} onClick={() => inserir(v.field)}
                         className="border-b border-[#F7FAFA] cursor-pointer hover:bg-[#F7FAFA]">
-                        <td className="px-2 py-1 font-mono text-[#0B4F5C]">@Model[0].{v.field}</td>
+                        <td className="px-2 py-1 font-mono text-[#062A31]">@Model[0].{v.field}</td>
                         <td className="px-2 py-1 text-[#5C8891]">{v.name}</td>
                       </tr>
                     ))}
@@ -249,7 +249,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
       <Toolbar actions={[
         { icon: '🔍', label: prever.isPending ? 'A gerar…' : 'Pré-visualizar', color: '#5C8891',
           disabled: isNew, onClick: () => prever.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>

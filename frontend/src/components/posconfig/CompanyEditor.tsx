@@ -11,7 +11,7 @@ type Bottom = 'license' | 'member' | 'texts' | 'bank';
 function Row({ label, children, w = 'w-[110px]' }: any) {
   return (
     <label className="flex items-center gap-2 text-[12px] min-w-0">
-      <span className={`${w} flex-shrink-0 text-[#06333C]`}>{label}</span>
+      <span className={`${w} flex-shrink-0 text-[#041F24]`}>{label}</span>
       {children}
     </label>
   );
@@ -125,7 +125,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
   const BTab = ({ id, label }: any) => (
     <button onClick={() => setBottom(id)}
-      className={`px-6 py-2 text-[13px] font-semibold ${bottom === id ? 'bg-[#06333C] text-white' : 'bg-[#F7FAFA] text-[#0B4F5C] hover:bg-[#EEF4F5]'}`}>
+      className={`px-6 py-2 text-[13px] font-semibold ${bottom === id ? 'bg-[#041F24] text-white' : 'bg-[#F7FAFA] text-[#062A31] hover:bg-[#EEF4F5]'}`}>
       {label}
     </button>
   );
@@ -133,7 +133,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#06333C]">A editar {src?.name}</span>
+        <span className="text-[13px] font-bold text-[#041F24]">A editar {src?.name}</span>
         <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
@@ -162,7 +162,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
             <div className="flex mt-2">
               {([['main', 'Main contacts'], ['sec', 'Secondary contacts']] as const).map(([k, label]) => (
                 <button key={k} onClick={() => setTab(k)}
-                  className={`px-6 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#06333C] text-white' : 'bg-[#F7FAFA] text-[#0B4F5C] hover:bg-[#EEF4F5]'}`}>{label}</button>
+                  className={`px-6 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#041F24] text-white' : 'bg-[#F7FAFA] text-[#062A31] hover:bg-[#EEF4F5]'}`}>{label}</button>
               ))}
             </div>
             <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-1.5" style={{ border: '4px groove #CFE3E6' }}>
@@ -211,10 +211,10 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 carregado fica no disco do próprio servidor do hotel, como tudo o resto. */}
             <Row label="Imagem do Hotel:" w="w-[100px]">
               <label className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                <span className={`${inp} flex-1 min-w-0 truncate text-[#0B4F5C] bg-[#F7FAFA]`} style={inputStyle}>
+                <span className={`${inp} flex-1 min-w-0 truncate text-[#062A31] bg-[#F7FAFA]`} style={inputStyle}>
                   {d.logo_url ? d.logo_url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                 </span>
-                <span className="px-3 py-1 text-[12px] font-semibold bg-[#06333C] text-white hover:bg-[#0B4F5C] flex-shrink-0">
+                <span className="px-3 py-1 text-[12px] font-semibold bg-[#041F24] text-white hover:bg-[#062A31] flex-shrink-0">
                   Carregar…
                 </span>
                 <input type="file" accept="image/*" className="hidden"
@@ -265,7 +265,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
             // aqui de propósito: se bastasse escrever "Máx. Terminais = 99", a licença
             // não valia nada. Editáveis: Contacto e POS Location Name (são do cliente).
             const RO = ({ label, value, w = 'w-[130px]' }: any) => (
-              <Row label={label} w={w}><input value={value ?? '—'} readOnly className={`${inp} flex-1 bg-[#F7FAFA] text-[#0B4F5C]`} /></Row>
+              <Row label={label} w={w}><input value={value ?? '—'} readOnly className={`${inp} flex-1 bg-[#F7FAFA] text-[#062A31]`} /></Row>
             );
             return (
               <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-[12px]">
@@ -284,7 +284,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 </div>
                 <div className="space-y-2">
                   <label className="flex items-start gap-2 text-[12px]">
-                    <span className="w-[150px] flex-shrink-0 text-[#06333C]">POS Location Name:</span>
+                    <span className="w-[150px] flex-shrink-0 text-[#041F24]">POS Location Name:</span>
                     <textarea value={d.pos_location_name || ''} onChange={(e) => set('pos_location_name', e.target.value)}
                       rows={3} className={`${inp} flex-1`} style={inputStyle} />
                   </label>
@@ -293,14 +293,14 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   <RO label="Máx. Terminais (Portátil):" value={lic.max_terminals_mobile} w="w-[150px]" />
                   <div className="pt-2 border-t border-[#F7FAFA] space-y-1">
                     {Object.entries(lic.limits || {}).map(([k, v]: any) => (
-                      <div key={k} className={`text-[11px] ${v.available === 0 ? 'text-[#B0392B] font-bold' : 'text-[#0B4F5C]'}`}>
+                      <div key={k} className={`text-[11px] ${v.available === 0 ? 'text-[#B0392B] font-bold' : 'text-[#062A31]'}`}>
                         {v.label}: <b>{v.used}</b> em uso de <b>{v.licensed}</b> licenciado(s)
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="col-span-2 flex items-center gap-2 text-[11px] text-[#5C8891] border-t border-[#F7FAFA] pt-2">
-                  <span className="w-6 h-6 rounded-full bg-[#06333C] text-white flex items-center justify-center"><Glyph icon="🔑" size={13} /></span>
+                  <span className="w-6 h-6 rounded-full bg-[#041F24] text-white flex items-center justify-center"><Glyph icon="🔑" size={13} /></span>
                   <span className="flex-1">
                     <b>Gestor de licenças</b> — os campos a cinzento vêm do ficheiro de licença assinado pelo fornecedor
                     e não são editáveis. Para alargar módulos, terminais ou validade, contacte o fornecedor.
@@ -338,7 +338,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 {[['＋', 'Adicionar', '#062A31', () => setPopup({ group: groups[0]?.id, sort_order: 100, is_active: true })],
                   ['✎', 'Editar', '#5C8891', () => mems[0] && setPopup({ ...mems[0], _i: 0 })],
                   ['−', 'Apagar', '#B0392B', () => set('memberships', mems.slice(0, -1))]].map(([ic, lb, c, fn]: any) => (
-                  <button key={lb} onClick={fn} className="flex items-center gap-2 w-full px-2 py-1.5 bg-[#06333C] text-white text-[13px] hover:bg-[#0B4F5C]">
+                  <button key={lb} onClick={fn} className="flex items-center gap-2 w-full px-2 py-1.5 bg-[#041F24] text-white text-[13px] hover:bg-[#062A31]">
                     <span className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: c }}><Glyph icon={ic} size={13} /></span>{lb}
                   </button>
                 ))}
@@ -419,12 +419,12 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 </tbody>
               </table>
               <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#EEF4F5]">
-                <button onClick={() => addBank.mutate()} className="flex items-center gap-2 text-[13px] text-[#06333C] hover:bg-[#F7FAFA] px-1 py-1">
+                <button onClick={() => addBank.mutate()} className="flex items-center gap-2 text-[13px] text-[#041F24] hover:bg-[#F7FAFA] px-1 py-1">
                   <span className="w-6 h-6 rounded-full bg-[#062A31] text-white flex items-center justify-center">＋</span> Adicionar
                 </button>
                 <span className="w-px h-6 bg-[#EEF4F5]" />
                 <button onClick={() => banks.length && confirm('Apagar a última conta?') && delBank.mutate(banks[banks.length - 1].id)}
-                  disabled={!banks.length} className="flex items-center gap-2 text-[13px] text-[#06333C] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
+                  disabled={!banks.length} className="flex items-center gap-2 text-[13px] text-[#041F24] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
                   <span className="w-6 h-6 rounded-full bg-[#B0392B] text-white flex items-center justify-center">−</span> Apagar
                 </button>
                 <span className="ml-auto text-[11px] text-[#5C8891]">Estas contas saem impressas no rodapé da fatura — é por aqui que o cliente paga.</span>
@@ -438,7 +438,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       {popup && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" onClick={() => setPopup(null)}>
           <div className="bg-white border border-[#5C8891] w-[560px] shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
+            <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
               <span>A editar {groups.find((g: any) => g.id === popup.group)?.name || 'grupo'}</span>
               <button onClick={() => setPopup(null)} className="text-white inline-flex"><Glyph icon="✕" size={14} /></button>
             </div>
@@ -450,7 +450,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
               <Row label="Ativo:"><input type="checkbox" checked={!!popup.is_active} onChange={(e) => setPopup({ ...popup, is_active: e.target.checked })} className="w-4 h-4" /></Row>
             </div>
             <Toolbar actions={[
-              { icon: '✔', label: 'Gravar', color: '#0B4F5C', onClick: () => saveMem({ group: popup.group, sort_order: popup.sort_order, is_active: popup.is_active, id: popup.id }) },
+              { icon: '✔', label: 'Gravar', color: '#062A31', onClick: () => saveMem({ group: popup.group, sort_order: popup.sort_order, is_active: popup.is_active, id: popup.id }) },
               { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: () => setPopup(null) },
             ]} />
           </div>
@@ -460,7 +460,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       <Toolbar actions={[
         { icon: '🔑', label: 'Gestor de Licenças', color: '#5C8891', disabled: !lic,
           onClick: () => { setSyncMsg(null); setShowLicenseManager(true); } },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
 
@@ -479,7 +479,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
             <div className="p-4 overflow-y-auto flex-1 text-[12px] space-y-4">
               {syncMsg && (
-                <div className={`px-2 py-1.5 rounded border text-[12px] ${syncMsg.ok ? 'bg-[#F7FAFA] border-[#EEF4F5] text-[#06333C]' : 'bg-[#FDECEA] border-[#B0392B] text-[#8C2B1F]'}`}>
+                <div className={`px-2 py-1.5 rounded border text-[12px] ${syncMsg.ok ? 'bg-[#F7FAFA] border-[#EEF4F5] text-[#041F24]' : 'bg-[#FDECEA] border-[#B0392B] text-[#8C2B1F]'}`}>
                   {syncMsg.text}
                 </div>
               )}
@@ -496,19 +496,19 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   ].map(([label, value]) => (
                     <tr key={String(label)} className="border-b border-[#F7FAFA]">
                       <td className="py-1 pr-3 text-[#5C8891] w-[190px]">{label}</td>
-                      <td className="py-1 font-bold text-[#06333C]">{value ?? '—'}</td>
+                      <td className="py-1 font-bold text-[#041F24]">{value ?? '—'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
               <div>
-                <div className="font-bold text-[#06333C] mb-1.5 border-b border-[#F7FAFA] pb-1">
+                <div className="font-bold text-[#041F24] mb-1.5 border-b border-[#F7FAFA] pb-1">
                   Módulos Licenciados ({(lic.modules || []).length})
                 </div>
                 <div className="grid grid-cols-3 gap-x-3 gap-y-1">
                   {(lic.modules || []).map((m: string) => (
-                    <div key={m} className="flex items-center gap-1.5 text-[11px] text-[#06333C]">
+                    <div key={m} className="flex items-center gap-1.5 text-[11px] text-[#041F24]">
                       <Glyph icon="✓" size={10} /> {m}
                     </div>
                   ))}
@@ -517,9 +517,9 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
               {(lic.limits && Object.keys(lic.limits).length > 0) && (
                 <div>
-                  <div className="font-bold text-[#06333C] mb-1.5 border-b border-[#F7FAFA] pb-1">Consumo</div>
+                  <div className="font-bold text-[#041F24] mb-1.5 border-b border-[#F7FAFA] pb-1">Consumo</div>
                   {Object.entries(lic.limits).map(([k, v]: any) => (
-                    <div key={k} className={`text-[11px] ${v.available === 0 ? 'text-[#B0392B] font-bold' : 'text-[#0B4F5C]'}`}>
+                    <div key={k} className={`text-[11px] ${v.available === 0 ? 'text-[#B0392B] font-bold' : 'text-[#062A31]'}`}>
                       {v.label}: <b>{v.used}</b> em uso de <b>{v.licensed}</b> licenciado(s)
                     </div>
                   ))}
@@ -530,22 +530,22 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   license.key novo por email/WhatsApp. Escolhe-se no computador de
                   quem está a ver este ecrã, nunca na pasta do servidor. */}
               <div className="border border-[#CFE3E6] bg-[#F7FAFA] rounded p-3">
-                <div className="font-bold text-[#06333C] mb-1">Renovar carregando um ficheiro</div>
-                <div className="text-[11px] text-[#0B4F5C] mb-2">
+                <div className="font-bold text-[#041F24] mb-1">Renovar carregando um ficheiro</div>
+                <div className="text-[11px] text-[#062A31] mb-2">
                   Recebeu um license.key novo do fornecedor (ex.: depois de pagar)? Escolha-o aqui.
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="file" accept=".key,text/plain"
                     onChange={(e) => setFicheiroLic(e.target.files?.[0] || null)}
-                    className="flex-1 text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-[#0B4F5C] file:text-white file:font-bold file:cursor-pointer" />
+                    className="flex-1 text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-[#062A31] file:text-white file:font-bold file:cursor-pointer" />
                   <button onClick={enviarFicheiroLicenca} disabled={uploading || !ficheiroLic}
                     className="h-8 px-3 text-[12px] font-bold text-white rounded disabled:opacity-50 flex-shrink-0"
-                    style={{ background: '#0B4F5C' }}>
+                    style={{ background: '#062A31' }}>
                     {uploading ? 'A enviar…' : 'Submeter'}
                   </button>
                 </div>
                 {uploadMsg && (
-                  <div className={`mt-2 text-[11px] px-2 py-1 rounded border ${uploadMsg.ok ? 'text-[#0B4F5C] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
+                  <div className={`mt-2 text-[11px] px-2 py-1 rounded border ${uploadMsg.ok ? 'text-[#062A31] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
                     {uploadMsg.text}
                   </div>
                 )}

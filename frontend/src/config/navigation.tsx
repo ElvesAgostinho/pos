@@ -101,9 +101,9 @@ export const BuffetDisplay = () => <KDSView fixedStation="BUFFET" title="Buffet 
 // Lançador do Terminal POS (o FrontOffice tátil abre em ecrã cheio, fora do backoffice).
 const PosTerminalLauncher = () => (
   <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-8">
-    <div className="text-lg font-bold text-[#0B4F5C]">Terminal POS (FrontOffice)</div>
+    <div className="text-lg font-bold text-[#062A31]">Terminal POS (FrontOffice)</div>
     <p className="text-sm text-gray-600 max-w-md">O terminal de venda tátil abre em ecrã cheio, com sessão própria do operador. Clique para abrir.</p>
-    <a href="/pos" className="px-6 py-3 bg-[#0B4F5C] text-white rounded-lg font-bold hover:bg-[#0B4F5C]">Abrir Terminal POS →</a>
+    <a href="/pos" className="px-6 py-3 bg-[#062A31] text-white rounded-lg font-bold hover:bg-[#062A31]">Abrir Terminal POS →</a>
   </div>
 );
 
