@@ -48,7 +48,14 @@ class UploadView(APIView):
         with open(os.path.join(dest_dir, name), 'wb') as out:
             for chunk in f.chunks():
                 out.write(chunk)
-        return Response({'url': f'{settings.MEDIA_URL}{folder}/{name}', 'size': f.size}, status=201)
+        # Absoluto (com o host do próprio pedido), não relativo: em produção o
+        # frontend e a API são servidos pelo mesmo Django, por isso dava sempre
+        # certo — mas um segundo terminal/tablet a aceder por outro endereço, ou
+        # o frontend de desenvolvimento (porta diferente do backend), resolvia
+        # "/media/..." contra a SUA PRÓPRIA origem, onde não existe nada: a
+        # imagem "desaparecia" sem erro nenhum, só uma caixa vazia.
+        url = request.build_absolute_uri(f'{settings.MEDIA_URL}{folder}/{name}')
+        return Response({'url': url, 'size': f.size}, status=201)
 
 
 class PublicBrandingView(APIView):
