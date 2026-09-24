@@ -23,14 +23,14 @@ export default function DocumentSeriesView() {
     <ClassicWindow title="Séries de Documentos (Master Data)" icon={<FileText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Nº registos: {series.length}</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px]">
-          <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#a0a0a0] p-1 w-24" />
-          <input placeholder="Nome" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <select value={draft.document_type} onChange={(e) => setDraft({ ...draft, document_type: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
+          <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#7FA9B1] p-1 w-24" />
+          <input placeholder="Nome" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <select value={draft.document_type} onChange={(e) => setDraft({ ...draft, document_type: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
             {DOCUMENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
-          <input placeholder="Prefixo" value={draft.prefix} onChange={(e) => setDraft({ ...draft, prefix: e.target.value.toUpperCase() })} className="border border-[#a0a0a0] p-1 w-20" />
-          <input placeholder="Ano" type="number" value={draft.year} onChange={(e) => setDraft({ ...draft, year: e.target.value })} className="border border-[#a0a0a0] p-1 w-20" />
+          <input placeholder="Prefixo" value={draft.prefix} onChange={(e) => setDraft({ ...draft, prefix: e.target.value.toUpperCase() })} className="border border-[#7FA9B1] p-1 w-20" />
+          <input placeholder="Ano" type="number" value={draft.year} onChange={(e) => setDraft({ ...draft, year: e.target.value })} className="border border-[#7FA9B1] p-1 w-20" />
           <ClassicButton icon={Plus} label="Adicionar Série" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -43,7 +43,7 @@ export default function DocumentSeriesView() {
               { header: 'Tipo', accessor: (r: any) => typeLabel(r.document_type), width: '24%' },
               { header: 'Formato', accessor: (r: any) => `${r.prefix}${r.year}/####`, width: '18%' },
               { header: 'Último nº', accessor: 'current_number', width: '12%' },
-              { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '8%' },
+              { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '8%' },
             ]}
           />
         </div>

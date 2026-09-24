@@ -17,14 +17,14 @@ function Placeholder({ id }: { id: string }) {
   const moduleTitle = MODULE_OF[id] || '';
   return (
     <ClassicWindow title={title}>
-      <div className="h-full w-full bg-[#e6e6e6] flex items-center justify-center p-6">
-        <div className="bg-[#f0f0f0] border-2 border-white border-b-[#a0a0a0] border-r-[#a0a0a0] p-8 max-w-lg text-center">
-          <div className="w-14 h-14 mx-auto mb-4 bg-white border border-[#c0c0c0] rounded-full flex items-center justify-center">
-            <Construction size={26} className="text-[#B08D3C]" />
+      <div className="h-full w-full bg-[#F7FAFA] flex items-center justify-center p-6">
+        <div className="bg-[#F7FAFA] border-2 border-white border-b-[#7FA9B1] border-r-[#7FA9B1] p-8 max-w-lg text-center">
+          <div className="w-14 h-14 mx-auto mb-4 bg-white border border-[#CFE3E6] rounded-full flex items-center justify-center">
+            <Construction size={26} className="text-[#5C8891]" />
           </div>
           {moduleTitle && <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{moduleTitle}</div>}
-          <h2 className="text-lg font-bold text-[#B08D3C] mb-2">{title}</h2>
-          <div className="inline-block text-[10px] font-bold text-[#8a6d1a] bg-[#fff4d6] border border-[#e0c877] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
+          <h2 className="text-lg font-bold text-[#5C8891] mb-2">{title}</h2>
+          <div className="inline-block text-[10px] font-bold text-[#0B4F5C] bg-[#F7FAFA] border border-[#7FA9B1] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
           <p className="text-[12px] text-gray-600">
             Não é um erro. Este ecrã está a ser construído — o módulo <b>está ativo na sua licença</b>,
             mas esta função específica ainda vai ser disponibilizada.

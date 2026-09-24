@@ -31,12 +31,12 @@ export default function PmsRoomPickerDialog({ mode, reservation, onClose, onDone
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[520px] max-h-[70vh] bg-[#f0f0f0] border border-[#8fa4bb] shadow-xl flex flex-col">
-        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #2a5488, #183453)' }}>
+      <div className="w-[520px] max-h-[70vh] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl flex flex-col">
+        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #0B4F5C, #06333C)' }}>
           {mode === 'assign' ? 'Atribuição Rápida de Quartos' : 'Mudança de Quarto'}
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>
-        <div className="px-3 py-2 text-[11px] bg-white border-b border-[#d0d0d0]">
+        <div className="px-3 py-2 text-[11px] bg-white border-b border-[#EEF4F5]">
           <b>{reservation.confirmation}</b> · {reservation.guest_name} · {reservation.room_type_name}
           {reservation.room_number && <> · quarto atual: <b>{reservation.room_number}</b></>}
         </div>
@@ -47,9 +47,9 @@ export default function PmsRoomPickerDialog({ mode, reservation, onClose, onDone
                 <button key={r.id} onClick={() => pick(r.id)}
                   disabled={r.status === 'OCCUPIED' || r.status === 'OOO'}
                   className={`p-2 border text-[11px] text-left ${
-                    r.status === 'VACANT_CLEAN' ? 'bg-[#eafaf0] border-[#8fce9e] hover:bg-[#d5f5e0]'
-                    : r.status === 'VACANT_DIRTY' ? 'bg-[#fff7e6] border-[#e0c080] hover:bg-[#ffedc0]'
-                    : 'bg-[#f0f0f0] border-[#c0c0c0] text-gray-400 cursor-not-allowed'}`}>
+                    r.status === 'VACANT_CLEAN' ? 'bg-[#F7FAFA] border-[#CFE3E6] hover:bg-[#EEF4F5]'
+                    : r.status === 'VACANT_DIRTY' ? 'bg-[#F7FAFA] border-[#CFE3E6] hover:bg-[#EEF4F5]'
+                    : 'bg-[#F7FAFA] border-[#CFE3E6] text-gray-400 cursor-not-allowed'}`}>
                   <div className="font-bold">{r.number}</div>
                   <div className="text-[10px]">{r.status_display}</div>
                 </button>
@@ -60,7 +60,7 @@ export default function PmsRoomPickerDialog({ mode, reservation, onClose, onDone
             </div>
           )}
         </div>
-        <div className="flex justify-end gap-2 p-2 bg-[#e8e8e8] border-t border-[#c0c0c0]">
+        <div className="flex justify-end gap-2 p-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
           <ClassicButton label="Fechar" onClick={onClose} />
         </div>
       </div>

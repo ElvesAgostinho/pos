@@ -27,7 +27,7 @@ function Campo({ x, params, setParams, armazens }: {
   x: any; params: any; setParams: (v: any) => void; armazens: any[];
 }) {
   const val = params[x.key] ?? '';
-  const cls = 'w-[240px] border border-[#8a95a3] px-2 py-[5px] text-[13px] bg-white';
+  const cls = 'w-[240px] border border-[#7FA9B1] px-2 py-[5px] text-[13px] bg-white';
   if (x.type === 'bool_sn') {
     return (
       <select value={val} onChange={(e) => setParams({ ...params, [x.key]: e.target.value })}
@@ -125,9 +125,9 @@ export default function PosReports() {
       w.document.write(`
         <html><head><title>${d.title}</title><style>
           body{font-family:'Segoe UI',sans-serif;font-size:12px;padding:24px}
-          h1{font-size:18px;margin:0 0 4px} .meta{color:#666;font-size:11px;margin-bottom:14px}
-          table{width:100%;border-collapse:collapse} th{background:#eee;text-align:left;padding:5px;border:1px solid #ccc}
-          td{padding:4px 5px;border:1px solid #ddd} tfoot td{font-weight:bold;background:#f5f5f5}
+          h1{font-size:18px;margin:0 0 4px} .meta{color:#5C8891;font-size:11px;margin-bottom:14px}
+          table{width:100%;border-collapse:collapse} th{background:#F7FAFA;text-align:left;padding:5px;border:1px solid #EEF4F5}
+          td{padding:4px 5px;border:1px solid #EEF4F5} tfoot td{font-weight:bold;background:#F7FAFA}
           .r{text-align:right}
         </style></head><body>
         <h1>${d.title}</h1>
@@ -196,84 +196,84 @@ export default function PosReports() {
 
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-4 py-2 border-b border-[#e0e0e0] text-[13px] flex-shrink-0">
+        <div className="px-4 py-2 border-b border-[#EEF4F5] text-[13px] flex-shrink-0">
           <button onClick={() => { correr.reset(); setRep(null); setPasta(null); }}
-            className="text-[#1a73c8] hover:underline">Start Page</button>
-          <span className="mx-1 text-[#999]">&gt;</span>
+            className="text-[#5C8891] hover:underline">Start Page</button>
+          <span className="mx-1 text-[#7FA9B1]">&gt;</span>
           <button onClick={() => { correr.reset(); setRep(null); }}
-            className="text-[#1a73c8] hover:underline">{pasta.code}</button>
-          <span className="mx-1 text-[#999]">&gt;</span>
+            className="text-[#5C8891] hover:underline">{pasta.code}</button>
+          <span className="mx-1 text-[#7FA9B1]">&gt;</span>
           <span className="font-semibold">{rep.name}</span>
         </div>
 
         {/* ── barra do visualizador — como o sistema de referência ── */}
-        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-[#d0d0d0] bg-[#f3f3f3] flex-shrink-0 text-[13px]">
+        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-[#EEF4F5] bg-[#F7FAFA] flex-shrink-0 text-[13px]">
           <button title="Primeira página" disabled={pagina <= 1} onClick={() => setPagina(1)}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#e8e8e8]">|◀</button>
+            className="px-2 py-1 border border-[#CFE3E6] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7FAFA]">|◀</button>
           <button title="Página anterior" disabled={pagina <= 1} onClick={() => setPagina((p) => Math.max(1, p - 1))}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#e8e8e8]">◀</button>
+            className="px-2 py-1 border border-[#CFE3E6] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7FAFA]">◀</button>
           <input value={pagina} onChange={(e) => setPagina(Math.min(totalPaginas, Math.max(1, Number(e.target.value) || 1)))}
-            className="w-[42px] text-center border border-[#c0c0c0] py-1" style={inputStyle} />
-          <span className="text-[#666] px-1">of {totalPaginas}</span>
+            className="w-[42px] text-center border border-[#CFE3E6] py-1" style={inputStyle} />
+          <span className="text-[#5C8891] px-1">of {totalPaginas}</span>
           <button title="Página seguinte" disabled={pagina >= totalPaginas} onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#e8e8e8]">▶</button>
+            className="px-2 py-1 border border-[#CFE3E6] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7FAFA]">▶</button>
           <button title="Última página" disabled={pagina >= totalPaginas} onClick={() => setPagina(totalPaginas)}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#e8e8e8]">▶|</button>
+            className="px-2 py-1 border border-[#CFE3E6] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7FAFA]">▶|</button>
 
-          <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
+          <span className="w-px h-5 bg-[#CFE3E6] mx-2" />
           <button title="Atualizar" onClick={() => correr.mutate()}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8]">↻</button>
+            className="px-2 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA]">↻</button>
           <button title="Voltar aos parâmetros" onClick={voltar}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8]">←</button>
+            className="px-2 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA]">←</button>
 
-          <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
+          <span className="w-px h-5 bg-[#CFE3E6] mx-2" />
           <select value={zoom} onChange={(e) => setZoom(Number(e.target.value))}
-            className="border border-[#c0c0c0] px-1 py-1 bg-white" style={inputStyle}>
+            className="border border-[#CFE3E6] px-1 py-1 bg-white" style={inputStyle}>
             {[50, 75, 100, 125, 150, 200].map((z) => <option key={z} value={z}>{z}%</option>)}
           </select>
 
-          <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
+          <span className="w-px h-5 bg-[#CFE3E6] mx-2" />
           <button title="Guardar (CSV)" onClick={exportar}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8] inline-flex"><Glyph icon="💾" size={14} /></button>
+            className="px-2 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] inline-flex"><Glyph icon="💾" size={14} /></button>
           <button title="Imprimir" onClick={imprimir}
-            className="px-2 py-1 border border-[#c0c0c0] bg-white hover:bg-[#e8e8e8] inline-flex"><Glyph icon="🖨" size={14} /></button>
+            className="px-2 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] inline-flex"><Glyph icon="🖨" size={14} /></button>
 
-          <span className="w-px h-5 bg-[#c8c8c8] mx-2" />
+          <span className="w-px h-5 bg-[#CFE3E6] mx-2" />
           <input value={procurar} onChange={(e) => setProcurar(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && procurarProxima()}
-            placeholder="Find" className="w-[140px] border border-[#c0c0c0] px-2 py-1" style={inputStyle} />
-          <button onClick={procurarProxima} className="text-[#1a73c8] hover:underline px-1">Next</button>
+            placeholder="Find" className="w-[140px] border border-[#CFE3E6] px-2 py-1" style={inputStyle} />
+          <button onClick={procurarProxima} className="text-[#5C8891] hover:underline px-1">Next</button>
         </div>
 
         <div className="flex-1 overflow-auto p-6" style={{ zoom: zoom / 100 }}>
           <div className="max-w-[1400px]">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <div className="text-[20px] font-bold text-[#222]">
+                <div className="text-[20px] font-bold text-[#06333C]">
                   {d.title}
                   {d.grouped_by && (
-                    <span className="ml-2 text-[13px] font-normal text-[#1a4f8a]">
+                    <span className="ml-2 text-[13px] font-normal text-[#0B4F5C]">
                       · agrupado por {d.grouped_by}
                     </span>
                   )}
                 </div>
-                <div className="text-[12px] text-[#555] mt-1"><b>{d.company}</b> · NIF {d.tax_id}</div>
-                <div className="text-[12px] text-[#555]">{d.folder}</div>
+                <div className="text-[12px] text-[#0B4F5C] mt-1"><b>{d.company}</b> · NIF {d.tax_id}</div>
+                <div className="text-[12px] text-[#0B4F5C]">{d.folder}</div>
                 {d.params?.from && (
-                  <div className="text-[12px] text-[#555]">
+                  <div className="text-[12px] text-[#0B4F5C]">
                     De data: {d.params.from} — A data: {d.params.to}
                   </div>
                 )}
-                <div className="text-[12px] text-[#555]">
+                <div className="text-[12px] text-[#0B4F5C]">
                   Incluir detalhes? <b>{d.params?.detailed || 'Não'}</b>
                 </div>
                 {outrosParams.map((x: any) => (
-                  <div key={x.key} className="text-[12px] text-[#555]">
+                  <div key={x.key} className="text-[12px] text-[#0B4F5C]">
                     {x.label}: {d.params[x.key]}
                   </div>
                 ))}
               </div>
-              <div className="text-[11px] text-[#888] italic text-right">
+              <div className="text-[11px] text-[#5C8891] italic text-right">
                 Data de impressão:<br />
                 {new Date(d.generated_at).toLocaleString('pt-PT')}<br />
                 {d.user}
@@ -284,7 +284,7 @@ export default function PosReports() {
               page={pagina} pageSize={PAGE_SIZE}
               onPageInfo={({ page, totalPages }) => { setTotalPaginas(totalPages); if (page !== pagina) setPagina(page); }} />
 
-            <div className="mt-6 pt-3 border-t border-[#e0e0e0] text-[10px] text-[#999] flex justify-between">
+            <div className="mt-6 pt-3 border-t border-[#EEF4F5] text-[10px] text-[#7FA9B1] flex justify-between">
               <span>System Mwana Lodge © {new Date().getFullYear()}. Todos os direitos reservados.<br />{idTecnico}</span>
               <span>Página {pagina} de {totalPaginas}</span>
             </div>
@@ -292,7 +292,7 @@ export default function PosReports() {
         </div>
 
         <Toolbar actions={[
-          { label: 'Voltar aos parâmetros', icon: '◀', color: '#6b6b6b', onClick: voltar },
+          { label: 'Voltar aos parâmetros', icon: '◀', color: '#5C8891', onClick: voltar },
         ]} />
       </div>
     );
@@ -302,35 +302,35 @@ export default function PosReports() {
   if (rep) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-4 py-2 border-b border-[#e0e0e0] text-[13px]">
+        <div className="px-4 py-2 border-b border-[#EEF4F5] text-[13px]">
           <button onClick={() => { setRep(null); setPasta(null); }}
-            className="text-[#1a73c8] hover:underline">Start Page</button>
-          <span className="mx-1 text-[#999]">&gt;</span>
-          <button onClick={() => setRep(null)} className="text-[#1a73c8] hover:underline">{pasta.code}</button>
-          <span className="mx-1 text-[#999]">&gt;</span>
+            className="text-[#5C8891] hover:underline">Start Page</button>
+          <span className="mx-1 text-[#7FA9B1]">&gt;</span>
+          <button onClick={() => setRep(null)} className="text-[#5C8891] hover:underline">{pasta.code}</button>
+          <span className="mx-1 text-[#7FA9B1]">&gt;</span>
           <span className="font-semibold">{rep.name}</span>
         </div>
 
         <div className="flex-1 overflow-auto p-6">
-          <div className="max-w-[1100px] border border-[#c8c8c8] bg-white">
+          <div className="max-w-[1100px] border border-[#CFE3E6] bg-white">
             <div className="px-5 py-5 flex items-start justify-between gap-8">
               <div className="grid grid-cols-2 gap-x-10 gap-y-4">
                 {rep.params.map((x: any) => (
                   <div key={x.key} className="flex items-center gap-3">
-                    <span className="w-[170px] flex-shrink-0 text-[13px] text-[#333]">{x.label}:</span>
+                    <span className="w-[170px] flex-shrink-0 text-[13px] text-[#06333C]">{x.label}:</span>
                     <Campo x={x} params={params} setParams={setParams} armazens={armazens as any[]} />
                   </div>
                 ))}
               </div>
               <button onClick={() => correr.mutate()} disabled={!podeExibir || correr.isPending}
-                className="flex-shrink-0 px-6 py-2.5 bg-[#e8e8e8] border border-[#9a9a9a] hover:enabled:bg-[#dcdcdc] text-[13px] font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                className="flex-shrink-0 px-6 py-2.5 bg-[#F7FAFA] border border-[#7FA9B1] hover:enabled:bg-[#EEF4F5] text-[13px] font-medium disabled:opacity-50 disabled:cursor-not-allowed">
                 {correr.isPending ? 'A gerar…' : 'Exibir Relatório'}
               </button>
             </div>
           </div>
         </div>
 
-        <Toolbar actions={[{ label: 'Voltar', icon: '◀', color: '#6b6b6b', onClick: voltar }]} />
+        <Toolbar actions={[{ label: 'Voltar', icon: '◀', color: '#5C8891', onClick: voltar }]} />
       </div>
     );
   }
@@ -339,29 +339,29 @@ export default function PosReports() {
   const lista = pasta ? pasta.reports : [];
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center px-4 py-2 border-b border-[#e0e0e0]">
+      <div className="flex items-center px-4 py-2 border-b border-[#EEF4F5]">
         <div className="text-[13px]">
-          <button onClick={() => setPasta(null)} className="text-[#1a73c8] hover:underline">Start Page</button>
+          <button onClick={() => setPasta(null)} className="text-[#5C8891] hover:underline">Start Page</button>
           {pasta && (<>
-            <span className="mx-1 text-[#999]">&gt;</span>
+            <span className="mx-1 text-[#7FA9B1]">&gt;</span>
             <span className="font-semibold">{pasta.code}</span>
           </>)}
         </div>
         <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Search"
-          className="ml-auto border border-[#c0c0c0] px-3 py-1 text-[13px] w-[320px]" style={inputStyle} />
+          className="ml-auto border border-[#CFE3E6] px-3 py-1 text-[13px] w-[320px]" style={inputStyle} />
       </div>
 
       <div className="flex-1 overflow-auto p-6">
         {busca ? (
           <div className="space-y-1">
-            <div className="text-[12px] text-[#666] mb-3">{encontrados.length} relatório(s)</div>
+            <div className="text-[12px] text-[#5C8891] mb-3">{encontrados.length} relatório(s)</div>
             {encontrados.map((r: any) => (
               <button key={r.code} onClick={() => { setBusca(''); abrirRelatorio(r, r.folder); }}
-                className="flex items-start gap-3 w-full text-left p-2 hover:bg-[#f0f6ff]">
-                <span className="w-5 h-6 flex-shrink-0 bg-white border border-[#9aa5b1]" />
+                className="flex items-start gap-3 w-full text-left p-2 hover:bg-[#FFFFFF]">
+                <span className="w-5 h-6 flex-shrink-0 bg-white border border-[#7FA9B1]" />
                 <span>
-                  <span className="text-[13px] text-[#222]">{r.name}</span>
-                  <span className="block text-[11px] text-[#888]">{r.folder.code} {r.folder.name}</span>
+                  <span className="text-[13px] text-[#06333C]">{r.name}</span>
+                  <span className="block text-[11px] text-[#5C8891]">{r.folder.code} {r.folder.name}</span>
                 </span>
               </button>
             ))}
@@ -370,13 +370,13 @@ export default function PosReports() {
           <div className="grid grid-cols-4 gap-6">
             {lista.map((r: any) => (
               <button key={r.code} onClick={() => abrirRelatorio(r, pasta)}
-                className="flex items-start gap-3 text-left hover:bg-[#f0f6ff] p-2">
-                <span className="w-7 h-8 flex-shrink-0 bg-white border border-[#9aa5b1] relative">
-                  <span className="absolute inset-x-1 top-1.5 h-px bg-[#c8d0d8]" />
-                  <span className="absolute inset-x-1 top-3 h-px bg-[#c8d0d8]" />
-                  <span className="absolute inset-x-1 top-[18px] h-px bg-[#c8d0d8]" />
+                className="flex items-start gap-3 text-left hover:bg-[#FFFFFF] p-2">
+                <span className="w-7 h-8 flex-shrink-0 bg-white border border-[#7FA9B1] relative">
+                  <span className="absolute inset-x-1 top-1.5 h-px bg-[#EEF4F5]" />
+                  <span className="absolute inset-x-1 top-3 h-px bg-[#EEF4F5]" />
+                  <span className="absolute inset-x-1 top-[18px] h-px bg-[#EEF4F5]" />
                 </span>
-                <span className="text-[13px] text-[#222] leading-5">{r.name}</span>
+                <span className="text-[13px] text-[#06333C] leading-5">{r.name}</span>
               </button>
             ))}
           </div>
@@ -384,15 +384,15 @@ export default function PosReports() {
           <div className="grid grid-cols-4 gap-6">
             {folders.map((f: any) => (
               <button key={f.code} onClick={() => setPasta(f)}
-                className="flex items-start gap-3 text-left hover:bg-[#f0f6ff] p-2">
+                className="flex items-start gap-3 text-left hover:bg-[#FFFFFF] p-2">
                 {/* pasta desenhada, como nos ERP clássicos — não um emoji */}
                 <span className="w-9 h-7 flex-shrink-0 relative">
-                  <span className="absolute inset-x-0 bottom-0 h-6 bg-[#f0c14b] border border-[#b8901f]" />
-                  <span className="absolute left-0 top-0 w-4 h-2 bg-[#f0c14b] border border-[#b8901f] border-b-0" />
+                  <span className="absolute inset-x-0 bottom-0 h-6 bg-[#7FA9B1] border border-[#5C8891]" />
+                  <span className="absolute left-0 top-0 w-4 h-2 bg-[#7FA9B1] border border-[#5C8891] border-b-0" />
                 </span>
                 <span>
-                  <span className="text-[14px] text-[#222]">{f.code} {f.name}</span>
-                  <span className="block text-[11px] text-[#888]">{f.count} relatório(s)</span>
+                  <span className="text-[14px] text-[#06333C]">{f.code} {f.name}</span>
+                  <span className="block text-[11px] text-[#5C8891]">{f.count} relatório(s)</span>
                 </span>
               </button>
             ))}
@@ -400,8 +400,8 @@ export default function PosReports() {
         )}
       </div>
 
-      <Toolbar actions={pasta ? [{ label: 'Voltar', icon: '◀', color: '#6b6b6b', onClick: voltar }] : []}
-        right={<span className="text-[11px] text-[#666]">
+      <Toolbar actions={pasta ? [{ label: 'Voltar', icon: '◀', color: '#5C8891', onClick: voltar }] : []}
+        right={<span className="text-[11px] text-[#5C8891]">
           Tudo o que o POS sabe, em pastas. Clique numa pasta para ver os relatórios.
         </span>} />
     </div>

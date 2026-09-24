@@ -32,18 +32,18 @@ const ChangePassword: React.FC<Props> = ({ onClose }) => {
     }
   };
 
-  const inputCls = 'w-full border border-[#a0a0a0] p-1.5 text-[12px] focus:outline-none bg-white';
+  const inputCls = 'w-full border border-[#7FA9B1] p-1.5 text-[12px] focus:outline-none bg-white';
 
   return (
     <div className="fixed inset-0 bg-black/30 z-[60] flex items-center justify-center">
-      <div className="bg-[#f0f0f0] border border-[#a0a0a0] w-[400px] shadow-[4px_4px_10px_rgba(0,0,0,0.35)]">
+      <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[400px] shadow-[4px_4px_10px_rgba(0,0,0,0.35)]">
         {/* Barra de título */}
-        <div className="bg-[#333] text-white px-2 py-1 flex justify-between items-center">
+        <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center">
           <div className="flex items-center">
-            <KeyRound size={13} className="mr-2 text-[#f1c40f]" />
+            <KeyRound size={13} className="mr-2 text-[#5C8891]" />
             <span className="font-bold text-[11px]">Alterar Palavra-passe</span>
           </div>
-          <button onClick={onClose} className="hover:text-red-400 font-bold">
+          <button onClick={onClose} className="hover:text-[#B0392B] font-bold">
             <X size={14} />
           </button>
         </div>
@@ -51,13 +51,13 @@ const ChangePassword: React.FC<Props> = ({ onClose }) => {
         <div className="p-4">
           {ok ? (
             <div className="text-center py-4">
-              <div className="w-12 h-12 bg-[#90c040] text-white flex items-center justify-center text-2xl font-bold border border-black mx-auto mb-3">
+              <div className="w-12 h-12 bg-[#5C8891] text-white flex items-center justify-center text-2xl font-bold border border-black mx-auto mb-3">
                 ✓
               </div>
-              <p className="font-bold text-green-800 text-[12px]">Palavra-passe alterada com sucesso!</p>
+              <p className="font-bold text-[#06333C] text-[12px]">Palavra-passe alterada com sucesso!</p>
               <button
                 onClick={onClose}
-                className="mt-4 px-4 py-1 border border-[#333] bg-[#333] text-white hover:bg-[#444] text-[11px]"
+                className="mt-4 px-4 py-1 border border-[#06333C] bg-[#06333C] text-white hover:bg-[#0B4F5C] text-[11px]"
               >
                 Concluir
               </button>
@@ -79,17 +79,17 @@ const ChangePassword: React.FC<Props> = ({ onClose }) => {
               </div>
 
               {error && (
-                <div className="bg-[#ffecec] border border-[#f0b0b0] text-red-700 px-2 py-1.5">{error}</div>
+                <div className="bg-[#F7FAFA] border border-[#FDECEA] text-[#8C2B1F] px-2 py-1.5">{error}</div>
               )}
 
               <div className="flex justify-end space-x-2 pt-1">
-                <button type="button" onClick={onClose} className="px-3 py-1 border border-[#a0a0a0] bg-white hover:bg-[#e8e8e8]">
+                <button type="button" onClick={onClose} className="px-3 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA]">
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-3 py-1 bg-[#5cb85c] hover:bg-[#4cae4c] disabled:opacity-60 text-white font-bold border border-[#4a8f4a]"
+                  className="px-3 py-1 bg-[#5C8891] hover:bg-[#5C8891] disabled:opacity-60 text-white font-bold border border-[#5C8891]"
                 >
                   {loading ? 'A gravar…' : 'Alterar'}
                 </button>

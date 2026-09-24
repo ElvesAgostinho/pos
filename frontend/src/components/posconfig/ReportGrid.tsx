@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { inputStyle, money, Glyph } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-[2px] text-[11px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-[2px] text-[11px] bg-white';
 
 /**
  * GRELHA DE RELATÓRIO com FILTROS AVANÇADOS — como no Excel, mas a sério.
@@ -161,11 +161,11 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       {/* ── barra de filtros ── */}
       <div className="flex items-center gap-2 mb-2 text-[12px]">
         <button onClick={() => setPainel(!painel)}
-          className={`px-3 py-1 border ${conds.length ? 'border-[#1a73c8] bg-[#e8f0fe] text-[#1a4f8a] font-semibold' : 'border-[#b0b0b0] bg-white'}`}>
+          className={`px-3 py-1 border ${conds.length ? 'border-[#5C8891] bg-[#F7FAFA] text-[#0B4F5C] font-semibold' : 'border-[#CFE3E6] bg-white'}`}>
           <span className="inline-flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtros avançados{conds.length ? ` (${conds.length})` : ''}</span>
         </button>
         <button onClick={() => setColsPainel(!colsPainel)}
-          className="px-3 py-1 border border-[#b0b0b0] bg-white">
+          className="px-3 py-1 border border-[#CFE3E6] bg-white">
           ▦ Colunas{ocultas.length ? ` (${ocultas.length} ocultas)` : ''}
         </button>
         <span className="ml-2">Mostrar:</span>
@@ -176,18 +176,18 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
         </select>
         {(filtrado || ordem || ocultas.length) && (
           <button onClick={() => { setRapido({}); setConds([]); setOrdem(null); setOcultas([]); setLimite(0); }}
-            className="px-3 py-1 border border-[#c0392b] text-[#c0392b] bg-white">Limpar filtros</button>
+            className="px-3 py-1 border border-[#B0392B] text-[#B0392B] bg-white">Limpar filtros</button>
         )}
-        <span className="ml-auto text-[#666]">
+        <span className="ml-auto text-[#5C8891]">
           {filtrado
-            ? <><b className="text-[#1a4f8a]">{capadas.length}</b> de {d.rows.length} linha(s)</>
+            ? <><b className="text-[#0B4F5C]">{capadas.length}</b> de {d.rows.length} linha(s)</>
             : <>{d.rows.length} linha(s)</>}
           {totalPaginas > 1 ? ` · página ${paginaAtual} de ${totalPaginas} (${vista.length} nesta página)` : ''}
         </span>
       </div>
 
       {colsPainel && (
-        <div className="mb-2 p-2 border border-[#d0d0d0] bg-[#fafafa] flex flex-wrap gap-3">
+        <div className="mb-2 p-2 border border-[#EEF4F5] bg-[#FFFFFF] flex flex-wrap gap-3">
           {cols.map((c) => (
             <label key={c[0]} className="flex items-center gap-1.5 text-[12px] cursor-pointer">
               <input type="checkbox" checked={!ocultas.includes(c[0])}
@@ -201,7 +201,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       )}
 
       {painel && (
-        <div className="mb-2 p-3 border border-[#c0d4ea] bg-[#f5f9ff]">
+        <div className="mb-2 p-3 border border-[#EEF4F5] bg-[#FFFFFF]">
           <div className="flex items-center gap-3 mb-2 text-[12px]">
             <span className="font-semibold">Mostrar as linhas em que</span>
             <select value={modo} onChange={(e) => setModo(e.target.value as any)}
@@ -211,11 +211,11 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
             </select>
             <span>se verificam:</span>
             <button onClick={() => setConds([...conds, { col: cols[0][0], op: 'contains', v1: '', v2: '' }])}
-              className="ml-auto px-3 py-1 bg-[#3d6ea5] text-white">+ Condição</button>
+              className="ml-auto px-3 py-1 bg-[#5C8891] text-white">+ Condição</button>
           </div>
 
           {conds.length === 0 && (
-            <div className="text-[11px] text-[#666]">
+            <div className="text-[11px] text-[#5C8891]">
               Sem condições. Clique em <b>+ Condição</b> — por exemplo: <i>Total</i> maior que <i>10000</i>
               {' '}E <i>Operador</i> contém <i>ana</i>.
             </div>
@@ -223,7 +223,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
 
           {conds.map((c, i) => (
             <div key={i} className="flex items-center gap-2 py-1">
-              <span className="text-[11px] text-[#666] w-[26px]">{i === 0 ? '' : (modo === 'AND' ? 'E' : 'OU')}</span>
+              <span className="text-[11px] text-[#5C8891] w-[26px]">{i === 0 ? '' : (modo === 'AND' ? 'E' : 'OU')}</span>
               <select value={c.col}
                 onChange={(e) => setConds(conds.map((x, k) => k === i ? { ...x, col: e.target.value } : x))}
                 className={`${inp} w-[180px]`} style={inputStyle}>
@@ -246,7 +246,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
                   className={`${inp} w-[150px]`} style={inputStyle} />
               </>)}
               <button onClick={() => setConds(conds.filter((_, k) => k !== i))}
-                className="text-[#c0392b] font-bold px-2">×</button>
+                className="text-[#B0392B] font-bold px-2">×</button>
             </div>
           ))}
         </div>
@@ -255,50 +255,50 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       {/* ── grelha ── */}
       <table className="w-full text-[12px] border-collapse">
         <thead>
-          <tr className="bg-[#e9e9e9]">
+          <tr className="bg-[#F7FAFA]">
             {visiveis.map((c) => (
               <th key={c[0]}
                 onClick={() => setOrdem(ordem && ordem.col === c[0]
                   ? { col: c[0], asc: !ordem.asc } : { col: c[0], asc: true })}
-                className={`font-bold px-2 py-1.5 border border-[#ccc] cursor-pointer select-none hover:bg-[#dfe7ef]
+                className={`font-bold px-2 py-1.5 border border-[#EEF4F5] cursor-pointer select-none hover:bg-[#F7FAFA]
                   ${isMoney(c) ? 'text-right' : 'text-left'}`}>
                 {c[1]}
                 {ordem && ordem.col === c[0] && (
-                  <span className="ml-1 text-[#1a73c8]">{ordem.asc ? '▲' : '▼'}</span>)}
+                  <span className="ml-1 text-[#5C8891]">{ordem.asc ? '▲' : '▼'}</span>)}
               </th>
             ))}
           </tr>
-          <tr className="bg-[#f4f4f4]">
+          <tr className="bg-[#F7FAFA]">
             {visiveis.map((c) => (
-              <th key={c[0]} className="px-1 py-1 border border-[#e0e0e0]">
+              <th key={c[0]} className="px-1 py-1 border border-[#EEF4F5]">
                 <input value={rapido[c[0]] ?? ''} placeholder="filtrar…"
                   onChange={(e) => setRapido({ ...rapido, [c[0]]: e.target.value })}
-                  className="w-full border border-[#c8c8c8] px-1 py-[2px] text-[11px] font-normal" />
+                  className="w-full border border-[#CFE3E6] px-1 py-[2px] text-[11px] font-normal" />
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {vista.map((r: any, i: number) => (
-            <tr key={i} className={i % 2 ? 'bg-[#fafafa]' : ''}>
+            <tr key={i} className={i % 2 ? 'bg-[#FFFFFF]' : ''}>
               {visiveis.map((c) => (
                 <td key={c[0]}
-                  className={`px-2 py-1 border border-[#e6e6e6] ${isMoney(c) ? 'text-right' : ''}`}>
+                  className={`px-2 py-1 border border-[#F7FAFA] ${isMoney(c) ? 'text-right' : ''}`}>
                   {fmt(c, r[c[0]])}
                 </td>
               ))}
             </tr>
           ))}
           {vista.length === 0 && (
-            <tr><td colSpan={visiveis.length} className="text-center text-[#999] py-10 border border-[#e6e6e6]">
+            <tr><td colSpan={visiveis.length} className="text-center text-[#7FA9B1] py-10 border border-[#F7FAFA]">
               {d.rows.length ? 'Nenhuma linha passa nos filtros.' : 'Não foram encontrados dados no período.'}
             </td></tr>
           )}
         </tbody>
         {Object.keys(totais).length > 0 && (
-          <tfoot><tr className="bg-[#f0f0f0] font-bold">
+          <tfoot><tr className="bg-[#F7FAFA] font-bold">
             {visiveis.map((c, i) => (
-              <td key={c[0]} className={`px-2 py-1.5 border border-[#ccc] ${isMoney(c) ? 'text-right' : ''}`}>
+              <td key={c[0]} className={`px-2 py-1.5 border border-[#EEF4F5] ${isMoney(c) ? 'text-right' : ''}`}>
                 {i === 0
                   ? (filtrado ? 'TOTAL (filtrado)' : 'TOTAL')
                   : (totais[c[0]] !== undefined

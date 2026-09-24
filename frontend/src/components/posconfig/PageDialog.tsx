@@ -39,11 +39,11 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
   const [cols, setCols] = useState(colsDefeito || 4);
   const [rows, setRows] = useState(rowsDefeito || 4);
 
-  const inp = 'border border-[#8a95a3] px-2 py-1 text-[13px] bg-white';
+  const inp = 'border border-[#7FA9B1] px-2 py-1 text-[13px] bg-white';
 
   const Linha = ({ label: t, children }: { label: string; children: any }) => (
     <div className="flex items-center gap-3 mb-3">
-      <span className="w-[130px] text-[13px] text-[#333] flex-shrink-0">{t}</span>
+      <span className="w-[130px] text-[13px] text-[#06333C] flex-shrink-0">{t}</span>
       {children}
     </div>
   );
@@ -56,11 +56,11 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
       <input type="number" value={v} min={min} max={max}
         onChange={(e) => set(Math.max(min, Math.min(max, Number(e.target.value) || min)))}
         className={`${inp} w-[110px]`} style={inputStyle} />
-      <div className="flex flex-col border border-l-0 border-[#8a95a3]">
+      <div className="flex flex-col border border-l-0 border-[#7FA9B1]">
         <button onClick={() => set(Math.min(max, v + 1))}
-          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#f0f0f0] hover:bg-[#e0e0e0]">▲</button>
+          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#F7FAFA] hover:bg-[#EEF4F5]">▲</button>
         <button onClick={() => set(Math.max(min, v - 1))}
-          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#f0f0f0] hover:bg-[#e0e0e0] border-t border-[#c8c8c8]">▼</button>
+          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#F7FAFA] hover:bg-[#EEF4F5] border-t border-[#CFE3E6]">▼</button>
       </div>
     </div>
   );
@@ -68,23 +68,23 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
   const Cor = ({ v, set }: { v: string; set: (c: string) => void }) => (
     <div className="flex items-center gap-2">
       <input value={v} onChange={(e) => set(e.target.value)} className={`${inp} w-[130px] font-mono`} style={inputStyle} />
-      <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(v) ? v : '#333333'}
+      <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(v) ? v : '#06333C'}
         onChange={(e) => set(e.target.value.toUpperCase())}
-        className="w-[38px] h-[26px] border border-[#8a95a3] p-0 bg-white cursor-pointer" />
+        className="w-[38px] h-[26px] border border-[#7FA9B1] p-0 bg-white cursor-pointer" />
     </div>
   );
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[75]" onClick={onClose}>
-      <div className="bg-[#f4f4f4] border border-[#888] w-[720px] max-w-[95vw] shadow-2xl flex flex-col"
+      <div className="bg-[#F7FAFA] border border-[#5C8891] w-[720px] max-w-[95vw] shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}>
 
-        <div className="h-[40px] bg-[#242428] flex items-center justify-end px-2">
+        <div className="h-[40px] bg-[#06333C] flex items-center justify-end px-2">
           <button onClick={onClose}
-            className="w-[26px] h-[22px] bg-[#c0392b] text-white font-bold leading-none flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
+            className="w-[26px] h-[22px] bg-[#B0392B] text-white font-bold leading-none flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
         </div>
 
-        <div className="bg-white p-5 border-y border-[#d0d0d0]">
+        <div className="bg-white p-5 border-y border-[#EEF4F5]">
           <Linha label="Tipo:">
             <label className="flex items-center gap-2 text-[13px] mr-8 cursor-pointer">
               <input type="radio" checked={tipo === 'PAGE'} onChange={() => setTipo('PAGE')} className="w-4 h-4" />
@@ -115,14 +115,14 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
 
           {/* a pré-visualização da tecla: vê-se a cor antes de a criar */}
           <div className="flex items-center gap-3 mt-4">
-            <span className="w-[130px] text-[13px] text-[#333]">Fica assim:</span>
+            <span className="w-[130px] text-[13px] text-[#06333C]">Fica assim:</span>
             <div className="w-[150px] h-[54px] flex items-center justify-center font-bold text-[15px]
               border-2 border-black rounded-[3px]
               shadow-[inset_0_2px_0_rgba(255,255,255,0.28),inset_0_-3px_0_rgba(0,0,0,0.4)]"
               style={{ background: cor, color: texto }}>
               {label || (tipo === 'PAGE' ? 'PÁGINA' : 'SUBPÁGINA')}
             </div>
-            <span className="text-[12px] text-[#666]">grelha {cols} × {rows}</span>
+            <span className="text-[12px] text-[#5C8891]">grelha {cols} × {rows}</span>
           </div>
         </div>
 
@@ -131,13 +131,13 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
             tipo, label: label.trim() || (tipo === 'PAGE' ? 'NOVA PÁGINA' : 'NOVA SUBPÁGINA'),
             price_level: preco, color: cor, text_color: texto, cols, rows,
           })}
-            className="flex items-center gap-2 text-[13px] text-[#333] hover:bg-[#eaeaea] px-3 py-1.5">
-            <span className="w-6 h-6 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
+            className="flex items-center gap-2 text-[13px] text-[#06333C] hover:bg-[#F7FAFA] px-3 py-1.5">
+            <span className="w-6 h-6 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
             OK
           </button>
           <button onClick={onClose}
-            className="flex items-center gap-2 text-[13px] text-[#333] hover:bg-[#eaeaea] px-3 py-1.5">
-            <span className="w-6 h-6 rounded-full bg-[#c0392b] text-white flex items-center justify-center"><Glyph icon="✕" size={13} /></span>
+            className="flex items-center gap-2 text-[13px] text-[#06333C] hover:bg-[#F7FAFA] px-3 py-1.5">
+            <span className="w-6 h-6 rounded-full bg-[#B0392B] text-white flex items-center justify-center"><Glyph icon="✕" size={13} /></span>
             Fechar
           </button>
         </div>

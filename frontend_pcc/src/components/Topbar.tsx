@@ -35,7 +35,7 @@ export default function Topbar({ onSelectView, userName, onChangePassword, onEdi
   };
 
   return (
-    <div ref={topbarRef} className="flex items-center justify-between bg-[#333333] text-white h-10 px-4 text-sm font-sans select-none relative z-50">
+    <div ref={topbarRef} className="flex items-center justify-between bg-[#06333C] text-white h-10 px-4 text-sm font-sans select-none relative z-50">
       <div className="flex items-center space-x-6">
         <div className="flex items-center text-white font-bold text-xl tracking-tight leading-none">
           <div className="flex flex-col items-center">
@@ -47,13 +47,13 @@ export default function Topbar({ onSelectView, userName, onChangePassword, onEdi
           
           {/* Licensing Menu */}
           <div className="relative">
-            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'LIC' ? 'bg-[#555] text-white' : 'hover:bg-[#444]'}`} onClick={() => handleMenuClick('LIC')}>
-              Licenciamento <span className="text-[#f1c40f] text-[8px] ml-1.5">▼</span>
+            <div className={`flex items-center cursor-pointer px-3 py-1 text-sm ${openDropdown === 'LIC' ? 'bg-[#0B4F5C] text-white' : 'hover:bg-[#0B4F5C]'}`} onClick={() => handleMenuClick('LIC')}>
+              Licenciamento <span className="text-[#5C8891] text-[8px] ml-1.5">▼</span>
             </div>
             {openDropdown === 'LIC' && (
-              <div className="absolute top-full left-0 mt-0 w-48 bg-[#f0f0f0] border border-[#a0a0a0] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('clients')}>Listar Clientes</div>
-                <div className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer" onClick={() => handleItemClick('provisioning')}>Novo Provisionamento</div>
+              <div className="absolute top-full left-0 mt-0 w-48 bg-[#F7FAFA] border border-[#7FA9B1] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
+                <div className="px-3 py-1.5 hover:bg-[#F7FAFA] hover:text-black cursor-pointer" onClick={() => handleItemClick('clients')}>Listar Clientes</div>
+                <div className="px-3 py-1.5 hover:bg-[#F7FAFA] hover:text-black cursor-pointer" onClick={() => handleItemClick('provisioning')}>Novo Provisionamento</div>
               </div>
             )}
           </div>
@@ -61,35 +61,35 @@ export default function Topbar({ onSelectView, userName, onChangePassword, onEdi
         </div>
       </div>
       <div className="flex items-center space-x-3 text-gray-300 text-[11px]">
-        <span className="text-red-400 font-semibold">| Admin Console |</span>
+        <span className="text-[#B0392B] font-semibold">| Admin Console |</span>
         <div className="relative">
           <div
-            className={`flex items-center space-x-1 cursor-pointer px-2 py-1 rounded ${openDropdown === 'USR' ? 'bg-[#555] text-white' : 'hover:bg-[#444]'}`}
+            className={`flex items-center space-x-1 cursor-pointer px-2 py-1 rounded ${openDropdown === 'USR' ? 'bg-[#0B4F5C] text-white' : 'hover:bg-[#0B4F5C]'}`}
             onClick={() => handleMenuClick('USR')}
           >
             <User size={12} />
             <span>{userName || 'utilizador'}</span>
-            <span className="text-[#f1c40f] text-[8px] ml-1">▼</span>
+            <span className="text-[#5C8891] text-[8px] ml-1">▼</span>
           </div>
           {openDropdown === 'USR' && (
-            <div className="absolute top-full right-0 mt-0 w-52 bg-[#f0f0f0] border border-[#a0a0a0] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
-              <div className="px-3 py-1.5 text-gray-500 border-b border-[#ddd] flex items-center">
+            <div className="absolute top-full right-0 mt-0 w-52 bg-[#F7FAFA] border border-[#7FA9B1] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
+              <div className="px-3 py-1.5 text-gray-500 border-b border-[#EEF4F5] flex items-center">
                 <User size={11} className="mr-2" /> Sessão: <b className="ml-1 text-gray-700">{userName || '—'}</b>
               </div>
               <div
-                className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer flex items-center"
+                className="px-3 py-1.5 hover:bg-[#F7FAFA] hover:text-black cursor-pointer flex items-center"
                 onClick={() => { setOpenDropdown(null); onEditCredentials && onEditCredentials(); }}
               >
                 <UserCog size={11} className="mr-2" /> As minhas credenciais
               </div>
               <div
-                className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer flex items-center"
+                className="px-3 py-1.5 hover:bg-[#F7FAFA] hover:text-black cursor-pointer flex items-center"
                 onClick={() => { setOpenDropdown(null); onChangePassword && onChangePassword(); }}
               >
                 <KeyRound size={11} className="mr-2" /> Alterar palavra-passe
               </div>
               <div
-                className="px-3 py-1.5 hover:bg-red-100 hover:text-red-700 cursor-pointer flex items-center text-red-600"
+                className="px-3 py-1.5 hover:bg-[#FDECEA] hover:text-[#8C2B1F] cursor-pointer flex items-center text-[#8C2B1F]"
                 onClick={() => { setOpenDropdown(null); onLogout && onLogout(); }}
               >
                 <LogOut size={11} className="mr-2" /> Terminar sessão

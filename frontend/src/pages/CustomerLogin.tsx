@@ -109,16 +109,16 @@ const CustomerLogin: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  const winBtn ='h-8 px-4 text-[13px] bg-[#e8e8e8] border border-[#8c8c8c] shadow-[inset_1px_1px_0_#fff] hover:bg-[#f2f2f2] active:shadow-[inset_1px_1px_0_#808080] active:translate-y-px';
+  const winBtn ='h-8 px-4 text-[13px] bg-[#F7FAFA] border border-[#5C8891] shadow-[inset_1px_1px_0_#FFFFFF] hover:bg-[#F7FAFA] active:shadow-[inset_1px_1px_0_#5C8891] active:translate-y-px';
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4"
-      style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif", background: loginBg ? undefined : 'linear-gradient(135deg,#4a6785 0%,#26374b 100%)' }}>
+      style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif", background: loginBg ? undefined : 'linear-gradient(135deg,#5C8891 0%,#06333C 100%)' }}>
       {loginBg && <img src={loginBg} alt="" className="fixed inset-0 w-full h-full object-cover -z-10" />}
       {loginBg && <div className="fixed inset-0 bg-black/30 -z-10" />}
 
       {/* Janela de login */}
-      <div className="w-[760px] max-w-full bg-[#f0f0f0] border border-[#4a6785] shadow-2xl">
+      <div className="w-[760px] max-w-full bg-[#F7FAFA] border border-[#5C8891] shadow-2xl">
         {/* Barra de título */}
         <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: `linear-gradient(180deg, ${barColor} 0%, ${shade(barColor, -18)} 100%)` }}>
           <span className="flex items-center gap-2"><Building2 size={14} /> {erpName} — Início de Sessão</span>
@@ -127,10 +127,10 @@ const CustomerLogin: React.FC = () => {
 
         <div className="flex">
           {/* Imagem / Branding (esquerda) */}
-          <div className="hidden md:flex w-64 flex-shrink-0 flex-col items-center justify-center gap-4 p-6 border-r border-[#c0c0c0]"
+          <div className="hidden md:flex w-64 flex-shrink-0 flex-col items-center justify-center gap-4 p-6 border-r border-[#CFE3E6]"
             style={{ background: loginBg ? 'rgba(255,255,255,0.06)' : `linear-gradient(160deg, ${shade(barColor, 12)} 0%, ${shade(barColor, -24)} 100%)` }}>
             {logo ? <img src={logo} alt="Logo" className="max-h-24 max-w-[180px] object-contain" />
-              : <div className="text-5xl font-black"><span className="text-[#c9a400]">M</span><span className="text-white">L</span></div>}
+              : <div className="text-5xl font-black"><span className="text-[#0B4F5C]">M</span><span className="text-white">L</span></div>}
             <div className="text-center text-white">
               <div className="text-lg font-bold leading-tight">{company}</div>
               <div className="text-[11px] opacity-80 mt-1">{erpName}</div>
@@ -149,22 +149,22 @@ const CustomerLogin: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-[150px_1fr] items-center gap-2">
                   <label className="text-[13px] text-gray-700 text-right">Nova palavra-passe:</label>
-                  <div className="flex items-center gap-1.5 bg-white border border-[#7f9db9] h-9 px-2">
+                  <div className="flex items-center gap-1.5 bg-white border border-[#7FA9B1] h-9 px-2">
                     <Lock size={14} className="text-gray-500" />
                     <input type="password" autoFocus value={novaPw} onChange={(e) => setNovaPw(e.target.value)}
                       className="flex-1 outline-none text-[13px]" />
                   </div>
                   <label className="text-[13px] text-gray-700 text-right">Confirmar:</label>
-                  <div className="flex items-center gap-1.5 bg-white border border-[#7f9db9] h-9 px-2">
+                  <div className="flex items-center gap-1.5 bg-white border border-[#7FA9B1] h-9 px-2">
                     <Lock size={14} className="text-gray-500" />
                     <input type="password" value={confirmaPw} onChange={(e) => setConfirmaPw(e.target.value)}
                       className="flex-1 outline-none text-[13px]" />
                   </div>
                 </div>
-                {error && <div className="ml-[158px] text-[12px] text-red-700 bg-red-50 border border-red-200 px-2 py-1">{error}</div>}
+                {error && <div className="ml-[158px] text-[12px] text-[#8C2B1F] bg-[#FDECEA] border border-[#B0392B] px-2 py-1">{error}</div>}
                 <div className="flex justify-end gap-2 pt-1">
                   <button type="submit" disabled={loading || novaPw.length < 6}
-                    className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#dbe8ff' }}>
+                    className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#F7FAFA' }}>
                     {loading ? 'A gravar…' : 'Gravar e entrar'}
                   </button>
                 </div>
@@ -176,7 +176,7 @@ const CustomerLogin: React.FC = () => {
             <form onSubmit={handleLogin} className="space-y-3">
               <div className="grid grid-cols-[110px_1fr] items-center gap-2">
                 <label className="text-[13px] text-gray-700 text-right">Empresa:</label>
-                <div className="flex items-center gap-2 bg-white border border-[#7f9db9] h-9 px-2">
+                <div className="flex items-center gap-2 bg-white border border-[#7FA9B1] h-9 px-2">
                   <Building2 size={14} className="text-gray-500" />
                   <select className="flex-1 outline-none text-[13px] bg-white">
                     <option>{company}</option>
@@ -184,13 +184,13 @@ const CustomerLogin: React.FC = () => {
                 </div>
 
                 <label className="text-[13px] text-gray-700 text-right">Utilizador:</label>
-                <div className="flex items-center gap-1.5 bg-white border border-[#7f9db9] h-9 px-2">
+                <div className="flex items-center gap-1.5 bg-white border border-[#7FA9B1] h-9 px-2">
                   <User size={14} className="text-gray-500" />
                   <input autoFocus value={username} onChange={(e) => setUsername(e.target.value)} className="flex-1 outline-none text-[13px]" />
                 </div>
 
                 <label className="text-[13px] text-gray-700 text-right">Palavra-passe:</label>
-                <div className="flex items-center gap-1.5 bg-white border border-[#7f9db9] h-9 px-2">
+                <div className="flex items-center gap-1.5 bg-white border border-[#7FA9B1] h-9 px-2">
                   <Lock size={14} className="text-gray-500" />
                   <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="flex-1 outline-none text-[13px]" />
                   <button type="button" onClick={() => setShowPw((s) => !s)} className="text-gray-500 hover:text-gray-800">{showPw ? <EyeOff size={14} /> : <Eye size={14} />}</button>
@@ -201,16 +201,16 @@ const CustomerLogin: React.FC = () => {
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Memorizar utilizador</label>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} /> Entrar automaticamente</label>
                 <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
-                  className="flex items-center gap-1 text-blue-700 hover:underline pt-1">
+                  className="flex items-center gap-1 text-[#0B4F5C] hover:underline pt-1">
                   <KeyRound size={12} /> Esqueci-me da password
                 </button>
               </div>
 
-              {error && <div className="ml-[118px] text-[12px] text-red-700 bg-red-50 border border-red-200 px-2 py-1">{error}</div>}
+              {error && <div className="ml-[118px] text-[12px] text-[#8C2B1F] bg-[#FDECEA] border border-[#B0392B] px-2 py-1">{error}</div>}
 
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => { setUsername(''); setPassword(''); setError(''); }} className={winBtn}>Cancelar</button>
-                <button type="submit" disabled={loading || !username} className={`${winBtn} font-bold flex items-center gap-1.5 disabled:opacity-50`} style={{ background: '#dbe8ff' }}>
+                <button type="submit" disabled={loading || !username} className={`${winBtn} font-bold flex items-center gap-1.5 disabled:opacity-50`} style={{ background: '#F7FAFA' }}>
                   <LogIn size={14} />{loading ? 'A entrar…' : 'Entrar'}
                 </button>
               </div>
@@ -221,7 +221,7 @@ const CustomerLogin: React.FC = () => {
         </div>
 
         {/* Barra de estado (rodapé) */}
-        <div className="h-7 flex items-center gap-4 px-3 text-[11px] text-gray-700 border-t border-[#c0c0c0] bg-[#e4e4e4]">
+        <div className="h-7 flex items-center gap-4 px-3 text-[11px] text-gray-700 border-t border-[#CFE3E6] bg-[#EEF4F5]">
           <span>Servidor: <b>localhost:8000</b></span>
           <span className="opacity-40">|</span>
           <span>Base: <b>ERP_2026</b></span>
@@ -229,8 +229,8 @@ const CustomerLogin: React.FC = () => {
           <span>Versão: <b>1.0.0</b></span>
           <div className="flex-1" />
           <span className="flex items-center gap-1">
-            <Wifi size={12} className={online === false ? 'text-red-600' : 'text-green-600'} />
-            Ligação: <b className={online === false ? 'text-red-700' : 'text-green-700'}>{online === null ? '…' : online ? 'Online' : 'Offline'}</b>
+            <Wifi size={12} className={online === false ? 'text-[#8C2B1F]' : 'text-[#5C8891]'} />
+            Ligação: <b className={online === false ? 'text-[#8C2B1F]' : 'text-[#0B4F5C]'}>{online === null ? '…' : online ? 'Online' : 'Offline'}</b>
           </span>
         </div>
       </div>
@@ -238,7 +238,7 @@ const CustomerLogin: React.FC = () => {
       {/* Diálogo Configurações */}
       {config && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfig(false)}>
-          <div className="w-[420px] bg-[#f0f0f0] border border-[#4a6785] shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+          <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
             <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: barColor }}>
               <span className="flex items-center gap-2"><Settings size={14} />Configurações de Ligação</span>
               <button onClick={() => setConfig(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
@@ -248,7 +248,7 @@ const CustomerLogin: React.FC = () => {
               <Row label="Base de dados" value="ERP_2026" />
               <Row label="Idioma" value="Português (Angola)" />
               <div className="flex items-center justify-between pt-2">
-                <span className="flex items-center gap-1 text-[12px]"><Wifi size={13} className={online ? 'text-green-600' : 'text-red-600'} />{online ? 'Servidor acessível' : 'Sem ligação'}</span>
+                <span className="flex items-center gap-1 text-[12px]"><Wifi size={13} className={online ? 'text-[#5C8891]' : 'text-[#8C2B1F]'} />{online ? 'Servidor acessível' : 'Sem ligação'}</span>
                 <button onClick={() => { setOnline(null); apiClient.get('licensing/status/').then(() => setOnline(true)).catch((e) => setOnline(!!e?.response)); }} className={winBtn}>Testar ligação</button>
               </div>
               <div className="text-[11px] text-gray-500 pt-1">Para personalizar logo/imagem/cores use Administração → Aparência.</div>
@@ -260,7 +260,7 @@ const CustomerLogin: React.FC = () => {
       {/* Diálogo "Esqueci-me da password" */}
       {showReset && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowReset(false)}>
-          <div className="w-[420px] bg-[#f0f0f0] border border-[#4a6785] shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+          <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
             <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: barColor }}>
               <span className="flex items-center gap-2"><KeyRound size={14} />Repor password</span>
               <button onClick={() => setShowReset(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
@@ -272,27 +272,27 @@ const CustomerLogin: React.FC = () => {
               <label className="block">
                 <span className="text-gray-700 block mb-1">Código do fornecedor:</span>
                 <input autoFocus value={resetCode} onChange={(e) => setResetCode(e.target.value)}
-                  className="w-full h-9 px-2 bg-white border border-[#7f9db9] outline-none font-mono tracking-wide" />
+                  className="w-full h-9 px-2 bg-white border border-[#7FA9B1] outline-none font-mono tracking-wide" />
               </label>
               <label className="block">
                 <span className="text-gray-700 block mb-1">Nova password:</span>
                 <input type="password" value={resetPw} onChange={(e) => setResetPw(e.target.value)}
-                  className="w-full h-9 px-2 bg-white border border-[#7f9db9] outline-none" />
+                  className="w-full h-9 px-2 bg-white border border-[#7FA9B1] outline-none" />
               </label>
               <label className="block">
                 <span className="text-gray-700 block mb-1">Confirmar:</span>
                 <input type="password" value={resetPw2} onChange={(e) => setResetPw2(e.target.value)}
-                  className="w-full h-9 px-2 bg-white border border-[#7f9db9] outline-none" />
+                  className="w-full h-9 px-2 bg-white border border-[#7FA9B1] outline-none" />
               </label>
               {resetMsg && (
-                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-[#0B4F5C] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
                   {resetMsg.text}
                 </div>
               )}
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => setShowReset(false)} className={winBtn}>Fechar</button>
                 <button type="submit" disabled={resetLoading || !resetCode || !resetPw}
-                  className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#dbe8ff' }}>
+                  className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#F7FAFA' }}>
                   {resetLoading ? 'A repor…' : 'Repor password'}
                 </button>
               </div>
@@ -305,7 +305,7 @@ const CustomerLogin: React.FC = () => {
 };
 
 function Row({ label, value }: { label: string; value: string }) {
-  return <div className="grid grid-cols-[130px_1fr] items-center gap-2"><span className="text-gray-600">{label}:</span><input readOnly value={value} className="h-8 px-2 bg-white border border-[#c0c0c0] text-gray-700 outline-none" /></div>;
+  return <div className="grid grid-cols-[130px_1fr] items-center gap-2"><span className="text-gray-600">{label}:</span><input readOnly value={value} className="h-8 px-2 bg-white border border-[#CFE3E6] text-gray-700 outline-none" /></div>;
 }
 
 export default CustomerLogin;

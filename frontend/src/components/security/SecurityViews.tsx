@@ -44,11 +44,11 @@ export function UsersView() {
     <ClassicWindow title="Utilizadores & Acessos (Security)" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{users.length} utilizador(es) · perfil define o que cada um acede (RBAC)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px]">
-          <input placeholder="Utilizador" value={d.username} onChange={(e) => setD({ ...d, username: e.target.value })} className="border border-[#a0a0a0] p-1 w-32" />
-          <input placeholder="Email" value={d.email} onChange={(e) => setD({ ...d, email: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <input placeholder="Palavra-passe" type="password" value={d.password} onChange={(e) => setD({ ...d, password: e.target.value })} className="border border-[#a0a0a0] p-1 w-32" />
-          <select value={d.profile_ids[0] || ''} onChange={(e) => setD({ ...d, profile_ids: e.target.value ? [Number(e.target.value)] : [] })} className="border border-[#a0a0a0] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
+          <input placeholder="Utilizador" value={d.username} onChange={(e) => setD({ ...d, username: e.target.value })} className="border border-[#7FA9B1] p-1 w-32" />
+          <input placeholder="Email" value={d.email} onChange={(e) => setD({ ...d, email: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input placeholder="Palavra-passe" type="password" value={d.password} onChange={(e) => setD({ ...d, password: e.target.value })} className="border border-[#7FA9B1] p-1 w-32" />
+          <select value={d.profile_ids[0] || ''} onChange={(e) => setD({ ...d, profile_ids: e.target.value ? [Number(e.target.value)] : [] })} className="border border-[#7FA9B1] p-1 bg-white">
             <option value="">— perfil —</option>{profiles.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           <ClassicButton icon={UserPlus} label="Criar Utilizador" onClick={add} />
@@ -58,7 +58,7 @@ export function UsersView() {
             { header: 'Utilizador', accessor: 'username', width: '18%' },
             { header: 'Email', accessor: (r: any) => r.email || '—', width: '20%' },
             { header: 'Perfil (RBAC)', accessor: (r: any) => (
-              <select value={r.profiles?.[0]?.id || ''} onChange={(e) => setProfile(r, e.target.value)} className="border border-[#a0a0a0] p-0.5 bg-white text-[11px]">
+              <select value={r.profiles?.[0]?.id || ''} onChange={(e) => setProfile(r, e.target.value)} className="border border-[#7FA9B1] p-0.5 bg-white text-[11px]">
                 <option value="">— sem perfil —</option>{profiles.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>), width: '22%' },
             { header: 'Hotéis (o que pode ver)', accessor: (r: any) => (
@@ -68,7 +68,7 @@ export function UsersView() {
                     const on = (r.hotels || []).some((x: any) => x.id === h.id);
                     return (
                       <button key={h.id} onClick={() => toggleHotel(r, h.id)} title={on ? 'Retirar acesso' : 'Dar acesso'}
-                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#B08D3C] text-white border-[#16304a]' : 'bg-white text-gray-500 border-[#c0c0c0]'}`}>
+                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#5C8891] text-white border-[#06333C]' : 'bg-white text-gray-500 border-[#CFE3E6]'}`}>
                         {h.name}
                       </button>
                     );
@@ -76,13 +76,13 @@ export function UsersView() {
                   {(r.hotels || []).length === 0 && <span className="text-[10px] text-gray-400 italic">sem restrição</span>}
                 </div>
               )), width: '22%' },
-            { header: 'Estado', accessor: (r: any) => <span className={r.is_active ? 'text-green-700 font-bold' : 'text-red-600'}>{r.is_active ? 'Ativo' : 'Inativo'}</span>, width: '8%' },
+            { header: 'Estado', accessor: (r: any) => <span className={r.is_active ? 'text-[#0B4F5C] font-bold' : 'text-[#8C2B1F]'}>{r.is_active ? 'Ativo' : 'Inativo'}</span>, width: '8%' },
             { header: 'Admin', accessor: (r: any) => r.is_superuser ? 'Super' : (r.is_staff ? 'Staff' : '—'), width: '10%' },
             { header: 'Ações', accessor: (r: any) => (
               <div className="flex gap-2">
-                <button title="Palavra-passe" onClick={() => changePw(r.id)} className="text-[#B08D3C] hover:text-black"><KeyRound size={13} /></button>
-                <button title="Ativar/Inativar" onClick={() => toggle.mutate(r.id)} className="text-[#b06a00] hover:text-black"><Power size={13} /></button>
-                {!r.is_superuser && <button title="Apagar" onClick={() => del.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={13} /></button>}
+                <button title="Palavra-passe" onClick={() => changePw(r.id)} className="text-[#5C8891] hover:text-black"><KeyRound size={13} /></button>
+                <button title="Ativar/Inativar" onClick={() => toggle.mutate(r.id)} className="text-[#0B4F5C] hover:text-black"><Power size={13} /></button>
+                {!r.is_superuser && <button title="Apagar" onClick={() => del.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={13} /></button>}
               </div>), width: '20%' },
           ]} />
         </div>
@@ -100,16 +100,16 @@ export function SessionsView() {
       <ClassicGrid rowKey="id" data={sessions} columns={[
         { header: 'Utilizador', accessor: (r: any) => r.user_name || r.operator_name || '—', width: '24%' },
         { header: 'Tipo', accessor: (r: any) => r.operator_name ? 'Operador POS' : 'Backoffice', width: '18%' },
-        { header: 'Estado', accessor: (r: any) => <span className={r.status === 'Active' ? 'text-green-700 font-bold' : 'text-gray-500'}>{r.status}</span>, width: '14%' },
+        { header: 'Estado', accessor: (r: any) => <span className={r.status === 'Active' ? 'text-[#0B4F5C] font-bold' : 'text-gray-500'}>{r.status}</span>, width: '14%' },
         { header: 'Início', accessor: (r: any) => new Date(r.login_time).toLocaleString('pt-PT'), width: '22%' },
         { header: 'Últ. atividade', accessor: (r: any) => new Date(r.last_activity).toLocaleTimeString('pt-PT'), width: '12%' },
-        { header: '', accessor: (r: any) => r.status === 'Active' ? <button onClick={() => revoke.mutate(r.id)} className="text-red-600 hover:text-red-800 text-[11px] font-bold">Terminar</button> : null, width: '10%' },
+        { header: '', accessor: (r: any) => r.status === 'Active' ? <button onClick={() => revoke.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F] text-[11px] font-bold">Terminar</button> : null, width: '10%' },
       ]} />
     </ClassicWindow>
   );
 }
 
-const EVT: Record<string, string> = { LOGIN_SUCCESS: 'text-green-700', LOGIN_FAILED_PASSWORD: 'text-red-600', LOGIN_FAILED_PIN: 'text-red-600', LOGOUT: 'text-gray-500' };
+const EVT: Record<string, string> = { LOGIN_SUCCESS: 'text-[#0B4F5C]', LOGIN_FAILED_PASSWORD: 'text-[#8C2B1F]', LOGIN_FAILED_PIN: 'text-[#8C2B1F]', LOGOUT: 'text-gray-500' };
 export function LoginHistoryView() {
   const [t, setT] = useState('');
   const { data: events = [] } = useAuthEvents(t || undefined);
@@ -117,9 +117,9 @@ export function LoginHistoryView() {
     <ClassicWindow title="Histórico de Login (Security)" icon={<History size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{events.length} evento(s) de autenticação</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px]">
+        <div className="flex items-center gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
           <label className="font-bold text-gray-700">Evento:</label>
-          <select value={t} onChange={(e) => setT(e.target.value)} className="border border-[#a0a0a0] p-1 bg-white">
+          <select value={t} onChange={(e) => setT(e.target.value)} className="border border-[#7FA9B1] p-1 bg-white">
             <option value="">Todos</option><option value="LOGIN_SUCCESS">Sucesso</option>
             <option value="LOGIN_FAILED_PASSWORD">Falha password</option><option value="LOGIN_FAILED_PIN">Falha PIN</option><option value="LOGOUT">Logout</option>
           </select>

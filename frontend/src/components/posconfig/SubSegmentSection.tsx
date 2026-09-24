@@ -21,7 +21,7 @@ export default function SubSegmentSection() {
         { key: 'code', label: 'Código', width: '18%' },
         { key: 'name', label: 'Descrição', width: '42%' },
         { key: 'segment_name', label: 'Segmento', width: '26%',
-          render: (r: any) => r.segment_name || <span className="text-[#999]">—</span> },
+          render: (r: any) => r.segment_name || <span className="text-[#7FA9B1]">—</span> },
         { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
       ]}
       fields={[

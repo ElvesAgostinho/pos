@@ -24,7 +24,7 @@ export default function WarehouseSection() {
         { key: 'doc_name', label: 'Documento para movimentos de stock de venda', width: '38%',
           render: (r: any) => r.doc_name
             ? r.doc_name
-            : <span className="text-[#c0392b]">sem documento</span> },
+            : <span className="text-[#B0392B]">sem documento</span> },
         { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
       ]}
       fields={[

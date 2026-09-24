@@ -7,11 +7,11 @@ import { aviso } from '../../ui/dialogo';
 
 function Row({ label, value, ok }: { label: string; value: any; ok?: boolean }) {
   return (
-    <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#eee] text-[12px]">
+    <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#F7FAFA] text-[12px]">
       <span className="text-gray-600">{label}</span>
       <span className="font-semibold flex items-center gap-1">
-        {ok === true && <CheckCircle2 size={13} className="text-green-600" />}
-        {ok === false && <XCircle size={13} className="text-red-600" />}
+        {ok === true && <CheckCircle2 size={13} className="text-[#5C8891]" />}
+        {ok === false && <XCircle size={13} className="text-[#8C2B1F]" />}
         {String(value)}
       </span>
     </div>
@@ -19,8 +19,8 @@ function Row({ label, value, ok }: { label: string; value: any; ok?: boolean }) 
 }
 function Section({ title, icon: Icon, children }: any) {
   return (
-    <div className="bg-white border border-[#c0c0c0]">
-      <div className="px-3 py-1.5 bg-[#B08D3C] text-white text-[12px] font-bold flex items-center gap-2"><Icon size={14} />{title}</div>
+    <div className="bg-white border border-[#CFE3E6]">
+      <div className="px-3 py-1.5 bg-[#5C8891] text-white text-[12px] font-bold flex items-center gap-2"><Icon size={14} />{title}</div>
       {children}
     </div>
   );
@@ -79,10 +79,10 @@ export default function SupportCenterView() {
     <ClassicWindow title="Support Center — Diagnóstico & Estado" icon={<LifeBuoy size={14} className="text-gray-300" />}
       footer={<div className="flex items-center justify-between w-full"><span className="text-gray-600">Assistência remota via VPN · gere um diagnóstico e envie ao suporte</span>
         <div className="flex gap-2">
-          <button onClick={() => refetch()} className="px-3 py-1 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] flex items-center gap-1"><RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />Atualizar</button>
-          <button onClick={download} className="px-3 py-1 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1"><Download size={12} />Criar Diagnóstico</button>
+          <button onClick={() => refetch()} className="px-3 py-1 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] text-[11px] flex items-center gap-1"><RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />Atualizar</button>
+          <button onClick={download} className="px-3 py-1 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] text-[11px] font-bold flex items-center gap-1"><Download size={12} />Criar Diagnóstico</button>
         </div></div>}>
-      <div className="p-4 grid grid-cols-2 gap-3 bg-[#ececec] h-full overflow-auto">
+      <div className="p-4 grid grid-cols-2 gap-3 bg-[#F7FAFA] h-full overflow-auto">
         <Section title="Sistema" icon={Server}>
           <Row label="Aplicação" value={`${sys.app} v${sys.version}`} />
           <Row label="Modo" value={sys.run_mode} />
@@ -114,7 +114,7 @@ export default function SupportCenterView() {
           <Row label="Origem" value={lic.source || '—'} />
           <div className="px-3 py-2">
             <button onClick={sincronizar} disabled={sincronizando}
-              className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
+              className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
               <RotateCw size={12} className={sincronizando ? 'animate-spin' : ''} />Sincronizar com o PCC
             </button>
           </div>
@@ -147,8 +147,8 @@ export default function SupportCenterView() {
           <Row label="Estado" value={email.configured ? 'Configurado' : 'Sem password — envio simulado'} ok={!!email.configured} />
           <div className="px-3 py-2 flex items-end gap-2">
             <input value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="destinatario@exemplo.com"
-              className="flex-1 border border-[#a0a0a0] px-2 py-1.5 text-[12px]" />
-            <button onClick={enviarTeste} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1">
+              className="flex-1 border border-[#7FA9B1] px-2 py-1.5 text-[12px]" />
+            <button onClick={enviarTeste} className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] text-[11px] font-bold flex items-center gap-1">
               <Send size={12} />Enviar mensagem de teste
             </button>
           </div>
@@ -158,11 +158,11 @@ export default function SupportCenterView() {
             não expirados), um por utilizador distinto. */}
         <Section title="Sessões ativas" icon={Users}>
           <div className="max-h-44 overflow-auto">
-            <div className="grid grid-cols-[1fr_170px_170px] px-3 py-1 text-[11px] font-bold text-gray-500 border-b border-[#eee]">
+            <div className="grid grid-cols-[1fr_170px_170px] px-3 py-1 text-[11px] font-bold text-gray-500 border-b border-[#F7FAFA]">
               <span>Utilizador</span><span>Início de sessão</span><span>Expira</span>
             </div>
             {sessions.map((s, i) => (
-              <div key={i} className="grid grid-cols-[1fr_170px_170px] px-3 py-1 border-b border-[#eee] text-[12px]">
+              <div key={i} className="grid grid-cols-[1fr_170px_170px] px-3 py-1 border-b border-[#F7FAFA] text-[12px]">
                 <span className="font-semibold">{s.user}</span>
                 <span className="text-gray-600">{new Date(s.login_at).toLocaleString('pt-PT')}</span>
                 <span className="text-gray-600">{new Date(s.expires_at).toLocaleString('pt-PT')}</span>
@@ -180,7 +180,7 @@ export default function SupportCenterView() {
             <Row label="Endpoint" value={`POST /api/${sync.endpoint || 'licensing/sync/'}`} />
             <div className="px-3 py-2 flex items-center gap-2">
               <button onClick={sincronizar} disabled={sincronizando}
-                className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
+                className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
                 <RotateCw size={12} className={sincronizando ? 'animate-spin' : ''} />Sincronizar agora
               </button>
               <span className="text-gray-500 text-[11px]">Traz a licença e a certificação AGT mais recentes do PCC (funciona sem internet: nada muda se a ligação falhar).</span>
@@ -195,10 +195,10 @@ export default function SupportCenterView() {
         <div className="col-span-2">
           <Section title="Posto de Trabalho (este navegador)" icon={Trash2}>
             <div className="px-3 py-2 flex items-center gap-2">
-              <button onClick={reporAparencia} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1">
+              <button onClick={reporAparencia} className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] text-[11px] font-bold flex items-center gap-1">
                 <RotateCw size={12} />Repor aparência
               </button>
-              <button onClick={limparArmazenamento} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] text-[11px] font-bold flex items-center gap-1">
+              <button onClick={limparArmazenamento} className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] text-[11px] font-bold flex items-center gap-1">
                 <Trash2 size={12} />Limpar Armazenamento Local
               </button>
             </div>
@@ -210,24 +210,24 @@ export default function SupportCenterView() {
           <Section title="Assistência Remota, VPN & Backup" icon={ShieldCheck}>
             <div className="p-3 space-y-3 text-[12px]">
               <div className="flex items-center gap-2">
-                <Wifi size={14} className={sup.support_url ? 'text-green-600' : 'text-gray-400'} />
+                <Wifi size={14} className={sup.support_url ? 'text-[#5C8891]' : 'text-gray-400'} />
                 Servidor de suporte (VPN): <b>{sup.vpn_link || 'não configurado'}</b>
                 {sup.last_sent_at && <span className="text-gray-500">· último envio {new Date(sup.last_sent_at).toLocaleString('pt-PT')}</span>}
               </div>
               <div className="flex items-end gap-2">
-                <input value={supportUrl} onChange={(e) => setSupportUrl(e.target.value)} placeholder="https://suporte.seuerp.com/ingest (URL do teu servidor)" className="flex-1 border border-[#a0a0a0] px-2 py-1.5" />
-                <button onClick={() => act({ action: 'save_config', support_url: supportUrl, auto_send_logs: true })} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4]">Guardar</button>
-                <button onClick={() => act({ action: 'send_logs' })} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] flex items-center gap-1"><Send size={13} />Enviar diagnóstico</button>
+                <input value={supportUrl} onChange={(e) => setSupportUrl(e.target.value)} placeholder="https://suporte.seuerp.com/ingest (URL do teu servidor)" className="flex-1 border border-[#7FA9B1] px-2 py-1.5" />
+                <button onClick={() => act({ action: 'save_config', support_url: supportUrl, auto_send_logs: true })} className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5]">Guardar</button>
+                <button onClick={() => act({ action: 'send_logs' })} className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] flex items-center gap-1"><Send size={13} />Enviar diagnóstico</button>
               </div>
-              <div className="flex items-center gap-2 pt-1 border-t border-[#eee]">
-                <ShieldCheck size={15} className={sup.remote_assist ? 'text-green-600' : 'text-gray-400'} />
-                Assistência remota: <b className={sup.remote_assist ? 'text-green-700' : 'text-gray-600'}>{sup.remote_assist ? `AUTORIZADA (código ${sup.remote_assist_code})` : 'Desativada'}</b>
+              <div className="flex items-center gap-2 pt-1 border-t border-[#F7FAFA]">
+                <ShieldCheck size={15} className={sup.remote_assist ? 'text-[#5C8891]' : 'text-gray-400'} />
+                Assistência remota: <b className={sup.remote_assist ? 'text-[#0B4F5C]' : 'text-gray-600'}>{sup.remote_assist ? `AUTORIZADA (código ${sup.remote_assist_code})` : 'Desativada'}</b>
                 {sup.remote_assist && <span className="text-gray-500">até {new Date(sup.remote_assist_until).toLocaleString('pt-PT')}</span>}
                 <div className="flex-1" />
                 {!sup.remote_assist
-                  ? <button onClick={() => act({ action: 'remote_assist', hours: 2 })} className="px-3 py-1.5 bg-[#1f9d55] text-white rounded font-bold">Autorizar (2h)</button>
-                  : <button onClick={() => act({ action: 'revoke' })} className="px-3 py-1.5 bg-[#a01818] text-white rounded font-bold">Revogar</button>}
-                <button onClick={backup} className="px-3 py-1.5 border border-[#a0a0a0] bg-gradient-to-b from-white to-[#e4e4e4] hover:to-[#d4d4d4] flex items-center gap-1"><HardDriveDownload size={13} />Criar Backup</button>
+                  ? <button onClick={() => act({ action: 'remote_assist', hours: 2 })} className="px-3 py-1.5 bg-[#0B4F5C] text-white rounded font-bold">Autorizar (2h)</button>
+                  : <button onClick={() => act({ action: 'revoke' })} className="px-3 py-1.5 bg-[#B0392B] text-white rounded font-bold">Revogar</button>}
+                <button onClick={backup} className="px-3 py-1.5 border border-[#7FA9B1] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] flex items-center gap-1"><HardDriveDownload size={13} />Criar Backup</button>
               </div>
             </div>
           </Section>
@@ -237,7 +237,7 @@ export default function SupportCenterView() {
           <Section title="Eventos recentes (auditoria)" icon={Activity}>
             <div className="max-h-52 overflow-auto">
               {events.map((e: any, i: number) => (
-                <div key={i} className="grid grid-cols-[150px_140px_1fr_100px] px-3 py-1 border-b border-[#eee] text-[11px]">
+                <div key={i} className="grid grid-cols-[150px_140px_1fr_100px] px-3 py-1 border-b border-[#F7FAFA] text-[11px]">
                   <span className="text-gray-500">{new Date(e.at).toLocaleString('pt-PT')}</span>
                   <span className="font-bold">{e.event}</span><span className="truncate">{e.desc}</span><span className="text-gray-500">{e.user || '—'}</span>
                 </div>

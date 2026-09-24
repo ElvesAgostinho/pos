@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Box } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 
 const BOTOES: [string, string, string][] = [
   ['PRODUCTION', 'Produção', 'O cozinheiro marca que começou a preparar.'],
@@ -24,7 +24,7 @@ const OPCOES: [string, string][] = [
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[110px] flex-shrink-0 text-[#333]">{label}</span>
+      <span className="w-[110px] flex-shrink-0 text-[#06333C]">{label}</span>
       {children}
     </label>
   );
@@ -81,14 +81,14 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo monitor' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo monitor' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Esquerda */}
-        <div className="w-[48%] p-4 space-y-2 overflow-auto border-r border-[#e0e0e0]">
+        <div className="w-[48%] p-4 space-y-2 overflow-auto border-r border-[#EEF4F5]">
           <Box title="Identificação">
           <div className="space-y-2 pt-1.5">
           <Row label="Código:">
@@ -115,7 +115,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               <option value="ITEM">Por artigo</option>
             </select>
           </Row>
-          <div className="text-[11px] text-[#666] pl-[122px] -mt-1">
+          <div className="text-[11px] text-[#5C8891] pl-[122px] -mt-1">
             {d.kind === 'ORDER'
               ? 'Vê-se a mesa inteira — os pratos saem juntos.'
               : 'Cada prato solto — para postos de linha.'}
@@ -124,27 +124,27 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
           </Box>
 
           <div className="pt-2">
-            <div className="text-[12px] font-semibold text-[#333] mb-1">Botões:</div>
-            <div style={{ border: '4px groove #c0c0c0' }}>
+            <div className="text-[12px] font-semibold text-[#06333C] mb-1">Botões:</div>
+            <div style={{ border: '4px groove #CFE3E6' }}>
               {BOTOES.map(([k, l, ajuda]) => (
-                <label key={k} className="flex items-start gap-2 px-2 py-1.5 border-b border-[#eee] text-[12px] hover:bg-[#f7f9fb] cursor-pointer">
+                <label key={k} className="flex items-start gap-2 px-2 py-1.5 border-b border-[#F7FAFA] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
                   <input type="checkbox" checked={bts.includes(k)} onChange={() => toggleB(k)} className="w-4 h-4 mt-px" />
-                  <span><b>{l}</b> <span className="text-[#888]">— {ajuda}</span></span>
+                  <span><b>{l}</b> <span className="text-[#5C8891]">— {ajuda}</span></span>
                 </label>
               ))}
             </div>
             {bts.length === 0 && (
-              <div className="text-[11px] text-[#8a6100] bg-[#fff7e6] border border-[#e0c080] px-2 py-1 mt-1">
+              <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1 mt-1">
                 Sem botões, o cozinheiro não consegue avançar nenhum pedido.
               </div>
             )}
           </div>
 
           <div className="pt-2">
-            <div className="text-[12px] font-semibold text-[#333] mb-1">Opções:</div>
-            <div style={{ border: '4px groove #c0c0c0' }}>
+            <div className="text-[12px] font-semibold text-[#06333C] mb-1">Opções:</div>
+            <div style={{ border: '4px groove #CFE3E6' }}>
               {OPCOES.map(([k, l]) => (
-                <label key={k} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#eee] text-[12px] hover:bg-[#f7f9fb] cursor-pointer">
+                <label key={k} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F7FAFA] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
                   <input type="checkbox" checked={!!opts[k]}
                     onChange={(e) => set('options', { ...opts, [k]: e.target.checked })} className="w-4 h-4" />
                   {l}
@@ -174,33 +174,33 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               className={`${inp} flex-1`} style={inputStyle} />
           </Row>
 
-          <div className="mt-3" style={{ border: '4px groove #c0c0c0' }}>
-            <div className="px-3 py-1.5 bg-[#dbe7f3] text-[12px] font-bold text-[#1a4f8a] border-b border-[#c8c8c8]">
+          <div className="mt-3" style={{ border: '4px groove #CFE3E6' }}>
+            <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] border-b border-[#CFE3E6]">
               Impressoras — as ativas substituem as de origem do pedido
             </div>
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#f4f4f4]">
-                <th className="w-[60px] font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Ativo</th>
-                <th className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Código</th>
-                <th className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Descrição</th>
-                <th className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Aparelho</th>
+              <thead><tr className="bg-[#F7FAFA]">
+                <th className="w-[60px] font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Ativo</th>
+                <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Código</th>
+                <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Descrição</th>
+                <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Aparelho</th>
               </tr></thead>
               <tbody>
                 {(printers as any[]).map((p) => (
                   <tr key={p.id} onClick={() => toggleP(p.id)}
-                    className={`border-b border-[#eee] cursor-pointer ${pids.includes(p.id) ? 'bg-[#e8f5e9]' : 'hover:bg-[#f5f9ff]'}`}>
+                    className={`border-b border-[#F7FAFA] cursor-pointer ${pids.includes(p.id) ? 'bg-[#F7FAFA]' : 'hover:bg-[#FFFFFF]'}`}>
                     <td className="text-center py-1.5">
                       <GridCheck checked={pids.includes(p.id)} onChange={() => toggleP(p.id)} />
                     </td>
                     <td className="px-2 py-1.5">{p.code}</td>
                     <td className="px-2 py-1.5">{p.name}</td>
                     <td className="px-2 py-1.5">
-                      {p.device_name || <span className="text-[#c0392b]">sem aparelho</span>}
+                      {p.device_name || <span className="text-[#B0392B]">sem aparelho</span>}
                     </td>
                   </tr>
                 ))}
                 {(printers as any[]).length === 0 && (
-                  <tr><td colSpan={4} className="text-center text-[#999] py-6">Sem impressoras.</td></tr>
+                  <tr><td colSpan={4} className="text-center text-[#7FA9B1] py-6">Sem impressoras.</td></tr>
                 )}
               </tbody>
             </table>
@@ -209,8 +209,8 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

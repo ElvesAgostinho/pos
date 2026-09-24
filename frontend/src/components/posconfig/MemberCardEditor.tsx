@@ -5,13 +5,13 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Glyph, Box } from './kit';
 import { ItemPicker, SubFamilyPicker } from './Pickers';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className="w-[100px] flex-shrink-0 text-[#333]">{label}</span>
+      <span className="w-[100px] flex-shrink-0 text-[#06333C]">{label}</span>
       {children}
     </label>
   );
@@ -93,14 +93,14 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo cartão' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo cartão' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Esquerda: a ficha */}
-        <div className="w-[58%] flex flex-col overflow-auto border-r border-[#e0e0e0]">
+        <div className="w-[58%] flex flex-col overflow-auto border-r border-[#EEF4F5]">
           <div className="p-4">
           <Box title="Identificação">
           <div className="space-y-2 pt-1.5">
@@ -131,9 +131,9 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                  ['has_points', 'Pontos', 'acumula pontos por consumo'],
                  ['has_discount', 'Desconto', 'desconta nos artigos da lista abaixo']] as const).map(([k, l, ajuda]) => (
                 <label key={k} className="flex items-center gap-3 text-[12px]">
-                  <span className="w-[100px] text-[#333]">{l}:</span>
+                  <span className="w-[100px] text-[#06333C]">{l}:</span>
                   <input type="checkbox" checked={!!d[k]} onChange={(e) => set(k, e.target.checked)} className="w-4 h-4" />
-                  <span className="text-[11px] text-[#888]">{ajuda}</span>
+                  <span className="text-[11px] text-[#5C8891]">{ajuda}</span>
                 </label>
               ))}
             </div>
@@ -143,11 +143,11 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                 <span className="flex-1 min-w-0 truncate">
                   {packArtigos.length
                     ? packArtigos.map((a) => a.name).join(', ')
-                    : <span className="text-[#999]">nenhum artigo incluído</span>}
+                    : <span className="text-[#7FA9B1]">nenhum artigo incluído</span>}
                 </span>
               </div>
               <button onClick={() => setPicker('pack')} title="Escolher os artigos incluídos"
-                className="w-9 h-[28px] bg-[#242428] text-white flex items-center justify-center"><Glyph icon="👁" size={14} /></button>
+                className="w-9 h-[28px] bg-[#06333C] text-white flex items-center justify-center"><Glyph icon="👁" size={14} /></button>
             </Row>
 
             <Row label="Happy Hour:">
@@ -159,7 +159,7 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
             </Row>
 
             {d.has_discount && ds.length === 0 && (
-              <div className="text-[11px] text-[#8a6100] bg-[#fff7e6] border border-[#e0c080] px-2 py-1">
+              <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1">
                 "Desconto" ligado mas sem artigos na lista — o cartão não vai descontar nada.
               </div>
             )}
@@ -168,20 +168,20 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
           </div>
 
           {/* Lista de descontos */}
-          <div className="flex items-center gap-3 px-3 py-2 bg-[#f4f4f4] border-y border-[#d0d0d0] text-[12px]">
+          <div className="flex items-center gap-3 px-3 py-2 bg-[#F7FAFA] border-y border-[#EEF4F5] text-[12px]">
             <span>Pesquisar:</span>
             <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[200px]`} style={inputStyle} />
           </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full text-[12px] border-collapse">
-              <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
+              <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
                 {['Código', 'Descrição', 'Família', 'Sub Família', 'Desconto', ''].map((h) => (
-                  <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{h}</th>
+                  <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{h}</th>
                 ))}
               </tr></thead>
               <tbody>
                 {visiveis.map((x, i) => (
-                  <tr key={i} className="border-b border-[#eee]">
+                  <tr key={i} className="border-b border-[#F7FAFA]">
                     <td className="px-2 py-1 font-mono">{x.code}</td>
                     <td className="px-2 py-1">{x.target}</td>
                     <td className="px-2 py-1">{x.family}</td>
@@ -194,62 +194,62 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
                     <td className="text-center w-[60px]">
                       {row?.id && x.item && (
                         <button onClick={() => simular.mutate(x.item)} title="Quanto fica este artigo com o cartão?"
-                          className="text-[#1a4f8a] text-[11px] font-bold">Simular</button>
+                          className="text-[#0B4F5C] text-[11px] font-bold">Simular</button>
                       )}
                       <button onClick={() => set('discounts', ds.filter((_, j) => j !== ds.indexOf(x)))}
-                        className="text-[#c0392b] text-[11px] font-bold ml-2">×</button>
+                        className="text-[#B0392B] text-[11px] font-bold ml-2">×</button>
                     </td>
                   </tr>
                 ))}
                 {visiveis.length === 0 && (
-                  <tr><td colSpan={6} className="text-center text-[#999] py-8">Não foram encontrados dados.</td></tr>
+                  <tr><td colSpan={6} className="text-center text-[#7FA9B1] py-8">Não foram encontrados dados.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          <div className="flex items-center gap-4 px-3 py-2 bg-[#f4f4f4] border-t border-[#d0d0d0]">
-            <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Sub-Famílias
+          <div className="flex items-center gap-4 px-3 py-2 bg-[#F7FAFA] border-t border-[#EEF4F5]">
+            <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1">
+              <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[11px]">＋</span> Sub-Famílias
             </button>
-            <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Artigos
+            <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1">
+              <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[11px]">＋</span> Artigos
             </button>
           </div>
         </div>
 
         {/* Direita: agenda do happy hour + simulação */}
         <div className="flex-1 flex flex-col overflow-auto">
-          <div className="px-3 py-1.5 bg-[#dbe7f3] text-[12px] font-bold text-[#1a4f8a] border-b border-[#c8c8c8]">
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] border-b border-[#CFE3E6]">
             Agenda (Happy Hour)
           </div>
           <div className="p-3">
             {d.happy_hour ? (
-              <div className="text-[12px] text-[#333]">
+              <div className="text-[12px] text-[#06333C]">
                 <b>{(happys as any[]).find((h) => h.id === Number(d.happy_hour))?.name}</b>
-                <div className="text-[11px] text-[#666] mt-1">
+                <div className="text-[11px] text-[#5C8891] mt-1">
                   As horas marcadas nesse Happy Hour valem para quem tem este cartão.
                   Edite a grelha em <b>Outros → Happy Hour</b>.
                 </div>
               </div>
             ) : (
-              <div className="text-[12px] text-[#999]">Sem agenda. Escolha um Happy Hour à esquerda.</div>
+              <div className="text-[12px] text-[#7FA9B1]">Sem agenda. Escolha um Happy Hour à esquerda.</div>
             )}
           </div>
 
           {sim && (
-            <div className="m-3 border border-[#c8c8c8]">
-              <div className="px-3 py-1.5 bg-[#e8f5e9] text-[12px] font-bold text-[#1f7a34] border-b border-[#c8c8c8]">
+            <div className="m-3 border border-[#CFE3E6]">
+              <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] border-b border-[#CFE3E6]">
                 Com este cartão…
               </div>
               <div className="p-3 text-[12px] space-y-1">
                 <div><b>{sim.item}</b></div>
                 <div>
-                  Preço normal: <b className="line-through text-[#999]">{Number(sim.base_price).toFixed(2)}</b>
+                  Preço normal: <b className="line-through text-[#7FA9B1]">{Number(sim.base_price).toFixed(2)}</b>
                   {' → '}
-                  <b className="text-[15px] text-[#1f7a34]">{Number(sim.final_price).toFixed(2)}</b>
+                  <b className="text-[15px] text-[#0B4F5C]">{Number(sim.final_price).toFixed(2)}</b>
                 </div>
-                <div className="text-[11px] text-[#666]">{sim.detail}</div>
+                <div className="text-[11px] text-[#5C8891]">{sim.detail}</div>
               </div>
             </div>
           )}
@@ -271,8 +271,8 @@ export default function MemberCardEditor({ row, onClose }: { row: any; onClose: 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

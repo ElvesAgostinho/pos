@@ -32,7 +32,7 @@ export default function PmsRoomTypesView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r border-[#a0a0a0]">
+        <div className="w-1/2 border-r border-[#7FA9B1]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
             { header: 'Código', accessor: 'code', width: '20%' },
             { header: 'Nome', accessor: 'name', width: '40%' },
@@ -41,16 +41,16 @@ export default function PmsRoomTypesView() {
           ]} />
         </div>
         <div className="w-1/2 p-3 space-y-2 text-[11px]">
-          <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#a0a0a0] p-1" /></label>
-          <label className="flex flex-col">Nome<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="border border-[#a0a0a0] p-1" /></label>
+          <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#7FA9B1] p-1" /></label>
+          <label className="flex flex-col">Nome<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>
           <div className="flex gap-2">
-            <label className="flex-1 flex flex-col">Capac. adultos<input type="number" value={form.capacity_adults} onChange={(e) => setForm({ ...form, capacity_adults: Number(e.target.value) })} className="border border-[#a0a0a0] p-1" /></label>
-            <label className="flex-1 flex flex-col">Capac. crianças<input type="number" value={form.capacity_children} onChange={(e) => setForm({ ...form, capacity_children: Number(e.target.value) })} className="border border-[#a0a0a0] p-1" /></label>
+            <label className="flex-1 flex flex-col">Capac. adultos<input type="number" value={form.capacity_adults} onChange={(e) => setForm({ ...form, capacity_adults: Number(e.target.value) })} className="border border-[#7FA9B1] p-1" /></label>
+            <label className="flex-1 flex flex-col">Capac. crianças<input type="number" value={form.capacity_children} onChange={(e) => setForm({ ...form, capacity_children: Number(e.target.value) })} className="border border-[#7FA9B1] p-1" /></label>
           </div>
-          <label className="flex flex-col">Preço base/noite<input type="number" value={form.base_rate} onChange={(e) => setForm({ ...form, base_rate: e.target.value })} className="border border-[#a0a0a0] p-1" /></label>
+          <label className="flex flex-col">Preço base/noite<input type="number" value={form.base_rate} onChange={(e) => setForm({ ...form, base_rate: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>
         </div>
       </div>
-      <div className="flex gap-2 p-2 border-t border-[#c0c0c0] bg-[#f4f4f4]">
+      <div className="flex gap-2 p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
         <ClassicButton icon={Plus} label="Nova" onClick={novo} />
         <ClassicButton icon={Save} label="Gravar" onClick={save} />
       </div>

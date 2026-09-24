@@ -87,19 +87,19 @@ export default function AgtCertification() {
           <label className="w-44 text-sm text-gray-600">Nº certificado AGT</label>
           <input value={cert} onChange={(e) => setCert(e.target.value)} placeholder="Ex.: 147/AGT/2026" className="border border-gray-300 rounded px-2 py-1.5 text-sm w-64" />
         </div>
-        <button onClick={generate} disabled={busy} className="bg-blue-700 hover:bg-blue-800 text-white text-sm px-4 py-2 rounded disabled:opacity-50">
+        <button onClick={generate} disabled={busy} className="bg-[#0B4F5C] hover:bg-[#06333C] text-white text-sm px-4 py-2 rounded disabled:opacity-50">
           {busy ? 'A gerar…' : 'Gerar credenciais AGT'}
         </button>
       </div>
 
       {result && (
-        <div className="bg-white border border-green-300 rounded p-4 mt-4 space-y-3 shadow-sm">
-          <div className="text-green-800 font-bold text-sm">✓ Credenciais geradas — entregue ao cliente</div>
+        <div className="bg-white border border-[#CFE3E6] rounded p-4 mt-4 space-y-3 shadow-sm">
+          <div className="text-[#06333C] font-bold text-sm">✓ Credenciais geradas — entregue ao cliente</div>
           <div className="text-sm"><b>Nº certificado:</b> {result.certificate_number} {result.license && <span className="text-gray-500">· guardado na licença {result.license}</span>}</div>
           {[['Chave privada (PEM)', result.private_key], ['Chave pública (PEM)', result.public_key]].map(([label, val]: any) => (
             <div key={label}>
               <div className="flex items-center justify-between mb-1"><span className="text-xs font-bold text-gray-600">{label}</span>
-                <button onClick={() => copy(val)} className="text-xs text-blue-700 hover:underline">copiar</button></div>
+                <button onClick={() => copy(val)} className="text-xs text-[#0B4F5C] hover:underline">copiar</button></div>
               <textarea readOnly value={val} rows={label.includes('privada') ? 5 : 3} className="w-full border border-gray-300 rounded p-2 font-mono text-[10px] bg-gray-50" />
             </div>
           ))}
@@ -114,12 +114,12 @@ export default function AgtCertification() {
           <p className="text-sm text-gray-500">Quando a AGT emitir as credenciais do contribuinte, preenchem-se aqui. Seguem ao cliente na próxima <b>sincronização</b> e o motor fiscal sai do modo simulação sozinho — o cliente nunca digita URLs.</p>
         </div>
 
-        {!licenseId && <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">Escolha a licença do cliente no topo da página para configurar a ligação.</div>}
+        {!licenseId && <div className="text-sm text-[#0B4F5C] bg-[#F7FAFA] border border-[#EEF4F5] rounded px-3 py-2">Escolha a licença do cliente no topo da página para configurar a ligação.</div>}
 
         {licenseId && (
           <>
             {estado && (
-              <div className={`text-xs rounded px-3 py-2 border ${estado.configured ? 'bg-green-50 border-green-200 text-green-800' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
+              <div className={`text-xs rounded px-3 py-2 border ${estado.configured ? 'bg-[#F7FAFA] border-[#EEF4F5] text-[#06333C]' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
                 {estado.configured ? '✓ Esta licença já tem ligação configurada — gravar substitui.' : 'Sem ligação configurada nesta licença.'}
                 {' '}Certificado: <b>{estado.certificate_number || '—'}</b> · Chaves de assinatura: <b>{estado.has_keys ? 'geradas' : 'por gerar'}</b>
               </div>
@@ -149,10 +149,10 @@ export default function AgtCertification() {
             ))}
 
             <div className="flex items-center gap-3 pt-1">
-              <button onClick={gravarLigacao} disabled={busyCon} className="bg-blue-700 hover:bg-blue-800 text-white text-sm px-4 py-2 rounded disabled:opacity-50">
+              <button onClick={gravarLigacao} disabled={busyCon} className="bg-[#0B4F5C] hover:bg-[#06333C] text-white text-sm px-4 py-2 rounded disabled:opacity-50">
                 {busyCon ? 'A gravar…' : 'Gravar ligação e-fatura'}
               </button>
-              {msgCon && <span className="text-sm text-green-700">{msgCon}</span>}
+              {msgCon && <span className="text-sm text-[#0B4F5C]">{msgCon}</span>}
             </div>
             <div className="text-xs text-gray-500">O secret guarda-se no PCC e, no cliente, fica <b>encriptado</b> no motor fiscal. No cliente aplica-se ao clicar <b>Sincronizar com o PCC</b> no Gestor de licenças.</div>
           </>

@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border-0 px-1.5 py-1 text-[12px] bg-transparent outline-none';
 
 type Tab = 'map' | 'multi' | 'ext';
@@ -25,11 +25,11 @@ export default function PmsInterface() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex border-b-2 border-[#18181B] px-3 bg-[#f7f7f7]">
+      <div className="flex border-b-2 border-[#062A31] px-3 bg-[#F7FAFA]">
         {([['map', 'Mapeamentos'], ['multi', 'Ligações Multi Hotel'], ['ext', 'Ligações externas']] as const)
           .map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-4 py-2 text-[13px] font-semibold border-b-[3px] ${tab === k ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+              className={`px-4 py-2 text-[13px] font-semibold border-b-[3px] ${tab === k ? 'border-[#062A31] text-[#062A31] bg-white' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
               {l}
             </button>
           ))}
@@ -103,26 +103,26 @@ function Mapeamentos({ qc }: { qc: any }) {
     <>
       <div className="flex-1 overflow-auto">
         {/* Mapeamento de parâmetros (setores) */}
-        <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] border-b border-[#d0d0d0]">
+        <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-b border-[#EEF4F5]">
           Mapeamento de Parâmetros
         </div>
         <table className="w-full text-[12px] border-collapse">
-          <thead><tr className="bg-[#f4f4f4]">
+          <thead><tr className="bg-[#F7FAFA]">
             {['Setor', 'Descrição', 'Departamento', 'Conta por defeito', 'Paymaster', 'Visível'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {(d.sectors || []).map((s: any) => (
-              <tr key={s.id} className="border-b border-[#eee]">
+              <tr key={s.id} className="border-b border-[#F7FAFA]">
                 <td className="px-2 py-1">{s.name}</td>
                 <td className="p-0.5"><input value={s.pms_department || ''} placeholder={s.name}
-                  onChange={(e) => setSector(s.id, 'pms_department', e.target.value)} className={`${cell} border border-[#e0e0e0] bg-white`} /></td>
-                <td className="p-0.5"><input value={s.pms_department || ''} readOnly className={`${cell} bg-[#f7f7f7] text-[#666]`} /></td>
+                  onChange={(e) => setSector(s.id, 'pms_department', e.target.value)} className={`${cell} border border-[#EEF4F5] bg-white`} /></td>
+                <td className="p-0.5"><input value={s.pms_department || ''} readOnly className={`${cell} bg-[#F7FAFA] text-[#5C8891]`} /></td>
                 <td className="p-0.5"><input value={s.pms_default_account || ''} placeholder="REST_COM"
-                  onChange={(e) => setSector(s.id, 'pms_default_account', e.target.value)} className={`${cell} border border-[#e0e0e0] bg-white`} /></td>
+                  onChange={(e) => setSector(s.id, 'pms_default_account', e.target.value)} className={`${cell} border border-[#EEF4F5] bg-white`} /></td>
                 <td className="p-0.5"><input value={s.pms_paymaster || ''} placeholder="9000"
-                  onChange={(e) => setSector(s.id, 'pms_paymaster', e.target.value)} className={`${cell} border border-[#e0e0e0] bg-white`} /></td>
+                  onChange={(e) => setSector(s.id, 'pms_paymaster', e.target.value)} className={`${cell} border border-[#EEF4F5] bg-white`} /></td>
                 <td className="text-center">
                   <GridCheck checked={s.pms_visible} onChange={(v) => setSector(s.id, 'pms_visible', v)}
                     title="Visível no PMS — desligado, a receção não vê este setor" />
@@ -130,24 +130,24 @@ function Mapeamentos({ qc }: { qc: any }) {
               </tr>
             ))}
             {(d.sectors || []).length === 0 && (
-              <tr><td colSpan={6} className="text-center text-[#999] py-6">Sem setores. Crie-os em Parâmetros do Sistema → Setores.</td></tr>
+              <tr><td colSpan={6} className="text-center text-[#7FA9B1] py-6">Sem setores. Crie-os em Parâmetros do Sistema → Setores.</td></tr>
             )}
           </tbody>
         </table>
 
         {/* Mapeamento de sub-famílias */}
-        <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] border-y border-[#d0d0d0] mt-2">
+        <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-y border-[#EEF4F5] mt-2">
           Mapeamento de sub-famílias
         </div>
-        <div className="flex items-center gap-3 px-3 py-2 bg-[#f7f7f7] border-b border-[#d0d0d0] text-[12px]">
+        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[12px]">
           <span>Pesquisar:</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[200px]`} style={inputStyle} />
           <span className="ml-2">Encargo:</span>
           <input value={encargo} onChange={(e) => setEncargo(e.target.value)} placeholder="(nenhum)"
             className={`${inp} w-[240px]`} style={inputStyle} />
           <button onClick={aplicar} disabled={!encargo || sel.length === 0}
-            className="flex items-center gap-2 px-2 py-1 hover:bg-[#e8e8e8] disabled:opacity-35">
-            <span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
+            className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7FAFA] disabled:opacity-35">
+            <span className="w-5 h-5 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
             Aplicar à seleção ({sel.length})
           </button>
           <label className="flex items-center gap-2 ml-auto">
@@ -157,35 +157,35 @@ function Mapeamentos({ qc }: { qc: any }) {
         </div>
 
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
-            <th className="w-[36px] border-b border-[#d0d0d0]" />
-            <th className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Descrição</th>
+          <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
+            <th className="w-[36px] border-b border-[#EEF4F5]" />
+            <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Descrição</th>
             {(d.outlets || []).map((o: any) => (
-              <th key={o.id} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{o.name}</th>
+              <th key={o.id} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{o.name}</th>
             ))}
           </tr></thead>
           <tbody>
             {rows.map((r: any) => (
-              <tr key={r.id} className="border-b border-[#eee]">
+              <tr key={r.id} className="border-b border-[#F7FAFA]">
                 <td className="text-center">
                   <input type="checkbox" checked={sel.includes(r.id)} className="w-4 h-4"
                     onChange={(e) => setSel(e.target.checked ? [...sel, r.id] : sel.filter((x) => x !== r.id))} />
                 </td>
                 <td className="px-2 py-1 whitespace-nowrap">
-                  {r.code} - {r.name} {showDesc && <span className="text-[#888]">({r.id})</span>}
+                  {r.code} - {r.name} {showDesc && <span className="text-[#5C8891]">({r.id})</span>}
                 </td>
                 {(d.outlets || []).map((o: any) => {
                   const c = r.cells?.[o.id] || {};
                   const vazio = !c.charge;
                   return (
-                    <td key={o.id} className="p-0" style={{ background: vazio ? '#ffe0b2' : undefined }}>
+                    <td key={o.id} className="p-0" style={{ background: vazio ? '#EEF4F5' : undefined }}>
                       <div className="flex items-center">
                         <input value={c.charge || ''} placeholder="sem encargo"
                           onChange={(e) => setCell(r.id, o.id, 'charge', e.target.value)}
                           className={cell} />
                         <input value={c.tax || ''} placeholder="—" title="Taxa do encargo"
                           onChange={(e) => setCell(r.id, o.id, 'tax', e.target.value)}
-                          className="w-[54px] border-0 px-1 py-1 text-[12px] bg-transparent outline-none text-[#1a4f8a]" />
+                          className="w-[54px] border-0 px-1 py-1 text-[12px] bg-transparent outline-none text-[#0B4F5C]" />
                       </div>
                     </td>
                   );
@@ -193,20 +193,20 @@ function Mapeamentos({ qc }: { qc: any }) {
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={2 + (d.outlets?.length || 0)} className="text-center text-[#999] py-8">Sem sub-famílias.</td></tr>
+              <tr><td colSpan={2 + (d.outlets?.length || 0)} className="text-center text-[#7FA9B1] py-8">Sem sub-famílias.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="px-3 py-1 text-[11px] text-[#8a6100] bg-[#fff7e6] border-t border-[#e0c080]">
+      <div className="px-3 py-1 text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border-t border-[#CFE3E6]">
         As células a <b>laranja</b> não têm encargo: nesse ponto de venda, o consumo do hóspede
         <b> não consegue entrar no folio</b>.
       </div>
 
       <Toolbar actions={[
         { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${Object.keys(dirty).length ? ` (${Object.keys(dirty).length})` : ''}`,
-          color: '#1f7a34', onClick: () => save.mutate() },
+          color: '#0B4F5C', onClick: () => save.mutate() },
       ]} />
     </>
   );
@@ -234,15 +234,15 @@ function MultiHotel() {
     <>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead><tr className="bg-[#f0f0f0]">
+          <thead><tr className="bg-[#F7FAFA]">
             {['Ativo', 'Por defeito', 'Id do Hotel', 'Descrição', 'Servidor', 'Base de dados', 'Utilizador', 'Password', 'Modo', 'Último teste'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {(links as any[]).map((l) => (
               <tr key={l.id} onClick={() => setSel(l.id)} onDoubleClick={() => setEdit(l)}
-                className={`border-b border-[#eee] cursor-pointer ${sel === l.id ? 'bg-[#cfe2f3]' : 'hover:bg-[#f5f9ff]'}`}>
+                className={`border-b border-[#F7FAFA] cursor-pointer ${sel === l.id ? 'bg-[#EEF4F5]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="text-center"><GridCheck checked={l.is_active} /></td>
                 <td className="text-center"><GridCheck checked={l.is_default} /></td>
                 <td className="px-2 py-1.5">{l.hotel_id}</td>
@@ -250,17 +250,17 @@ function MultiHotel() {
                 <td className="px-2 py-1.5">{l.server || '—'}</td>
                 <td className="px-2 py-1.5">{l.database || '—'}</td>
                 <td className="px-2 py-1.5">{l.trusted ? '(trusted)' : (l.username || '—')}</td>
-                <td className="px-2 py-1.5 text-[#888]">{l.has_password ? '- - - - -' : '—'}</td>
+                <td className="px-2 py-1.5 text-[#5C8891]">{l.has_password ? '- - - - -' : '—'}</td>
                 <td className="px-2 py-1.5">{l.mode === 'FULL' ? 'Completo' : 'Simples'}</td>
                 <td className="px-2 py-1.5">
-                  {!l.last_test_at ? <span className="text-[#888]">Desconhecido</span>
-                    : l.last_test_ok ? <span className="text-[#1f7a34] font-bold">Ligado</span>
-                      : <span className="text-[#c0392b] font-bold">Sem resposta</span>}
+                  {!l.last_test_at ? <span className="text-[#5C8891]">Desconhecido</span>
+                    : l.last_test_ok ? <span className="text-[#0B4F5C] font-bold">Ligado</span>
+                      : <span className="text-[#B0392B] font-bold">Sem resposta</span>}
                 </td>
               </tr>
             ))}
             {(links as any[]).length === 0 && (
-              <tr><td colSpan={10} className="text-center text-[#999] py-10">
+              <tr><td colSpan={10} className="text-center text-[#7FA9B1] py-10">
                 Sem ligações. Só são precisas se este hotel fizer parte de uma rede.
               </td></tr>
             )}
@@ -269,9 +269,9 @@ function MultiHotel() {
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#18181B', onClick: () => setEdit({ is_active: true, hotel_id: '0', mode: 'SIMPLE' }) },
-        { icon: '✎', label: 'Editar', color: '#1a73c8', disabled: !sel, onClick: () => setEdit((links as any[]).find((l) => l.id === sel)) },
-        { icon: '−', label: 'Apagar', color: '#c0392b', disabled: !sel, onClick: () => confirm('Apagar esta ligação?') && del.mutate(sel!) },
+        { icon: '＋', label: 'Adicionar', color: '#062A31', onClick: () => setEdit({ is_active: true, hotel_id: '0', mode: 'SIMPLE' }) },
+        { icon: '✎', label: 'Editar', color: '#5C8891', disabled: !sel, onClick: () => setEdit((links as any[]).find((l) => l.id === sel)) },
+        { icon: '−', label: 'Apagar', color: '#B0392B', disabled: !sel, onClick: () => confirm('Apagar esta ligação?') && del.mutate(sel!) },
       ]} />
     </>
   );
@@ -294,41 +294,41 @@ function Externas() {
     <>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead><tr className="bg-[#f0f0f0]">
+          <thead><tr className="bg-[#F7FAFA]">
             {['Ativo', 'Company Id', 'Descrição', 'Servidor', 'Base de dados', 'Utilizador', 'Password', 'Trusted', 'Status'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {(links as any[]).map((l) => (
               <tr key={l.id} onDoubleClick={() => setEdit(l)} onClick={() => setEdit(l)}
-                className="border-b border-[#eee] cursor-pointer hover:bg-[#f5f9ff]">
+                className="border-b border-[#F7FAFA] cursor-pointer hover:bg-[#FFFFFF]">
                 <td className="text-center"><GridCheck checked={l.is_active} /></td>
                 <td className="px-2 py-1.5">{l.company_id}</td>
                 <td className="px-2 py-1.5">{l.sector_name}</td>
                 <td className="px-2 py-1.5">{l.server || ''}</td>
                 <td className="px-2 py-1.5">{l.database || ''}</td>
                 <td className="px-2 py-1.5">{l.username || ''}</td>
-                <td className="px-2 py-1.5 text-[#888]">{l.has_password ? '- - - - -' : '—'}</td>
+                <td className="px-2 py-1.5 text-[#5C8891]">{l.has_password ? '- - - - -' : '—'}</td>
                 <td className="text-center"><GridCheck checked={l.trusted} /></td>
                 <td className="px-2 py-1.5">
-                  {l.status === 'Ligado' ? <span className="text-[#1f7a34] font-bold">Ligado</span>
-                    : l.status === 'Sem resposta' ? <span className="text-[#c0392b] font-bold">Sem resposta</span>
-                      : <span className="text-[#888]">Desconhecido</span>}
+                  {l.status === 'Ligado' ? <span className="text-[#0B4F5C] font-bold">Ligado</span>
+                    : l.status === 'Sem resposta' ? <span className="text-[#B0392B] font-bold">Sem resposta</span>
+                      : <span className="text-[#5C8891]">Desconhecido</span>}
                 </td>
               </tr>
             ))}
             {(links as any[]).length === 0 && (
-              <tr><td colSpan={9} className="text-center text-[#999] py-10">Sem setores ativos.</td></tr>
+              <tr><td colSpan={9} className="text-center text-[#7FA9B1] py-10">Sem setores ativos.</td></tr>
             )}
           </tbody>
         </table>
       </div>
-      <div className="px-3 py-1 text-[11px] text-[#666] bg-[#f7f7f7] border-t border-[#e0e0e0]">
+      <div className="px-3 py-1 text-[11px] text-[#5C8891] bg-[#F7FAFA] border-t border-[#EEF4F5]">
         Um setor só precisa de ligação externa se as contas dos quartos viverem noutro servidor.
         Clique na linha para editar.
       </div>
-      <Toolbar actions={[{ icon: '✎', label: 'Editar', color: '#1a73c8', disabled: true, onClick: () => {} }]} />
+      <Toolbar actions={[{ icon: '✎', label: 'Editar', color: '#5C8891', disabled: true, onClick: () => {} }]} />
     </>
   );
 }
@@ -374,20 +374,20 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
   const set = (k: string, v: any) => setD((o: any) => ({ ...o, [k]: v }));
   const Row = ({ label, children }: any) => (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#333]">{label}</span>
+      <span className="w-[120px] flex-shrink-0 text-[#06333C]">{label}</span>
       {children}
     </label>
   );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#242428' }}>
+      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
         <span>
           {isHotel
             ? `Ligações Multi Hotel - ${isNew ? 'Adicionar' : `Editar ${d.description || ''}`}`
             : `Ligações externas - Editar ${d.sector_name || ''}`}
         </span>
-        <button onClick={onClose} className="w-5 h-5 bg-[#c0392b] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
+        <button onClick={onClose} className="w-5 h-5 bg-[#B0392B] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
       </div>
 
       <div className="flex-1 overflow-auto p-5 space-y-2 max-w-[720px]">
@@ -398,7 +398,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
         {isHotel && (
           <label className="flex items-center gap-2 text-[12px]">
             <input type="checkbox" checked={!!d.is_default} onChange={(e) => set('is_default', e.target.checked)} className="w-4 h-4" />
-            Por defeito <span className="text-[#888]">(só uma pode sê-lo)</span>
+            Por defeito <span className="text-[#5C8891]">(só uma pode sê-lo)</span>
           </label>
         )}
 
@@ -424,7 +424,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
         <label className="flex items-center gap-2 text-[12px]">
           <input type="checkbox" checked={!!d.trusted} onChange={(e) => set('trusted', e.target.checked)} className="w-4 h-4" />
-          Trusted <span className="text-[#888]">(autenticação integrada — dispensa utilizador/password)</span>
+          Trusted <span className="text-[#5C8891]">(autenticação integrada — dispensa utilizador/password)</span>
         </label>
 
         <div className={d.trusted ? 'opacity-45 pointer-events-none' : ''}>
@@ -465,22 +465,22 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
         {!isNew && d.last_test_detail && (
           <div className={`text-[11px] px-2 py-1 border mt-2 ${d.last_test_ok
-            ? 'bg-[#e8f5e9] border-[#b6d7b9] text-[#1f7a34]'
-            : 'bg-[#fdecea] border-[#e6b0aa] text-[#a01818]'}`}>
+            ? 'bg-[#F7FAFA] border-[#CFE3E6] text-[#0B4F5C]'
+            : 'bg-[#F7FAFA] border-[#B0392B] text-[#B0392B]'}`}>
             Último teste: {d.last_test_detail}
           </div>
         )}
-        <div className="text-[11px] text-[#666] pt-2 border-t border-[#eee] mt-2">
+        <div className="text-[11px] text-[#5C8891] pt-2 border-t border-[#F7FAFA] mt-2">
           A password é de um utilizador de <b>serviço</b> (base de dados), não de uma pessoa.
           Fica guardada e a API <b>nunca a devolve</b> — só se pode substituir.
         </div>
       </div>
 
       <Toolbar actions={[
-        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#5d4037',
+        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#0B4F5C',
           disabled: isNew, onClick: () => test.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

@@ -13,7 +13,7 @@ const inval = (qc: any) => qc.invalidateQueries({ queryKey: ['srm'] });
 function SupplierSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const { data: sups = [] } = useSuppliers();
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="border border-[#a0a0a0] p-1 bg-white max-w-[180px]">
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="border border-[#7FA9B1] p-1 bg-white max-w-[180px]">
       <option value="">Fornecedor…</option>
       {sups.map((s: any) => <option key={s.id} value={s.id}>{s.commercial_name}</option>)}
     </select>
@@ -36,13 +36,13 @@ export function SrmContractsView() {
     <ClassicWindow title="Contratos de Fornecedores" icon={<ScrollText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Contratos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
           <SupplierSelect value={f.supplier} onChange={(v) => setF({ ...f, supplier: v })} />
-          <input placeholder="Referência" value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} className="border border-[#a0a0a0] p-1 w-28" />
-          <input type="date" value={f.start_date} onChange={(e) => setF({ ...f, start_date: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <input type="date" value={f.end_date} onChange={(e) => setF({ ...f, end_date: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <input type="number" placeholder="Desc.%" value={f.base_discount_percentage} onChange={(e) => setF({ ...f, base_discount_percentage: e.target.value })} className="border border-[#a0a0a0] p-1 w-16" />
-          <input placeholder="Incoterms" value={f.incoterms} onChange={(e) => setF({ ...f, incoterms: e.target.value })} className="border border-[#a0a0a0] p-1 w-20" />
+          <input placeholder="Referência" value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} className="border border-[#7FA9B1] p-1 w-28" />
+          <input type="date" value={f.start_date} onChange={(e) => setF({ ...f, start_date: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input type="date" value={f.end_date} onChange={(e) => setF({ ...f, end_date: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input type="number" placeholder="Desc.%" value={f.base_discount_percentage} onChange={(e) => setF({ ...f, base_discount_percentage: e.target.value })} className="border border-[#7FA9B1] p-1 w-16" />
+          <input placeholder="Incoterms" value={f.incoterms} onChange={(e) => setF({ ...f, incoterms: e.target.value })} className="border border-[#7FA9B1] p-1 w-20" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -53,7 +53,7 @@ export function SrmContractsView() {
             { header: 'Fim', accessor: (r: any) => r.end_date || '—', width: '14%' },
             { header: 'Desc.', accessor: (r: any) => `${r.base_discount_percentage}%`, width: '10%' },
             { header: 'Incoterms', accessor: (r: any) => r.incoterms || '—', width: '10%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '6%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
           ]} />
         </div>
       </div>
@@ -80,16 +80,16 @@ function DocumentsBase({ title, icon, onlyType }: { title: string; icon: any; on
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">{rows.length} documento(s)</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
           <SupplierSelect value={f.supplier} onChange={(v) => setF({ ...f, supplier: v })} />
           {!onlyType && (
-            <select value={f.document_type} onChange={(e) => setF({ ...f, document_type: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+            <select value={f.document_type} onChange={(e) => setF({ ...f, document_type: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
               {Object.entries(DOC_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
           )}
-          <input placeholder="Título" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <label className="text-gray-500">Emissão<input type="date" value={f.issue_date} onChange={(e) => setF({ ...f, issue_date: e.target.value })} className="border border-[#a0a0a0] p-1 ml-1" /></label>
-          <label className="text-gray-500">Validade<input type="date" value={f.expiration_date} onChange={(e) => setF({ ...f, expiration_date: e.target.value })} className="border border-[#a0a0a0] p-1 ml-1" /></label>
+          <input placeholder="Título" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <label className="text-gray-500">Emissão<input type="date" value={f.issue_date} onChange={(e) => setF({ ...f, issue_date: e.target.value })} className="border border-[#7FA9B1] p-1 ml-1" /></label>
+          <label className="text-gray-500">Validade<input type="date" value={f.expiration_date} onChange={(e) => setF({ ...f, expiration_date: e.target.value })} className="border border-[#7FA9B1] p-1 ml-1" /></label>
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -98,8 +98,8 @@ function DocumentsBase({ title, icon, onlyType }: { title: string; icon: any; on
             { header: 'Fornecedor', accessor: 'supplier_name', width: '26%' },
             ...(onlyType ? [] : [{ header: 'Tipo', accessor: (r: any) => r.document_type_display, width: '14%' }]),
             { header: 'Emissão', accessor: (r: any) => r.issue_date || '—', width: onlyType ? '18%' : '12%' },
-            { header: 'Validade', accessor: (r: any) => <span className={r.expiration_date && r.expiration_date < today ? 'text-red-600 font-bold' : ''}>{r.expiration_date || '—'}</span>, width: onlyType ? '20%' : '12%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '6%' },
+            { header: 'Validade', accessor: (r: any) => <span className={r.expiration_date && r.expiration_date < today ? 'text-[#8C2B1F] font-bold' : ''}>{r.expiration_date || '—'}</span>, width: onlyType ? '20%' : '12%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
           ]} />
         </div>
       </div>
@@ -125,12 +125,12 @@ export function SrmSlaView() {
     <ClassicWindow title="SLA & Controlo de Qualidade" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Requisitos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
           <SupplierSelect value={f.supplier} onChange={(v) => setF({ ...f, supplier: v })} />
           <label className="flex items-center gap-1"><input type="checkbox" checked={f.requires_haccp} onChange={(e) => setF({ ...f, requires_haccp: e.target.checked })} />HACCP</label>
           <label className="flex items-center gap-1"><input type="checkbox" checked={f.requires_cold_chain} onChange={(e) => setF({ ...f, requires_cold_chain: e.target.checked })} />Cadeia de frio</label>
-          <input placeholder="Temp. exigida" value={f.required_temperature} onChange={(e) => setF({ ...f, required_temperature: e.target.value })} className="border border-[#a0a0a0] p-1 w-24" />
-          <label className="text-gray-500">Última auditoria<input type="date" value={f.last_audit_date} onChange={(e) => setF({ ...f, last_audit_date: e.target.value })} className="border border-[#a0a0a0] p-1 ml-1" /></label>
+          <input placeholder="Temp. exigida" value={f.required_temperature} onChange={(e) => setF({ ...f, required_temperature: e.target.value })} className="border border-[#7FA9B1] p-1 w-24" />
+          <label className="text-gray-500">Última auditoria<input type="date" value={f.last_audit_date} onChange={(e) => setF({ ...f, last_audit_date: e.target.value })} className="border border-[#7FA9B1] p-1 ml-1" /></label>
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -144,7 +144,7 @@ export function SrmSlaView() {
                 value={!!r.requires_cold_chain} invalidate="srm" title="Exige cadeia de frio na entrega" /> },
             { header: 'Temp.', accessor: (r: any) => r.required_temperature || '—', width: '14%' },
             { header: 'Últ. auditoria', accessor: (r: any) => r.last_audit_date || '—', width: '18%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '8%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '8%' },
           ]} />
         </div>
       </div>
@@ -155,7 +155,7 @@ export function SrmSlaView() {
 // ---------------- Avaliações / Performance ----------------
 export function SrmEvaluationView() {
   const { data: rows = [] } = useQuery({ queryKey: ['srm', 'performance'], queryFn: () => esmApi.listPerformance() });
-  const tone = (s: number) => s >= 85 ? 'text-green-700 font-bold' : s >= 60 ? 'text-amber-700 font-bold' : 'text-red-600 font-bold';
+  const tone = (s: number) => s >= 85 ? 'text-[#0B4F5C] font-bold' : s >= 60 ? 'text-[#0B4F5C] font-bold' : 'text-[#8C2B1F] font-bold';
   return (
     <ClassicWindow title="Avaliação de Fornecedores (Scorecard)" icon={<Gauge size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Avaliados: {rows.length} · pontualidade, conformidade e devoluções</div>}>

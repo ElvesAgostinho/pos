@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[110px] flex-shrink-0 text-[#333]">{label}</span>
+      <span className="w-[110px] flex-shrink-0 text-[#06333C]">{label}</span>
       {children}
     </label>
   );
@@ -62,11 +62,11 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">
           {isNew ? 'Novo tipo de cartão' : `A editar ${d.name}`}
         </span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -96,25 +96,25 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
           <Row label="Tamanho:">
             <input type="number" value={d.length ?? 0} onChange={(e) => set('length', Number(e.target.value))}
               className={`${inp} w-[130px]`} style={inputStyle} />
-            <span className="text-[11px] text-[#666]">
+            <span className="text-[11px] text-[#5C8891]">
               nº de dígitos do número. 0 = não confere o tamanho.
             </span>
           </Row>
 
           {/* Detalhes da pista */}
-          <fieldset className="border border-[#c8c8c8] mt-3">
-            <legend className="px-2 py-1 bg-[#dbe7f3] text-[12px] font-bold text-[#1a4f8a] w-full">
+          <fieldset className="border border-[#CFE3E6] mt-3">
+            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] w-full">
               Detalhes da Pista
             </legend>
             <div className="flex items-center gap-6 p-3">
               <label className="flex items-center gap-3 text-[12px]">
-                <span className="w-[110px] text-[#333]">Start Sentinel:</span>
+                <span className="w-[110px] text-[#06333C]">Start Sentinel:</span>
                 <input value={d.start_sentinel || ''} maxLength={4}
                   onChange={(e) => set('start_sentinel', e.target.value)}
                   placeholder=";" className={`${inp} w-[130px] font-mono`} style={inputStyle} />
               </label>
               <label className="flex items-center gap-3 text-[12px]">
-                <span className="text-[#333]">End Sentinel:</span>
+                <span className="text-[#06333C]">End Sentinel:</span>
                 <input value={d.end_sentinel || ''} maxLength={4}
                   onChange={(e) => set('end_sentinel', e.target.value)}
                   placeholder="?" className={`${inp} w-[130px] font-mono`} style={inputStyle} />
@@ -123,34 +123,34 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
           </fieldset>
 
           {/* Posição */}
-          <fieldset className="border border-[#c8c8c8]">
-            <legend className="px-2 py-1 bg-[#dbe7f3] text-[12px] font-bold text-[#1a4f8a] w-full">
+          <fieldset className="border border-[#CFE3E6]">
+            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] w-full">
               Posição
             </legend>
             <div className="flex items-center gap-6 p-3">
               <label className="flex items-center gap-3 text-[12px]">
-                <span className="w-[110px] text-[#333]">Início:</span>
+                <span className="w-[110px] text-[#06333C]">Início:</span>
                 <input type="number" value={d.pos_start ?? 0}
                   onChange={(e) => set('pos_start', Number(e.target.value))}
                   className={`${inp} w-[130px]`} style={inputStyle} />
               </label>
               <label className="flex items-center gap-3 text-[12px]">
-                <span className="text-[#333]">Fim:</span>
+                <span className="text-[#06333C]">Fim:</span>
                 <input type="number" value={d.pos_end ?? 0}
                   onChange={(e) => set('pos_end', Number(e.target.value))}
                   className={`${inp} w-[130px]`} style={inputStyle} />
               </label>
-              <span className="text-[11px] text-[#666]">0 e 0 = usar a pista toda</span>
+              <span className="text-[11px] text-[#5C8891]">0 e 0 = usar a pista toda</span>
             </div>
           </fieldset>
 
           {/* Testar a leitura */}
-          <fieldset className="border border-[#c8c8c8] mt-3">
-            <legend className="px-2 py-1 bg-[#e8f5e9] text-[12px] font-bold text-[#1f7a34] w-full">
+          <fieldset className="border border-[#CFE3E6] mt-3">
+            <legend className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold text-[#0B4F5C] w-full">
               Testar a leitura
             </legend>
             <div className="p-3 space-y-2">
-              <div className="text-[11px] text-[#666]">
+              <div className="text-[11px] text-[#5C8891]">
                 Encoste o cartão ao leitor com o cursor na caixa (ou cole o que ele devolveu)
                 e veja que número sai. É o que evita instalar às cegas.
               </div>
@@ -158,17 +158,17 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
                 <input value={raw} onChange={(e) => setRaw(e.target.value)}
                   className={`${inp} flex-1 font-mono`} style={inputStyle} />
                 <button onClick={() => testar.mutate()} disabled={isNew}
-                  className="px-4 py-1.5 bg-[#18181B] text-white text-[12px] font-semibold disabled:opacity-40">
+                  className="px-4 py-1.5 bg-[#062A31] text-white text-[12px] font-semibold disabled:opacity-40">
                   {testar.isPending ? 'A ler…' : 'Ler'}
                 </button>
               </div>
               {isNew && (
-                <div className="text-[11px] text-[#8a6100]">Grave primeiro — depois pode testar.</div>
+                <div className="text-[11px] text-[#0B4F5C]">Grave primeiro — depois pode testar.</div>
               )}
               {resultado && (
                 <div className={`text-[12px] px-3 py-2 border ${resultado.ok
-                  ? 'bg-[#e8f5e9] border-[#b6d7b9] text-[#1f7a34]'
-                  : 'bg-[#fdecea] border-[#e6b0aa] text-[#a01818]'}`}>
+                  ? 'bg-[#F7FAFA] border-[#CFE3E6] text-[#0B4F5C]'
+                  : 'bg-[#F7FAFA] border-[#B0392B] text-[#B0392B]'}`}>
                   {resultado.ok
                     ? <>Número lido: <b className="font-mono text-[14px]">{resultado.number}</b></>
                     : resultado.detail}
@@ -180,8 +180,8 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

@@ -53,9 +53,9 @@ const ErrorReports: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#f0f0f0] text-black font-sans text-[11px] select-none">
+    <div className="flex flex-col h-full bg-[#F7FAFA] text-black font-sans text-[11px] select-none">
       {/* Top bar */}
-      <div className="flex items-center px-2 py-1 bg-[#e0e0e0] border-b border-[#a0a0a0] gap-3">
+      <div className="flex items-center px-2 py-1 bg-[#EEF4F5] border-b border-[#7FA9B1] gap-3">
         <span className="mr-2 text-gray-700 font-bold">Erros Automáticos</span>
         <label className="flex items-center gap-1 text-gray-600 cursor-pointer">
           <input type="checkbox" checked={showResolved} onChange={(e) => setShowResolved(e.target.checked)} />
@@ -65,39 +65,39 @@ const ErrorReports: React.FC = () => {
           {visiveis.length} {visiveis.length === 1 ? 'erro' : 'erros'} {showResolved ? '' : 'por resolver'}
         </span>
         <button onClick={fetchReports} disabled={loading}
-          className="ml-auto flex items-center gap-1 px-2 py-0.5 border border-[#a0a0a0] bg-white hover:bg-[#e8e8e8] disabled:opacity-50">
+          className="ml-auto flex items-center gap-1 px-2 py-0.5 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA] disabled:opacity-50">
           <RefreshCcw size={11} className={loading ? 'animate-spin' : ''} /> Atualizar
         </button>
       </div>
 
       {/* Grid */}
-      <div className="flex-1 bg-white overflow-auto border-b border-[#a0a0a0]">
+      <div className="flex-1 bg-white overflow-auto border-b border-[#7FA9B1]">
         <table className="w-full text-left border-collapse cursor-default">
           <thead>
-            <tr className="bg-gradient-to-b from-[#ffffff] to-[#e0e0e0] border-b border-[#a0a0a0] text-gray-700">
-              <th className="py-1 px-2 border-r border-[#ccc] font-normal w-32">Quando</th>
-              <th className="py-1 px-2 border-r border-[#ccc] font-normal w-28">Cliente</th>
-              <th className="py-1 px-2 border-r border-[#ccc] font-normal w-16 text-center">Nível</th>
-              <th className="py-1 px-2 border-r border-[#ccc] font-normal">Mensagem</th>
-              <th className="py-1 px-2 border-r border-[#ccc] font-normal w-24">Versão</th>
+            <tr className="bg-gradient-to-b from-[#FFFFFF] to-[#EEF4F5] border-b border-[#7FA9B1] text-gray-700">
+              <th className="py-1 px-2 border-r border-[#EEF4F5] font-normal w-32">Quando</th>
+              <th className="py-1 px-2 border-r border-[#EEF4F5] font-normal w-28">Cliente</th>
+              <th className="py-1 px-2 border-r border-[#EEF4F5] font-normal w-16 text-center">Nível</th>
+              <th className="py-1 px-2 border-r border-[#EEF4F5] font-normal">Mensagem</th>
+              <th className="py-1 px-2 border-r border-[#EEF4F5] font-normal w-24">Versão</th>
               <th className="py-1 px-2 font-normal w-20 text-center">Estado</th>
             </tr>
           </thead>
           <tbody>
             {visiveis.map((r) => (
               <tr key={r.id} onClick={() => { setSelected(r); setNote(r.resolved_note || ''); }}
-                className={`border-b border-[#eee] hover:bg-[#cce8ff] ${selected?.id === r.id ? 'bg-[#cce8ff]' : ''} ${!r.resolved ? '' : 'text-gray-400'}`}>
-                <td className="py-1 px-2 border-r border-[#eee] whitespace-nowrap" title={r.created_at}>{tempoRelativo(r.created_at)}</td>
-                <td className="py-1 px-2 border-r border-[#eee]">{r.client_code || '—'}</td>
-                <td className="py-1 px-2 border-r border-[#eee] text-center">
-                  <span className={`inline-flex items-center gap-1 font-bold ${r.level === 'ERROR' || r.level === 'CRITICAL' ? 'text-red-600' : 'text-amber-600'}`}>
+                className={`border-b border-[#F7FAFA] hover:bg-[#F7FAFA] ${selected?.id === r.id ? 'bg-[#F7FAFA]' : ''} ${!r.resolved ? '' : 'text-gray-400'}`}>
+                <td className="py-1 px-2 border-r border-[#F7FAFA] whitespace-nowrap" title={r.created_at}>{tempoRelativo(r.created_at)}</td>
+                <td className="py-1 px-2 border-r border-[#F7FAFA]">{r.client_code || '—'}</td>
+                <td className="py-1 px-2 border-r border-[#F7FAFA] text-center">
+                  <span className={`inline-flex items-center gap-1 font-bold ${r.level === 'ERROR' || r.level === 'CRITICAL' ? 'text-[#8C2B1F]' : 'text-[#5C8891]'}`}>
                     {!r.resolved && <AlertTriangle size={10} />} {r.level}
                   </span>
                 </td>
-                <td className="py-1 px-2 border-r border-[#eee] truncate max-w-[1px]">{r.message}</td>
-                <td className="py-1 px-2 border-r border-[#eee]">{r.app_version || '—'}</td>
+                <td className="py-1 px-2 border-r border-[#F7FAFA] truncate max-w-[1px]">{r.message}</td>
+                <td className="py-1 px-2 border-r border-[#F7FAFA]">{r.app_version || '—'}</td>
                 <td className="py-1 px-2 text-center">
-                  {r.resolved ? <span className="text-green-600 inline-flex items-center gap-1"><CheckCircle size={11} /> resolvido</span>
+                  {r.resolved ? <span className="text-[#5C8891] inline-flex items-center gap-1"><CheckCircle size={11} /> resolvido</span>
                     : <span className="text-gray-400">por resolver</span>}
                 </td>
               </tr>
@@ -114,16 +114,16 @@ const ErrorReports: React.FC = () => {
       {/* Detalhe */}
       {selected && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
-          <div className="bg-[#f0f0f0] border border-[#a0a0a0] w-[640px] max-h-[80vh] shadow-md flex flex-col">
-            <div className="bg-[#333] text-white px-2 py-1 flex justify-between items-center">
+          <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[640px] max-h-[80vh] shadow-md flex flex-col">
+            <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center">
               <div className="flex items-center">
-                <AlertTriangle size={14} className="mr-2 text-amber-400" />
+                <AlertTriangle size={14} className="mr-2 text-[#7FA9B1]" />
                 <span className="font-bold text-[11px]">{selected.client_code} — {selected.level}</span>
               </div>
-              <button onClick={() => setSelected(null)} className="hover:text-red-400 font-bold"><X size={14} /></button>
+              <button onClick={() => setSelected(null)} className="hover:text-[#B0392B] font-bold"><X size={14} /></button>
             </div>
-            <div className="p-4 bg-[#f0f0f0] flex-1 overflow-y-auto space-y-3 text-[11px] font-sans">
-              <div className="bg-white border border-[#a0a0a0] p-3 grid grid-cols-2 gap-2">
+            <div className="p-4 bg-[#F7FAFA] flex-1 overflow-y-auto space-y-3 text-[11px] font-sans">
+              <div className="bg-white border border-[#7FA9B1] p-3 grid grid-cols-2 gap-2">
                 <div><span className="text-gray-500">Quando:</span> {new Date(selected.created_at).toLocaleString('pt-PT')}</div>
                 <div><span className="text-gray-500">Máquina:</span> {selected.hostname || '—'}</div>
                 <div><span className="text-gray-500">Versão:</span> {selected.app_version || '—'}</div>
@@ -131,38 +131,38 @@ const ErrorReports: React.FC = () => {
                 <div className="col-span-2"><span className="text-gray-500">Caminho:</span> {selected.path || '—'}</div>
                 <div className="col-span-2"><span className="text-gray-500">Logger:</span> {selected.logger_name || '—'}</div>
               </div>
-              <div className="bg-white border border-[#a0a0a0] p-3">
+              <div className="bg-white border border-[#7FA9B1] p-3">
                 <div className="font-bold text-gray-700 mb-1">Mensagem</div>
                 <div className="text-gray-800">{selected.message}</div>
               </div>
               {selected.traceback && (
-                <div className="bg-white border border-[#a0a0a0] p-3">
+                <div className="bg-white border border-[#7FA9B1] p-3">
                   <div className="font-bold text-gray-700 mb-1">Traceback</div>
-                  <pre className="text-[10px] font-mono whitespace-pre-wrap break-all bg-[#1e1e1e] text-[#d4d4d4] p-2 max-h-[240px] overflow-y-auto">{selected.traceback}</pre>
+                  <pre className="text-[10px] font-mono whitespace-pre-wrap break-all bg-[#062A31] text-[#EEF4F5] p-2 max-h-[240px] overflow-y-auto">{selected.traceback}</pre>
                 </div>
               )}
-              <div className="bg-white border border-[#a0a0a0] p-3">
+              <div className="bg-white border border-[#7FA9B1] p-3">
                 <div className="font-bold text-gray-700 mb-1">Nota de triagem</div>
                 <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2}
                   placeholder="Ex.: corrigido em 1.1.0, ou motivo de não avançar"
-                  className="w-full border border-[#999] px-2 py-1 text-[11px] font-sans" />
+                  className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] font-sans" />
               </div>
             </div>
-            <div className="bg-[#e0e0e0] border-t border-[#b0b0b0] p-2 flex justify-end gap-2">
+            <div className="bg-[#EEF4F5] border-t border-[#CFE3E6] p-2 flex justify-end gap-2">
               {selected.resolved ? (
                 <button onClick={() => marcarResolvido(selected, false)} disabled={saving}
-                  className="flex items-center gap-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white disabled:opacity-50">
+                  className="flex items-center gap-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white disabled:opacity-50">
                   <span className="font-bold text-gray-700">Reabrir</span>
                 </button>
               ) : (
                 <button onClick={() => marcarResolvido(selected, true)} disabled={saving}
-                  className="flex items-center gap-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white disabled:opacity-50">
-                  <CheckCircle size={12} className="text-green-600" />
-                  <span className="font-bold text-green-700">{saving ? 'A guardar…' : 'Marcar resolvido'}</span>
+                  className="flex items-center gap-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white disabled:opacity-50">
+                  <CheckCircle size={12} className="text-[#5C8891]" />
+                  <span className="font-bold text-[#0B4F5C]">{saving ? 'A guardar…' : 'Marcar resolvido'}</span>
                 </button>
               )}
               <button onClick={() => setSelected(null)}
-                className="flex items-center gap-1 hover:bg-[#d0d0d0] px-3 py-1 rounded border border-[#a0a0a0] bg-white">
+                className="flex items-center gap-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white">
                 <X size={12} className="text-gray-600" />
                 <span className="font-bold">Fechar</span>
               </button>

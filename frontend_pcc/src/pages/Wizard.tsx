@@ -109,13 +109,13 @@ const Wizard: React.FC = () => {
 
   if (success) {
     return (
-      <div className="p-4 bg-[#e6e6e6] h-full overflow-auto text-black font-sans text-xs flex justify-center items-center">
-        <div className="bg-[#f0f0f0] border border-[#a0a0a0] p-4 w-[500px] shadow-md">
-          <div className="bg-[#333] text-white px-2 py-1 flex justify-between items-center mb-4">
+      <div className="p-4 bg-[#F7FAFA] h-full overflow-auto text-black font-sans text-xs flex justify-center items-center">
+        <div className="bg-[#F7FAFA] border border-[#7FA9B1] p-4 w-[500px] shadow-md">
+          <div className="bg-[#06333C] text-white px-2 py-1 flex justify-between items-center mb-4">
             <span className="font-bold text-[11px]">Deploy Concluído</span>
           </div>
           <div className="flex mb-4">
-            <div className="w-12 h-12 bg-[#90c040] text-white flex justify-center items-center font-bold text-2xl border border-black mr-4">✓</div>
+            <div className="w-12 h-12 bg-[#5C8891] text-white flex justify-center items-center font-bold text-2xl border border-black mr-4">✓</div>
             <div>
               <p className="font-bold mb-1">O cliente foi provisionado com sucesso na Cloud (PCC).</p>
               <p className="text-gray-600 text-[10px] mb-2">
@@ -125,33 +125,33 @@ const Wizard: React.FC = () => {
           </div>
           <div className="mb-3">
             <div className="text-[10px] font-bold text-gray-600 mb-1">Chave de licença (license.key)</div>
-            <div className="bg-white border border-[#999] p-2">
+            <div className="bg-white border border-[#7FA9B1] p-2">
               <code className="text-[10px] text-gray-800 break-all select-all block">{licenseKey}</code>
             </div>
           </div>
 
-          <div className="bg-[#fff8e1] border border-[#e0c080] p-3 mb-3">
-            <div className="text-[10px] font-bold text-[#8a6100] mb-2">
+          <div className="bg-[#F7FAFA] border border-[#CFE3E6] p-3 mb-3">
+            <div className="text-[10px] font-bold text-[#0B4F5C] mb-2">
               ⚠ Estas duas senhas só aparecem UMA VEZ. Copie-as agora — depois só é possível gerar novas, não reler as atuais.
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <div className="text-[10px] font-bold text-gray-600 mb-1">Senha de instalação (para o técnico)</div>
                 <input readOnly value={installPassword} onClick={(e) => (e.target as HTMLInputElement).select()}
-                  className="w-full border border-[#999] px-2 py-1 text-[11px] font-mono bg-white select-all" />
+                  className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] font-mono bg-white select-all" />
                 <div className="text-[9px] text-gray-500 mt-0.5">Cole no build_instalador.ps1 quando o pedir.</div>
               </div>
               <div>
                 <div className="text-[10px] font-bold text-gray-600 mb-1">Senha do dono ({ownerUsername})</div>
                 <input readOnly value={ownerPassword} onClick={(e) => (e.target as HTMLInputElement).select()}
-                  className="w-full border border-[#999] px-2 py-1 text-[11px] font-mono bg-white select-all" />
+                  className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] font-mono bg-white select-all" />
                 <div className="text-[9px] text-gray-500 mt-0.5">Digite-a na página "Conta do Dono" do instalador.</div>
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end border-t border-[#ccc] pt-2 mt-2">
-            <button onClick={() => { setSuccess(false); setStep(1); }} className="px-4 py-1 border border-[#333] bg-[#333] text-white hover:bg-[#444]">
+          <div className="flex justify-end border-t border-[#EEF4F5] pt-2 mt-2">
+            <button onClick={() => { setSuccess(false); setStep(1); }} className="px-4 py-1 border border-[#06333C] bg-[#06333C] text-white hover:bg-[#0B4F5C]">
               Concluir
             </button>
           </div>
@@ -161,17 +161,17 @@ const Wizard: React.FC = () => {
   }
 
   return (
-    <div className="p-4 bg-[#e6e6e6] h-full overflow-auto text-black font-sans text-xs">
-      <div className="border-b border-[#cccccc] pb-2 mb-4">
-        <h1 className="text-lg font-bold text-[#333]">Novo Cliente - Provisioning Engine</h1>
+    <div className="p-4 bg-[#F7FAFA] h-full overflow-auto text-black font-sans text-xs">
+      <div className="border-b border-[#EEF4F5] pb-2 mb-4">
+        <h1 className="text-lg font-bold text-[#06333C]">Novo Cliente - Provisioning Engine</h1>
       </div>
 
       {/* Stepper */}
-      <div className="flex items-center mb-6 bg-white border border-[#ccc] p-2 text-[11px]">
+      <div className="flex items-center mb-6 bg-white border border-[#EEF4F5] p-2 text-[11px]">
         {steps.map((s, i) => (
           <div key={i} className="flex items-center mr-4">
             <div className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[9px] mr-1
-              ${step > i + 1 ? 'bg-[#90c040] text-white' : step === i + 1 ? 'bg-[#333] text-white' : 'bg-[#e0e0e0] text-[#888]'}`}>
+              ${step > i + 1 ? 'bg-[#5C8891] text-white' : step === i + 1 ? 'bg-[#06333C] text-white' : 'bg-[#EEF4F5] text-[#5C8891]'}`}>
               {step > i + 1 ? '✓' : i + 1}
             </div>
             <span className={`${step >= i + 1 ? 'text-black font-bold' : 'text-gray-500'}`}>{s}</span>
@@ -184,28 +184,28 @@ const Wizard: React.FC = () => {
         <div className="p-4">
           {step === 1 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">1. Dados da Entidade</h2>
+              <h2 className="text-sm font-bold border-b border-[#F7FAFA] pb-1">1. Dados da Entidade</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">Nome Comercial</label>
-                  <input type="text" className="w-full border border-[#999] px-2 py-1 text-xs" placeholder="Ex: Grupo Pestana"
+                  <input type="text" className="w-full border border-[#7FA9B1] px-2 py-1 text-xs" placeholder="Ex: Grupo Pestana"
                     value={formData.commercial_name} onChange={(e) => setFormData({ ...formData, commercial_name: e.target.value })} />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">NIF</label>
-                  <input type="text" className="w-full border border-[#999] px-2 py-1 text-xs" placeholder="Ex: 500123456"
+                  <input type="text" className="w-full border border-[#7FA9B1] px-2 py-1 text-xs" placeholder="Ex: 500123456"
                     value={formData.nif} onChange={(e) => setFormData({ ...formData, nif: e.target.value })} />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">País</label>
-                  <select className="w-full border border-[#999] px-2 py-1 text-xs"
+                  <select className="w-full border border-[#7FA9B1] px-2 py-1 text-xs"
                     value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })}>
                     <option>Angola</option><option>Portugal</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">E-mail de Contacto</label>
-                  <input type="email" className="w-full border border-[#999] px-2 py-1 text-xs"
+                  <input type="email" className="w-full border border-[#7FA9B1] px-2 py-1 text-xs"
                     value={formData.general_email} onChange={(e) => setFormData({ ...formData, general_email: e.target.value })} />
                 </div>
               </div>
@@ -214,14 +214,14 @@ const Wizard: React.FC = () => {
 
           {step === 2 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">2. Ativação de Módulos</h2>
+              <h2 className="text-sm font-bold border-b border-[#F7FAFA] pb-1">2. Ativação de Módulos</h2>
               <p className="text-[10px] text-gray-500">
                 Cada módulo corresponde a uma aplicação real do ERP. O que ativar aqui é o que arranca no servidor do cliente.
               </p>
 
               {/* Núcleo (sempre incluído) */}
-              <div className="border border-[#ccc] bg-[#f4f9ee]">
-                <div className="px-2 py-1 bg-[#e8f2dc] text-[10px] font-bold text-[#4a6a25] border-b border-[#d5e5c0]">
+              <div className="border border-[#EEF4F5] bg-[#F7FAFA]">
+                <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#0B4F5C] border-b border-[#EEF4F5]">
                   NÚCLEO (sempre incluído)
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-1 p-2">
@@ -236,16 +236,16 @@ const Wizard: React.FC = () => {
 
               {/* Opcionais por categoria */}
               {Object.entries(optionalByCategory).map(([cat, mods]) => (
-                <div key={cat} className="border border-[#ccc] bg-[#f9f9f9]">
-                  <div className="px-2 py-1 bg-[#eee] text-[10px] font-bold text-[#333] border-b border-[#ddd] uppercase tracking-wide">
+                <div key={cat} className="border border-[#EEF4F5] bg-[#FFFFFF]">
+                  <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#06333C] border-b border-[#EEF4F5] uppercase tracking-wide">
                     {cat}
                   </div>
                   <div className="p-2 space-y-1">
                     {mods.map((m) => (
-                      <label key={m.code} className="flex items-start p-1 hover:bg-[#e6f2ff] cursor-pointer rounded">
+                      <label key={m.code} className="flex items-start p-1 hover:bg-[#F7FAFA] cursor-pointer rounded">
                         <input type="checkbox" className="mr-2 mt-0.5" checked={selected.includes(m.code)} onChange={() => toggle(m.code)} />
                         <div>
-                          <span className="font-bold text-[#333]">{m.name}</span>
+                          <span className="font-bold text-[#06333C]">{m.name}</span>
                           <span className="ml-2 text-[9px] text-gray-400 font-mono">[{m.code}]</span>
                           {m.description && <div className="text-[9px] text-gray-500">{m.description}</div>}
                         </div>
@@ -259,21 +259,21 @@ const Wizard: React.FC = () => {
 
           {step === 3 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">3. Funcionalidades (Premium & Base)</h2>
+              <h2 className="text-sm font-bold border-b border-[#F7FAFA] pb-1">3. Funcionalidades (Premium & Base)</h2>
               <p className="text-[10px] text-gray-500">
                 Dentro de cada módulo, escolha as funcionalidades incluídas nesta licença. As desativadas não aparecem no ERP do cliente.
               </p>
               {Object.entries(featuresByModule).map(([mod, feats]) => (
-                <div key={mod} className="border border-[#ccc] bg-[#f9f9f9]">
-                  <div className="px-2 py-1 bg-[#eee] text-[10px] font-bold text-[#333] border-b border-[#ddd] uppercase tracking-wide">{mod}</div>
+                <div key={mod} className="border border-[#EEF4F5] bg-[#FFFFFF]">
+                  <div className="px-2 py-1 bg-[#F7FAFA] text-[10px] font-bold text-[#06333C] border-b border-[#EEF4F5] uppercase tracking-wide">{mod}</div>
                   <div className="p-2 space-y-1">
                     {feats.map((f: any) => (
-                      <label key={f.key} className="flex items-start p-1 hover:bg-[#e6f2ff] cursor-pointer rounded">
+                      <label key={f.key} className="flex items-start p-1 hover:bg-[#F7FAFA] cursor-pointer rounded">
                         <input type="checkbox" className="mr-2 mt-0.5" checked={selectedFeatures.includes(f.key)} onChange={() => toggleFeature(f.key)} />
                         <div>
-                          <span className="font-bold text-[#333]">{f.name}</span>
+                          <span className="font-bold text-[#06333C]">{f.name}</span>
                           <span className="ml-2 text-[9px] text-gray-400 font-mono">[{f.key}]</span>
-                          {!f.default_on && <span className="ml-2 text-[8px] font-bold text-[#b06a00] bg-[#fff4d6] px-1 rounded">PREMIUM</span>}
+                          {!f.default_on && <span className="ml-2 text-[8px] font-bold text-[#0B4F5C] bg-[#F7FAFA] px-1 rounded">PREMIUM</span>}
                         </div>
                       </label>
                     ))}
@@ -286,23 +286,23 @@ const Wizard: React.FC = () => {
 
           {step === 4 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">4. Detalhes da Licença</h2>
+              <h2 className="text-sm font-bold border-b border-[#F7FAFA] pb-1">4. Detalhes da Licença</h2>
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">Plano Contratado</label>
-                  <select className="w-full border border-[#999] px-2 py-1 text-xs"
+                  <select className="w-full border border-[#7FA9B1] px-2 py-1 text-xs"
                     value={formData.plan} onChange={(e) => setFormData({ ...formData, plan: e.target.value })}>
                     <option>Enterprise</option><option>Standard</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">Limite de Hotéis</label>
-                  <input type="number" className="w-full border border-[#999] px-2 py-1 text-xs"
+                  <input type="number" className="w-full border border-[#7FA9B1] px-2 py-1 text-xs"
                     value={formData.max_hotels} onChange={(e) => setFormData({ ...formData, max_hotels: parseInt(e.target.value) || 1 })} />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">Limite de POS</label>
-                  <input type="number" className="w-full border border-[#999] px-2 py-1 text-xs"
+                  <input type="number" className="w-full border border-[#7FA9B1] px-2 py-1 text-xs"
                     value={formData.max_pos} onChange={(e) => setFormData({ ...formData, max_pos: parseInt(e.target.value) || 1 })} />
                 </div>
               </div>
@@ -311,27 +311,27 @@ const Wizard: React.FC = () => {
 
           {step === 5 && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold border-b border-[#eee] pb-1">5. Tudo Pronto para o Deploy!</h2>
-              <div className="bg-[#f9f9f9] border border-[#ccc] p-4 text-[11px] max-h-60 overflow-y-auto">
+              <h2 className="text-sm font-bold border-b border-[#F7FAFA] pb-1">5. Tudo Pronto para o Deploy!</h2>
+              <div className="bg-[#FFFFFF] border border-[#EEF4F5] p-4 text-[11px] max-h-60 overflow-y-auto">
                 <ul className="space-y-1">
-                  <li><span className="text-[#90c040] font-bold">✓</span> Criar Cliente: {formData.commercial_name || 'Novo Cliente'}</li>
-                  <li><span className="text-[#90c040] font-bold">✓</span> Limites: {formData.max_hotels} Hotéis, {formData.max_pos} POS</li>
-                  <li><span className="text-[#90c040] font-bold">✓</span> Módulos opcionais ativados ({selected.length}):</li>
-                  <ul className="pl-4 pb-2 border-l border-[#ccc] ml-2 mt-1">
+                  <li><span className="text-[#5C8891] font-bold">✓</span> Criar Cliente: {formData.commercial_name || 'Novo Cliente'}</li>
+                  <li><span className="text-[#5C8891] font-bold">✓</span> Limites: {formData.max_hotels} Hotéis, {formData.max_pos} POS</li>
+                  <li><span className="text-[#5C8891] font-bold">✓</span> Módulos opcionais ativados ({selected.length}):</li>
+                  <ul className="pl-4 pb-2 border-l border-[#EEF4F5] ml-2 mt-1">
                     {selected.map((code) => (
                       <li key={code} className="text-[10px] text-gray-700">
                         {catalog.find((m) => m.code === code)?.name} <span className="text-gray-400 font-mono">[{code}]</span>
                       </li>
                     ))}
-                    {selected.length === 0 && <li className="text-[10px] text-red-500">(Nenhum módulo opcional selecionado)</li>}
+                    {selected.length === 0 && <li className="text-[10px] text-[#B0392B]">(Nenhum módulo opcional selecionado)</li>}
                   </ul>
-                  <li><span className="text-[#90c040] font-bold">✓</span> Funcionalidades incluídas ({selectedFeatures.length}/{featureCatalog.length}):</li>
-                  <ul className="pl-4 pb-2 border-l border-[#ccc] ml-2 mt-1">
+                  <li><span className="text-[#5C8891] font-bold">✓</span> Funcionalidades incluídas ({selectedFeatures.length}/{featureCatalog.length}):</li>
+                  <ul className="pl-4 pb-2 border-l border-[#EEF4F5] ml-2 mt-1">
                     {selectedFeatures.map((k) => (
                       <li key={k} className="text-[10px] text-gray-700">{featureCatalog.find((f) => f.key === k)?.name} <span className="text-gray-400 font-mono">[{k}]</span></li>
                     ))}
                   </ul>
-                  <li><span className="text-[#90c040] font-bold">✓</span> Gerar Chave Criptografada (Validade: 1 Ano)</li>
+                  <li><span className="text-[#5C8891] font-bold">✓</span> Gerar Chave Criptografada (Validade: 1 Ano)</li>
                 </ul>
               </div>
             </div>
@@ -340,24 +340,24 @@ const Wizard: React.FC = () => {
       </div>
 
       {/* Footer Controls */}
-      <div className="bg-[#e0e0e0] border-t border-[#b0b0b0] p-1 flex justify-between items-center text-[11px]">
+      <div className="bg-[#EEF4F5] border-t border-[#CFE3E6] p-1 flex justify-between items-center text-[11px]">
         <div className="flex space-x-4 px-2">
           <button onClick={handleBack} disabled={step === 1 || loading}
-            className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-2 py-1 rounded disabled:opacity-50">
-            <div className="w-5 h-5 rounded-full border-2 border-[#555] flex justify-center items-center font-bold text-[#555] pb-[2px]">&lt;</div>
+            className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-2 py-1 rounded disabled:opacity-50">
+            <div className="w-5 h-5 rounded-full border-2 border-[#0B4F5C] flex justify-center items-center font-bold text-[#0B4F5C] pb-[2px]">&lt;</div>
             <span className="text-gray-700 font-medium ml-1">Anterior</span>
           </button>
 
           {step < steps.length ? (
-            <button onClick={handleNext} className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-2 py-1 rounded">
-              <div className="w-5 h-5 rounded-full flex justify-center items-center bg-[#5bc0de] text-white">
+            <button onClick={handleNext} className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-2 py-1 rounded">
+              <div className="w-5 h-5 rounded-full flex justify-center items-center bg-[#7FA9B1] text-white">
                 <ChevronRight size={12} strokeWidth={3} />
               </div>
               <span className="text-gray-700 font-medium ml-1">Próximo</span>
             </button>
           ) : (
-            <button onClick={handleProvision} disabled={loading} className="flex items-center space-x-1 hover:bg-[#d0d0d0] px-2 py-1 rounded">
-              <div className="w-5 h-5 rounded-full flex justify-center items-center bg-[#5cb85c] text-white font-bold pb-[2px]">+</div>
+            <button onClick={handleProvision} disabled={loading} className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-2 py-1 rounded">
+              <div className="w-5 h-5 rounded-full flex justify-center items-center bg-[#5C8891] text-white font-bold pb-[2px]">+</div>
               <span className="text-gray-700 font-medium ml-1">{loading ? 'A processar...' : 'Adicionar / Criar Plataforma'}</span>
             </button>
           )}

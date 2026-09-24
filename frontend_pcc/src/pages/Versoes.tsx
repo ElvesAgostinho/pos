@@ -59,62 +59,62 @@ export default function Versoes() {
   const atual = releases[0]; // ordenado por -created_at no backend
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#e6e6e6] text-[12px]">
-      <div className="flex items-center px-2 py-1 bg-[#e0e0e0] border-b border-[#a0a0a0]">
+    <div className="flex-1 flex flex-col h-full bg-[#F7FAFA] text-[12px]">
+      <div className="flex items-center px-2 py-1 bg-[#EEF4F5] border-b border-[#7FA9B1]">
         <span className="font-bold text-gray-700">Versões publicadas</span>
       </div>
 
       <div className="p-4 space-y-4 overflow-auto">
         {atual && (
-          <div className="bg-white border border-[#a0a0a0] p-3 max-w-2xl">
+          <div className="bg-white border border-[#7FA9B1] p-3 max-w-2xl">
             <div className="text-[11px] text-gray-500 mb-1">Versão que os clientes recebem AGORA ao sincronizar:</div>
             <div className="font-bold text-[15px]">v{atual.version}</div>
           </div>
         )}
 
-        <div className="bg-white border border-[#a0a0a0] p-4 max-w-2xl">
+        <div className="bg-white border border-[#7FA9B1] p-4 max-w-2xl">
           <div className="font-bold mb-3 text-gray-700">Publicar versão nova</div>
           <div className="space-y-2">
             <div>
               <label className="block text-[11px] text-gray-600 mb-0.5">Versão (ex.: 1.1.0)</label>
               <input value={version} onChange={(e) => setVersion(e.target.value)}
-                className="w-full border border-[#999] px-2 py-1" placeholder="1.1.0" />
+                className="w-full border border-[#7FA9B1] px-2 py-1" placeholder="1.1.0" />
             </div>
             <div>
               <label className="block text-[11px] text-gray-600 mb-0.5">Link de descarga do instalador (.exe)</label>
               <input value={downloadUrl} onChange={(e) => setDownloadUrl(e.target.value)}
-                className="w-full border border-[#999] px-2 py-1" placeholder="https://.../MwanaLodge-Setup-1.1.0.exe" />
+                className="w-full border border-[#7FA9B1] px-2 py-1" placeholder="https://.../MwanaLodge-Setup-1.1.0.exe" />
             </div>
             <div>
               <label className="block text-[11px] text-gray-600 mb-0.5">O que mudou (aparece no aviso do cliente)</label>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
-                className="w-full border border-[#999] px-2 py-1" />
+                className="w-full border border-[#7FA9B1] px-2 py-1" />
             </div>
             <button onClick={publicar} disabled={busy}
-              className="px-4 py-1.5 bg-[#2b6cb0] text-white font-bold disabled:opacity-50">
+              className="px-4 py-1.5 bg-[#5C8891] text-white font-bold disabled:opacity-50">
               {busy ? 'A publicar…' : 'Publicar'}
             </button>
           </div>
         </div>
 
-        <div className="bg-white border border-[#a0a0a0] max-w-2xl">
+        <div className="bg-white border border-[#7FA9B1] max-w-2xl">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gradient-to-b from-[#ffffff] to-[#e0e0e0] border-b border-[#a0a0a0] text-gray-700">
-                <th className="py-1 px-2 border-r border-[#ccc] font-normal">Versão</th>
-                <th className="py-1 px-2 border-r border-[#ccc] font-normal">Publicada em</th>
-                <th className="py-1 px-2 border-r border-[#ccc] font-normal">Por</th>
+              <tr className="bg-gradient-to-b from-[#FFFFFF] to-[#EEF4F5] border-b border-[#7FA9B1] text-gray-700">
+                <th className="py-1 px-2 border-r border-[#EEF4F5] font-normal">Versão</th>
+                <th className="py-1 px-2 border-r border-[#EEF4F5] font-normal">Publicada em</th>
+                <th className="py-1 px-2 border-r border-[#EEF4F5] font-normal">Por</th>
                 <th className="py-1 px-2 font-normal w-16"></th>
               </tr>
             </thead>
             <tbody>
               {releases.map((r) => (
-                <tr key={r.id} className="border-b border-[#eee] hover:bg-[#f5f5f5]">
-                  <td className="py-1 px-2 border-r border-[#eee] font-bold">v{r.version}</td>
-                  <td className="py-1 px-2 border-r border-[#eee]">{new Date(r.created_at).toLocaleString('pt-PT')}</td>
-                  <td className="py-1 px-2 border-r border-[#eee]">{r.created_by || '—'}</td>
+                <tr key={r.id} className="border-b border-[#F7FAFA] hover:bg-[#F7FAFA]">
+                  <td className="py-1 px-2 border-r border-[#F7FAFA] font-bold">v{r.version}</td>
+                  <td className="py-1 px-2 border-r border-[#F7FAFA]">{new Date(r.created_at).toLocaleString('pt-PT')}</td>
+                  <td className="py-1 px-2 border-r border-[#F7FAFA]">{r.created_by || '—'}</td>
                   <td className="py-1 px-2 text-center">
-                    <button onClick={() => apagar(r.id)} className="text-red-600 hover:underline">Apagar</button>
+                    <button onClick={() => apagar(r.id)} className="text-[#8C2B1F] hover:underline">Apagar</button>
                   </td>
                 </tr>
               ))}

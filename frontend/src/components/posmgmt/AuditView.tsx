@@ -6,8 +6,8 @@ import { useAudit } from '../../hooks/usePosMgmt';
 import { AUDIT_EVENTS } from '../../api/posmgmt';
 
 const EVENT_COLOR: Record<string, string> = {
-  PAYMENT: 'text-green-700', DOC_ISSUE: 'text-[#B08D3C]', TICKET_VOID: 'text-red-600',
-  CASH_CLOSE: 'text-[#b06a00]', CASH_OPEN: 'text-[#b06a00]', CASH_MOVE: 'text-[#b06a00]',
+  PAYMENT: 'text-[#0B4F5C]', DOC_ISSUE: 'text-[#5C8891]', TICKET_VOID: 'text-[#8C2B1F]',
+  CASH_CLOSE: 'text-[#0B4F5C]', CASH_OPEN: 'text-[#0B4F5C]', CASH_MOVE: 'text-[#0B4F5C]',
 };
 
 export default function AuditView() {
@@ -18,9 +18,9 @@ export default function AuditView() {
     <ClassicWindow title="Auditoria de Operação (POS)" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{logs.length} registos · atualiza automaticamente</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px]">
+        <div className="flex items-center gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
           <label className="font-bold text-gray-700">Evento:</label>
-          <select value={event} onChange={(e) => setEvent(e.target.value)} className="border border-[#a0a0a0] p-1 bg-white">
+          <select value={event} onChange={(e) => setEvent(e.target.value)} className="border border-[#7FA9B1] p-1 bg-white">
             {AUDIT_EVENTS.map((e) => <option key={e.value} value={e.value}>{e.label}</option>)}
           </select>
         </div>

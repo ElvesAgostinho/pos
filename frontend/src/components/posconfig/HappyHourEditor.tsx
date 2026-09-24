@@ -4,17 +4,17 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 /** As cores dos níveis de preço — as mesmas do original, para o olho reconhecer. */
 const NIVEIS = [
-  { v: 0, label: 'Preço por Omissão', bg: '#ffffff', fg: '#333' },
-  { v: 1, label: 'Preço 1', bg: '#f472b6', fg: '#fff' },
-  { v: 2, label: 'Preço 2', bg: '#5eead4', fg: '#0f3b36' },
-  { v: 3, label: 'Preço 3', bg: '#86efac', fg: '#14532d' },
-  { v: 4, label: 'Preço 4', bg: '#7dd3fc', fg: '#0c3d52' },
-  { v: 5, label: 'Preço 5', bg: '#d8b4fe', fg: '#3b0764' },
+  { v: 0, label: 'Preço por Omissão', bg: '#FFFFFF', fg: '#06333C' },
+  { v: 1, label: 'Preço 1', bg: '#CFE3E6', fg: '#FFFFFF' },
+  { v: 2, label: 'Preço 2', bg: '#7FA9B1', fg: '#06333C' },
+  { v: 3, label: 'Preço 3', bg: '#CFE3E6', fg: '#06333C' },
+  { v: 4, label: 'Preço 4', bg: '#CFE3E6', fg: '#06333C' },
+  { v: 5, label: 'Preço 5', bg: '#EEF4F5', fg: '#06333C' },
 ];
 
 /**
@@ -82,22 +82,22 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white" onMouseUp={() => setPainting(false)}>
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo Happy Hour' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo Happy Hour' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
-      <div className="p-4 border-b border-[#e0e0e0]">
+      <div className="p-4 border-b border-[#EEF4F5]">
         <Box title="Identificação">
         <div className="space-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[12px]">
-          <span className="w-[110px] text-[#333]">Descrição:<span className="text-[#a01818]">*</span></span>
+          <span className="w-[110px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
             placeholder="Happy Hour de Verão" className={`${inp} w-[420px]`} style={inputStyle} />
         </label>
 
         <div className="flex items-center gap-8 text-[12px]">
-          <span className="w-[110px] text-[#333]">Tipo:</span>
+          <span className="w-[110px] text-[#06333C]">Tipo:</span>
           <label className="flex items-center gap-2">
             <input type="radio" checked={d.kind === 'PRICE'} onChange={() => set('kind', 'PRICE')} className="w-4 h-4" />
             Preço
@@ -109,13 +109,13 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
         </div>
 
         <label className="flex items-center gap-3 text-[12px]">
-          <span className="w-[110px] text-[#333]">Mostrar Meias Horas:</span>
+          <span className="w-[110px] text-[#06333C]">Mostrar Meias Horas:</span>
           <input type="checkbox" checked={!!d.show_half_hours}
             onChange={(e) => set('show_half_hours', e.target.checked)} className="w-4 h-4" />
         </label>
 
         <label className="flex items-center gap-3 text-[12px]">
-          <span className="w-[110px] text-[#333]">Ponto de venda:</span>
+          <span className="w-[110px] text-[#06333C]">Ponto de venda:</span>
           <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)}
             className={`${inp} w-[280px]`} style={inputStyle}>
             <option value="">(todos)</option>
@@ -134,14 +134,14 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
         {/* Grelha hora × dia */}
         <div className="flex-1 overflow-auto">
           <table className="text-[12px] border-collapse select-none">
-            <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
-              <th className="text-left font-normal px-2 py-1.5 border border-[#d5d5d5] w-[130px]">Hora</th>
-              {DIAS.map((x) => <th key={x} className="font-normal px-4 py-1.5 border border-[#d5d5d5]">{x}</th>)}
+            <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
+              <th className="text-left font-normal px-2 py-1.5 border border-[#EEF4F5] w-[130px]">Hora</th>
+              {DIAS.map((x) => <th key={x} className="font-normal px-4 py-1.5 border border-[#EEF4F5]">{x}</th>)}
             </tr></thead>
             <tbody>
               {slots.map((s) => (
                 <tr key={s}>
-                  <td className="px-2 py-1 border border-[#e5e5e5] whitespace-nowrap text-[#555]">{label(s)}</td>
+                  <td className="px-2 py-1 border border-[#EEF4F5] whitespace-nowrap text-[#0B4F5C]">{label(s)}</td>
                   {DIAS.map((_, dia) => {
                     const v = cells[`${dia}-${s}`];
                     const c = d.kind === 'PRICE' ? corDe(v) : null;
@@ -150,11 +150,11 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
                         onMouseDown={() => { setPainting(true); pinta(dia, s); }}
                         onMouseEnter={() => painting && pinta(dia, s)}
                         title={v ? (d.kind === 'PRICE' ? `Preço ${v}` : `-${v}%`) : 'Preço normal'}
-                        className="border border-[#e5e5e5] cursor-pointer text-center"
+                        className="border border-[#EEF4F5] cursor-pointer text-center"
                         style={{
                           minWidth: 74, height: 26,
-                          background: v ? (c ? c.bg : '#ffd479') : '#fff',
-                          color: c ? c.fg : '#333',
+                          background: v ? (c ? c.bg : '#CFE3E6') : '#FFFFFF',
+                          color: c ? c.fg : '#06333C',
                         }}>
                         {v ? (d.kind === 'PRICE' ? '' : `-${v}%`) : ''}
                       </td>
@@ -167,32 +167,32 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
         </div>
 
         {/* Paleta */}
-        <div className="w-[220px] flex-shrink-0 border-l border-[#d5d5d5] bg-[#fafafa]">
-          <div className="px-3 py-1.5 bg-[#e9e9e9] text-[12px] font-bold text-[#333] border-b border-[#d0d0d0]">
+        <div className="w-[220px] flex-shrink-0 border-l border-[#EEF4F5] bg-[#FFFFFF]">
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#06333C] border-b border-[#EEF4F5]">
             {d.kind === 'PRICE' ? 'Preço' : 'Desconto'}
           </div>
           {d.kind === 'PRICE' ? (
             NIVEIS.map((n) => (
               <button key={n.v} onClick={() => setBrush(n.v)}
-                className={`w-full py-3 text-[13px] font-semibold border-b border-white ${brush === n.v ? 'ring-2 ring-inset ring-[#18181B]' : ''}`}
+                className={`w-full py-3 text-[13px] font-semibold border-b border-white ${brush === n.v ? 'ring-2 ring-inset ring-[#062A31]' : ''}`}
                 style={{ background: n.bg, color: n.fg }}>
                 {n.label}
               </button>
             ))
           ) : (
             <div className="p-3 space-y-2">
-              <div className="text-[11px] text-[#666]">Percentagem a aplicar nas horas pintadas:</div>
+              <div className="text-[11px] text-[#5C8891]">Percentagem a aplicar nas horas pintadas:</div>
               <input type="number" value={brush} onChange={(e) => setBrush(Number(e.target.value))}
                 className={`${inp} w-full`} style={inputStyle} />
-              <button onClick={() => setBrush(0)} className="w-full py-2 bg-white border border-[#c8c8c8] text-[12px]">
+              <button onClick={() => setBrush(0)} className="w-full py-2 bg-white border border-[#CFE3E6] text-[12px]">
                 Limpar (preço normal)
               </button>
             </div>
           )}
 
-          <div className="p-3 text-[11px] text-[#666] border-t border-[#e5e5e5] mt-2">
+          <div className="p-3 text-[11px] text-[#5C8891] border-t border-[#EEF4F5] mt-2">
             Arraste sobre a grelha para pintar. <b>{Object.keys(cells).length}</b> hora(s) marcada(s).
-            <div className="mt-2 pt-2 border-t border-[#eee]">
+            <div className="mt-2 pt-2 border-t border-[#F7FAFA]">
               Os níveis 1..5 são os <b>preços da ficha do artigo</b>. Sem preço nesse nível,
               o artigo mantém o preço normal.
             </div>
@@ -201,8 +201,8 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

@@ -78,8 +78,8 @@ const RolesView: React.FC = () => {
           </>
         }
       >
-        <div className="p-4 bg-[#f0f0f0] h-full flex flex-col">
-          <div className="bg-white border border-[#a0a0a0] p-4 flex flex-col space-y-3">
+        <div className="p-4 bg-[#F7FAFA] h-full flex flex-col">
+          <div className="bg-white border border-[#7FA9B1] p-4 flex flex-col space-y-3">
             <div className="flex space-x-4">
               <div className="w-1/3">
                 <label className="block text-gray-700 font-bold mb-1 text-[11px]">Código</label>
@@ -87,7 +87,7 @@ const RolesView: React.FC = () => {
                   type="text" 
                   value={formData.code || ''}
                   onChange={e => setFormData({...formData, code: e.target.value})}
-                  className="w-full border border-[#a0a0a0] px-2 py-1 text-[11px] focus:outline-none"
+                  className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] focus:outline-none"
                   disabled={mode === 'edit'}
                 />
               </div>
@@ -97,7 +97,7 @@ const RolesView: React.FC = () => {
                   type="text" 
                   value={formData.name || ''}
                   onChange={e => setFormData({...formData, name: e.target.value})}
-                  className="w-full border border-[#a0a0a0] px-2 py-1 text-[11px] focus:outline-none"
+                  className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] focus:outline-none"
                 />
               </div>
             </div>
@@ -108,7 +108,7 @@ const RolesView: React.FC = () => {
                 <select 
                   value={formData.category || ''}
                   onChange={e => setFormData({...formData, category: e.target.value})}
-                  className="w-full border border-[#a0a0a0] px-2 py-1 text-[11px] bg-white focus:outline-none"
+                  className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] bg-white focus:outline-none"
                 >
                   <option value="Operação">Operação</option>
                   <option value="Gestão">Gestão</option>
@@ -121,7 +121,7 @@ const RolesView: React.FC = () => {
                 <select 
                   value={formData.status || ''}
                   onChange={e => setFormData({...formData, status: e.target.value as any})}
-                  className="w-full border border-[#a0a0a0] px-2 py-1 text-[11px] bg-white focus:outline-none"
+                  className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] bg-white focus:outline-none"
                 >
                   <option value="Active">Ativo</option>
                   <option value="Draft">Rascunho</option>
@@ -145,7 +145,7 @@ const RolesView: React.FC = () => {
               <textarea 
                 value={formData.description || ''}
                 onChange={e => setFormData({...formData, description: e.target.value})}
-                className="w-full border border-[#a0a0a0] px-2 py-1 text-[11px] h-16 focus:outline-none"
+                className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] h-16 focus:outline-none"
               />
             </div>
           </div>

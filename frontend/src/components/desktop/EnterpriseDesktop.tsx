@@ -25,8 +25,8 @@ function HotelBackdrop({ tint, accent, glow }: { tint: string; accent: string; g
       <div className="absolute rounded-full" style={{ width: 480, height: 480, left: '30%', bottom: '-22%', background: tint, opacity: 0.28, filter: 'blur(140px)' }} />
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMax slice" style={{ opacity: 0.16 }}>
         <path d="M470 600 V330 h130 V190 h60 V180 h140 V190 h60 V300 h120 V600"
-          fill="none" stroke="#ffffff" strokeWidth="2" strokeLinejoin="round" />
-        <text x="700" y="160" fontSize="15" fill="#ffffff" textAnchor="middle" fontFamily="Georgia" letterSpacing="3">HOTEL</text>
+          fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinejoin="round" />
+        <text x="700" y="160" fontSize="15" fill="#FFFFFF" textAnchor="middle" fontFamily="Georgia" letterSpacing="3">HOTEL</text>
       </svg>
     </div>
   );
@@ -236,7 +236,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       {/* ===== BARRA SUPERIOR ===== */}
       {/* A MESMA barra do POS: mesmo fundo, mesma altura, mesma tipografia. Ter duas
           barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
-      <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-[#18181B]"
+      <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-[#062A31]"
         style={{ background: accentGradient(), fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
         {/* Logo = seletor de módulos. O logótipo próprio da instalação (Empresa →
             Imagem do Hotel) substitui o de fábrica automaticamente; sem ele, mostra-se
@@ -245,13 +245,13 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           title="Trocar de módulo"
           className={`flex items-center gap-2 px-2.5 py-1 pr-3.5 mr-2 leading-none rounded-full transition-colors ${modMenu ? 'bg-white/20' : 'hover:bg-white/10'}`}>
           <img src={logoUrl || '/brand-logo.png'} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" />
-          <span className="text-[13px] text-[#18181B]">▾</span>
+          <span className="text-[13px] text-[#062A31]">▾</span>
         </button>
         {modMenu && (
-          <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#f0f0f0] border border-[#333] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#F7FAFA] border border-[#06333C] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
             <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: ws.color }}>{erpName} — Módulos</div>
             {licensed.map((m) => (
-              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] hover:bg-[#dbe8ff] text-left border-b border-[#e0e0e0] last:border-b-0">
+              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] hover:bg-[#F7FAFA] text-left border-b border-[#EEF4F5] last:border-b-0">
                 <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ background: `radial-gradient(circle at 30% 30%, ${m.glow}, ${m.color})`, boxShadow: `0 0 6px ${m.glow}` }} />
                 <span className="font-bold" style={{ color: m.color }}>{m.name}</span>
                 {m.key === wsKey && <span className="ml-auto text-[11px] text-gray-500">● ativo</span>}
@@ -270,11 +270,11 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             </button>
             {topMenu === m && (
               <div className="absolute left-0 top-full min-w-[260px] py-1 shadow-2xl z-[120]"
-                style={{ background: '#18181B', border: '1px solid #444' }} onClick={(e) => e.stopPropagation()}>
+                style={{ background: '#062A31', border: '1px solid #0B4F5C' }} onClick={(e) => e.stopPropagation()}>
                 {MENUS[m].map((it, i) => (
                   <button key={i} onClick={() => it.act ? (it.act(), setTopMenu(null)) : open(it.screen, it.label)}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3d6ea5]">
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#c9a400]" />{it.label}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891]">
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#0B4F5C]" />{it.label}
                   </button>
                 ))}
               </div>
@@ -283,7 +283,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
         ))}
 
         <div className="ml-auto flex items-center gap-3 text-[13px]">
-          <span className="text-[#e05555] font-semibold">
+          <span className="text-[#B0392B] font-semibold">
             {clock.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
           </span>
           <span className="opacity-30">|</span>
@@ -293,12 +293,12 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
               {user?.username || 'operador'}
             </button>
             {userMenu && (
-              <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#f0f0f0] border border-[#333] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
-                <div className="px-3 py-2 text-[11px] font-bold text-[#18181B]" style={{ background: accentGradient() }}>
+              <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#F7FAFA] border border-[#06333C] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
+                <div className="px-3 py-2 text-[11px] font-bold text-[#062A31]" style={{ background: accentGradient() }}>
                   {user?.username || 'operador'}
                 </div>
                 <button onClick={() => { setUserMenu(false); logout(); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] text-left hover:bg-[#dbe8ff] text-[#a01818] font-semibold">
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] text-left hover:bg-[#F7FAFA] text-[#B0392B] font-semibold">
                   <LogOut size={14} /> Terminar sessão
                 </button>
               </div>
@@ -351,7 +351,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             {[['Licença', ShieldCheck, 'ativa'], ['Servidor', Server, 'online'], ['VPN', Wifi, 'ligada']].map(([k, Icon, v]: any) => (
               <div key={k as string} className="flex items-center justify-between">
                 <span className="text-white/60 flex items-center gap-1.5"><Icon size={13} strokeWidth={2} className="text-white/50" />{k}</span>
-                <span className="text-[#9dffb0] font-medium">{v}</span></div>
+                <span className="text-[#EEF4F5] font-medium">{v}</span></div>
             ))}
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
       {/* ===== BARRA DE TAREFAS ===== */}
       <div className="h-[40px] flex items-center px-1.5 gap-1 flex-shrink-0 relative z-[100]"
-        style={{ background: `linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.22)), linear-gradient(to bottom, ${ws.colorDark}, #070f18)`, borderTop: `2px solid ${ws.accent}`, boxShadow: `0 -3px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)` }}>
+        style={{ background: `linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.22)), linear-gradient(to bottom, ${ws.colorDark}, #062A31)`, borderTop: `2px solid ${ws.accent}`, boxShadow: `0 -3px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)` }}>
         <button onClick={(e) => { e.stopPropagation(); setStart((s) => !s); }} className="flex items-center gap-1.5 px-3.5 h-[30px] rounded-full font-bold text-white text-[13px] transition-colors"
           style={{ background: start ? `${ws.accent}55` : `${ws.glow}26`, border: `1px solid ${ws.accent}66` }}>
           <span className="text-[15px]">⊞</span> Iniciar
@@ -368,13 +368,13 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
         <span className="text-white/70 text-[12px] px-2">{ws.name}</span>
         <div className="flex-1" />
         <div className="px-3 text-white text-[12px] font-semibold flex items-center gap-1.5" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-          <span className="w-2 h-2 rounded-full bg-[#7CFC98]" /> {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+          <span className="w-2 h-2 rounded-full bg-[#CFE3E6]" /> {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
 
       {/* ===== MENU INICIAR (todas as apps do módulo) ===== */}
       {start && (
-        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-[#f0f0f0] border border-[#333] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-[#F7FAFA] border border-[#06333C] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="px-4 py-3.5 text-white" style={{ background: `linear-gradient(to bottom, ${ws.accent}, ${ws.color})` }}>
             <div className="font-black text-[15px]">{erpName}</div>
             <div className="text-[11px] text-white/80">{user?.username} · {ws.name}</div>
@@ -383,18 +383,18 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             <div className="text-[10px] uppercase text-gray-500 px-1 py-1 font-semibold">Aplicações — {ws.name}</div>
             <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-auto p-0.5">
               {ws.icons.map((ic, i) => (
-                <button key={i} onClick={() => openIcon(ic)} className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-[11px] hover:bg-[#dbe8ff] text-center rounded-xl transition-colors">
+                <button key={i} onClick={() => openIcon(ic)} className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-[11px] hover:bg-[#F7FAFA] text-center rounded-xl transition-colors">
                   <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: `linear-gradient(155deg, ${ws.accent}, ${ws.color})` }}>
                     <ClassicIcon name={ic.icon} size={18} />
                   </span>
-                  <span className="leading-tight text-[#333]">{ic.label}</span>
+                  <span className="leading-tight text-[#06333C]">{ic.label}</span>
                 </button>
               ))}
             </div>
           </div>
-          <div className="border-t border-[#d0d0d0] flex">
-            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2.5 text-[12px] hover:bg-[#e4e4e4] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
-            <button onClick={logout} className="px-4 py-2.5 text-[12px] hover:bg-[#c0392b] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
+          <div className="border-t border-[#EEF4F5] flex">
+            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2.5 text-[12px] hover:bg-[#EEF4F5] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
+            <button onClick={logout} className="px-4 py-2.5 text-[12px] hover:bg-[#B0392B] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
           </div>
         </div>
       )}

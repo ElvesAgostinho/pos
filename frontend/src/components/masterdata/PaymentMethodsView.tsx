@@ -13,7 +13,7 @@ const TYPES: { v: string; l: string }[] = [
   { v: 'CREDIT', l: 'Crédito Cliente' }, { v: 'MIXED', l: 'Misto' }, { v: 'OTHER', l: 'Outro' },
 ];
 const typeLabel = (v: string) => TYPES.find((t) => t.v === v)?.l || v;
-const inputCls = 'flex-1 border border-[#a0a0a0] p-1 focus:outline-none bg-white';
+const inputCls = 'flex-1 border border-[#7FA9B1] p-1 focus:outline-none bg-white';
 
 export default function PaymentMethodsView() {
   const { data: methods = [] } = useMdPaymentMethods();
@@ -35,9 +35,9 @@ export default function PaymentMethodsView() {
     return (
       <ClassicWindow title="Novo Método de Pagamento" icon={<CreditCard size={14} className="text-gray-300" />}
         footer={<><ClassicButton icon={Save} label="Gravar" onClick={save} /><ClassicButton label="Cancelar" onClick={() => setMode('list')} /></>}>
-        <div className="p-4 bg-[#f0f0f0] h-full overflow-y-auto text-[11px]">
-          <div className="border border-[#a0a0a0] bg-white p-2 max-w-2xl">
-            <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Método de Pagamento (Master Data)</h3>
+        <div className="p-4 bg-[#F7FAFA] h-full overflow-y-auto text-[11px]">
+          <div className="border border-[#7FA9B1] bg-white p-2 max-w-2xl">
+            <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Método de Pagamento (Master Data)</h3>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">
               <div className="flex items-center"><label className="w-28 font-bold">Código *</label><input value={form.code || ''} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className={inputCls} /></div>
               <div className="flex items-center"><label className="w-28 font-bold">Nome *</label><input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></div>
@@ -46,10 +46,10 @@ export default function PaymentMethodsView() {
                   {TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
                 </select></div>
               <div className="flex items-center"><label className="w-28 font-bold">Moeda</label><input value={form.currency || ''} onChange={(e) => setForm({ ...form, currency: e.target.value })} className={inputCls} /></div>
-              <div className="flex items-center"><label className="w-28 font-bold">Taxa/Comissão %</label><input type="number" value={form.fee_percentage ?? 0} onChange={(e) => setForm({ ...form, fee_percentage: e.target.value })} className="w-24 border border-[#a0a0a0] p-1" /></div>
-              <div className="flex items-center"><label className="w-28 font-bold">Ordem</label><input type="number" value={form.sort_order ?? 0} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} className="w-24 border border-[#a0a0a0] p-1" /></div>
+              <div className="flex items-center"><label className="w-28 font-bold">Taxa/Comissão %</label><input type="number" value={form.fee_percentage ?? 0} onChange={(e) => setForm({ ...form, fee_percentage: e.target.value })} className="w-24 border border-[#7FA9B1] p-1" /></div>
+              <div className="flex items-center"><label className="w-28 font-bold">Ordem</label><input type="number" value={form.sort_order ?? 0} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} className="w-24 border border-[#7FA9B1] p-1" /></div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 border-t border-[#e0e0e0] pt-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 border-t border-[#EEF4F5] pt-2">
               {chk('allows_change', 'Permite troco')}
               {chk('allows_refund', 'Permite estorno')}
               {chk('allows_partial', 'Pagamento parcial')}
@@ -84,7 +84,7 @@ export default function PaymentMethodsView() {
           { header: 'Ativo', width: '8%',
             accessor: (r: MdPaymentMethod) => <GridToggle endpoint="mdm/payment-methods" id={r.id} field="is_active"
               value={!!r.is_active} invalidate="masterdata" title="Desligar tira este meio de pagamento do POS" /> },
-          { header: '', accessor: (r: MdPaymentMethod) => <button onClick={() => del.mutate(r.id!)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '8%' },
+          { header: '', accessor: (r: MdPaymentMethod) => <button onClick={() => del.mutate(r.id!)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '8%' },
         ]}
       />
     </ClassicWindow>

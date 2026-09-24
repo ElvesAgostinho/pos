@@ -11,7 +11,7 @@ import { GRN_STATUS } from '../../api/procurement';
 import type { GoodsReceipt } from '../../api/procurement';
 
 const fmt = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const inputCls = 'flex-1 border border-[#a0a0a0] p-1 focus:outline-none bg-white';
+const inputCls = 'flex-1 border border-[#7FA9B1] p-1 focus:outline-none bg-white';
 
 function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void }) {
   const [currentId, setCurrentId] = useState<number | null>(grnId);
@@ -51,15 +51,15 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
             {!isNew && !validated && (
               <ClassicButton icon={CheckCircle} label="Validar Receção" onClick={() => validate.mutate(currentId!)} />
             )}
-            {validated && <span className="text-green-700 font-bold text-[11px] flex items-center gap-1"><Check size={12} strokeWidth={3} /> Validada — performance do fornecedor atualizada</span>}
+            {validated && <span className="text-[#0B4F5C] font-bold text-[11px] flex items-center gap-1"><Check size={12} strokeWidth={3} /> Validada — performance do fornecedor atualizada</span>}
           </div>
           <ClassicButton icon={ArrowLeft} label="Voltar à Lista" onClick={onBack} />
         </>
       }
     >
-      <div className="p-4 bg-[#f0f0f0] h-full overflow-y-auto text-[11px] space-y-4">
-        <div className="border border-[#a0a0a0] bg-white p-2">
-          <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Cabeçalho</h3>
+      <div className="p-4 bg-[#F7FAFA] h-full overflow-y-auto text-[11px] space-y-4">
+        <div className="border border-[#7FA9B1] bg-white p-2">
+          <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Cabeçalho</h3>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">
             <div className="flex items-center"><label className="w-32 font-bold">Nº Receção *</label>
               <input value={form.receipt_number || ''} onChange={(e) => setForm({ ...form, receipt_number: e.target.value })} disabled={!isNew} className={inputCls} /></div>
@@ -75,22 +75,22 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
         </div>
 
         {isNew ? (
-          <div className="border border-[#a0a0a0] bg-[#fffbe6] p-3 text-gray-700">Crie a receção para lançar as linhas recebidas. (Nota: escolher uma PO herda fornecedor e armazém.)</div>
+          <div className="border border-[#7FA9B1] bg-[#F7FAFA] p-3 text-gray-700">Crie a receção para lançar as linhas recebidas. (Nota: escolher uma PO herda fornecedor e armazém.)</div>
         ) : (
-          <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Linhas Recebidas</h3>
+          <div className="border border-[#7FA9B1] bg-white p-2">
+            <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Linhas Recebidas</h3>
             {!validated && (
-              <div className="flex flex-wrap items-end gap-2 mb-3 bg-[#f8f8f8] p-2 border border-[#e0e0e0]">
-                <select value={line.item} onChange={(e) => setLine({ ...line, item: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+              <div className="flex flex-wrap items-end gap-2 mb-3 bg-[#FFFFFF] p-2 border border-[#EEF4F5]">
+                <select value={line.item} onChange={(e) => setLine({ ...line, item: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
                   <option value="">— artigo —</option>
                   {items.map((i: any) => <option key={i.id} value={i.id}>[{i.code}] {i.name}</option>)}
                 </select>
-                <input placeholder="Qtd recebida" type="number" value={line.quantity_received} onChange={(e) => setLine({ ...line, quantity_received: e.target.value })} className="border border-[#a0a0a0] p-1 w-24" />
-                <select value={line.uom} onChange={(e) => setLine({ ...line, uom: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+                <input placeholder="Qtd recebida" type="number" value={line.quantity_received} onChange={(e) => setLine({ ...line, quantity_received: e.target.value })} className="border border-[#7FA9B1] p-1 w-24" />
+                <select value={line.uom} onChange={(e) => setLine({ ...line, uom: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
                   <option value="">un</option>
                   {uoms.map((u: any) => <option key={u.id} value={u.id}>{u.code}</option>)}
                 </select>
-                <input placeholder="Custo unit." type="number" value={line.unit_cost} onChange={(e) => setLine({ ...line, unit_cost: e.target.value })} className="border border-[#a0a0a0] p-1 w-24" />
+                <input placeholder="Custo unit." type="number" value={line.unit_cost} onChange={(e) => setLine({ ...line, unit_cost: e.target.value })} className="border border-[#7FA9B1] p-1 w-24" />
                 <ClassicButton icon={Plus} label="Adicionar" onClick={addComponent} />
               </div>
             )}
@@ -102,7 +102,7 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
                 { header: 'Artigo', accessor: 'item_name', width: '40%' },
                 { header: 'Qtd Recebida', accessor: (r: any) => `${fmt(r.quantity_received)} ${r.uom_code || ''}`, width: '22%' },
                 { header: 'Custo', accessor: (r: any) => fmt(r.unit_cost), width: '18%' },
-                { header: '', accessor: (r: any) => (!validated ? <button onClick={() => delLine.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button> : null), width: '6%' },
+                { header: '', accessor: (r: any) => (!validated ? <button onClick={() => delLine.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button> : null), width: '6%' },
               ]}
             />
           </div>
@@ -138,8 +138,8 @@ export default function GoodsReceiptsView() {
           { header: 'Nº Receção', accessor: 'receipt_number', width: '18%' },
           { header: 'Fornecedor', accessor: 'supplier_name', width: '28%' },
           { header: 'PO', accessor: (r: any) => r.po_number || '—', width: '16%' },
-          { header: 'Estado', accessor: (r: any) => <span className={r.status === 'Validated' ? 'text-green-700 font-bold' : ''}>{GRN_STATUS[r.status] || r.status}</span>, width: '20%' },
-          { header: '', accessor: (r: any) => <button onClick={(e) => { e.stopPropagation(); if (confirm(`Apagar a receção ${r.receipt_number}?`)) del.mutate(r.id); }} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '6%' },
+          { header: 'Estado', accessor: (r: any) => <span className={r.status === 'Validated' ? 'text-[#0B4F5C] font-bold' : ''}>{GRN_STATUS[r.status] || r.status}</span>, width: '20%' },
+          { header: '', accessor: (r: any) => <button onClick={(e) => { e.stopPropagation(); if (confirm(`Apagar a receção ${r.receipt_number}?`)) del.mutate(r.id); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
         ]}
       />
     </ClassicWindow>

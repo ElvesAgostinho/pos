@@ -177,7 +177,7 @@ export const SECTIONS = [
 export function Field({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
     <label className="flex items-center gap-2 text-[12px]">
-      <span className={`text-[#333] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
+      <span className={`text-[#06333C] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
@@ -187,7 +187,7 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
   { value: any; onChange: (v: string) => void; options: { value: any; label: string }[]; all?: boolean; allLabel?: string }) {
   return (
     <select value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-      className="border border-[#8a95a3] px-2 py-1 text-[12px] bg-white min-w-[170px] flex-1"
+      className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white min-w-[170px] flex-1"
       style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.10)' }}>
       {all && <option value="">{allLabel}</option>}
       {options.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
@@ -204,12 +204,12 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
       {actions.map((a, i) => (
         <div key={a.label} className="flex items-center">
           <button onClick={a.onClick} disabled={a.disabled}
-            className="flex items-center gap-1.5 px-2 py-1 text-[12px] text-[#333] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#adc6e0] hover:bg-[#e6f0fa] rounded-[2px]">
+            className="flex items-center gap-1.5 px-2 py-1 text-[12px] text-[#06333C] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">
             <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
-              style={{ color: a.disabled ? '#aaa' : a.color }}><Glyph icon={a.icon} size={15} /></span>
+              style={{ color: a.disabled ? '#7FA9B1' : a.color }}><Glyph icon={a.icon} size={15} /></span>
             {a.label}
           </button>
-          {i < actions.length - 1 && <span className="w-px h-5 bg-[#d5d5d5]" />}
+          {i < actions.length - 1 && <span className="w-px h-5 bg-[#EEF4F5]" />}
         </div>
       ))}
       <div className="ml-auto">{right}</div>
@@ -221,7 +221,7 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
 export function Tab({ active, onClick, children }: any) {
   return (
     <button onClick={onClick}
-      className={`px-3 py-1.5 text-[13px] font-semibold border-b-[3px] ${active ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+      className={`px-3 py-1.5 text-[13px] font-semibold border-b-[3px] ${active ? 'border-[#062A31] text-[#062A31] bg-white' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
       {children}
     </button>
   );
@@ -237,7 +237,7 @@ export function Box({ title, children, className = '' }: { title?: string; child
     <fieldset className={`px-3 pb-3 pt-1.5 min-w-0 overflow-hidden ${className}`}
       style={{
         border: `4px groove ${TOKENS.line}`,
-        background: '#fafbfc',
+        background: '#FFFFFF',
         boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.06)',
       }}>
       {title && (
@@ -260,7 +260,7 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-[#18181B] font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default ${className}`}
+      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-[#062A31] font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default ${className}`}
       style={{ background: accentGradient(), border: `3px outset ${TOKENS.accent}` }}>
       <Glyph icon={icon} size={22} />
       <span className="text-[13px]">{label}</span>
@@ -272,13 +272,13 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 export function Row({ label, children, w = 'w-[120px]' }: { label: string; children: ReactNode; w?: string }) {
   return (
     <label className="flex items-center gap-2 text-[12px] py-[3px] min-w-0">
-      <span className={`text-[#333] ${w} flex-shrink-0`}>{label}</span>
+      <span className={`text-[#06333C] ${w} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
 }
 
-export const inputCls = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white flex-1 min-w-0';
+export const inputCls = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white flex-1 min-w-0';
 // Campo "afundado" (sunken) clássico — tinha um valor mais fraco (0.10) do que a
 // regra global em index.css (0.16 + realce de baixo), e como é aplicado inline
 // (style={inputStyle}) GANHA da regra global em quase todos os formulários do

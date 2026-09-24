@@ -5,8 +5,8 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle } from './kit';
 import TableMapDesigner from './TableMapDesigner';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 
 // Parâmetros do SETOR (os do terminal são outros). O número é a referência do suporte.
 const SECTOR_PARAMS = [
@@ -78,52 +78,52 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo setor' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo setor' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Identificação */}
-        <div className="w-[46%] flex-shrink-0 p-4 space-y-2 border-r border-[#e0e0e0] overflow-auto">
+        <div className="w-[46%] flex-shrink-0 p-4 space-y-2 border-r border-[#EEF4F5] overflow-auto">
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
+            <span className="w-[90px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[280px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#333]">Descrição:<span className="text-[#a01818]">*</span></span>
+            <span className="w-[90px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inp} flex-1`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#333]">Tipo Preço:</span>
+            <span className="w-[90px] text-[#06333C]">Tipo Preço:</span>
             <input type="number" min={1} max={6} value={d.price_level ?? 1} onChange={(e) => set('price_level', Number(e.target.value))}
               className={`${inp} w-[280px]`} style={inputStyle} />
-            <span className="text-[11px] text-[#666]">nível de preço do artigo</span>
+            <span className="text-[11px] text-[#5C8891]">nível de preço do artigo</span>
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#333]">Happy Hour:</span>
+            <span className="w-[90px] text-[#06333C]">Happy Hour:</span>
             <select value={d.happy_hour || ''} onChange={(e) => set('happy_hour', Number(e.target.value) || null)} className={`${inp} w-[280px]`} style={inputStyle}>
               <option value="">Nenhum</option>
               {promos.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#333]">Armazém:</span>
+            <span className="w-[90px] text-[#06333C]">Armazém:</span>
             <select value={d.warehouse || ''} onChange={(e) => set('warehouse', Number(e.target.value) || null)} className={`${inp} w-[280px]`} style={inputStyle}>
               <option value="">Nenhum</option>
               {warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
-            <span className="text-[11px] text-[#666]">de onde sai o stock</span>
+            <span className="text-[11px] text-[#5C8891]">de onde sai o stock</span>
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#333]">Outlet:</span>
+            <span className="w-[90px] text-[#06333C]">Outlet:</span>
             <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)} className={`${inp} w-[280px]`} style={inputStyle}>
               <option value="">—</option>
               {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
             </select>
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[90px] text-[#333]">Lugares:</span>
+            <span className="w-[90px] text-[#06333C]">Lugares:</span>
             <input type="number" value={d.seats ?? 0} onChange={(e) => set('seats', Number(e.target.value))} className={`${inp} w-[280px]`} style={inputStyle} />
           </label>
         </div>
@@ -132,14 +132,14 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
         <div className="flex-1 overflow-auto">
           {groups.map((g) => (
             <div key={g}>
-              <div className="px-3 py-1.5 bg-[#e9e9e9] text-[13px] font-bold text-[#333] border-y border-[#d0d0d0]">{g}</div>
+              <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#06333C] border-y border-[#EEF4F5]">{g}</div>
               <table className="w-full text-[12px] border-collapse">
                 <tbody>
                   {SECTOR_PARAMS.filter((p) => p.g === g).map((p) => {
                     const v = (d.params || {})[p.n] ?? '';
                     return (
-                      <tr key={p.n} className="border-b border-[#eee] hover:bg-[#f7f9fb]">
-                        <td className="px-3 py-1.5 w-[55%]"><span className="text-[#666]">({p.n})</span> {p.name}</td>
+                      <tr key={p.n} className="border-b border-[#F7FAFA] hover:bg-[#FFFFFF]">
+                        <td className="px-3 py-1.5 w-[55%]"><span className="text-[#5C8891]">({p.n})</span> {p.name}</td>
                         <td className="px-2 py-1">
                           {p.kind === 'CHOICE' ? (
                             <select value={v} onChange={(e) => setP(p.n, e.target.value)} className={cell}>
@@ -175,10 +175,10 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
       )}
 
       <Toolbar actions={[
-        { icon: '▦', label: 'Mesas', color: '#4caf50', disabled: isNew, onClick: () => setMap('design') },
-        { icon: '▦', label: 'Mesas - Online', color: '#29b6f6', disabled: isNew, onClick: () => setMap('online') },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '▦', label: 'Mesas', color: '#5C8891', disabled: isNew, onClick: () => setMap('design') },
+        { icon: '▦', label: 'Mesas - Online', color: '#7FA9B1', disabled: isNew, onClick: () => setMap('online') },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

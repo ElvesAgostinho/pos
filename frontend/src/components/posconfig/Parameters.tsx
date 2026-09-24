@@ -5,7 +5,7 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Glyph } from './kit';
 import { TOKENS } from '../../config/theme';
 
-const cell = 'w-full border border-[#8a95a3] px-1.5 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#7FA9B1] px-1.5 py-1 text-[12px] bg-white';
 
 /**
  * PARÂMETROS DO SISTEMA — é aqui que se liga e desliga o comportamento do POS.
@@ -77,30 +77,30 @@ export default function Parameters({ group }: { group?: string } = {}) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#d0d0d0] bg-[#f7f7f7] text-[13px]">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#EEF4F5] bg-[#F7FAFA] text-[13px]">
         <span>Pesquisar:</span>
-        <div className="flex items-center border border-[#8a95a3] bg-white" style={inputStyle}>
+        <div className="flex items-center border border-[#7FA9B1] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="nome ou número (ex.: 8128)"
             className="px-2 py-1 text-[12px] outline-none w-[280px]" />
-          <span className="px-2 text-[#666]"><Glyph icon="🔍" size={13} /></span>
+          <span className="px-2 text-[#5C8891]"><Glyph icon="🔍" size={13} /></span>
         </div>
-        <span className="ml-auto text-[11px] text-[#666]">
-          {total} parâmetros · {dirty.size > 0 && <b className="text-[#a01818]">{dirty.size} por gravar</b>}
+        <span className="ml-auto text-[11px] text-[#5C8891]">
+          {total} parâmetros · {dirty.size > 0 && <b className="text-[#B0392B]">{dirty.size} por gravar</b>}
         </span>
       </div>
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0 z-10">
-            <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+            <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
               <th className="text-left font-semibold px-3 py-1.5 border-b-2" style={{ borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>Descrição</th>
-              <th className="text-left font-semibold px-3 py-1.5 border-b-2 border-l w-[38%]" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>Valor</th>
+              <th className="text-left font-semibold px-3 py-1.5 border-b-2 border-l w-[38%]" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#EEF4F5', color: TOKENS.selectedText }}>Valor</th>
             </tr>
           </thead>
           <tbody>
             {shown.map((g: any) => (
               <Fragment key={g.group}>
-                <tr style={{ background: 'linear-gradient(to bottom, #f2f4f6 0%, #e6e9ed 100%)' }}>
+                <tr style={{ background: 'linear-gradient(to bottom, #F7FAFA 0%, #F7FAFA 100%)' }}>
                   <td colSpan={2} className="px-3 py-1.5 font-bold border-y" style={{ color: TOKENS.selectedText, borderColor: TOKENS.border }}>{g.group}</td>
                 </tr>
                 {g.params.map((p: any, i: number) => {
@@ -108,12 +108,12 @@ export default function Parameters({ group }: { group?: string } = {}) {
                   const changed = dirty.has(p.number);
                   return (
                     <tr key={p.number} className="border-b"
-                      style={{ borderColor: '#eef0f2', background: changed ? TOKENS.warningBg : i % 2 ? '#f7f8fa' : TOKENS.surface }}
+                      style={{ borderColor: '#F7FAFA', background: changed ? TOKENS.warningBg : i % 2 ? '#FFFFFF' : TOKENS.surface }}
                       onMouseEnter={(e) => { if (!changed) e.currentTarget.style.background = TOKENS.hover; }}
-                      onMouseLeave={(e) => { if (!changed) e.currentTarget.style.background = i % 2 ? '#f7f8fa' : TOKENS.surface; }}>
+                      onMouseLeave={(e) => { if (!changed) e.currentTarget.style.background = i % 2 ? '#FFFFFF' : TOKENS.surface; }}>
                       <td className="px-3 py-1.5" title={p.help_text}>
-                        <span className="text-[#666]">({p.number})</span> {p.name}
-                        {p.help_text && <div className="text-[10px] text-[#888] mt-0.5">{p.help_text}</div>}
+                        <span className="text-[#5C8891]">({p.number})</span> {p.name}
+                        {p.help_text && <div className="text-[10px] text-[#5C8891] mt-0.5">{p.help_text}</div>}
                       </td>
                       <td className="px-3 py-1">
                         {p.kind === 'BOOL' ? (
@@ -134,7 +134,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
               </Fragment>
             ))}
             {shown.length === 0 && (
-              <tr><td colSpan={2} className="text-center text-[#999] py-10">Nenhum parâmetro corresponde à pesquisa.</td></tr>
+              <tr><td colSpan={2} className="text-center text-[#7FA9B1] py-10">Nenhum parâmetro corresponde à pesquisa.</td></tr>
             )}
           </tbody>
         </table>
@@ -142,9 +142,9 @@ export default function Parameters({ group }: { group?: string } = {}) {
 
       <Toolbar
         actions={[
-          { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${dirty.size ? ` (${dirty.size})` : ''}`, color: '#1f7a34', disabled: !dirty.size, onClick: () => save.mutate() },
+          { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${dirty.size ? ` (${dirty.size})` : ''}`, color: '#0B4F5C', disabled: !dirty.size, onClick: () => save.mutate() },
         ]}
-        right={<span className="text-[11px] text-[#666] pr-2">
+        right={<span className="text-[11px] text-[#5C8891] pr-2">
           Os parâmetros são lidos pelo sistema em tempo real — entram em vigor em segundos.
         </span>}
       />

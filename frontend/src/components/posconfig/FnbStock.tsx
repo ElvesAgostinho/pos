@@ -4,9 +4,9 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[130px]', children }: any) => (
-  <span className={`text-[12px] text-[#333] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#06333C] ${w} flex-shrink-0`}>{children}</span>
 );
 
 function useList(ep: string, key: string, params?: any) {
@@ -85,26 +85,26 @@ export default function FnbStock() {
   if (agrupar) vista.forEach((r) => { (grupos[r.warehouse] ||= []).push(r); });
 
   const Linha = ({ r }: any) => (
-    <tr className={`border-b border-[#eee] ${r.below_min ? 'bg-[#fff7e6]' : 'hover:bg-[#f5f9ff]'}`}>
-      <td className="px-2 py-1 font-mono text-[#666]">{r.code}</td>
+    <tr className={`border-b border-[#F7FAFA] ${r.below_min ? 'bg-[#F7FAFA]' : 'hover:bg-[#FFFFFF]'}`}>
+      <td className="px-2 py-1 font-mono text-[#5C8891]">{r.code}</td>
       <td className="px-2 py-1 font-semibold">
         {r.name}
         {Number(r.quantity) < 0 && (
-          <span className="ml-2 text-[11px] text-[#a01818] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
+          <span className="ml-2 text-[11px] text-[#B0392B] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
         )}
       </td>
       {!agrupar && <td className="px-2 py-1">{r.warehouse}</td>}
       <td className="px-2 py-1 text-right font-bold"
-        style={{ color: Number(r.quantity) < 0 ? '#a01818' : undefined }}>{r.quantity}</td>
-      <td className="px-2 py-1 text-right text-[#666]">{money(r.average_cost)}</td>
+        style={{ color: Number(r.quantity) < 0 ? '#B0392B' : undefined }}>{r.quantity}</td>
+      <td className="px-2 py-1 text-right text-[#5C8891]">{money(r.average_cost)}</td>
       <td className="px-2 py-1 text-right font-bold">{money(r.value)}</td>
-      <td className="px-2 py-1 text-right text-[#666]">{r.min_stock}</td>
+      <td className="px-2 py-1 text-right text-[#5C8891]">{r.min_stock}</td>
     </tr>
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f0f0]">
-      <div className="flex gap-6 p-3 bg-white border-b border-[#d0d0d0]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
+      <div className="flex gap-6 p-3 bg-white border-b border-[#EEF4F5]">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <L>Família:</L>
@@ -154,17 +154,17 @@ export default function FnbStock() {
 
       <div className="flex-1 overflow-auto bg-white">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
+          <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
             {['Código', 'Artigo', ...(agrupar ? [] : ['Armazém']), 'Stock Qtd.', 'Custo médio', 'Valor', 'Mínimo'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0] border-r border-r-[#e6e6e6]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5] border-r border-r-[#F7FAFA]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {agrupar
               ? Object.entries(grupos).map(([arm, lista]) => (
                 <>
-                  <tr key={arm} className="bg-[#e4e4e4]">
-                    <td colSpan={6} className="px-2 py-1 font-bold text-[#333]">
+                  <tr key={arm} className="bg-[#EEF4F5]">
+                    <td colSpan={6} className="px-2 py-1 font-bold text-[#06333C]">
                       {arm} — {money(lista.reduce((s, r) => s + Number(r.value), 0))} Kz
                     </td>
                   </tr>
@@ -173,13 +173,13 @@ export default function FnbStock() {
               ))
               : vista.map((r) => <Linha key={r.id} r={r} />)}
             {vista.length === 0 && (
-              <tr><td colSpan={7} className="text-center text-[#999] py-12">Não foram encontrados dados.</td></tr>
+              <tr><td colSpan={7} className="text-center text-[#7FA9B1] py-12">Não foram encontrados dados.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f4f4f4] border-t border-[#d8d8d8] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7FAFA] border-t border-[#EEF4F5] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -196,12 +196,12 @@ export default function FnbStock() {
 
       <Toolbar actions={[
         {
-          label: recalcular.isPending ? 'A recalcular…' : 'Recalcular o stock', icon: '⟳', color: '#1a73c8',
+          label: recalcular.isPending ? 'A recalcular…' : 'Recalcular o stock', icon: '⟳', color: '#5C8891',
           onClick: () => recalcular.mutate(),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#1f7a34', onClick: exportar },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#0B4F5C', onClick: exportar },
       ]} right={
-        <span className="text-[11px] text-[#666]">
+        <span className="text-[11px] text-[#5C8891]">
           O valor é a quantidade ao custo médio — é o dinheiro parado dentro do armazém.
         </span>
       } />

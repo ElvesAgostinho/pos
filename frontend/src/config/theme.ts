@@ -18,44 +18,47 @@ import { getAppearance } from './appearance';
 
 export const TOKENS = {
   // Institucional — a cor de marca desta instalação (Aparência → Cor da barra).
-  // Preto + branco + dourado discreto: o dourado é a marca, não decoração — por
-  // isso só entra em traços finos (rebordo, seleção, gradiente de barra de
-  // título), nunca como preenchimento grande.
-  get accent() { return getAppearance('barColor') || '#B08D3C'; },
-  // Dourado — o mesmo tom do accent por omissão; para o logótipo "ML" e realces
-  // de marca. Nunca para texto/fundo em grande área — é "discreto" de propósito.
-  gold: '#B08D3C',
-  goldDark: '#8a6a24',
+  // Azul petróleo + branco: só duas cores em todo o sistema (pedido do dono).
+  // O vermelho de "apagar/erro" (danger, abaixo) é a ÚNICA exceção — é o único
+  // sítio onde a cor É o aviso, sempre acompanhada de ícone+texto, nunca sozinha.
+  get accent() { return getAppearance('barColor') || '#0B4F5C'; },
+  // Mantido com o nome "gold" por compatibilidade (dezenas de ecrãs já leem
+  // TOKENS.gold) — mas já não é dourado: é o mesmo azul petróleo institucional,
+  // para o logótipo "ML" e realces de marca não destoarem do resto da paleta.
+  gold: '#0B4F5C',
+  goldDark: '#06333C',
 
-  // Neutros — a base de tudo (barras, fundos, linhas). Preto quase puro, não
-  // cinzento — é a segunda cor da paleta (preto + branco + dourado).
-  bar: '#18181B',            // barra de menus / título de janela (escuro sempre, claro ou escuro)
-  barSoft: '#242428',        // barra secundária (título da secção, um tom mais claro que `bar`)
-  canvas: '#f0f0f0',         // fundo da área de trabalho
+  // Neutros — a base de tudo (barras, fundos, linhas), agora dentro da família
+  // azul-petróleo em vez de cinzento neutro: bordas/linhas/fundos claros usam
+  // tons muito diluídos do mesmo azul, para lerem como a MESMA cor, não uma 3ª.
+  bar: '#06333C',            // barra de menus / título de janela (petróleo escuro)
+  barSoft: '#0F3D47',        // barra secundária (título da secção, um tom mais claro que `bar`)
+  canvas: '#EEF4F5',         // fundo da área de trabalho (petróleo muito diluído)
   surface: '#ffffff',        // fundo dos formulários/grelhas
-  toolbarBg: '#f4f4f4',      // fundo da barra de ferramentas (Toolbar do kit.tsx)
-  border: '#8a95a3',         // contorno de campos de formulário (inputCls do kit.tsx)
-  line: '#c0c0c0',           // divisórias/linhas finas entre áreas
-  lineSoft: '#d5d5d5',       // divisórias mais subtis (dentro de grelhas)
+  toolbarBg: '#F7FAFA',      // fundo da barra de ferramentas (Toolbar do kit.tsx)
+  border: '#5C8891',         // contorno de campos de formulário (inputCls do kit.tsx)
+  line: '#C3D8DB',           // divisórias/linhas finas entre áreas
+  lineSoft: '#DCEAEC',       // divisórias mais subtis (dentro de grelhas)
 
   // Texto
-  textOnDark: '#e6e6e6',
-  textOnLight: '#1a2433',
-  textMuted: '#666666',
+  textOnDark: '#F2F7F8',
+  textOnLight: '#0B2E36',
+  textMuted: '#5C7A80',
 
-  // Seleção / destaque (linha escolhida numa grelha, item ativo numa árvore) —
-  // dourado muito claro em vez do azul de antes, para ficar dentro da paleta.
-  selectedBg: '#f2ecdc',
-  selectedText: '#18181B',
-  hover: '#faf7f0',
+  // Seleção / destaque (linha escolhida numa grelha, item ativo numa árvore).
+  selectedBg: '#CFE3E6',
+  selectedText: '#06333C',
+  hover: '#E4F0F1',
 
-  // Semântica — sempre as mesmas em todo o sistema, nunca variações locais.
-  success: '#1f7a34',        // Gravar / confirmar
-  danger: '#c0392b',         // Apagar / cancelar
-  dangerSoft: '#a01818',     // texto de erro sobre fundo claro
-  warning: '#e0a020',
-  warningBg: '#fff8e1',
-  warningBorder: '#e0c080',
+  // Semântica — o vermelho é a ÚNICA cor fora da família azul-petróleo/branco,
+  // e só para apagar/cancelar/erro (nunca decoração). "Sucesso"/"aviso" deixaram
+  // de ter cor própria — usam a mesma família petróleo (sempre com ícone+texto).
+  success: '#0B4F5C',        // Gravar / confirmar
+  danger: '#B0392B',         // Apagar / cancelar
+  dangerSoft: '#8C2B1F',     // texto de erro sobre fundo claro
+  warning: '#0B4F5C',
+  warningBg: '#EEF4F5',
+  warningBorder: '#5C8891',
 } as const;
 
 // Aclara/escurece um hex por `pct` (±255) — usado para montar o gradiente de uma
@@ -71,7 +74,7 @@ export function shade(hex: string, pct: number): string {
 }
 
 // Gradiente de barra de título a partir da cor institucional (3 tons, sempre a
-// mesma receita) — para não se escrever "linear-gradient(...#1e3f66...)" fixo
+// mesma receita) — para não se escrever "linear-gradient(...#0B4F5C...)" fixo
 // em cada ecrã: assim a personalização (Aparência → Cor da barra) chega a todo
 // o lado que usar isto, não só ao ecrã onde alguém se lembrou de a aplicar.
 export function accentGradient(accent: string = TOKENS.accent): string {
@@ -84,16 +87,16 @@ export function accentGradient(accent: string = TOKENS.accent): string {
 export function classicTheme(dark: boolean) {
   return dark
     ? {
-        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#202024', tree: '#1e1e21',
-        treeText: '#dcdcdc', line: '#3a3a3a', body: '#1e1e1e', status: '#1b1b1b',
-        hover: '#3a3a3a', accent: TOKENS.gold,
+        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#0B3E48', tree: '#062A31',
+        treeText: '#DCEAEC', line: '#1A5762', body: '#062A31', status: '#052128',
+        hover: '#12505C', accent: TOKENS.gold,
       }
     : {
-        bar: 'linear-gradient(to bottom, #fbfcfd 0%, #eceff2 55%, #dfe3e8 100%)',
+        bar: 'linear-gradient(to bottom, #F7FAFA 0%, #EEF4F5 55%, #DCEAEC 100%)',
         barText: TOKENS.textOnLight,
-        ribbon: 'linear-gradient(to bottom, #f6f8fa 0%, #e6eaee 60%, #d7dce2 100%)',
+        ribbon: 'linear-gradient(to bottom, #F7FAFA 0%, #EEF4F5 60%, #DCEAEC 100%)',
         tree: TOKENS.surface, treeText: TOKENS.textOnLight, line: TOKENS.border,
-        body: '#dfe3e8', status: TOKENS.accent, hover: TOKENS.selectedBg,
+        body: '#DCEAEC', status: TOKENS.accent, hover: TOKENS.selectedBg,
         accent: TOKENS.accent,
       };
 }

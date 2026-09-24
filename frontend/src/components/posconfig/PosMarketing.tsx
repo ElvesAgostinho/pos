@@ -5,8 +5,8 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 import EntityEditor from './EntityEditor';
 
-const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
-const lbl = 'text-[12px] text-[#333] w-[120px] flex-shrink-0';
+const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
+const lbl = 'text-[12px] text-[#06333C] w-[120px] flex-shrink-0';
 
 /** Lista simples de um endpoint (as tabelas que o POS já tem). */
 function useList(ep: string, key: string) {
@@ -21,9 +21,9 @@ function useList(ep: string, key: string) {
 
 /** Cabeçalho de painel cinzento, como no original. */
 const Painel = ({ title, children, right }: any) => (
-  <div className="bg-white" style={{ border: '4px groove #c0c0c0' }}>
-    <div className="flex items-center justify-between px-3 py-1.5 bg-[#e4e4e4] border-b border-[#c8c8c8]">
-      <span className="text-[12px] font-bold text-[#333]">{title}</span>
+  <div className="bg-white" style={{ border: '4px groove #CFE3E6' }}>
+    <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF4F5] border-b border-[#CFE3E6]">
+      <span className="text-[12px] font-bold text-[#06333C]">{title}</span>
       {right}
     </div>
     {children}
@@ -98,7 +98,7 @@ export function EntitySearch() {
     );
     const req = new Set(regras.filter((r: any) => r.is_required).map((r: any) => r.field));
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f0f0]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
         <div className="flex-1 overflow-auto p-3">
           <Painel title={edit.id ? `Ficha de entidade — ${edit.name}` : 'Nova entidade'}>
             <div className="grid grid-cols-3 gap-x-8 gap-y-2 p-4">
@@ -146,7 +146,7 @@ export function EntitySearch() {
                 <span className={lbl}>Motivo bloqueio:</span>
                 <input value={edit.block_reason ?? ''} onChange={(e) => setEdit({ ...edit, block_reason: e.target.value })}
                   disabled={!edit.is_blocked}
-                  className={`${inp} w-[600px] disabled:bg-[#f0f0f0]`} style={inputStyle} />
+                  className={`${inp} w-[600px] disabled:bg-[#F7FAFA]`} style={inputStyle} />
               </div>
               <div className="col-span-3 flex items-start gap-2">
                 <span className={lbl}>Informações:</span>
@@ -155,15 +155,15 @@ export function EntitySearch() {
               </div>
             </div>
             {req.size > 0 && (
-              <div className="px-4 pb-3 text-[11px] text-[#8a6100]">
+              <div className="px-4 pb-3 text-[11px] text-[#0B4F5C]">
                 Obrigatórios nesta casa: {regras.filter((r: any) => r.is_required).map((r: any) => r.label).join(', ')}.
               </div>
             )}
           </Painel>
         </div>
         <Toolbar actions={[
-          { label: 'Gravar', icon: '✔', color: '#1f7a34', onClick: () => gravar.mutate(edit) },
-          { label: 'Fechar', icon: '✖', color: '#6b6b6b', onClick: () => setEdit(null) },
+          { label: 'Gravar', icon: '✔', color: '#0B4F5C', onClick: () => gravar.mutate(edit) },
+          { label: 'Fechar', icon: '✖', color: '#5C8891', onClick: () => setEdit(null) },
         ]} />
       </div>
     );
@@ -180,20 +180,20 @@ export function EntitySearch() {
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f0f0]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
       <div className="p-3 pb-0">
         <Painel title="Critérios Pesquisa">
           <div className="flex gap-0 px-3 pt-2">
             {[['S', 'Pesquisa simples'], ['A', 'Pesquisa Avançada']].map(([k, t]) => (
               <button key={k} onClick={() => setTab(k as any)}
                 className={`px-4 py-1.5 text-[12px] border-b-2 ${tab === k
-                  ? 'border-[#3d6ea5] font-bold text-[#1a4f8a] bg-white'
-                  : 'border-transparent text-[#666] hover:bg-[#f5f5f5]'}`}>
+                  ? 'border-[#5C8891] font-bold text-[#0B4F5C] bg-white'
+                  : 'border-transparent text-[#5C8891] hover:bg-[#F7FAFA]'}`}>
                 {t}
               </button>
             ))}
           </div>
-          <div className="flex gap-4 p-4 border-t border-[#e0e0e0]">
+          <div className="flex gap-4 p-4 border-t border-[#EEF4F5]">
             <div className="flex-1">
               {tab === 'S' ? (
                 <div className="space-y-2">
@@ -263,42 +263,42 @@ export function EntitySearch() {
         <Painel title="Resultado da pesquisa">
           <div className="overflow-auto" style={{ maxHeight: '46vh' }}>
             <table className="w-full text-[12px] border-collapse">
-              <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
+              <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
                 {['Apelido', 'Nome', 'Outros nomes', 'Nr. cliente', 'Tipo', 'Morada', 'Contacto',
                   'Cartão', 'Informações'].map((h) => (
-                  <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0] border-r border-r-[#e6e6e6]">{h}</th>
+                  <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5] border-r border-r-[#F7FAFA]">{h}</th>
                 ))}
               </tr></thead>
               <tbody>
                 {vista.map((r) => (
                   <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
-                    className={`border-b border-[#eee] cursor-pointer ${sel === r.id ? 'bg-[#dce9f7]' : 'hover:bg-[#f5f9ff]'}`}>
+                    className={`border-b border-[#F7FAFA] cursor-pointer ${sel === r.id ? 'bg-[#F7FAFA]' : 'hover:bg-[#FFFFFF]'}`}>
                     <td className="px-2 py-1">{r.last_name || '—'}</td>
                     <td className="px-2 py-1 font-semibold">
-                      {r.is_blocked && <span title={r.block_reason || 'Bloqueado'} className="text-[#a01818] mr-1 inline-flex align-middle"><Glyph icon="⛔" size={13} /></span>}
+                      {r.is_blocked && <span title={r.block_reason || 'Bloqueado'} className="text-[#B0392B] mr-1 inline-flex align-middle"><Glyph icon="⛔" size={13} /></span>}
                       {r.name}
                     </td>
                     <td className="px-2 py-1">{r.other_names || '—'}</td>
-                    <td className="px-2 py-1 font-mono text-[#666]">{r.code}</td>
+                    <td className="px-2 py-1 font-mono text-[#5C8891]">{r.code}</td>
                     <td className="px-2 py-1">{r.entity_type_name || '—'}</td>
                     <td className="px-2 py-1">{r.address || '—'}</td>
                     <td className="px-2 py-1">{r.contact || '—'}</td>
                     <td className="px-2 py-1">{r.card_name ? `${r.card_name}${r.member_card_number ? ' · ' + r.member_card_number : ''}` : '—'}</td>
-                    <td className="px-2 py-1 text-[#666]">
+                    <td className="px-2 py-1 text-[#5C8891]">
                       {r.documents ? `${r.documents} doc · ${money(r.spent)} Kz` : ''}
                       {r.events ? ` · ${r.events} evento(s)` : ''}
                     </td>
                   </tr>
                 ))}
                 {vista.length === 0 && (
-                  <tr><td colSpan={9} className="text-center text-[#999] py-10">
+                  <tr><td colSpan={9} className="text-center text-[#7FA9B1] py-10">
                     {isFetching ? 'A pesquisar…' : 'Não foram encontrados dados.'}
                   </td></tr>
                 )}
               </tbody>
             </table>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f4f4f4] border-t border-[#d8d8d8] text-[12px]">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7FAFA] border-t border-[#EEF4F5] text-[12px]">
             <span>Nº registos a visualizar:</span>
             <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
               className={`${inp} w-[70px]`} style={inputStyle}>
@@ -312,7 +312,7 @@ export function EntitySearch() {
             <span>de {paginas}</span>
             <button disabled={page >= paginas} onClick={() => setPage(page + 1)} className="px-2 disabled:opacity-30">▶</button>
             <button disabled={page >= paginas} onClick={() => setPage(paginas)} className="px-2 disabled:opacity-30">⏭</button>
-            <span className="ml-auto text-[#666]">
+            <span className="ml-auto text-[#5C8891]">
               {total === 0 ? 'Não foram encontrados dados.' : `${total} entidade(s)`}
             </span>
           </div>
@@ -323,12 +323,12 @@ export function EntitySearch() {
       {obrig && (
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setObrig(false)} />
-          <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#888] shadow-2xl w-[440px]">
-            <div className="px-3 py-2 bg-[#242428] text-white text-[13px] font-bold flex justify-between">
+          <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#5C8891] shadow-2xl w-[440px]">
+            <div className="px-3 py-2 bg-[#06333C] text-white text-[13px] font-bold flex justify-between">
               Campos obrigatórios <button onClick={() => setObrig(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[50vh] overflow-auto">
-              <div className="text-[11px] text-[#666] mb-2">
+              <div className="text-[11px] text-[#5C8891] mb-2">
                 O servidor recusa gravar uma entidade sem estes campos. Não é um aviso — é uma regra.
               </div>
               {regras.map((r: any) => (
@@ -336,7 +336,7 @@ export function EntitySearch() {
                   <input type="checkbox" checked={!!r.is_required}
                     onChange={(e) => regra.mutate({ id: r.id, v: e.target.checked })}
                     disabled={r.field === 'name'} className="w-4 h-4" />
-                  {r.label}{r.field === 'name' && <span className="text-[#999] text-[11px]">(sempre)</span>}
+                  {r.label}{r.field === 'name' && <span className="text-[#7FA9B1] text-[11px]">(sempre)</span>}
                 </label>
               ))}
             </div>
@@ -348,18 +348,18 @@ export function EntitySearch() {
       {dups && (
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setDups(false)} />
-          <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#888] shadow-2xl w-[620px]">
-            <div className="px-3 py-2 bg-[#242428] text-white text-[13px] font-bold flex justify-between">
+          <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#5C8891] shadow-2xl w-[620px]">
+            <div className="px-3 py-2 bg-[#06333C] text-white text-[13px] font-bold flex justify-between">
               Controlo de duplicação <button onClick={() => setDups(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[55vh] overflow-auto text-[12px]">
               {(duplicados?.groups || []).length === 0 ? (
-                <div className="text-center text-[#1f7a34] py-8 font-bold flex items-center justify-center gap-1.5">
+                <div className="text-center text-[#0B4F5C] py-8 font-bold flex items-center justify-center gap-1.5">
                   <Glyph icon="✔" size={15} /> Nenhuma entidade repetida.
                 </div>
               ) : (duplicados.groups.map((g: any, i: number) => (
-                <div key={i} className="mb-3 border border-[#e6b0aa] bg-[#fdecea] p-2">
-                  <div className="font-bold text-[#a01818]">{g.field}: {g.value}</div>
+                <div key={i} className="mb-3 border border-[#B0392B] bg-[#F7FAFA] p-2">
+                  <div className="font-bold text-[#B0392B]">{g.field}: {g.value}</div>
                   {g.entities.map((e: any) => (
                     <div key={e.id} className="pl-3">· [{e.code}] {e.name}</div>
                   ))}
@@ -373,8 +373,8 @@ export function EntitySearch() {
       <Toolbar actions={[
         { label: 'Adicionar', icon: '➕', onClick: () => setEdit({ is_blocked: false }) },
         { label: 'Editar', icon: '✏', disabled: !sel, onClick: () => setEdit({ ...rows.find((r) => r.id === sel) }) },
-        { label: 'Campos obrigatórios', icon: '☑', color: '#1a73c8', onClick: () => setObrig(true) },
-        { label: 'Controlo de duplicação', icon: '⧉', color: '#5d4037', onClick: () => setDups(true) },
+        { label: 'Campos obrigatórios', icon: '☑', color: '#5C8891', onClick: () => setObrig(true) },
+        { label: 'Controlo de duplicação', icon: '⧉', color: '#0B4F5C', onClick: () => setDups(true) },
       ]} />
     </div>
   );
@@ -459,7 +459,7 @@ export function EventRequests() {
       </div>
     );
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f0f0]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
         <div className="flex-1 overflow-auto p-3">
           <Painel title={edit.id ? `Pedido ${edit.number} — ${edit.title}` : 'Novo pedido de evento'}>
             <div className="grid grid-cols-3 gap-x-8 gap-y-2 p-4">
@@ -493,7 +493,7 @@ export function EventRequests() {
                   rows={3} className={`${inp} w-[620px]`} style={inputStyle} />
               </div>
             </div>
-            <div className="px-4 pb-3 text-[11px] text-[#8a6100]">
+            <div className="px-4 pb-3 text-[11px] text-[#0B4F5C]">
               O <b>Estado da reserva</b> decide se o espaço fica bloqueado: um Confirmado tira a sala do
               mercado e o sistema recusa outro à mesma hora; uma Opção não bloqueia.
               Marcar <b>Respondido</b> tira o pedido da lista de trabalho do comercial.
@@ -501,7 +501,7 @@ export function EventRequests() {
           </Painel>
         </div>
         <Toolbar actions={[
-          { label: 'Gravar', icon: '✔', color: '#1f7a34', onClick: () => gravar.mutate(edit) },
+          { label: 'Gravar', icon: '✔', color: '#0B4F5C', onClick: () => gravar.mutate(edit) },
           {
             label: 'Cancelar evento', icon: '🚫', disabled: !edit.id,
             onClick: () => {
@@ -511,7 +511,7 @@ export function EventRequests() {
               if (mm) cancelar.mutate({ id: edit.id, cancel_reason: mm.id });
             },
           },
-          { label: 'Fechar', icon: '✖', color: '#6b6b6b', onClick: () => setEdit(null) },
+          { label: 'Fechar', icon: '✖', color: '#5C8891', onClick: () => setEdit(null) },
         ]} />
       </div>
     );
@@ -519,9 +519,9 @@ export function EventRequests() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#d8d8d8] bg-[#f7f7f7] text-[12px]">
-        <button onClick={exportar} className="flex items-center gap-2 px-2 py-1 hover:bg-[#e8e8e8]">
-          <span className="text-[#1f7a34]"><Glyph icon="📊" size={15} /></span> Exportar para Excel
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#EEF4F5] bg-[#F7FAFA] text-[12px]">
+        <button onClick={exportar} className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7FAFA]">
+          <span className="text-[#0B4F5C]"><Glyph icon="📊" size={15} /></span> Exportar para Excel
         </button>
         <span className="ml-2">Estado:</span>
         <select value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1); }}
@@ -534,20 +534,20 @@ export function EventRequests() {
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
+          <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
             {['Data do pedido', 'Nome', 'Espaço', 'Telefone', 'E-mail', 'Data', 'Pax',
               'Tipo de Evento', 'Notas', 'Estado'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0] border-r border-r-[#e6e6e6]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5] border-r border-r-[#F7FAFA]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {vista.map((r) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
-                className={`border-b border-[#eee] cursor-pointer ${sel === r.id ? 'bg-[#dce9f7]' : 'hover:bg-[#f5f9ff]'}`}>
+                className={`border-b border-[#F7FAFA] cursor-pointer ${sel === r.id ? 'bg-[#F7FAFA]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="px-2 py-1">{dt(r.created_at)}</td>
                 <td className="px-2 py-1 font-semibold">{r.customer_name || r.contact_name || r.title}</td>
                 <td className="px-2 py-1">
-                  <span className="px-1.5 py-0.5" style={{ background: r.state_bg || '#eee', color: r.state_fg || '#333' }}>
+                  <span className="px-1.5 py-0.5" style={{ background: r.state_bg || '#F7FAFA', color: r.state_fg || '#06333C' }}>
                     {r.space_name}{r.blocks_space && <Glyph icon="🔒" size={11} />}
                   </span>
                 </td>
@@ -556,23 +556,23 @@ export function EventRequests() {
                 <td className="px-2 py-1">{dt(r.start_at)}</td>
                 <td className="px-2 py-1 text-right">{r.pax}</td>
                 <td className="px-2 py-1">{r.event_type_name || '—'}</td>
-                <td className="px-2 py-1 text-[#666] max-w-[220px] truncate">{r.notes || ''}</td>
+                <td className="px-2 py-1 text-[#5C8891] max-w-[220px] truncate">{r.notes || ''}</td>
                 <td className="px-2 py-1">
                   <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.answered
-                    ? 'bg-[#e8f5e9] text-[#1f7a34]' : 'bg-[#fff7e6] text-[#8a6100]'}`}>
+                    ? 'bg-[#F7FAFA] text-[#0B4F5C]' : 'bg-[#F7FAFA] text-[#0B4F5C]'}`}>
                     {r.answered ? 'Respondido' : 'Não Respondido'}
                   </span>
                 </td>
               </tr>
             ))}
             {vista.length === 0 && (
-              <tr><td colSpan={10} className="text-center text-[#999] py-10">Não foram encontrados dados.</td></tr>
+              <tr><td colSpan={10} className="text-center text-[#7FA9B1] py-10">Não foram encontrados dados.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f4f4f4] border-t border-[#d8d8d8] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7FAFA] border-t border-[#EEF4F5] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -581,7 +581,7 @@ export function EventRequests() {
         <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-2 disabled:opacity-30 inline-flex"><Glyph icon="◀" size={13} /></button>
         <span>Página {page} de {paginas}</span>
         <button disabled={page >= paginas} onClick={() => setPage(page + 1)} className="px-2 disabled:opacity-30 inline-flex"><Glyph icon="▶" size={13} /></button>
-        <span className="ml-auto text-[#666]">
+        <span className="ml-auto text-[#5C8891]">
           {total === 0 ? 'Não foram encontrados dados.' : `${total} pedido(s)`}
         </span>
       </div>
@@ -590,7 +590,7 @@ export function EventRequests() {
         { label: 'Adicionar', icon: '➕', onClick: () => setEdit({ pax: 0, price_per_pax: 0, extra_total: 0, answered: false }) },
         { label: 'Editar', icon: '✏', disabled: !sel, onClick: () => setEdit({ ...rows.find((r) => r.id === sel) }) },
       ]} right={
-        <span className="text-[11px] text-[#666] flex items-center gap-1">Duplo-clique abre o pedido. <Glyph icon="🔒" size={11} /> = o estado bloqueia o espaço.</span>
+        <span className="text-[11px] text-[#5C8891] flex items-center gap-1">Duplo-clique abre o pedido. <Glyph icon="🔒" size={11} /> = o estado bloqueia o espaço.</span>
       } />
     </div>
   );

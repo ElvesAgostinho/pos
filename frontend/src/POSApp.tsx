@@ -30,14 +30,14 @@ const POSApp: React.FC = () => {
 
   // If token exists, render the actual Frontoffice POS
   return (
-    <div className="h-screen w-screen bg-[#008080] p-4 flex flex-col">
+    <div className="h-screen w-screen bg-[#0B4F5C] p-4 flex flex-col">
       <ClassicWindow 
         title={`Frente de Loja - ${terminalName}`} 
         icon={<ShoppingBag size={14} className="text-gray-300" />}
       >
-        <div className="flex-1 flex items-center justify-center bg-[#c0c0c0]">
+        <div className="flex-1 flex items-center justify-center bg-[#CFE3E6]">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-[#1e3f66] mb-4">POS Frontoffice</h1>
+            <h1 className="text-4xl font-bold text-[#0B4F5C] mb-4">POS Frontoffice</h1>
             <p className="text-xl">Terminal Ativo: {terminalName}</p>
             <p className="text-sm mt-8 text-gray-600">A Interface Tátil Clássica será implementada aqui.</p>
             
@@ -47,7 +47,7 @@ const POSApp: React.FC = () => {
                 localStorage.removeItem('pos_terminal_name');
                 setDeviceToken(null);
               }}
-              className="mt-12 px-4 py-2 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 bg-[#dfdfdf] font-bold active:border-t-gray-800 active:border-l-gray-800 active:border-b-white active:border-r-white"
+              className="mt-12 px-4 py-2 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 bg-[#EEF4F5] font-bold active:border-t-gray-800 active:border-l-gray-800 active:border-b-white active:border-r-white"
             >
               Desvincular Terminal (Teste)
             </button>

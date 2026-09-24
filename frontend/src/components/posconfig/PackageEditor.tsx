@@ -5,13 +5,13 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money } from './kit';
 import { ItemPicker } from './Pickers';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[100px] flex-shrink-0 text-[#333]">{label}</span>
+      <span className="w-[100px] flex-shrink-0 text-[#06333C]">{label}</span>
       {children}
     </label>
   );
@@ -68,14 +68,14 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo package' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo package' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Ficha */}
-        <div className="w-[46%] p-4 space-y-2 overflow-auto border-r border-[#e0e0e0]">
+        <div className="w-[46%] p-4 space-y-2 overflow-auto border-r border-[#EEF4F5]">
           <Row label="Código:">
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               className={`${inp} w-[290px]`} style={inputStyle} />
@@ -96,7 +96,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
             Ativo
           </label>
 
-          <fieldset className="px-3 pb-3 pt-1 mt-3" style={{ border: '4px groove #c0c0c0' }}>
+          <fieldset className="px-3 pb-3 pt-1 mt-3" style={{ border: '4px groove #CFE3E6' }}>
             <legend className="text-[12px] px-1">Línguas</legend>
             {[1, 2, 3].map((n) => (
               <Row key={n} label={`Língua ${n}:`}>
@@ -109,20 +109,20 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
 
         {/* Artigos */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-3 py-1.5 bg-[#e9e9e9] text-[12px] font-bold text-[#333] border-b border-[#d0d0d0]">
+          <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#06333C] border-b border-[#EEF4F5]">
             Artigos
           </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full text-[12px] border-collapse">
-              <thead className="sticky top-0"><tr className="bg-[#f4f4f4]">
+              <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
                 {['Artigo', 'Quantidade', 'Valor', 'Total'].map((h) => (
-                  <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{h}</th>
+                  <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{h}</th>
                 ))}
               </tr></thead>
               <tbody>
                 {lines.map((l, i) => (
                   <tr key={i} onClick={() => setSel(i)}
-                    className={`border-b border-[#eee] cursor-pointer ${sel === i ? 'bg-[#cfe2f3]' : ''}`}>
+                    className={`border-b border-[#F7FAFA] cursor-pointer ${sel === i ? 'bg-[#EEF4F5]' : ''}`}>
                     <td className="px-2 py-1"><b className="font-mono">{l.item_code}</b> · {l.item_name}</td>
                     <td className="p-0.5 w-[110px]">
                       <input type="number" step="any" value={l.quantity}
@@ -138,7 +138,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
                   </tr>
                 ))}
                 {lines.length === 0 && (
-                  <tr><td colSpan={4} className="text-center text-[#999] py-10">
+                  <tr><td colSpan={4} className="text-center text-[#7FA9B1] py-10">
                     Sem artigos. O pacote tem de conter o que o cliente recebe.
                   </td></tr>
                 )}
@@ -146,16 +146,16 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
             </table>
           </div>
 
-          <div className="flex items-center gap-4 px-3 py-2 bg-[#f4f4f4] border-t border-[#d0d0d0]">
-            <button onClick={() => setPicker(true)} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+          <div className="flex items-center gap-4 px-3 py-2 bg-[#F7FAFA] border-t border-[#EEF4F5]">
+            <button onClick={() => setPicker(true)} className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1">
+              <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={() => { if (sel !== null) { set('lines', lines.filter((_, j) => j !== sel)); setSel(null); } }}
               disabled={sel === null}
-              className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1 disabled:opacity-35">
-              <span className="w-5 h-5 rounded-full bg-[#c0392b] text-white flex items-center justify-center text-[11px]">−</span> Apagar
+              className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
+              <span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[11px]">−</span> Apagar
             </button>
-            <span className="ml-auto text-[16px] font-black text-[#1f7a34]">Total: {money(total)}</span>
+            <span className="ml-auto text-[16px] font-black text-[#0B4F5C]">Total: {money(total)}</span>
           </div>
         </div>
       </div>
@@ -166,8 +166,8 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

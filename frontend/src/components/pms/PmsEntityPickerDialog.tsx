@@ -56,53 +56,53 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
 
   const Adv = ({ k, label }: { k: string; label: string }) => (
     <label className="flex items-center gap-2">
-      <span className="w-[110px] text-[#333]">{label}</span>
+      <span className="w-[110px] text-[#06333C]">{label}</span>
       <input value={adv[k] || ''} onChange={(e) => setAdv((a: any) => ({ ...a, [k]: e.target.value }))}
-        className="border border-[#a0a0a0] p-1 bg-white flex-1" />
+        className="border border-[#7FA9B1] p-1 bg-white flex-1" />
     </label>
   );
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[1000px] max-h-[85vh] bg-[#f0f0f0] border border-[#8a8a8a] shadow-xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
+      <div className="w-[1000px] max-h-[85vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
           Entidades
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
             <button onClick={onClose} title="Fechar"
-              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#e74c3c] text-white hover:brightness-110">
+              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
               <X size={12} strokeWidth={3} />
             </button>
           </div>
         </div>
 
-        <div className="bg-white border-b border-[#d0d0d0] text-[12px]">
-          <div className="flex border-b border-[#d0d0d0]">
+        <div className="bg-white border-b border-[#EEF4F5] text-[12px]">
+          <div className="flex border-b border-[#EEF4F5]">
             <button onClick={() => setTab('S')}
-              className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#3c3c3c]' : 'bg-[#e8e8e8] text-[#666]'}`}>
+              className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#06333C]' : 'bg-[#F7FAFA] text-[#5C8891]'}`}>
               Pesquisa simples
             </button>
             <button onClick={() => setTab('A')}
-              className={`px-4 py-1.5 font-semibold ${tab === 'A' ? 'bg-white border-b-2 border-[#3c3c3c]' : 'bg-[#e8e8e8] text-[#666]'}`}>
+              className={`px-4 py-1.5 font-semibold ${tab === 'A' ? 'bg-white border-b-2 border-[#06333C]' : 'bg-[#F7FAFA] text-[#5C8891]'}`}>
               Pesquisa Avançada
             </button>
           </div>
           <div className="p-2 flex gap-3">
             <div className="flex-1">
               <label className="flex items-center gap-2 mb-1.5">
-                <span className="w-[110px] text-[#333]">Tipo de entidade:</span>
+                <span className="w-[110px] text-[#06333C]">Tipo de entidade:</span>
                 <select value={entityType} onChange={(e) => setEntityType(e.target.value)}
-                  className="border border-[#a0a0a0] p-1 bg-white flex-1">
+                  className="border border-[#7FA9B1] p-1 bg-white flex-1">
                   <option value="">(Todos)</option>
                   {tipoList.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </label>
               {tab === 'S' ? (
                 <label className="flex items-center gap-2">
-                  <span className="w-[110px] text-[#333]">Pesquisa livre:</span>
+                  <span className="w-[110px] text-[#06333C]">Pesquisa livre:</span>
                   <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus
                     onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
-                    className="border border-[#a0a0a0] p-1 bg-white flex-1" />
+                    className="border border-[#7FA9B1] p-1 bg-white flex-1" />
                 </label>
               ) : (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
@@ -119,7 +119,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
             </div>
             <button onClick={pesquisar}
               className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px]"
-              style={{ background: '#2b2b2b' }}>
+              style={{ background: '#06333C' }}>
               <RefreshCw size={20} /> Pesquisar
             </button>
           </div>
@@ -131,7 +131,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
               onRowClick={(r: any) => setSelId(r.id)}
               onRowDoubleClick={(r: any) => onSelect(r)}
               columns={[
-                { header: '', accessor: () => <User size={14} className="text-[#8a95a3]" />, width: '4%' },
+                { header: '', accessor: () => <User size={14} className="text-[#7FA9B1]" />, width: '4%' },
                 { header: 'Apelido', accessor: 'last_name', width: '13%' },
                 { header: 'Nome', accessor: 'name', width: '17%' },
                 { header: 'Outros nomes', accessor: 'other_names', width: '15%' },
@@ -143,30 +143,30 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
           )}
         </div>
 
-        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#e8e8e8] border-t border-[#c0c0c0] text-[12px]">
-          <button onClick={() => setEditing({ is_blocked: false })} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#ddd]">
+        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7FAFA] border-t border-[#CFE3E6] text-[12px]">
+          <button onClick={() => setEditing({ is_blocked: false })} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5]">
             <Plus size={13} /> Adicionar
           </button>
           <button disabled={!sel} onClick={() => sel && setEditing({ ...sel })}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#ddd] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5] disabled:opacity-30 disabled:hover:bg-transparent">
             <Pencil size={13} /> Editar
           </button>
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#ddd] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5] disabled:opacity-30 disabled:hover:bg-transparent">
             <Hand size={13} /> Selecionar
           </button>
-          <button onClick={() => naoConstruido('Guest Info')} className="flex items-center gap-1.5 px-2 py-1 text-gray-400 hover:bg-[#ddd]">
+          <button onClick={() => naoConstruido('Guest Info')} className="flex items-center gap-1.5 px-2 py-1 text-gray-400 hover:bg-[#EEF4F5]">
             <User size={13} /> Guest Info
           </button>
-          <button onClick={() => naoConstruido('Campos obrigatórios')} className="flex items-center gap-1.5 px-2 py-1 text-gray-400 hover:bg-[#ddd]">
+          <button onClick={() => naoConstruido('Campos obrigatórios')} className="flex items-center gap-1.5 px-2 py-1 text-gray-400 hover:bg-[#EEF4F5]">
             <Search size={13} /> Campos obrigatórios
           </button>
-          <button onClick={() => setShowDups(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#ddd]">
+          <button onClick={() => setShowDups(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5]">
             <Copy size={13} /> Controlo de duplicação
           </button>
           <div className="flex-1" />
           <button onClick={onClose} className="flex items-center gap-1.5 font-semibold hover:text-black">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#e74c3c] text-white">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white">
               <X size={9} strokeWidth={3} />
             </span>
             Fechar

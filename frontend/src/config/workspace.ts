@@ -18,9 +18,13 @@ const wp = (c1: string, c2: string) =>
 
 export const WORKSPACES: Workspace[] = [
   {
+    // Azul petróleo — mesma cor institucional em todos os módulos (pedido do
+    // dono: só 2 cores em todo o sistema). Os módulos distinguem-se por
+    // ícone/nome, não por cor própria (cada um já tinha a sua antes — verde
+    // aqui, azul-marinho no PMS — colapsaram para a mesma família).
     key: 'pos', name: 'POS',
-    color: '#1f7a34', colorDark: '#0f4a1f', accent: '#3fb058', glow: '#6ee08a',
-    wallpaper: wp('#1f7a34', '#0a2a14'),
+    color: '#0B4F5C', colorDark: '#06333C', accent: '#2E7885', glow: '#5CA3AE',
+    wallpaper: wp('#0B4F5C', '#06333C'),
     licenseModule: 'posfront',
     icons: [
       // O POS é UM ecrã. Clicar aqui entra logo nele (ocupa a janela toda, com o
@@ -31,8 +35,8 @@ export const WORKSPACES: Workspace[] = [
   },
   {
     key: 'pms', name: 'PMS',
-    color: '#1e3f66', colorDark: '#122942', accent: '#3f7fc0', glow: '#5fa8e6',
-    wallpaper: wp('#22496f', '#0d1f34'),
+    color: '#0B4F5C', colorDark: '#06333C', accent: '#2E7885', glow: '#5CA3AE',
+    wallpaper: wp('#0B4F5C', '#06333C'),
     licenseModule: 'pms',
     icons: [
       // Um ecrã só (como o POS): abre logo no PmsShell, que tem o seu próprio

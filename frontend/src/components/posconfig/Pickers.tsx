@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph, SearchButton } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 
 /**
  * PICKERS — as janelas de escolha múltipla ("Adicionar - Artigos",
@@ -17,9 +17,9 @@ const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
 
 function Head({ title, onClose }: { title: string; onClose: () => void }) {
   return (
-    <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#242428' }}>
+    <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
       <span>{title}</span>
-      <button onClick={onClose} className="w-5 h-5 bg-[#c0392b] text-white leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
+      <button onClick={onClose} className="w-5 h-5 bg-[#B0392B] text-white leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
     </div>
   );
 }
@@ -45,11 +45,11 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
-      <div className="bg-[#f4f4f4] border border-[#888] w-[620px] max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#F7FAFA] border border-[#5C8891] w-[620px] max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <Head title="Adicionar - Sub Família" onClose={onClose} />
 
-        <div className="flex items-center gap-3 px-3 py-2 bg-white border-b border-[#d0d0d0]">
-          <span className="text-[12px] text-[#333]">Pesquisar:</span>
+        <div className="flex items-center gap-3 px-3 py-2 bg-white border-b border-[#EEF4F5]">
+          <span className="text-[12px] text-[#06333C]">Pesquisar:</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus className={`${inp} w-[240px]`} style={inputStyle} />
           <label className="flex items-center gap-2 text-[12px] ml-3">
             <input type="checkbox" checked={allOn}
@@ -60,33 +60,33 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
 
         <div className="flex-1 overflow-auto bg-white">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
-              <th className="w-[42px] border-b border-[#d0d0d0]" />
-              <th className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Descrição</th>
+            <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
+              <th className="w-[42px] border-b border-[#EEF4F5]" />
+              <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Descrição</th>
             </tr></thead>
             <tbody>
               {rows.map((s: any) => (
                 <tr key={s.id} onClick={() => toggle(s.id)}
-                  className={`border-b border-[#eee] cursor-pointer ${sel.includes(s.id) ? 'bg-[#cfe2f3]' : 'hover:bg-[#f5f9ff]'}`}>
+                  className={`border-b border-[#F7FAFA] cursor-pointer ${sel.includes(s.id) ? 'bg-[#EEF4F5]' : 'hover:bg-[#FFFFFF]'}`}>
                   <td className="text-center py-1.5">
                     <input type="checkbox" checked={sel.includes(s.id)} onChange={() => toggle(s.id)}
                       onClick={(e) => e.stopPropagation()} className="w-4 h-4" />
                   </td>
-                  <td className="px-2 py-1.5 text-[#1a4f8a]">{s.code} ({s.name})</td>
+                  <td className="px-2 py-1.5 text-[#0B4F5C]">{s.code} ({s.name})</td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={2} className="text-center text-[#999] py-8">Sem sub-famílias.</td></tr>}
+              {rows.length === 0 && <tr><td colSpan={2} className="text-center text-[#7FA9B1] py-8">Sem sub-famílias.</td></tr>}
             </tbody>
           </table>
         </div>
 
-        <div className="px-3 py-1 text-[11px] text-[#666] bg-[#f4f4f4] border-t border-[#e0e0e0]">
+        <div className="px-3 py-1 text-[11px] text-[#5C8891] bg-[#F7FAFA] border-t border-[#EEF4F5]">
           {sel.length} selecionada(s) de {rows.length}
         </div>
         <Toolbar actions={[
-          { icon: '✔', label: 'Selecionar', color: '#1f7a34',
+          { icon: '✔', label: 'Selecionar', color: '#0B4F5C',
             onClick: () => onPick(rows.filter((r) => sel.includes(r.id))) },
-          { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+          { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
         ]} />
       </div>
     </div>
@@ -138,15 +138,15 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
   const over = sel.length > max;
 
   const toggle = (id: number) => setSel((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
-  const sl = 'border border-[#8a95a3] px-1 py-1 text-[12px] bg-white w-full';
+  const sl = 'border border-[#7FA9B1] px-1 py-1 text-[12px] bg-white w-full';
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
-      <div className="bg-[#f4f4f4] border border-[#888] w-[1180px] max-w-[97vw] h-[86vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#F7FAFA] border border-[#5C8891] w-[1180px] max-w-[97vw] h-[86vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <Head title={title} onClose={onClose} />
 
         {/* Filtros */}
-        <div className="flex gap-4 p-3 bg-white border-b border-[#d0d0d0]">
+        <div className="flex gap-4 p-3 bg-white border-b border-[#EEF4F5]">
           <div className="flex-1 grid grid-cols-[70px_1fr_70px_1fr] gap-x-3 gap-y-2 items-center text-[12px]">
             <span>Grupo:</span>
             <select value={f.group} onChange={(e) => setF({ ...f, group: e.target.value, family: '', subfamily: '' })} className={sl} style={inputStyle}>
@@ -186,23 +186,23 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
           <SearchButton onClick={() => { setApplied({ ...f }); setPage(1); }} className="w-[150px]" />
         </div>
 
-        <div className={`px-3 py-1.5 text-[12px] font-bold ${over ? 'text-[#c0392b]' : 'text-[#333]'}`}>
+        <div className={`px-3 py-1.5 text-[12px] font-bold ${over ? 'text-[#B0392B]' : 'text-[#06333C]'}`}>
           (Selecionado: {sel.length}) (Máximo: {max}){over && ' — reduza a seleção'}
         </div>
 
         {/* Grelha */}
-        <div className="flex-1 overflow-auto bg-white border-y border-[#d0d0d0]">
+        <div className="flex-1 overflow-auto bg-white border-y border-[#EEF4F5]">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
-              <th className="w-[42px] border-b border-[#d0d0d0]" />
+            <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
+              <th className="w-[42px] border-b border-[#EEF4F5]" />
               {['Código', 'Descrição', 'Grupo', 'Família', 'Sub Família', 'Preço', 'Iva', 'Impressoras', 'Ativo'].map((h) => (
-                <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0] whitespace-nowrap">{h}</th>
+                <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5] whitespace-nowrap">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {view.map((i: any) => (
                 <tr key={i.id} onClick={() => toggle(i.id)}
-                  className={`border-b border-[#eee] cursor-pointer ${sel.includes(i.id) ? 'bg-[#cfe2f3]' : 'hover:bg-[#f5f9ff]'}`}>
+                  className={`border-b border-[#F7FAFA] cursor-pointer ${sel.includes(i.id) ? 'bg-[#EEF4F5]' : 'hover:bg-[#FFFFFF]'}`}>
                   <td className="text-center py-1.5">
                     <input type="checkbox" checked={sel.includes(i.id)} onChange={() => toggle(i.id)}
                       onClick={(e) => e.stopPropagation()} className="w-4 h-4" />
@@ -213,21 +213,21 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
                   <td className="px-2 py-1.5">{i.family_name}</td>
                   <td className="px-2 py-1.5">{i.subfamily_name}</td>
                   <td className="px-2 py-1.5 whitespace-nowrap">(1: {Number(i.sale_price || 0).toFixed(2)})</td>
-                  <td className="px-2 py-1.5 text-[#1a4f8a] whitespace-nowrap italic">{Number(i.tax_percentage || 0).toFixed(2)}</td>
-                  <td className="px-2 py-1.5 text-[11px] text-[#666]">{i.printers_label}</td>
+                  <td className="px-2 py-1.5 text-[#0B4F5C] whitespace-nowrap italic">{Number(i.tax_percentage || 0).toFixed(2)}</td>
+                  <td className="px-2 py-1.5 text-[11px] text-[#5C8891]">{i.printers_label}</td>
                   <td className="text-center">
                     <GridCheck checked={i.is_active} onChange={(v) => setActive.mutate({ id: i.id, v })}
                       title="Artigo ativo — desligar tira-o da venda no POS" />
                   </td>
                 </tr>
               ))}
-              {view.length === 0 && <tr><td colSpan={10} className="text-center text-[#999] py-10">Sem artigos. Ajuste os filtros e carregue em Pesquisar.</td></tr>}
+              {view.length === 0 && <tr><td colSpan={10} className="text-center text-[#7FA9B1] py-10">Sem artigos. Ajuste os filtros e carregue em Pesquisar.</td></tr>}
             </tbody>
           </table>
         </div>
 
         {/* Paginação */}
-        <div className="flex items-center gap-3 px-3 py-2 bg-[#f4f4f4] text-[12px]">
+        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7FAFA] text-[12px]">
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={allOn}
               onChange={(e) => setSel(e.target.checked ? rows.map((r) => r.id) : [])} className="w-4 h-4" />
@@ -245,15 +245,15 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
           <span>de {pages}</span>
           <button onClick={() => setPage((p) => Math.min(pages, p + 1))} disabled={page === pages} className="px-1 disabled:opacity-30">▶</button>
           <button onClick={() => setPage(pages)} disabled={page === pages} className="px-1 disabled:opacity-30">⏭</button>
-          <span className="ml-auto text-[#555]">
+          <span className="ml-auto text-[#0B4F5C]">
             Nº registos a visualizar {rows.length ? (page - 1) * size + 1 : 0} - {Math.min(page * size, rows.length)} de {rows.length}
           </span>
         </div>
 
         <Toolbar actions={[
-          { icon: '✔', label: 'OK', color: over ? '#999' : '#1f7a34',
+          { icon: '✔', label: 'OK', color: over ? '#7FA9B1' : '#0B4F5C',
             onClick: () => { if (!over) onPick(rows.filter((r) => sel.includes(r.id))); } },
-          { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+          { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
         ]} />
       </div>
     </div>

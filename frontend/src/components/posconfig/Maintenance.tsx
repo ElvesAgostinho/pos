@@ -5,7 +5,7 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Glyph } from './kit';
 import { TOKENS } from '../../config/theme';
 
-const inp = 'border border-[#c8c8c8] px-1.5 py-1 text-[12px] w-full bg-white';
+const inp = 'border border-[#CFE3E6] px-1.5 py-1 text-[12px] w-full bg-white';
 
 /**
  * MANUTENÇÃO — criação e alteração RÁPIDA de artigos, em massa.
@@ -72,8 +72,8 @@ export default function Maintenance() {
   });
 
   const Common = ({ label, children }: any) => (
-    <tr className="border-b border-[#eee]">
-      <td className="px-2 py-1 text-[12px] text-[#333] w-[120px] border-r border-[#eee]">{label}</td>
+    <tr className="border-b border-[#F7FAFA]">
+      <td className="px-2 py-1 text-[12px] text-[#06333C] w-[120px] border-r border-[#F7FAFA]">{label}</td>
       <td className="px-2 py-1">{children}</td>
     </tr>
   );
@@ -81,8 +81,8 @@ export default function Maintenance() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       {/* Tipo */}
-      <div className="flex items-center gap-8 px-4 py-3 border-b border-[#d0d0d0] text-[13px]">
-        <span className="text-[#333]">Tipo:</span>
+      <div className="flex items-center gap-8 px-4 py-3 border-b border-[#EEF4F5] text-[13px]">
+        <span className="text-[#06333C]">Tipo:</span>
         {([['create', 'Criação rápida de artigos'], ['update', 'Alteração rápida de artigos'], ['prices', 'Alterações de Preço']] as const).map(([k, label]) => (
           <label key={k} className="flex items-center gap-2 cursor-pointer">
             <input type="radio" checked={mode === k} onChange={() => setMode(k)} className="w-4 h-4" />
@@ -91,20 +91,20 @@ export default function Maintenance() {
         ))}
       </div>
 
-      <div className="px-4 py-2 bg-[#e9e9e9] border-b border-[#d0d0d0] text-[13px] font-bold text-[#333]">
+      <div className="px-4 py-2 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[13px] font-bold text-[#06333C]">
         {mode === 'create' ? 'Criação rápida de artigos' : mode === 'update' ? 'Alteração rápida de artigos' : 'Alterações de Preço'}
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Dados comuns */}
-        <div className="w-[380px] flex-shrink-0 flex flex-col m-3 mr-0" style={{ border: '4px groove #c0c0c0' }}>
-          <div className="px-3 py-1.5 border-b border-[#d0d0d0] text-[13px] font-bold" style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)', color: TOKENS.selectedText }}>Dados Comuns</div>
+        <div className="w-[380px] flex-shrink-0 flex flex-col m-3 mr-0" style={{ border: '4px groove #CFE3E6' }}>
+          <div className="px-3 py-1.5 border-b border-[#EEF4F5] text-[13px] font-bold" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)', color: TOKENS.selectedText }}>Dados Comuns</div>
           <div className="flex-1 overflow-auto">
             <table className="w-full">
               <thead>
-                <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+                <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
                   <th className="text-left px-2 py-1 border-b-2 font-semibold" style={{ borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>Descrição</th>
-                  <th className="text-left px-2 py-1 border-b-2 border-l font-semibold" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>Valor</th>
+                  <th className="text-left px-2 py-1 border-b-2 border-l font-semibold" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#EEF4F5', color: TOKENS.selectedText }}>Valor</th>
                 </tr>
               </thead>
               <tbody>
@@ -149,27 +149,27 @@ export default function Maintenance() {
               </tbody>
             </table>
           </div>
-          <div className="text-[11px] text-[#666] p-2 border-t border-[#e0e0e0]">
+          <div className="text-[11px] text-[#5C8891] p-2 border-t border-[#EEF4F5]">
             O que é comum define-se aqui uma vez; em baixo escreve-se só o que muda.
           </div>
         </div>
 
         {/* Linhas */}
         <div className="flex-1 flex flex-col overflow-hidden m-3">
-          <div className="flex-1 overflow-auto" style={{ border: '4px groove #c0c0c0' }}>
+          <div className="flex-1 overflow-auto" style={{ border: '4px groove #CFE3E6' }}>
             <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
-                <tr style={{ background: 'linear-gradient(to bottom, #fbfbfc 0%, #eef0f2 55%, #e2e5e9 100%)' }}>
+                <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
                   {['Código', 'Descrição', 'Código PLU', 'Preço 1', 'Preço 2', 'Preço 3', 'Preço 4', 'Preço 5'].map((h, i) => (
                     <th key={h} className={`text-left font-semibold px-2 py-1.5 border-b-2 ${i > 0 ? 'border-l' : ''}`}
-                      style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6', color: TOKENS.selectedText }}>{h}</th>
+                      style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#EEF4F5', color: TOKENS.selectedText }}>{h}</th>
                   ))}
-                  <th className="border-b-2 border-l w-[40px]" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#dde1e6' }} />
+                  <th className="border-b-2 border-l w-[40px]" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#EEF4F5' }} />
                 </tr>
               </thead>
               <tbody>
                 {lines.map((l, i) => (
-                  <tr key={i} className="border-b" style={{ borderColor: '#eef0f2', background: i % 2 ? '#f7f8fa' : TOKENS.surface }}>
+                  <tr key={i} className="border-b" style={{ borderColor: '#F7FAFA', background: i % 2 ? '#FFFFFF' : TOKENS.surface }}>
                     <td className="p-0.5"><input value={l.code} onChange={(e) => setLine(i, 'code', e.target.value)} className={inp} /></td>
                     <td className="p-0.5"><input value={l.name} onChange={(e) => setLine(i, 'name', e.target.value)} className={inp} /></td>
                     <td className="p-0.5 w-[110px]"><input value={l.plu_code} onChange={(e) => setLine(i, 'plu_code', e.target.value)} className={inp} /></td>
@@ -179,36 +179,36 @@ export default function Maintenance() {
                       </td>
                     ))}
                     <td className="text-center">
-                      <button onClick={() => delLine(i)} className="text-red-600 font-bold">−</button>
+                      <button onClick={() => delLine(i)} className="text-[#8C2B1F] font-bold">−</button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <button onClick={addLine} className="flex items-center gap-2 m-2 text-[13px] text-[#333]">
-              <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center"><Glyph icon="＋" size={13} /></span>
+            <button onClick={addLine} className="flex items-center gap-2 m-2 text-[13px] text-[#06333C]">
+              <span className="w-6 h-6 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="＋" size={13} /></span>
               Acrescentar linha
             </button>
           </div>
 
-          <div className="flex items-center gap-4 px-3 py-2 border-t border-[#d0d0d0] bg-[#f4f4f4] text-[13px]">
+          <div className="flex items-center gap-4 px-3 py-2 border-t border-[#EEF4F5] bg-[#F7FAFA] text-[13px]">
             <button onClick={() => run.mutate()} disabled={run.isPending}
-              className="flex items-center gap-2 font-semibold text-[#1f7a34] disabled:opacity-50">
-              <span className="w-7 h-7 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={14} /></span>
+              className="flex items-center gap-2 font-semibold text-[#0B4F5C] disabled:opacity-50">
+              <span className="w-7 h-7 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={14} /></span>
               {run.isPending ? 'A gravar…' : 'Gravar'}
             </button>
             <span className="opacity-30">|</span>
             <span>Estado:</span>
-            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#29b6f6] text-white text-[11px] flex items-center justify-center">·</span>{lines.length}</span>
-            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#1f7a34] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>{result.ok}</span>
-            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#c0392b] text-white flex items-center justify-center"><Glyph icon="✖" size={11} /></span>{result.fail}</span>
+            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#7FA9B1] text-white text-[11px] flex items-center justify-center">·</span>{lines.length}</span>
+            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#0B4F5C] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>{result.ok}</span>
+            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center"><Glyph icon="✖" size={11} /></span>{result.fail}</span>
             <button onClick={() => { setLines([{ code: '', name: '', plu_code: '', p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }]); setResult({ ok: 0, fail: 0, errors: [] }); }}
-              className="ml-auto flex items-center gap-2 text-[#c0392b] font-semibold">
-              <span className="w-6 h-6 rounded-full bg-[#c0392b] text-white flex items-center justify-center"><Glyph icon="−" size={13} /></span> Limpar tudo
+              className="ml-auto flex items-center gap-2 text-[#B0392B] font-semibold">
+              <span className="w-6 h-6 rounded-full bg-[#B0392B] text-white flex items-center justify-center"><Glyph icon="−" size={13} /></span> Limpar tudo
             </button>
           </div>
           {result.errors.length > 0 && (
-            <div className="px-3 py-2 bg-[#fdeaea] border-t border-[#e0a0a0] text-[11px] text-[#a01818] max-h-[80px] overflow-auto">
+            <div className="px-3 py-2 bg-[#F7FAFA] border-t border-[#B0392B] text-[11px] text-[#B0392B] max-h-[80px] overflow-auto">
               {result.errors.map((e, i) => <div key={i}>• {e}</div>)}
             </div>
           )}

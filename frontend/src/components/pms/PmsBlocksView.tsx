@@ -29,7 +29,7 @@ export default function PmsBlocksView() {
             { header: 'Garantido', accessor: (r: any) => r.is_guaranteed ? 'Sim' : 'Não', width: '10%' },
           ]} />
       </div>
-      <div className="flex gap-2 p-2 border-t border-[#c0c0c0] bg-[#f4f4f4]">
+      <div className="flex gap-2 p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
         <ClassicButton icon={Plus} label="Novo" onClick={() => setEditing('new')} />
         <ClassicButton icon={Copy} label="Copiar" disabled={!sel} onClick={() => setEditing('copy')} />
         <ClassicButton label="Editar" disabled={!sel} onClick={() => setEditing('edit')} />

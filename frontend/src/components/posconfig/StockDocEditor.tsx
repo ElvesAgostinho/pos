@@ -4,15 +4,15 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 
 type Tab = 'geral' | 'stocks' | 'print' | 'states';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#333]">{label}</span>
+      <span className="w-[120px] flex-shrink-0 text-[#06333C]">{label}</span>
       {children}
     </label>
   );
@@ -74,14 +74,14 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo documento' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo documento' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Ficha */}
-        <div className="w-[38%] p-4 space-y-2 overflow-auto border-r border-[#e0e0e0]">
+        <div className="w-[38%] p-4 space-y-2 overflow-auto border-r border-[#EEF4F5]">
           <div className="flex items-start gap-4">
             <Row label="Código:">
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
@@ -102,7 +102,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
           </Row>
           <Row label="Número:">
             <input value={d.current_number ?? 0} readOnly
-              className={`${inp} w-[170px] bg-[#f0f0f0] text-[#666]`} style={inputStyle} />
+              className={`${inp} w-[170px] bg-[#F7FAFA] text-[#5C8891]`} style={inputStyle} />
           </Row>
           <Row label="Descrição:">
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
@@ -131,11 +131,11 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
 
         {/* Separadores */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex border-b-2 border-[#18181B] px-2">
+          <div className="flex border-b-2 border-[#062A31] px-2">
             {TABS.map(([k, l]) => (
               <button key={k} onClick={() => setTab(k)}
                 className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k
-                  ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+                  ? 'border-[#062A31] text-[#062A31] bg-white' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
                 {l}
               </button>
             ))}
@@ -158,7 +158,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                 </div>
 
                 <div className="space-y-4">
-                  <fieldset className="px-3 pb-3 pt-1" style={{ border: '4px groove #c0c0c0' }}>
+                  <fieldset className="px-3 pb-3 pt-1" style={{ border: '4px groove #CFE3E6' }}>
                     <legend className="text-[12px] px-1">Natureza</legend>
                     {[['RECEIVABLE', 'Documento a receber'], ['PAYABLE', 'Documento a pagar']].map(([v, l]) => (
                       <label key={v} className="flex items-center gap-2 text-[12px] py-0.5">
@@ -168,7 +168,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                     ))}
                   </fieldset>
 
-                  <fieldset className="px-3 pb-3 pt-1" style={{ border: '4px groove #c0c0c0' }}>
+                  <fieldset className="px-3 pb-3 pt-1" style={{ border: '4px groove #CFE3E6' }}>
                     <legend className="text-[12px] px-1">Documento externo</legend>
                     {[['IGNORE', 'Ignorar duplicação'], ['WARN', 'Informar sobre duplicação'],
                       ['BLOCK', 'Não permite duplicação']].map(([v, l]) => (
@@ -178,12 +178,12 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                         {l}
                       </label>
                     ))}
-                    <label className="flex items-center gap-2 text-[12px] pt-2 border-t border-[#eee] mt-2">
+                    <label className="flex items-center gap-2 text-[12px] pt-2 border-t border-[#F7FAFA] mt-2">
                       <input type="checkbox" checked={!!d.external_required}
                         onChange={(e) => set('external_required', e.target.checked)} className="w-4 h-4" />
                       Preenchimento obrigatório
                     </label>
-                    <div className="text-[11px] text-[#666] mt-1">
+                    <div className="text-[11px] text-[#5C8891] mt-1">
                       "Não permite duplicação" impede pagar a mesma fatura do fornecedor duas vezes.
                     </div>
                   </fieldset>
@@ -199,48 +199,48 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                    ['updates_last_entry_date', 'Atualiza última data de entrada', '']] as const).map(([k, l, ajuda]) => (
                   <label key={k} className="flex items-start gap-2 text-[12px]">
                     <input type="checkbox" checked={!!d[k]} onChange={(e) => set(k, e.target.checked)} className="w-4 h-4 mt-px" />
-                    <span><b>{l}</b>{ajuda && <span className="text-[#888]"> — {ajuda}</span>}</span>
+                    <span><b>{l}</b>{ajuda && <span className="text-[#5C8891]"> — {ajuda}</span>}</span>
                   </label>
                 ))}
               </div>
             )}
 
             {tab === 'print' && (
-              <div className="border border-[#c8c8c8]">
+              <div className="border border-[#CFE3E6]">
                 <table className="w-full text-[12px] border-collapse">
-                  <thead><tr className="bg-[#f0f0f0]">
+                  <thead><tr className="bg-[#F7FAFA]">
                     {['Tipo', 'Código', 'Descrição', 'Modelo', 'Ordem', 'Ativo'].map((h) => (
-                      <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{h}</th>
+                      <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
                     {pms.map((m, i) => (
                       <tr key={i} onClick={() => setSel(i)}
-                        className={`border-b border-[#eee] cursor-pointer ${sel === i ? 'bg-[#cfe2f3]' : ''}`}>
+                        className={`border-b border-[#F7FAFA] cursor-pointer ${sel === i ? 'bg-[#EEF4F5]' : ''}`}>
                         <td className="p-0.5"><input value={m.kind} onChange={(e) => setPm(i, 'kind', e.target.value)} className={cell} /></td>
                         <td className="p-0.5 w-[70px]"><input value={m.code} onChange={(e) => setPm(i, 'code', e.target.value)} className={cell} /></td>
                         <td className="p-0.5"><input value={m.description || ''} onChange={(e) => setPm(i, 'description', e.target.value)} className={cell} /></td>
-                        <td className="p-0.5"><input value={m.model_path || ''} onChange={(e) => setPm(i, 'model_path', e.target.value)} className={`${cell} text-[#1a4f8a]`} /></td>
+                        <td className="p-0.5"><input value={m.model_path || ''} onChange={(e) => setPm(i, 'model_path', e.target.value)} className={`${cell} text-[#0B4F5C]`} /></td>
                         <td className="p-0.5 w-[70px]"><input type="number" value={m.sort_order} onChange={(e) => setPm(i, 'sort_order', Number(e.target.value))} className={cell} /></td>
                         <td className="text-center w-[60px]"><GridCheck checked={m.is_active} onChange={(v) => setPm(i, 'is_active', v)} /></td>
                       </tr>
                     ))}
                     {pms.length === 0 && (
-                      <tr><td colSpan={6} className="text-center text-[#999] py-8">Sem modelos de impressão.</td></tr>
+                      <tr><td colSpan={6} className="text-center text-[#7FA9B1] py-8">Sem modelos de impressão.</td></tr>
                     )}
                   </tbody>
                 </table>
-                <div className="flex items-center gap-4 px-3 py-2 bg-[#f4f4f4] border-t border-[#d5d5d5]">
+                <div className="flex items-center gap-4 px-3 py-2 bg-[#F7FAFA] border-t border-[#EEF4F5]">
                   <button onClick={() => set('print_models', [...pms, {
                     kind: 'Normal', code: String(pms.length + 1), description: 'Normal',
                     model_path: '', sort_order: pms.length + 1, is_active: true,
-                  }])} className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1">
-                    <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+                  }])} className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1">
+                    <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
                   </button>
                   <button onClick={() => { if (sel !== null) { set('print_models', pms.filter((_, j) => j !== sel)); setSel(null); } }}
                     disabled={sel === null}
-                    className="flex items-center gap-2 text-[12px] hover:bg-[#e8e8e8] px-1 py-1 disabled:opacity-35">
-                    <span className="w-5 h-5 rounded-full bg-[#c0392b] text-white flex items-center justify-center text-[11px]">−</span> Apagar
+                    className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
+                    <span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[11px]">−</span> Apagar
                   </button>
                 </div>
               </div>
@@ -248,14 +248,14 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
 
             {tab === 'states' && (
               <div className="max-w-[420px]">
-                <div className="text-[11px] text-[#666] mb-2">
+                <div className="text-[11px] text-[#5C8891] mb-2">
                   Os estados por que este documento pode passar. É o circuito de aprovação —
                   sem ele, qualquer pessoa tira o que quer do armazém.
                 </div>
-                <div className="border border-[#c8c8c8]">
+                <div className="border border-[#CFE3E6]">
                   {(estados as any[]).map((s) => (
                     <label key={s.id}
-                      className="flex items-center gap-3 px-2 py-1.5 border-b border-[#eee] cursor-pointer hover:bg-[#f7f9fb]">
+                      className="flex items-center gap-3 px-2 py-1.5 border-b border-[#F7FAFA] cursor-pointer hover:bg-[#FFFFFF]">
                       <input type="checkbox" checked={sids.includes(s.id)} onChange={() => toggleS(s.id)} className="w-4 h-4" />
                       <span className="flex-1 px-3 py-1 text-[12px] font-bold text-center"
                         style={{ background: s.bg_color, color: s.text_color }}>
@@ -264,7 +264,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                     </label>
                   ))}
                   {(estados as any[]).length === 0 && (
-                    <div className="text-center text-[#999] py-6 text-[12px]">
+                    <div className="text-center text-[#7FA9B1] py-6 text-[12px]">
                       Sem estados. Crie-os em <b>Status dos documentos</b>.
                     </div>
                   )}
@@ -276,8 +276,8 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

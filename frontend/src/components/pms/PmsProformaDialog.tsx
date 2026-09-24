@@ -35,33 +35,33 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[560px] bg-[#f0f0f0] border border-[#8a8a8a] shadow-xl">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#3c3c3c' }}>
+      <div className="w-[560px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
           Fatura Proforma para a reserva {r.confirmation}
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#e74c3c] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
         <div className="p-3 flex flex-col gap-2 text-[12px]">
           <label className="flex flex-col gap-0.5">Entidade:
-            <select disabled className="border border-[#a0a0a0] p-1.5 bg-[#f4f4f4]"><option>{r.guest_name}</option></select>
+            <select disabled className="border border-[#7FA9B1] p-1.5 bg-[#F7FAFA]"><option>{r.guest_name}</option></select>
           </label>
           <label className="flex flex-col gap-0.5">Agrupado por:
-            <select disabled className="border border-[#a0a0a0] p-1.5 bg-[#f4f4f4]"><option>(Sem Agrupamento)</option></select>
+            <select disabled className="border border-[#7FA9B1] p-1.5 bg-[#F7FAFA]"><option>(Sem Agrupamento)</option></select>
           </label>
           <label className="flex flex-col gap-0.5">Formato:
-            <select value={formato} onChange={(e) => setFormato(e.target.value)} className="border border-[#a0a0a0] p-1.5 bg-white">
+            <select value={formato} onChange={(e) => setFormato(e.target.value)} className="border border-[#7FA9B1] p-1.5 bg-white">
               {FORMATOS.map((f) => <option key={f}>{f}</option>)}
             </select>
           </label>
         </div>
-        <div className="flex items-center gap-3 px-3 py-2 bg-[#e8e8e8] border-t border-[#c0c0c0]">
-          <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#333] hover:text-black"><Printer size={14} /> Imprimir</button>
+        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
+          <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#06333C] hover:text-black"><Printer size={14} /> Imprimir</button>
           <button onClick={() => aviso('"Enviar E-mail" ainda não está construído nesta fase do PMS.')}
             className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400"><Mail size={14} /> Enviar E-mail</button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#333] hover:text-black ml-auto">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#e74c3c] text-white"><X size={9} strokeWidth={3} /></span>
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#06333C] hover:text-black ml-auto">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
         </div>

@@ -15,8 +15,8 @@ const SOURCE_LABEL: Record<string, string> = { DIRECT: 'Normal', ONLINE: 'Online
 
 function Panel({ title, children, className = '' }: { title: string; children: any; className?: string }) {
   return (
-    <div className={`border border-[#c0c7d0] bg-white flex flex-col ${className}`}>
-      <div className="px-2 py-1 font-bold text-[11px] border-b border-[#c0c7d0] bg-[#eef1f4] flex-shrink-0">{title}</div>
+    <div className={`border border-[#CFE3E6] bg-white flex flex-col ${className}`}>
+      <div className="px-2 py-1 font-bold text-[11px] border-b border-[#CFE3E6] bg-[#F7FAFA] flex-shrink-0">{title}</div>
       <div className="p-2 flex flex-col gap-1.5 text-[11px] flex-1 overflow-auto">{children}</div>
     </div>
   );
@@ -24,13 +24,13 @@ function Panel({ title, children, className = '' }: { title: string; children: a
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-2">
-      <span className="w-[110px] flex-shrink-0 text-[#333]">{label}</span>
+      <span className="w-[110px] flex-shrink-0 text-[#06333C]">{label}</span>
       {children}
     </label>
   );
 }
-const inp = 'border border-[#a0a0a0] p-1 bg-white flex-1 min-w-0';
-const disabledInp = 'border border-[#a0a0a0] p-1 bg-[#f0f0f0] text-gray-400 flex-1 min-w-0 cursor-not-allowed';
+const inp = 'border border-[#7FA9B1] p-1 bg-white flex-1 min-w-0';
+const disabledInp = 'border border-[#7FA9B1] p-1 bg-[#F7FAFA] text-gray-400 flex-1 min-w-0 cursor-not-allowed';
 
 /** Nova Reserva — usado tanto em Reservas como em Disponibilidade ("Criar Reserva").
  * Traz o seu próprio cabeçalho (não é um popup genérico) — igual ao resto dos
@@ -121,13 +121,13 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[1180px] max-w-[97vw] bg-[#f0f0f0] border border-[#8a8a8a] shadow-2xl flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#3c3c3c' }}>
+      <div className="w-[1180px] max-w-[97vw] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#06333C' }}>
           {editing ? `${reservation.confirmation}, ${reservation.guest_name}, - Reserva` : 'Nova Reserva'}
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
             <button onClick={onClose} title="Fechar"
-              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#e74c3c] text-white hover:brightness-110">
+              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
               <X size={12} strokeWidth={3} />
             </button>
           </div>
@@ -140,10 +140,10 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
             <Row label="Check-Out:"><input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className={inp} /></Row>
             <Row label="Noites:">
               <div className="flex items-center gap-1 flex-1">
-                <span className="flex-1 border border-[#a0a0a0] p-1 bg-white">{nights}</span>
+                <span className="flex-1 border border-[#7FA9B1] p-1 bg-white">{nights}</span>
                 <div className="flex flex-col">
-                  <button onClick={() => setCheckOut(plusDays(checkOut, 1))} className="border border-[#a0a0a0] border-b-0 px-1 bg-white hover:bg-[#eee]"><ChevronUp size={10} /></button>
-                  <button onClick={() => nights > 1 && setCheckOut(plusDays(checkOut, -1))} className="border border-[#a0a0a0] px-1 bg-white hover:bg-[#eee]"><ChevronDown size={10} /></button>
+                  <button onClick={() => setCheckOut(plusDays(checkOut, 1))} className="border border-[#7FA9B1] border-b-0 px-1 bg-white hover:bg-[#F7FAFA]"><ChevronUp size={10} /></button>
+                  <button onClick={() => nights > 1 && setCheckOut(plusDays(checkOut, -1))} className="border border-[#7FA9B1] px-1 bg-white hover:bg-[#F7FAFA]"><ChevronDown size={10} /></button>
                 </div>
               </div>
             </Row>
@@ -173,7 +173,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
           {/* Entidades */}
           <Panel title="Entidades">
             {!guest ? (
-              <div className="text-red-600 font-bold flex-1">Por favor adicione um hóspede ou grupo!</div>
+              <div className="text-[#8C2B1F] font-bold flex-1">Por favor adicione um hóspede ou grupo!</div>
             ) : (
               <div className="flex-1">
                 <div className="font-semibold">{guest.name}</div>
@@ -181,7 +181,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
               </div>
             )}
             <button onClick={() => setShowEntity(true)}
-              className="flex items-center justify-center gap-1.5 py-1 bg-[#e8e8e8] border border-[#c0c0c0] hover:bg-[#ddd] font-semibold">
+              className="flex items-center justify-center gap-1.5 py-1 bg-[#F7FAFA] border border-[#CFE3E6] hover:bg-[#EEF4F5] font-semibold">
               <Plus size={13} /> Adicionar
             </button>
             <Row label="Pessoa de contacto:">
@@ -198,17 +198,17 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
               <div className="text-gray-400">A carregar…</div>
             ) : (
               <>
-                <div className="px-2 py-1.5 font-semibold" style={{ background: '#8ef0b0' }}>Livres: {availDay.free}</div>
-                <div className="px-2 py-1.5 font-semibold" style={{ background: '#7fe0ea' }}>Opção: {availDay.option}</div>
-                <div className="px-2 py-1.5 font-semibold" style={{ background: '#f5a3a3' }}>Ocupado: {availDay.booked}</div>
-                <div className="px-2 py-1.5 font-semibold" style={{ background: '#f7cf8f' }}>Lista Espera: {availDay.waitlist}</div>
+                <div className="px-2 py-1.5 font-semibold" style={{ background: '#CFE3E6' }}>Livres: {availDay.free}</div>
+                <div className="px-2 py-1.5 font-semibold" style={{ background: '#CFE3E6' }}>Opção: {availDay.option}</div>
+                <div className="px-2 py-1.5 font-semibold" style={{ background: '#B0392B' }}>Ocupado: {availDay.booked}</div>
+                <div className="px-2 py-1.5 font-semibold" style={{ background: '#CFE3E6' }}>Lista Espera: {availDay.waitlist}</div>
               </>
             )}
           </Panel>
 
           {/* Ocupação */}
           <Panel title="Ocupação">
-            <Row label="Quartos:"><input readOnly value={1} className={inp + ' bg-[#f4f4f4]'} title="Uma reserva = um quarto, nesta fase do PMS." /></Row>
+            <Row label="Quartos:"><input readOnly value={1} className={inp + ' bg-[#F7FAFA]'} title="Uma reserva = um quarto, nesta fase do PMS." /></Row>
             <Row label="Upg. de:">
               <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Upgrade de categoria'); }}>
                 <option>(nenhum)</option>
@@ -223,18 +223,18 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
             <Row label="Allotment:">
               <div className="flex gap-1 flex-1">
                 <input readOnly value={allotment ? allotment.code : '(nenhum)'} className={inp} />
-                {allotment && <button onClick={() => setAllotment(null)} className="border border-[#a0a0a0] px-1.5 bg-white">×</button>}
+                {allotment && <button onClick={() => setAllotment(null)} className="border border-[#7FA9B1] px-1.5 bg-white">×</button>}
                 <button onClick={() => setShowBlockPicker(true)} title="Procurar bloco"
-                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#3c3c3c] text-white"><Plus size={13} /></button>
+                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#06333C] text-white"><Plus size={13} /></button>
               </div>
             </Row>
             <Row label="Quarto:">
               <div className="flex gap-1 flex-1">
                 <input readOnly value={room ? room.number : ''} className={inp} />
                 <button onClick={() => setShowRoomPicker(true)} disabled={!roomType} title="Mostrar quartos livres"
-                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#3c8f52] text-white disabled:opacity-40"><Plus size={13} /></button>
+                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#0B4F5C] text-white disabled:opacity-40"><Plus size={13} /></button>
                 <button onClick={() => setRoom(null)} disabled={!room} title="Limpar"
-                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#c0392b] text-white disabled:opacity-40"><Minus size={13} /></button>
+                  className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#B0392B] text-white disabled:opacity-40"><Minus size={13} /></button>
               </div>
             </Row>
             <label className="flex items-center gap-4">
@@ -247,7 +247,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
                 </span>
               )}
             </label>
-            <button onClick={() => naoConstruido('Tipos de limpeza')} className="mt-auto py-1 bg-[#e8e8e8] border border-[#c0c0c0] hover:bg-[#ddd] text-gray-500">
+            <button onClick={() => naoConstruido('Tipos de limpeza')} className="mt-auto py-1 bg-[#F7FAFA] border border-[#CFE3E6] hover:bg-[#EEF4F5] text-gray-500">
               Tipos de limpeza
             </button>
           </Panel>
@@ -285,7 +285,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
               <input type="checkbox" checked={manualPrice} onChange={(e) => { setManualPrice(e.target.checked); if (e.target.checked) setRate(String(autoRate ?? '')); }} /> Preço Manual
             </label>
             <Row label="Preço:">
-              <input type="number" value={effectiveRate} disabled={!manualPrice} onChange={(e) => setRate(e.target.value)} className={manualPrice ? inp : inp + ' bg-[#f4f4f4]'} />
+              <input type="number" value={effectiveRate} disabled={!manualPrice} onChange={(e) => setRate(e.target.value)} className={manualPrice ? inp : inp + ' bg-[#F7FAFA]'} />
             </Row>
           </Panel>
 
@@ -326,18 +326,18 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
               </select>
             </Row>
             <label className="flex flex-col gap-0.5 flex-1">Notas:
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="border border-[#a0a0a0] p-1 bg-white flex-1" />
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="border border-[#7FA9B1] p-1 bg-white flex-1" />
             </label>
           </Panel>
         </div>
 
-        <div className="flex justify-end gap-2 px-3 py-1.5 bg-[#e8e8e8] border-t border-[#c0c0c0] flex-shrink-0">
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#333] hover:text-black px-2">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#e74c3c] text-white"><X size={9} strokeWidth={3} /></span>
+        <div className="flex justify-end gap-2 px-3 py-1.5 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#06333C] hover:text-black px-2">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
           <button onClick={save} disabled={saving}
-            className="px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-50" style={{ background: '#2b7a3b' }}>
+            className="px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-50" style={{ background: '#0B4F5C' }}>
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
         </div>

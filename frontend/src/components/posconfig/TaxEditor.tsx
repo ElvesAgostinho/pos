@@ -4,8 +4,8 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 
 /**
  * IMPOSTO — a taxa que sai na fatura. É a MESMA que o motor fiscal usa (não há
@@ -56,31 +56,31 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo imposto' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo imposto' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
         <Box title="Identificação" className="max-w-[860px]">
         <div className="space-y-2 pt-1.5">
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[160px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
+            <span className="w-[160px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[160px] text-[#333]">Descrição:<span className="text-[#a01818]">*</span></span>
+            <span className="w-[160px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
               className={`${inp} flex-1`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[160px] text-[#333]">Conta de Contabilidade:</span>
+            <span className="w-[160px] text-[#06333C]">Conta de Contabilidade:</span>
             <input value={d.accounting_account || ''} onChange={(e) => set('accounting_account', e.target.value)}
               placeholder="34.3.1 (IVA liquidado)" className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[160px] text-[#333]">Classe IVA:</span>
+            <span className="w-[160px] text-[#06333C]">Classe IVA:</span>
             <input value={d.tax_class || ''} onChange={(e) => set('tax_class', e.target.value)}
               placeholder="NOR · RED · ISE (SAF-T)" className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
@@ -103,18 +103,18 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
         </Box>
 
         {/* Versões com validade */}
-        <div className="flex mt-4 max-w-[860px]" style={{ border: '4px groove #c0c0c0' }}>
+        <div className="flex mt-4 max-w-[860px]" style={{ border: '4px groove #CFE3E6' }}>
           <div className="flex-1">
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#f0f0f0]">
-                <th className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Válido de</th>
-                <th className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Válido até</th>
-                <th className="text-right font-normal px-2 py-1.5 border-b border-[#d0d0d0]">Valor</th>
+              <thead><tr className="bg-[#F7FAFA]">
+                <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Válido de</th>
+                <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Válido até</th>
+                <th className="text-right font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Valor</th>
               </tr></thead>
               <tbody>
                 {vs.map((v, i) => (
                   <tr key={i} onClick={() => setSel(i)}
-                    className={`border-b border-[#eee] cursor-pointer ${sel === i ? 'bg-[#cfe2f3]' : 'hover:bg-[#f5f9ff]'}`}>
+                    className={`border-b border-[#F7FAFA] cursor-pointer ${sel === i ? 'bg-[#EEF4F5]' : 'hover:bg-[#FFFFFF]'}`}>
                     <td className="p-0.5"><input type="date" value={(v.valid_from || '').slice(0, 10)}
                       onChange={(e) => setV(i, 'valid_from', e.target.value)} className={cell} /></td>
                     <td className="p-0.5"><input type="date" value={(v.valid_to || '').slice(0, 10)}
@@ -124,7 +124,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
                   </tr>
                 ))}
                 {vs.length === 0 && (
-                  <tr><td colSpan={3} className="text-center text-[#999] py-10">
+                  <tr><td colSpan={3} className="text-center text-[#7FA9B1] py-10">
                     Sem períodos. Carregue em "Adicionar" para datar a taxa.
                   </td></tr>
                 )}
@@ -132,33 +132,33 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
             </table>
           </div>
 
-          <div className="w-[160px] bg-[#f4f4f4] border-l border-[#d5d5d5] py-2">
-            <button onClick={addV} className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#e8e8e8]">
-              <span className="w-5 h-5 rounded-full bg-[#18181B] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+          <div className="w-[160px] bg-[#F7FAFA] border-l border-[#EEF4F5] py-2">
+            <button onClick={addV} className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#F7FAFA]">
+              <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={delV} disabled={sel === null}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#e8e8e8] disabled:opacity-35">
-              <span className="w-5 h-5 rounded-full bg-[#c0392b] text-white flex items-center justify-center text-[11px]">−</span> Apagar
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#F7FAFA] disabled:opacity-35">
+              <span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[11px]">−</span> Apagar
             </button>
           </div>
         </div>
 
         {overlap && (
-          <div className="max-w-[860px] mt-2 px-3 py-2 bg-[#fff7e6] border border-[#e0c080] text-[11px] text-[#8a6100]">
+          <div className="max-w-[860px] mt-2 px-3 py-2 bg-[#F7FAFA] border border-[#CFE3E6] text-[11px] text-[#0B4F5C]">
             <b>Atenção:</b> há períodos sobrepostos — duas taxas válidas no mesmo dia.
             O sistema usa a mais recente, mas isto costuma ser um erro de datas.
           </div>
         )}
 
-        <div className="max-w-[860px] mt-2 text-[11px] text-[#666]">
+        <div className="max-w-[860px] mt-2 text-[11px] text-[#5C8891]">
           Em vigor hoje: <b>{d.current_rate ?? d.percentage}%</b>. Datar a taxa é o que
           permite que uma fatura de Março continue a ser recalculada com a taxa de Março.
         </div>
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

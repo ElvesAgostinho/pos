@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#333]">{label}</span>
+      <span className="w-[120px] flex-shrink-0 text-[#06333C]">{label}</span>
       {children}
     </label>
   );
@@ -82,9 +82,9 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo modelo' : `A editar ${d.code}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo modelo' : `A editar ${d.code}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -167,7 +167,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
                 <input value={d.bcc || ''} onChange={(e) => set('bcc', e.target.value)} className={`${inp} flex-1`} style={inputStyle} />
               </Row>
               {d.is_sub_template && (
-                <div className="text-[11px] text-[#666] bg-[#f7f7f7] border border-[#e0e0e0] px-2 py-1">
+                <div className="text-[11px] text-[#5C8891] bg-[#F7FAFA] border border-[#EEF4F5] px-2 py-1">
                   Sub-modelo: não se envia sozinho — é incluído por outros modelos.
                 </div>
               )}
@@ -178,15 +178,15 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
 
         <div className="max-w-[1100px] mt-2">
           {/* Línguas */}
-          <div className="flex border-b-2 border-[#18181B] mt-3">
+          <div className="flex border-b-2 border-[#062A31] mt-3">
             {culturas.map((c) => {
               const tem = (d.texts || []).some((t: any) => t.culture === c && (t.subject || t.body));
               return (
                 <button key={c} onClick={() => setCultura(c)}
                   className={`px-6 py-1.5 text-[12px] font-semibold border-b-[3px] ${atual === c
-                    ? 'border-[#18181B] text-[#111] bg-white' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+                    ? 'border-[#062A31] text-[#062A31] bg-white' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
                   {c}
-                  {!tem && <span className="ml-1 text-[#c0392b]" title="Sem texto nesta língua">●</span>}
+                  {!tem && <span className="ml-1 text-[#B0392B]" title="Sem texto nesta língua">●</span>}
                 </button>
               );
             })}
@@ -199,15 +199,15 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
                   className={`${inp} flex-1`} style={inputStyle} />
               </Row>
               <label className="flex items-start gap-3 text-[12px]">
-                <span className="w-[120px] flex-shrink-0 text-[#333] pt-1">Texto:</span>
+                <span className="w-[120px] flex-shrink-0 text-[#06333C] pt-1">Texto:</span>
                 <textarea value={texto.body || ''} onChange={(e) => setTexto('body', e.target.value)} rows={10}
                   className={`${inp} flex-1 font-mono`} style={inputStyle} />
               </label>
             </div>
 
             {/* Variáveis */}
-            <div className="w-[300px] border border-[#c8c8c8] flex flex-col">
-              <div className="px-2 py-1.5 bg-[#f0f0f0] text-[12px] font-bold border-b border-[#d0d0d0]">
+            <div className="w-[300px] border border-[#CFE3E6] flex flex-col">
+              <div className="px-2 py-1.5 bg-[#F7FAFA] text-[12px] font-bold border-b border-[#EEF4F5]">
                 Variáveis — clique para inserir
               </div>
               <div className="h-[240px] overflow-auto">
@@ -215,13 +215,13 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
                   <tbody>
                     {(variaveis as any[]).slice(0, 200).map((v) => (
                       <tr key={v.id} onClick={() => inserir(v.field)}
-                        className="border-b border-[#eee] cursor-pointer hover:bg-[#e6f0fa]">
-                        <td className="px-2 py-1 font-mono text-[#1a4f8a]">@Model[0].{v.field}</td>
-                        <td className="px-2 py-1 text-[#666]">{v.name}</td>
+                        className="border-b border-[#F7FAFA] cursor-pointer hover:bg-[#F7FAFA]">
+                        <td className="px-2 py-1 font-mono text-[#0B4F5C]">@Model[0].{v.field}</td>
+                        <td className="px-2 py-1 text-[#5C8891]">{v.name}</td>
                       </tr>
                     ))}
                     {(variaveis as any[]).length === 0 && (
-                      <tr><td className="text-center text-[#999] py-6">
+                      <tr><td className="text-center text-[#7FA9B1] py-6">
                         Sem variáveis. Crie-as em <b>Modelos - Variáveis</b>.
                       </td></tr>
                     )}
@@ -233,7 +233,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
 
           {previa && (
             <div className={`border mt-3 ${previa.unknown?.length
-              ? 'border-[#e6b0aa] bg-[#fdecea]' : 'border-[#b6d7b9] bg-[#e8f5e9]'}`}>
+              ? 'border-[#B0392B] bg-[#F7FAFA]' : 'border-[#CFE3E6] bg-[#F7FAFA]'}`}>
               <div className="px-3 py-1.5 text-[12px] font-bold border-b border-black/10">
                 Pré-visualização ({atual}) — {previa.detail}
               </div>
@@ -247,10 +247,10 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
       </div>
 
       <Toolbar actions={[
-        { icon: '🔍', label: prever.isPending ? 'A gerar…' : 'Pré-visualizar', color: '#1a73c8',
+        { icon: '🔍', label: prever.isPending ? 'A gerar…' : 'Pré-visualizar', color: '#5C8891',
           disabled: isNew, onClick: () => prever.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

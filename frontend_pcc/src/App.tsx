@@ -88,7 +88,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#e0e0e0] font-sans">
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#EEF4F5] font-sans">
       <Topbar
         onSelectView={handleSelectView}
         userName={user?.name}
@@ -116,7 +116,7 @@ function App() {
         {activeView ? (
           <MainContent activeView={activeView} />
         ) : (
-          <div className="flex-1 flex flex-col bg-[#e6e6e6] items-center justify-center text-gray-400">
+          <div className="flex-1 flex flex-col bg-[#F7FAFA] items-center justify-center text-gray-400">
             <h2 className="text-xl font-bold mb-2 text-gray-500">Platform Control Center</h2>
             <p>Selecione uma opção no menu para começar.</p>
           </div>

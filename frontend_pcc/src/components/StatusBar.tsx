@@ -9,7 +9,7 @@ interface StatusBarProps {
 
 export default function StatusBar({ openTabs = [], activeView = '', onSelectTab, viewMetadata = {} }: StatusBarProps) {
   return (
-    <div className="bg-[#2d2d2d] text-[#b0b0b0] h-7 flex items-center justify-between px-2 text-[10px] select-none border-t border-black">
+    <div className="bg-[#06333C] text-[#CFE3E6] h-7 flex items-center justify-between px-2 text-[10px] select-none border-t border-black">
       
       {/* Left side: Taskbar tabs */}
       <div className="flex items-center h-full space-x-0.5">
@@ -22,9 +22,9 @@ export default function StatusBar({ openTabs = [], activeView = '', onSelectTab,
             <div 
               key={tab}
               onClick={() => onSelectTab && onSelectTab(tab)}
-              className={`flex items-center px-2 py-1 h-full max-w-[150px] cursor-pointer hover:bg-[#404040] border-t-2 ${
+              className={`flex items-center px-2 py-1 h-full max-w-[150px] cursor-pointer hover:bg-[#0B4F5C] border-t-2 ${
                 isActive 
-                  ? 'bg-[#404040] text-white border-white' 
+                  ? 'bg-[#0B4F5C] text-white border-white' 
                   : 'bg-transparent text-gray-400 border-transparent'
               }`}
             >

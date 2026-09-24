@@ -26,15 +26,15 @@ export default function WhLocationsView() {
     <ClassicWindow title="Localizações de Armazém" icon={<MapPin size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Localizações: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
-          <select value={wh} onChange={(e) => setWh(e.target.value)} className="border border-[#a0a0a0] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
+          <select value={wh} onChange={(e) => setWh(e.target.value)} className="border border-[#7FA9B1] p-1 bg-white">
             <option value="">Todos os armazéns</option>
             {warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
           </select>
           <span className="text-gray-400">|</span>
-          <input placeholder="Código (A-01-03)" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#a0a0a0] p-1 w-28" />
-          <input placeholder="Descrição" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <select value={f.location_type} onChange={(e) => setF({ ...f, location_type: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+          <input placeholder="Código (A-01-03)" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#7FA9B1] p-1 w-28" />
+          <input placeholder="Descrição" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <select value={f.location_type} onChange={(e) => setF({ ...f, location_type: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
             {Object.entries(LOC_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
@@ -45,7 +45,7 @@ export default function WhLocationsView() {
             { header: 'Descrição', accessor: 'name', width: '34%' },
             { header: 'Tipo', accessor: (r: any) => LOC_TYPES[r.location_type] || r.location_type, width: '20%' },
             { header: 'Armazém', accessor: 'warehouse_name', width: '22%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '6%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
           ]} />
         </div>
       </div>

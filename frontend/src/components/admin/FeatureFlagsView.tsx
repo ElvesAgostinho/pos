@@ -27,17 +27,17 @@ export default function FeatureFlagsView() {
   return (
     <ClassicWindow title="Funcionalidades (Licenciamento por Módulo)" icon={<SlidersHorizontal size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Ligue/desligue funcionalidades dentro dos módulos licenciados · os ecrãs desligados desaparecem do menu</div>}>
-      <div className="p-4 space-y-4 bg-[#e6e6e6] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#F7FAFA] h-full overflow-auto">
         {Object.entries(groups).map(([mod, feats]) => (
-          <div key={mod} className="bg-white border border-[#c0c0c0]">
-            <div className="px-3 py-1.5 bg-[#B08D3C] text-white text-[12px] font-bold">{MOD_NAME[mod] || mod}</div>
+          <div key={mod} className="bg-white border border-[#CFE3E6]">
+            <div className="px-3 py-1.5 bg-[#5C8891] text-white text-[12px] font-bold">{MOD_NAME[mod] || mod}</div>
             {feats.map((f: any) => (
-              <div key={f.key} className="flex items-center justify-between px-3 py-2 border-b border-[#eee] text-[13px]">
+              <div key={f.key} className="flex items-center justify-between px-3 py-2 border-b border-[#F7FAFA] text-[13px]">
                 <div>
                   <div className="font-semibold">{f.name}</div>
                   <div className="text-[10px] text-gray-500 font-mono">{f.key}</div>
                 </div>
-                <button onClick={() => toggle(f.key, !f.active)} className="flex items-center gap-1.5 font-bold" style={{ color: f.active ? '#1f9d55' : '#999' }}>
+                <button onClick={() => toggle(f.key, !f.active)} className="flex items-center gap-1.5 font-bold" style={{ color: f.active ? '#0B4F5C' : '#7FA9B1' }}>
                   {f.active ? <ToggleRight size={26} /> : <ToggleLeft size={26} />}{f.active ? 'Ativa' : 'Desligada'}
                 </button>
               </div>

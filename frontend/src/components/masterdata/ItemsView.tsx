@@ -10,12 +10,12 @@ import type { MdItem } from '../../api/masterdata';
 
 const money = (v: any) => v == null || v === '' ? '—' : Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const typeLabel = (v: string) => ITEM_TYPES.find((t) => t.value === v)?.label || v;
-const inp = 'border border-[#a0a0a0] p-1 bg-white focus:outline-none focus:ring-1 focus:ring-[#B08D3C]';
+const inp = 'border border-[#7FA9B1] p-1 bg-white focus:outline-none focus:ring-1 focus:ring-[#5C8891]';
 
 function Field({ label, children, req }: any) {
   return (
     <div className="flex items-center gap-2 mb-1.5">
-      <label className="w-36 text-right text-gray-600">{label}{req && <span className="text-red-600"> *</span>}</label>
+      <label className="w-36 text-right text-gray-600">{label}{req && <span className="text-[#8C2B1F]"> *</span>}</label>
       {children}
     </div>
   );
@@ -60,16 +60,16 @@ export default function ItemsView() {
   if (mode === 'edit') {
     return (
       <ClassicWindow title={editingId ? `Editar Artigo — ${form.code || ''}` : 'Novo Artigo'} icon={<Package size={14} className="text-gray-300" />}
-        footer={<><ClassicButton icon={Save} label="Gravar Artigo" onClick={save} /><ClassicButton label="Cancelar" onClick={() => setMode('list')} /><div className="text-red-600 text-[11px]">{err}</div></>}>
-        <div className="flex flex-col h-full bg-[#f0f0f0] text-[11px]">
+        footer={<><ClassicButton icon={Save} label="Gravar Artigo" onClick={save} /><ClassicButton label="Cancelar" onClick={() => setMode('list')} /><div className="text-[#8C2B1F] text-[11px]">{err}</div></>}>
+        <div className="flex flex-col h-full bg-[#F7FAFA] text-[11px]">
           {/* Separadores */}
-          <div className="flex gap-0.5 px-2 pt-2 border-b border-[#a0a0a0]">
+          <div className="flex gap-0.5 px-2 pt-2 border-b border-[#7FA9B1]">
             {TABS.map((tt) => (
-              <button key={tt} onClick={() => setTab(tt)} className={`px-4 py-1.5 border border-b-0 rounded-t ${tab === tt ? 'bg-white border-[#a0a0a0] font-bold text-[#B08D3C]' : 'bg-[#dcdcdc] border-[#c0c0c0] text-gray-600'}`}>{tt}</button>
+              <button key={tt} onClick={() => setTab(tt)} className={`px-4 py-1.5 border border-b-0 rounded-t ${tab === tt ? 'bg-white border-[#7FA9B1] font-bold text-[#5C8891]' : 'bg-[#EEF4F5] border-[#CFE3E6] text-gray-600'}`}>{tt}</button>
             ))}
           </div>
           <div className="flex-1 overflow-auto p-4">
-            <div className="border border-[#a0a0a0] bg-white p-3 max-w-2xl">
+            <div className="border border-[#7FA9B1] bg-white p-3 max-w-2xl">
               {tab === 'Geral' && <>
                 <Field label="Código" req><input value={form.code || ''} onChange={(e) => set({ code: e.target.value })} className={`${inp} w-48`} /></Field>
                 <Field label="Designação" req><input value={form.name || ''} onChange={(e) => set({ name: e.target.value })} className={`${inp} flex-1`} /></Field>
@@ -87,7 +87,7 @@ export default function ItemsView() {
                 <Field label="IVA %"><input type="number" value={form.tax_percentage ?? 0} onChange={(e) => set({ tax_percentage: e.target.value })} className={`${inp} w-24 text-right`} /></Field>
                 <Field label="Custo médio atual"><span className="font-mono">{money(form.current_average_cost)} Kz</span> <span className="text-gray-400 ml-2">(calculado pelo motor de stock)</span></Field>
                 {form.sale_price && form.current_average_cost != null && Number(form.current_average_cost) > 0 && (
-                  <Field label="Margem"><span className="font-bold text-green-700">{((1 - Number(form.current_average_cost) / Number(form.sale_price)) * 100).toFixed(1)}%</span></Field>
+                  <Field label="Margem"><span className="font-bold text-[#0B4F5C]">{((1 - Number(form.current_average_cost) / Number(form.sale_price)) * 100).toFixed(1)}%</span></Field>
                 )}
               </>}
               {tab === 'Stock & Compras' && <>
@@ -115,15 +115,15 @@ export default function ItemsView() {
       accessor: (r: MdItem) => <GridToggle endpoint="inventory/items" id={r.id} field="is_active"
         value={!!r.is_active} invalidate="masterdata"
         title="Desligar tira o artigo da venda no POS (o histórico mantém-se)" /> },
-    { header: '', accessor: (r: MdItem) => <button onClick={(e) => { e.stopPropagation(); if (confirm(`Apagar o artigo ${r.name}?`)) delItem.mutate(r.id!); }} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '5%' },
+    { header: '', accessor: (r: MdItem) => <button onClick={(e) => { e.stopPropagation(); if (confirm(`Apagar o artigo ${r.name}?`)) delItem.mutate(r.id!); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '5%' },
   ];
 
   return (
     <ClassicWindow title="Artigos (Master Data)" icon={<Package size={14} className="text-gray-300" />}
       footer={<><ClassicButton icon={Plus} label="Novo Artigo" onClick={openNew} /><div className="text-gray-600">Nº registos: {items.length}{isLoading ? ' (a carregar…)' : ''}</div></>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px]">
-          <div className="flex items-center border border-[#a0a0a0] bg-white px-1">
+        <div className="flex items-center gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
+          <div className="flex items-center border border-[#7FA9B1] bg-white px-1">
             <Search size={12} className="text-gray-500" />
             <input placeholder="Pesquisar código, designação ou código de barras…" value={search} onChange={(e) => setSearch(e.target.value)} className="p-1 focus:outline-none w-72" />
           </div>

@@ -26,10 +26,10 @@ export default function DashboardMDMView() {
   ).map(([k, v]) => ({ name: ITEM_TYPE_LABEL[k] || k, artigos: v as number }));
 
   const StatCard = ({ title, value, subtitle }: any) => (
-    <div className="bg-[#f0f0f0] border-2 border-white border-b-[#a0a0a0] border-r-[#a0a0a0] p-4 flex flex-col justify-between">
+    <div className="bg-[#F7FAFA] border-2 border-white border-b-[#7FA9B1] border-r-[#7FA9B1] p-4 flex flex-col justify-between">
       <div className="mb-2">
         <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
-        <div className="text-2xl font-bold text-[#B08D3C]">{value}</div>
+        <div className="text-2xl font-bold text-[#5C8891]">{value}</div>
       </div>
       <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>
     </div>
@@ -37,8 +37,8 @@ export default function DashboardMDMView() {
 
   return (
     <ClassicWindow title="Dashboard — Master Data">
-      <div className="bg-[#e6e6e6] min-h-full font-sans p-4 overflow-y-auto">
-        <div className="flex justify-between items-center mb-4 border-b border-[#a0a0a0] pb-2">
+      <div className="bg-[#F7FAFA] min-h-full font-sans p-4 overflow-y-auto">
+        <div className="flex justify-between items-center mb-4 border-b border-[#7FA9B1] pb-2">
           <div>
             <h1 className="text-lg font-bold text-black">Resumo Operacional (Master Data)</h1>
             <p className="text-xs text-gray-600 mt-1">Fonte única de cadastros — dados em tempo real.</p>
@@ -52,16 +52,16 @@ export default function DashboardMDMView() {
           <StatCard title="Tipos de Artigo" value={byType.length} subtitle="Matéria-prima, produzidos…" />
         </div>
 
-        <div className="bg-[#f0f0f0] border-2 border-white border-b-[#a0a0a0] border-r-[#a0a0a0] p-4">
+        <div className="bg-[#F7FAFA] border-2 border-white border-b-[#7FA9B1] border-r-[#7FA9B1] p-4">
           <h3 className="text-xs font-bold text-black mb-4">Distribuição de Artigos por Tipo</h3>
-          <div className="h-56 w-full bg-white border border-[#a0a0a0]">
+          <div className="h-56 w-full bg-white border border-[#7FA9B1]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={byType} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ccc" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EEF4F5" />
                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'black' }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'black' }} />
-                <RechartsTooltip contentStyle={{ borderRadius: 0, border: '1px solid black', backgroundColor: '#ffffaa', fontSize: 10 }} />
-                <Bar dataKey="artigos" fill="#B08D3C" />
+                <RechartsTooltip contentStyle={{ borderRadius: 0, border: '1px solid black', backgroundColor: '#EEF4F5', fontSize: 10 }} />
+                <Bar dataKey="artigos" fill="#5C8891" />
               </BarChart>
             </ResponsiveContainer>
           </div>

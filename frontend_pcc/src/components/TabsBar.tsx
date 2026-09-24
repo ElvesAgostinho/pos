@@ -18,7 +18,7 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
   const ActiveIcon = activeMeta.icon;
 
   return (
-    <div className="flex items-center justify-between bg-[#4d4d4d] h-7 px-2 select-none border-b border-[#333]">
+    <div className="flex items-center justify-between bg-[#0B4F5C] h-7 px-2 select-none border-b border-[#06333C]">
 
       {/* Window Title */}
       <div className="flex items-center text-white text-[12px] font-medium">
@@ -29,15 +29,15 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
       {/* Sessão + Window Controls (Classic Windows style) */}
       <div className="flex items-center space-x-1 pr-1">
         {userName && (
-          <span className="text-[#cfe3ff] text-[11px] mr-2 flex items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#90c040] mr-1.5" /> {userName}
+          <span className="text-[#F7FAFA] text-[11px] mr-2 flex items-center">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#5C8891] mr-1.5" /> {userName}
           </span>
         )}
         {onToggleNotes && (
           <div
             onClick={onToggleNotes}
             title="Bloco de Notas"
-            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#666]"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#5C8891]"
           >
             <StickyNote size={11} />
           </div>
@@ -46,7 +46,7 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
           <div
             onClick={onCloseAllTabs}
             title="Fechar todos os separadores"
-            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#666]"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#5C8891]"
           >
             <XCircle size={11} />
           </div>
@@ -55,7 +55,7 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
           <div
             onClick={onLock}
             title="Bloquear"
-            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#666]"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#5C8891]"
           >
             <Lock size={11} />
           </div>
@@ -64,20 +64,20 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
           <div
             onClick={onLogout}
             title="Terminar sessão"
-            className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#e74c3c] border border-[#c0392b] text-white hover:brightness-110 mr-1"
+            className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#B0392B] border border-[#B0392B] text-white hover:brightness-110 mr-1"
           >
             <LogOut size={11} />
           </div>
         )}
-        <div className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#f1c40f] border border-[#d4ac0d] hover:brightness-110">
+        <div className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#5C8891] border border-[#5C8891] hover:brightness-110">
           <div className="w-2 h-[2px] bg-black mb-[-5px]"></div>
         </div>
-        <div className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#f1c40f] border border-[#d4ac0d] hover:brightness-110">
+        <div className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#5C8891] border border-[#5C8891] hover:brightness-110">
           <div className="w-2 h-2 border border-black"></div>
         </div>
         <div
           onClick={() => onCloseTab(activeView)}
-          className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#e74c3c] border border-[#c0392b] text-white hover:brightness-110"
+          className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#B0392B] border border-[#B0392B] text-white hover:brightness-110"
         >
           <X size={12} strokeWidth={3} />
         </div>

@@ -38,24 +38,24 @@ async function printDocumentFrom(url: string, params: any = {}) {
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>${d.invoice_no}</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #111; margin: 0; padding: 24px 32px; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #062A31; margin: 0; padding: 24px 32px; }
     .head { display: flex; justify-content: space-between; align-items: flex-start; }
     .brand { font-size: 20px; font-weight: bold; }
-    .muted { color: #444; }
+    .muted { color: #0B4F5C; }
     .doc-title { font-weight: bold; font-size: 13px; }
     table { width: 100%; border-collapse: collapse; }
     .items { margin-top: 14px; }
-    .items th, .items td { border: 1px solid #999; padding: 4px 6px; }
-    .items th { background: #f0f0f0; text-align: left; }
+    .items th, .items td { border: 1px solid #7FA9B1; padding: 4px 6px; }
+    .items th { background: #F7FAFA; text-align: left; }
     .num { text-align: right; }
     .rowbox { display: flex; gap: 24px; margin-top: 14px; }
-    .vat th, .vat td { border: 1px solid #999; padding: 3px 6px; font-size: 11px; }
+    .vat th, .vat td { border: 1px solid #7FA9B1; padding: 3px 6px; font-size: 11px; }
     .totals td { padding: 3px 8px; }
-    .totals .lbl { color: #333; } .totals .val { text-align: right; font-weight: bold; }
+    .totals .lbl { color: #06333C; } .totals .val { text-align: right; font-weight: bold; }
     .words { margin-top: 10px; font-style: italic; }
-    .mention { margin-top: 18px; font-size: 10px; color: #333; border-top: 1px solid #ccc; padding-top: 6px; }
-    .foot { margin-top: 40px; font-size: 10px; color: #333; }
-    .sign { margin-top: 34px; border-top: 1px solid #333; width: 240px; text-align: center; font-size: 10px; padding-top: 3px; }
+    .mention { margin-top: 18px; font-size: 10px; color: #06333C; border-top: 1px solid #EEF4F5; padding-top: 6px; }
+    .foot { margin-top: 40px; font-size: 10px; color: #06333C; }
+    .sign { margin-top: 34px; border-top: 1px solid #06333C; width: 240px; text-align: center; font-size: 10px; padding-top: 3px; }
     @media print { body { padding: 10mm; } }
   </style></head><body onload="window.print()">
     <div class="head">
@@ -102,7 +102,7 @@ async function printDocumentFrom(url: string, params: any = {}) {
     ${pays ? `<table class="vat" style="width:auto;margin-top:12px"><thead><tr><th>Modo Pagamento</th><th>Valor</th></tr></thead><tbody>${pays}</tbody></table>` : ''}
 
     <div class="sign">(assinatura)</div>
-    <div class="mention">${p.print_mention || ''} &nbsp;/&nbsp; ${d.invoice_no}${p.qr_data ? `<div style="margin-top:4px;color:#888;word-break:break-all">QR: ${p.qr_data}</div>` : ''}</div>
+    <div class="mention">${p.print_mention || ''} &nbsp;/&nbsp; ${d.invoice_no}${p.qr_data ? `<div style="margin-top:4px;color:#5C8891;word-break:break-all">QR: ${p.qr_data}</div>` : ''}</div>
 
     ${(p.bank_accounts || []).length ? `
     <div class="banks">

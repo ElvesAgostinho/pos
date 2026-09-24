@@ -5,7 +5,7 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph } from './kit';
 import PermissoesBotao from './PermissoesBotao';
 
-const inp = 'border border-[#8a95a3] px-2 py-[3px] text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-[3px] text-[12px] bg-white';
 
 /**
  * CONTAS CORRENTES — quem deve, quanto deve, e quanto já deixou adiantado.
@@ -62,7 +62,7 @@ export default function PosCurrentAccounts() {
 
   const Campo = ({ k, label }: any) => (
     <div className="flex items-center gap-2">
-      <span className="text-[12px] text-[#333] w-[100px]">{label}</span>
+      <span className="text-[12px] text-[#06333C] w-[100px]">{label}</span>
       <input value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
         onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
         className={`${inp} w-[190px]`} style={inputStyle} />
@@ -74,10 +74,10 @@ export default function PosCurrentAccounts() {
     const porLiquidar = det.documents.filter((d: any) => !d.settled && !d.rectifying);
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-3 py-2 bg-[#dbe7f3] text-[#1a4f8a] text-[13px] font-bold border-b border-[#a9c4de] flex items-center gap-3">
+        <div className="px-3 py-2 bg-[#F7FAFA] text-[#0B4F5C] text-[13px] font-bold border-b border-[#CFE3E6] flex items-center gap-3">
           <span>{det.entity.name} — [{det.entity.code}] NIF {det.entity.tax_id || '—'}</span>
           {det.entity.blocked && (
-            <span className="px-2 py-0.5 bg-[#a01818] text-white text-[11px]">
+            <span className="px-2 py-0.5 bg-[#B0392B] text-white text-[11px]">
               BLOQUEADA{det.entity.block_reason ? ` · ${det.entity.block_reason}` : ''}
             </span>
           )}
@@ -87,25 +87,25 @@ export default function PosCurrentAccounts() {
         </div>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className="flex-1 overflow-auto border-r border-[#e0e0e0]">
-            <div className="px-3 py-1.5 bg-[#e9e9e9] text-[12px] font-bold border-b border-[#d0d0d0]">
+          <div className="flex-1 overflow-auto border-r border-[#EEF4F5]">
+            <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold border-b border-[#EEF4F5]">
               Documentos ({porLiquidar.length} por liquidar)
             </div>
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#f4f4f4]">
+              <thead><tr className="bg-[#F7FAFA]">
                 {['Documento', 'Data', 'Total', 'Estado', ''].map((h) => (
-                  <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0]">{h}</th>
+                  <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">{h}</th>
                 ))}
               </tr></thead>
               <tbody>
                 {det.documents.map((d: any) => (
-                  <tr key={d.id} className="border-b border-[#eee]">
+                  <tr key={d.id} className="border-b border-[#F7FAFA]">
                     <td className="px-2 py-1 font-mono">{d.invoice_no}</td>
                     <td className="px-2 py-1">{d.date}</td>
                     <td className="px-2 py-1 text-right font-bold">{money(d.total)}</td>
                     <td className="px-2 py-1">
                       <span className={`px-2 py-0.5 text-[11px] font-semibold ${d.settled
-                        ? 'bg-[#e8f5e9] text-[#1f7a34]' : 'bg-[#fdecea] text-[#a01818]'}`}>
+                        ? 'bg-[#F7FAFA] text-[#0B4F5C]' : 'bg-[#F7FAFA] text-[#B0392B]'}`}>
                         {d.settled ? 'Liquidado' : 'Por receber'}
                       </span>
                     </td>
@@ -113,13 +113,13 @@ export default function PosCurrentAccounts() {
                       {!d.settled && !d.rectifying && (
                         <>
                           <button onClick={() => acao.mutate({ id: conta, action: 'settle', document: d.id })}
-                            className="text-[11px] text-[#1a4f8a] hover:underline">Receber</button>
+                            className="text-[11px] text-[#0B4F5C] hover:underline">Receber</button>
                           <button
                             disabled={Number(det.advance_balance) < Number(d.total)}
                             title={Number(det.advance_balance) < Number(d.total)
                               ? 'O adiantamento não chega' : 'Liquidar com o depósito da entidade'}
                             onClick={() => acao.mutate({ id: conta, action: 'settle', document: d.id, from_deposit: true })}
-                            className="text-[11px] text-[#1f7a34] hover:underline ml-3 disabled:text-[#bbb] disabled:no-underline">
+                            className="text-[11px] text-[#0B4F5C] hover:underline ml-3 disabled:text-[#CFE3E6] disabled:no-underline">
                             Usar depósito
                           </button>
                         </>
@@ -128,66 +128,66 @@ export default function PosCurrentAccounts() {
                   </tr>
                 ))}
                 {det.documents.length === 0 && (
-                  <tr><td colSpan={5} className="text-center text-[#999] py-8">Sem documentos.</td></tr>
+                  <tr><td colSpan={5} className="text-center text-[#7FA9B1] py-8">Sem documentos.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
 
           <div className="w-[42%] overflow-auto">
-            <div className="px-3 py-1.5 bg-[#e9e9e9] text-[12px] font-bold border-b border-[#d0d0d0]">
+            <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold border-b border-[#EEF4F5]">
               Cash Advance — depósitos
             </div>
-            <div className="p-3 flex items-end gap-2 border-b border-[#eee]">
+            <div className="p-3 flex items-end gap-2 border-b border-[#F7FAFA]">
               <div>
-                <div className="text-[11px] text-[#666] mb-1">Valor</div>
+                <div className="text-[11px] text-[#5C8891] mb-1">Valor</div>
                 <input id="dep" type="number" className={`${inp} w-[120px]`} style={inputStyle} />
               </div>
               <div className="flex-1">
-                <div className="text-[11px] text-[#666] mb-1">Motivo</div>
+                <div className="text-[11px] text-[#5C8891] mb-1">Motivo</div>
                 <input id="depm" className={`${inp} w-full`} style={inputStyle} />
               </div>
               <button onClick={() => {
                 const v = (document.getElementById('dep') as HTMLInputElement).value;
                 const m = (document.getElementById('depm') as HTMLInputElement).value;
                 acao.mutate({ id: conta, action: 'deposit', kind: 'IN', amount: v, reason: m });
-              }} className="px-3 py-1.5 bg-[#1f7a34] text-white text-[12px]">Depositar</button>
+              }} className="px-3 py-1.5 bg-[#0B4F5C] text-white text-[12px]">Depositar</button>
               <button onClick={() => {
                 const v = (document.getElementById('dep') as HTMLInputElement).value;
                 acao.mutate({ id: conta, action: 'deposit', kind: 'OUT', amount: v, reason: 'Devolução' });
-              }} className="px-3 py-1.5 border border-[#b0b0b0] text-[12px]">Devolver</button>
+              }} className="px-3 py-1.5 border border-[#CFE3E6] text-[12px]">Devolver</button>
             </div>
             <table className="w-full text-[12px] border-collapse">
               <tbody>
                 {det.deposits.map((x: any) => (
-                  <tr key={x.id} className="border-b border-[#eee]">
+                  <tr key={x.id} className="border-b border-[#F7FAFA]">
                     <td className="px-2 py-1">{new Date(x.created_at).toLocaleDateString('pt-PT')}</td>
                     <td className="px-2 py-1">{x.kind_display}</td>
-                    <td className="px-2 py-1 text-[#666]">{x.reason || ''}</td>
-                    <td className={`px-2 py-1 text-right font-bold ${x.kind === 'IN' ? 'text-[#1f7a34]' : 'text-[#a01818]'}`}>
+                    <td className="px-2 py-1 text-[#5C8891]">{x.reason || ''}</td>
+                    <td className={`px-2 py-1 text-right font-bold ${x.kind === 'IN' ? 'text-[#0B4F5C]' : 'text-[#B0392B]'}`}>
                       {x.kind === 'IN' ? '+' : '−'}{money(x.amount)}
                     </td>
                   </tr>
                 ))}
                 {det.deposits.length === 0 && (
-                  <tr><td colSpan={4} className="text-center text-[#999] py-8">Sem depósitos.</td></tr>
+                  <tr><td colSpan={4} className="text-center text-[#7FA9B1] py-8">Sem depósitos.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         </div>
 
-        <Toolbar actions={[{ label: 'Voltar', icon: '◀', color: '#6b6b6b', onClick: () => setConta(null) }]} />
+        <Toolbar actions={[{ label: 'Voltar', icon: '◀', color: '#5C8891', onClick: () => setConta(null) }]} />
       </div>
     );
   }
 
   // ---------- pesquisa ----------
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f0f0]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
       <div className="flex gap-3 p-3">
-        <fieldset className="bg-white px-3 pb-3 w-[220px]" style={{ border: '4px groove #c0c0c0' }}>
-          <legend className="text-[12px] text-[#333] px-1">Tipo de pesquisa</legend>
+        <fieldset className="bg-white px-3 pb-3 w-[220px]" style={{ border: '4px groove #CFE3E6' }}>
+          <legend className="text-[12px] text-[#06333C] px-1">Tipo de pesquisa</legend>
           {[['CC', 'Clientes (Conta Corrente)'], ['ALL', 'Clientes (Todos)']].map(([k, t]) => (
             <label key={k} className="flex items-start gap-2 py-1 text-[12px] cursor-pointer">
               <input type="radio" checked={scope === k} onChange={() => setScope(k)} className="mt-0.5" />
@@ -196,8 +196,8 @@ export default function PosCurrentAccounts() {
           ))}
         </fieldset>
 
-        <fieldset className="bg-white flex-1 px-3 pb-3" style={{ border: '4px groove #c0c0c0' }}>
-          <legend className="text-[12px] text-[#333] px-1">Critérios de pesquisa</legend>
+        <fieldset className="bg-white flex-1 px-3 pb-3" style={{ border: '4px groove #CFE3E6' }}>
+          <legend className="text-[12px] text-[#06333C] px-1">Critérios de pesquisa</legend>
           <div className="flex gap-6">
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-[12px] cursor-pointer">
@@ -205,7 +205,7 @@ export default function PosCurrentAccounts() {
                 Só com depósitos
               </label>
               <div className="flex items-center gap-2">
-                <span className="text-[12px] text-[#333] w-[100px]">Tipo de entidade:</span>
+                <span className="text-[12px] text-[#06333C] w-[100px]">Tipo de entidade:</span>
                 <select value={f.entity_type ?? ''} onChange={(e) => setF({ ...f, entity_type: e.target.value })}
                   className={`${inp} w-[170px]`} style={inputStyle}>
                   <option value="">Todos</option>
@@ -227,48 +227,48 @@ export default function PosCurrentAccounts() {
         </fieldset>
 
         <button onClick={pesquisar}
-          className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#242428] text-white hover:bg-[#18181B]">
+          className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#06333C] text-white hover:bg-[#062A31]">
           <Glyph icon="🔄" size={26} />
           <span className="text-[13px]">Pesquisar</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto bg-white border-t border-[#d0d0d0]">
+      <div className="flex-1 overflow-auto bg-white border-t border-[#EEF4F5]">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
+          <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
             {['Principal', 'Morada', 'Contacto', 'Outra', 'Saldo (Conta Corrente)', 'Saldo (Cash Advance)'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0] border-r border-r-[#e6e6e6]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5] border-r border-r-[#F7FAFA]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {vista.map((r) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setConta(r.id)}
-                className={`border-b border-[#eee] cursor-pointer ${sel === r.id ? 'bg-[#dce9f7]' : 'hover:bg-[#f5f9ff]'}`}>
+                className={`border-b border-[#F7FAFA] cursor-pointer ${sel === r.id ? 'bg-[#F7FAFA]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="px-2 py-1.5 font-semibold">
-                  {r.blocked && <span className="text-[#a01818] mr-1 inline-flex align-middle" title="Bloqueada"><Glyph icon="⛔" size={13} /></span>}
+                  {r.blocked && <span className="text-[#B0392B] mr-1 inline-flex align-middle" title="Bloqueada"><Glyph icon="⛔" size={13} /></span>}
                   {r.name}
                 </td>
                 <td className="px-2 py-1.5">{r.address || '—'}</td>
                 <td className="px-2 py-1.5">{r.contact || '—'}</td>
-                <td className="px-2 py-1.5 text-[#666]">{r.other || '—'}</td>
+                <td className="px-2 py-1.5 text-[#5C8891]">{r.other || '—'}</td>
                 <td className="px-2 py-1.5 text-right font-bold"
-                  style={{ color: Number(r.cc_balance) > 0 ? '#a01818' : '#333' }}>
+                  style={{ color: Number(r.cc_balance) > 0 ? '#B0392B' : '#06333C' }}>
                   {money(r.cc_balance)}
                 </td>
                 <td className="px-2 py-1.5 text-right font-bold"
-                  style={{ color: Number(r.advance_balance) > 0 ? '#1f7a34' : '#333' }}>
+                  style={{ color: Number(r.advance_balance) > 0 ? '#0B4F5C' : '#06333C' }}>
                   {money(r.advance_balance)}
                 </td>
               </tr>
             ))}
             {vista.length === 0 && (
-              <tr><td colSpan={6} className="text-center text-[#999] py-10">Não foram encontrados dados.</td></tr>
+              <tr><td colSpan={6} className="text-center text-[#7FA9B1] py-10">Não foram encontrados dados.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f4f4f4] border-t border-[#d8d8d8] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7FAFA] border-t border-[#EEF4F5] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -278,18 +278,18 @@ export default function PosCurrentAccounts() {
         <span>Página {page} de {paginas}</span>
         <button disabled={page >= paginas} onClick={() => setPage(page + 1)} className="px-2 disabled:opacity-30">▶</button>
         <span className="ml-auto">
-          Por receber: <b className="text-[#a01818]">{money(data?.total_due || 0)} Kz</b>
-          <span className="mx-2 text-[#ccc]">|</span>
-          Adiantado: <b className="text-[#1f7a34]">{money(data?.total_advance || 0)} Kz</b>
+          Por receber: <b className="text-[#B0392B]">{money(data?.total_due || 0)} Kz</b>
+          <span className="mx-2 text-[#EEF4F5]">|</span>
+          Adiantado: <b className="text-[#0B4F5C]">{money(data?.total_advance || 0)} Kz</b>
         </span>
       </div>
 
       <Toolbar actions={[
-        { label: 'Contas Correntes', icon: '▸', color: '#1a73c8', disabled: !sel, onClick: () => setConta(sel) },
-        { label: 'Cash Advance', icon: '▸', color: '#1f7a34', disabled: !sel, onClick: () => setConta(sel) },
+        { label: 'Contas Correntes', icon: '▸', color: '#5C8891', disabled: !sel, onClick: () => setConta(sel) },
+        { label: 'Cash Advance', icon: '▸', color: '#0B4F5C', disabled: !sel, onClick: () => setConta(sel) },
       ]} right={
         <span className="flex items-center gap-2">
-          <span className="text-[11px] text-[#666]">
+          <span className="text-[11px] text-[#5C8891]">
             Duplo-clique abre a conta. Vermelho = deve; verde = tem dinheiro nosso à guarda dele.
           </span>
           <PermissoesBotao right={20003} titulo="Utilitários" />

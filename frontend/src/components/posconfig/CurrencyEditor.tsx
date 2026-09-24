@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 
 function Fieldset({ title, children }: { title: string; children: any }) {
   return (
-    <fieldset className="px-4 pb-3 pt-1 min-w-0" style={{ border: '4px groove #c0c0c0' }}>
-      <legend className="text-[12px] text-[#333] px-1">{title}</legend>
+    <fieldset className="px-4 pb-3 pt-1 min-w-0" style={{ border: '4px groove #CFE3E6' }}>
+      <legend className="text-[12px] text-[#06333C] px-1">{title}</legend>
       <div className="space-y-2">{children}</div>
     </fieldset>
   );
@@ -17,7 +17,7 @@ function Fieldset({ title, children }: { title: string; children: any }) {
 function Row({ label, children, w = 'w-[150px]' }: { label: string; children: any; w?: string }) {
   return (
     <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className={`${w} flex-shrink-0 text-[#333]`}>{label}</span>
+      <span className={`${w} flex-shrink-0 text-[#06333C]`}>{label}</span>
       {children}
     </label>
   );
@@ -85,9 +85,9 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Nova moeda' : `A editar ${d.code}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Nova moeda' : `A editar ${d.code}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -99,7 +99,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
                 maxLength={8} className={`${inp} flex-1`} style={inputStyle} />
             </Row>
             <label className="flex items-start gap-3 text-[12px]">
-              <span className="w-[110px] flex-shrink-0 text-[#333] pt-1">Descrição:</span>
+              <span className="w-[110px] flex-shrink-0 text-[#06333C] pt-1">Descrição:</span>
               <textarea value={d.name || ''} onChange={(e) => set('name', e.target.value)} rows={3}
                 className={`${inp} flex-1`} style={inputStyle} />
             </label>
@@ -119,7 +119,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
               Imprimir nos documentos de POS
             </label>
             {d.is_local && (
-              <div className="text-[11px] text-[#8a6100] bg-[#fff7e6] border border-[#e0c080] px-2 py-1">
+              <div className="text-[11px] text-[#0B4F5C] bg-[#F7FAFA] border border-[#CFE3E6] px-2 py-1">
                 Só pode haver <b>uma</b> moeda local — ao gravar, as outras deixam de o ser.
                 É nela que a contabilidade fecha.
               </div>
@@ -151,7 +151,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
                 <input type="checkbox" checked={!!d.excluded} onChange={(e) => set('excluded', e.target.checked)} className="w-4 h-4" />
                 Excluído
               </label>
-              <div className="text-[11px] text-[#666] pt-1">
+              <div className="text-[11px] text-[#5C8891] pt-1">
                 Compra abaixo de venda: a diferença é a margem do balcão de câmbio.
               </div>
             </Fieldset>
@@ -159,7 +159,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
             <Fieldset title="Taxa de Câmbio para lançamentos em moeda estrangeira">
               <Row label="Taxa de Câmbio:">{num('rate_to_base')}</Row>
               <Row label="Margem:">{num('exchange_margin')}</Row>
-              <div className="text-[11px] text-[#666] pt-1">
+              <div className="text-[11px] text-[#5C8891] pt-1">
                 É esta que converte a conta para a moeda local — na fatura e na contabilidade.
               </div>
             </Fieldset>
@@ -178,14 +178,14 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
                 <span className="w-[130px]">Comissão Fixa</span>
                 <input type="number" step="any" value={d.commission_fixed ?? 0} disabled={d.commission_mode !== 'FIXED'}
                   onChange={(e) => set('commission_fixed', e.target.value)}
-                  className={`${inp} w-[210px] disabled:bg-[#f0f0f0] disabled:text-[#999]`} style={inputStyle} />
+                  className={`${inp} w-[210px] disabled:bg-[#F7FAFA] disabled:text-[#7FA9B1]`} style={inputStyle} />
               </label>
               <label className="flex items-center gap-3 text-[12px]">
                 <input type="radio" checked={d.commission_mode === 'PERCENT'} onChange={() => set('commission_mode', 'PERCENT')} className="w-4 h-4" />
                 <span className="w-[130px]">Comissão Perct.</span>
                 <input type="number" step="any" value={d.commission_percent ?? 0} disabled={d.commission_mode !== 'PERCENT'}
                   onChange={(e) => set('commission_percent', e.target.value)}
-                  className={`${inp} w-[210px] disabled:bg-[#f0f0f0] disabled:text-[#999]`} style={inputStyle} />
+                  className={`${inp} w-[210px] disabled:bg-[#F7FAFA] disabled:text-[#7FA9B1]`} style={inputStyle} />
               </label>
             </div>
 
@@ -199,9 +199,9 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
       {hist && <CurrencyHistory id={row.id} code={d.code} onClose={() => setHist(false)} />}
 
       <Toolbar actions={[
-        ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', color: '#18181B', onClick: () => setHist(true) }]),
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', color: '#062A31', onClick: () => setHist(true) }]),
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );
@@ -219,23 +219,23 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
-      <div className="bg-[#f4f4f4] border border-[#888] w-[1000px] max-w-[95vw] h-[65vh] flex flex-col shadow-2xl"
+      <div className="bg-[#F7FAFA] border border-[#5C8891] w-[1000px] max-w-[95vw] h-[65vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#242428' }}>
+        <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#06333C' }}>
           <span>{code} - Histórico</span>
-          <button onClick={onClose} className="w-5 h-5 bg-[#c0392b] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
+          <button onClick={onClose} className="w-5 h-5 bg-[#B0392B] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
         </div>
 
         <div className="flex-1 overflow-auto bg-white">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0"><tr className="bg-[#f0f0f0]">
+            <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
               {['Data da alteração', 'Utilizador', 'Código ISO', 'Descrição', 'Taxa de Câmbio', 'Taxa de Compra', 'Taxa de Venda', 'Ativo'].map((h) => (
-                <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#d0d0d0] whitespace-nowrap">{h}</th>
+                <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5] whitespace-nowrap">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {(rows as any[]).map((h) => (
-                <tr key={h.id} className="border-b border-[#eee] hover:bg-[#f7f9fb]">
+                <tr key={h.id} className="border-b border-[#F7FAFA] hover:bg-[#FFFFFF]">
                   <td className="px-2 py-1.5 whitespace-nowrap">{dt(h.changed_at)}</td>
                   <td className="px-2 py-1.5">{h.changed_by}</td>
                   <td className="px-2 py-1.5">{h.code}</td>
@@ -248,16 +248,16 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
                 </tr>
               ))}
               {!isLoading && rows.length === 0 && (
-                <tr><td colSpan={8} className="text-center text-[#999] py-10">Ainda não há alterações registadas.</td></tr>
+                <tr><td colSpan={8} className="text-center text-[#7FA9B1] py-10">Ainda não há alterações registadas.</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="px-3 py-1.5 text-[11px] text-[#666] bg-[#f4f4f4] border-t border-[#e0e0e0]">
+        <div className="px-3 py-1.5 text-[11px] text-[#5C8891] bg-[#F7FAFA] border-t border-[#EEF4F5]">
           Só de leitura — é a prova de com que taxa cada fatura foi convertida.
         </div>
-        <Toolbar actions={[{ icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose }]} />
+        <Toolbar actions={[{ icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose }]} />
       </div>
     </div>
   );

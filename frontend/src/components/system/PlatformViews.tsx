@@ -32,10 +32,10 @@ function IntegrationView({ kind, title, icon }: { kind: string; title: string; i
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Conectores: {rows.length} · reais ligam-se com credenciais</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
-          <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <input placeholder="Fornecedor/Marca" value={f.vendor} onChange={(e) => setF({ ...f, vendor: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <input placeholder="Endpoint / host" value={f.endpoint} onChange={(e) => setF({ ...f, endpoint: e.target.value })} className="border border-[#a0a0a0] p-1 w-40" />
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
+          <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input placeholder="Fornecedor/Marca" value={f.vendor} onChange={(e) => setF({ ...f, vendor: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input placeholder="Endpoint / host" value={f.endpoint} onChange={(e) => setF({ ...f, endpoint: e.target.value })} className="border border-[#7FA9B1] p-1 w-40" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -45,7 +45,7 @@ function IntegrationView({ kind, title, icon }: { kind: string; title: string; i
             { header: 'Endpoint', accessor: (r: any) => r.endpoint || '—', width: '24%' },
             { header: 'Estado', accessor: (r: any) => r.status_display, width: '14%' },
             { header: 'Ativo', accessor: (r: any) => <input type="checkbox" checked={r.enabled} onChange={() => update.mutate({ id: r.id, data: { enabled: !r.enabled, status: !r.enabled ? 'CONFIGURED' : 'DISABLED' } })} />, width: '10%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '6%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
           ]} />
         </div>
       </div>
@@ -66,10 +66,10 @@ function ChannelsView({ channel, title, icon }: { channel: string; title: string
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Canais: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
-          <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <input placeholder="Fornecedor (SMTP/Twilio/FCM)" value={f.provider} onChange={(e) => setF({ ...f, provider: e.target.value })} className="border border-[#a0a0a0] p-1 w-44" />
-          <input placeholder="Remetente" value={f.sender} onChange={(e) => setF({ ...f, sender: e.target.value })} className="border border-[#a0a0a0] p-1" />
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
+          <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input placeholder="Fornecedor (SMTP/Twilio/FCM)" value={f.provider} onChange={(e) => setF({ ...f, provider: e.target.value })} className="border border-[#7FA9B1] p-1 w-44" />
+          <input placeholder="Remetente" value={f.sender} onChange={(e) => setF({ ...f, sender: e.target.value })} className="border border-[#7FA9B1] p-1" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -78,7 +78,7 @@ function ChannelsView({ channel, title, icon }: { channel: string; title: string
             { header: 'Fornecedor', accessor: (r: any) => r.provider || '—', width: '26%' },
             { header: 'Remetente', accessor: (r: any) => r.sender || '—', width: '26%' },
             { header: 'Ativo', accessor: (r: any) => <input type="checkbox" checked={r.enabled} onChange={() => update.mutate({ id: r.id, data: { enabled: !r.enabled } })} />, width: '12%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '8%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '8%' },
           ]} />
         </div>
       </div>
@@ -97,13 +97,13 @@ export function NtfAlertsView() {
   return (
     <ClassicWindow title="Notificações — Alertas & Regras" icon={<BellRing size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Regras: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
-          <input placeholder="Evento (stock.low…)" value={f.event} onChange={(e) => setF({ ...f, event: e.target.value })} className="border border-[#a0a0a0] p-1 w-36" />
-          <input placeholder="Nome da regra" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <select value={f.channel} onChange={(e) => setF({ ...f, channel: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
+          <input placeholder="Evento (stock.low…)" value={f.event} onChange={(e) => setF({ ...f, event: e.target.value })} className="border border-[#7FA9B1] p-1 w-36" />
+          <input placeholder="Nome da regra" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <select value={f.channel} onChange={(e) => setF({ ...f, channel: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
             <option value="">Canal…</option>{channels.map((ch: any) => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
           </select>
-          <input placeholder="Destinatários" value={f.recipients} onChange={(e) => setF({ ...f, recipients: e.target.value })} className="border border-[#a0a0a0] p-1 w-32" />
+          <input placeholder="Destinatários" value={f.recipients} onChange={(e) => setF({ ...f, recipients: e.target.value })} className="border border-[#7FA9B1] p-1 w-32" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -113,7 +113,7 @@ export function NtfAlertsView() {
             { header: 'Canal', accessor: (r: any) => r.channel_name || '—', width: '18%' },
             { header: 'Destinatários', accessor: (r: any) => r.recipients || '—', width: '16%' },
             { header: 'Ativo', accessor: (r: any) => <input type="checkbox" checked={r.enabled} onChange={() => update.mutate({ id: r.id, data: { enabled: !r.enabled } })} />, width: '8%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '6%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
           ]} />
         </div>
       </div>
@@ -131,10 +131,10 @@ function TemplatesBase({ title, icon, onlySignature }: { title: string; icon: an
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Modelos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
-          <input placeholder="Nome do modelo" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <input placeholder="Tipo (FT, FR, VOUCHER…)" value={f.doc_type} onChange={(e) => setF({ ...f, doc_type: e.target.value.toUpperCase() })} className="border border-[#a0a0a0] p-1 w-32" />
-          <select value={f.page_format} onChange={(e) => setF({ ...f, page_format: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
+          <input placeholder="Nome do modelo" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input placeholder="Tipo (FT, FR, VOUCHER…)" value={f.doc_type} onChange={(e) => setF({ ...f, doc_type: e.target.value.toUpperCase() })} className="border border-[#7FA9B1] p-1 w-32" />
+          <select value={f.page_format} onChange={(e) => setF({ ...f, page_format: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
             {Object.entries(FORMATS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
           {onlySignature && <span className="text-gray-500">assinatura digital</span>}
@@ -148,7 +148,7 @@ function TemplatesBase({ title, icon, onlySignature }: { title: string; icon: an
             { header: 'Logo/QR', accessor: (r: any) => `${r.show_logo ? 'Logo' : ''} ${r.show_qr ? 'QR' : ''}`.trim() || '—', width: '14%' },
             { header: 'Assinatura', accessor: (r: any) => <input type="checkbox" checked={r.signature_enabled} onChange={() => update.mutate({ id: r.id, data: { signature_enabled: !r.signature_enabled } })} />, width: '12%' },
             { header: 'Def.', accessor: (r: any) => r.is_default ? <Star size={13} className="fill-current" /> : '', width: '8%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '8%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '8%' },
           ]} />
         </div>
       </div>
@@ -168,13 +168,13 @@ export function SysSchedulerView() {
   return (
     <ClassicWindow title="Sistema — Agendador de Tarefas" icon={<Clock size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Tarefas: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
-          <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <input placeholder="Tipo (BACKUP…)" value={f.task_type} onChange={(e) => setF({ ...f, task_type: e.target.value.toUpperCase() })} className="border border-[#a0a0a0] p-1 w-32" />
-          <select value={f.frequency} onChange={(e) => setF({ ...f, frequency: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
+          <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input placeholder="Tipo (BACKUP…)" value={f.task_type} onChange={(e) => setF({ ...f, task_type: e.target.value.toUpperCase() })} className="border border-[#7FA9B1] p-1 w-32" />
+          <select value={f.frequency} onChange={(e) => setF({ ...f, frequency: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
             {Object.entries(FREQ).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
-          <input placeholder="Hora" value={f.run_at} onChange={(e) => setF({ ...f, run_at: e.target.value })} className="border border-[#a0a0a0] p-1 w-16" />
+          <input placeholder="Hora" value={f.run_at} onChange={(e) => setF({ ...f, run_at: e.target.value })} className="border border-[#7FA9B1] p-1 w-16" />
           <ClassicButton icon={Plus} label="Agendar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -185,7 +185,7 @@ export function SysSchedulerView() {
             { header: 'Hora', accessor: (r: any) => r.run_at || '—', width: '10%' },
             { header: 'Últ. estado', accessor: (r: any) => r.last_status || '—', width: '12%' },
             { header: 'Ativo', accessor: (r: any) => <input type="checkbox" checked={r.enabled} onChange={() => update.mutate({ id: r.id, data: { enabled: !r.enabled } })} />, width: '8%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '6%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
           ]} />
         </div>
       </div>
@@ -216,13 +216,13 @@ function SysInfoView({ title, icon }: { title: string; icon: any }) {
   const qc = useQueryClient();
   const { data: d } = useQuery({ queryKey: ['platform', 'system'], queryFn: () => platformApi.systemInfo() });
   const clear = useMutation({ mutationFn: () => platformApi.clearCache(), onSuccess: () => { aviso('Cache limpa.'); qc.invalidateQueries({ queryKey: ['platform', 'system'] }); } });
-  const Row = ({ k, v }: any) => <div className="flex justify-between border-b border-[#eee] py-1 text-[12px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
+  const Row = ({ k, v }: any) => <div className="flex justify-between border-b border-[#F7FAFA] py-1 text-[12px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Estado do sistema em tempo real</div>}>
       <div className="p-3 space-y-3">
         {!d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
           <>
-            <div className="bg-white border border-[#a0a0a0] p-3">
+            <div className="bg-white border border-[#7FA9B1] p-3">
               <Row k="Aplicação" v={`${d.app} v${d.version}`} />
               <Row k="Atualização" v={d.update?.up_to_date ? <span className="flex items-center gap-1"><Check size={12} strokeWidth={3} /> Atualizado ({d.update.current})</span> : `Disponível ${d.update?.latest}`} />
               <Row k="Canal" v={d.update?.channel} />
@@ -252,7 +252,7 @@ export function SysBackupsView() {
   return (
     <ClassicWindow title="Sistema — Backups" icon={<HardDriveDownload size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Backup portável da base de dados (JSON)</div>}>
       <div className="p-4 space-y-3">
-        <div className="bg-[#eef4fb] border border-[#a0a0a0] p-3 text-[12px] text-gray-700">
+        <div className="bg-[#F7FAFA] border border-[#7FA9B1] p-3 text-[12px] text-gray-700">
           O backup exporta todos os dados de negócio num ficheiro JSON portável (independente do motor de base de dados).
           Guarde-o em local seguro. Agende backups automáticos no <b>Agendador de Tarefas</b>.
         </div>

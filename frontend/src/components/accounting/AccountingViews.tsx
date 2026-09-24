@@ -24,8 +24,8 @@ function useCrud(resource: keyof typeof accApi, params?: any) {
   };
 }
 const Card = ({ label, value, tone, sub }: any) => (
-  <div className="bg-white border border-[#a0a0a0] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div>
-    <div className={`text-xl font-bold ${tone || 'text-[#B08D3C]'}`}>{value}</div>{sub && <div className="text-[11px] text-gray-500">{sub}</div>}</div>
+  <div className="bg-white border border-[#7FA9B1] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div>
+    <div className={`text-xl font-bold ${tone || 'text-[#5C8891]'}`}>{value}</div>{sub && <div className="text-[11px] text-gray-500">{sub}</div>}</div>
 );
 
 // ==================== Dashboard ====================
@@ -36,8 +36,8 @@ export function AccDashboardView() {
       <div className="p-3 grid grid-cols-4 gap-2">
         {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Total do Ativo" value={AOA(d.total_assets)} /><Card label="Total do Passivo" value={AOA(d.total_liabilities)} />
-          <Card label="Proveitos" value={AOA(d.total_income)} tone="text-green-700" /><Card label="Custos" value={AOA(d.total_expense)} tone="text-amber-700" />
-          <Card label="Resultado líquido" value={AOA(d.net_result)} tone={d.net_result >= 0 ? 'text-green-700' : 'text-red-600'} sub={d.net_result >= 0 ? 'Lucro' : 'Prejuízo'} />
+          <Card label="Proveitos" value={AOA(d.total_income)} tone="text-[#0B4F5C]" /><Card label="Custos" value={AOA(d.total_expense)} tone="text-[#0B4F5C]" />
+          <Card label="Resultado líquido" value={AOA(d.net_result)} tone={d.net_result >= 0 ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'} sub={d.net_result >= 0 ? 'Lucro' : 'Prejuízo'} />
           <Card label="Contas de movimento" value={d.movement_accounts} /><Card label="Lançamentos" value={d.entries_posted} sub={`${d.entries_draft} rascunhos`} /><Card label="Diários" value={d.journals} />
         </>}
       </div>
@@ -55,12 +55,12 @@ export function AccChartView() {
   return (
     <ClassicWindow title="Plano de Contas (PGC-AO)" icon={<BookOpen size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Contas: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
-          <input placeholder="Código" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#a0a0a0] p-1 w-20" />
-          <input placeholder="Nome da conta" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-          <select value={f.account_class} onChange={(e) => setF({ ...f, account_class: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">{Object.entries(CLASSES).map(([k, v]) => <option key={k} value={k}>{k} · {v}</option>)}</select>
-          <select value={f.account_type} onChange={(e) => setF({ ...f, account_type: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">{Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-          <select value={f.normal_side} onChange={(e) => setF({ ...f, normal_side: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white"><option value="D">Devedora</option><option value="C">Credora</option></select>
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
+          <input placeholder="Código" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#7FA9B1] p-1 w-20" />
+          <input placeholder="Nome da conta" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <select value={f.account_class} onChange={(e) => setF({ ...f, account_class: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">{Object.entries(CLASSES).map(([k, v]) => <option key={k} value={k}>{k} · {v}</option>)}</select>
+          <select value={f.account_type} onChange={(e) => setF({ ...f, account_type: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">{Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+          <select value={f.normal_side} onChange={(e) => setF({ ...f, normal_side: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white"><option value="D">Devedora</option><option value="C">Credora</option></select>
           <label className="flex items-center gap-1"><input type="checkbox" checked={f.is_movement} onChange={(e) => setF({ ...f, is_movement: e.target.checked })} />Movimento</label>
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
@@ -71,7 +71,7 @@ export function AccChartView() {
             { header: 'Classe', accessor: (r: any) => CLASSES[r.account_class], width: '18%' },
             { header: 'Tipo', accessor: (r: any) => TYPES[r.account_type], width: '14%' },
             { header: 'Lado', accessor: (r: any) => r.normal_side === 'D' ? 'Dev.' : 'Cred.', width: '8%' },
-            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>, width: '6%' },
+            { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>, width: '6%' },
           ]} />
         </div>
       </div>
@@ -110,12 +110,12 @@ export function AccEntriesView() {
     <ClassicWindow title="Lançamentos Contabilísticos" icon={<NotebookPen size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Lançamentos: {rows.length}</div>}>
       <div className="flex h-full">
         {/* Lista */}
-        <div className="w-2/5 border-r border-[#a0a0a0] flex flex-col">
+        <div className="w-2/5 border-r border-[#7FA9B1] flex flex-col">
           <div className="flex-1 overflow-hidden">
             <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '22%' }, { header: 'Data', accessor: 'entry_date', width: '20%' },
               { header: 'Descrição', accessor: 'description', width: '36%' },
-              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'POSTED' ? 'text-green-700 font-bold' : r.status === 'REVERSED' ? 'text-gray-500' : 'text-amber-700'}>{r.status_display}</span>, width: '22%' },
+              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'POSTED' ? 'text-[#0B4F5C] font-bold' : r.status === 'REVERSED' ? 'text-gray-500' : 'text-[#0B4F5C]'}>{r.status_display}</span>, width: '22%' },
             ]} />
           </div>
         </div>
@@ -128,7 +128,7 @@ export function AccEntriesView() {
                 <div className="flex gap-1">
                   {sel.status === 'DRAFT' && <ClassicButton icon={CheckCircle} label="Lançar" onClick={() => post(sel.id)} />}
                   {sel.status === 'POSTED' && <ClassicButton icon={Undo2} label="Estornar" onClick={() => reverse(sel.id)} />}
-                  {sel.status === 'DRAFT' && <button onClick={() => { remove.mutate(sel.id); setSelId(null); }} className="text-red-600"><Trash2 size={14} /></button>}
+                  {sel.status === 'DRAFT' && <button onClick={() => { remove.mutate(sel.id); setSelId(null); }} className="text-[#8C2B1F]"><Trash2 size={14} /></button>}
                 </div>
               </div>
               <ClassicGrid rowKey="id" data={sel.lines || []} columns={[
@@ -140,28 +140,28 @@ export function AccEntriesView() {
             </div>
           ) : (
             <div className="flex-1 overflow-auto p-2 text-[11px]">
-              <div className="font-bold text-[#B08D3C] mb-2">Novo lançamento</div>
+              <div className="font-bold text-[#5C8891] mb-2">Novo lançamento</div>
               <div className="flex flex-wrap items-end gap-2 mb-2">
-                <select value={hdr.journal} onChange={(e) => setHdr({ ...hdr, journal: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white"><option value="">Diário…</option>{journals.map((j: any) => <option key={j.id} value={j.id}>{j.code} · {j.name}</option>)}</select>
-                <input type="date" value={hdr.entry_date} onChange={(e) => setHdr({ ...hdr, entry_date: e.target.value })} className="border border-[#a0a0a0] p-1" />
-                <input placeholder="Descrição" value={hdr.description} onChange={(e) => setHdr({ ...hdr, description: e.target.value })} className="border border-[#a0a0a0] p-1 flex-1" />
+                <select value={hdr.journal} onChange={(e) => setHdr({ ...hdr, journal: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white"><option value="">Diário…</option>{journals.map((j: any) => <option key={j.id} value={j.id}>{j.code} · {j.name}</option>)}</select>
+                <input type="date" value={hdr.entry_date} onChange={(e) => setHdr({ ...hdr, entry_date: e.target.value })} className="border border-[#7FA9B1] p-1" />
+                <input placeholder="Descrição" value={hdr.description} onChange={(e) => setHdr({ ...hdr, description: e.target.value })} className="border border-[#7FA9B1] p-1 flex-1" />
               </div>
               <table className="w-full border-collapse">
-                <thead><tr className="bg-[#f0f0f0] text-left"><th className="p-1 border border-[#d0d0d0]">Conta</th><th className="p-1 border border-[#d0d0d0] w-24">Débito</th><th className="p-1 border border-[#d0d0d0] w-24">Crédito</th><th className="w-6"></th></tr></thead>
+                <thead><tr className="bg-[#F7FAFA] text-left"><th className="p-1 border border-[#EEF4F5]">Conta</th><th className="p-1 border border-[#EEF4F5] w-24">Débito</th><th className="p-1 border border-[#EEF4F5] w-24">Crédito</th><th className="w-6"></th></tr></thead>
                 <tbody>
                   {lines.map((l, i) => (
                     <tr key={i}>
-                      <td className="border border-[#e0e0e0] p-0.5"><select value={l.account} onChange={(e) => setLine(i, { account: e.target.value })} className="w-full border-none bg-transparent"><option value="">—</option>{accounts.map((a: any) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}</select></td>
-                      <td className="border border-[#e0e0e0] p-0.5"><input type="number" value={l.debit} onChange={(e) => setLine(i, { debit: e.target.value, credit: '' })} className="w-full border-none text-right" /></td>
-                      <td className="border border-[#e0e0e0] p-0.5"><input type="number" value={l.credit} onChange={(e) => setLine(i, { credit: e.target.value, debit: '' })} className="w-full border-none text-right" /></td>
-                      <td className="text-center"><button onClick={() => setLines(lines.filter((_, x) => x !== i))} className="text-red-600"><Trash2 size={11} /></button></td>
+                      <td className="border border-[#EEF4F5] p-0.5"><select value={l.account} onChange={(e) => setLine(i, { account: e.target.value })} className="w-full border-none bg-transparent"><option value="">—</option>{accounts.map((a: any) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}</select></td>
+                      <td className="border border-[#EEF4F5] p-0.5"><input type="number" value={l.debit} onChange={(e) => setLine(i, { debit: e.target.value, credit: '' })} className="w-full border-none text-right" /></td>
+                      <td className="border border-[#EEF4F5] p-0.5"><input type="number" value={l.credit} onChange={(e) => setLine(i, { credit: e.target.value, debit: '' })} className="w-full border-none text-right" /></td>
+                      <td className="text-center"><button onClick={() => setLines(lines.filter((_, x) => x !== i))} className="text-[#8C2B1F]"><Trash2 size={11} /></button></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               <div className="flex items-center justify-between mt-2">
                 <ClassicButton icon={Plus} label="Linha" onClick={() => setLines([...lines, emptyLine()])} />
-                <div className={`font-bold flex items-center gap-1 ${balanced ? 'text-green-700' : 'text-red-600'}`}>
+                <div className={`font-bold flex items-center gap-1 ${balanced ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'}`}>
                   D: {AOA(totD)} · C: {AOA(totC)} {balanced ? <><Check size={13} strokeWidth={3} /> Salda</> : <><X size={13} strokeWidth={3} /> Não salda</>}
                 </div>
               </div>
@@ -169,7 +169,7 @@ export function AccEntriesView() {
               {rows.length > 0 && <div className="text-gray-400 mt-4">Selecione um lançamento na lista para ver/lançar.</div>}
             </div>
           )}
-          {sel && <div className="p-2 border-t border-[#a0a0a0]"><ClassicButton label="+ Novo lançamento" onClick={() => setSelId(null)} /></div>}
+          {sel && <div className="p-2 border-t border-[#7FA9B1]"><ClassicButton label="+ Novo lançamento" onClick={() => setSelId(null)} /></div>}
         </div>
       </div>
     </ClassicWindow>
@@ -187,11 +187,11 @@ export function AccJournalsView() {
   return (
     <ClassicWindow title="Diários & Exercícios" icon={<ScrollText size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Diários: {j.rows.length} · Exercícios: {p.rows.length}</div>}>
       <div className="flex h-full">
-        <div className="w-1/2 border-r border-[#a0a0a0] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#f0f0f0] border-b border-[#a0a0a0] text-[11px]">
-            <input placeholder="Cód." value={nj.code} onChange={(e) => setNj({ ...nj, code: e.target.value })} className="border border-[#a0a0a0] p-1 w-14" />
-            <input placeholder="Nome do diário" value={nj.name} onChange={(e) => setNj({ ...nj, name: e.target.value })} className="border border-[#a0a0a0] p-1" />
-            <select value={nj.journal_type} onChange={(e) => setNj({ ...nj, journal_type: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">{Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+        <div className="w-1/2 border-r border-[#7FA9B1] flex flex-col">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7FAFA] border-b border-[#7FA9B1] text-[11px]">
+            <input placeholder="Cód." value={nj.code} onChange={(e) => setNj({ ...nj, code: e.target.value })} className="border border-[#7FA9B1] p-1 w-14" />
+            <input placeholder="Nome do diário" value={nj.name} onChange={(e) => setNj({ ...nj, name: e.target.value })} className="border border-[#7FA9B1] p-1" />
+            <select value={nj.journal_type} onChange={(e) => setNj({ ...nj, journal_type: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">{Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
             <ClassicButton icon={Plus} label="Add" onClick={() => nj.code && nj.name && j.create.mutate(nj, { onSuccess: () => setNj({ code: '', name: '', journal_type: 'GENERAL' }) })} />
           </div>
           <div className="flex-1 overflow-hidden"><ClassicGrid rowKey="id" data={j.rows} columns={[
@@ -199,10 +199,10 @@ export function AccJournalsView() {
           ]} /></div>
         </div>
         <div className="w-1/2 flex flex-col">
-          <div className="p-2 bg-[#f0f0f0] border-b border-[#a0a0a0] text-[11px] font-bold">Exercícios contabilísticos</div>
+          <div className="p-2 bg-[#F7FAFA] border-b border-[#7FA9B1] text-[11px] font-bold">Exercícios contabilísticos</div>
           <div className="flex-1 overflow-hidden"><ClassicGrid rowKey="id" data={p.rows} columns={[
             { header: 'Exercício', accessor: 'name', width: '28%' }, { header: 'Início', accessor: 'start_date', width: '24%' }, { header: 'Fim', accessor: 'end_date', width: '24%' },
-            { header: 'Estado', accessor: (r: any) => <button onClick={() => toggleClose(r.id)} className={`flex items-center gap-1 ${r.is_closed ? 'text-red-600' : 'text-green-700'}`}>{r.is_closed ? <><Lock size={11} />Fechado</> : <><Unlock size={11} />Aberto</>}</button>, width: '24%' },
+            { header: 'Estado', accessor: (r: any) => <button onClick={() => toggleClose(r.id)} className={`flex items-center gap-1 ${r.is_closed ? 'text-[#8C2B1F]' : 'text-[#0B4F5C]'}`}>{r.is_closed ? <><Lock size={11} />Fechado</> : <><Unlock size={11} />Aberto</>}</button>, width: '24%' },
           ]} /></div>
         </div>
       </div>
@@ -219,8 +219,8 @@ export function AccLedgerView() {
   return (
     <ClassicWindow title="Razão (movimentos por conta)" icon={<ScrollText size={14} className="text-gray-300" />} footer={<div className="text-gray-600">{data ? `Saldo final: ${AOA(data.final_balance)}` : 'Selecione uma conta'}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex items-end gap-2 bg-[#f0f0f0] border border-[#a0a0a0] p-2 text-[11px]">
-          <select value={code} onChange={(e) => setCode(e.target.value)} className="border border-[#a0a0a0] p-1 bg-white"><option value="">Conta…</option>{accounts.map((a: any) => <option key={a.id} value={a.code}>{a.code} · {a.name}</option>)}</select>
+        <div className="flex items-end gap-2 bg-[#F7FAFA] border border-[#7FA9B1] p-2 text-[11px]">
+          <select value={code} onChange={(e) => setCode(e.target.value)} className="border border-[#7FA9B1] p-1 bg-white"><option value="">Conta…</option>{accounts.map((a: any) => <option key={a.id} value={a.code}>{a.code} · {a.name}</option>)}</select>
           {data && <span className="text-gray-600">{data.account.name} ({data.account.normal_side === 'D' ? 'devedora' : 'credora'})</span>}
         </div>
         <div className="flex-1 overflow-hidden"><ClassicGrid rowKey="entry" data={rows} columns={[
@@ -240,7 +240,7 @@ export function AccTrialBalanceView() {
   const rows = data?.rows ?? [];
   const t = data?.totals;
   return (
-    <ClassicWindow title="Balancete" icon={<Scale size={14} className="text-gray-300" />} footer={<div className="text-gray-600">{t ? <>Total D: {AOA(t.debit)} · C: {AOA(t.credit)} · {data.balanced ? <span className="text-green-700 font-bold">Balanceado ✓</span> : <span className="text-red-600 font-bold">Desequilibrado</span>}</> : '—'}</div>}>
+    <ClassicWindow title="Balancete" icon={<Scale size={14} className="text-gray-300" />} footer={<div className="text-gray-600">{t ? <>Total D: {AOA(t.debit)} · C: {AOA(t.credit)} · {data.balanced ? <span className="text-[#0B4F5C] font-bold">Balanceado ✓</span> : <span className="text-[#8C2B1F] font-bold">Desequilibrado</span>}</> : '—'}</div>}>
       <div className="p-2 h-full"><ClassicGrid rowKey="code" data={rows} columns={[
         { header: 'Conta', accessor: (r: any) => `${r.code} · ${r.name}`, width: '40%' },
         { header: 'Débito', accessor: (r: any) => AOA(r.debit), width: '15%' }, { header: 'Crédito', accessor: (r: any) => AOA(r.credit), width: '15%' },
@@ -261,8 +261,8 @@ export function AccIntegrationView() {
   });
   const p = data?.pending ?? { pos: [], purchase: [], treasury: [] };
   const Section = ({ title, source, rows }: any) => (
-    <div className="bg-white border border-[#a0a0a0]">
-      <div className="bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-1.5 text-[11px] font-bold flex items-center justify-between">
+    <div className="bg-white border border-[#7FA9B1]">
+      <div className="bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-1.5 text-[11px] font-bold flex items-center justify-between">
         <span>{title} — {rows.length} pendente(s)</span>
         {rows.length > 0 && <ClassicButton icon={Zap} label="Contabilizar" onClick={() => run.mutate([source])} />}
       </div>
@@ -280,7 +280,7 @@ export function AccIntegrationView() {
     <ClassicWindow title="Integração Contabilística (Auto-Posting)" icon={<Zap size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{data ? `${data.total} documento(s) por contabilizar` : '—'}</div>}>
       <div className="p-3 space-y-3">
-        <div className="bg-[#eef4fb] border border-[#a0a0a0] px-3 py-2 text-[11px] text-gray-700 flex items-center justify-between">
+        <div className="bg-[#F7FAFA] border border-[#7FA9B1] px-3 py-2 text-[11px] text-gray-700 flex items-center justify-between">
           <span>Gera lançamentos automaticamente: <b>Venda POS</b> → Dr Caixa / Cr Vendas+IVA · <b>Compras</b> → Dr Existências / Cr Fornecedores · <b>Tesouraria</b> → Recebimentos/Pagamentos.</span>
           <div className="flex gap-1">
             <ClassicButton icon={RefreshCw} label="Atualizar" onClick={() => qc.invalidateQueries({ queryKey: ['acc', 'autoPost'] })} />
@@ -294,8 +294,8 @@ export function AccIntegrationView() {
         </>}
 
         {/* Apuramento de resultados (fecho de exercício) */}
-        <div className="bg-white border border-[#a0a0a0]">
-          <div className="bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-1.5 text-[11px] font-bold">Apuramento de Resultados (fecho de exercício)</div>
+        <div className="bg-white border border-[#7FA9B1]">
+          <div className="bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-1.5 text-[11px] font-bold">Apuramento de Resultados (fecho de exercício)</div>
           <div className="p-3 flex items-center justify-between text-[11px]">
             <span className="text-gray-600">Transfere Proveitos (classe 6) e Custos (classe 7) para a conta de Resultado Líquido (88).</span>
             <ClassicButton icon={CheckCircle} label="Apurar resultados" onClick={async () => {
@@ -315,8 +315,8 @@ export function AccIntegrationView() {
 export function AccStatementsView() {
   const { data: is_ } = useQuery({ queryKey: ['acc', 'incomeStatement'], queryFn: () => accApi.incomeStatement() });
   const { data: bs } = useQuery({ queryKey: ['acc', 'balanceSheet'], queryFn: () => accApi.balanceSheet() });
-  const Line = ({ label, value, bold }: any) => <div className={`flex justify-between py-0.5 border-b border-[#eee] text-[11px] ${bold ? 'font-bold' : ''}`}><span>{label}</span><span>{AOA(value)}</span></div>;
-  const Panel = ({ title, children }: any) => <div className="bg-white border border-[#a0a0a0]"><div className="bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-1.5 text-[11px] font-bold">{title}</div><div className="p-2">{children}</div></div>;
+  const Line = ({ label, value, bold }: any) => <div className={`flex justify-between py-0.5 border-b border-[#F7FAFA] text-[11px] ${bold ? 'font-bold' : ''}`}><span>{label}</span><span>{AOA(value)}</span></div>;
+  const Panel = ({ title, children }: any) => <div className="bg-white border border-[#7FA9B1]"><div className="bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-1.5 text-[11px] font-bold">{title}</div><div className="p-2">{children}</div></div>;
   return (
     <ClassicWindow title="Demonstrações Financeiras" icon={<FileBarChart size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Demonstração de Resultados + Balanço (PGC-AO)</div>}>
       <div className="p-3 grid grid-cols-2 gap-3">
@@ -328,7 +328,7 @@ export function AccStatementsView() {
             <div className="text-[10px] text-gray-500 uppercase mt-2">Custos</div>
             {is_.expense.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Total Custos" value={is_.total_expense} bold />
-            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${is_.net_result >= 0 ? 'text-green-700' : 'text-red-600'}`}><span>Resultado ({is_.result_label})</span><span>{AOA(is_.net_result)}</span></div>
+            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${is_.net_result >= 0 ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'}`}><span>Resultado ({is_.result_label})</span><span>{AOA(is_.net_result)}</span></div>
           </> : <div className="text-gray-400">A carregar…</div>}
         </Panel>
         <Panel title="Balanço">
@@ -343,7 +343,7 @@ export function AccStatementsView() {
             {bs.equity.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Resultado do exercício" value={bs.net_result} />
             <Line label="Total Fundos Próprios" value={bs.total_equity} bold />
-            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${bs.balanced ? 'text-green-700' : 'text-red-600'}`}><span className="flex items-center gap-1">Passivo + Fundos Próprios {bs.balanced ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}</span><span>{AOA(bs.total_liabilities_equity)}</span></div>
+            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${bs.balanced ? 'text-[#0B4F5C]' : 'text-[#8C2B1F]'}`}><span className="flex items-center gap-1">Passivo + Fundos Próprios {bs.balanced ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}</span><span>{AOA(bs.total_liabilities_equity)}</span></div>
           </> : <div className="text-gray-400">A carregar…</div>}
         </Panel>
       </div>

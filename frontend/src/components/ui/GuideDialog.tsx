@@ -25,33 +25,33 @@ export default function GuideDialog() {
   if (!g) return null;
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45" onClick={() => setG(null)}>
-      <div className="w-[460px] bg-[#f4f6f8] border border-[#7f8b9b] shadow-2xl" onClick={(e) => e.stopPropagation()}
+      <div className="w-[460px] bg-[#F7FAFA] border border-[#7FA9B1] shadow-2xl" onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
         {/* Barra de título */}
         <div className="h-8 flex items-center gap-2 px-3 text-white font-bold text-[12px]"
-          style={{ background: 'linear-gradient(to bottom, #d7a13a, #b5761b 55%, #91590f)' }}>
+          style={{ background: 'linear-gradient(to bottom, #5C8891, #5C8891 55%, #0B4F5C)' }}>
           <TriangleAlert size={14} />{g.title}
         </div>
 
         <div className="p-4 flex gap-3">
           <div className="w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center text-[22px] text-white"
-            style={{ background: 'linear-gradient(to bottom, #e5b95c, #c9820a)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.25)' }}>!</div>
-          <div className="flex-1 text-[12px] text-[#243040]">
+            style={{ background: 'linear-gradient(to bottom, #7FA9B1, #5C8891)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.25)' }}>!</div>
+          <div className="flex-1 text-[12px] text-[#06333C]">
             <div className="whitespace-pre-line font-semibold leading-relaxed">{g.message}</div>
             {g.hint && (
-              <div className="mt-3 p-2 bg-[#eaf1fa] border border-[#b9cde6] text-[11px] text-[#B08D3C] flex gap-2">
+              <div className="mt-3 p-2 bg-[#F7FAFA] border border-[#EEF4F5] text-[11px] text-[#5C8891] flex gap-2">
                 <Lightbulb size={14} className="flex-shrink-0 mt-px" /><span><b>O que fazer:</b> {g.hint}</span>
               </div>
             )}
           </div>
         </div>
 
-        <div className="px-4 py-2.5 bg-gradient-to-b from-[#eceff2] to-[#dde1e6] border-t border-[#c0c7d0] flex justify-end">
+        <div className="px-4 py-2.5 bg-gradient-to-b from-[#F7FAFA] to-[#EEF4F5] border-t border-[#CFE3E6] flex justify-end">
           <button onClick={() => setG(null)} autoFocus
-            className="px-6 py-1.5 text-[12px] font-semibold text-[#2a3543] border"
+            className="px-6 py-1.5 text-[12px] font-semibold text-[#06333C] border"
             style={{
-              background: 'linear-gradient(to bottom, #fdfdfd, #eceef1 48%, #dde1e6 52%, #cfd4da)',
-              borderColor: '#7f8b9b',
+              background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA 48%, #EEF4F5 52%, #EEF4F5)',
+              borderColor: '#7FA9B1',
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
             }}>
             Percebi

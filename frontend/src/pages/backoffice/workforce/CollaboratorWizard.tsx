@@ -101,44 +101,44 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
         </>
       }
     >
-      <div className="p-4 bg-[#f0f0f0] h-full overflow-y-auto">
+      <div className="p-4 bg-[#F7FAFA] h-full overflow-y-auto">
         <form onSubmit={handleSubmit} className="text-[11px] grid grid-cols-1 gap-4 max-w-2xl">
           
-          <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Identificação</h3>
+          <div className="border border-[#7FA9B1] bg-white p-2">
+            <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Identificação</h3>
             <div className="grid grid-cols-1 gap-y-2">
               <div className="flex items-center">
                 <label className="w-32 font-bold">Código</label>
-                <input readOnly name="code" value={formData.code} className="flex-1 border border-[#a0a0a0] p-1 bg-[#eeeeee]" />
+                <input readOnly name="code" value={formData.code} className="flex-1 border border-[#7FA9B1] p-1 bg-[#F7FAFA]" />
               </div>
               <div className="flex items-center">
                 <label className="w-32 font-bold">Nome *</label>
-                <input required name="name" value={formData.name} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none" />
+                <input required name="name" value={formData.name} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
               </div>
               <div className="flex items-center">
                 <label className="w-32 font-bold">Email</label>
-                <input type="email" name="email" value={formData.email} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none" />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
               </div>
               <div className="flex items-center">
                 <label className="w-32 font-bold">NIF</label>
-                <input name="nif" value={formData.nif} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none" />
+                <input name="nif" value={formData.nif} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
               </div>
               <div className="flex items-center">
                 <label className="w-32 font-bold">Departamento</label>
-                <select name="department_id" value={formData.department_id} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none bg-white">
+                <select name="department_id" value={formData.department_id} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none bg-white">
                   <option value="">(Nenhum)</option>
                   {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
               </div>
               <div className="flex items-center">
                 <label className="w-32 font-bold">Cargo</label>
-                <input name="job_title" value={formData.job_title} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none" />
+                <input name="job_title" value={formData.job_title} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
               </div>
             </div>
           </div>
 
-          <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Acesso ao Sistema (ERP)</h3>
+          <div className="border border-[#7FA9B1] bg-white p-2">
+            <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Acesso ao Sistema (ERP)</h3>
             <div className="flex items-center mb-2">
               <input type="checkbox" name="create_erp_account" checked={formData.create_erp_account} onChange={handleChange} className="mr-2" />
               <label className="font-bold">Criar Conta no Backoffice</label>
@@ -147,15 +147,15 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
               <div className="grid grid-cols-1 gap-y-2 pl-6">
                 <div className="flex items-center">
                   <label className="w-32">Username *</label>
-                  <input required={formData.create_erp_account} name="erp_username" value={formData.erp_username} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none" />
+                  <input required={formData.create_erp_account} name="erp_username" value={formData.erp_username} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center">
                   <label className="w-32">Password *</label>
-                  <input required={formData.create_erp_account} type="password" name="erp_password" value={formData.erp_password} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none" />
+                  <input required={formData.create_erp_account} type="password" name="erp_password" value={formData.erp_password} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center mt-1">
                   <label className="w-32 font-bold">Perfil / Grupo</label>
-                  <select name="profile_id" value={formData.profile_id} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none bg-[#ffffe0]">
+                  <select name="profile_id" value={formData.profile_id} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none bg-[#F7FAFA]">
                     <option value="">(Selecione)</option>
                     {profiles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
@@ -164,8 +164,8 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
             )}
           </div>
 
-          <div className="border border-[#a0a0a0] bg-white p-2">
-            <h3 className="font-bold text-[#B08D3C] border-b border-[#a0a0a0] mb-2 pb-1">Acesso POS (Frente de Loja)</h3>
+          <div className="border border-[#7FA9B1] bg-white p-2">
+            <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Acesso POS (Frente de Loja)</h3>
             <div className="flex items-center mb-2">
               <input type="checkbox" name="create_pos_operator" checked={formData.create_pos_operator} onChange={handleChange} className="mr-2" />
               <label className="font-bold">É Operador de POS</label>
@@ -174,18 +174,18 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
               <div className="grid grid-cols-1 gap-y-2 pl-6">
                 <div className="flex items-center">
                   <label className="w-32">Nome no Talão *</label>
-                  <input required={formData.create_pos_operator} name="pos_name" value={formData.pos_name} onChange={handleChange} className="flex-1 border border-[#a0a0a0] p-1 focus:outline-none" />
+                  <input required={formData.create_pos_operator} name="pos_name" value={formData.pos_name} onChange={handleChange} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center">
                   <label className="w-32">PIN (Tátil) *</label>
-                  <input required={formData.create_pos_operator} type="password" maxLength={6} name="pos_pin" value={formData.pos_pin} onChange={handleChange} className="w-24 border border-[#a0a0a0] p-1 focus:outline-none text-center tracking-widest" />
+                  <input required={formData.create_pos_operator} type="password" maxLength={6} name="pos_pin" value={formData.pos_pin} onChange={handleChange} className="w-24 border border-[#7FA9B1] p-1 focus:outline-none text-center tracking-widest" />
                 </div>
                 
                 <div className="mt-2">
                   <label className="font-bold block mb-1 border-b border-gray-200">Terminais Autorizados:</label>
-                  <div className="max-h-24 overflow-y-auto border border-[#a0a0a0] p-1 bg-white">
+                  <div className="max-h-24 overflow-y-auto border border-[#7FA9B1] p-1 bg-white">
                     {terminals.map(t => (
-                      <div key={t.id} className="flex items-center p-1 hover:bg-blue-50 cursor-pointer" onClick={() => toggleTerminal(t.id)}>
+                      <div key={t.id} className="flex items-center p-1 hover:bg-[#F7FAFA] cursor-pointer" onClick={() => toggleTerminal(t.id)}>
                         <input type="checkbox" checked={formData.allowed_workstations.includes(t.id)} readOnly className="mr-2" />
                         <span>{t.name} (IP: {t.ip_address || 'N/A'})</span>
                       </div>

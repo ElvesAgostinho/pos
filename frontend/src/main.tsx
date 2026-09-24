@@ -42,20 +42,20 @@ const RequireLicense = ({ children }: { children: JSX.Element }) => {
   // Validação REAL da licença (fonte: PCC/clm no admin, fallback license.key assinada).
   const { data, isLoading, isError, refetch } = useLicenseStatus();
   if (isLoading) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-[#0e1622] text-gray-300 text-sm">A validar licença…</div>;
+    return <div className="h-screen w-screen flex items-center justify-center bg-[#062A31] text-gray-300 text-sm">A validar licença…</div>;
   }
   // Falha de REDE (servidor em baixo/a arrancar) NÃO é "sem licença" — não manda para o
   // onboarding; mostra o erro com opção de repetir.
   if (isError) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[#0e1622]">
-        <div className="bg-white border border-[#8fa4bb] shadow-2xl w-[440px]">
-          <div className="px-4 py-2 bg-[#a01818] text-white font-bold text-sm">Sem ligação ao servidor</div>
+      <div className="h-screen w-screen flex items-center justify-center bg-[#062A31]">
+        <div className="bg-white border border-[#7FA9B1] shadow-2xl w-[440px]">
+          <div className="px-4 py-2 bg-[#B0392B] text-white font-bold text-sm">Sem ligação ao servidor</div>
           <div className="p-4 text-[12px] text-gray-700 space-y-3">
             <p>Não foi possível contactar o servidor da aplicação (<b>localhost:8000</b>). Verifique se o serviço está a correr.</p>
             <div className="flex gap-2">
-              <button onClick={() => refetch()} className="px-3 py-1.5 bg-[#B08D3C] text-white text-[12px] font-semibold">Tentar novamente</button>
-              <button onClick={() => window.location.reload()} className="px-3 py-1.5 bg-[#f0f0f0] border border-[#a0a0a0] text-[12px]">Recarregar</button>
+              <button onClick={() => refetch()} className="px-3 py-1.5 bg-[#5C8891] text-white text-[12px] font-semibold">Tentar novamente</button>
+              <button onClick={() => window.location.reload()} className="px-3 py-1.5 bg-[#F7FAFA] border border-[#7FA9B1] text-[12px]">Recarregar</button>
             </div>
           </div>
         </div>
@@ -74,7 +74,7 @@ const RequireLicense = ({ children }: { children: JSX.Element }) => {
 const SkipOnboardingIfLicensed = ({ children }: { children: JSX.Element }) => {
   const { data, isLoading } = useLicenseStatus();
   if (isLoading) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-[#0e1622] text-gray-300 text-sm">A validar licença…</div>;
+    return <div className="h-screen w-screen flex items-center justify-center bg-[#062A31] text-gray-300 text-sm">A validar licença…</div>;
   }
   if (data?.licensed) {
     return <Navigate to="/backoffice/login" replace />;

@@ -69,15 +69,15 @@ export default function StockMovementsView() {
           </>
         }
       >
-        <div className="p-4 flex flex-col h-full bg-[#f0f0f0]">
+        <div className="p-4 flex flex-col h-full bg-[#F7FAFA]">
           {/* Header */}
-          <div className="bg-white border border-[#a0a0a0] p-3 mb-3 flex space-x-4">
+          <div className="bg-white border border-[#7FA9B1] p-3 mb-3 flex space-x-4">
             <div>
               <label className="block text-gray-700 font-bold mb-1">Tipo de Movimento</label>
               <select 
                 value={formData.transaction_type}
                 onChange={e => setFormData({...formData, transaction_type: e.target.value as any})}
-                className="border border-[#a0a0a0] px-2 py-1 w-48 bg-white focus:outline-none"
+                className="border border-[#7FA9B1] px-2 py-1 w-48 bg-white focus:outline-none"
               >
                 <option value="RECEIPT">Entrada (Receipt)</option>
                 <option value="ISSUE">Saída (Issue)</option>
@@ -91,7 +91,7 @@ export default function StockMovementsView() {
                 type="text" 
                 value={formData.reference_document || ''}
                 onChange={e => setFormData({...formData, reference_document: e.target.value})}
-                className="border border-[#a0a0a0] px-2 py-1 w-48 focus:outline-none"
+                className="border border-[#7FA9B1] px-2 py-1 w-48 focus:outline-none"
               />
             </div>
             <div className="flex-1">
@@ -100,33 +100,33 @@ export default function StockMovementsView() {
                 type="text" 
                 value={formData.notes || ''}
                 onChange={e => setFormData({...formData, notes: e.target.value})}
-                className="border border-[#a0a0a0] px-2 py-1 w-full focus:outline-none"
+                className="border border-[#7FA9B1] px-2 py-1 w-full focus:outline-none"
               />
             </div>
           </div>
 
           {/* Lines */}
-          <div className="flex-1 flex flex-col bg-white border border-[#a0a0a0]">
-            <div className="bg-[#e8e8e8] border-b border-[#a0a0a0] p-1 flex">
+          <div className="flex-1 flex flex-col bg-white border border-[#7FA9B1]">
+            <div className="bg-[#F7FAFA] border-b border-[#7FA9B1] p-1 flex">
                <ClassicButton icon={Plus} label="Adicionar Linha" onClick={() => setLines([...lines, { quantity: 1, conversion_factor: 1 }])} />
             </div>
             <div className="flex-1 overflow-auto">
               <table className="w-full text-[11px] border-collapse">
-                <thead className="bg-[#f0f0f0] border-b border-[#a0a0a0]">
+                <thead className="bg-[#F7FAFA] border-b border-[#7FA9B1]">
                   <tr>
-                    <th className="p-1 border-r border-[#d0d0d0] text-left">Artigo</th>
-                    <th className="p-1 border-r border-[#d0d0d0] text-left">Armazém/Local Origem</th>
-                    <th className="p-1 border-r border-[#d0d0d0] text-left">Armazém/Local Destino</th>
-                    <th className="p-1 border-r border-[#d0d0d0] text-left">Lote</th>
-                    <th className="p-1 border-r border-[#d0d0d0] text-left">Qtd.</th>
-                    <th className="p-1 border-r border-[#d0d0d0] text-left">UoM</th>
+                    <th className="p-1 border-r border-[#EEF4F5] text-left">Artigo</th>
+                    <th className="p-1 border-r border-[#EEF4F5] text-left">Armazém/Local Origem</th>
+                    <th className="p-1 border-r border-[#EEF4F5] text-left">Armazém/Local Destino</th>
+                    <th className="p-1 border-r border-[#EEF4F5] text-left">Lote</th>
+                    <th className="p-1 border-r border-[#EEF4F5] text-left">Qtd.</th>
+                    <th className="p-1 border-r border-[#EEF4F5] text-left">UoM</th>
                     <th className="p-1 w-8"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {lines.map((line, idx) => (
-                    <tr key={idx} className="border-b border-[#e0e0e0]">
-                      <td className="p-1 border-r border-[#e0e0e0]">
+                    <tr key={idx} className="border-b border-[#EEF4F5]">
+                      <td className="p-1 border-r border-[#EEF4F5]">
                         <select 
                           value={line.item || ''} 
                           onChange={e => {
@@ -134,13 +134,13 @@ export default function StockMovementsView() {
                             newLines[idx].item = Number(e.target.value);
                             setLines(newLines);
                           }}
-                          className="w-full border border-[#a0a0a0] focus:outline-none"
+                          className="w-full border border-[#7FA9B1] focus:outline-none"
                         >
                           <option value="">Selecione...</option>
                           {items?.map((i: any) => <option key={i.id} value={i.id}>{i.name}</option>)}
                         </select>
                       </td>
-                      <td className="p-1 border-r border-[#e0e0e0]">
+                      <td className="p-1 border-r border-[#EEF4F5]">
                         <select 
                           value={line.source_location || ''} 
                           disabled={formData.transaction_type === 'RECEIPT'}
@@ -149,13 +149,13 @@ export default function StockMovementsView() {
                             newLines[idx].source_location = e.target.value;
                             setLines(newLines);
                           }}
-                          className="w-full border border-[#a0a0a0] bg-white focus:outline-none disabled:bg-gray-200"
+                          className="w-full border border-[#7FA9B1] bg-white focus:outline-none disabled:bg-gray-200"
                         >
                           <option value="">Nenhum (Entrada)</option>
                           {locations?.map(l => <option key={l.id} value={l.id}>{l.full_code}</option>)}
                         </select>
                       </td>
-                      <td className="p-1 border-r border-[#e0e0e0]">
+                      <td className="p-1 border-r border-[#EEF4F5]">
                         <select 
                           value={line.destination_location || ''} 
                           disabled={formData.transaction_type === 'ISSUE'}
@@ -164,13 +164,13 @@ export default function StockMovementsView() {
                             newLines[idx].destination_location = e.target.value;
                             setLines(newLines);
                           }}
-                          className="w-full border border-[#a0a0a0] bg-white focus:outline-none disabled:bg-gray-200"
+                          className="w-full border border-[#7FA9B1] bg-white focus:outline-none disabled:bg-gray-200"
                         >
                           <option value="">Nenhum (Saída)</option>
                           {locations?.map(l => <option key={l.id} value={l.id}>{l.full_code}</option>)}
                         </select>
                       </td>
-                      <td className="p-1 border-r border-[#e0e0e0]">
+                      <td className="p-1 border-r border-[#EEF4F5]">
                         <input 
                           type="text" 
                           value={line.batch_number || ''}
@@ -179,10 +179,10 @@ export default function StockMovementsView() {
                             newLines[idx].batch_number = e.target.value;
                             setLines(newLines);
                           }}
-                          className="w-full border border-[#a0a0a0] px-1 focus:outline-none"
+                          className="w-full border border-[#7FA9B1] px-1 focus:outline-none"
                         />
                       </td>
-                      <td className="p-1 border-r border-[#e0e0e0]">
+                      <td className="p-1 border-r border-[#EEF4F5]">
                         <input 
                           type="number" 
                           value={line.quantity || ''}
@@ -191,10 +191,10 @@ export default function StockMovementsView() {
                             newLines[idx].quantity = Number(e.target.value);
                             setLines(newLines);
                           }}
-                          className="w-full border border-[#a0a0a0] px-1 focus:outline-none"
+                          className="w-full border border-[#7FA9B1] px-1 focus:outline-none"
                         />
                       </td>
-                      <td className="p-1 border-r border-[#e0e0e0]">
+                      <td className="p-1 border-r border-[#EEF4F5]">
                         <select 
                           value={line.uom || ''} 
                           onChange={e => {
@@ -202,7 +202,7 @@ export default function StockMovementsView() {
                             newLines[idx].uom = Number(e.target.value);
                             setLines(newLines);
                           }}
-                          className="w-full border border-[#a0a0a0] focus:outline-none"
+                          className="w-full border border-[#7FA9B1] focus:outline-none"
                         >
                           <option value="">...</option>
                           {uoms?.map((u: any) => <option key={u.id} value={u.id}>{u.code}</option>)}
@@ -213,7 +213,7 @@ export default function StockMovementsView() {
                           const newLines = [...lines];
                           newLines.splice(idx, 1);
                           setLines(newLines);
-                        }} className="text-red-600 hover:text-red-800"><Trash2 size={12} /></button>
+                        }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>
                       </td>
                     </tr>
                   ))}

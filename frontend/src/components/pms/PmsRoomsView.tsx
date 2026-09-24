@@ -6,10 +6,10 @@ import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 
 const STATUS_STYLE: Record<string, string> = {
-  VACANT_CLEAN: 'bg-[#eafaf0] border-[#8fce9e] text-green-800',
-  VACANT_DIRTY: 'bg-[#fff7e6] border-[#e0c080] text-amber-800',
-  OCCUPIED: 'bg-[#fdeaea] border-[#e0a0a0] text-red-800',
-  OOO: 'bg-[#e8e8e8] border-[#b0b0b0] text-gray-500',
+  VACANT_CLEAN: 'bg-[#F7FAFA] border-[#CFE3E6] text-[#06333C]',
+  VACANT_DIRTY: 'bg-[#F7FAFA] border-[#CFE3E6] text-[#06333C]',
+  OCCUPIED: 'bg-[#F7FAFA] border-[#B0392B] text-[#8C2B1F]',
+  OOO: 'bg-[#F7FAFA] border-[#CFE3E6] text-gray-500',
 };
 
 const blank = { number: '', room_type: '' };
@@ -54,23 +54,23 @@ export default function PmsRoomsView() {
         ))}
         {rows.length === 0 && <div className="col-span-6 text-center text-gray-400 py-6">Sem quartos criados.</div>}
       </div>
-      <div className="p-2 border-t border-[#c0c0c0] bg-[#f4f4f4]">
+      <div className="p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
         <ClassicButton icon={Plus} label="Novo Quarto" onClick={() => setShowNew(true)} />
       </div>
 
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-          <div className="w-[360px] bg-[#f0f0f0] border border-[#8fa4bb] shadow-xl">
-            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #2a5488, #183453)' }}>Novo Quarto</div>
+          <div className="w-[360px] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl">
+            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #0B4F5C, #06333C)' }}>Novo Quarto</div>
             <div className="p-3 space-y-2 text-[11px]">
-              <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#a0a0a0] p-1" /></label>
+              <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>
               <label className="flex flex-col">Categoria
-                <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+                <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
                   <option value="">Escolha…</option>{rtList.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
                 </select>
               </label>
             </div>
-            <div className="flex justify-end gap-2 p-2 bg-[#e8e8e8] border-t border-[#c0c0c0]">
+            <div className="flex justify-end gap-2 p-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
               <ClassicButton label="Cancelar" onClick={() => setShowNew(false)} />
               <ClassicButton icon={Save} label="Gravar" onClick={create} />
             </div>

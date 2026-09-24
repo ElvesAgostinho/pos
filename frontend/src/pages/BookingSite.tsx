@@ -28,7 +28,7 @@ export default function BookingSite() {
       .then((r) => setCfg(r.data)).catch(() => setNotFound(true));
   }, [slug]);
 
-  const color = cfg?.primary_color || '#B08D3C';
+  const color = cfg?.primary_color || '#5C8891';
   const search = async () => {
     setBusy(true); setRooms(null);
     try { const r = await apiClient.get('pms/booking/availability/', { params: { slug, check_in: ci, check_out: co, adults, children } }); setRooms(r.data.rooms || []); }
@@ -114,7 +114,7 @@ export default function BookingSite() {
       {confirmation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl w-full max-w-md p-6 text-center">
-            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white" style={{ background: '#1f9d55' }}><Check size={30} strokeWidth={3} /></div>
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white" style={{ background: '#0B4F5C' }}><Check size={30} strokeWidth={3} /></div>
             <h3 className="text-xl font-bold">Reserva confirmada!</h3>
             <p className="text-gray-600 mt-2">Código: <b className="font-mono">{confirmation.confirmation}</b></p>
             <p className="text-gray-600">{confirmation.room_type} · {confirmation.check_in} → {confirmation.check_out}</p>

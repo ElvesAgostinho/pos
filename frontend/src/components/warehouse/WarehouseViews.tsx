@@ -19,15 +19,15 @@ export function WarehousesView() {
     <ClassicWindow title="Armazéns (Warehouse)" icon={<WhIcon size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{whs.length} armazém(éns)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px]">
-          <input placeholder="Nome do armazém" value={name} onChange={(e) => setName(e.target.value)} className="border border-[#a0a0a0] p-1" />
+        <div className="flex items-end gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
+          <input placeholder="Nome do armazém" value={name} onChange={(e) => setName(e.target.value)} className="border border-[#7FA9B1] p-1" />
           <ClassicButton icon={Plus} label="Adicionar Armazém" onClick={() => { if (name) create.mutate({ name }, { onSuccess: () => setName('') }); }} />
         </div>
         <div className="flex-1 overflow-hidden">
           <ClassicGrid rowKey="id" data={whs} columns={[
             { header: 'Armazém', accessor: 'name', width: '50%' },
             { header: 'Hotel', accessor: (r: any) => r.hotel_name || '—', width: '35%' },
-            { header: 'Principal', accessor: (r: any) => (r.is_main ? <Check size={13} className="text-green-700" /> : '—'), width: '15%' },
+            { header: 'Principal', accessor: (r: any) => (r.is_main ? <Check size={13} className="text-[#0B4F5C]" /> : '—'), width: '15%' },
           ]} />
         </div>
       </div>
@@ -56,20 +56,20 @@ export function StockLevelsView() {
     <ClassicWindow title="Stock Atual & Operações (Warehouse)" icon={<Boxes size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Custo médio ponderado móvel · a receção de compras entra aqui automaticamente</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-2 text-[11px]">
-          <select value={wh || ''} onChange={(e) => setWh(e.target.value ? Number(e.target.value) : undefined)} className="border border-[#a0a0a0] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
+          <select value={wh || ''} onChange={(e) => setWh(e.target.value ? Number(e.target.value) : undefined)} className="border border-[#7FA9B1] p-1 bg-white">
             <option value="">— armazém —</option>{whs.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
           </select>
-          <select value={op.item} onChange={(e) => setOp({ ...op, item: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+          <select value={op.item} onChange={(e) => setOp({ ...op, item: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
             <option value="">— artigo —</option>{items.map((i: any) => <option key={i.id} value={i.id}>[{i.code}] {i.name}</option>)}
           </select>
-          <input placeholder="Qtd" type="number" value={op.quantity} onChange={(e) => setOp({ ...op, quantity: e.target.value })} className="border border-[#a0a0a0] p-1 w-16" />
-          <input placeholder="Custo" type="number" value={op.unit_cost} onChange={(e) => setOp({ ...op, unit_cost: e.target.value })} className="border border-[#a0a0a0] p-1 w-20" />
+          <input placeholder="Qtd" type="number" value={op.quantity} onChange={(e) => setOp({ ...op, quantity: e.target.value })} className="border border-[#7FA9B1] p-1 w-16" />
+          <input placeholder="Custo" type="number" value={op.unit_cost} onChange={(e) => setOp({ ...op, unit_cost: e.target.value })} className="border border-[#7FA9B1] p-1 w-20" />
           <ClassicButton icon={ArrowDownCircle} label="Entrada" onClick={doReceive} />
           <ClassicButton icon={ArrowUpCircle} label="Saída" onClick={doIssue} />
-          <input placeholder="Contado" type="number" value={op.counted} onChange={(e) => setOp({ ...op, counted: e.target.value })} className="border border-[#a0a0a0] p-1 w-20" />
+          <input placeholder="Contado" type="number" value={op.counted} onChange={(e) => setOp({ ...op, counted: e.target.value })} className="border border-[#7FA9B1] p-1 w-20" />
           <ClassicButton icon={ClipboardCheck} label="Ajuste inventário" onClick={doAdjust} />
-          <select value={op.dest} onChange={(e) => setOp({ ...op, dest: e.target.value })} className="border border-[#a0a0a0] p-1 bg-white">
+          <select value={op.dest} onChange={(e) => setOp({ ...op, dest: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
             <option value="">— destino —</option>{whs.filter((w: any) => w.id !== wh).map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
           </select>
           <ClassicButton icon={ArrowRightLeft} label="Transferir" onClick={doTransfer} />
@@ -79,7 +79,7 @@ export function StockLevelsView() {
             { header: 'Código', accessor: 'item_code', width: '12%' },
             { header: 'Artigo', accessor: 'item_name', width: '30%' },
             { header: 'Un', accessor: 'uom_code', width: '8%' },
-            { header: 'Em stock', accessor: (r: any) => <span className={Number(r.quantity_on_hand) <= Number(r.min_stock_alert) ? 'text-red-600 font-bold' : ''}>{qty(r.quantity_on_hand)}</span>, width: '14%' },
+            { header: 'Em stock', accessor: (r: any) => <span className={Number(r.quantity_on_hand) <= Number(r.min_stock_alert) ? 'text-[#8C2B1F] font-bold' : ''}>{qty(r.quantity_on_hand)}</span>, width: '14%' },
             { header: 'Disponível', accessor: (r: any) => qty(r.available_quantity), width: '12%' },
             { header: 'Custo méd.', accessor: (r: any) => money(r.unit_cost), width: '12%' },
             { header: 'Valor', accessor: (r: any) => money(Number(r.quantity_on_hand) * Number(r.unit_cost)), width: '12%' },
@@ -90,7 +90,7 @@ export function StockLevelsView() {
   );
 }
 
-const MTC: Record<string, string> = { IN: 'text-green-700', GRN: 'text-green-700', OUT: 'text-red-600', ADJUST: 'text-[#b06a00]', TRANSFER_IN: 'text-blue-700', TRANSFER_OUT: 'text-blue-700' };
+const MTC: Record<string, string> = { IN: 'text-[#0B4F5C]', GRN: 'text-[#0B4F5C]', OUT: 'text-[#8C2B1F]', ADJUST: 'text-[#0B4F5C]', TRANSFER_IN: 'text-[#0B4F5C]', TRANSFER_OUT: 'text-[#0B4F5C]' };
 export function StockMovementsView() {
   const PAGE = 25;
   const [page, setPage] = useState(1);
@@ -103,10 +103,10 @@ export function StockMovementsView() {
     <ClassicWindow title="Movimentos de Stock (ledger)" icon={<History size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{count} movimento(s) · histórico completo (entradas, saídas, transferências, ajustes, receções)</div>}>
       <div className="flex flex-col h-full">
-        <form className="flex items-center gap-2 bg-[#f0f0f0] border-b border-[#a0a0a0] px-3 py-1.5 text-[11px]" onSubmit={(e) => { e.preventDefault(); setPage(1); setQ(search); }}>
-          <input className="border border-[#a0a0a0] p-1 w-64" placeholder="Pesquisar artigo (código/nome) ou referência…" value={search} onChange={e => setSearch(e.target.value)} />
+        <form className="flex items-center gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-1.5 text-[11px]" onSubmit={(e) => { e.preventDefault(); setPage(1); setQ(search); }}>
+          <input className="border border-[#7FA9B1] p-1 w-64" placeholder="Pesquisar artigo (código/nome) ou referência…" value={search} onChange={e => setSearch(e.target.value)} />
           <ClassicButton label="Pesquisar" onClick={() => { setPage(1); setQ(search); }} />
-          {q && <button type="button" className="text-[#B08D3C] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
+          {q && <button type="button" className="text-[#5C8891] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
         </form>
         <div className="flex-1 overflow-hidden">
           <ClassicGrid rowKey="id" data={moves} columns={[

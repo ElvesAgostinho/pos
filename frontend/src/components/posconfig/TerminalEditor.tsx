@@ -4,8 +4,8 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#8a95a3] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#dcdcdc] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 
 const HW_TYPES = [
   { value: 'DRAWER', label: 'Gaveta' }, { value: 'SCALE', label: 'Balança' },
@@ -63,28 +63,28 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
-      className={`px-5 py-1.5 text-[13px] font-semibold border-b-[3px] ${tab === id ? 'border-[#18181B] text-[#111]' : 'border-transparent text-[#666] hover:text-[#111]'}`}>
+      className={`px-5 py-1.5 text-[13px] font-semibold border-b-[3px] ${tab === id ? 'border-[#062A31] text-[#062A31]' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
       {label}
     </button>
   );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#f0f0f0] border-b border-[#d0d0d0]">
-        <span className="text-[13px] font-bold text-[#333]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#666] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <span className="text-[13px] font-bold text-[#06333C]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
       </div>
 
       {/* Identificação */}
-      <div className="px-4 py-3 border-b border-[#e0e0e0]">
+      <div className="px-4 py-3 border-b border-[#EEF4F5]">
       <Box title="Identificação">
       <div className="grid grid-cols-2 gap-x-10 gap-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[90px] text-[#333]">Código:<span className="text-[#a01818]">*</span></span>
+          <span className="w-[90px] text-[#06333C]">Código:<span className="text-[#B0392B]">*</span></span>
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[220px]`} style={inputStyle} />
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[70px] text-[#333]">Tipo:</span>
+          <span className="w-[70px] text-[#06333C]">Tipo:</span>
           <select value={d.terminal_type} onChange={(e) => set('terminal_type', e.target.value)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="NORMAL">Normal</option>
             <option value="VIRTUAL">Virtual</option>
@@ -92,11 +92,11 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
           </select>
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[90px] text-[#333]">Descrição:<span className="text-[#a01818]">*</span></span>
+          <span className="w-[90px] text-[#06333C]">Descrição:<span className="text-[#B0392B]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inp} w-[300px]`} style={inputStyle} />
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[70px] text-[#333]">Outlet:</span>
+          <span className="w-[70px] text-[#06333C]">Outlet:</span>
           <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="">—</option>
             {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
@@ -106,17 +106,17 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       </Box>
       </div>
 
-      <div className="flex border-b-2 border-[#18181B] bg-[#f7f7f7] px-2">
+      <div className="flex border-b-2 border-[#062A31] bg-[#F7FAFA] px-2">
         <Tab id="geral" label="Geral" /><Tab id="printers" label="Impressoras" /><Tab id="hardware" label="Hardware" />
       </div>
 
       <div className="flex-1 overflow-auto p-3">
         {tab === 'geral' && (
           <>
-            <div className="flex items-center gap-3 mb-2 text-[13px] bg-[#f0f0f0] px-3 py-2 border border-[#e0e0e0]">
+            <div className="flex items-center gap-3 mb-2 text-[13px] bg-[#F7FAFA] px-3 py-2 border border-[#EEF4F5]">
               <span>Pesquisar:</span>
               <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[240px]`} style={inputStyle} />
-              <span className="text-[11px] text-[#666] ml-auto">
+              <span className="text-[11px] text-[#5C8891] ml-auto">
                 O número (ex.: 8610) é a referência do parâmetro — é por ele que o suporte fala consigo.
               </span>
             </div>
@@ -124,18 +124,18 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
               <tbody>
                 {shown.map((g: any) => (
                   <Fragment key={g.group}>
-                    <tr className="bg-[#e9e9e9]">
-                      <td colSpan={2} className="px-2 py-1.5 border border-[#d5d5d5] font-bold">{g.group}</td>
+                    <tr className="bg-[#F7FAFA]">
+                      <td colSpan={2} className="px-2 py-1.5 border border-[#EEF4F5] font-bold">{g.group}</td>
                     </tr>
                     {g.params.map((p: any) => {
                       const v = (d.params || {})[p.number] ?? p.default;
                       return (
-                        <tr key={p.number} className="border-b border-[#eee] hover:bg-[#f7f9fb]">
-                          <td className="px-2 py-1.5 border border-[#eee]" title={p.help_text}>
-                            <span className="text-[#666]">({p.number})</span> {p.name}
-                            {p.help_text && <div className="text-[10px] text-[#888] mt-0.5">{p.help_text}</div>}
+                        <tr key={p.number} className="border-b border-[#F7FAFA] hover:bg-[#FFFFFF]">
+                          <td className="px-2 py-1.5 border border-[#F7FAFA]" title={p.help_text}>
+                            <span className="text-[#5C8891]">({p.number})</span> {p.name}
+                            {p.help_text && <div className="text-[10px] text-[#5C8891] mt-0.5">{p.help_text}</div>}
                           </td>
-                          <td className="px-2 py-1 border border-[#eee] w-[45%]">
+                          <td className="px-2 py-1 border border-[#F7FAFA] w-[45%]">
                             {p.kind === 'BOOL' ? (
                               <input type="checkbox" checked={v === true || v === 'true'} onChange={(e) => setParam(p.number, e.target.checked)} className="w-4 h-4" />
                             ) : p.kind === 'CHOICE' ? (
@@ -154,7 +154,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                   </Fragment>
                 ))}
                 {shown.length === 0 && (
-                  <tr><td colSpan={2} className="text-center text-[#999] py-8">Nenhum parâmetro corresponde à pesquisa.</td></tr>
+                  <tr><td colSpan={2} className="text-center text-[#7FA9B1] py-8">Nenhum parâmetro corresponde à pesquisa.</td></tr>
                 )}
               </tbody>
             </table>
@@ -163,38 +163,38 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
         {tab === 'printers' && (
           <table className="w-full text-[12px] border-collapse">
-            <thead><tr className="bg-[#f0f0f0]">
+            <thead><tr className="bg-[#F7FAFA]">
               {['Ativo', 'Código', 'Descrição', 'Porta', 'Localização Impressora', 'Um artigo por talão', 'Monitores de cozinha'].map((h) => (
-                <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#d5d5d5]">{h}</th>
+                <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#EEF4F5]">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {printers.map((p: any) => {
                 const tp = tprinters.find((x) => x.printer === p.id);
                 return (
-                  <tr key={p.id} className="border-b border-[#eee]">
-                    <td className="text-center border border-[#eee]">
+                  <tr key={p.id} className="border-b border-[#F7FAFA]">
+                    <td className="text-center border border-[#F7FAFA]">
                       <input type="checkbox" checked={!!tp} onChange={() => togglePrinter(p.id)} className="w-4 h-4" />
                     </td>
-                    <td className="px-2 py-1.5 border border-[#eee] font-mono">{p.code}</td>
-                    <td className="px-2 py-1.5 border border-[#eee]">{p.name}</td>
-                    <td className="p-0.5 border border-[#eee] w-[110px]">
+                    <td className="px-2 py-1.5 border border-[#F7FAFA] font-mono">{p.code}</td>
+                    <td className="px-2 py-1.5 border border-[#F7FAFA]">{p.name}</td>
+                    <td className="p-0.5 border border-[#F7FAFA] w-[110px]">
                       <input value={tp?.port || ''} disabled={!tp} onChange={(e) => setP(p.id, 'port', e.target.value)}
-                        placeholder="COM1 / IP" className={`${cell} disabled:bg-[#f4f4f4]`} />
+                        placeholder="COM1 / IP" className={`${cell} disabled:bg-[#F7FAFA]`} />
                     </td>
-                    <td className="p-0.5 border border-[#eee] w-[150px]">
+                    <td className="p-0.5 border border-[#F7FAFA] w-[150px]">
                       <select value={tp?.location || 'TERMINAL'} disabled={!tp} onChange={(e) => setP(p.id, 'location', e.target.value)}
-                        className={`${cell} disabled:bg-[#f4f4f4]`}>
+                        className={`${cell} disabled:bg-[#F7FAFA]`}>
                         <option value="TERMINAL">Terminal</option><option value="SERVER">Servidor</option><option value="NETWORK">Rede</option>
                       </select>
                     </td>
-                    <td className="text-center border border-[#eee]">
+                    <td className="text-center border border-[#F7FAFA]">
                       <input type="checkbox" checked={!!tp?.one_item_per_ticket} disabled={!tp}
                         onChange={(e) => setP(p.id, 'one_item_per_ticket', e.target.checked)} className="w-4 h-4" />
                     </td>
-                    <td className="p-0.5 border border-[#eee] w-[150px]">
+                    <td className="p-0.5 border border-[#F7FAFA] w-[150px]">
                       <input value={tp?.kds_monitor || ''} disabled={!tp} onChange={(e) => setP(p.id, 'kds_monitor', e.target.value)}
-                        placeholder="(nenhum)" className={`${cell} disabled:bg-[#f4f4f4]`} />
+                        placeholder="(nenhum)" className={`${cell} disabled:bg-[#F7FAFA]`} />
                     </td>
                   </tr>
                 );
@@ -206,41 +206,41 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
         {tab === 'hardware' && (
           <div>
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#f0f0f0]">
+              <thead><tr className="bg-[#F7FAFA]">
                 {['Código', 'Descrição', 'Tipo', 'Porta', 'Ativo', ''].map((h) => (
-                  <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#d5d5d5]">{h}</th>
+                  <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#EEF4F5]">{h}</th>
                 ))}
               </tr></thead>
               <tbody>
                 {hw.map((h, i) => (
-                  <tr key={i} className="border-b border-[#eee]">
-                    <td className="p-0.5 border border-[#eee]"><input value={h.code} onChange={(e) => setHw(i, 'code', e.target.value)} className={cell} /></td>
-                    <td className="p-0.5 border border-[#eee]"><input value={h.description} onChange={(e) => setHw(i, 'description', e.target.value)} className={cell} /></td>
-                    <td className="p-0.5 border border-[#eee] w-[180px]">
+                  <tr key={i} className="border-b border-[#F7FAFA]">
+                    <td className="p-0.5 border border-[#F7FAFA]"><input value={h.code} onChange={(e) => setHw(i, 'code', e.target.value)} className={cell} /></td>
+                    <td className="p-0.5 border border-[#F7FAFA]"><input value={h.description} onChange={(e) => setHw(i, 'description', e.target.value)} className={cell} /></td>
+                    <td className="p-0.5 border border-[#F7FAFA] w-[180px]">
                       <select value={h.hw_type} onChange={(e) => setHw(i, 'hw_type', e.target.value)} className={cell}>
                         {HW_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select>
                     </td>
-                    <td className="p-0.5 border border-[#eee] w-[120px]"><input value={h.port || ''} onChange={(e) => setHw(i, 'port', e.target.value)} placeholder="COM1" className={cell} /></td>
-                    <td className="text-center border border-[#eee]"><input type="checkbox" checked={!!h.is_active} onChange={(e) => setHw(i, 'is_active', e.target.checked)} className="w-4 h-4" /></td>
-                    <td className="text-center border border-[#eee]">
-                      <button onClick={() => set('hardware', hw.filter((_, j) => j !== i))} className="text-red-600 font-bold text-[11px]">Apagar</button>
+                    <td className="p-0.5 border border-[#F7FAFA] w-[120px]"><input value={h.port || ''} onChange={(e) => setHw(i, 'port', e.target.value)} placeholder="COM1" className={cell} /></td>
+                    <td className="text-center border border-[#F7FAFA]"><input type="checkbox" checked={!!h.is_active} onChange={(e) => setHw(i, 'is_active', e.target.checked)} className="w-4 h-4" /></td>
+                    <td className="text-center border border-[#F7FAFA]">
+                      <button onClick={() => set('hardware', hw.filter((_, j) => j !== i))} className="text-[#8C2B1F] font-bold text-[11px]">Apagar</button>
                     </td>
                   </tr>
                 ))}
-                {hw.length === 0 && <tr><td colSpan={6} className="text-center text-[#999] py-8">Sem periféricos ligados a este terminal.</td></tr>}
+                {hw.length === 0 && <tr><td colSpan={6} className="text-center text-[#7FA9B1] py-8">Sem periféricos ligados a este terminal.</td></tr>}
               </tbody>
             </table>
-            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[13px] text-[#333] px-1 py-1 hover:bg-[#f0f0f0]">
-              <span className="w-6 h-6 rounded-full bg-[#18181B] text-white flex items-center justify-center">＋</span> Adicionar
+            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[13px] text-[#06333C] px-1 py-1 hover:bg-[#F7FAFA]">
+              <span className="w-6 h-6 rounded-full bg-[#062A31] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
           </div>
         )}
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1f7a34', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#c0392b', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#0B4F5C', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
       ]} />
     </div>
   );

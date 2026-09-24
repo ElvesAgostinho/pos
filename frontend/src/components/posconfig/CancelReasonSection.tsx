@@ -28,7 +28,7 @@ export default function CancelReasonSection() {
         { key: 'code', label: 'Código', width: '16%' },
         { key: 'name', label: 'Descrição', width: '26%' },
         { key: 'charge_name', label: 'Encargo', width: '18%',
-          render: (r: any) => r.charge_name || <span className="text-[#999]">(nenhum)</span> },
+          render: (r: any) => r.charge_name || <span className="text-[#7FA9B1]">(nenhum)</span> },
         { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
         { key: 'default_auto_cancel', label: 'Por omissão p/ cancelamentos autom.', width: '18%', toggle: true },
         { key: 'default_abandon', label: 'Por omissão p/ abandonos', width: '12%', toggle: true },

@@ -132,10 +132,10 @@ const Onboarding: React.FC = () => {
   }, [refetch, refetchPre]);
 
   return (
-    <div className="min-h-screen bg-[#111827] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#062A31] flex items-center justify-center p-4">
       <div className="bg-white max-w-lg w-full rounded shadow-2xl overflow-hidden">
-        <div className="bg-[#1f2937] text-white p-6 flex items-center gap-3">
-          <ShieldCheck size={28} className="text-[#90c040]" />
+        <div className="bg-[#06333C] text-white p-6 flex items-center gap-3">
+          <ShieldCheck size={28} className="text-[#5C8891]" />
           <div>
             <h1 className="text-lg font-bold">System Mwana Lodge</h1>
             <p className="text-xs text-gray-400">Ainda sem licença ativa nesta instalação</p>
@@ -148,10 +148,10 @@ const Onboarding: React.FC = () => {
             instalação. Ative-a de uma das formas abaixo.
           </p>
 
-          <div className="bg-green-50 border border-green-200 rounded p-4 text-sm space-y-3">
+          <div className="bg-[#F7FAFA] border border-[#EEF4F5] rounded p-4 text-sm space-y-3">
             <div className="flex items-start gap-2">
-              <Upload size={16} className="text-green-600 mt-0.5 shrink-0" />
-              <div className="font-bold text-green-900">Carregar o ficheiro (recomendado)</div>
+              <Upload size={16} className="text-[#5C8891] mt-0.5 shrink-0" />
+              <div className="font-bold text-[#062A31]">Carregar o ficheiro (recomendado)</div>
             </div>
             <p className="text-[12px] text-gray-600">
               O técnico já lhe entregou o <code className="bg-gray-200 px-1 rounded">license.key</code> (email,
@@ -160,22 +160,22 @@ const Onboarding: React.FC = () => {
             </p>
             <input ref={fileInputRef} type="file" accept=".key,text/plain"
               onChange={(e) => setFicheiro(e.target.files?.[0] || null)}
-              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-green-600 file:text-white file:font-bold hover:file:bg-green-700 file:cursor-pointer" />
+              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#5C8891] file:text-white file:font-bold hover:file:bg-[#0B4F5C] file:cursor-pointer" />
             {enviarMsg && (
-              <div className={`text-[12px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+              <div className={`text-[12px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-[#0B4F5C] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
                 {enviarMsg.text}
               </div>
             )}
             <button onClick={handleEnviarFicheiro} disabled={enviando || !ficheiro}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700 disabled:opacity-50">
+              className="w-full flex items-center justify-center gap-2 py-2 bg-[#5C8891] text-white rounded font-bold hover:bg-[#0B4F5C] disabled:opacity-50">
               {enviando ? 'A enviar…' : 'Submeter'}
             </button>
           </div>
 
-          <form onSubmit={handleAtivar} className="bg-blue-50 border border-blue-200 rounded p-4 text-sm space-y-3">
+          <form onSubmit={handleAtivar} className="bg-[#F7FAFA] border border-[#EEF4F5] rounded p-4 text-sm space-y-3">
             <div className="flex items-start gap-2">
-              <Wifi size={16} className="text-blue-500 mt-0.5 shrink-0" />
-              <div className="font-bold text-blue-900">Ativação automática (só código + senha, sem ficheiro)</div>
+              <Wifi size={16} className="text-[#5C8891] mt-0.5 shrink-0" />
+              <div className="font-bold text-[#062A31]">Ativação automática (só código + senha, sem ficheiro)</div>
             </div>
             <p className="text-[12px] text-gray-600">
               Os mesmos dois dados que já tem para correr o setup.exe (PCC → Gestão de Clientes
@@ -192,12 +192,12 @@ const Onboarding: React.FC = () => {
                 className="w-full h-9 px-2 bg-white border border-gray-300 rounded outline-none" />
             </label>
             {ativarMsg && (
-              <div className={`text-[12px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+              <div className={`text-[12px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-[#0B4F5C] bg-[#F7FAFA] border-[#EEF4F5]' : 'text-[#8C2B1F] bg-[#FDECEA] border-[#B0392B]'}`}>
                 {ativarMsg.text}
               </div>
             )}
             <button type="submit" disabled={ativando || !clientCode || !installPassword}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 disabled:opacity-50">
+              className="w-full flex items-center justify-center gap-2 py-2 bg-[#5C8891] text-white rounded font-bold hover:bg-[#0B4F5C] disabled:opacity-50">
               {ativando ? 'A ativar…' : 'Ativar via Internet'}
             </button>
           </form>
@@ -220,13 +220,13 @@ const Onboarding: React.FC = () => {
 
           {pre && (
             <div className={`border rounded p-4 text-sm space-y-2 ${
-              pre.diagnosis === 'OK' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+              pre.diagnosis === 'OK' ? 'bg-[#F7FAFA] border-[#EEF4F5]' : 'bg-[#FDECEA] border-[#B0392B]'}`}>
               <div className="flex items-start gap-2">
                 {pre.diagnosis === 'OK'
-                  ? <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" />
-                  : <AlertTriangle size={16} className="text-red-600 mt-0.5 shrink-0" />}
+                  ? <CheckCircle2 size={16} className="text-[#5C8891] mt-0.5 shrink-0" />
+                  : <AlertTriangle size={16} className="text-[#8C2B1F] mt-0.5 shrink-0" />}
                 <div className="flex-1">
-                  <div className={`font-bold ${pre.diagnosis === 'OK' ? 'text-green-800' : 'text-red-800'}`}>
+                  <div className={`font-bold ${pre.diagnosis === 'OK' ? 'text-[#06333C]' : 'text-[#8C2B1F]'}`}>
                     Diagnóstico: {DIAGNOSIS_LABEL[pre.diagnosis] || pre.diagnosis}
                   </div>
                   <p className="text-gray-700 mt-1">{pre.detail}</p>
@@ -248,7 +248,7 @@ const Onboarding: React.FC = () => {
           <button
             onClick={() => refetch()}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#111827] text-white rounded font-bold hover:bg-[#1f2937] transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#062A31] text-white rounded font-bold hover:bg-[#06333C] transition-colors disabled:opacity-50"
           >
             <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
             {isLoading ? 'A verificar…' : 'Verificar agora'}
