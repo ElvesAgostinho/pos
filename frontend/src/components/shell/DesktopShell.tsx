@@ -30,7 +30,11 @@ import LockScreen from '../ui/LockScreen';
 // Ecrãs que trazem a sua própria janela completa (não entram na árvore + ribbon).
 // PMS é ecrã inteiro, cabeçalho e menus PRÓPRIOS (PmsShell) — igual à Configuração
 // POS. NUNCA passa pela árvore/ribbon clássica abaixo.
-const FULLSCREEN_VIEWS = ['posc_config', 'pms_home'];
+// 'adm_appearance': a janela do Papel de Parede já traz a sua própria moldura
+// (ClassicWindow) — dentro da árvore+ribbon do shell ficava com DUAS barras de
+// título e um ribbon/árvore cheios de ações (Novo/Eliminar/Duplicar/Anexos…)
+// que não fazem sentido para um ecrã de uma só definição, sem registos.
+const FULLSCREEN_VIEWS = ['posc_config', 'pms_home', 'adm_appearance'];
 
 const cmd = (name: string) => window.dispatchEvent(new CustomEvent('erp:cmd', { detail: name }));
 

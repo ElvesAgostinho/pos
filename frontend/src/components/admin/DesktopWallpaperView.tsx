@@ -11,8 +11,9 @@ const read = () => (typeof localStorage !== 'undefined' ? localStorage.getItem(S
     cor da barra já têm os seus próprios ecrãs (Empresa, Personalização de
     cores) e não se repetem aqui. Guardado por terminal (localStorage), como
     o resto da Aparência: EnterpriseDesktop.tsx lê esta mesma chave. */
-export default function DesktopWallpaperView() {
+export default function DesktopWallpaperView({ onBack, onDesktop }: { onBack?: () => void; onDesktop?: () => void }) {
   const [val, setVal] = useState<string>(read());
+  const voltar = onDesktop || onBack;
 
   const onFile = (f?: File) => {
     if (!f) return;
@@ -30,6 +31,7 @@ export default function DesktopWallpaperView() {
 
   return (
     <ClassicWindow title="Papel de Parede do Ambiente de Trabalho" icon={<Image size={14} className="text-gray-300" />}
+      onClose={voltar}
       footer={<>
         <ClassicButton icon={Save} label="Guardar e aplicar" onClick={salvar} />
         <div className="text-gray-600">Aplica-se só a este terminal.</div>
