@@ -16,22 +16,23 @@ const BRAND = {
 };
 
 const DEFAULT_PROPERTIES = [{ id: '1', name: 'Mwana Lodge' }];
-const DEFAULT_AREAS = [
-  { id: 'restaurante', name: 'Restaurante' },
-  { id: 'esplanada', name: 'Esplanada' },
-  { id: 'bar', name: 'Lobby Bar' },
-];
 
 const PosLoginModern: React.FC = () => {
   const [properties] = useState(DEFAULT_PROPERTIES);
-  const [areas, setAreas] = useState(DEFAULT_AREAS);
+  // Começa vazia de propósito: mostrar "Restaurante"/"Esplanada"/"Lobby Bar" antes
+  // de se saber quais os setores REAIS deste hotel dava a entender que existiam,
+  // mesmo quando o gestor da empresa nunca os configurou. Só aparece o que o
+  // servidor confirmar; enquanto isso, o dropdown mostra "A carregar…"/"Sem
+  // setores configurados", nunca um nome inventado.
+  const [areas, setAreas] = useState<{ id: string; name: string }[]>([]);
   const [property, setProperty] = useState(DEFAULT_PROPERTIES[0].id);
-  const [area, setArea] = useState(DEFAULT_AREAS[0].id);
+  const [area, setArea] = useState('');
+  const [areasLoading, setAreasLoading] = useState(true);
   // Só passa a valer a pena GUARDAR a escolha se a lista veio mesmo do servidor: sem
   // sessão anterior neste aparelho (primeiro acesso, ou depois de "Sair"), a lista de
-  // outlets exige autenticação e cai nestes três nomes de exemplo — não são setores
-  // reais, e o terminal não pode tentar usá-los depois do login (rejeitava sempre,
-  // com um aviso de "sem acesso" que nem era verdade).
+  // outlets exige autenticação — o terminal não pode tentar usar um setor que não
+  // veio do servidor depois do login (rejeitava sempre, com um aviso de "sem
+  // acesso" que nem era verdade).
   const [areasReais, setAreasReais] = useState(false);
   const [pin, setPin] = useState('');
   const [showPad, setShowPad] = useState(false);
@@ -61,7 +62,8 @@ const PosLoginModern: React.FC = () => {
           setAreasReais(true);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setAreasLoading(false));
   }, []);
 
   const fmt = (d: Date) => {
@@ -128,8 +130,12 @@ const PosLoginModern: React.FC = () => {
           <div className="flex items-center gap-2">
             <Monitor className="text-white w-7 h-7 flex-shrink-0" />
             <div className="relative flex-1">
-              <select value={area} onChange={(e) => setArea(e.target.value)} className={sel}>
-                {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              <select value={area} onChange={(e) => setArea(e.target.value)} disabled={!areasReais} className={sel}>
+                {areasLoading
+                  ? <option value="">A carregar…</option>
+                  : areas.length
+                    ? areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)
+                    : <option value="">Sem setores configurados</option>}
               </select>
               <ChevronDown className="text-gray-300 w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
