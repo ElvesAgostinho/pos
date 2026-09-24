@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { User, LogOut, KeyRound } from 'lucide-react';
+import { User, LogOut, KeyRound, UserCog } from 'lucide-react';
 
 interface TopbarProps {
   onSelectView?: (view: string) => void;
   userName?: string;
   onChangePassword?: () => void;
+  onEditCredentials?: () => void;
   onLogout?: () => void;
 }
 
-export default function Topbar({ onSelectView, userName, onChangePassword, onLogout }: TopbarProps) {
+export default function Topbar({ onSelectView, userName, onChangePassword, onEditCredentials, onLogout }: TopbarProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const topbarRef = useRef<HTMLDivElement>(null);
 
@@ -74,6 +75,12 @@ export default function Topbar({ onSelectView, userName, onChangePassword, onLog
             <div className="absolute top-full right-0 mt-0 w-52 bg-[#f0f0f0] border border-[#a0a0a0] shadow-[2px_2px_5px_rgba(0,0,0,0.5)] text-gray-800 text-[11px] py-1 z-50">
               <div className="px-3 py-1.5 text-gray-500 border-b border-[#ddd] flex items-center">
                 <User size={11} className="mr-2" /> Sessão: <b className="ml-1 text-gray-700">{userName || '—'}</b>
+              </div>
+              <div
+                className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer flex items-center"
+                onClick={() => { setOpenDropdown(null); onEditCredentials && onEditCredentials(); }}
+              >
+                <UserCog size={11} className="mr-2" /> As minhas credenciais
               </div>
               <div
                 className="px-3 py-1.5 hover:bg-[#cce8ff] hover:text-black cursor-pointer flex items-center"

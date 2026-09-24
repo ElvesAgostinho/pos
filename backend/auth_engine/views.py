@@ -268,7 +268,12 @@ class PosLoginView(APIView):
 
 
 class MeView(APIView):
-    """Devolve o utilizador autenticado e os seus perfis RBAC."""
+    """Devolve o utilizador autenticado e os seus perfis RBAC; PATCH edita as
+    CREDENCIAIS DE ENTRADA (nome de utilizador/e-mail — não a password, que tem
+    o seu próprio ecrã/validação em ChangePasswordView). Serve tanto o backoffice
+    como o PCC (Gerenciamento → As Minhas Credenciais) — é o mesmo utilizador
+    Django dos dois lados, endpoint partilhado.
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -282,6 +287,33 @@ class MeView(APIView):
             'is_staff': u.is_staff,
             'roles': _roles_for(u),
         })
+
+    def patch(self, request):
+        u = request.user
+        # Trocar o NOME DE UTILIZADOR é trocar a própria chave de login — exige a
+        # password atual, a mesma exigência do ChangePasswordView, para que uma
+        # sessão esquecida aberta não baste para sequestrar a conta.
+        current_password = request.data.get('current_password') or ''
+        if not u.check_password(current_password):
+            return Response({'detail': 'A palavra-passe atual está incorreta.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        username = (request.data.get('username') or '').strip()
+        email = (request.data.get('email') or '').strip()
+        if not username:
+            return Response({'detail': 'O nome de utilizador não pode ficar vazio.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        from django.contrib.auth.models import User
+        if User.objects.filter(username__iexact=username).exclude(pk=u.pk).exists():
+            return Response({'detail': f'Já existe um utilizador com o nome "{username}".'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        u.username = username
+        u.email = email
+        u.save(update_fields=['username', 'email'])
+        AuthEventLog.objects.create(
+            event_type='LOGIN_SUCCESS', identity_attempt=username,
+            ip_address=_client_ip(request), details='Credenciais (utilizador/e-mail) alteradas pelo próprio utilizador.',
+        )
+        return Response({'id': u.id, 'username': u.username, 'email': u.email})
 
 
 class ChangePasswordView(APIView):

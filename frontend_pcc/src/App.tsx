@@ -14,6 +14,7 @@ import ErrorReports from './pages/ErrorReports';
 import AuditLog from './pages/AuditLog';
 import Login from './pages/Login';
 import ChangePassword from './pages/ChangePassword';
+import MyCredentials from './pages/MyCredentials';
 import { pccAuth } from './api/auth';
 import { Shield, Users, Database, Stamp, UploadCloud, AlertTriangle, ScrollText } from 'lucide-react';
 
@@ -50,7 +51,12 @@ function App() {
   const [isLocked, setIsLocked] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showCredentials, setShowCredentials] = useState(false);
+  // Bumped depois de gravar credenciais novas, para o nome no Topbar (lido de
+  // localStorage) refletir a mudança sem precisar de sair e voltar a entrar.
+  const [userVersion, setUserVersion] = useState(0);
   const user = pccAuth.getUser();
+  void userVersion;
 
   const handleLogout = async () => {
     await pccAuth.logout();
@@ -87,6 +93,7 @@ function App() {
         onSelectView={handleSelectView}
         userName={user?.name}
         onChangePassword={() => setShowChangePassword(true)}
+        onEditCredentials={() => setShowCredentials(true)}
         onLogout={handleLogout}
       />
       <TabsBar 
@@ -124,6 +131,12 @@ function App() {
       {isLocked && <LockScreen onUnlock={() => setIsLocked(false)} />}
       {showNotes && <QuickNotes onClose={() => setShowNotes(false)} />}
       {showChangePassword && <ChangePassword onClose={() => setShowChangePassword(false)} />}
+      {showCredentials && (
+        <MyCredentials
+          onClose={() => setShowCredentials(false)}
+          onSaved={() => setUserVersion((v) => v + 1)}
+        />
+      )}
     </div>
   );
 }

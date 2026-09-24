@@ -41,6 +41,20 @@ export const pccAuth = {
     return data;
   },
 
+  // Nome de utilizador / e-mail — as CREDENCIAIS DE ENTRADA (não a password,
+  // que é o changePassword acima). Exige a password atual (mesma proteção do
+  // change-password) e atualiza também o 'pcc_user' guardado localmente.
+  updateCredentials: async (username: string, email: string, currentPassword: string) => {
+    const { data } = await apiClient.patch('auth/me/', {
+      username, email, current_password: currentPassword,
+    });
+    const user = pccAuth.getUser();
+    if (user) {
+      localStorage.setItem(USER, JSON.stringify({ ...user, username: data.username, email: data.email }));
+    }
+    return data;
+  },
+
   logout: async () => {
     const refresh = localStorage.getItem(REFRESH);
     try {
