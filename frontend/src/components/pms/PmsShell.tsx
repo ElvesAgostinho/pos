@@ -51,7 +51,9 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
 };
 
 // Só glifos que existem em ICON_MAP (posconfig/kit.tsx) — nunca emoji cru no ecrã.
-const MENUS: { title: string; items: { icon: string; label: string; section?: string; url?: string; soon?: boolean }[] }[] = [
+// "posSection": reaproveita um ecrã que já existe na Configuração POS (ex.:
+// Diagnóstico) em vez de duplicar informação — sai do PMS e abre lá.
+const MENUS: { title: string; items: { icon: string; label: string; section?: string; url?: string; posSection?: string; soon?: boolean }[] }[] = [
   { title: 'Reserva', items: [
     { icon: '📊', label: 'Disponibilidade', section: 'availability' },
     { icon: '🔍', label: 'Reservas', section: 'reservations' },
@@ -99,7 +101,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '🧾', label: 'SAFT-AO', section: 'saft_pos' },
     { icon: '🛏', label: 'Categorias de Quarto', section: 'room_types' },
     { icon: '💰', label: 'Tarifas (Rate Codes)', section: 'rate_plans' },
-    { icon: '⚙', label: 'Diagnóstico', soon: true },
+    { icon: '⚙', label: 'Diagnóstico', posSection: 'x_diag' },
     { icon: '📋', label: 'Visualizar Logs', soon: true },
   ] },
   { title: 'EMS', items: [
@@ -110,7 +112,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
   ] },
 ];
 
-export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: (id: string) => void; onDesktop?: () => void }) {
+export default function PmsShell({ onDesktop, onOpen }: { onBack?: () => void; onOpen?: (id: string) => void; onDesktop?: () => void }) {
   // A secção com que se abre: quem manda abrir o PMS (o Ambiente de Trabalho, um
   // atalho dos seus próprios menus) deixa-a aqui — mesmo padrão do posc_section
   // que a Configuração POS já usa.
@@ -172,8 +174,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
 
         {MENUS.map((m) => (
           <div key={m.title} className="relative">
+            {/* Só troca de menu ao CLICAR — havia um onMouseEnter aqui que trocava
+                de menu só de o rato passar por cima do título ao caminho de outro
+                sítio, sem se clicar em nada: o operador achava que o sistema
+                "saltava sozinho" de secção. */}
             <button onClick={() => setMenu(menu === m.title ? null : m.title)}
-              onMouseEnter={() => menu && setMenu(m.title)}
               className={`px-4 py-2 text-[15px] font-semibold hover:bg-white/10 ${menu === m.title ? 'bg-white/10' : ''}`}>
               {m.title} ▾
             </button>
@@ -187,6 +192,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                         setMenu(null);
                         if (it.soon) { aviso(`"${it.label}" ainda não está construído nesta fase do PMS.`); return; }
                         if (it.url) { window.open(it.url, '_blank'); return; }
+                        if (it.posSection) {
+                          localStorage.setItem('posc_section', it.posSection);
+                          onOpen?.('posc_config');
+                          return;
+                        }
                         if (it.section) {
                           if (!screenAllowed(`pms_${it.section}`)) { aviso('Sem permissão para aceder a este ecrã.'); return; }
                           setSection(it.section);
