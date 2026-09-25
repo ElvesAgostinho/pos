@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Save } from 'lucide-react';
-import ClassicButton from '../ui/ClassicButton';
+import { Toolbar } from '../posconfig/kit';
 import ClassicGrid from '../ui/ClassicGrid';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
@@ -138,10 +137,10 @@ export default function PmsFinanceView() {
           <label className="flex flex-col">Data<input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className={inp} /></label>
         </div>
       </div>
-      <div className="flex gap-2 p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
-        <ClassicButton icon={Plus} label="Limpar" onClick={novo} />
-        <ClassicButton icon={Save} label="Gravar Transação" onClick={save} />
-      </div>
+      <Toolbar actions={[
+        { label: 'Limpar', icon: '✕', onClick: novo },
+        { label: 'Gravar Transação', icon: '💾', onClick: save },
+      ]} />
     </div>
   );
 }

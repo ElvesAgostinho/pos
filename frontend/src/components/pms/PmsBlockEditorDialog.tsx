@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { X, Copy, Plus } from 'lucide-react';
+import { X, Copy } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso } from '../../ui/dialogo';
-import ClassicButton from '../ui/ClassicButton';
+import { Glyph } from '../posconfig/kit';
 import ClassicGrid from '../ui/ClassicGrid';
 
 const blank = {
@@ -197,7 +197,9 @@ function BlockGrid({ blockId, roomTypes }: { blockId: number; roomTypes: any[] }
         </select>
         <input type="date" value={row.date} onChange={(e) => setRow({ ...row, date: e.target.value })} className="border border-[#7FA9B1] p-1" />
         <input type="number" min={0} value={row.rooms_blocked} onChange={(e) => setRow({ ...row, rooms_blocked: Number(e.target.value) })} className="border border-[#7FA9B1] p-1 w-20" placeholder="Qtd" />
-        <ClassicButton icon={Plus} label="Adicionar" onClick={addRow} />
+        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[12px] text-[#041F24] border border-[#7FA9B1] hover:bg-[#F7FAFA] rounded-[2px]">
+          <Glyph icon="＋" size={14} /> Adicionar
+        </button>
       </div>
       <ClassicGrid rowKey="id" data={data?.room_types || []} columns={[
         { header: 'Categoria', accessor: 'room_type_name', width: '35%' },

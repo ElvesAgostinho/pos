@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { X, Users } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
@@ -119,6 +119,13 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   const cur = SECTIONS[section];
   const Comp = cur.Comp;
   const [clock] = useState(() => new Date());
+  // O mesmo logótipo real da instalação (Empresa → Imagem do Hotel) que o
+  // Ambiente de Trabalho e a Configuração POS já mostram — nada de "ML"
+  // escrito à mão só aqui, que ficava diferente do resto do sistema.
+  const [logoUrl, setLogoUrl] = useState('');
+  useEffect(() => {
+    apiClient.get('platform/branding/').then((r) => setLogoUrl(r.data?.logo_url || '')).catch(() => {});
+  }, []);
 
   const { data: myHotels } = useQuery({
     queryKey: ['auth', 'hotels'],
@@ -141,16 +148,8 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
-            <span className="text-[30px] font-black tracking-tight select-none"
-              style={{
-                background: 'linear-gradient(180deg,#CFE3E6 0%,#062A31 55%,#062A31 100%)',
-                WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
-                textShadow: '0 1px 0 rgba(255,255,255,.35), 0 3px 6px rgba(0,0,0,.55)',
-                filter: 'drop-shadow(0 2px 1px rgba(0,0,0,.6))',
-              }}>
-              ML
-            </span>
-            <span className="text-[10px] text-[#7FA9B1] pb-1">Mwana Lodge ▾</span>
+            <img src={logoUrl || '/brand-logo.png'} alt="" className="h-9 w-9 object-contain flex-shrink-0 rounded-full" />
+            <span className="text-[13px] text-white">▾</span>
           </button>
           {menu === '__ml' && (
             <>

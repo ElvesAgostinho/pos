@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Save, Trash2 } from 'lucide-react';
-import ClassicButton from '../ui/ClassicButton';
+import { Toolbar } from '../posconfig/kit';
 import ClassicGrid from '../ui/ClassicGrid';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
@@ -125,11 +124,11 @@ export default function PmsGuestsCompaniesView() {
           <label className="flex flex-col">Notas<textarea value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={inp} rows={2} /></label>
         </div>
       </div>
-      <div className="flex gap-2 p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
-        <ClassicButton icon={Plus} label={tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa'} onClick={novo} />
-        <ClassicButton icon={Save} label="Gravar" onClick={save} />
-        {selId && <ClassicButton icon={Trash2} label="Eliminar" onClick={remove} />}
-      </div>
+      <Toolbar actions={[
+        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', onClick: novo },
+        { label: 'Gravar', icon: '💾', onClick: save },
+        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#B0392B' },
+      ]} />
     </div>
   );
 }

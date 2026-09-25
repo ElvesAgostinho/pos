@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Wallet, Plus, Split, ArrowRightLeft, Undo2, FileCheck2 } from 'lucide-react';
+import { ArrowRightLeft, Undo2 } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso, confirmar, pedir } from '../../ui/dialogo';
-import ClassicButton from '../ui/ClassicButton';
+import { Toolbar, Glyph } from '../posconfig/kit';
 import ClassicGrid from '../ui/ClassicGrid';
 
 export default function PmsFolioPanel({ reservationId, onClose }: { reservationId: number; onClose: () => void }) {
@@ -74,7 +74,7 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[640px] max-h-[80vh] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl flex flex-col">
         <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #062A31, #041F24)' }}>
-          <span className="flex items-center gap-1.5"><Wallet size={13} /> Conta — {folio?.confirmation}</span>
+          <span className="flex items-center gap-1.5"><Glyph icon="💳" size={13} /> Conta — {folio?.confirmation}</span>
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>
 
@@ -107,14 +107,14 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
           ]} />
         </div>
 
-        <div className="flex flex-wrap gap-2 p-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
-          <ClassicButton icon={Plus} label="Lançar" onClick={addCharge} />
-          <ClassicButton icon={Split} label="Dividir Conta" onClick={split} />
-          <ClassicButton icon={Wallet} label="Registar Pagamento" onClick={settle} />
-          <ClassicButton icon={FileCheck2} label="Gerar Fatura (AGT)" onClick={generateInvoice} />
-          <div className="flex-1" />
-          <ClassicButton label="Fechar" onClick={onClose} />
-        </div>
+        <Toolbar actions={[
+          { label: 'Lançar', icon: '＋', onClick: addCharge },
+          { label: 'Dividir Conta', icon: '✂', onClick: split },
+          { label: 'Registar Pagamento', icon: '💳', onClick: settle },
+          { label: 'Gerar Fatura (AGT)', icon: '🧾', onClick: generateInvoice },
+        ]} right={
+          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#041F24] border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">Fechar</button>
+        } />
       </div>
     </div>
   );

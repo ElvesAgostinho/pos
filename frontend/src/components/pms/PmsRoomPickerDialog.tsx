@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
-import ClassicButton from '../ui/ClassicButton';
 
 interface Props {
   mode: 'assign' | 'change';
@@ -61,7 +60,7 @@ export default function PmsRoomPickerDialog({ mode, reservation, onClose, onDone
           )}
         </div>
         <div className="flex justify-end gap-2 p-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
-          <ClassicButton label="Fechar" onClick={onClose} />
+          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#041F24] border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">Fechar</button>
         </div>
       </div>
     </div>

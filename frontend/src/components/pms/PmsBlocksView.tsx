@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Copy } from 'lucide-react';
-import ClassicButton from '../ui/ClassicButton';
+import { Toolbar } from '../posconfig/kit';
 import ClassicGrid from '../ui/ClassicGrid';
 import { apiClient } from '../../api/client';
 import PmsBlockEditorDialog from './PmsBlockEditorDialog';
@@ -29,11 +28,11 @@ export default function PmsBlocksView() {
             { header: 'Garantido', accessor: (r: any) => r.is_guaranteed ? 'Sim' : 'Não', width: '10%' },
           ]} />
       </div>
-      <div className="flex gap-2 p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
-        <ClassicButton icon={Plus} label="Novo" onClick={() => setEditing('new')} />
-        <ClassicButton icon={Copy} label="Copiar" disabled={!sel} onClick={() => setEditing('copy')} />
-        <ClassicButton label="Editar" disabled={!sel} onClick={() => setEditing('edit')} />
-      </div>
+      <Toolbar actions={[
+        { label: 'Novo', icon: '＋', onClick: () => setEditing('new') },
+        { label: 'Copiar', icon: '⧉', disabled: !sel, onClick: () => setEditing('copy') },
+        { label: 'Editar', icon: '✎', disabled: !sel, onClick: () => setEditing('edit') },
+      ]} />
 
       {editing === 'new' && (
         <PmsBlockEditorDialog onClose={() => setEditing(null)}

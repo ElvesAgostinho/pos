@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Save } from 'lucide-react';
-import ClassicButton from '../ui/ClassicButton';
+import { Toolbar } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 
@@ -54,9 +53,7 @@ export default function PmsRoomsView() {
         ))}
         {rows.length === 0 && <div className="col-span-6 text-center text-gray-400 py-6">Sem quartos criados.</div>}
       </div>
-      <div className="p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
-        <ClassicButton icon={Plus} label="Novo Quarto" onClick={() => setShowNew(true)} />
-      </div>
+      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', onClick: () => setShowNew(true) }]} />
 
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
@@ -70,10 +67,10 @@ export default function PmsRoomsView() {
                 </select>
               </label>
             </div>
-            <div className="flex justify-end gap-2 p-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
-              <ClassicButton label="Cancelar" onClick={() => setShowNew(false)} />
-              <ClassicButton icon={Save} label="Gravar" onClick={create} />
-            </div>
+            <Toolbar actions={[
+              { label: 'Cancelar', icon: '✕', onClick: () => setShowNew(false) },
+              { label: 'Gravar', icon: '💾', onClick: create },
+            ]} />
           </div>
         </div>
       )}

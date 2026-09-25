@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Save } from 'lucide-react';
-import ClassicButton from '../ui/ClassicButton';
+import { Toolbar } from '../posconfig/kit';
 import ClassicGrid from '../ui/ClassicGrid';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso } from '../../ui/dialogo';
 
 const BOARDS = [['RO', 'Só dormida'], ['BB', 'Bed & Breakfast'], ['HB', 'Meia Pensão'], ['FB', 'Pensão Completa'], ['AI', 'All Inclusive']];
-const blank = { code: '', name: '', room_type: '', price_per_night: 0, board: 'RO', min_nights: 1 };
+const blank = { code: '', name: '', room_type: '', price_per_night: 0, board: 'RO', min_nights: 1, valid_from: '', valid_to: '' };
 
 export default function PmsRatePlansView() {
   const qc = useQueryClient();
@@ -61,12 +60,17 @@ export default function PmsRatePlansView() {
             <label className="flex-1 flex flex-col">Preço/noite<input type="number" value={form.price_per_night} onChange={(e) => setForm({ ...form, price_per_night: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>
             <label className="flex-1 flex flex-col">Mín. noites<input type="number" value={form.min_nights} onChange={(e) => setForm({ ...form, min_nights: Number(e.target.value) })} className="border border-[#7FA9B1] p-1" /></label>
           </div>
+          <div className="flex gap-2">
+            <label className="flex-1 flex flex-col">Válida de<input type="date" value={form.valid_from || ''} onChange={(e) => setForm({ ...form, valid_from: e.target.value || null })} className="border border-[#7FA9B1] p-1" /></label>
+            <label className="flex-1 flex flex-col">Válida até<input type="date" value={form.valid_to || ''} onChange={(e) => setForm({ ...form, valid_to: e.target.value || null })} className="border border-[#7FA9B1] p-1" /></label>
+          </div>
+          <div className="text-[10px] text-gray-500">Deixe em branco para a tarifa valer sempre. Preços por dia específico (ex.: só sextas e sábados) fazem-se no Calendário de Tarifas → Atualização em Massa.</div>
         </div>
       </div>
-      <div className="flex gap-2 p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
-        <ClassicButton icon={Plus} label="Nova" onClick={novo} />
-        <ClassicButton icon={Save} label="Gravar" onClick={save} />
-      </div>
+      <Toolbar actions={[
+        { label: 'Nova', icon: '＋', onClick: novo },
+        { label: 'Gravar', icon: '💾', onClick: save },
+      ]} />
     </div>
   );
 }

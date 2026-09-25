@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Save } from 'lucide-react';
-import ClassicButton from '../ui/ClassicButton';
+import { Toolbar } from '../posconfig/kit';
 import ClassicGrid from '../ui/ClassicGrid';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
@@ -50,10 +49,10 @@ export default function PmsRoomTypesView() {
           <label className="flex flex-col">Preço base/noite<input type="number" value={form.base_rate} onChange={(e) => setForm({ ...form, base_rate: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>
         </div>
       </div>
-      <div className="flex gap-2 p-2 border-t border-[#CFE3E6] bg-[#F7FAFA]">
-        <ClassicButton icon={Plus} label="Nova" onClick={novo} />
-        <ClassicButton icon={Save} label="Gravar" onClick={save} />
-      </div>
+      <Toolbar actions={[
+        { label: 'Nova', icon: '＋', onClick: novo },
+        { label: 'Gravar', icon: '💾', onClick: save },
+      ]} />
     </div>
   );
 }
