@@ -6,6 +6,10 @@ from .views import (
     ReservationViewSet, FolioViewSet, MealPlanEntryViewSet,
 )
 from .availability import AvailabilityView
+from .reports import (
+    PerformanceReportView, OccupancyReportView, RevenueReportView,
+    PaymentsReportView, ChargesReportView, HousekeepingReportView,
+)
 
 router = DefaultRouter()
 router.register(r'room-types', RoomTypeViewSet)
@@ -19,4 +23,10 @@ router.register(r'meal-plan-entries', MealPlanEntryViewSet, basename='pms-meal-p
 
 urlpatterns = [
     path('availability/', AvailabilityView.as_view()),
+    path('reports/performance/', PerformanceReportView.as_view()),
+    path('reports/occupancy/', OccupancyReportView.as_view()),
+    path('reports/revenue/', RevenueReportView.as_view()),
+    path('reports/payments/', PaymentsReportView.as_view()),
+    path('reports/charges/', ChargesReportView.as_view()),
+    path('reports/housekeeping/', HousekeepingReportView.as_view()),
 ] + router.urls

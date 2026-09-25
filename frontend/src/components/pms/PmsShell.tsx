@@ -17,12 +17,13 @@ import PmsRatesCalendarView from './PmsRatesCalendarView';
 import PmsRoomsBulkEditView from './PmsRoomsBulkEditView';
 import PmsGuestsCompaniesView from './PmsGuestsCompaniesView';
 import PmsFinanceView from './PmsFinanceView';
+import PmsReportsView from './PmsReportsView';
 // Estes 4 já existem no POS (Configuração POS) — ligamos ao MESMO componente
 // (mesmos dados, mesma lógica), só com a moldura do PMS à volta, para não
 // parecer que se está a saltar de módulo.
 import PosReports from '../posconfig/PosReports';
 import PosOnline from '../posconfig/PosOnline';
-import { PosDayClose, PosSaft } from '../posconfig/PosOps';
+import { PosDayClose, PosSaft, PosDiagnostics } from '../posconfig/PosOps';
 
 /**
  * PMS — cabeçalho e menus PRÓPRIOS (não o menu clássico do resto do backoffice).
@@ -45,15 +46,15 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   guests_companies: { label: 'Hóspedes & Empresas', icon: '👤', Comp: PmsGuestsCompaniesView },
   finance_pms: { label: 'Financeiro', icon: '📋', Comp: PmsFinanceView },
   reports: { label: 'Relatórios', icon: '🖨', Comp: PosReports },
+  reports_pms: { label: 'Performance & Ocupação', icon: '📊', Comp: PmsReportsView },
   online: { label: 'Informação Online', icon: '📈', Comp: PosOnline },
   dayclose_pos: { label: 'Fecho do dia POS', icon: '🌙', Comp: PosDayClose },
   saft_pos: { label: 'SAFT-AO', icon: '🧾', Comp: PosSaft },
+  diag_pos: { label: 'Diagnóstico', icon: '⚙', Comp: PosDiagnostics },
 };
 
 // Só glifos que existem em ICON_MAP (posconfig/kit.tsx) — nunca emoji cru no ecrã.
-// "posSection": reaproveita um ecrã que já existe na Configuração POS (ex.:
-// Diagnóstico) em vez de duplicar informação — sai do PMS e abre lá.
-const MENUS: { title: string; items: { icon: string; label: string; section?: string; url?: string; posSection?: string; soon?: boolean }[] }[] = [
+const MENUS: { title: string; items: { icon: string; label: string; section?: string; url?: string; soon?: boolean }[] }[] = [
   { title: 'Reserva', items: [
     { icon: '📊', label: 'Disponibilidade', section: 'availability' },
     { icon: '🔍', label: 'Reservas', section: 'reservations' },
@@ -91,6 +92,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '⭐', label: 'Gestão de Pontos', soon: true },
   ] },
   { title: 'Reporting', items: [
+    { icon: '📊', label: 'Performance & Ocupação', section: 'reports_pms' },
     { icon: '🖨', label: 'Relatórios', section: 'reports' },
     { icon: '📈', label: 'Informação Online', section: 'online' },
   ] },
@@ -101,7 +103,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '🧾', label: 'SAFT-AO', section: 'saft_pos' },
     { icon: '🛏', label: 'Categorias de Quarto', section: 'room_types' },
     { icon: '💰', label: 'Tarifas (Rate Codes)', section: 'rate_plans' },
-    { icon: '⚙', label: 'Diagnóstico', posSection: 'x_diag' },
+    { icon: '⚙', label: 'Diagnóstico', section: 'diag_pos' },
     { icon: '📋', label: 'Visualizar Logs', soon: true },
   ] },
   { title: 'EMS', items: [
@@ -112,7 +114,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
   ] },
 ];
 
-export default function PmsShell({ onDesktop, onOpen }: { onBack?: () => void; onOpen?: (id: string) => void; onDesktop?: () => void }) {
+export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: (id: string) => void; onDesktop?: () => void }) {
   // A secção com que se abre: quem manda abrir o PMS (o Ambiente de Trabalho, um
   // atalho dos seus próprios menus) deixa-a aqui — mesmo padrão do posc_section
   // que a Configuração POS já usa.
@@ -192,11 +194,6 @@ export default function PmsShell({ onDesktop, onOpen }: { onBack?: () => void; o
                         setMenu(null);
                         if (it.soon) { aviso(`"${it.label}" ainda não está construído nesta fase do PMS.`); return; }
                         if (it.url) { window.open(it.url, '_blank'); return; }
-                        if (it.posSection) {
-                          localStorage.setItem('posc_section', it.posSection);
-                          onOpen?.('posc_config');
-                          return;
-                        }
                         if (it.section) {
                           if (!screenAllowed(`pms_${it.section}`)) { aviso('Sem permissão para aceder a este ecrã.'); return; }
                           setSection(it.section);
