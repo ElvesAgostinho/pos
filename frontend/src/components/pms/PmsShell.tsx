@@ -13,6 +13,8 @@ import PmsBlocksView from './PmsBlocksView';
 import PmsRoomsView from './PmsRoomsView';
 import PmsRoomTypesView from './PmsRoomTypesView';
 import PmsRatePlansView from './PmsRatePlansView';
+import PmsGuestsCompaniesView from './PmsGuestsCompaniesView';
+import PmsFinanceView from './PmsFinanceView';
 // Estes 4 já existem no POS (Configuração POS) — ligamos ao MESMO componente
 // (mesmos dados, mesma lógica), só com a moldura do PMS à volta, para não
 // parecer que se está a saltar de módulo.
@@ -36,6 +38,8 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   rooms: { label: 'Mapa de Quartos', icon: '🛏', Comp: PmsRoomsView },
   room_types: { label: 'Categorias de Quarto', icon: '🛏', Comp: PmsRoomTypesView },
   rate_plans: { label: 'Tarifas (Rate Codes)', icon: '💰', Comp: PmsRatePlansView },
+  guests_companies: { label: 'Hóspedes & Empresas', icon: '👤', Comp: PmsGuestsCompaniesView },
+  finance_pms: { label: 'Financeiro', icon: '📋', Comp: PmsFinanceView },
   reports: { label: 'Relatórios', icon: '🖨', Comp: PosReports },
   online: { label: 'Informação Online', icon: '📈', Comp: PosOnline },
   dayclose_pos: { label: 'Fecho do dia POS', icon: '🌙', Comp: PosDayClose },
@@ -56,7 +60,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '🔍', label: 'Reservas', section: 'reservations' },
     { icon: '🕐', label: 'Planning', soon: true },
     { icon: '🛏', label: 'Quartos Livres / Mapa de Quartos', section: 'rooms' },
-    { icon: '🔍', label: 'Pesquisa de Entidades', soon: true },
+    { icon: '👤', label: 'Hóspedes & Empresas', section: 'guests_companies' },
     { icon: '📦', label: 'Perdidos e Achados', soon: true },
     { icon: '🏢', label: 'Gestão de Quartos', soon: true },
     { icon: '✔', label: 'Tarefas', soon: true },
@@ -65,7 +69,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
   ] },
   { title: 'Contas', items: [
     { icon: '🧾', label: 'Check-Out', soon: true },
-    { icon: '📋', label: 'Lançamentos Gerais', soon: true },
+    { icon: '📋', label: 'Financeiro (Receitas/Despesas)', section: 'finance_pms' },
     { icon: 'ℹ', label: 'Extrato Mobile', soon: true },
     { icon: '💰', label: 'Contas Correntes (ver folio de uma reserva)', section: 'reservations' },
   ] },
