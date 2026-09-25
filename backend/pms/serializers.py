@@ -204,9 +204,16 @@ class ChatbotSettingsSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
-    client_name = serializers.CharField(source='client.name', read_only=True, default=None)
+    # SerializerMethodField (não CharField(source='client.name', default=None)) de
+    # propósito: um CharField de source composto com `default` fica inconsistente
+    # logo a seguir a um `.save()` dentro do mesmo pedido (ex.: PATCH) — desaparece
+    # da resposta nesse caso específico, mesmo continuando presente num GET normal.
+    client_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
         fields = '__all__'
         extra_kwargs = {'hotel': {'required': False}}
+
+    def get_client_name(self, obj):
+        return obj.client.name if obj.client_id else None

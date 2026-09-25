@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X, Check } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
@@ -39,7 +39,18 @@ const PMS_SCREENS = [
 
 export default function PmsUserAccessDialog({ user, onClose }: { user: any; onClose: () => void }) {
   const qc = useQueryClient();
-  const profile = user?.profiles?.[0];
+  // `user.profiles[0]` (vindo de `auth/users/`) é só um RESUMO ({id, code,
+  // name}) — não traz `full_access`/`allowed_screens`. Esses só vêm da lista
+  // completa de perfis (`eae/profiles/`, o mesmo endpoint que
+  // `PmsPermissionsDialog.tsx` já usa) — por isso vamos lá buscar o perfil
+  // A SÉRIO pelo id, em vez de confiar no resumo.
+  const profileSummary = user?.profiles?.[0];
+  const { data: profiles, isLoading } = useQuery({
+    queryKey: ['eae', 'profiles'],
+    queryFn: async () => (await apiClient.get('eae/profiles/')).data,
+  });
+  const profileRows = Array.isArray(profiles) ? profiles : profiles?.results || [];
+  const profile = profileSummary ? profileRows.find((p: any) => p.id === profileSummary.id) : null;
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
 
@@ -80,8 +91,12 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
           </button>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          {!profile ? (
+          {isLoading ? (
+            <div className="p-4 text-gray-400 text-[12px]">A carregar…</div>
+          ) : !profileSummary ? (
             <div className="p-6 text-center text-gray-400 text-[12px]">Este utilizador ainda não tem um perfil (RBAC) atribuído — atribua um perfil em Segurança → Utilizadores primeiro.</div>
+          ) : !profile ? (
+            <div className="p-6 text-center text-gray-400 text-[12px]">Não foi possível carregar os dados completos do perfil "{profileSummary.name}".</div>
           ) : profile.full_access !== false ? (
             <div className="p-6 text-center text-gray-500 text-[12px]">
               O perfil <b>{profile.name}</b> deste utilizador tem <b>acesso total</b> — vê todos os ecrãs do PMS.

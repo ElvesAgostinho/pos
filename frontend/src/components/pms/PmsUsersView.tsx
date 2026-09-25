@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import ClassicGrid from '../ui/ClassicGrid';
 import { useUsers } from '../../hooks/useSecurity';
+import { apiClient } from '../../api/client';
 import PmsUserAccessDialog from './PmsUserAccessDialog';
 import { ShieldCheck } from 'lucide-react';
 
@@ -18,10 +20,22 @@ export default function PmsUsersView() {
   const { data: users = [] } = useUsers();
   const [target, setTarget] = useState<any>(null);
 
+  // `u.profiles[0]` (de `auth/users/`) é só um resumo {id,code,name} — sem
+  // `full_access`/`allowed_screens`. Para mostrar o nível de acesso a sério
+  // é preciso ir buscar o perfil completo à lista de `eae/profiles/` (mesmo
+  // endpoint que `PmsPermissionsDialog`/`PmsUserAccessDialog` já usam).
+  const { data: profiles } = useQuery({ queryKey: ['eae', 'profiles'], queryFn: async () => (await apiClient.get('eae/profiles/')).data });
+  const profileRows: any[] = Array.isArray(profiles) ? profiles : profiles?.results || [];
+  const fullProfileOf = (u: any) => {
+    const summary = u.profiles?.[0];
+    return summary ? profileRows.find((p) => p.id === summary.id) : null;
+  };
+
   const accessLabel = (u: any) => {
-    const p = u.profiles?.[0];
     if (u.is_superuser) return 'Total (dono)';
-    if (!p) return 'Sem perfil';
+    const p = fullProfileOf(u);
+    if (!u.profiles?.[0]) return 'Sem perfil';
+    if (!p) return '…';
     if (p.full_access !== false) return 'Total';
     const n = (p.allowed_screens || []).filter((s: string) => s.startsWith('pms_')).length;
     return n > 0 ? `${n} ecrã(s) PMS` : 'Sem ecrãs PMS';
