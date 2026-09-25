@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
@@ -7,9 +8,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.tenancy import HotelScopedMixin, default_hotel_id, scope_qs
-from .models import RoomType, Room, RatePlan, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry
+from .models import RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry
 from .serializers import (
-    RoomTypeSerializer, RoomSerializer, RatePlanSerializer,
+    RoomTypeSerializer, RoomSerializer, RatePlanSerializer, RateOverrideSerializer,
     BlockSerializer, BlockRoomTypeSerializer,
     ReservationSerializer, FolioSerializer, FolioChargeSerializer, MealPlanEntrySerializer,
 )
@@ -107,6 +108,64 @@ class RatePlanViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet
         qs = super().get_queryset()
         rt = self.request.query_params.get('room_type')
         return qs.filter(room_type_id=rt) if rt else qs
+
+    @action(detail=False, methods=['post'])
+    def bulk_update(self, request):
+        """Atualização em Massa (Calendário de Tarifas): aplica preço/mínimo
+        de noites/disponibilidade a um conjunto de Rate Plans, só nas datas e
+        dias da semana escolhidos — SEMPRE via RateOverride, nunca mexe no
+        RatePlan em si (o "Remover todas as exceções" das imagens de
+        referência é literalmente apagar estas linhas)."""
+        d = request.data
+        ids = d.get('rate_plan_ids') or []
+        date_from, date_to = _parse_date(d.get('date_from')), _parse_date(d.get('date_to'))
+        if not ids or not date_from or not date_to or date_to < date_from:
+            return Response({'detail': 'Escolha as tarifas e um período de datas válido.'}, status=400)
+        if (date_to - date_from).days > 730:
+            return Response({'detail': 'Período demasiado longo (máximo 2 anos).'}, status=400)
+        weekdays = d.get('weekdays')  # 0=Segunda … 6=Domingo; vazio/ausente = todos os dias
+        weekdays = set(int(w) for w in weekdays) if weekdays else set(range(7))
+        remove = bool(d.get('remove_overrides'))
+
+        plans = list(scope_qs(request, RatePlan.objects.filter(id__in=ids)))
+        touched = 0
+        with transaction.atomic():
+            for plan in plans:
+                cur = date_from
+                while cur <= date_to:
+                    if cur.weekday() in weekdays:
+                        if remove:
+                            RateOverride.objects.filter(rate_plan=plan, date=cur).delete()
+                        else:
+                            fields = {}
+                            if d.get('update_price'):
+                                fields['price_per_night'] = d.get('base_price')
+                            if d.get('update_min_nights'):
+                                fields['min_nights'] = d.get('min_nights')
+                            if d.get('update_sale_state'):
+                                fields['is_bookable'] = (d.get('sale_state') == 'AVAILABLE')
+                            if fields:
+                                RateOverride.objects.update_or_create(rate_plan=plan, date=cur, defaults=fields)
+                        touched += 1
+                    cur += timedelta(days=1)
+        return Response({'rate_plans': len(plans), 'days_touched': touched})
+
+
+class RateOverrideViewSet(viewsets.ModelViewSet):
+    queryset = RateOverride.objects.select_related('rate_plan').all()
+    serializer_class = RateOverrideSerializer
+
+    def get_queryset(self):
+        qs = scope_qs(self.request, super().get_queryset(), hotel_path='rate_plan__hotel')
+        rp = self.request.query_params.get('rate_plan')
+        if rp:
+            qs = qs.filter(rate_plan_id=rp)
+        date_from, date_to = _parse_date(self.request.query_params.get('date_from')), _parse_date(self.request.query_params.get('date_to'))
+        if date_from:
+            qs = qs.filter(date__gte=date_from)
+        if date_to:
+            qs = qs.filter(date__lte=date_to)
+        return qs
 
 
 # ==========================================================================

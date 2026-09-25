@@ -13,6 +13,8 @@ import PmsBlocksView from './PmsBlocksView';
 import PmsRoomsView from './PmsRoomsView';
 import PmsRoomTypesView from './PmsRoomTypesView';
 import PmsRatePlansView from './PmsRatePlansView';
+import PmsRatesCalendarView from './PmsRatesCalendarView';
+import PmsRoomsBulkEditView from './PmsRoomsBulkEditView';
 import PmsGuestsCompaniesView from './PmsGuestsCompaniesView';
 import PmsFinanceView from './PmsFinanceView';
 // Estes 4 já existem no POS (Configuração POS) — ligamos ao MESMO componente
@@ -38,6 +40,8 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   rooms: { label: 'Mapa de Quartos', icon: '🛏', Comp: PmsRoomsView },
   room_types: { label: 'Categorias de Quarto', icon: '🛏', Comp: PmsRoomTypesView },
   rate_plans: { label: 'Tarifas (Rate Codes)', icon: '💰', Comp: PmsRatePlansView },
+  rates_calendar: { label: 'Calendário de Tarifas', icon: '📊', Comp: PmsRatesCalendarView },
+  rooms_bulk: { label: 'Gestão de Quartos', icon: '🏢', Comp: PmsRoomsBulkEditView },
   guests_companies: { label: 'Hóspedes & Empresas', icon: '👤', Comp: PmsGuestsCompaniesView },
   finance_pms: { label: 'Financeiro', icon: '📋', Comp: PmsFinanceView },
   reports: { label: 'Relatórios', icon: '🖨', Comp: PosReports },
@@ -62,7 +66,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '🛏', label: 'Quartos Livres / Mapa de Quartos', section: 'rooms' },
     { icon: '👤', label: 'Hóspedes & Empresas', section: 'guests_companies' },
     { icon: '📦', label: 'Perdidos e Achados', soon: true },
-    { icon: '🏢', label: 'Gestão de Quartos', soon: true },
+    { icon: '🏢', label: 'Gestão de Quartos', section: 'rooms_bulk' },
     { icon: '✔', label: 'Tarefas', soon: true },
     { icon: '🪪', label: 'Leitor de Documentos', soon: true },
     { icon: '☎', label: 'Lista telefónica', soon: true },
@@ -74,6 +78,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '💰', label: 'Contas Correntes (ver folio de uma reserva)', section: 'reservations' },
   ] },
   { title: 'Gestão de Canais', items: [
+    { icon: '📊', label: 'Calendário de Tarifas', section: 'rates_calendar' },
     { icon: '💰', label: 'Rate Codes', section: 'rate_plans' },
     { icon: '⚙', label: 'Configuração Guest Experience', soon: true },
     { icon: '🔗', label: 'Booking Engine', soon: true },

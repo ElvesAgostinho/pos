@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    RoomType, Room, RatePlan, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
+    RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
 )
 
 
@@ -30,6 +30,12 @@ class RatePlanSerializer(serializers.ModelSerializer):
         model = RatePlan
         fields = '__all__'
         extra_kwargs = {'hotel': {'required': False}}
+
+
+class RateOverrideSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RateOverride
+        fields = '__all__'
 
 
 class BlockRoomTypeSerializer(serializers.ModelSerializer):

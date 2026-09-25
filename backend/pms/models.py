@@ -86,6 +86,33 @@ class RatePlan(models.Model):
         return f"{self.code} · {self.room_type.code}"
 
 
+class RateOverride(models.Model):
+    """Exceção de um dia a um Rate Plan — o Calendário de Tarifas e a
+    Atualização em Massa trabalham aqui, nunca no preço base do RatePlan.
+
+    O RatePlan guarda UM preço para todo o período de validade; para "sexta e
+    sábado de outubro ficam mais caros" (dias não-contíguos, dentro de um
+    período contíguo) é preciso granularidade ao dia — daí este modelo, em vez
+    de forçar o RatePlan a virar uma tabela de preços por dia. Linha ausente =
+    herda o preço/mínimo de noites/disponibilidade do RatePlan; "Remover todas
+    as exceções" (nas imagens de referência) é simplesmente apagar linhas
+    daqui, nunca tocar no RatePlan.
+    """
+    rate_plan = models.ForeignKey(RatePlan, on_delete=models.CASCADE, related_name='overrides')
+    date = models.DateField()
+    price_per_night = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    min_nights = models.PositiveIntegerField(blank=True, null=True)
+    is_bookable = models.BooleanField(blank=True, null=True)   # None = herda (sempre reservável)
+
+    class Meta:
+        db_table = 'pms_rate_override'
+        unique_together = ('rate_plan', 'date')
+        ordering = ['date']
+
+    def __str__(self):
+        return f"{self.rate_plan.code} · {self.date}"
+
+
 # ==========================================================================
 # BLOCOS — grupos/empresas com quartos reservados antecipadamente
 # ==========================================================================
