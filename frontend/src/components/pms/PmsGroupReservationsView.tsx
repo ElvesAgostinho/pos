@@ -5,13 +5,11 @@ import {
   ChevronsLeft, ChevronsRight, FileSpreadsheet, Eye, X, BedDouble,
 } from 'lucide-react';
 import { apiClient } from '../../api/client';
-import { aviso } from '../../ui/dialogo';
 import ClassicGrid from '../ui/ClassicGrid';
 import PmsBlockEditorDialog from './PmsBlockEditorDialog';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
 import PmsSaveSearchDialog from './PmsSaveSearchDialog';
 
-const naoConstruido = (label: string) => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
 const SAVED_KEY = 'pms_saved_searches_group';
 
 function Field({ label, children }: { label: string; children: any }) {
@@ -24,7 +22,6 @@ function Field({ label, children }: { label: string; children: any }) {
 }
 const inputCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white';
 const selCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white';
-const disabledSel = selCls + ' text-gray-400';
 
 function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#041F24' }: any) {
   return (
@@ -90,7 +87,6 @@ export default function PmsGroupReservationsView() {
   const [coFrom, setCoFrom] = useState('');
   const [coTo, setCoTo] = useState('');
   const [minRooms, setMinRooms] = useState('');
-  const [minAdults, setMinAdults] = useState('');
   const [roomType, setRoomType] = useState('');
   const [segment, setSegment] = useState('');
   const [subSegment, setSubSegment] = useState('');
@@ -235,25 +231,16 @@ export default function PmsGroupReservationsView() {
       </button>
 
       {avancadaAberta && (
-        <div className="flex gap-3 p-2 bg-[#F7FAFA] border-b border-[#7FA9B1]">
+        <div className="flex gap-4 p-3 bg-[#F7FAFA] border-b border-[#7FA9B1]">
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Hóspede:"><input value={guestQuery} onChange={(e) => setGuestQuery(e.target.value)} className={inputCls + ' w-full'} /></Field>
-            <Field label="Incluir:">
-              <div className="flex gap-1">
-                <select disabled className={disabledSel + ' flex-1'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Incluir'); }}>
-                  <option>(nenhum)</option>
-                </select>
-                <input disabled placeholder="—" className={inputCls + ' w-16 text-gray-400'} />
-              </div>
-            </Field>
-            <Field label="Nº Reserva:"><input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Código do bloco" className={inputCls + ' w-full'} /></Field>
-            <label className="flex items-center gap-1.5 text-gray-400 cursor-not-allowed" title="Ainda não está construído nesta fase do PMS." onClick={() => naoConstruido('Incluir hóspedes adicionais')}>
-              <input type="checkbox" disabled /> Incluir hóspedes adicionais
-            </label>
+            <Field label="Código do Bloco:"><input value={codigo} onChange={(e) => setCodigo(e.target.value)} className={inputCls + ' w-full'} /></Field>
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Datas</div>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'fixed'} onChange={() => setDateMode('fixed')} /> Fixo</label>
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'period'} onChange={() => setDateMode('period')} /> Período</label>
@@ -270,58 +257,34 @@ export default function PmsGroupReservationsView() {
               <input type="date" disabled={!coOn} value={coFrom} onChange={(e) => setCoFrom(e.target.value)} className={inputCls} />
               {dateMode === 'period' && <input type="date" disabled={!coOn} value={coTo} onChange={(e) => setCoTo(e.target.value)} className={inputCls} />}
             </div>
-            <Field label="TipoReserva:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('TipoReserva'); }}>
-                <option>Normal</option>
-              </select>
-            </Field>
             <label className="flex items-center gap-1.5">
               <input type="checkbox" checked={ciOn && dateMode === 'fixed' && ciFrom === new Date().toISOString().slice(0, 10)}
                 onChange={(e) => { if (e.target.checked) { setDateMode('fixed'); setCiOn(true); setCiFrom(new Date().toISOString().slice(0, 10)); } else setCiOn(false); }} />
               Check-In Hoje
             </label>
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1">Mín. quartos:
-                <input type="number" min={0} value={minRooms} onChange={(e) => setMinRooms(e.target.value)} className={inputCls + ' w-14'} />
-              </label>
-              <label className="flex items-center gap-1 text-gray-400 cursor-not-allowed" title="Ainda não está construído nesta fase do PMS." onClick={() => naoConstruido('Mín. adultos')}>
-                Mín. adultos:
-                <input disabled value={minAdults} onChange={(e) => setMinAdults(e.target.value)} className={inputCls + ' w-14 text-gray-400'} />
-              </label>
-            </div>
+            <label className="flex items-center gap-1">Mín. quartos:
+              <input type="number" min={0} value={minRooms} onChange={(e) => setMinRooms(e.target.value)} className={inputCls + ' w-14'} />
+            </label>
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Quarto / Tarifa</div>
             <Field label="Categoria:">
               <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
                 {rtList.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
               </select>
             </Field>
-            <Field label="Quarto:">
-              <div className="flex items-center gap-2">
-                <input disabled placeholder="—" className={inputCls + ' flex-1 text-gray-400'} title="Ainda não está construído nesta fase do PMS." onFocus={(e) => { e.target.blur(); naoConstruido('Quarto'); }} />
-                <label className="flex items-center gap-1 text-gray-400">sem: <input type="checkbox" disabled /></label>
-              </div>
-            </Field>
-            <Field label="Package:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Package'); }}>
-                <option>(Todos)</option>
-              </select>
-            </Field>
-            <Field label="Lista Preços:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Lista de Preços'); }}>
-                <option>(Todos)</option>
-              </select>
-            </Field>
-            <Field label="Allotment:">
-              <select disabled className={disabledSel + ' w-full'} title="O próprio bloco é o allotment." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Allotment'); }}>
-                <option>(Todos)</option>
+            <Field label="Rate Code:">
+              <select value={ratePlan} onChange={(e) => setRatePlan(e.target.value)} className={selCls + ' w-full'}>
+                <option value="">(Todos)</option>
+                {rpList.map((rp: any) => <option key={rp.id} value={rp.id}>{rp.code}</option>)}
               </select>
             </Field>
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Comercial</div>
             <Field label="Segmento:">
               <select value={segment} onChange={(e) => { setSegment(e.target.value); setSubSegment(''); }} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -342,31 +305,11 @@ export default function PmsGroupReservationsView() {
             </Field>
             <label className="flex items-center gap-1.5"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
             <Field label="Voucher:"><input value={voucher} onChange={(e) => setVoucher(e.target.value)} className={inputCls + ' w-full'} /></Field>
-            <Field label="Tipo de oferta:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Tipo de oferta'); }}>
-                <option>(Todos)</option>
-              </select>
-            </Field>
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
-            <Field label="Canal online:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Canal online'); }}>
-                <option>(Todos)</option>
-              </select>
-            </Field>
-            <Field label="Rate Code:">
-              <select value={ratePlan} onChange={(e) => setRatePlan(e.target.value)} className={selCls + ' w-full'}>
-                <option value="">(Todos)</option>
-                {rpList.map((rp: any) => <option key={rp.id} value={rp.id}>{rp.code}</option>)}
-              </select>
-            </Field>
-            <div className="flex items-center gap-1.5">
-              <label className="flex items-center gap-1.5 text-gray-400 cursor-not-allowed" title="Ainda não está construído nesta fase do PMS." onClick={() => naoConstruido('Apenas reservas automáticas')}>
-                <input type="checkbox" disabled /> Apenas reservas automáticas
-              </label>
-              <button onClick={exportarExcel} className="flex items-center gap-1.5 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA] ml-auto"><FileSpreadsheet size={13} /> Excel</button>
-            </div>
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Visualização</div>
+            <button onClick={exportarExcel} className="flex items-center gap-1.5 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA] w-fit"><FileSpreadsheet size={13} /> Excel</button>
             <div className="flex items-center gap-1.5">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <input type="checkbox" checked={autoUpdate} onChange={(e) => setAutoUpdate(e.target.checked)} /> Atualização automática
@@ -376,12 +319,6 @@ export default function PmsGroupReservationsView() {
                 <RefreshCw size={13} /> Auto
               </button>
             </div>
-            <Field label="Modo Visualização:">
-              <select className={selCls + ' w-full'} defaultValue="Detalhado" onChange={(e) => { if (e.target.value !== 'Detalhado') { naoConstruido(e.target.value); e.target.value = 'Detalhado'; } }}>
-                <option>Detalhado</option>
-                <option>Compacto</option>
-              </select>
-            </Field>
             <label className="flex items-center gap-1.5"><input type="checkbox" checked={ocultarAposPesquisa} onChange={(e) => setOcultarAposPesquisa(e.target.checked)} /> Ocultar filtros após pesquisa</label>
           </div>
 

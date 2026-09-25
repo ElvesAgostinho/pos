@@ -11,7 +11,7 @@ import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
 import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
-import { aviso } from '../../ui/dialogo';
+import { MENUS as PMS_MENU_GROUPS } from '../pms/PmsShell';
 
 // Fundo ambiente do Ambiente de Trabalho — manchas de cor desfocadas (mesh gradient,
 // linguagem de dashboards modernos) nas cores do próprio módulo, com uma silhueta de
@@ -156,74 +156,34 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
     ],
   };
 
-  // O PMS tem os SEUS PRÓPRIOS menus aqui — as 8 abas do PmsShell, espelhadas.
-  // Construído entra logo na secção certa (localStorage 'pms_section', mesmo
-  // padrão do 'posc_section' do abrirPos acima). O que ainda não foi construído
-  // avisa em vez de fingir que abre alguma coisa (mesma regra do PmsShell).
+  // O PMS tem os SEUS PRÓPRIOS menus aqui — construídos a partir da MESMA lista
+  // que o PmsShell usa (PMS_MENU_GROUPS, importado), nunca uma cópia manual: uma
+  // cópia à mão desincroniza sempre que o PmsShell muda (foi exatamente isso que
+  // fazia aparecer "Check-Out ainda não está construído" aqui muito depois de o
+  // Check-Out já estar pronto lá dentro — duas listas a dizerem coisas diferentes
+  // sobre o mesmo PMS). Construído entra logo na secção certa (localStorage
+  // 'pms_section', mesmo padrão do abrirPos acima); 'POS Front Office' é o único
+  // item com 'url' em vez de 'section' e abre numa aba nova, como no PmsShell.
   const abrirPms = (seccao: string) => {
     localStorage.setItem('pms_section', seccao);
     open('pms_home', 'PMS');
   };
-  const emBreve = (label: string) => () => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
-  const PMS_MENUS: Record<string, { label: string; screen?: string; act?: () => void }[]> = {
-    Reserva: [
-      { label: 'Disponibilidade', act: () => abrirPms('availability') },
-      { label: 'Reservas', act: () => abrirPms('reservations') },
-      { label: 'Reservas de Grupo', act: () => abrirPms('group_reservations') },
-      { label: 'Blocos', act: () => abrirPms('blocks') },
-      { label: 'Blocos (disponibilidade)', act: emBreve('Blocos (disponibilidade)') },
-    ],
-    'Front Desk': [
-      { label: 'Estado Hotel', act: emBreve('Estado Hotel') },
-      { label: 'Reservas', act: () => abrirPms('reservations') },
-      { label: 'Planning', act: emBreve('Planning') },
-      { label: 'Quartos Livres / Mapa de Quartos', act: () => abrirPms('rooms') },
-      { label: 'Pesquisa de Entidades', act: emBreve('Pesquisa de Entidades') },
-      { label: 'Perdidos e Achados', act: emBreve('Perdidos e Achados') },
-      { label: 'Gestão de Quartos', act: emBreve('Gestão de Quartos') },
-      { label: 'Tarefas', act: emBreve('Tarefas') },
-      { label: 'Leitor de Documentos', act: emBreve('Leitor de Documentos') },
-      { label: 'Lista telefónica', act: emBreve('Lista telefónica') },
-    ],
-    Contas: [
-      { label: 'Check-Out', act: emBreve('Check-Out') },
-      { label: 'Lançamentos Gerais', act: emBreve('Lançamentos Gerais') },
-      { label: 'Extrato Mobile', act: emBreve('Extrato Mobile') },
-      { label: 'Contas Correntes (ver folio de uma reserva)', act: () => abrirPms('reservations') },
-    ],
-    'Gestão de Canais': [
-      { label: 'Rate Codes', act: () => abrirPms('rate_plans') },
-      { label: 'Configuração Guest Experience', act: emBreve('Configuração Guest Experience') },
-      { label: 'Booking Engine', act: emBreve('Booking Engine') },
-    ],
-    Marketing: [
-      { label: 'Pesquisa de Entidades', act: emBreve('Pesquisa de Entidades') },
-      { label: 'Lista de Eventos', act: emBreve('Lista de Eventos') },
-      { label: 'Gestão de Pontos', act: emBreve('Gestão de Pontos') },
-    ],
-    Reporting: [
-      { label: 'Relatórios', act: emBreve('Relatórios') },
-      { label: 'Informação Online', act: emBreve('Informação Online') },
-    ],
-    Utilitários: [
-      { label: 'Auditoria da Noite', act: emBreve('Auditoria da Noite') },
-      { label: 'POS Front Office', act: emBreve('POS Front Office') },
-      { label: 'Fecho do dia POS', act: emBreve('Fecho do dia POS') },
-      { label: 'SAFT-AO', act: emBreve('SAFT-AO') },
-      { label: 'Categorias de Quarto', act: () => abrirPms('room_types') },
-      { label: 'Tarifas (Rate Codes)', act: () => abrirPms('rate_plans') },
-      { label: 'Papel de Parede', act: () => open('adm_appearance', 'Papel de Parede') },
-      { label: 'Diagnóstico', act: emBreve('Diagnóstico') },
-      { label: 'Visualizar Logs', act: emBreve('Visualizar Logs') },
-      { label: 'Terminar sessão', act: logout },
-    ],
-    EMS: [
-      { label: 'EMS (Eventos)', act: emBreve('EMS (Eventos)') },
-      { label: 'Pesquisar EMS', act: emBreve('Pesquisar EMS') },
-      { label: 'Calendário EMS', act: emBreve('Calendário EMS') },
-      { label: 'Previsão EMS', act: emBreve('Previsão EMS') },
-    ],
-  };
+  const PMS_MENUS: Record<string, { label: string; screen?: string; act?: () => void }[]> = Object.fromEntries(
+    PMS_MENU_GROUPS.map((grupo) => [
+      grupo.title,
+      grupo.items.map((it) => ({
+        label: it.label,
+        act: it.url ? () => window.open(it.url, '_blank', 'noopener') : () => abrirPms(it.section!),
+      })),
+    ]),
+  );
+  // "Papel de Parede" e "Terminar sessão" são ações do Ambiente de Trabalho em si
+  // (não secções do PMS) — continuam à parte, acrescentadas ao grupo Utilitários.
+  PMS_MENUS['Utilitários'] = [
+    ...PMS_MENUS['Utilitários'],
+    { label: 'Papel de Parede', act: () => open('adm_appearance', 'Papel de Parede') },
+    { label: 'Terminar sessão', act: logout },
+  ];
 
   const MENUS = wsKey === 'pms' ? PMS_MENUS : POS_MENUS;
 

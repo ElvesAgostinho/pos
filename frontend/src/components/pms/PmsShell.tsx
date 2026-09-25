@@ -95,7 +95,12 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
 };
 
 // Só glifos que existem em ICON_MAP (posconfig/kit.tsx) — nunca emoji cru no ecrã.
-const MENUS: { title: string; items: { icon: string; label: string; section?: string; url?: string; soon?: boolean }[] }[] = [
+// Exportado: é também a fonte destes menus no Ambiente de Trabalho
+// (EnterpriseDesktop.tsx) — só existe UMA lista, nunca um espelho manual que
+// desincroniza sempre que aqui se muda algo (foi exatamente isso que causava
+// "Check-Out ainda não está construído" a aparecer a partir do Ambiente de
+// Trabalho muito depois de o Check-Out já estar pronto aqui).
+export const MENUS: { title: string; items: { icon: string; label: string; section?: string; url?: string; soon?: boolean }[] }[] = [
   { title: 'Reserva', items: [
     { icon: '📊', label: 'Disponibilidade', section: 'availability' },
     { icon: '🔍', label: 'Reservas', section: 'reservations' },

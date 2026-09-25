@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Plus, Copy, LogIn, LogOut, XCircle, Repeat, Bed, BedDouble, Wallet, ChevronDown, ChevronUp,
-  Building2, Printer, RefreshCw, Save, Trash2, ChevronsLeft, ChevronsRight, Settings,
+  Building2, Printer, RefreshCw, Save, Trash2, ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
@@ -119,7 +119,6 @@ function Field({ label, children }: { label: string; children: any }) {
 }
 const inputCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white';
 const selCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white min-w-[130px]';
-const disabledSel = selCls + ' text-gray-400';
 
 function loadSaved(): { name: string; filters: any }[] {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch { return []; }
@@ -293,18 +292,35 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
     } catch (e) { notifyError(e); } finally { setCopying(false); }
   };
 
+  // Impressão via iframe escondido (não janela nova) — uma janela nova traz sempre
+  // a moldura do navegador (barra de endereço, abas) para dentro da pré-visualização
+  // de impressão; um iframe só imprime o conteúdo, como nos sistemas de referência.
+  const esc = (s: any) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
   const imprimir = () => {
-    const w = window.open('', '_blank', 'width=900,height=700');
-    if (!w) return;
     const linhas = sortedRows.map((r: any) =>
-      `<tr><td>${r.confirmation}</td><td>${r.guest_name}</td><td>${r.room_type_name}</td>` +
-      `<td>${r.check_in}</td><td>${r.check_out}</td><td>${STATUS_LABEL[r.status] || r.status}</td></tr>`).join('');
-    w.document.write(`<html><head><title>Reservas — ${hotelName}</title></head><body>` +
-      `<h3>Reservas — ${hotelName}</h3><table border="1" cellpadding="4" style="border-collapse:collapse;font-family:sans-serif;font-size:12px">` +
+      `<tr><td>${esc(r.confirmation)}</td><td>${esc(r.guest_name)}</td><td>${esc(r.room_type_name)}</td>` +
+      `<td>${esc(r.check_in)}</td><td>${esc(r.check_out)}</td><td>${esc(STATUS_LABEL[r.status] || r.status)}</td></tr>`).join('');
+    const html = `<html><head><title>Reservas — ${esc(hotelName)}</title><style>
+      body{font-family:sans-serif;font-size:12px;margin:16px}
+      h3{margin:0 0 12px}
+      table{border-collapse:collapse;width:100%}
+      th,td{border:1px solid #999;padding:4px 6px;text-align:left}
+      th{background:#F0F0F0}
+    </style></head><body>` +
+      `<h3>Reservas — ${esc(hotelName)}</h3><table>` +
       `<tr><th>Confirmação</th><th>Hóspede</th><th>Categoria</th><th>Check-In</th><th>Check-Out</th><th>Estado</th></tr>${linhas}</table>` +
-      `</body></html>`);
-    w.document.close();
-    w.print();
+      `</body></html>`;
+    const frame = document.createElement('iframe');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(frame);
+    const doc = frame.contentWindow?.document;
+    if (!doc) { document.body.removeChild(frame); return; }
+    doc.open(); doc.write(html); doc.close();
+    frame.onload = () => {
+      frame.contentWindow?.focus();
+      frame.contentWindow?.print();
+      setTimeout(() => document.body.removeChild(frame), 1000);
+    };
   };
 
   const confirmarGravarPesquisa = (nome: string) => {
@@ -374,18 +390,12 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
       </button>
 
       {avancadaAberta && (
-        <div className="flex gap-3 p-2 bg-[#F7FAFA] border-b border-[#7FA9B1]">
+        <div className="flex gap-4 p-3 bg-[#F7FAFA] border-b border-[#7FA9B1]">
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Hóspede:"><input value={guestQuery} onChange={(e) => setGuestQuery(e.target.value)} className={inputCls + ' w-full'} /></Field>
-            <Field label="(outros membros:)">
-              <input disabled placeholder="—" title="Ainda não está construído nesta fase do PMS."
-                onFocus={(e) => { e.target.blur(); naoConstruido('Outros membros'); }} className={inputCls + ' w-full text-gray-400'} />
-            </Field>
             <Field label="Nº Reserva:"><input value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className={inputCls + ' w-full'} /></Field>
-            <label className="flex items-center gap-1.5 text-gray-400 cursor-not-allowed" title="Ainda não está construído nesta fase do PMS." onClick={() => naoConstruido('Incluir hóspedes adicionais')}>
-              <input type="checkbox" disabled /> Incluir hóspedes adicionais
-            </label>
             <label className="flex items-center gap-1.5">
               <input type="checkbox" checked={createdOn} onChange={(e) => setCreatedOn(e.target.checked)} /> De (Criação):
               <input type="date" disabled={!createdOn} value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className={inputCls} />
@@ -397,6 +407,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Datas</div>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'fixed'} onChange={() => setDateMode('fixed')} /> Fixo</label>
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'period'} onChange={() => setDateMode('period')} /> Período</label>
@@ -424,23 +435,14 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
                 onChange={(e) => { if (e.target.checked) { setDateMode('fixed'); setCiOn(true); setCiFrom(new Date().toISOString().slice(0, 10)); } else setCiOn(false); }} />
               Check-In Hoje
             </label>
-            <Field label="Estado Adicional:">
-              <select disabled className={disabledSel} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Estado Adicional'); }}>
-                <option>(Todos)</option>
-              </select>
-            </Field>
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Quarto / Tarifa</div>
             <Field label="Categoria:">
               <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
                 {rtList.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
-              </select>
-            </Field>
-            <Field label="Upg. de:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Upgrade de'); }}>
-                <option>(Todos)</option>
               </select>
             </Field>
             <div className="flex items-end gap-2">
@@ -453,11 +455,6 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
                 {rpList.map((rp: any) => <option key={rp.id} value={rp.id}>{rp.code}</option>)}
               </select>
             </Field>
-            <Field label="Lista Preços:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Lista de Preços'); }}>
-                <option>(Todos)</option>
-              </select>
-            </Field>
             <Field label="Allotment:">
               <select value={allotment} onChange={(e) => setAllotment(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -467,6 +464,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Comercial</div>
             <Field label="Segmento:">
               <select value={segment} onChange={(e) => { setSegment(e.target.value); setSubSegment(''); }} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -487,19 +485,10 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             </Field>
             <label className="flex items-center gap-1.5"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
             <Field label="Voucher:"><input value={voucher} onChange={(e) => setVoucher(e.target.value)} className={inputCls + ' w-full'} /></Field>
-            <Field label="Tipo de oferta:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Tipo de oferta'); }}>
-                <option>(Todos)</option>
-              </select>
-            </Field>
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
-            <Field label="Canal online:">
-              <select disabled className={disabledSel + ' w-full'} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Canal online'); }}>
-                <option>(Todos)</option>
-              </select>
-            </Field>
+            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Visualização</div>
             <Field label="Estado:">
               <select value={status} onChange={(e) => setStatus(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -523,12 +512,6 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
                 </button>
               )}
             </div>
-            <Field label="Modo Visualização:">
-              <select className={selCls + ' w-full'} defaultValue="Detalhado" onChange={(e) => { if (e.target.value !== 'Detalhado') { naoConstruido(e.target.value); e.target.value = 'Detalhado'; } }}>
-                <option>Detalhado</option>
-                <option>Compacto</option>
-              </select>
-            </Field>
             <label className="flex items-center gap-1.5"><input type="checkbox" checked={ocultarAposPesquisa} onChange={(e) => setOcultarAposPesquisa(e.target.checked)} /> Ocultar filtros após pesquisa</label>
           </div>
 
@@ -615,10 +598,6 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             </>
           )}
         </div>
-        <button onClick={() => naoConstruido('Configurações')} title="Configurações"
-          className="p-1.5 text-gray-500 hover:bg-[#EEF4F5]">
-          <Settings size={15} />
-        </button>
         <ToolBtn icon={Repeat} label="Mudanças de Quartos" onClick={() => setShowBulkChange(true)} />
         <ToolBtn icon={Bed} label="Atribuição rápida de quartos" color="#5C8891" onClick={() => setShowQuickAssign(true)} />
         {autoMode && onCloseDialog && (
