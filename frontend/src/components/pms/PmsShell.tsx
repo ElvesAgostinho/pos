@@ -42,6 +42,8 @@ import PosReports from '../posconfig/PosReports';
 import PosOnline from '../posconfig/PosOnline';
 import { PosDayClose, PosSaft, PosDiagnostics } from '../posconfig/PosOps';
 import { EntitySearch, EventRequests } from '../posconfig/PosMarketing';
+import { SysLogsView } from '../system/PlatformViews';
+import PmsDocumentScanView from './PmsDocumentScanView';
 
 /**
  * PMS — cabeçalho e menus PRÓPRIOS (não o menu clássico do resto do backoffice).
@@ -88,6 +90,8 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   events_calendar: { label: 'Calendário EMS', icon: '🕐', Comp: PmsEventsCalendarView },
   events_forecast: { label: 'Previsão EMS', icon: '📈', Comp: PmsEventsForecastView },
   users: { label: 'Utilizadores (PMS)', icon: '👤', Comp: PmsUsersView },
+  sys_logs_pms: { label: 'Logs', icon: '📋', Comp: SysLogsView },
+  document_scan: { label: 'Leitor de Documentos', icon: '🪪', Comp: PmsDocumentScanView },
 };
 
 // Só glifos que existem em ICON_MAP (posconfig/kit.tsx) — nunca emoji cru no ecrã.
@@ -97,7 +101,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '🔍', label: 'Reservas', section: 'reservations' },
     { icon: '👥', label: 'Reservas de Grupo', section: 'group_reservations' },
     { icon: '🗂', label: 'Blocos', section: 'blocks' },
-    { icon: '📊', label: 'Blocos (disponibilidade)', soon: true },
+    { icon: '📊', label: 'Blocos (disponibilidade)', section: 'blocks' },
   ] },
   { title: 'Front Desk', items: [
     { icon: '🏛', label: 'Estado Hotel', section: 'hotel_status' },
@@ -108,13 +112,12 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '📦', label: 'Perdidos e Achados', section: 'lost_found' },
     { icon: '🏢', label: 'Gestão de Quartos', section: 'rooms_bulk' },
     { icon: '✔', label: 'Tarefas', section: 'tasks' },
-    { icon: '🪪', label: 'Leitor de Documentos', soon: true },
+    { icon: '🪪', label: 'Leitor de Documentos', section: 'document_scan' },
     { icon: '☎', label: 'Lista telefónica', section: 'phone_directory' },
   ] },
   { title: 'Contas', items: [
     { icon: '🧾', label: 'Check-Out', section: 'checkout' },
     { icon: '📋', label: 'Financeiro (Receitas/Despesas)', section: 'finance_pms' },
-    { icon: 'ℹ', label: 'Extrato Mobile', soon: true },
     { icon: '💰', label: 'Contas Correntes (ver folio de uma reserva)', section: 'reservations' },
   ] },
   { title: 'Gestão de Canais', items: [
@@ -144,7 +147,7 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '💰', label: 'Tarifas (Rate Codes)', section: 'rate_plans' },
     { icon: '⚙', label: 'Diagnóstico', section: 'diag_pos' },
     { icon: '👤', label: 'Utilizadores (PMS)', section: 'users' },
-    { icon: '📋', label: 'Visualizar Logs', soon: true },
+    { icon: '📋', label: 'Visualizar Logs', section: 'sys_logs_pms' },
   ] },
   { title: 'EMS', items: [
     { icon: '🎉', label: 'EMS (Eventos)', section: 'events' },
