@@ -83,7 +83,6 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
   { title: 'Gestão de Canais', items: [
     { icon: '📊', label: 'Calendário de Tarifas', section: 'rates_calendar' },
     { icon: '💰', label: 'Rate Codes', section: 'rate_plans' },
-    { icon: '⚙', label: 'Configuração Guest Experience', soon: true },
     { icon: '🔗', label: 'Booking Engine', soon: true },
   ] },
   { title: 'Marketing', items: [
