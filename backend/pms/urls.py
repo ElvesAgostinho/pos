@@ -4,6 +4,7 @@ from django.urls import path
 from .views import (
     RoomTypeViewSet, RoomViewSet, RatePlanViewSet, RateOverrideViewSet, BlockViewSet,
     ReservationViewSet, FolioViewSet, MealPlanEntryViewSet,
+    LostFoundItemViewSet, HousekeepingTaskViewSet, PhoneDirectoryEntryViewSet,
 )
 from .availability import AvailabilityView
 from .reports import (
@@ -20,6 +21,9 @@ router.register(r'blocks', BlockViewSet, basename='pms-block')
 router.register(r'reservations', ReservationViewSet, basename='pms-reservation')
 router.register(r'folios', FolioViewSet, basename='pms-folio')
 router.register(r'meal-plan-entries', MealPlanEntryViewSet, basename='pms-meal-plan-entry')
+router.register(r'lost-found-items', LostFoundItemViewSet, basename='pms-lost-found-item')
+router.register(r'tasks', HousekeepingTaskViewSet, basename='pms-task')
+router.register(r'phone-directory', PhoneDirectoryEntryViewSet, basename='pms-phone-directory')
 
 urlpatterns = [
     path('availability/', AvailabilityView.as_view()),

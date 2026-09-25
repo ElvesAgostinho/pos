@@ -341,6 +341,79 @@ class FolioCharge(models.Model):
 
 
 # ==========================================================================
+# FRONT DESK — Perdidos e Achados / Tarefas / Lista Telefónica
+# ==========================================================================
+
+class LostFoundItem(models.Model):
+    """Perdidos e Achados — um objeto encontrado nas instalações, à espera de
+    ser reclamado (ou descartado, se ninguém aparecer)."""
+    STATUS = [('FOUND', 'Encontrado'), ('CLAIMED', 'Reclamado'), ('DISPOSED', 'Descartado')]
+
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_lost_found_items')
+    description = models.CharField(max_length=255)
+    found_location = models.CharField(max_length=150, blank=True, null=True)
+    found_date = models.DateField()
+    room = models.ForeignKey(Room, on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+    guest = models.ForeignKey('mdm.Customer', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+    status = models.CharField(max_length=10, choices=STATUS, default='FOUND')
+    claimed_by = models.CharField(max_length=150, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'pms_lost_found_item'
+        ordering = ['-found_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.description} ({self.get_status_display()})"
+
+
+class HousekeepingTask(models.Model):
+    """Tarefas do Front Desk/Governanta — não há modelo de funcionário/RH no
+    PMS (é texto livre em `assigned_to`, como o resto do sistema faz noutros
+    sítios onde ainda não existe um cadastro de colaboradores)."""
+    PRIORITY = [('LOW', 'Baixa'), ('NORMAL', 'Normal'), ('HIGH', 'Alta')]
+    STATUS = [('PENDING', 'Pendente'), ('IN_PROGRESS', 'Em curso'), ('DONE', 'Concluída')]
+
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_tasks')
+    title = models.CharField(max_length=200)
+    room = models.ForeignKey(Room, on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+    assigned_to = models.CharField(max_length=150, blank=True, null=True)
+    priority = models.CharField(max_length=6, choices=PRIORITY, default='NORMAL')
+    status = models.CharField(max_length=11, choices=STATUS, default='PENDING')
+    due_at = models.DateTimeField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'pms_housekeeping_task'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class PhoneDirectoryEntry(models.Model):
+    """Lista telefónica interna — ramais/departamentos, para a receção
+    transferir uma chamada sem ter de perguntar a ninguém."""
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_phone_directory')
+    name = models.CharField(max_length=150)
+    department = models.CharField(max_length=100, blank=True, null=True)
+    extension = models.CharField(max_length=20, blank=True, null=True)
+    phone = models.CharField(max_length=30, blank=True, null=True)
+    notes = models.CharField(max_length=255, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pms_phone_directory_entry'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+# ==========================================================================
 # MAPA DE REFEIÇÕES — quantas pessoas usam cada refeição, por dia
 # ==========================================================================
 

@@ -8,11 +8,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.tenancy import HotelScopedMixin, default_hotel_id, scope_qs
-from .models import RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry
+from .models import (
+    RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
+    LostFoundItem, HousekeepingTask, PhoneDirectoryEntry,
+)
 from .serializers import (
     RoomTypeSerializer, RoomSerializer, RatePlanSerializer, RateOverrideSerializer,
     BlockSerializer, BlockRoomTypeSerializer,
     ReservationSerializer, FolioSerializer, FolioChargeSerializer, MealPlanEntrySerializer,
+    LostFoundItemSerializer, HousekeepingTaskSerializer, PhoneDirectoryEntrySerializer,
 )
 
 
@@ -665,3 +669,59 @@ class MealPlanEntryViewSet(viewsets.ModelViewSet):
             criados.append(row.id)
             d += timedelta(days=1)
         return Response({'detail': f'{len(criados)} dia(s) atualizado(s).', 'ids': criados}, status=200)
+
+
+# ==========================================================================
+# FRONT DESK — Perdidos e Achados / Tarefas / Lista Telefónica
+# ==========================================================================
+
+class LostFoundItemViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
+    queryset = LostFoundItem.objects.select_related('room', 'guest').all()
+    serializer_class = LostFoundItemSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        if p.get('status'):
+            qs = qs.filter(status=p['status'])
+        if p.get('q'):
+            from django.db.models import Q
+            qs = qs.filter(Q(description__icontains=p['q']) | Q(found_location__icontains=p['q']))
+        return qs
+
+
+class HousekeepingTaskViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
+    queryset = HousekeepingTask.objects.select_related('room').all()
+    serializer_class = HousekeepingTaskSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        if p.get('status'):
+            qs = qs.filter(status=p['status'])
+        if p.get('priority'):
+            qs = qs.filter(priority=p['priority'])
+        if p.get('room'):
+            qs = qs.filter(room_id=p['room'])
+        return qs
+
+    @action(detail=True, methods=['post'], url_path='mark-done')
+    def mark_done(self, request, pk=None):
+        task = self.get_object()
+        task.status = 'DONE'
+        task.completed_at = timezone.now()
+        task.save(update_fields=['status', 'completed_at'])
+        return Response(self.get_serializer(task).data)
+
+
+class PhoneDirectoryEntryViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
+    queryset = PhoneDirectoryEntry.objects.all()
+    serializer_class = PhoneDirectoryEntrySerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        p = self.request.query_params
+        if p.get('q'):
+            from django.db.models import Q
+            qs = qs.filter(Q(name__icontains=p['q']) | Q(department__icontains=p['q']) | Q(extension__icontains=p['q']))
+        return qs
