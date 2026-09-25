@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
-    NightAuditRun,
+    NightAuditRun, LostFoundItem, HousekeepingTask, PhoneDirectoryEntry,
 )
 
 
@@ -130,6 +130,35 @@ class NightAuditRunSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NightAuditRun
+        fields = '__all__'
+        extra_kwargs = {'hotel': {'required': False}}
+
+
+class LostFoundItemSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    room_number = serializers.CharField(source='room.number', read_only=True, default=None)
+    guest_name = serializers.CharField(source='guest.name', read_only=True, default=None)
+
+    class Meta:
+        model = LostFoundItem
+        fields = '__all__'
+        extra_kwargs = {'hotel': {'required': False}}
+
+
+class HousekeepingTaskSerializer(serializers.ModelSerializer):
+    priority_display = serializers.CharField(source='get_priority_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    room_number = serializers.CharField(source='room.number', read_only=True, default=None)
+
+    class Meta:
+        model = HousekeepingTask
+        fields = '__all__'
+        extra_kwargs = {'hotel': {'required': False}}
+
+
+class PhoneDirectoryEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhoneDirectoryEntry
         fields = '__all__'
         extra_kwargs = {'hotel': {'required': False}}
 
