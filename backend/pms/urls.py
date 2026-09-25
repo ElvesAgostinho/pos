@@ -10,6 +10,8 @@ from .reports import (
     PerformanceReportView, OccupancyReportView, RevenueReportView,
     PaymentsReportView, ChargesReportView, HousekeepingReportView,
 )
+from .frontdesk import HotelStatusView
+from .night_audit import NightAuditRunViewSet, NightAuditRunView
 
 router = DefaultRouter()
 router.register(r'room-types', RoomTypeViewSet)
@@ -20,6 +22,7 @@ router.register(r'blocks', BlockViewSet, basename='pms-block')
 router.register(r'reservations', ReservationViewSet, basename='pms-reservation')
 router.register(r'folios', FolioViewSet, basename='pms-folio')
 router.register(r'meal-plan-entries', MealPlanEntryViewSet, basename='pms-meal-plan-entry')
+router.register(r'night-audit-runs', NightAuditRunViewSet, basename='pms-night-audit-run')
 
 urlpatterns = [
     path('availability/', AvailabilityView.as_view()),
@@ -29,4 +32,6 @@ urlpatterns = [
     path('reports/payments/', PaymentsReportView.as_view()),
     path('reports/charges/', ChargesReportView.as_view()),
     path('reports/housekeeping/', HousekeepingReportView.as_view()),
+    path('frontdesk/hotel-status/', HotelStatusView.as_view()),
+    path('night-audit/run/', NightAuditRunView.as_view()),
 ] + router.urls

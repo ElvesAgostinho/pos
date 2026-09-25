@@ -344,6 +344,32 @@ class FolioCharge(models.Model):
 # MAPA DE REFEIÇÕES — quantas pessoas usam cada refeição, por dia
 # ==========================================================================
 
+class NightAuditRun(models.Model):
+    """Registo de uma execução da Auditoria da Noite: fecha o dia `audit_date`
+    lançando a diária (ROOM) das reservas em CHECKED_IN cujo folio ainda não
+    tem o lançamento dessa noite (a 1ª noite já foi lançada no check-in — ver
+    `ReservationViewSet.check_in`; esta é a peça que faltava para as noites
+    seguintes de uma estadia de várias noites).
+
+    `unique_together` é a trava contra duplo-lançamento: uma vez corrida a
+    auditoria de uma data, para este hotel, não corre outra vez — mesmo que o
+    endpoint seja chamado duas vezes (duplo-clique, retry de rede, etc.)."""
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_night_audit_runs')
+    audit_date = models.DateField()
+    run_at = models.DateTimeField(auto_now_add=True)
+    run_by = models.CharField(max_length=100, blank=True, null=True)
+    rooms_charged = models.PositiveIntegerField(default=0)
+    total_posted = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'pms_night_audit_run'
+        unique_together = ('hotel', 'audit_date')
+        ordering = ['-audit_date']
+
+    def __str__(self):
+        return f"Auditoria {self.audit_date} · {self.hotel}"
+
+
 class MealPlanEntry(models.Model):
     """Uma linha do Mapa de Refeições: nesta reserva, neste dia, nesta
     refeição, quantos adultos/crianças a usam. Alimenta o mapa de cozinha —
