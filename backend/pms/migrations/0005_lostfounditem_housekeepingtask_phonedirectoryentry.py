@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("pms", "0003_rateoverride"),
+        ("pms", "0004_nightauditrun"),
         ("identity", "0007_hotel_license_contact"),
         ("mdm", "0018_customer_newsletter_interests"),
     ]

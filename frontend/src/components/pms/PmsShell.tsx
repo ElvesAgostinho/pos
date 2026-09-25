@@ -18,12 +18,30 @@ import PmsRoomsBulkEditView from './PmsRoomsBulkEditView';
 import PmsGuestsCompaniesView from './PmsGuestsCompaniesView';
 import PmsFinanceView from './PmsFinanceView';
 import PmsReportsView from './PmsReportsView';
-// Estes 4 já existem no POS (Configuração POS) — ligamos ao MESMO componente
+import PmsHotelStatusView from './PmsHotelStatusView';
+import PmsPlanningView from './PmsPlanningView';
+import PmsCheckOutView from './PmsCheckOutView';
+import PmsNightAuditView from './PmsNightAuditView';
+import PmsProductsServicesView from './PmsProductsServicesView';
+import PmsMemberCardsView from './PmsMemberCardsView';
+import PmsLostFoundView from './PmsLostFoundView';
+import PmsTasksView from './PmsTasksView';
+import PmsPhoneDirectoryView from './PmsPhoneDirectoryView';
+import PmsHomeDashboardView from './PmsHomeDashboardView';
+import BookingEngineView from '../integration/BookingEngineView';
+import ChannelManagerView from '../integration/ChannelManagerView';
+import PmsChatbotView from './PmsChatbotView';
+import PmsEventsView from './PmsEventsView';
+import PmsEventsCalendarView from './PmsEventsCalendarView';
+import PmsEventsForecastView from './PmsEventsForecastView';
+import PmsUsersView from './PmsUsersView';
+// Estes já existem no POS (Configuração POS) — ligamos ao MESMO componente
 // (mesmos dados, mesma lógica), só com a moldura do PMS à volta, para não
 // parecer que se está a saltar de módulo.
 import PosReports from '../posconfig/PosReports';
 import PosOnline from '../posconfig/PosOnline';
 import { PosDayClose, PosSaft, PosDiagnostics } from '../posconfig/PosOps';
+import { EntitySearch, EventRequests } from '../posconfig/PosMarketing';
 
 /**
  * PMS — cabeçalho e menus PRÓPRIOS (não o menu clássico do resto do backoffice).
@@ -51,6 +69,25 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   dayclose_pos: { label: 'Fecho do dia POS', icon: '🌙', Comp: PosDayClose },
   saft_pos: { label: 'SAFT-AO', icon: '🧾', Comp: PosSaft },
   diag_pos: { label: 'Diagnóstico', icon: '⚙', Comp: PosDiagnostics },
+  hotel_status: { label: 'Estado Hotel', icon: '🏛', Comp: PmsHotelStatusView },
+  planning: { label: 'Planning', icon: '🕐', Comp: PmsPlanningView },
+  checkout: { label: 'Check-Out', icon: '🧾', Comp: PmsCheckOutView },
+  night_audit: { label: 'Auditoria da Noite', icon: '🌙', Comp: PmsNightAuditView },
+  products_services: { label: 'Produtos & Serviços', icon: '📦', Comp: PmsProductsServicesView },
+  membership_points: { label: 'Gestão de Pontos', icon: '⭐', Comp: PmsMemberCardsView },
+  entity_search: { label: 'Pesquisa de Entidades', icon: '🔎', Comp: EntitySearch },
+  event_list: { label: 'Lista de Eventos', icon: '🎉', Comp: EventRequests },
+  lost_found: { label: 'Perdidos e Achados', icon: '📦', Comp: PmsLostFoundView },
+  tasks: { label: 'Tarefas', icon: '✔', Comp: PmsTasksView },
+  phone_directory: { label: 'Lista Telefónica', icon: '☎', Comp: PmsPhoneDirectoryView },
+  home_dashboard: { label: 'Início', icon: '🖥', Comp: PmsHomeDashboardView },
+  booking_engine: { label: 'Booking Engine', icon: '🔗', Comp: BookingEngineView },
+  channel_manager: { label: 'Channel Manager', icon: '🔗', Comp: ChannelManagerView },
+  chatbot: { label: 'Chatbot', icon: '✉', Comp: PmsChatbotView },
+  events: { label: 'EMS (Eventos)', icon: '🎉', Comp: PmsEventsView },
+  events_calendar: { label: 'Calendário EMS', icon: '🕐', Comp: PmsEventsCalendarView },
+  events_forecast: { label: 'Previsão EMS', icon: '📈', Comp: PmsEventsForecastView },
+  users: { label: 'Utilizadores (PMS)', icon: '👤', Comp: PmsUsersView },
 };
 
 // Só glifos que existem em ICON_MAP (posconfig/kit.tsx) — nunca emoji cru no ecrã.
@@ -63,19 +100,19 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '📊', label: 'Blocos (disponibilidade)', soon: true },
   ] },
   { title: 'Front Desk', items: [
-    { icon: '🏛', label: 'Estado Hotel', soon: true },
+    { icon: '🏛', label: 'Estado Hotel', section: 'hotel_status' },
     { icon: '🔍', label: 'Reservas', section: 'reservations' },
-    { icon: '🕐', label: 'Planning', soon: true },
+    { icon: '🕐', label: 'Planning', section: 'planning' },
     { icon: '🛏', label: 'Quartos Livres / Mapa de Quartos', section: 'rooms' },
     { icon: '👤', label: 'Hóspedes & Empresas', section: 'guests_companies' },
-    { icon: '📦', label: 'Perdidos e Achados', soon: true },
+    { icon: '📦', label: 'Perdidos e Achados', section: 'lost_found' },
     { icon: '🏢', label: 'Gestão de Quartos', section: 'rooms_bulk' },
-    { icon: '✔', label: 'Tarefas', soon: true },
+    { icon: '✔', label: 'Tarefas', section: 'tasks' },
     { icon: '🪪', label: 'Leitor de Documentos', soon: true },
-    { icon: '☎', label: 'Lista telefónica', soon: true },
+    { icon: '☎', label: 'Lista telefónica', section: 'phone_directory' },
   ] },
   { title: 'Contas', items: [
-    { icon: '🧾', label: 'Check-Out', soon: true },
+    { icon: '🧾', label: 'Check-Out', section: 'checkout' },
     { icon: '📋', label: 'Financeiro (Receitas/Despesas)', section: 'finance_pms' },
     { icon: 'ℹ', label: 'Extrato Mobile', soon: true },
     { icon: '💰', label: 'Contas Correntes (ver folio de uma reserva)', section: 'reservations' },
@@ -83,12 +120,15 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
   { title: 'Gestão de Canais', items: [
     { icon: '📊', label: 'Calendário de Tarifas', section: 'rates_calendar' },
     { icon: '💰', label: 'Rate Codes', section: 'rate_plans' },
-    { icon: '🔗', label: 'Booking Engine', soon: true },
+    { icon: '📦', label: 'Produtos & Serviços', section: 'products_services' },
+    { icon: '🔗', label: 'Booking Engine', section: 'booking_engine' },
+    { icon: '🔗', label: 'Channel Manager', section: 'channel_manager' },
+    { icon: '✉', label: 'Chatbot', section: 'chatbot' },
   ] },
   { title: 'Marketing', items: [
-    { icon: '🔍', label: 'Pesquisa de Entidades', soon: true },
-    { icon: '🎉', label: 'Lista de Eventos', soon: true },
-    { icon: '⭐', label: 'Gestão de Pontos', soon: true },
+    { icon: '🔎', label: 'Pesquisa de Entidades', section: 'entity_search' },
+    { icon: '🎉', label: 'Lista de Eventos', section: 'event_list' },
+    { icon: '⭐', label: 'Gestão de Pontos', section: 'membership_points' },
   ] },
   { title: 'Reporting', items: [
     { icon: '📊', label: 'Performance & Ocupação', section: 'reports_pms' },
@@ -96,20 +136,21 @@ const MENUS: { title: string; items: { icon: string; label: string; section?: st
     { icon: '📈', label: 'Informação Online', section: 'online' },
   ] },
   { title: 'Utilitários', items: [
-    { icon: '🌙', label: 'Auditoria da Noite', soon: true },
+    { icon: '🌙', label: 'Auditoria da Noite', section: 'night_audit' },
     { icon: '🖥', label: 'POS Front Office', url: '/pos/terminal' },
     { icon: '🌙', label: 'Fecho do dia POS', section: 'dayclose_pos' },
     { icon: '🧾', label: 'SAFT-AO', section: 'saft_pos' },
     { icon: '🛏', label: 'Categorias de Quarto', section: 'room_types' },
     { icon: '💰', label: 'Tarifas (Rate Codes)', section: 'rate_plans' },
     { icon: '⚙', label: 'Diagnóstico', section: 'diag_pos' },
+    { icon: '👤', label: 'Utilizadores (PMS)', section: 'users' },
     { icon: '📋', label: 'Visualizar Logs', soon: true },
   ] },
   { title: 'EMS', items: [
-    { icon: '🎉', label: 'EMS (Eventos)', soon: true },
-    { icon: '🔍', label: 'Pesquisar EMS', soon: true },
-    { icon: '🕐', label: 'Calendário EMS', soon: true },
-    { icon: '📈', label: 'Previsão EMS', soon: true },
+    { icon: '🎉', label: 'EMS (Eventos)', section: 'events' },
+    { icon: '🔍', label: 'Pesquisar EMS', section: 'events' },
+    { icon: '🕐', label: 'Calendário EMS', section: 'events_calendar' },
+    { icon: '📈', label: 'Previsão EMS', section: 'events_forecast' },
   ] },
 ];
 
@@ -120,7 +161,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   const [section, setSection] = useState(() => {
     const pedida = localStorage.getItem('pms_section');
     if (pedida) localStorage.removeItem('pms_section');
-    return pedida || 'availability';
+    return pedida || 'home_dashboard';
   });
   const [menu, setMenu] = useState<string | null>(null);
   const [showPerms, setShowPerms] = useState(false);
@@ -225,7 +266,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
       </div>
 
       <div className="flex-1 overflow-hidden">
-        <Comp onDesktop={onDesktop} />
+        <Comp onDesktop={onDesktop} onNavigate={setSection} />
       </div>
 
       {/* Barra 1 — ação do ecrã + hora + fechar */}

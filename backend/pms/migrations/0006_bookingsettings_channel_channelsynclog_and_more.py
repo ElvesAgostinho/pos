@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("identity", "0007_hotel_license_contact"),
         ("mdm", "0018_customer_newsletter_interests"),
-        ("pms", "0003_rateoverride"),
+        ("pms", "0005_lostfounditem_housekeepingtask_phonedirectoryentry"),
     ]
 
     operations = [
