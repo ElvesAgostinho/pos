@@ -414,6 +414,183 @@ class PhoneDirectoryEntry(models.Model):
 
 
 # ==========================================================================
+# BOOKING ENGINE — motor de reservas online (site público multi-tenant por slug)
+# ==========================================================================
+
+def _rand_key():
+    import uuid
+    return uuid.uuid4().hex
+
+
+class BookingSettings(models.Model):
+    """Configuração do motor de reservas online de UM hotel. `slug` identifica
+    o hotel no site público (/book/<slug>) sem expor o ID interno; `api_key` é
+    a chave que o site/app usa para chamar `pms/booking/*` (também aceite via
+    `?key=` nos endpoints públicos, para testar sem publicar o slug).
+
+    NOTA de nomenclatura: o campo `is_active` (documentado) é o mesmo que o
+    ecrã de administração chama de "enabled" — o serializer expõe-no com esse
+    nome (`source='is_active'`) porque é o que `BookingEngineView.tsx` já
+    manda/lê; o modelo mantém o nome descritivo internamente.
+    """
+    PAYMENT_PROVIDERS = [
+        ('SIMULATED', 'Simulado (testes)'), ('MULTICAIXA', 'Multicaixa Express'),
+        ('EMIS', 'EMIS GPO'), ('STRIPE', 'Stripe'), ('PAYPAL', 'PayPal'),
+    ]
+    hotel = models.OneToOneField(Hotel, on_delete=models.CASCADE, related_name='booking_settings')
+    slug = models.SlugField(max_length=80, unique=True, blank=True)
+    api_key = models.CharField(max_length=64, unique=True, default=_rand_key)
+    is_active = models.BooleanField(default=True)
+
+    currency = models.CharField(max_length=10, default='AOA')
+    deposit_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    payment_enabled = models.BooleanField(default=False)
+    payment_provider = models.CharField(max_length=20, choices=PAYMENT_PROVIDERS, default='SIMULATED')
+    primary_color = models.CharField(max_length=10, default='#5C8891')
+    welcome_text = models.CharField(max_length=255, blank=True, default='')
+    cancellation_policy = models.CharField(max_length=500, blank=True, default='')
+    custom_domain = models.CharField(max_length=150, blank=True, null=True)
+    logo_url = models.CharField(max_length=300, blank=True, null=True)
+    hero_image_url = models.CharField(max_length=300, blank=True, null=True)
+
+    min_advance_days = models.PositiveIntegerField(blank=True, null=True)
+    max_advance_days = models.PositiveIntegerField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'pms_booking_settings'
+
+    def __str__(self):
+        return f"Booking Engine · {self.hotel.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            base = slugify(self.hotel.name) or 'hotel'
+            slug = base
+            n = 1
+            while BookingSettings.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                n += 1
+                slug = f"{base}-{n}"
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+
+# ==========================================================================
+# CHANNEL MANAGER — sincronização com OTAs (Booking.com, Expedia, Airbnb…)
+# ==========================================================================
+
+class Channel(models.Model):
+    """Uma ligação a uma OTA. A estrutura (mapeamento, push/pull, anti-
+    overbooking) está pronta; o ENVIO REAL às APIs de cada OTA só liga quando
+    o dono tiver a credenciação comercial dessa plataforma (Booking
+    Connectivity Partner, Expedia EPS Rapid, etc. — ver ChannelSyncLog e
+    `channel_manager.py`, que nunca fingem uma sincronização bem-sucedida)."""
+    OTA_TYPES = [
+        ('BOOKING', 'Booking.com'), ('EXPEDIA', 'Expedia'), ('AIRBNB', 'Airbnb'),
+        ('AGODA', 'Agoda'), ('HOTELS', 'Hotels.com'), ('TRIVAGO', 'Trivago'),
+        ('GOOGLE', 'Google Hotels'), ('OTHER', 'Outro'),
+    ]
+    STATUS = [('DISCONNECTED', 'Desligado'), ('PENDING', 'Credenciais pendentes'), ('CONNECTED', 'Ligado')]
+
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_channels')
+    name = models.CharField(max_length=120)
+    ota_type = models.CharField(max_length=10, choices=OTA_TYPES, default='OTHER')
+    property_id = models.CharField(max_length=80, blank=True, null=True)
+    api_key = models.CharField(max_length=255, blank=True, null=True)
+    commission_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    status = models.CharField(max_length=15, choices=STATUS, default='PENDING')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'pms_channel'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_ota_type_display()} · {self.name}"
+
+
+class ChannelSyncLog(models.Model):
+    """Uma tentativa de sincronização (envio de disponibilidade/tarifas ou
+    receção de reservas). `status='SKIPPED'` — sem credenciais, nem tentou;
+    `status='ERROR'` — tentou mas o conector real desta OTA ainda não está
+    homologado; nunca há um 'OK' fabricado sem uma chamada real ter sido feita."""
+    STATUS = [('OK', 'Sucesso'), ('ERROR', 'Erro'), ('SKIPPED', 'Sem credenciais')]
+    DIRECTIONS = [('PUSH', 'Enviado'), ('PULL', 'Recebido')]
+
+    channel = models.ForeignKey(Channel, on_delete=models.CASCADE, related_name='sync_logs')
+    direction = models.CharField(max_length=4, choices=DIRECTIONS, default='PUSH')
+    event = models.CharField(max_length=40, default='availability')
+    status = models.CharField(max_length=8, choices=STATUS, default='SKIPPED')
+    message = models.CharField(max_length=500, blank=True, null=True)
+    synced_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'pms_channel_sync_log'
+        ordering = ['-synced_at']
+
+    def __str__(self):
+        return f"{self.channel.name} · {self.status}"
+
+
+# ==========================================================================
+# CHATBOT — assistente WhatsApp (configuração + simulador com dados reais)
+# ==========================================================================
+
+class ChatbotSettings(models.Model):
+    """Configuração do assistente de reservas por WhatsApp. O `access_token`
+    fica guardado tal como introduzido — é um campo de configuração; nada
+    neste projeto ainda o usa para chamar a Meta Business API a sério (ver
+    `chatbot.py`: falta a credenciação/homologação da conta Business do
+    dono). O "Simular Conversa" no ecrã usa dados REAIS (disponibilidade) sem
+    nunca enviar uma mensagem WhatsApp verdadeira."""
+    hotel = models.OneToOneField(Hotel, on_delete=models.CASCADE, related_name='chatbot_settings')
+    whatsapp_phone_number = models.CharField(max_length=30, blank=True, null=True)
+    whatsapp_business_account_id = models.CharField(max_length=60, blank=True, null=True)
+    access_token = models.CharField(max_length=500, blank=True, null=True)
+    is_active = models.BooleanField(default=False)
+    welcome_message = models.TextField(default='Olá! Posso ajudar a verificar disponibilidade e criar uma reserva. Como posso ajudar?')
+
+    class Meta:
+        db_table = 'pms_chatbot_settings'
+
+    def __str__(self):
+        return f"Chatbot · {self.hotel.name}"
+
+
+# ==========================================================================
+# EMS — Events Management (MVP)
+# ==========================================================================
+
+class Event(models.Model):
+    """Um evento/reserva de espaço (casamento, conferência, festa…). MVP:
+    sem modelo de inventário de salas (não existe nenhum "venue"/sala de
+    eventos no sistema ainda) — `venue` é texto livre até isso existir."""
+    STATUS = [('INQUIRY', 'Pedido'), ('CONFIRMED', 'Confirmado'), ('CANCELLED', 'Cancelado'), ('COMPLETED', 'Concluído')]
+
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_events')
+    name = models.CharField(max_length=200)
+    event_date = models.DateField()
+    start_time = models.TimeField(blank=True, null=True)
+    end_time = models.TimeField(blank=True, null=True)
+    venue = models.CharField(max_length=150, blank=True, null=True)
+    client = models.ForeignKey('mdm.Customer', on_delete=models.SET_NULL, blank=True, null=True, related_name='pms_events')
+    expected_guests = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=10, choices=STATUS, default='INQUIRY')
+    estimated_revenue = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'pms_event'
+        ordering = ['event_date']
+
+    def __str__(self):
+        return f"{self.name} · {self.event_date}"
+
+
+# ==========================================================================
 # MAPA DE REFEIÇÕES — quantas pessoas usam cada refeição, por dia
 # ==========================================================================
 
