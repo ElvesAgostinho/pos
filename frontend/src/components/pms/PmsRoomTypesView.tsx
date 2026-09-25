@@ -50,8 +50,8 @@ export default function PmsRoomTypesView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Nova', icon: '＋', onClick: novo },
-        { label: 'Gravar', icon: '💾', onClick: save },
+        { label: 'Nova', icon: '＋', color: '#062A31', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#062A31', onClick: save },
       ]} />
     </div>
   );

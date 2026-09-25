@@ -72,8 +72,8 @@ export default function PmsRoomsBulkEditView() {
         {rows.length === 0 && <div className="text-center text-gray-400 py-6">Sem quartos — clique em "Adicionar Linha".</div>}
       </div>
       <Toolbar actions={[
-        { label: 'Adicionar Linha', icon: '＋', onClick: addRow, disabled: rtList.length === 0 },
-        { label: saving ? 'A gravar…' : 'Gravar Tudo', icon: '💾', onClick: save, disabled: saving },
+        { label: 'Adicionar Linha', icon: '＋', color: '#062A31', onClick: addRow, disabled: rtList.length === 0 },
+        { label: saving ? 'A gravar…' : 'Gravar Tudo', icon: '💾', color: '#062A31', onClick: save, disabled: saving },
       ]} />
     </div>
   );

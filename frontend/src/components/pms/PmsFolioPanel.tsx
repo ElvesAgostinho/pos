@@ -108,10 +108,10 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
         </div>
 
         <Toolbar actions={[
-          { label: 'Lançar', icon: '＋', onClick: addCharge },
-          { label: 'Dividir Conta', icon: '✂', onClick: split },
-          { label: 'Registar Pagamento', icon: '💳', onClick: settle },
-          { label: 'Gerar Fatura (AGT)', icon: '🧾', onClick: generateInvoice },
+          { label: 'Lançar', icon: '＋', color: '#062A31', onClick: addCharge },
+          { label: 'Dividir Conta', icon: '✂', color: '#5C8891', onClick: split },
+          { label: 'Registar Pagamento', icon: '💳', color: '#062A31', onClick: settle },
+          { label: 'Gerar Fatura (AGT)', icon: '🧾', color: '#062A31', onClick: generateInvoice },
         ]} right={
           <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#041F24] border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">Fechar</button>
         } />

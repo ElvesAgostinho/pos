@@ -29,9 +29,9 @@ export default function PmsBlocksView() {
           ]} />
       </div>
       <Toolbar actions={[
-        { label: 'Novo', icon: '＋', onClick: () => setEditing('new') },
-        { label: 'Copiar', icon: '⧉', disabled: !sel, onClick: () => setEditing('copy') },
-        { label: 'Editar', icon: '✎', disabled: !sel, onClick: () => setEditing('edit') },
+        { label: 'Novo', icon: '＋', color: '#062A31', onClick: () => setEditing('new') },
+        { label: 'Copiar', icon: '⧉', color: '#062A31', disabled: !sel, onClick: () => setEditing('copy') },
+        { label: 'Editar', icon: '✎', color: '#5C8891', disabled: !sel, onClick: () => setEditing('edit') },
       ]} />
 
       {editing === 'new' && (

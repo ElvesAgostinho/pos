@@ -125,8 +125,8 @@ export default function PmsGuestsCompaniesView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', onClick: novo },
-        { label: 'Gravar', icon: '💾', onClick: save },
+        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', color: '#062A31', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#062A31', onClick: save },
         { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#B0392B' },
       ]} />
     </div>

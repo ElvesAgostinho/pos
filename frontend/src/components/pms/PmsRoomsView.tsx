@@ -53,7 +53,7 @@ export default function PmsRoomsView() {
         ))}
         {rows.length === 0 && <div className="col-span-6 text-center text-gray-400 py-6">Sem quartos criados.</div>}
       </div>
-      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', onClick: () => setShowNew(true) }]} />
+      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', color: '#062A31', onClick: () => setShowNew(true) }]} />
 
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
@@ -68,8 +68,8 @@ export default function PmsRoomsView() {
               </label>
             </div>
             <Toolbar actions={[
-              { label: 'Cancelar', icon: '✕', onClick: () => setShowNew(false) },
-              { label: 'Gravar', icon: '💾', onClick: create },
+              { label: 'Cancelar', icon: '✕', color: '#5C8891', onClick: () => setShowNew(false) },
+              { label: 'Gravar', icon: '💾', color: '#062A31', onClick: create },
             ]} />
           </div>
         </div>

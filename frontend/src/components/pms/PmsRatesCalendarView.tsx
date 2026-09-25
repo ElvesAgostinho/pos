@@ -50,10 +50,10 @@ export default function PmsRatesCalendarView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <Toolbar actions={[
-        { label: '← 14 dias', icon: '◀', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
-        { label: '14 dias →', icon: '▶', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
-        { label: 'Hoje', icon: '🕐', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
-        { label: 'Atualização em Massa', icon: '✎', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
+        { label: '← 14 dias', icon: '◀', color: '#5C8891', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
+        { label: '14 dias →', icon: '▶', color: '#5C8891', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
+        { label: 'Hoje', icon: '🕐', color: '#5C8891', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
+        { label: 'Atualização em Massa', icon: '✎', color: '#062A31', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
       ]} />
       <div className="flex-1 overflow-auto">
         <table className="border-collapse text-[11px] w-full">
