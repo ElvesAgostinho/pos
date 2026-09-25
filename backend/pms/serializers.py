@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import (
     RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
+    NightAuditRun,
 )
 
 
@@ -122,6 +123,15 @@ class ReservationSerializer(serializers.ModelSerializer):
     def get_folio_balance(self, obj):
         f = obj.folio
         return str(f.balance) if f else None
+
+
+class NightAuditRunSerializer(serializers.ModelSerializer):
+    hotel_name = serializers.CharField(source='hotel.name', read_only=True, default=None)
+
+    class Meta:
+        model = NightAuditRun
+        fields = '__all__'
+        extra_kwargs = {'hotel': {'required': False}}
 
 
 class MealPlanEntrySerializer(serializers.ModelSerializer):
