@@ -5,6 +5,7 @@ import { aviso } from '../../ui/dialogo';
 import { Glyph } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
 import { MENUS } from './pmsMenus';
+import { RADIUS, SHADOW } from '../../config/theme';
 import PmsPermissionsDialog from './PmsPermissionsDialog';
 import { useMyAccess } from '../../hooks/useActiveModules';
 import PmsAvailabilityView from './PmsAvailabilityView';
@@ -155,9 +156,9 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           {menu === '__ml' && (
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full z-[61] min-w-[230px] py-1 shadow-2xl" style={{ background: '#041F24', border: '1px solid #062A31' }}>
+              <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden" style={{ background: '#062A31', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                 <button onClick={() => { setMenu(null); localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891]">
+                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891] transition-colors">
                   <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>
                   Ambiente de Trabalho
                 </button>
@@ -173,13 +174,14 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                 sítio, sem se clicar em nada: o operador achava que o sistema
                 "saltava sozinho" de secção. */}
             <button onClick={() => setMenu(menu === m.title ? null : m.title)}
-              className={`px-4 py-2 text-[15px] font-semibold hover:bg-white/10 ${menu === m.title ? 'bg-white/10' : ''}`}>
+              className="px-3 py-1.5 text-[14px] font-semibold hover:bg-white/10 transition-colors"
+              style={{ background: menu === m.title ? 'rgba(255,255,255,0.1)' : 'transparent', borderRadius: RADIUS.sm }}>
               {m.title} ▾
             </button>
             {menu === m.title && (
               <>
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full z-[61] min-w-[260px] py-1 shadow-2xl" style={{ background: '#041F24', border: '1px solid #062A31' }}>
+                <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[260px] py-1 overflow-hidden" style={{ background: '#062A31', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                   {m.items.map((it, i) => (
                     <button key={i}
                       onClick={() => {
@@ -191,7 +193,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                           setSection(it.section);
                         }
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891]">
+                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891] transition-colors">
                       <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon={it.icon} size={16} /></span>
                       {it.label}{it.soon && <span className="ml-auto text-[10px] opacity-50">(brevemente)</span>}
                     </button>
@@ -208,11 +210,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
       </div>
 
       {/* Título da secção ativa */}
-      <div className="flex items-center gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
-        <span className="text-[#062A31] inline-flex items-center"><Glyph icon={cur.icon} size={17} /></span>
-        {cur.label}{hotelName && ` - ${hotelName}`}
+      <div className="flex items-center gap-2 px-3.5 py-2.5 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#062A31' }}>
+        <span className="inline-flex items-center opacity-90"><Glyph icon={cur.icon} size={17} /></span>
+        {cur.label}{hotelName && <span className="font-normal opacity-70"> — {hotelName}</span>}
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
-          className="ml-auto w-6 h-6 rounded flex items-center justify-center text-[#CFE3E6] hover:text-white hover:bg-white/10">
+          className="ml-auto w-7 h-7 flex items-center justify-center text-[#CFE3E6] hover:text-white hover:bg-white/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
           <Users size={15} />
         </button>
       </div>
@@ -221,31 +223,25 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         <Comp onDesktop={onDesktop} onNavigate={setSection} />
       </div>
 
-      {/* Barra 1 — ação do ecrã + hora + fechar */}
-      <div className="h-8 flex items-center justify-between px-3 flex-shrink-0 border-t border-[#CFE3E6] text-[11px]" style={{ background: '#F7FAFA' }}>
-        <span className="text-[#062A31]">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+      {/* Rodapé — um bar só (era dois empilhados: ação do ecrã + hora, e depois
+          separador/versão/hotel — a mesma informação cabe toda numa linha). */}
+      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white text-[11px]" style={{ background: '#062A31' }}>
+        <span className="opacity-80">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+        {hotels.length > 1 && (
+          <select value={hotelId || String(hotels[0]?.id)} onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
+            className="h-6 text-[11px] px-1.5 border" style={{ background: '#041F24', borderColor: '#0B4F5C', borderRadius: RADIUS.sm }}>
+            {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
+          </select>
+        )}
+        <div className="flex-1" />
+        <span className="opacity-50">PMS v1.0</span>
         <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-          className="flex items-center gap-1.5 text-[#041F24] font-semibold hover:text-black" title="Fechar (volta ao Ambiente de Trabalho)">
+          className="flex items-center gap-1.5 font-semibold hover:text-white opacity-90 hover:opacity-100 transition-opacity" title="Fechar (volta ao Ambiente de Trabalho)">
           <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white">
             <X size={10} strokeWidth={3} />
           </span>
           Fechar
         </button>
-      </div>
-
-      {/* Barra 2 — separador (tarefa aberta) + versão + hotel ativo */}
-      <div className="h-7 flex items-center px-2 gap-2 flex-shrink-0 text-white text-[11px]" style={{ background: '#041F24' }}>
-        <span className="flex items-center gap-1.5 px-2 py-0.5 bg-[#5C8891]">
-          <Glyph icon={cur.icon} size={11} /> {cur.label}
-        </span>
-        <div className="flex-1" />
-        <span className="opacity-60">ML · PMS v1.0</span>
-        {hotels.length > 1 && (
-          <select value={hotelId || String(hotels[0]?.id)} onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
-            className="h-[20px] text-[11px] px-1 border border-[#062A31] bg-[#062A31] text-white">
-            {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
-          </select>
-        )}
       </div>
 
       {showPerms && (

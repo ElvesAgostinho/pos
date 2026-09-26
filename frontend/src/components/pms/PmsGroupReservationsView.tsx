@@ -5,6 +5,7 @@ import {
   ChevronsLeft, ChevronsRight, FileSpreadsheet, Eye, X, BedDouble,
 } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import { RADIUS, SHADOW } from '../../config/theme';
 import ClassicGrid from '../ui/ClassicGrid';
 import PmsBlockEditorDialog from './PmsBlockEditorDialog';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
@@ -20,8 +21,8 @@ function Field({ label, children }: { label: string; children: any }) {
     </label>
   );
 }
-const inputCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white';
-const selCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white';
+const inputCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
+const selCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
 
 function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#041F24' }: any) {
   return (
@@ -220,9 +221,9 @@ export default function PmsGroupReservationsView() {
             <option value="">(Nova pesquisa)</option>
             {saved.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
           </select>
-          <button onClick={() => setShowSaveDialog(true)} title="Nova pesquisa" className="w-6 h-6 flex items-center justify-center rounded-full bg-[#041F24] text-white"><Plus size={13} /></button>
-          <button onClick={() => setShowSaveDialog(true)} className="flex items-center gap-1 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA]"><Save size={12} /> Gravar</button>
-          <button onClick={apagarPesquisa} disabled={!savedName} className="flex items-center gap-1 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA] disabled:opacity-40"><Trash2 size={12} className="text-[#B0392B]" /> Apagar</button>
+          <button onClick={() => setShowSaveDialog(true)} title="Nova pesquisa" className="w-6 h-6 flex items-center justify-center rounded-full bg-[#062A31] text-white hover:brightness-110 transition-[filter]"><Plus size={13} /></button>
+          <button onClick={() => setShowSaveDialog(true)} className="flex items-center gap-1 px-2.5 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] rounded-[6px] transition-colors"><Save size={12} /> Gravar</button>
+          <button onClick={apagarPesquisa} disabled={!savedName} className="flex items-center gap-1 px-2.5 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] disabled:opacity-40 rounded-[6px] transition-colors"><Trash2 size={12} className="text-[#B0392B]" /> Apagar</button>
         </div>
       </div>
       <button onClick={() => setAvancadaAberta((o) => !o)}
@@ -231,7 +232,7 @@ export default function PmsGroupReservationsView() {
       </button>
 
       {avancadaAberta && (
-        <div className="flex gap-4 p-3 bg-[#F7FAFA] border-b border-[#7FA9B1]">
+        <div className="flex gap-4 p-3 bg-[#F7FAFA] border-b border-[#EEF4F5]">
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
             <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
@@ -309,7 +310,7 @@ export default function PmsGroupReservationsView() {
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
             <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Visualização</div>
-            <button onClick={exportarExcel} className="flex items-center gap-1.5 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA] w-fit"><FileSpreadsheet size={13} /> Excel</button>
+            <button onClick={exportarExcel} className="flex items-center gap-1.5 px-2.5 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] w-fit rounded-[6px] transition-colors"><FileSpreadsheet size={13} /> Excel</button>
             <div className="flex items-center gap-1.5">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <input type="checkbox" checked={autoUpdate} onChange={(e) => setAutoUpdate(e.target.checked)} /> Atualização automática
@@ -323,8 +324,8 @@ export default function PmsGroupReservationsView() {
           </div>
 
           <button onClick={pesquisar}
-            className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px]"
-            style={{ background: '#041F24' }}>
+            className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] hover:brightness-110 transition-[filter]"
+            style={{ background: '#062A31', borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
             <RefreshCw size={20} /> Pesquisar
           </button>
         </div>

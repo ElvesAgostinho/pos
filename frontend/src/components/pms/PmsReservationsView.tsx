@@ -7,6 +7,7 @@ import {
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso, confirmar } from '../../ui/dialogo';
+import { RADIUS, SHADOW } from '../../config/theme';
 import PmsFolioPanel from './PmsFolioPanel';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
 import PmsQuickAssignDialog from './PmsQuickAssignDialog';
@@ -83,7 +84,7 @@ function ReservationRow({ r, hotelName, selected, onSelect, onCheckIn, onCheckOu
         {r.is_guaranteed && <div className="text-[10px] text-[#062A31]">Garantido</div>}
       </div>
       <div className="px-3 py-3 leading-tight" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => onVerConta(r)} className="text-[11px] px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA]">Ver Conta</button>
+        <button onClick={() => onVerConta(r)} className="text-[11px] px-2 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] rounded-[6px] transition-colors">Ver Conta</button>
         <div className="text-[10px] text-gray-500 mt-1">{r.folios_count || 0} conta(s) ativa(s)</div>
         {r.folio_balance != null && (
           <div className={`font-bold ${Number(r.folio_balance) > 0 ? 'text-[#8C2B1F]' : 'text-[#062A31]'}`}>{r.folio_balance}</div>
@@ -117,8 +118,8 @@ function Field({ label, children }: { label: string; children: any }) {
     </label>
   );
 }
-const inputCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white';
-const selCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white min-w-[130px]';
+const inputCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
+const selCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white min-w-[130px] rounded-[6px]';
 
 function loadSaved(): { name: string; filters: any }[] {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch { return []; }
@@ -379,9 +380,9 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             <option value="">(Nova pesquisa)</option>
             {saved.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
           </select>
-          <button onClick={() => setShowSaveDialog(true)} title="Nova pesquisa" className="w-6 h-6 flex items-center justify-center rounded-full bg-[#041F24] text-white"><Plus size={13} /></button>
-          <button onClick={() => setShowSaveDialog(true)} className="flex items-center gap-1 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA]"><Save size={12} /> Gravar</button>
-          <button onClick={apagarPesquisa} disabled={!savedName} className="flex items-center gap-1 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA] disabled:opacity-40"><Trash2 size={12} className="text-[#B0392B]" /> Apagar</button>
+          <button onClick={() => setShowSaveDialog(true)} title="Nova pesquisa" className="w-6 h-6 flex items-center justify-center rounded-full bg-[#062A31] text-white hover:brightness-110 transition-[filter]"><Plus size={13} /></button>
+          <button onClick={() => setShowSaveDialog(true)} className="flex items-center gap-1 px-2.5 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] rounded-[6px] transition-colors"><Save size={12} /> Gravar</button>
+          <button onClick={apagarPesquisa} disabled={!savedName} className="flex items-center gap-1 px-2.5 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] disabled:opacity-40 rounded-[6px] transition-colors"><Trash2 size={12} className="text-[#B0392B]" /> Apagar</button>
         </div>
       </div>
       <button onClick={() => setAvancadaAberta((o) => !o)}
@@ -390,7 +391,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
       </button>
 
       {avancadaAberta && (
-        <div className="flex gap-4 p-3 bg-[#F7FAFA] border-b border-[#7FA9B1]">
+        <div className="flex gap-4 p-3 bg-[#F7FAFA] border-b border-[#EEF4F5]">
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
             <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
@@ -499,7 +500,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
               <label className="flex items-center gap-1.5 cursor-pointer" title="Reservas com origem Online (channel/booking automático), sem intervenção da receção.">
                 <input type="checkbox" checked={apenasAuto} onChange={(e) => setApenasAuto(e.target.checked)} /> Apenas reservas automáticas
               </label>
-              <button onClick={imprimir} className="flex items-center gap-1.5 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA] ml-auto"><Printer size={13} /> Imprimir</button>
+              <button onClick={imprimir} className="flex items-center gap-1.5 px-2 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] rounded-[6px] transition-colors ml-auto"><Printer size={13} /> Imprimir</button>
             </div>
             <div className="flex items-center gap-1.5">
               <label className="flex items-center gap-1.5 cursor-pointer">
@@ -507,7 +508,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
               </label>
               {!autoMode && (
                 <button onClick={() => setShowAutoDialog(true)}
-                  className="flex items-center gap-1.5 px-2 py-1 border border-[#7FA9B1] bg-white hover:bg-[#F7FAFA] ml-auto">
+                  className="flex items-center gap-1.5 px-2 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] rounded-[6px] transition-colors ml-auto">
                   <RefreshCw size={13} /> Auto
                 </button>
               )}
@@ -516,8 +517,8 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           </div>
 
           <button onClick={pesquisar}
-            className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px]"
-            style={{ background: '#041F24' }}>
+            className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] hover:brightness-110 transition-[filter]"
+            style={{ background: '#062A31', borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
             <RefreshCw size={20} /> Pesquisar
           </button>
         </div>
@@ -582,7 +583,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           {showFuncoes && sel && (
             <>
               <div className="fixed inset-0 z-[8000]" onClick={() => setShowFuncoes(false)} />
-              <div className="absolute bottom-full left-0 mb-1 z-[8001] min-w-[220px] bg-white border border-[#7FA9B1] shadow-xl py-1">
+              <div className="absolute bottom-full left-0 mb-1.5 z-[8001] min-w-[220px] bg-white border border-[#EEF4F5] py-1 overflow-hidden" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                 {[
                   ['Instruções de Faturação', false], ['Encargos Fixos', false], ['Depósitos', false],
                   ['Vouchers', false], ['Comissões', false], ['Informação do pagamento', true],
