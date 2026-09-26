@@ -8,6 +8,9 @@ license.key
 private.pem
 *_private.pem
 *.private.pem
+# Par de chaves de assinatura fiscal AGT — próprio de cada instalação, nunca no repo
+# (mesmo princípio de backend/licensing/engine/, também nunca commitado).
+backend/fiscal/keys/
 
 # ---------- Python / Django ----------
 __pycache__/
