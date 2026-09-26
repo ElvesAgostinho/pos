@@ -4,17 +4,29 @@ Digital Signature Engine — assinatura RSA (SHA-1) dos documentos fiscais, conf
 Mensagem a assinar (concatenada com ';', sem aspas nem quebras de linha):
     InvoiceDate;SystemEntryDate;InvoiceNo;GrossTotal;PreviousHash
 
-Reutiliza o par de chaves em licensing/engine/{private,public}.pem.
+Par de chaves PRÓPRIO em fiscal/keys/{private,public}.pem — NUNCA a pasta
+licensing/engine/. Essa pasta guarda a chave que valida o `license.key` do
+cliente (ver licensing/engine/crypto.py); antes deste ficheiro apontava para lá
+("reutiliza o par de chaves de licensing/engine"), e `apply_certification()`
+(que grava aqui as credenciais AGT vindas do PCC) SOBRESCREVIA o public.pem do
+licenciamento com a chave de assinatura AGT — a próxima verificação de licença
+falhava ("Assinatura de licença inválida") e o `pms` (e todos os módulos
+opcionais) saía do INSTALLED_APPS. Apanhado a sério nesta auditoria: gerar um
+par de teste no caminho antigo partiu a licença desta instalação na hora.
 A assinatura (Hash) é guardada em base64, tal como a versão da chave.
 """
 import base64
+import os
 from pathlib import Path
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
 
-ENGINE_DIR = Path(__file__).resolve().parent.parent / 'licensing' / 'engine'
+# FISCAL_KEYS_DIR (opcional): mesmo motivo do LICENSING_KEYS_DIR do licenciamento —
+# num deploy em contentor a pasta de código é reconstruída a cada redeploy; a chave
+# PRIVADA tem de viver num volume persistente separado quando essa variável existir.
+ENGINE_DIR = Path(os.environ.get('FISCAL_KEYS_DIR') or (Path(__file__).resolve().parent / 'keys'))
 PRIVATE_KEY_PATH = ENGINE_DIR / 'private.pem'
 PUBLIC_KEY_PATH = ENGINE_DIR / 'public.pem'
 
