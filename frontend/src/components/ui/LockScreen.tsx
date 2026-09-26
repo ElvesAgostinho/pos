@@ -33,7 +33,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#041F24]">
-      <div className="w-80 bg-[#041F24] border border-[#062A31] rounded-sm p-8 flex flex-col items-center shadow-2xl">
+      <div className="w-80 bg-[#041F24] border border-[#062A31] rounded-[16px] p-8 flex flex-col items-center shadow-2xl">
         <Lock size={48} className="text-[#7FA9B1] mb-6" />
         <h2 className="text-white text-lg font-bold mb-1">Sessão Bloqueada</h2>
         <p className="text-[#7FA9B1] text-xs mb-4 flex items-center gap-1">

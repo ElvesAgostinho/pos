@@ -60,7 +60,7 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
 
       {aberto && (
         <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center">
-          <div className="w-[420px] bg-white border border-[#7FA9B1] shadow-xl">
+          <div className="w-[420px] bg-white border border-[#7FA9B1] shadow-xl rounded-[16px] overflow-hidden">
             <div className="px-3 py-2 bg-[#041F24] text-white text-[14px] font-bold flex items-center justify-between">
               <span>Permissões — {titulo}</span>
               <button onClick={() => setAberto(false)} className="w-6 h-6 bg-[#B0392B] text-white font-bold flex items-center justify-center"><X size={14} /></button>

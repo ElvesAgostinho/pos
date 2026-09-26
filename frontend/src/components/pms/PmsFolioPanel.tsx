@@ -72,7 +72,7 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[640px] max-h-[80vh] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl flex flex-col">
+      <div className="w-[640px] max-h-[80vh] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
         <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #062A31, #041F24)' }}>
           <span className="flex items-center gap-1.5"><Glyph icon="💳" size={13} /> Conta — {folio?.confirmation}</span>
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>

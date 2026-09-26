@@ -32,7 +32,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[1000px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
+      <div className="w-[1000px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
           Mostrar quartos livres
           <button onClick={onClose} title="Fechar"

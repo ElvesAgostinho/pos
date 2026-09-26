@@ -57,7 +57,7 @@ export default function PmsRoomsView() {
 
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-          <div className="w-[360px] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl">
+          <div className="w-[360px] bg-[#F7FAFA] border border-[#7FA9B1] shadow-xl rounded-[16px] overflow-hidden">
             <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #062A31, #041F24)' }}>Novo Quarto</div>
             <div className="p-3 space-y-2 text-[11px]">
               <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>

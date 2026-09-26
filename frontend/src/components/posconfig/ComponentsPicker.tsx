@@ -59,7 +59,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="bg-white w-[1100px] max-w-[95vw] h-[720px] max-h-[92vh] flex flex-col shadow-2xl"
+      <div className="bg-white w-[1100px] max-w-[95vw] h-[720px] max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-3 py-2 bg-[#062A31] text-white">
           <span className="text-[14px] font-bold">Componentes</span>

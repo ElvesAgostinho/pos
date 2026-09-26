@@ -45,7 +45,7 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
-      <div className="bg-[#F7FAFA] border border-[#5C8891] w-[620px] max-h-[80vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#F7FAFA] border border-[#5C8891] w-[620px] max-h-[80vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <Head title="Adicionar - Sub Família" onClose={onClose} />
 
         <div className="flex items-center gap-3 px-3 py-2 bg-white border-b border-[#EEF4F5]">
@@ -142,7 +142,7 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
-      <div className="bg-[#F7FAFA] border border-[#5C8891] w-[1180px] max-w-[97vw] h-[86vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#F7FAFA] border border-[#5C8891] w-[1180px] max-w-[97vw] h-[86vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <Head title={title} onClose={onClose} />
 
         {/* Filtros */}

@@ -41,7 +41,7 @@ export default function PmsMealPlanDialog({ reservation: r, onClose }: { reserva
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[97vw] h-[88vh] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl flex flex-col">
+      <div className="w-[97vw] h-[88vh] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl rounded-[16px] overflow-hidden flex flex-col">
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           Mapa de Refeições
           <button onClick={onClose} title="Fechar"
@@ -180,7 +180,7 @@ function MealEditDialog({ reservation: r, onClose, onSaved }: { reservation: any
 
   return (
     <div className="fixed inset-0 z-[9300] flex items-center justify-center bg-black/40">
-      <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl">
+      <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden">
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
           Refeição
           <button onClick={onClose} className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={12} strokeWidth={3} /></button>

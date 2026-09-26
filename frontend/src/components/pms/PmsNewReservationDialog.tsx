@@ -121,7 +121,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[1180px] max-w-[97vw] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
+      <div className="w-[1180px] max-w-[97vw] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           {editing ? `${reservation.confirmation}, ${reservation.guest_name}, - Reserva` : 'Nova Reserva'}
           <div className="flex items-center gap-2">

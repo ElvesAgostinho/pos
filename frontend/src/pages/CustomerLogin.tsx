@@ -118,7 +118,7 @@ const CustomerLogin: React.FC = () => {
       {loginBg && <div className="fixed inset-0 bg-black/30 -z-10" />}
 
       {/* Janela de login */}
-      <div className="w-[760px] max-w-full bg-[#F7FAFA] border border-[#5C8891] shadow-2xl">
+      <div className="w-[760px] max-w-full bg-[#F7FAFA] border border-[#5C8891] shadow-2xl rounded-[16px] overflow-hidden">
         {/* Barra de título */}
         <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: `linear-gradient(180deg, ${barColor} 0%, ${shade(barColor, -18)} 100%)` }}>
           <span className="flex items-center gap-2"><Building2 size={14} /> {erpName} — Início de Sessão</span>
@@ -238,7 +238,7 @@ const CustomerLogin: React.FC = () => {
       {/* Diálogo Configurações */}
       {config && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfig(false)}>
-          <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+          <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
             <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: barColor }}>
               <span className="flex items-center gap-2"><Settings size={14} />Configurações de Ligação</span>
               <button onClick={() => setConfig(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
@@ -260,7 +260,7 @@ const CustomerLogin: React.FC = () => {
       {/* Diálogo "Esqueci-me da password" */}
       {showReset && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowReset(false)}>
-          <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+          <div className="w-[420px] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
             <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: barColor }}>
               <span className="flex items-center gap-2"><KeyRound size={14} />Repor password</span>
               <button onClick={() => setShowReset(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>

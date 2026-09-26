@@ -66,7 +66,7 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-w-[97vw] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl flex flex-col" style={{ height: 'min(85vh, 700px)' }}>
+      <div className="w-[900px] max-w-[97vw] bg-[#F7FAFA] border border-[#5C8891] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(85vh, 700px)' }}>
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           {selId ? `Bloco — ${form.code}` : copyFrom ? 'Copiar Reserva de Grupo' : 'Nova Reserva de Grupo'}
           <div className="flex items-center gap-2">

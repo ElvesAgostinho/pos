@@ -121,7 +121,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-6" onClick={onClose}>
-      <div className="bg-[#F7FAFA] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#F7FAFA] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#041F24' }}>
           <span>{mode === 'online' ? 'Mesas - Online' : 'Mesas'} — {sector.name}</span>
           <button onClick={onClose} className="text-white"><Glyph icon="✕" size={16} /></button>

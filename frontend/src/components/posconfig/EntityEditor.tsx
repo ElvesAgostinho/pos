@@ -469,7 +469,7 @@ function Comissoes({ eid, d: _d, T }: any) {
     </div>
     {add && (
       <div className="fixed inset-0 bg-black/40 z-[400] flex items-center justify-center" onClick={() => setAdd(null)}>
-        <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#F7FAFA] border border-[#041F24] shadow-2xl">
+        <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#F7FAFA] border border-[#041F24] shadow-2xl rounded-[16px] overflow-hidden">
           <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold bg-[#041F24]">
             <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#B0392B] flex items-center justify-center"><Glyph icon="✕" size={11} /></button></div>
           <div className="p-4 space-y-2">

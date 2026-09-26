@@ -25,7 +25,7 @@ export default function GuideDialog() {
   if (!g) return null;
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45" onClick={() => setG(null)}>
-      <div className="w-[460px] bg-[#F7FAFA] border border-[#7FA9B1] shadow-2xl" onClick={(e) => e.stopPropagation()}
+      <div className="w-[460px] bg-[#F7FAFA] border border-[#7FA9B1] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
         {/* Barra de título */}
         <div className="h-8 flex items-center gap-2 px-3 text-white font-bold text-[12px]"

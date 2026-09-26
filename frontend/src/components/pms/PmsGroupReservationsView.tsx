@@ -49,7 +49,7 @@ function PickupDialog({ block, onClose }: { block: any; onClose: () => void }) {
   const rows = data || [];
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[820px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
+      <div className="w-[820px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
           Pickup — {block.code} · {block.description}
           <button onClick={onClose} title="Fechar"
