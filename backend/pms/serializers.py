@@ -111,6 +111,9 @@ class ReservationSerializer(serializers.ModelSerializer):
     folio_balance = serializers.SerializerMethodField()
     folios_count = serializers.IntegerField(source='folios.count', read_only=True)
     rate_plan_code = serializers.CharField(source='rate_plan.code', read_only=True, default=None)
+    guest_is_vip = serializers.BooleanField(source='guest.is_vip', read_only=True, default=False)
+    guest_vip_discount_percent = serializers.DecimalField(source='guest.vip_discount_percent', read_only=True,
+                                                            max_digits=5, decimal_places=2, default=0)
 
     class Meta:
         model = Reservation

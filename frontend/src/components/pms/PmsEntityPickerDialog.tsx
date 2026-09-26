@@ -1,13 +1,114 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, RefreshCw, Plus, Pencil, Hand, User, Copy, X } from 'lucide-react';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { RefreshCw, Plus, Pencil, Hand, User, Copy, X, Search } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { aviso } from '../../ui/dialogo';
+import { notifyError } from '../../utils/friendlyError';
 import ClassicGrid from '../ui/ClassicGrid';
 import EntityEditor from '../posconfig/EntityEditor';
 import PmsDuplicateCheckDialog from './PmsDuplicateCheckDialog';
+import { STATUS_COLOR } from './reservationStatus';
 
-const naoConstruido = (label: string) => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
+/** "Campos obrigatórios" — a MESMA regra do servidor (mdm.Customer via
+ * EntitySerializer.validate, pos/marketing/entity-rules/) que já existe e já
+ * é usada pela "Pesquisa de Entidades" da Configuração POS
+ * (posconfig/PosMarketing.tsx). Aqui é só a moldura popup do PMS por cima do
+ * MESMO endpoint — o servidor continua a ser a única fonte da regra. */
+function RequiredFieldsDialog({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient();
+  const { data: regras } = useQuery({
+    queryKey: ['pos', 'entity-rules'],
+    queryFn: async () => (await apiClient.get('pos/marketing/entity-rules/')).data,
+  });
+  const rows: any[] = Array.isArray(regras) ? regras : regras?.results || [];
+  const toggle = useMutation({
+    mutationFn: ({ id, v }: { id: number; v: boolean }) => apiClient.patch(`pos/marketing/entity-rules/${id}/`, { is_required: v }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['pos', 'entity-rules'] }),
+    onError: notifyError,
+  });
+
+  return (
+    <div className="fixed inset-0 z-[9300] flex items-center justify-center bg-black/40">
+      <div className="w-[440px] max-h-[70vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+          Campos obrigatórios
+          <button onClick={onClose} title="Fechar"
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            <X size={12} strokeWidth={3} />
+          </button>
+        </div>
+        <div className="p-3 overflow-auto bg-white text-[12px]">
+          <div className="text-[11px] text-[#5C8891] mb-2">
+            O servidor recusa gravar uma entidade sem estes campos. Não é um aviso — é uma regra.
+          </div>
+          {rows.map((r: any) => (
+            <label key={r.id} className="flex items-center gap-2 py-1 cursor-pointer">
+              <input type="checkbox" checked={!!r.is_required} disabled={r.field === 'name' || toggle.isPending}
+                onChange={(e) => toggle.mutate({ id: r.id, v: e.target.checked })} className="w-4 h-4" />
+              {r.label || r.field}{r.field === 'name' && <span className="text-[#7FA9B1] text-[11px]"> (sempre)</span>}
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** "Guest Info" — histórico de estadias deste hóspede em todo o hotel
+ * (pms/reservations/?guest=<id>, o MESMO filtro que ReservationViewSet já
+ * suporta — ver pms/views.py). Diferente do "Histórico" de uma reserva
+ * (PmsHistoryDialog, que mostra os eventos de UMA reserva): aqui mostra-se
+ * TODAS as reservas deste hóspede, passadas e futuras. */
+function GuestInfoDialog({ guest, onClose }: { guest: any; onClose: () => void }) {
+  const { data, isFetching } = useQuery({
+    queryKey: ['pms', 'reservations', 'by-guest', guest.id],
+    queryFn: async () => (await apiClient.get('pms/reservations/', { params: { guest: guest.id } })).data,
+  });
+  const rows: any[] = Array.isArray(data) ? data : data?.results || [];
+  const stays = rows.filter((r: any) => r.status === 'CHECKED_OUT').length;
+
+  return (
+    <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
+      <div className="w-[760px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+          Guest Info — {guest.name}
+          <button onClick={onClose} title="Fechar"
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            <X size={12} strokeWidth={3} />
+          </button>
+        </div>
+        <div className="px-3 py-2 bg-white border-b border-[#CFE3E6] text-[12px] flex gap-6 flex-shrink-0">
+          <span><b>Nr. cliente:</b> {guest.code || '—'}</span>
+          <span><b>Contacto:</b> {guest.contact || '—'}</span>
+          <span><b>NIF:</b> {guest.tax_id || '—'}</span>
+          <span><b>Estadias concluídas:</b> {stays}</span>
+        </div>
+        <div className="flex-1 overflow-auto bg-white">
+          {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A carregar…</div> : rows.length === 0 ? (
+            <div className="p-6 text-center text-gray-400 text-[12px]">Este hóspede ainda não tem reservas.</div>
+          ) : (
+            <ClassicGrid rowKey="id" data={rows} filterable={false} columns={[
+              { header: 'Confirmação', accessor: 'confirmation', width: '15%' },
+              { header: 'Categoria', accessor: 'room_type_name', width: '20%' },
+              { header: 'Quarto', accessor: (r: any) => r.room_number || '—', width: '10%' },
+              { header: 'Check-in', accessor: 'check_in', width: '13%' },
+              { header: 'Check-out', accessor: 'check_out', width: '13%' },
+              { header: 'Estado', accessor: (r: any) => (
+                <span style={{ color: STATUS_COLOR[r.status] || '#041F24', fontWeight: 700 }}>{r.status_display}</span>
+              ), width: '15%' },
+            ]} />
+          )}
+        </div>
+        <div className="flex justify-end px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * "Entidades" — pesquisar/criar/editar um hóspede. NÃO é um cadastro à parte:
@@ -26,6 +127,8 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
   const [selId, setSelId] = useState<number | null>(null);
   const [editing, setEditing] = useState<any>(null);
   const [showDups, setShowDups] = useState(false);
+  const [showGuestInfo, setShowGuestInfo] = useState(false);
+  const [showRequired, setShowRequired] = useState(false);
 
   const { data: tipos } = useQuery({
     queryKey: ['pos', 'customer-types'],
@@ -155,10 +258,11 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
             className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5] disabled:opacity-30 disabled:hover:bg-transparent">
             <Hand size={13} /> Selecionar
           </button>
-          <button onClick={() => naoConstruido('Guest Info')} className="flex items-center gap-1.5 px-2 py-1 text-gray-400 hover:bg-[#EEF4F5]">
+          <button disabled={!sel} onClick={() => sel && setShowGuestInfo(true)}
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5] disabled:opacity-30 disabled:hover:bg-transparent">
             <User size={13} /> Guest Info
           </button>
-          <button onClick={() => naoConstruido('Campos obrigatórios')} className="flex items-center gap-1.5 px-2 py-1 text-gray-400 hover:bg-[#EEF4F5]">
+          <button onClick={() => setShowRequired(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5]">
             <Search size={13} /> Campos obrigatórios
           </button>
           <button onClick={() => setShowDups(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5]">
@@ -175,6 +279,8 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
       </div>
 
       {showDups && <PmsDuplicateCheckDialog onClose={() => setShowDups(false)} />}
+      {showGuestInfo && sel && <GuestInfoDialog guest={sel} onClose={() => setShowGuestInfo(false)} />}
+      {showRequired && <RequiredFieldsDialog onClose={() => setShowRequired(false)} />}
     </div>
   );
 }

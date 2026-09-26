@@ -31,13 +31,15 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
   });
   const rows = (Array.isArray(data) ? data : data?.results || [])
     .filter((r: any) => r.room_number && r.status !== 'CHECKED_OUT' && r.status !== 'CANCELLED');
+  const movable = rows.filter((r: any) => !r.lock_room);
+  const lockedCount = rows.length - movable.length;
 
   const [checked, setChecked] = useState<Set<number>>(new Set());
   const [target, setTarget] = useState<Record<number, string>>({});
   const [applying, setApplying] = useState(false);
 
-  const allChecked = rows.length > 0 && rows.every((r: any) => checked.has(r.id));
-  const toggleAll = () => setChecked(allChecked ? new Set() : new Set(rows.map((r: any) => r.id)));
+  const allChecked = movable.length > 0 && movable.every((r: any) => checked.has(r.id));
+  const toggleAll = () => setChecked(allChecked ? new Set() : new Set(movable.map((r: any) => r.id)));
   const toggle = (id: number) => setChecked((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const aplicar = async () => {

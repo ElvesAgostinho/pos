@@ -242,6 +242,18 @@ class Reservation(models.Model):
     voucher = models.CharField(max_length=40, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
 
+    # Hora prevista de chegada/saída — só informativo (para a receção preparar
+    # o quarto/transporte), não altera check_in/check_out (que são datas).
+    eta = models.TimeField(blank=True, null=True, verbose_name='Hora de chegada prevista')
+    etd = models.TimeField(blank=True, null=True, verbose_name='Hora de saída prevista')
+    # Cor manual para destacar esta reserva no Planning (Gantt) — se vazio,
+    # usa-se a cor do estado (ver reservationStatus.ts no frontend).
+    color_tag = models.CharField(max_length=7, blank=True, null=True, verbose_name='Cor')
+    # Impede que "Atribuição rápida"/"Mudança de Quartos em Massa" movam esta
+    # reserva de quarto sem o utilizador destravar primeiro (ver
+    # PmsBulkRoomChangeDialog.tsx, que já respeita este campo).
+    lock_room = models.BooleanField(default=False, verbose_name='Não mudar de quarto')
+
     created_at = models.DateTimeField(auto_now_add=True)
     checked_in_at = models.DateTimeField(blank=True, null=True)
     checked_out_at = models.DateTimeField(blank=True, null=True)
