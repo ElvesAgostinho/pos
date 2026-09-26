@@ -34,10 +34,26 @@ export default function PmsMealPlanDialog({ reservation: r, onClose }: { reserva
   const cell = (date: string, meal: string, col: string) =>
     entries.find((e: any) => e.date === date && e.meal_code === meal)?.[col] || 0;
 
-  const totalUtilizado: Record<string, number> = { adults: 0, children_1: 0, children_2: 0, children_3: 0 };
-  entries.forEach((e: any) => AGE_COLS.forEach((c) => { totalUtilizado[c] += e[c] || 0; }));
-  const possivel = (r.adults || 0) * dias.length;
-  const naoUtilizado = { adults: Math.max(possivel - totalUtilizado.adults, 0), children_1: 0, children_2: 0, children_3: 0 };
+  // DIREITO a refeições, por tipo de refeição: cada pessoa tem direito a UMA de
+  // cada refeição por dia de estadia. O "não utilizado" é por LINHA (por
+  // refeição) — antes era um número global, calculado à custa do direito só do
+  // pequeno-almoço mas descontando as refeições de TODOS os tipos (marcar 8
+  // almoços zerava os pequenos-almoços por utilizar) e ainda por cima só era
+  // mostrado na linha do pequeno-almoço; as outras ficavam sempre em branco.
+  // Crianças: a reserva só guarda um total (`children`), não os 3 escalões do
+  // mapa — por isso o direito entra no escalão 1 e os outros ficam a zero.
+  const direito: Record<string, number> = {
+    adults: (r.adults || 0) * dias.length,
+    children_1: (r.children || 0) * dias.length,
+    children_2: 0,
+    children_3: 0,
+  };
+  const naoUtilizadoDe = (util: Record<string, number>) => ({
+    adults: Math.max(direito.adults - util.adults, 0),
+    children_1: Math.max(direito.children_1 - util.children_1, 0),
+    children_2: Math.max(direito.children_2 - util.children_2, 0),
+    children_3: Math.max(direito.children_3 - util.children_3, 0),
+  });
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
@@ -117,12 +133,17 @@ export default function PmsMealPlanDialog({ reservation: r, onClose }: { reserva
                   {MEALS.map(([code, label]) => {
                     const util: Record<string, number> = { adults: 0, children_1: 0, children_2: 0, children_3: 0 };
                     entries.filter((e: any) => e.meal_code === code).forEach((e: any) => AGE_COLS.forEach((c) => { util[c] += e[c] || 0; }));
+                    const naoUtil = naoUtilizadoDe(util);
                     return (
                       <tr key={code} className="border-b border-[#F7FAFA]">
                         <td className="px-2 py-1">{label}</td>
                         <td className="px-2 py-1">Refeição</td>
                         {AGE_COLS.map((c) => <td key={'u' + c} className="px-2 py-1 text-center">{util[c] || ''}</td>)}
-                        {AGE_COLS.map((c) => <td key={'n' + c} className="px-2 py-1 text-center">{code === 'BREAKFAST' ? (naoUtilizado[c as keyof typeof naoUtilizado] || '') : ''}</td>)}
+                        {AGE_COLS.map((c) => (
+                          <td key={'n' + c} className="px-2 py-1 text-center">
+                            {naoUtil[c as keyof typeof naoUtil] || ''}
+                          </td>
+                        ))}
                       </tr>
                     );
                   })}
