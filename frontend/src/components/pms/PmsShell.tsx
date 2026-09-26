@@ -40,6 +40,7 @@ import PmsUsersView from './PmsUsersView';
 // parecer que se está a saltar de módulo.
 import PosReports from '../posconfig/PosReports';
 import PosOnline from '../posconfig/PosOnline';
+import PosCurrentAccounts from '../posconfig/PosCurrentAccounts';
 import { PosDayClose, PosSaft, PosDiagnostics } from '../posconfig/PosOps';
 import { EntitySearch, EventRequests } from '../posconfig/PosMarketing';
 import { SysLogsView } from '../system/PlatformViews';
@@ -65,6 +66,13 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   rooms_bulk: { label: 'Gestão de Quartos', icon: '🏢', Comp: PmsRoomsBulkEditView },
   guests_companies: { label: 'Hóspedes & Empresas', icon: '👤', Comp: PmsGuestsCompaniesView },
   finance_pms: { label: 'Financeiro', icon: '📋', Comp: PmsFinanceView },
+  // A MESMA Conta Corrente do POS (mesmos dados: fiscal.FiscalDocument por
+  // Customer, que já mistura tickets do POS com faturas de folio do PMS —
+  // "source_module" é só metadado do documento, a conta é da entidade, não do
+  // módulo). Antes este item do menu apontava para "reservations" (só o folio
+  // de UMA reserva de cada vez) — dava a entender que era uma conta corrente a
+  // sério e não era; agora é a conta a sério, partilhada com o POS.
+  current_accounts: { label: 'Contas Correntes', icon: '💰', Comp: PosCurrentAccounts },
   reports: { label: 'Relatórios', icon: '🖨', Comp: PosReports },
   reports_pms: { label: 'Performance & Ocupação', icon: '📊', Comp: PmsReportsView },
   online: { label: 'Informação Online', icon: '📈', Comp: PosOnline },
@@ -123,7 +131,7 @@ export const MENUS: { title: string; items: { icon: string; label: string; secti
   { title: 'Contas', items: [
     { icon: '🧾', label: 'Check-Out', section: 'checkout' },
     { icon: '📋', label: 'Financeiro (Receitas/Despesas)', section: 'finance_pms' },
-    { icon: '💰', label: 'Contas Correntes (ver folio de uma reserva)', section: 'reservations' },
+    { icon: '💰', label: 'Contas Correntes', section: 'current_accounts' },
   ] },
   { title: 'Gestão de Canais', items: [
     { icon: '📊', label: 'Calendário de Tarifas', section: 'rates_calendar' },
