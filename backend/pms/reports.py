@@ -54,16 +54,12 @@ def _active_reservations(request, date_from, date_to):
 
 
 def _effective_rate(r):
-    """A mesma conta que o check-in usa para lançar a 1ª diária (ver
-    ReservationViewSet.check_in) — para o relatório nunca divergir do que
-    realmente se lançou no folio."""
-    if r.rate and r.rate > 0:
-        return r.rate
-    if r.rate_plan_id and r.rate_plan and r.rate_plan.price_per_night:
-        return r.rate_plan.price_per_night
-    if r.room_type_id and r.room_type:
-        return r.room_type.base_rate
-    return 0
+    """A MESMA regra que o check-in usa para lançar a 1ª diária e que a
+    Auditoria da Noite usa para lançar as seguintes — ver
+    `Reservation.effective_rate` (models.py), a ÚNICA definição desta conta em
+    todo o sistema. Este wrapper existe só porque os relatórios abaixo já
+    chamavam `_effective_rate(r)`; não recalcula nada por si."""
+    return r.effective_rate
 
 
 def _nights_in_period(r, date_from, date_to):

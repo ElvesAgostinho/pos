@@ -261,6 +261,25 @@ class Reservation(models.Model):
     def folio(self):
         return self.folios.filter(is_primary=True).first() or self.folios.first()
 
+    @property
+    def effective_rate(self):
+        """A tarifa realmente cobrada por noite desta reserva: `rate` (override
+        manual) se preenchido e positivo, senão o preço do `rate_plan`, senão a
+        tarifa base da categoria de quarto. ÚNICA definição desta regra em todo
+        o sistema — `ReservationViewSet.check_in` (views.py), os relatórios
+        (`reports.py`) e a Auditoria da Noite (`night_audit.py`) reutilizam
+        esta property em vez de recalcular cada um a sua conta (o que já
+        aconteceu — três cópias do mesmo `if`/`else` — e é exatamente o tipo de
+        lógica repetida que se quer evitar: um dia alguém muda uma cópia e
+        esquece as outras, e o relatório deixa de bater com o que foi lançado)."""
+        if self.rate and self.rate > 0:
+            return self.rate
+        if self.rate_plan_id and self.rate_plan and self.rate_plan.price_per_night:
+            return self.rate_plan.price_per_night
+        if self.room_type_id and self.room_type:
+            return self.room_type.base_rate
+        return Decimal('0')
+
 
 # ==========================================================================
 # FOLIO — a conta do hóspede
