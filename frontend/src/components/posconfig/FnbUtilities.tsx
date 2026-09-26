@@ -198,7 +198,7 @@ function InventarioAgt() {
             </button>
           </div>
           {meta && (
-            <div className="bg-white p-3 grid grid-cols-3 gap-2 text-[12px]" style={{ border: '4px groove #CFE3E6' }}>
+            <div className="bg-white p-3 grid grid-cols-3 gap-2 text-[12px]" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               <div><span className="text-[#5C8891]">Artigos com existência</span><br /><b>{meta.items}</b></div>
               <div><span className="text-[#5C8891]">Valor total (custo médio)</span><br /><b>{Number(meta.total_value).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} Kz</b></div>
               <div><span className="text-[#5C8891]">Empresa / NIF</span><br /><b>{meta.company}</b> · {meta.nif}</div>

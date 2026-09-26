@@ -113,7 +113,7 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
           { label: 'Registar Pagamento', icon: '💳', color: '#062A31', onClick: settle },
           { label: 'Gerar Fatura (AGT)', icon: '🧾', color: '#062A31', onClick: generateInvoice },
         ]} right={
-          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#041F24] border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">Fechar</button>
+          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#041F24] border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[6px]">Fechar</button>
         } />
       </div>
     </div>

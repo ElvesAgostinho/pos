@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Settings, Power, LogOut, ShieldCheck, Server, Wifi } from 'lucide-react';
+import { X, Settings, Power, LogOut, ShieldCheck, Server, Wifi, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
@@ -206,7 +206,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
         <button onClick={(e) => { e.stopPropagation(); setModMenu((s) => !s); setTopMenu(null); }}
           title="Trocar de módulo"
           className={`flex items-center gap-2 px-2.5 py-1 pr-3.5 mr-2 leading-none rounded-full transition-colors ${modMenu ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-          <img src={logoUrl || '/brand-logo.png'} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" />
+          {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
           <span className="text-[13px] text-white">▾</span>
         </button>
         {modMenu && (

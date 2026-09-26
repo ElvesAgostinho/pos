@@ -197,7 +197,7 @@ function BlockGrid({ blockId, roomTypes }: { blockId: number; roomTypes: any[] }
         </select>
         <input type="date" value={row.date} onChange={(e) => setRow({ ...row, date: e.target.value })} className="border border-[#7FA9B1] p-1" />
         <input type="number" min={0} value={row.rooms_blocked} onChange={(e) => setRow({ ...row, rooms_blocked: Number(e.target.value) })} className="border border-[#7FA9B1] p-1 w-20" placeholder="Qtd" />
-        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[12px] text-[#041F24] border border-[#7FA9B1] hover:bg-[#F7FAFA] rounded-[2px]">
+        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[12px] text-[#041F24] border border-[#7FA9B1] hover:bg-[#F7FAFA] rounded-[6px]">
           <span className="text-[#062A31]"><Glyph icon="＋" size={14} /></span> Adicionar
         </button>
       </div>

@@ -53,7 +53,7 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
   };
   if (!eid) return <div className="text-[12px] text-[#5C8891] p-3">Grave primeiro a ficha — as listas ligam-se à entidade criada.</div>;
   return (
-    <div style={{ border: '4px groove #CFE3E6' }}>
+    <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
       <div className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold flex justify-between">
         <span>{titulo}</span>
         <span className="flex gap-2">
@@ -411,7 +411,7 @@ function InfoSeccoes({ eid }: { eid: number }) {
   };
   if (!eid) return <div className="text-[12px] text-[#5C8891] p-2">Grave a ficha para escrever informação por secção.</div>;
   return (
-    <div style={{ border: '4px groove #CFE3E6' }}>
+    <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
       <div className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold">Informação para secção</div>
       <div className="flex" style={{ minHeight: 120 }}>
         <div className="w-[220px] border-r border-[#EEF4F5] bg-white">
@@ -452,7 +452,7 @@ function Comissoes({ eid, d: _d, T }: any) {
     <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 mb-2">
       <T k="commission_code" l="Cód. Comissão:" /> <T k="commission_pct" l="Percent. comissão:" tipo="number" />
     </div>
-    <div style={{ border: '4px groove #CFE3E6' }}>
+    <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
       <div className="px-2 py-1 bg-[#F7FAFA] text-[12px] font-bold flex justify-between">
         <span>Outras Comissões</span>
         <button onClick={() => eid ? setAdd({ ativo: true }) : aviso('Grave primeiro a ficha.')} className="text-[#062A31]">⊕ Adicionar</button>

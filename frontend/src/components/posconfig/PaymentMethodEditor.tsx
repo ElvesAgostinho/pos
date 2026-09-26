@@ -177,7 +177,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_fnb} onChange={(e) => set('for_fnb', e.target.checked)} className="w-4 h-4" />F&B (contas a pagar)</label>
             </div>
 
-            <div style={{ border: '4px groove #CFE3E6' }}>
+            <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#041F24] border-b border-[#EEF4F5]">Detalhes</div>
               <div className="p-3 space-y-2">
                 <CheckRow on={d.tip_from_change} onToggle={(v: boolean) => set('tip_from_change', v)}

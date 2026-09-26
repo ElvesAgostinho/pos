@@ -6,7 +6,7 @@ import {
   VIEW_REGISTRY, ITEM_TITLES, ITEM_MODULE_KEY, moduleEnabled, moduleKeyOf, featureAllowed,
 } from '../../config/navigation';
 import { getAppearance } from '../../config/appearance';
-import { classicTheme } from '../../config/theme';
+import { classicTheme, RADIUS, SHADOW } from '../../config/theme';
 import ErrorBoundary from './ErrorBoundary';
 import { exportDomTable } from '../../utils/exportData';
 import { WORKSPACES, MODULE_TREE } from '../../config/workspace';
@@ -16,7 +16,7 @@ import {
   FilePlus2, Pencil, Save, Trash2, Copy, Search, RefreshCw, Printer, Download,
   Paperclip, History, ClipboardList, ChevronRight, ChevronDown, Folder, FolderOpen,
   Power, Moon, Sun, Server, ShieldCheck, Monitor, Building2, Database, Wifi, Cpu,
-  Lock, LogOut, X,
+  Lock, LogOut,
 } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
 import LockScreen from '../ui/LockScreen';
@@ -62,6 +62,15 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   const [exportOpen, setExportOpen] = useState(false);
   const [locked, setLocked] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
+
+  // Logótipo real do cliente (Administração → Empresa) — mesma fonte que o
+  // Ambiente de Trabalho e o PMS já usam. Sem imagem de reserva de marca: sem
+  // logótipo carregado, mostra um ícone neutro (prédio), nunca uma imagem do
+  // sistema a fingir ser a marca do cliente.
+  const [logoUrl, setLogoUrl] = useState('');
+  useEffect(() => {
+    apiClient.get('platform/branding/').then((r) => setLogoUrl(r.data?.logo_url || '')).catch(() => {});
+  }, []);
 
   // PROPRIEDADE ATIVA — em grupos com vários hotéis, tudo o que se vê é do hotel escolhido.
   const { data: myHotels } = useQuery({
@@ -282,14 +291,19 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   return (
     <div ref={shellRef} className="h-screen w-screen flex flex-col overflow-hidden font-sans select-none" style={{ background: t.body }}>
       {/* ================= BARRA DE MENUS ================= */}
-      <div className="flex items-center h-[26px] px-1 text-[12px] flex-shrink-0 border-b" style={{ background: t.bar, color: t.barText, borderColor: t.line }}>
-        <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }} title="Voltar ao Ambiente de Trabalho" className="font-black tracking-tight px-2 hover:bg-black/10 h-[26px]"><span className="text-[#062A31]">M</span><span style={{ color: t.accent }}>L</span></button>
+      <div className="flex items-center h-[30px] px-1.5 gap-0.5 text-[12px] flex-shrink-0 border-b" style={{ background: t.bar, color: t.barText, borderColor: t.line }}>
+        <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }}
+          title="Voltar ao Ambiente de Trabalho"
+          className="flex items-center justify-center w-7 h-7 mr-1 flex-shrink-0 hover:bg-black/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
+          {logoUrl ? <img src={logoUrl} alt="" className="w-6 h-6 object-contain rounded-full" /> : <Building2 size={16} />}
+        </button>
         {Object.keys(MENUS).map((m) => (
           <div key={m} className="menu-root relative">
             <button onClick={() => setMenu((o) => (o === m ? null : m))}
-              className="px-2.5 h-[26px] hover:bg-black/10" style={{ background: menu === m ? t.hover : 'transparent' }}>{m}</button>
+              className="px-2.5 h-7 transition-colors" style={{ background: menu === m ? t.hover : 'transparent', borderRadius: RADIUS.sm }}>{m}</button>
             {menu === m && (
-              <div className="absolute left-0 top-[26px] min-w-[220px] shadow-lg py-1 z-50 border" style={{ background: t.tree, borderColor: t.line, color: t.treeText }}>
+              <div className="absolute left-0 top-[32px] min-w-[220px] py-1 z-50 border overflow-hidden"
+                style={{ background: t.tree, borderColor: t.line, color: t.treeText, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                 {MENUS[m].map((it) => (
                   <button key={it.label} onClick={() => { it.act?.(); setMenu(null); }}
                     className="w-full text-left px-3 py-1.5 flex justify-between gap-6 hover:bg-black/10">
@@ -300,6 +314,11 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
             )}
           </div>
         ))}
+
+        {/* Ecrã ativo — a mesma informação que antes vivia numa barra de "janela"
+            à parte, sem fingir controlos de minimizar/maximizar de um SO. */}
+        <span className="ml-2 text-[12px] font-medium truncate opacity-80">{ITEM_TITLES[activeView] || ''}</span>
+
         <div className="flex-1" />
         {/* PROPRIEDADE ATIVA — só aparece em grupos com mais do que um hotel. */}
         {hotels.length > 1 && (
@@ -307,53 +326,34 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
             <Building2 size={13} className="opacity-70" />
             <select value={hotelId || String(hotels[0].id)} onChange={(e) => pickHotel(e.target.value)}
               title="Propriedade ativa — só vê os dados deste hotel"
-              className="h-[20px] text-[11px] font-bold px-1 border"
-              style={{ background: t.tree, color: t.treeText, borderColor: t.line }}>
+              className="h-6 text-[11px] font-bold px-1.5 border" style={{ background: t.tree, color: t.treeText, borderColor: t.line, borderRadius: RADIUS.sm }}>
               {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
           </div>
         )}
-        <button onClick={() => setDark((d) => !d)} title="Tema" className="px-2 h-[26px] hover:bg-black/10">{dark ? <Sun size={14} /> : <Moon size={14} />}</button>
-      </div>
-
-      {/* ================= CONTROLOS DE JANELA (estilo clássico, igual ao PCC) ================= */}
-      <div className="flex items-center justify-between bg-[#062A31] h-7 px-2 select-none border-b border-[#041F24] flex-shrink-0">
-        <div className="flex items-center text-white text-[12px] font-medium truncate">{ITEM_TITLES[activeView] || ''}</div>
-        <div className="flex items-center space-x-1 pr-1">
-          <span className="text-[#F7FAFA] text-[11px] mr-2 flex items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#5C8891] mr-1.5" /> {user?.username || 'operador'}
-          </span>
-          <div onClick={() => setLocked(true)} title="Bloquear ecrã"
-            className="w-5 h-4 flex items-center justify-center cursor-pointer text-white hover:bg-[#5C8891]">
-            <Lock size={11} />
-          </div>
-          <div onClick={logout} title="Terminar sessão"
-            className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#B0392B] border border-[#B0392B] text-white hover:brightness-110 mr-1">
-            <LogOut size={11} />
-          </div>
-          <div title="Minimizar" className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#5C8891] border border-[#5C8891] hover:brightness-110">
-            <div className="w-2 h-[2px] bg-black mb-[-5px]"></div>
-          </div>
-          <div title="Maximizar" className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#5C8891] border border-[#5C8891] hover:brightness-110">
-            <div className="w-2 h-2 border border-black"></div>
-          </div>
-          <div onClick={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }}
-            title="Voltar ao Ambiente de Trabalho"
-            className="w-5 h-4 flex items-center justify-center cursor-pointer bg-[#B0392B] border border-[#B0392B] text-white hover:brightness-110">
-            <X size={12} strokeWidth={3} />
-          </div>
-        </div>
+        <span className="flex items-center gap-1.5 text-[11px] mr-1.5 opacity-80">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#5C8891]" /> {user?.username || 'operador'}
+        </span>
+        <button onClick={() => setLocked(true)} title="Bloquear ecrã" className="flex items-center justify-center w-7 h-7 hover:bg-black/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
+          <Lock size={13} />
+        </button>
+        <button onClick={() => setDark((d) => !d)} title="Tema" className="flex items-center justify-center w-7 h-7 hover:bg-black/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
+          {dark ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
+        <button onClick={logout} title="Terminar sessão" className="flex items-center justify-center w-7 h-7 hover:bg-[#B0392B]/85 hover:text-white transition-colors" style={{ borderRadius: RADIUS.sm }}>
+          <LogOut size={13} />
+        </button>
       </div>
 
       {/* ================= RIBBON ================= */}
-      <div className="flex items-stretch gap-0 px-1 py-1 flex-shrink-0 border-b overflow-x-auto" style={{ background: t.ribbon, borderColor: t.line, boxShadow: dark ? 'none' : 'inset 0 1px 0 #FFFFFF, 0 2px 4px rgba(0,0,0,0.14)' }}>
+      <div className="flex items-stretch gap-1 px-2 py-1.5 flex-shrink-0 border-b overflow-x-auto" style={{ background: t.ribbon, borderColor: t.line, boxShadow: dark ? 'none' : SHADOW.soft }}>
         {ribbonGroups.map((g) => (
-          <div key={g.title} className="flex flex-col items-center px-2 border-r" style={{ borderColor: t.line }}>
+          <div key={g.title} className="flex flex-col items-center px-2">
             <div className="flex items-end gap-0.5">
               {g.btns.map(([Icon, label, action]) => (
                 <button key={label} onClick={() => runRibbon(action)} title={label}
-                  className="flex flex-col items-center justify-center w-[52px] h-[46px] gap-0.5 hover:bg-black/10 rounded-sm"
-                  style={{ color: t.barText }}>
+                  className="flex flex-col items-center justify-center w-[54px] h-[46px] gap-0.5 hover:bg-black/[0.06] transition-colors"
+                  style={{ color: t.barText, borderRadius: RADIUS.sm }}>
                   <Icon size={18} strokeWidth={1.6} />
                   <span className="text-[10px] leading-none">{label}</span>
                 </button>
@@ -368,7 +368,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
       {exportOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setExportOpen(false)} />
-          <div className="absolute z-50 shadow-lg border rounded-sm overflow-hidden" style={{ top: 80, left: 360, background: t.tree, borderColor: t.line, color: t.treeText }}>
+          <div className="absolute z-50 border overflow-hidden" style={{ top: 80, left: 360, background: t.tree, borderColor: t.line, color: t.treeText, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
             <div className="px-3 py-1.5 text-[10px] uppercase opacity-60 border-b" style={{ borderColor: t.line }}>Exportar a grelha visível</div>
             {[['pdf', 'PDF', '#B0392B'], ['excel', 'Excel', '#062A31'], ['word', 'Word', '#062A31'], ['csv', 'CSV', '#062A31'], ['json', 'JSON', '#062A31']].map(([f, label, c]: any) => (
               <button key={f} onClick={() => exportAs(f)} className="w-full flex items-center gap-2 px-4 py-2 text-[12px] hover:bg-black/10 text-left">
@@ -383,14 +383,14 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
       <div className="flex-1 flex overflow-hidden">
         {/* Árvore de navegação (Windows Explorer) */}
         <div className="w-[236px] flex-shrink-0 flex flex-col border-r overflow-hidden" style={{ background: t.tree, borderColor: t.line, color: t.treeText }}>
-          <div className="p-1.5 border-b" style={{ borderColor: t.line }}>
-            <div className="flex items-center gap-1 px-1.5 py-1 border" style={{ borderColor: t.line, background: dark ? '#062A31' : '#FFFFFF' }}>
+          <div className="p-2 border-b" style={{ borderColor: t.line }}>
+            <div className="flex items-center gap-1.5 px-2 py-1.5 border" style={{ borderColor: t.line, background: dark ? '#062A31' : '#FFFFFF', borderRadius: RADIUS.sm }}>
               <Search size={12} className="opacity-50" />
               <input value={treeQuery} onChange={(e) => setTreeQuery(e.target.value)} placeholder="Pesquisar ecrãs…"
                 className="bg-transparent outline-none text-[12px] w-full" style={{ color: t.treeText }} />
             </div>
           </div>
-          <div className="flex-1 overflow-auto py-1">
+          <div className="flex-1 overflow-auto py-1 px-1.5">
             {tree.map((f, idx) => {
               const its = q(f.items);
               if (treeQuery && its.length === 0) return null;
@@ -401,14 +401,14 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
                 <div key={f.key}>
                   {/* Separador de grupo (Operação / Financeiro / Análise / Sistema) */}
                   {newGroup && !treeQuery && (
-                    <div className="flex items-center gap-2 px-2 pt-2.5 pb-1 select-none">
+                    <div className="flex items-center gap-2 px-1.5 pt-3 pb-1.5 select-none">
                       <span className="text-[9px] font-bold tracking-widest opacity-45">{grp}</span>
                       <span className="flex-1 h-px" style={{ background: dark ? '#041F24' : '#EEF4F5' }} />
                     </div>
                   )}
                   <button onClick={() => setExpanded((e) => ({ ...e, [f.key]: !open }))}
-                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[12px] font-bold hover:bg-black/5 border-b"
-                    style={{ background: f.key === activeFolder ? t.hover : 'transparent', borderColor: dark ? '#041F24' : '#F7FAFA' }}>
+                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[12px] font-bold hover:bg-black/5 transition-colors"
+                    style={{ background: f.key === activeFolder ? t.hover : 'transparent', borderRadius: RADIUS.sm }}>
                     {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                     {open ? <FolderOpen size={14} style={{ color: '#5C8891' }} /> : <Folder size={14} style={{ color: '#5C8891' }} />}
                     <span className="truncate">{f.title}</span>
@@ -418,8 +418,8 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
                     const sel = it.id === activeView;
                     return (
                       <button key={it.id} onClick={() => onOpen(it.id)}
-                        className="w-full flex items-center gap-1.5 pl-8 pr-2 py-[4px] text-[12px] hover:bg-black/10 text-left"
-                        style={{ background: sel ? t.accent : 'transparent', color: sel ? '#FFFFFF' : t.treeText }}>
+                        className="w-full flex items-center gap-1.5 pl-8 pr-2 py-[5px] my-[1px] text-[12px] hover:bg-black/[0.06] text-left transition-colors"
+                        style={{ background: sel ? t.accent : 'transparent', color: sel ? '#FFFFFF' : t.treeText, borderRadius: RADIUS.sm }}>
                         <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: sel ? '#FFFFFF' : '#5C8891' }} />
                         <span className="truncate">{it.name}</span>
                       </button>
@@ -440,33 +440,23 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
       </div>
 
       {/* ================= BARRA DE ESTADO ================= */}
-      <div className="h-[26px] flex items-center px-2 gap-2.5 text-[11px] flex-shrink-0 overflow-hidden"
-        style={{ background: t.status, color: '#FFFFFF', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)' }}>
-        <span className="flex items-center gap-1"><Monitor size={12} /> {user?.username || 'operador'}</span>
-        <span className="opacity-30">|</span>
-        <span className="flex items-center gap-1"><Building2 size={12} /> {companyName || 'System Mwana Lodge'}</span>
-        <span className="opacity-30">|</span>
+      <div className="h-[28px] flex items-center px-3 gap-3 text-[11px] flex-shrink-0 overflow-hidden"
+        style={{ background: t.status, color: '#FFFFFF' }}>
+        <span className="flex items-center gap-1 opacity-90"><Monitor size={12} /> {user?.username || 'operador'}</span>
+        <span className="flex items-center gap-1 opacity-90"><Building2 size={12} /> {companyName || 'System Mwana Lodge'}</span>
         {/* Propriedade em que se está a trabalhar (evita lançar num hotel errado). */}
         <span className="flex items-center gap-1 font-bold" title="Propriedade ativa">{hotelName}</span>
-        <span className="opacity-30">|</span>
-        <span className="flex items-center gap-1"><Server size={12} /> {window.location.hostname}:8000</span>
-        <span className="opacity-30">|</span>
-        <span className="flex items-center gap-1" title="Base de dados"><Database size={12} /> {lic ? 'SQL' : '—'}</span>
-        <span className="opacity-30">|</span>
-        <span className="flex items-center gap-1 text-[#CFE3E6]"><span className="w-2 h-2 rounded-full bg-[#5C8891]" /> Ligado</span>
-        <span className="opacity-30">|</span>
-        <span className="flex items-center gap-1" title="VPN de suporte"><Wifi size={12} /> VPN</span>
-        <span className="opacity-30">|</span>
-        <span className="flex items-center gap-1"><ShieldCheck size={12} /> Licença ativa</span>
-        <span className="opacity-30">|</span>
-        <span className="flex items-center gap-1" title="Memória usada pela aplicação"><Cpu size={12} /> {mem}</span>
+        <span className="flex items-center gap-1 opacity-90"><Server size={12} /> {window.location.hostname}:8000</span>
+        <span className="flex items-center gap-1 opacity-90" title="Base de dados"><Database size={12} /> {lic ? 'SQL' : '—'}</span>
+        <span className="flex items-center gap-1 text-[#CFE3E6]"><span className="w-1.5 h-1.5 rounded-full bg-[#5C8891]" /> Ligado</span>
+        <span className="flex items-center gap-1 opacity-90" title="VPN de suporte"><Wifi size={12} /> VPN</span>
+        <span className="flex items-center gap-1 opacity-90"><ShieldCheck size={12} /> Licença ativa</span>
+        <span className="flex items-center gap-1 opacity-90" title="Memória usada pela aplicação"><Cpu size={12} /> {mem}</span>
         <div className="flex-1" />
         <span className="font-semibold">{ITEM_TITLES[activeView] || ''}</span>
-        <span className="opacity-30">|</span>
-        <span>v1.0</span>
-        <span className="opacity-30">|</span>
-        <span>{clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-        <button onClick={logout} title="Terminar sessão" className="ml-1 hover:text-[#FDECEA]"><Power size={13} /></button>
+        <span className="opacity-70">v1.0</span>
+        <span className="opacity-90">{clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+        <button onClick={logout} title="Terminar sessão" className="hover:text-[#FDECEA] transition-colors"><Power size={13} /></button>
       </div>
       {locked && <LockScreen onUnlock={() => setLocked(false)} />}
     </div>
@@ -482,14 +472,14 @@ function WelcomePanel({ tree, moduleName, onOpen, dark }:
       <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#EEF4F5' : '#5C8891' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {tree.map((f) => (
-          <div key={f.key} className={`border ${card}`} style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
+          <div key={f.key} className={`border overflow-hidden ${card}`} style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
             <div className="px-3 py-2 border-b text-[12px] font-bold" style={{ borderColor: dark ? '#041F24' : '#EEF4F5', background: dark ? '#041F24' : 'linear-gradient(to bottom,#FFFFFF,#F7FAFA)' }}>
               {f.title}
             </div>
             <div className="p-2">
               {f.items.map((it) => (
                 <button key={it.id} onClick={() => onOpen(it.id)}
-                  className="w-full flex items-center gap-2 py-1 px-1 text-[12px] text-left hover:bg-[#F7FAFA] rounded">
+                  className="w-full flex items-center gap-2 py-1.5 px-1.5 text-[12px] text-left hover:bg-[#F7FAFA] transition-colors" style={{ borderRadius: RADIUS.sm }}>
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#5C8891' }} />
                   {it.name}
                 </button>

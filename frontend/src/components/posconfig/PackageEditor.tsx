@@ -96,7 +96,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
             Ativo
           </label>
 
-          <fieldset className="px-3 pb-3 pt-1 mt-3" style={{ border: '4px groove #CFE3E6' }}>
+          <fieldset className="px-3 pb-3 pt-1 mt-3" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
             <legend className="text-[12px] px-1">Línguas</legend>
             {[1, 2, 3].map((n) => (
               <Row key={n} label={`Língua ${n}:`}>

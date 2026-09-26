@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { X, Users } from 'lucide-react';
+import { X, Users, Building2 } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
 import { Glyph } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
@@ -205,7 +205,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
-            <img src={logoUrl || '/brand-logo.png'} alt="" className="h-9 w-9 object-contain flex-shrink-0 rounded-full" />
+            {logoUrl ? <img src={logoUrl} alt="" className="h-9 w-9 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={20} className="flex-shrink-0" />}
             <span className="text-[13px] text-white">▾</span>
           </button>
           {menu === '__ml' && (

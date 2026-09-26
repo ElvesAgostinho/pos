@@ -81,6 +81,30 @@ export function accentGradient(accent: string = TOKENS.accent): string {
   return `linear-gradient(to bottom, ${shade(accent, 24)} 0%, ${accent} 55%, ${shade(accent, -30)} 100%)`;
 }
 
+// Escala de FORMA (raio de canto + sombra) — ao lado da escala de COR acima.
+// Antes cada ecrã escrevia o seu próprio "rounded-[2px]" ou "border: 4px groove"
+// (relevo entalhado estilo Windows 98) à mão; isto dava um sistema com cantos
+// quase quadrados e relevos 3D, muito mais antigo do que o Ambiente de Trabalho
+// (EnterpriseDesktop.tsx), que já usa cantos suaves e sombras leves. Esta escala
+// fixa esses valores UMA vez para o resto do backoffice clássico (DesktopShell,
+// Sidebar, kit.tsx, ClassicWindow, ClassicGrid) se aproximar do mesmo visual sem
+// imitar janelas do sistema operativo nem cair no extremo oposto (cartão SaaS
+// pastel/whitespace exagerado). A cor não muda — só a forma.
+export const RADIUS = {
+  sm: '6px',   // inputs, botões pequenos, células
+  md: '10px',  // caixas/painéis, linhas selecionadas
+  lg: '16px',  // janelas, cartões grandes
+} as const;
+
+export const SHADOW = {
+  // Elevação subtil (painéis, grelhas, caixas) — substitui o `groove`/`inset` rígido.
+  soft: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)',
+  // Elevação de janela/diálogo (mais presença, ainda sem ser um cartão SaaS pesado).
+  panel: '0 2px 4px rgba(6,42,49,0.08), 0 8px 24px rgba(6,42,49,0.10)',
+  // Anel de foco/hover discreto (substitui bordas rígidas a aparecer/desaparecer).
+  ring: '0 0 0 1px rgba(92,136,145,0.35)',
+} as const;
+
 // Tema "clássico pesado" (light) — barras com relevo/gradiente, linhas fortes.
 // Reutilizado pelo DesktopShell (moldura do backoffice) e por qualquer ecrã que
 // precise da MESMA moldura (Configuração POS, Diagnóstico, etc.).

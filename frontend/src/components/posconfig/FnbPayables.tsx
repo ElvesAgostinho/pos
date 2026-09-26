@@ -140,7 +140,7 @@ export default function FnbPayables() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#F7FAFA]">
       <div className="p-3">
-        <fieldset className="bg-white px-3 pb-3" style={{ border: '4px groove #CFE3E6' }}>
+        <fieldset className="bg-white px-3 pb-3" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <legend className="text-[12px] px-1">Critérios de pesquisa</legend>
           <div className="flex gap-10">
             <div className="space-y-2">

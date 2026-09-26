@@ -474,7 +474,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                 </button>
               </div>
 
-              <div className="flex-1 overflow-auto" style={{ border: '4px groove #CFE3E6' }}>
+              <div className="flex-1 overflow-auto" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
                 <table className="text-[12px] border-collapse w-full">
                   <thead className="sticky top-0 z-10">
                     <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
@@ -695,7 +695,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
         )}
 
         {tab === 'armazens' && (
-          <div style={{ border: '4px groove #CFE3E6' }}>
+          <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="w-full text-[12px] border-collapse">
             <thead>
               <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
@@ -723,7 +723,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
         )}
 
         {tab === 'fornecedores' && (
-          <div style={{ border: '4px groove #CFE3E6' }}>
+          <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="w-full text-[12px] border-collapse">
             <thead>
               <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>

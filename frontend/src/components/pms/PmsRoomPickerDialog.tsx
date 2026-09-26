@@ -60,7 +60,7 @@ export default function PmsRoomPickerDialog({ mode, reservation, onClose, onDone
           )}
         </div>
         <div className="flex justify-end gap-2 p-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
-          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#041F24] border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">Fechar</button>
+          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#041F24] border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[6px]">Fechar</button>
         </div>
       </div>
     </div>

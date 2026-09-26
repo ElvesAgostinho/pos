@@ -165,7 +165,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   className={`px-6 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#041F24] text-white' : 'bg-[#F7FAFA] text-[#062A31] hover:bg-[#EEF4F5]'}`}>{label}</button>
               ))}
             </div>
-            <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-1.5" style={{ border: '4px groove #CFE3E6' }}>
+            <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-1.5" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               {tab === 'main' ? (
                 <>
                   <Row label="Morada 1:"><input value={d.address || ''} onChange={(e) => set('address', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></Row>
@@ -259,7 +259,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
           <BTab id="bank" label="Informação bancária" />
         </div>
 
-        <div className="p-3 min-h-[220px]" style={{ border: '4px groove #CFE3E6' }}>
+        <div className="p-3 min-h-[220px]" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           {bottom === 'license' && lic && (() => {
             // Os campos cinzentos vêm do ficheiro de licença ASSINADO — não se escrevem
             // aqui de propósito: se bastasse escrever "Máx. Terminais = 99", a licença

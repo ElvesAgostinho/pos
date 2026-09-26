@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
-import { TOKENS } from '../../config/theme';
+import { TOKENS, RADIUS, SHADOW } from '../../config/theme';
 
 interface Column {
   header: string;
@@ -41,9 +41,9 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
   }, [baseData, filter]);
 
   return (
-    <div className="w-full bg-white border border-[#7FA9B1] overflow-auto h-full text-[11px] font-sans flex flex-col">
+    <div className="w-full bg-white border border-[#7FA9B1] overflow-auto h-full text-[11px] font-sans flex flex-col" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
       {showFilter && (
-        <div className="flex items-center gap-1 px-2 py-1 bg-[#F7FAFA] border-b border-[#EEF4F5] sticky top-0 z-20">
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5] sticky top-0 z-20">
           <Search size={12} className="text-gray-400" />
           <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filtrar nesta lista…"
             className="flex-1 bg-transparent outline-none text-[11px] py-0.5" />
@@ -52,16 +52,15 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
         </div>
       )}
       <table className="w-full min-w-max border-collapse">
-        <thead className="sticky z-10" style={{ top: showFilter ? 25 : 0 }}>
+        <thead className="sticky z-10" style={{ top: showFilter ? 29 : 0 }}>
           <tr>
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className="text-left py-1 px-2 border-r border-b font-bold uppercase tracking-tight text-[10.5px]"
+                className="text-left py-1.5 px-2.5 border-b font-bold uppercase tracking-tight text-[10.5px]"
                 style={{
-                  width: col.width, borderColor: TOKENS.border, color: TOKENS.selectedText,
-                  background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)',
-                  boxShadow: 'inset 0 1px 0 #FFFFFF',
+                  width: col.width, borderColor: TOKENS.line, color: TOKENS.selectedText,
+                  background: TOKENS.toolbarBg,
                 }}
               >
                 {col.header}
@@ -77,14 +76,14 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
                 key={row[rowKey] || idx}
                 onClick={() => { setInnerSel(row[rowKey] ?? idx); onRowClick && onRowClick(row); }}
                 onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-                className="border-b border-[#EEF4F5] cursor-pointer hover:brightness-[0.98]"
+                className="border-b border-[#EEF4F5] cursor-pointer transition-colors hover:bg-[#F7FAFA]"
                 style={{
                   background: isSelected ? TOKENS.selectedBg : idx % 2 === 0 ? TOKENS.surface : '#FFFFFF',
                   color: isSelected ? TOKENS.selectedText : undefined,
                 }}
               >
                 {columns.map((col, cIdx) => (
-                  <td key={cIdx} className="py-0.5 px-2 border-r border-[#EEF4F5] truncate">
+                  <td key={cIdx} className="py-1 px-2.5 border-r border-[#EEF4F5] truncate">
                     {typeof col.accessor === 'function' ? col.accessor(row) : row[col.accessor]}
                   </td>
                 ))}

@@ -89,7 +89,7 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
         </div>
         </Box>
 
-        <div className="max-w-[820px] mt-4" style={{ border: '4px groove #CFE3E6' }}>
+        <div className="max-w-[820px] mt-4" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="w-full text-[12px] border-collapse">
             <thead><tr className="bg-[#F7FAFA]">
               <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Código</th>

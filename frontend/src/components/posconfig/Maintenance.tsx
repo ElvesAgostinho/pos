@@ -97,7 +97,7 @@ export default function Maintenance() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Dados comuns */}
-        <div className="w-[380px] flex-shrink-0 flex flex-col m-3 mr-0" style={{ border: '4px groove #CFE3E6' }}>
+        <div className="w-[380px] flex-shrink-0 flex flex-col m-3 mr-0" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <div className="px-3 py-1.5 border-b border-[#EEF4F5] text-[13px] font-bold" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)', color: TOKENS.selectedText }}>Dados Comuns</div>
           <div className="flex-1 overflow-auto">
             <table className="w-full">
@@ -156,7 +156,7 @@ export default function Maintenance() {
 
         {/* Linhas */}
         <div className="flex-1 flex flex-col overflow-hidden m-3">
-          <div className="flex-1 overflow-auto" style={{ border: '4px groove #CFE3E6' }}>
+          <div className="flex-1 overflow-auto" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
             <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
                 <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>

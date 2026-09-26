@@ -86,7 +86,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
           ))}
         </div>
 
-        <div className="flex" style={{ border: '4px groove #CFE3E6' }}>
+        <div className="flex" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="flex-1 text-[12px] border-collapse">
             <thead>
               <tr className="bg-[#F7FAFA] text-[#041F24]">

@@ -91,7 +91,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         </div>
         </Box>
 
-        <div className="mb-4" style={{ border: '4px groove #CFE3E6' }}>
+        <div className="mb-4" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#041F24] border-b border-[#CFE3E6]">
             Artigos que fazem esta pergunta
             <span className="font-normal text-[#5C8891] ml-2">
@@ -118,7 +118,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         </div>
 
         {/* Modelos (respostas) */}
-        <div style={{ border: '4px groove #CFE3E6' }}>
+        <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <div className="px-3 py-1.5 bg-[#F7FAFA] text-[13px] font-bold text-[#041F24] border-b border-[#CFE3E6]">Modelos</div>
           <div className="flex">
             <table className="flex-1 text-[12px] border-collapse">

@@ -105,7 +105,7 @@ export default function FnbInventory() {
         </div>
 
         <div className="flex gap-3 p-3">
-          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '4px groove #CFE3E6' }}>
+          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
             <legend className="text-[12px] px-1 font-bold">Geral</legend>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="flex items-center gap-2">
@@ -144,7 +144,7 @@ export default function FnbInventory() {
             </div>
           </fieldset>
 
-          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '4px groove #CFE3E6' }}>
+          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
             <legend className="text-[12px] px-1 font-bold">Filtros</legend>
             <div className="flex gap-4">
               <div className="space-y-2">

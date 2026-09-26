@@ -245,7 +245,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
           {/* Entidade + Totais */}
           <div className="w-[42%] flex gap-3">
             {mode === 'PURCHASE' && (
-              <div className="flex-1 bg-white" style={{ border: '4px groove #CFE3E6' }}>
+              <div className="flex-1 bg-white" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
                 <div className="px-2 py-1 bg-[#EEF4F5] text-[12px] font-bold border-b border-[#CFE3E6]">Entidade</div>
                 <div className="p-2 space-y-1">
                   <select value={edit.entity ?? ''} onChange={(e) => setEdit({ ...edit, entity: e.target.value })}
@@ -278,7 +278,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
               </div>
             )}
 
-            <div className="w-[220px] bg-white" style={{ border: '4px groove #CFE3E6' }}>
+            <div className="w-[220px] bg-white" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               <div className="px-2 py-1 bg-[#EEF4F5] text-[12px] font-bold border-b border-[#CFE3E6] text-right">Totais</div>
               <div className="p-2 text-[12px] space-y-1">
                 {[['Subtotal', sub], ['Desconto Artigo', descArt], ['Desconto', descGlobal], ['Tax', iva]].map(([k, v]: any) => (
@@ -295,7 +295,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
         </div>
 
         {/* Artigos */}
-        <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3 bg-white" style={{ border: '4px groove #CFE3E6' }}>
+        <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3 bg-white" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <div className="px-2 py-1 bg-[#EEF4F5] text-[12px] font-bold border-b border-[#CFE3E6]">Artigos</div>
           <div className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F7FAFA] text-[12px]">
             <span>Filtro:</span>

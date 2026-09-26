@@ -8,7 +8,7 @@ const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 
 function Fieldset({ title, children }: { title: string; children: any }) {
   return (
-    <fieldset className="px-4 pb-3 pt-1 min-w-0" style={{ border: '4px groove #CFE3E6' }}>
+    <fieldset className="px-4 pb-3 pt-1 min-w-0" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
       <legend className="text-[12px] text-[#041F24] px-1">{title}</legend>
       <div className="space-y-2">{children}</div>
     </fieldset>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MODULES, moduleEnabled } from '../config/navigation';
 import { useActiveModules } from '../hooks/useActiveModules';
 import { LayoutGrid } from 'lucide-react';
+import { RADIUS } from '../config/theme';
 
 interface SidebarProps {
   activeView?: string;
@@ -27,20 +28,21 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
     <div className="w-60 bg-[#F7FAFA] border-r border-[#7FA9B1] flex flex-col text-[11px] font-sans select-none overflow-y-auto">
       {/* Voltar ao ambiente de trabalho do módulo */}
       <button onClick={() => onSelectView && onSelectView(`home:${scopeKey || 'admin'}`)}
-        className="flex items-center gap-2 px-2 py-1.5 bg-[#5C8891] text-white hover:bg-[#062A31] border-b border-[#041F24]">
+        className="flex items-center gap-2 px-2 py-1.5 m-1.5 mb-1 bg-[#5C8891] text-white hover:bg-[#062A31] transition-colors"
+        style={{ borderRadius: RADIUS.sm }}>
         <LayoutGrid size={13} /> <span className="font-bold">Ambiente de trabalho</span>
       </button>
 
+      <div className="px-1.5">
       {visible.map((mod) => {
         // Em modo módulo-único, começa sempre expandido.
         const isOpen = singleModule ? open[mod.key] !== false : !!open[mod.key];
         const hasActive = mod.items.some((i) => i.id === activeView) || activeView === `home:${mod.key}`;
         return (
-          <div key={mod.key}>
+          <div key={mod.key} className="mb-0.5">
             <div
-              className={`flex items-center px-2 py-1 border-b border-[#EEF4F5] border-t border-t-[#FFFFFF] cursor-pointer ${
-                hasActive ? 'bg-[#F7FAFA]' : 'bg-[#F7FAFA] hover:bg-[#F7FAFA]'
-              }`}
+              className={`flex items-center px-2 py-1.5 cursor-pointer transition-colors ${hasActive ? 'bg-[#EEF4F5]' : 'hover:bg-[#EEF4F5]'}`}
+              style={{ borderRadius: RADIUS.sm }}
               onClick={() => { setOpen((o) => ({ ...o, [mod.key]: true })); onSelectView && onSelectView(`home:${mod.key}`); }}
             >
               <span onClick={(e) => { e.stopPropagation(); toggle(mod.key); }}
@@ -49,16 +51,15 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
             </div>
 
             {isOpen && (
-              <div className="bg-white">
+              <div className="bg-white py-0.5">
                 {mod.items.map((item) => {
                   const isActive = activeView === item.id;
                   return (
                     <div
                       key={item.id}
                       onClick={() => onSelectView && onSelectView(item.id)}
-                      className={`flex items-center px-6 py-1 cursor-pointer border-b border-transparent ${
-                        isActive ? 'bg-[#F7FAFA] border-b-[#EEF4F5]' : 'hover:bg-[#F7FAFA]'
-                      }`}
+                      className={`flex items-center pl-7 pr-2 py-1 my-[1px] cursor-pointer transition-colors ${isActive ? 'bg-[#CFE3E6]' : 'hover:bg-[#F7FAFA]'}`}
+                      style={{ borderRadius: RADIUS.sm }}
                     >
                       <div className="w-1 h-1 rounded-full bg-gray-500 mr-2" />
                       <span className={isActive ? 'text-black font-medium' : 'text-gray-800'}>{item.name}</span>
@@ -70,6 +71,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

@@ -103,7 +103,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
         </Box>
 
         {/* Versões com validade */}
-        <div className="flex mt-4 max-w-[860px]" style={{ border: '4px groove #CFE3E6' }}>
+        <div className="flex mt-4 max-w-[860px]" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <div className="flex-1">
             <table className="w-full text-[12px] border-collapse">
               <thead><tr className="bg-[#F7FAFA]">

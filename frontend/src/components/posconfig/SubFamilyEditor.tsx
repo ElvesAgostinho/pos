@@ -118,7 +118,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
               ))}
             </div>
 
-            <div className="p-3" style={{ border: '4px groove #CFE3E6' }}>
+            <div className="p-3" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               {/* Barra de aplicação em massa */}
               <div className="flex items-center gap-3 mb-3 text-[13px]">
                 <span>Pesquisar:</span>

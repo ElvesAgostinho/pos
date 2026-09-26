@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { TOKENS, accentGradient } from '../../config/theme';
+import { TOKENS, accentGradient, RADIUS, SHADOW } from '../../config/theme';
 import {
   Check as CheckIcon, X, Pencil, Copy, Minus, Plus, CirclePlus, Download, Printer,
   RefreshCw, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SquareCheck, Search,
@@ -200,17 +200,15 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
     bolha colorida à volta, moldura só aparece ao passar o rato por cima. */
 export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode }) {
   return (
-    <div className="flex items-center gap-0.5 px-2 py-1 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.line }}>
-      {actions.map((a, i) => (
-        <div key={a.label} className="flex items-center">
-          <button onClick={a.onClick} disabled={a.disabled}
-            className="flex items-center gap-1.5 px-2 py-1 text-[12px] text-[#041F24] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[2px]">
-            <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
-              style={{ color: a.disabled ? '#7FA9B1' : a.color }}><Glyph icon={a.icon} size={15} /></span>
-            {a.label}
-          </button>
-          {i < actions.length - 1 && <span className="w-px h-5 bg-[#EEF4F5]" />}
-        </div>
+    <div className="flex items-center gap-1 px-2 py-1.5 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.line }}>
+      {actions.map((a) => (
+        <button key={a.label} onClick={a.onClick} disabled={a.disabled}
+          className="flex items-center gap-1.5 px-2.5 py-1 text-[12px] text-[#041F24] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#CFE3E6] hover:bg-white transition-colors"
+          style={{ borderRadius: RADIUS.sm }}>
+          <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
+            style={{ color: a.disabled ? '#7FA9B1' : a.color }}><Glyph icon={a.icon} size={15} /></span>
+          {a.label}
+        </button>
       ))}
       <div className="ml-auto">{right}</div>
     </div>
@@ -234,11 +232,12 @@ export function Tab({ active, onClick, children }: any) {
     é o que faz a diferença entre "parece antigo" e "parece a sério". */
 export function Box({ title, children, className = '' }: { title?: string; children: ReactNode; className?: string }) {
   return (
-    <fieldset className={`px-3 pb-3 pt-1.5 min-w-0 overflow-hidden ${className}`}
+    <fieldset className={`px-3.5 pb-3.5 pt-2 min-w-0 overflow-hidden ${className}`}
       style={{
-        border: `4px groove ${TOKENS.line}`,
+        border: `1px solid ${TOKENS.line}`,
         background: '#FFFFFF',
-        boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.06)',
+        borderRadius: RADIUS.md,
+        boxShadow: SHADOW.soft,
       }}>
       {title && (
         <legend className="px-2 text-[12px] font-bold uppercase tracking-tight" style={{ color: TOKENS.selectedText }}>
@@ -260,8 +259,8 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-white font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default ${className}`}
-      style={{ background: accentGradient(), border: `3px outset ${TOKENS.accent}` }}>
+      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-white font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default transition-[filter] ${className}`}
+      style={{ background: accentGradient(), borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
       <Glyph icon={icon} size={22} />
       <span className="text-[13px]">{label}</span>
     </button>
@@ -278,12 +277,11 @@ export function Row({ label, children, w = 'w-[120px]' }: { label: string; child
   );
 }
 
-export const inputCls = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white flex-1 min-w-0';
-// Campo "afundado" (sunken) clássico — tinha um valor mais fraco (0.10) do que a
-// regra global em index.css (0.16 + realce de baixo), e como é aplicado inline
-// (style={inputStyle}) GANHA da regra global em quase todos os formulários do
-// sistema — o campo ficava sistematicamente mais raso onde este objeto era usado.
-export const inputStyle = { boxShadow: 'inset 1px 1px 3px rgba(0,0,0,0.20), inset -1px -1px 0 rgba(255,255,255,0.6)' };
+export const inputCls = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white flex-1 min-w-0 rounded-[6px]';
+// Sombra interior discreta (substitui o "afundado" 3D de antes) — aplicada
+// inline (style={inputStyle}) para continuar a ganhar da regra global em
+// index.css em todos os formulários que já a usam.
+export const inputStyle = { boxShadow: 'inset 0 1px 2px rgba(6,42,49,0.10)' };
 
 export function Check({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (

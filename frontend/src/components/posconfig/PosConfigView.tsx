@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Building2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
@@ -159,6 +159,15 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   // ecrã nem terminar sessão sem sair pelo Ambiente de Trabalho primeiro.
   const [locked, setLocked] = useState(false);
   const { data: agt } = useAgtCertificate();
+  // Logótipo real do cliente (Administração → Empresa) — mesma fonte que o
+  // Ambiente de Trabalho e o PMS já usam. Sem imagem de reserva de marca: sem
+  // logótipo carregado, mostra um ícone neutro, nunca uma imagem do sistema.
+  const { data: branding } = useQuery({
+    queryKey: ['platform', 'branding'],
+    queryFn: async () => (await apiClient.get('platform/branding/')).data,
+    staleTime: 5 * 60 * 1000,
+  });
+  const logoUrl = branding?.logo_url || '';
   // FAVORITOS — as secções que este utilizador usa todos os dias (ficam no browser dele).
   const [favs, setFavs] = useState<any[]>(() => JSON.parse(localStorage.getItem('posc_favs') || '[]'));
   const [open, setOpen] = useState<Record<string, boolean>>({ artigos: true });
@@ -235,7 +244,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')}
             title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-black/15' : 'hover:bg-black/10'}`}>
-            <img src="/brand-logo.png" alt="" className="h-10 w-10 object-contain flex-shrink-0" />
+            {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
             <span className="text-[13px] text-white">▾</span>
           </button>
 

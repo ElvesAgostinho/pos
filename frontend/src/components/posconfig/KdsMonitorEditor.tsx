@@ -125,7 +125,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
 
           <div className="pt-2">
             <div className="text-[12px] font-semibold text-[#041F24] mb-1">Botões:</div>
-            <div style={{ border: '4px groove #CFE3E6' }}>
+            <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               {BOTOES.map(([k, l, ajuda]) => (
                 <label key={k} className="flex items-start gap-2 px-2 py-1.5 border-b border-[#F7FAFA] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
                   <input type="checkbox" checked={bts.includes(k)} onChange={() => toggleB(k)} className="w-4 h-4 mt-px" />
@@ -142,7 +142,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
 
           <div className="pt-2">
             <div className="text-[12px] font-semibold text-[#041F24] mb-1">Opções:</div>
-            <div style={{ border: '4px groove #CFE3E6' }}>
+            <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               {OPCOES.map(([k, l]) => (
                 <label key={k} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F7FAFA] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
                   <input type="checkbox" checked={!!opts[k]}
@@ -174,7 +174,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               className={`${inp} flex-1`} style={inputStyle} />
           </Row>
 
-          <div className="mt-3" style={{ border: '4px groove #CFE3E6' }}>
+          <div className="mt-3" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
             <div className="px-3 py-1.5 bg-[#F7FAFA] text-[12px] font-bold text-[#062A31] border-b border-[#CFE3E6]">
               Impressoras — as ativas substituem as de origem do pedido
             </div>
