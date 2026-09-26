@@ -7,8 +7,6 @@ import { aviso } from '../../ui/dialogo';
 import EntityEditor from '../posconfig/EntityEditor';
 import PmsShowFreeRoomsDialog from './PmsShowFreeRoomsDialog';
 
-const naoConstruido = (label: string) => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
-
 /** Check-In — igual ao popup do PMS de referência: escolher/confirmar o
  * quarto (com o mesmo "Mostrar quartos livres" que a Nova Reserva já usa) e
  * editar a ficha do hóspede sem sair daqui (o MESMO editor do POS, "Nova
@@ -74,9 +72,12 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
           <label className="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" checked={allowDirty} onChange={(e) => setAllowDirty(e.target.checked)} /> Permitir mesmo se quarto estiver sujo
           </label>
-          <label className="flex items-center gap-1.5 text-gray-400 cursor-not-allowed" title="Ainda não está construído nesta fase do PMS." onClick={() => naoConstruido('Estado de inspeção do quarto')}>
-            <input type="checkbox" disabled /> Permitir mesmo se quarto estiver não inspeccionado
-          </label>
+          {/* "Estado de inspeção do quarto" removido de propósito: o Room deste
+              PMS só tem 2 estados de limpeza (Limpo/Sujo, ver Room.STATUS em
+              pms/models.py) — não existe um 3º estado "inspecionado" para
+              overridar aqui. Adicionar essa tri-estado exigiria um novo campo
+              no modelo Room partilhado por todo o PMS, fora de alcance desta
+              auditoria pontual. */}
         </div>
         <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
           <button onClick={doCheckIn} disabled={saving}

@@ -7,11 +7,10 @@ import { aviso } from '../../ui/dialogo';
 import PmsEntityPickerDialog from './PmsEntityPickerDialog';
 import PmsBlockPickerDialog from './PmsBlockPickerDialog';
 import PmsShowFreeRoomsDialog from './PmsShowFreeRoomsDialog';
+import { SOURCE_LABEL } from './reservationStatus';
 
-const naoConstruido = (label: string) => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const plusDays = (iso: string, n: number) => { const d = new Date(iso); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
-const SOURCE_LABEL: Record<string, string> = { DIRECT: 'Normal', ONLINE: 'Online', BLOCK: 'Bloco/Grupo' };
 
 function Panel({ title, children, className = '' }: { title: string; children: any; className?: string }) {
   return (
@@ -30,7 +29,6 @@ function Row({ label, children }: { label: string; children: any }) {
   );
 }
 const inp = 'border border-[#7FA9B1] p-1 bg-white flex-1 min-w-0';
-const disabledInp = 'border border-[#7FA9B1] p-1 bg-[#F7FAFA] text-gray-400 flex-1 min-w-0 cursor-not-allowed';
 
 /** Nova Reserva — usado tanto em Reservas como em Disponibilidade ("Criar Reserva").
  * Traz o seu próprio cabeçalho (não é um popup genérico) — igual ao resto dos
@@ -57,11 +55,18 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
   const [channel, setChannel] = useState(reservation?.channel ? String(reservation.channel) : '');
   const [notes, setNotes] = useState(reservation?.notes || '');
   const [walkIn, setWalkIn] = useState(false);
-  const [guest, setGuest] = useState<any>(reservation ? { id: reservation.guest, name: reservation.guest_name, tax_id: reservation.guest_tax_id, code: '' } : null);
+  const [guest, setGuest] = useState<any>(reservation ? {
+    id: reservation.guest, name: reservation.guest_name, tax_id: reservation.guest_tax_id, code: '',
+    is_vip: reservation.guest_is_vip, vip_discount_percent: reservation.guest_vip_discount_percent,
+  } : null);
   const [showEntity, setShowEntity] = useState(false);
   const [showBlockPicker, setShowBlockPicker] = useState(false);
   const [showRoomPicker, setShowRoomPicker] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [eta, setEta] = useState(reservation?.eta || '');
+  const [etd, setEtd] = useState(reservation?.etd || '');
+  const [lockRoom, setLockRoom] = useState(!!reservation?.lock_room);
+  const [colorTag, setColorTag] = useState(reservation?.color_tag || '');
 
   const nights = Math.max(Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000), 0);
 
@@ -73,7 +78,13 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
   const rpList = Array.isArray(ratePlans) ? ratePlans : ratePlans?.results || [];
   const ratePlan = rpList.find((rp: any) => String(rp.id) === ratePlanId);
   const roomTypeObj = roomTypes.find((rt: any) => String(rt.id) === roomType);
-  const autoRate = ratePlan ? ratePlan.price_per_night : (roomTypeObj ? roomTypeObj.base_rate : 0);
+  const baseRate = Number(ratePlan ? ratePlan.price_per_night : (roomTypeObj ? roomTypeObj.base_rate : 0)) || 0;
+  // Cliente VIP: o MESMO desconto automático que o POS já aplica nos tickets
+  // (ver pos/views.py, cust.is_vip/vip_discount_percent) — aqui sobre a
+  // diária, só quando o preço não é manual (o preço manual é sempre a
+  // decisão final do rececionista).
+  const vipPct = Number(guest?.vip_discount_percent || 0);
+  const autoRate = guest?.is_vip && vipPct > 0 ? Math.round(baseRate * (1 - vipPct / 100) * 100) / 100 : baseRate;
   const effectiveRate = manualPrice ? rate : String(autoRate ?? '');
 
   const { data: segments } = useQuery({ queryKey: ['pos', 'segments'], queryFn: async () => (await apiClient.get('pos/config/segments/')).data });
@@ -108,6 +119,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
         rate_plan: ratePlanId || undefined, rate: effectiveRate || 0,
         segment: segment || undefined, sub_segment: subSegment || undefined, channel: channel || undefined,
         is_guaranteed: isGuaranteed, source, notes: notes || undefined,
+        eta: eta || undefined, etd: etd || undefined, lock_room: lockRoom, color_tag: colorTag || undefined,
       };
       if (editing) {
         await apiClient.patch(`pms/reservations/${reservation.id}/`, payload);
@@ -148,26 +160,21 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
               </div>
             </Row>
             <Row label="Hora Chegada:">
-              <input disabled value="—" title="Ainda não está construído nesta fase do PMS." onFocus={(e) => { e.target.blur(); naoConstruido('Hora Chegada'); }} className={disabledInp} />
+              <input type="time" value={eta} onChange={(e) => setEta(e.target.value)} className={inp} title="Hora prevista de chegada — só informativo." />
             </Row>
             <Row label="Hora Saída:">
-              <input disabled value="—" title="Ainda não está construído nesta fase do PMS." onFocus={(e) => { e.target.blur(); naoConstruido('Hora Saída'); }} className={disabledInp} />
+              <input type="time" value={etd} onChange={(e) => setEtd(e.target.value)} className={inp} title="Hora prevista de saída — só informativo." />
             </Row>
             <Row label="TipoReserva:">
               <select value={source} onChange={(e) => setSource(e.target.value)} className={inp}>
                 {Object.entries(SOURCE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </Row>
-            <Row label="Estado Adicional:">
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Estado Adicional'); }}>
-                <option>(nenhum)</option>
-              </select>
-            </Row>
-            <Row label="Tipo de oferta:">
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Tipo de oferta'); }}>
-                <option>(nenhum)</option>
-              </select>
-            </Row>
+            {/* "Estado Adicional" e "Tipo de oferta" removidos de propósito: o
+                único estado real de uma reserva é Reservation.status (Opção/
+                Reservada/Check-in/Check-out/Cancelada/No-show/Lista de Espera),
+                já coberto pelo resto do ecrã — um 2º campo de "estado" ou uma
+                lista de "ofertas" sem modelo por trás só inventaria dados. */}
           </Panel>
 
           {/* Entidades */}
@@ -184,9 +191,15 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
               className="flex items-center justify-center gap-1.5 py-1 bg-[#F7FAFA] border border-[#CFE3E6] hover:bg-[#EEF4F5] font-semibold">
               <Plus size={13} /> Adicionar
             </button>
-            <Row label="Pessoa de contacto:">
-              <input disabled value="—" title="Ainda não está construído nesta fase do PMS." onFocus={(e) => { e.target.blur(); naoConstruido('Pessoa de contacto'); }} className={disabledInp} />
-            </Row>
+            {guest?.is_vip && (
+              <div className="px-2 py-1 font-semibold text-[#062A31]" style={{ background: '#CFE3E6' }}>
+                ★ Cliente VIP{Number(guest.vip_discount_percent) > 0 ? ` — desconto automático ${guest.vip_discount_percent}%` : ''}
+              </div>
+            )}
+            {/* "Pessoa de contacto" removido de propósito: exigiria um campo novo
+                no mdm.Customer (Master Data partilhado por todo o ERP, fora dos
+                ficheiros desta auditoria) só para guardar um nome de contacto de
+                empresa — sem consumidor real (nenhum relatório/ecrã usa isto). */}
           </Panel>
 
           {/* Disponibilidade */}
@@ -209,11 +222,10 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
           {/* Ocupação */}
           <Panel title="Ocupação">
             <Row label="Quartos:"><input readOnly value={1} className={inp + ' bg-[#F7FAFA]'} title="Uma reserva = um quarto, nesta fase do PMS." /></Row>
-            <Row label="Upg. de:">
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Upgrade de categoria'); }}>
-                <option>(nenhum)</option>
-              </select>
-            </Row>
+            {/* "Upgrade de categoria" removido de propósito: o mesmo resultado
+                (pôr o hóspede numa categoria melhor) já se faz mudando
+                "Categoria" abaixo — rastrear "veio de X, subiu para Y" como
+                campo à parte não tem nenhum relatório/ecrã que o consuma. */}
             <Row label="Categoria:">
               <select value={roomType} onChange={(e) => { setRoomType(e.target.value); setRatePlanId(''); setRoom(null); }} className={inp + ' font-semibold'}>
                 <option value="">Escolha…</option>
@@ -238,8 +250,8 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
               </div>
             </Row>
             <label className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5 text-gray-400 cursor-not-allowed" title="Ainda não está construído nesta fase do PMS." onClick={() => naoConstruido('Não Mudar Qrt')}>
-                <input type="checkbox" disabled /> Não Mudar Qrt:
+              <span className="flex items-center gap-1.5 cursor-pointer" title="Impede que 'Atribuição rápida' e 'Mudança de Quartos em Massa' movam esta reserva de quarto.">
+                <input type="checkbox" checked={lockRoom} onChange={(e) => setLockRoom(e.target.checked)} /> Não Mudar Qrt:
               </span>
               {!editing && (
                 <span className="flex items-center gap-1.5 cursor-pointer">
@@ -247,9 +259,12 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
                 </span>
               )}
             </label>
-            <button onClick={() => naoConstruido('Tipos de limpeza')} className="mt-auto py-1 bg-[#F7FAFA] border border-[#CFE3E6] hover:bg-[#EEF4F5] text-gray-500">
-              Tipos de limpeza
-            </button>
+            {/* "Tipos de limpeza" removido de propósito: não existe nenhuma
+                taxonomia de tipos de limpeza no sistema — um pedido de limpeza
+                específico para este quarto já tem um caminho real: a Tarefa
+                de limpeza (PmsTasksView, HousekeepingTask), que já existe e
+                já aparece no mapa de quartos. Duplicar aqui um 2º picklist
+                sem dados por trás só inventaria uma opção. */}
           </Panel>
 
           {/* Package e Preço */}
@@ -266,21 +281,18 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
                 {rpList.map((rp: any) => <option key={rp.id} value={rp.id}>{rp.code} ({rp.board})</option>)}
               </select>
             </Row>
-            <Row label="Lista Preços:">
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Lista de Preços'); }}>
-                <option>RACK</option>
-              </select>
-            </Row>
-            <Row label="Desconto:">
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Desconto'); }}>
-                <option>(nenhum)</option>
-              </select>
-            </Row>
-            <Row label="Regra de Desc.:">
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Regra de Desconto'); }}>
-                <option>(nenhum)</option>
-              </select>
-            </Row>
+            {/* "Lista Preços" removido de propósito: é a MESMA coisa que
+                "Package" acima (o preço vem sempre do RatePlan escolhido, ver
+                pms/models.py RatePlan) — um 2º seletor fixo em "RACK" seria a
+                mesma informação duplicada e sem efeito.
+                "Desconto"/"Regra de Desconto" removidos de propósito: o motor
+                de promoções/descontos real do sistema (commercial.Promotion)
+                é escopado a artigos de F&B/retalho (Item/ItemCategory de um
+                Outlet), não a diárias de quarto — usá-lo aqui seria forçar um
+                encaixe fora do seu domínio. O desconto automático que FAZ
+                sentido para uma reserva (cliente VIP) já está aplicado acima,
+                em "Entidades", com o mesmo campo que o POS usa
+                (mdm.Customer.is_vip/vip_discount_percent). */}
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={manualPrice} onChange={(e) => { setManualPrice(e.target.checked); if (e.target.checked) setRate(String(autoRate ?? '')); }} /> Preço Manual
             </label>
@@ -291,22 +303,27 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
 
           {/* Outros */}
           <Panel title="Outros">
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Garantia automática'); }}>
-                <option>Todos</option>
-              </select>
-            </div>
+            {/* "Garantia automática" (regra tipo "garante sempre reservas do
+                canal X") removida de propósito: não existe motor de regras —
+                "Garantido" abaixo já é o campo real (Reservation.is_guaranteed)
+                e o rececionista decide caso a caso. */}
+            <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
             <Row label="Cor:">
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Cor'); }}>
-                <option>(nenhum)</option>
-              </select>
+              <div className="flex items-center gap-1.5 flex-1">
+                {['', '#B0392B', '#B08B2C', '#062A31', '#5C8891', '#7FA9B1'].map((c) => (
+                  <button key={c || 'none'} type="button" onClick={() => setColorTag(c)} title={c || '(nenhuma)'}
+                    className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ${colorTag === c ? 'border-[#041F24]' : 'border-[#CFE3E6]'}`}
+                    style={{ background: c || '#FFFFFF' }}>
+                    {!c && <X size={12} className="text-gray-400 m-auto" />}
+                  </button>
+                ))}
+              </div>
             </Row>
-            <Row label="Código VIP:">
-              <select disabled className={disabledInp} title="Ainda não está construído nesta fase do PMS." onMouseDown={(e) => { e.preventDefault(); naoConstruido('Código VIP'); }}>
-                <option>(nenhum)</option>
-              </select>
-            </Row>
+            {/* "Código VIP" removido daqui de propósito: não é um código à parte
+                — é o mesmo mdm.Customer.is_vip/vip_discount_percent do hóspede
+                escolhido, já mostrado acima em "Entidades" (com o desconto
+                automático aplicado ao preço). Repeti-lo aqui como um 2º
+                seletor desligado seria a mesma informação duas vezes. */}
             <Row label="Segmento:">
               <select value={segment} onChange={(e) => { setSegment(e.target.value); setSubSegment(''); }} className={inp}>
                 <option value="">(nenhum)</option>

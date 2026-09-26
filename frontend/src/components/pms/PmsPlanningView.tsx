@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { Toolbar } from '../posconfig/kit';
 import PmsReservationDetailDialog from './PmsReservationDetailDialog';
+import { STATUS_COLOR } from './reservationStatus';
 
 /** Planning — mapa de ocupação estilo Gantt: quartos em linha, dias em
     coluna, cada reserva atribuída a um quarto vira uma barra colorida a
@@ -12,11 +13,6 @@ import PmsReservationDetailDialog from './PmsReservationDetailDialog';
 const DAYS_VISIBLE = 14;
 const fmtISO = (d: Date) => d.toISOString().slice(0, 10);
 const addDays = (d: Date, n: number) => { const c = new Date(d); c.setDate(c.getDate() + n); return c; };
-
-const STATUS_COLOR: Record<string, string> = {
-  OPTION: '#7FA9B1', BOOKED: '#5C8891', CHECKED_IN: '#062A31',
-  CHECKED_OUT: '#B7C6C9', WAITLIST: '#B08B2C',
-};
 
 export default function PmsPlanningView() {
   const [weekStart, setWeekStart] = useState(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; });
@@ -93,7 +89,7 @@ export default function PmsPlanningView() {
                   cells.push(
                     <td key={dayIdx} colSpan={span} onClick={() => setSelId(res.id)}
                       className="border border-[#CFE3E6] px-1 py-1 text-white text-[10px] font-semibold cursor-pointer truncate hover:brightness-110"
-                      style={{ background: STATUS_COLOR[res.status] || '#5C8891' }}
+                      style={{ background: res.color_tag || STATUS_COLOR[res.status] || '#5C8891' }}
                       title={`${res.confirmation} · ${res.guest_name} · ${res.check_in} → ${res.check_out}`}>
                       {res.guest_name}
                     </td>,

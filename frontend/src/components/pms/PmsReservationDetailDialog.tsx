@@ -14,15 +14,8 @@ import PmsSharerManagerDialog from './PmsSharerManagerDialog';
 import PmsProformaDialog from './PmsProformaDialog';
 import PmsMealPlanDialog from './PmsMealPlanDialog';
 import { openGuestInfoWindow } from './guestInfoWindow';
+import { STATUS_LABEL, STATUS_COLOR } from './reservationStatus';
 
-const STATUS_LABEL: Record<string, string> = {
-  OPTION: 'Opção', BOOKED: 'Reservada', CHECKED_IN: 'Check-in', CHECKED_OUT: 'Check-out',
-  CANCELLED: 'Cancelada', NO_SHOW: 'No-show', WAITLIST: 'Lista de Espera',
-};
-const STATUS_COLOR: Record<string, string> = {
-  OPTION: '#7FA9B1', BOOKED: '#5C8891', CHECKED_IN: '#5C8891', CHECKED_OUT: '#5C8891',
-  CANCELLED: '#B0392B', NO_SHOW: '#B0392B', WAITLIST: '#5C8891',
-};
 const naoConstruido = (label: string) => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
 const fmtD = (iso: string) => iso ? new Date(iso).toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 const fmtDT = (iso: string) => iso ? new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';

@@ -6,14 +6,16 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { apiClient } from '../../api/client';
-import { aviso } from '../../ui/dialogo';
+import ClassicGrid from '../ui/ClassicGrid';
 import PmsBlockPickerDialog from './PmsBlockPickerDialog';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
 
-// Colunas 1 e 2 do rádio "Modo" — a ordem importa (o layout é 2 colunas x 4 linhas).
-const MODOS: [string, string][] = [
-  ['Gráfico', 'Plano Preços'], ['Lista', 'Prev. anual'], ['Lista2', 'Recursos'], ['Lista3', 'Painel Controlo'],
-];
+// Modos de visualização reais: "Gráfico" (barras empilhadas) e "Lista" (grelha
+// livres/total por categoria e dia). Os outros modos do PMS de referência
+// (Lista2/Lista3, Plano Preços, Prev. anual, Recursos, Painel Controlo) foram
+// removidos daqui de propósito por serem redundantes ou fora de alcance nesta
+// fase — ver nota de auditoria no fundo do ficheiro.
+const MODOS: string[] = ['Gráfico', 'Lista'];
 
 // A cor de cada estado — igual ao que uma reserva realmente pode ser neste PMS
 // (pms.Reservation.STATUS) mais o Allotment (retido por um Bloco, ainda sem
@@ -86,6 +88,29 @@ export default function PmsAvailabilityView() {
     'Lista Espera': d.waitlist, Overbook: d.overbook, Allotment: d.allotment,
   }));
 
+  // Modo "Lista" — a MESMA resposta de pms/availability/ (data.by_category +
+  // data.total), só que como tabela plana: uma linha por categoria (mais uma
+  // linha de total geral), uma coluna por dia do período pedido.
+  const listaDays: any[] = data?.total || [];
+  const listaRows = [
+    ...((data?.by_category || []).map((c: any) => ({ id: c.room_type, name: `${c.code} — ${c.name}`, total: c.total, days: c.days }))),
+    ...(listaDays.length ? [{ id: 'TOTAL', name: 'Total (todas as categorias)', total: listaDays[0]?.total, days: listaDays, isTotal: true }] : []),
+  ];
+  const listaCols = [
+    { header: 'Categoria', accessor: (row: any) => <span className={row.isTotal ? 'font-bold' : ''}>{row.name}</span>, width: '220px' },
+    { header: 'Qtd', accessor: 'total', width: '46px' },
+    ...listaDays.map((d: any, i: number) => ({
+      header: fmt(d.date),
+      width: '84px',
+      accessor: (row: any) => {
+        const cell = row.days?.[i];
+        if (!cell) return '';
+        const color = cell.overbook > 0 ? '#B0392B' : cell.free === 0 ? '#B0392B' : '#062A31';
+        return <span style={{ color, fontWeight: row.isTotal ? 700 : 500 }}>{cell.free}/{cell.total}</span>;
+      },
+    })),
+  ];
+
   return (
     <div className="flex h-full bg-white">
       {/* Categorias dos Hotéis */}
@@ -129,14 +154,13 @@ export default function PmsAvailabilityView() {
           {/* Modo */}
           <div className="border border-[#CFE3E6] bg-white flex-shrink-0">
             <PanelHead>Modo</PanelHead>
-            <div className="p-2 grid grid-cols-2 gap-x-4 gap-y-1">
-              {MODOS.map(([a, b]) => [a, b].map((m) => (
+            <div className="p-2 flex flex-col gap-1">
+              {MODOS.map((m) => (
                 <label key={m} className="flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                  <input type="radio" name="modo" checked={modo === m}
-                    onChange={() => { setModo(m); if (m !== 'Gráfico') aviso(`Modo "${m}" ainda não está construído — só "Gráfico" funciona nesta fase.`); }} />
+                  <input type="radio" name="modo" checked={modo === m} onChange={() => setModo(m)} />
                   {m}
                 </label>
-              )))}
+              ))}
             </div>
           </div>
 
@@ -208,9 +232,11 @@ export default function PmsAvailabilityView() {
         </div>
 
         <div className="flex-1 p-3 overflow-auto">
-          {modo !== 'Gráfico' ? (
-            <div className="text-gray-400 text-[12px] text-center py-10">Modo "{modo}" ainda não construído — mude para "Gráfico".</div>
-          ) : isLoading ? <div className="text-gray-400 text-[12px]">A carregar…</div> : (
+          {isLoading ? <div className="text-gray-400 text-[12px]">A carregar…</div> : modo === 'Lista' ? (
+            <div className="h-[440px]">
+              <ClassicGrid columns={listaCols} data={listaRows} rowKey="id" filterable={false} />
+            </div>
+          ) : (
             <ResponsiveContainer width="100%" height={420}>
               <BarChart data={chartData} barCategoryGap="8%" barGap={0}>
                 <XAxis dataKey="dia" tick={{ fontSize: 11 }} axisLine={{ stroke: '#041F24' }} />
@@ -232,14 +258,17 @@ export default function PmsAvailabilityView() {
             </ResponsiveContainer>
           )}
           {/* Legenda — 8 cores fiéis ao PMS de referência; "FdS" e "Day Use" ainda
-              não têm nenhum lançamento real por trás nesta fase (não inventam dados). */}
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 mt-2 text-[11px] text-[#041F24]">
-            {LEGEND.map((l) => (
-              <span key={l.key} className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 inline-block" style={{ background: l.color }} /> {l.label}
-              </span>
-            ))}
-          </div>
+              não têm nenhum lançamento real por trás nesta fase (não inventam dados).
+              Só faz sentido para o gráfico de barras, não para a grelha "Lista". */}
+          {modo !== 'Lista' && (
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 mt-2 text-[11px] text-[#041F24]">
+              {LEGEND.map((l) => (
+                <span key={l.key} className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 inline-block" style={{ background: l.color }} /> {l.label}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between px-2 py-1.5 border-t border-[#CFE3E6] bg-[#F7FAFA] text-[11px] text-gray-600">
