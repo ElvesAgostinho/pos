@@ -2,21 +2,26 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
-import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb, TriangleAlert } from 'lucide-react';
+import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb, TriangleAlert, Unplug } from 'lucide-react';
+import { notifyError } from '../../utils/friendlyError';
 
 const btn = 'px-3 py-1.5 text-[12px] border border-[#CFE3E6] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] active:translate-y-px flex items-center gap-1.5';
 const PROVIDERS: [string, string][] = [['BOOKING', 'Booking.com'], ['EXPEDIA', 'Expedia'], ['AIRBNB', 'Airbnb'], ['AGODA', 'Agoda'], ['HOTELS', 'Hotels.com'], ['TRIVAGO', 'Trivago'], ['GOOGLE', 'Google Hotels'], ['OTHER', 'Outro']];
 const PROV_COLOR: Record<string, string> = { BOOKING: '#062A31', EXPEDIA: '#041F24', AIRBNB: '#B0392B', AGODA: '#062A31', HOTELS: '#B0392B', TRIVAGO: '#B0392B', GOOGLE: '#7FA9B1', OTHER: '#5C8891' };
-const ST_COLOR: Record<string, string> = { CONNECTED: '#062A31', ERROR: '#B0392B', DISABLED: '#7FA9B1' };
+// Tem de bater certo com Channel.STATUS no backend (models.py): Desligado/
+// Credenciais pendentes/Ligado. Havia aqui 'ERROR'/'DISABLED', que nunca são
+// o `status` do canal (são estados do LOG de sincronização) — 'PENDING' e
+// 'DISCONNECTED', que são os valores reais, ficavam sem cor nenhuma.
+const ST_COLOR: Record<string, string> = { CONNECTED: '#062A31', PENDING: '#5C8891', DISCONNECTED: '#7FA9B1' };
 
 export default function ChannelManagerView() {
   const qc = useQueryClient();
   const inval = () => { qc.invalidateQueries({ queryKey: ['channels'] }); qc.invalidateQueries({ queryKey: ['channel-logs'] }); };
   const { data: channels = [] } = useQuery({ queryKey: ['channels'], queryFn: async () => (await apiClient.get('pms/channels/')).data, refetchInterval: 30000 });
   const { data: logs = [] } = useQuery({ queryKey: ['channel-logs'], queryFn: async () => (await apiClient.get('pms/channel-sync-logs/')).data, refetchInterval: 20000 });
-  const [f, setF] = useState<any>({ provider: 'BOOKING', name: '', property_id: '', api_key: '', commission_percent: 15, enabled: true });
-  const create = useMutation({ mutationFn: async () => (await apiClient.post('pms/channels/', { ...f, commission_percent: Number(f.commission_percent) })).data, onSuccess: () => { inval(); setF({ ...f, name: '', property_id: '', api_key: '' }); } });
-  const act = useMutation({ mutationFn: async ({ id, a }: any) => (await apiClient.post(`pms/channels/${id}/${a}/`, {})).data, onSuccess: inval });
+  const [f, setF] = useState<any>({ provider: 'BOOKING', name: '', property_id: '', api_key: '', commission_percent: 15 });
+  const create = useMutation({ mutationFn: async () => (await apiClient.post('pms/channels/', { ...f, commission_percent: Number(f.commission_percent) })).data, onSuccess: () => { inval(); setF({ ...f, name: '', property_id: '', api_key: '' }); }, onError: notifyError });
+  const act = useMutation({ mutationFn: async ({ id, a }: any) => (await apiClient.post(`pms/channels/${id}/${a}/`, {})).data, onSuccess: inval, onError: notifyError });
   const syncAll = useMutation({ mutationFn: async () => (await apiClient.post('pms/channels/sync_all/', {})).data, onSuccess: inval });
 
   return (
@@ -80,9 +85,14 @@ export default function ChannelManagerView() {
               <div className="text-[12px] text-gray-700 mt-1">{ch.name}</div>
               <div className="text-[10px] text-gray-500">Property {ch.property_id || '—'} · comissão {Number(ch.commission_percent)}% · {ch.mapped_rooms} tipo(s) mapeado(s)</div>
               <div className="text-[10px] text-gray-400">{ch.last_sync_at ? `última sync ${new Date(ch.last_sync_at).toLocaleString('pt-PT')}` : 'nunca sincronizado'}</div>
-              <div className="flex gap-1 mt-2">
+              <div className="flex gap-1 mt-2 flex-wrap">
                 <button className="text-[11px] text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'sync_availability' })}><UploadCloud size={12} />Enviar disp.</button>
                 <button className="text-[11px] text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'pull' })}><DownloadCloud size={12} />Receber reservas</button>
+                {ch.status === 'CONNECTED' ? (
+                  <button className="text-[11px] text-[#B0392B] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'disconnect' })}><Unplug size={12} />Desligar</button>
+                ) : (
+                  <button className="text-[11px] text-[#062A31] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'connect' })}><Link2 size={12} />Marcar como ligado</button>
+                )}
               </div>
             </div>
           ))}

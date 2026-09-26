@@ -391,7 +391,7 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
             res.save()
 
             folio = Folio.objects.create(reservation=res, number=_next_number(Folio.objects, 'number', 'FOL'))
-            rate = res.rate or (res.rate_plan.price_per_night if res.rate_plan else res.room_type.base_rate)
+            rate = res.effective_rate  # única definição da regra — ver Reservation.effective_rate
             today = timezone.localdate()
             if rate and res.nights > 0:
                 FolioCharge.objects.create(

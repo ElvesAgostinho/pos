@@ -35,15 +35,11 @@ def _parse_date(d):
 
 
 def _effective_rate(r):
-    """A MESMA conta usada em `ReservationViewSet.check_in` — a auditoria
-    nunca pode lançar um valor diferente do que o check-in lançaria."""
-    if r.rate and r.rate > 0:
-        return r.rate
-    if r.rate_plan_id and r.rate_plan and r.rate_plan.price_per_night:
-        return r.rate_plan.price_per_night
-    if r.room_type_id and r.room_type:
-        return r.room_type.base_rate
-    return Decimal('0')
+    """A MESMA regra usada em `ReservationViewSet.check_in` e em
+    `reports.py` — ver `Reservation.effective_rate` (models.py), a ÚNICA
+    definição desta conta em todo o sistema. A auditoria nunca pode lançar um
+    valor diferente do que o check-in lançaria."""
+    return r.effective_rate
 
 
 class NightAuditRunViewSet(HotelScopedMixin, viewsets.ReadOnlyModelViewSet):
