@@ -706,12 +706,37 @@ class HousekeepingTaskViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.Mode
         return qs
 
     @action(detail=True, methods=['post'], url_path='mark-done')
+    @transaction.atomic
     def mark_done(self, request, pk=None):
+        """Dá a tarefa por concluída — e, se for LIMPEZA, liberta o quarto.
+
+        Sem isto, a governanta limpava o quarto, marcava a tarefa como feita, e o
+        quarto continuava "Por limpar" no mapa da receção para sempre: o único
+        sítio que alguma vez punha um quarto em VACANT_CLEAN era o ecrã de
+        Quartos, à mão. A tarefa e o estado do quarto eram dois mundos separados.
+
+        Só a limpeza muda o estado, e só a partir de "Por limpar":
+        - OCCUPIED (limpeza com hóspede dentro) não se toca — o quarto continua ocupado;
+        - OOO (fora de serviço) não se toca — sair de fora-de-serviço é decisão de
+          quem o pôs lá, não efeito lateral de uma limpeza.
+        """
         task = self.get_object()
         task.status = 'DONE'
         task.completed_at = timezone.now()
         task.save(update_fields=['status', 'completed_at'])
-        return Response(self.get_serializer(task).data)
+
+        quarto_liberto = None
+        room = task.room
+        if room and task.task_type == 'CLEANING' and room.status == 'VACANT_DIRTY':
+            room.status = 'VACANT_CLEAN'
+            room.save(update_fields=['status'])
+            quarto_liberto = room.number
+
+        data = self.get_serializer(task).data
+        data['room_released'] = quarto_liberto
+        data['detail'] = (f'Tarefa concluída — quarto {quarto_liberto} passou a Livre/Limpo.'
+                          if quarto_liberto else 'Tarefa concluída.')
+        return Response(data)
 
 
 class PhoneDirectoryEntryViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):

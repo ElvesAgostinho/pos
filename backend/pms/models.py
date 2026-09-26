@@ -405,9 +405,16 @@ class HousekeepingTask(models.Model):
     sítios onde ainda não existe um cadastro de colaboradores)."""
     PRIORITY = [('LOW', 'Baixa'), ('NORMAL', 'Normal'), ('HIGH', 'Alta')]
     STATUS = [('PENDING', 'Pendente'), ('IN_PROGRESS', 'Em curso'), ('DONE', 'Concluída')]
+    # O TIPO decide o que acontece ao QUARTO quando a tarefa é dada como feita
+    # (ver HousekeepingTaskViewSet.mark_done): só a LIMPEZA liberta um quarto
+    # "Por limpar". Sem este campo, dar por concluída uma reparação de chuveiro
+    # marcava o quarto como limpo — e a receção vendia-o sujo.
+    TASK_TYPES = [('CLEANING', 'Limpeza'), ('MAINTENANCE', 'Manutenção'), ('OTHER', 'Outra')]
 
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_tasks')
     title = models.CharField(max_length=200)
+    task_type = models.CharField(max_length=12, choices=TASK_TYPES, default='CLEANING',
+                                 verbose_name='Tipo de tarefa')
     room = models.ForeignKey(Room, on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
     assigned_to = models.CharField(max_length=150, blank=True, null=True)
     priority = models.CharField(max_length=6, choices=PRIORITY, default='NORMAL')

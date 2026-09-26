@@ -152,7 +152,11 @@ class LostFoundItemSerializer(serializers.ModelSerializer):
 class HousekeepingTaskSerializer(serializers.ModelSerializer):
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    task_type_display = serializers.CharField(source='get_task_type_display', read_only=True)
     room_number = serializers.CharField(source='room.number', read_only=True, default=None)
+    # Estado ATUAL do quarto — a lista de tarefas mostra logo se o quarto ainda
+    # está por limpar, sem obrigar a saltar para o mapa de quartos para confirmar.
+    room_status = serializers.CharField(source='room.get_status_display', read_only=True, default=None)
 
     class Meta:
         model = HousekeepingTask

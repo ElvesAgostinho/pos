@@ -14,7 +14,10 @@ import { aviso, confirmar } from '../../ui/dialogo';
 const PRIORITY = [{ value: 'LOW', label: 'Baixa' }, { value: 'NORMAL', label: 'Normal' }, { value: 'HIGH', label: 'Alta' }];
 const STATUS = [{ value: 'PENDING', label: 'Pendente' }, { value: 'IN_PROGRESS', label: 'Em curso' }, { value: 'DONE', label: 'Concluída' }];
 const STATUS_COLOR: Record<string, string> = { PENDING: '#B0392B', IN_PROGRESS: '#5C8891', DONE: '#062A31' };
-const blank = { title: '', assigned_to: '', priority: 'NORMAL', status: 'PENDING', due_at: '', notes: '' };
+// O TIPO decide o que acontece ao quarto ao concluir: só "Limpeza" liberta um
+// quarto que esteja "Por limpar" (ver mark_done em pms/views.py).
+const TASK_TYPES = [{ value: 'CLEANING', label: 'Limpeza' }, { value: 'MAINTENANCE', label: 'Manutenção' }, { value: 'OTHER', label: 'Outra' }];
+const blank = { title: '', task_type: 'CLEANING', assigned_to: '', priority: 'NORMAL', status: 'PENDING', due_at: '', notes: '' };
 
 export default function PmsTasksView() {
   const qc = useQueryClient();
@@ -57,6 +60,9 @@ export default function PmsTasksView() {
     try {
       const r = await apiClient.post(`pms/tasks/${selId}/mark-done/`);
       refetch(); qc.invalidateQueries({ queryKey: ['pms'] }); setForm(r.data);
+      // Quando a limpeza liberta o quarto, dizê-lo — senão a governanta não
+      // sabe se o quarto já está vendável ou se ainda tem de avisar a receção.
+      if (r.data?.room_released) aviso(r.data.detail);
     } catch (e) { notifyError(e); }
   };
 
@@ -69,12 +75,14 @@ export default function PmsTasksView() {
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/2 border-r border-[#7FA9B1]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
-            { header: 'Título', accessor: 'title', width: '30%' },
-            { header: 'Quarto', accessor: (r: any) => r.room_number || '—', width: '13%' },
-            { header: 'Responsável', accessor: (r: any) => r.assigned_to || '—', width: '20%' },
-            { header: 'Prioridade', accessor: (r: any) => priorityLabel(r.priority), width: '15%' },
+            { header: 'Título', accessor: 'title', width: '26%' },
+            { header: 'Tipo', accessor: (r: any) => r.task_type_display || '—', width: '12%' },
+            { header: 'Quarto', accessor: (r: any) => r.room_number
+              ? `${r.room_number}${r.room_status ? ` (${r.room_status})` : ''}` : '—', width: '20%' },
+            { header: 'Responsável', accessor: (r: any) => r.assigned_to || '—', width: '14%' },
+            { header: 'Prioridade', accessor: (r: any) => priorityLabel(r.priority), width: '12%' },
             {
-              header: 'Estado', width: '22%',
+              header: 'Estado', width: '16%',
               accessor: (r: any) => (
                 <span className="px-1.5 py-0.5 text-white text-[10px] font-semibold" style={{ background: STATUS_COLOR[r.status] || '#5C8891' }}>
                   {statusLabel(r.status)}
@@ -86,6 +94,14 @@ export default function PmsTasksView() {
         <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
           <div className="font-bold text-[#062A31]">{selId ? 'Editar Tarefa' : 'Nova Tarefa'}</div>
           <label className="flex flex-col">Título<input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inp} /></label>
+          <label className="flex flex-col">Tipo de tarefa
+            <select value={form.task_type || 'CLEANING'} onChange={(e) => setForm({ ...form, task_type: e.target.value })} className={inp}>
+              {TASK_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+            <span className="text-[10px] text-[#5C8891] mt-0.5">
+              Só "Limpeza" liberta o quarto (Por limpar → Livre/Limpo) ao ser concluída.
+            </span>
+          </label>
           <div className="flex gap-2">
             <label className="flex-1 flex flex-col">Quarto
               <select value={form.room ?? ''} onChange={(e) => setForm({ ...form, room: e.target.value ? Number(e.target.value) : null })} className={inp}>
