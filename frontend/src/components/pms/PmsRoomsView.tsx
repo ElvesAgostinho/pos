@@ -40,10 +40,35 @@ export default function PmsRoomsView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 p-3 grid grid-cols-6 gap-2 overflow-auto content-start">
         {rows.map((r: any) => (
-          <div key={r.id} className={`border p-2 text-[11px] ${STATUS_STYLE[r.status] || ''}`}>
+          <div key={r.id} className={`border p-2 text-[11px] rounded-[10px] ${STATUS_STYLE[r.status] || ''}`}>
             <div className="font-bold text-[13px]">{r.number}</div>
             <div className="text-[10px] mb-1">{r.room_type_name}</div>
-            <select value={r.status} onChange={(e) => setStatus(r.id, e.target.value)} className="w-full text-[10px] border border-black/10 bg-white/70">
+            {/* AÇÃO ÓBVIA primeiro: o seletor sozinho escondia a única forma de
+                libertar um quarto (ninguém procura um dropdown minúsculo para
+                dizer "já está limpo"). O seletor fica por baixo, para os casos
+                que estes botões não cobrem. */}
+            {r.status === 'VACANT_DIRTY' && (
+              <button onClick={() => setStatus(r.id, 'VACANT_CLEAN')}
+                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[6px] hover:brightness-110 transition-[filter]"
+                style={{ background: '#062A31' }}>
+                ✔ Marcar como limpo
+              </button>
+            )}
+            {r.status === 'OOO' && (
+              <button onClick={() => setStatus(r.id, 'VACANT_DIRTY')}
+                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[6px] hover:brightness-110 transition-[filter]"
+                style={{ background: '#5C8891' }}>
+                ↩ Voltar ao serviço
+              </button>
+            )}
+            {r.status === 'VACANT_CLEAN' && (
+              <button onClick={() => setStatus(r.id, 'OOO')}
+                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold rounded-[6px] border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] transition-colors text-[#8C2B1F]">
+                ⊘ Pôr fora de serviço
+              </button>
+            )}
+            <select value={r.status} onChange={(e) => setStatus(r.id, e.target.value)}
+              className="w-full text-[10px] border border-black/10 bg-white/70 rounded-[6px]">
               <option value="VACANT_CLEAN">Livre / Limpo</option>
               <option value="VACANT_DIRTY">Livre / Por limpar</option>
               <option value="OCCUPIED">Ocupado</option>

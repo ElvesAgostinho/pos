@@ -219,7 +219,14 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         </button>
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      {/* `flex flex-col` (e não só `overflow-hidden`): quase todos os ecrãs do
+          PMS são `flex-1 overflow-auto` por dentro. Sem o pai ser flex, esse
+          `flex-1` não tem altura nenhuma para trabalhar — o conteúdo crescia
+          para fora e era simplesmente CORTADO por este `overflow-hidden`, sem
+          barra de deslocamento (era o que acontecia no Diagnóstico: metade do
+          ecrã inacessível). `min-h-0` é o que permite ao filho encolher dentro
+          do flex em vez de empurrar o contentor. */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         <Comp onDesktop={onDesktop} onNavigate={setSection} />
       </div>
 

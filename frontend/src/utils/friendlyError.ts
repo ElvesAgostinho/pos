@@ -51,7 +51,29 @@ export function friendlyError(err: any): Guide {
   if (status === 403) return { title: 'Sem permissão', message: 'Não tem autorização para esta operação.', hint: 'Peça ao administrador para lhe dar acesso (Segurança → Acessos por Perfil).' };
   if (status === 404) return { title: 'Não encontrado', message: 'O registo já não existe (pode ter sido apagado).', hint: 'Atualize a lista e tente de novo.' };
   if (status === 429) return { title: 'Demasiados pedidos', message: 'Fez pedidos a mais em pouco tempo.', hint: 'Aguarde um momento e repita.' };
-  if (status >= 500) return { title: 'Erro no servidor', message: 'Ocorreu um erro interno ao processar o pedido.', hint: 'Se voltar a acontecer, contacte o suporte.' };
+  // 502/503/504 — o servidor está bem; quem NÃO respondeu foi um serviço lá
+  // fora (o PCC, a AGT, uma OTA). Isso não é "erro interno": é uma condição
+  // normal e explicável, e o servidor manda sempre o motivo em `detail`.
+  // Engolir esse motivo e mostrar "contacte o suporte" mandava o dono ligar
+  // para o suporte por causa de um PCC desligado que ele próprio podia ligar.
+  if (status === 502 || status === 503 || status === 504) {
+    const motivo = (data && (typeof data === 'string' ? data : data.detail)) || '';
+    return {
+      title: 'Serviço externo indisponível',
+      message: motivo ? humanize(motivo) : 'Um serviço externo não respondeu ao pedido.',
+      hint: 'Confirme que esse serviço está ligado e acessível, e tente novamente.',
+    };
+  }
+  if (status >= 500) {
+    // Mesmo num 500 a sério, se o servidor explicou o que falhou, mostra-se —
+    // uma frase concreta vale mais do que "erro interno".
+    const motivo = data && typeof data !== 'string' && data.detail ? humanize(data.detail) : '';
+    return {
+      title: 'Erro no servidor',
+      message: motivo || 'Ocorreu um erro interno ao processar o pedido.',
+      hint: 'Se voltar a acontecer, contacte o suporte.',
+    };
+  }
 
   // 400 — erros de validação (o caso mais comum).
   if (status === 400 && data) {
