@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X, Check } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
+import { MENUS as PMS_MENU_GROUPS } from './pmsMenus';
 
 /**
  * Variante POR UTILIZADOR do `PmsPermissionsDialog` (que é por ecrã): em vez
@@ -11,34 +12,45 @@ import { notifyError } from '../../utils/friendlyError';
  * (`eae.Profile.allowed_screens`), só a matriz virada ao contrário, mais
  * prática para o ecrã de Utilizadores.
  *
- * NOTA para quem ligar isto ao PmsShell: esta lista tem de refletir as keys
- * de `SECTIONS` em PmsShell.tsx (prefixadas com `pms_`) — atualizar aqui
- * sempre que uma secção nova entrar lá.
+ * A lista de ecrãs vem SEMPRE de `MENUS` (pmsMenus.ts, a mesma fonte que o
+ * PmsShell.tsx e o Ambiente de Trabalho já usam) — nunca uma cópia à mão.
+ * Havia aqui antes uma lista `PMS_SCREENS` escrita à mão que
+ * ficou desatualizada e só cobria 19 dos ~37 ecrãs reais do PMS (faltavam
+ * Check-Out, Auditoria da Noite, Estado Hotel, Planning, Tarefas, Perdidos e
+ * Achados, Lista Telefónica, Leitor de Documentos, Logs, Diagnóstico, SAFT-AO,
+ * Fecho do dia POS, Relatórios, Informação Online, Produtos & Serviços,
+ * Pesquisa de Entidades, Lista de Eventos, Categorias de Quarto e Início) — um
+ * dono que tentasse restringir um rececionista a "só Reservas" não conseguia
+ * sequer NEGAR-lhe o Check-Out ou o Financeiro por este ecrã, porque essas
+ * entradas nem apareciam na lista para desmarcar. Deriva-se aqui de `MENUS`
+ * para nunca mais desincronizar (é o mesmo padrão já corrigido em
+ * EnterpriseDesktop.tsx para o Ambiente de Trabalho).
+ *
+ * `pmsMenus.ts` é um ficheiro de dados puro (sem componentes React), por
+ * isso importá-lo aqui não cria nenhum ciclo com PmsShell.tsx — ao contrário
+ * de importar `MENUS` do próprio PmsShell.tsx, que passaria pelo componente
+ * inteiro só para ler uma lista. `derivePmsScreens()` continua calculada via
+ * `useMemo` em tempo de render, simplesmente por não haver razão para a
+ * recalcular a cada render.
  */
-const PMS_SCREENS = [
-  { id: 'pms_availability', label: 'Disponibilidade' },
-  { id: 'pms_reservations', label: 'Reservas' },
-  { id: 'pms_group_reservations', label: 'Reservas de Grupo' },
-  { id: 'pms_blocks', label: 'Blocos' },
-  { id: 'pms_rooms', label: 'Mapa de Quartos' },
-  { id: 'pms_room_types', label: 'Categorias de Quarto' },
-  { id: 'pms_rate_plans', label: 'Tarifas (Rate Codes)' },
-  { id: 'pms_rates_calendar', label: 'Calendário de Tarifas' },
-  { id: 'pms_rooms_bulk', label: 'Gestão de Quartos' },
-  { id: 'pms_guests_companies', label: 'Hóspedes & Empresas' },
-  { id: 'pms_finance_pms', label: 'Financeiro' },
-  { id: 'pms_reports_pms', label: 'Performance & Ocupação' },
-  { id: 'pms_booking_engine', label: 'Booking Engine' },
-  { id: 'pms_channel_manager', label: 'Channel Manager' },
-  { id: 'pms_chatbot', label: 'Chatbot' },
-  { id: 'pms_events', label: 'EMS (Eventos)' },
-  { id: 'pms_events_calendar', label: 'Calendário EMS' },
-  { id: 'pms_events_forecast', label: 'Previsão EMS' },
-  { id: 'pms_users', label: 'Utilizadores (PMS)' },
-];
+function derivePmsScreens(): { id: string; label: string }[] {
+  const porSeccao = new Map<string, string>();
+  for (const grupo of PMS_MENU_GROUPS) {
+    for (const it of grupo.items) {
+      if (!it.section || porSeccao.has(it.section)) continue;
+      porSeccao.set(it.section, it.label);
+    }
+  }
+  // "Início" é o ecrã de arranque do PMS — nunca aparece como item de menu
+  // (não há para onde "navegar" a partir dele), mas também é um ecrã que
+  // pode ser restringido, por isso entra aqui à parte.
+  if (!porSeccao.has('home_dashboard')) porSeccao.set('home_dashboard', 'Início');
+  return Array.from(porSeccao, ([section, label]) => ({ id: `pms_${section}`, label }));
+}
 
 export default function PmsUserAccessDialog({ user, onClose }: { user: any; onClose: () => void }) {
   const qc = useQueryClient();
+  const PMS_SCREENS = useMemo(derivePmsScreens, []);
   // `user.profiles[0]` (vindo de `auth/users/`) é só um RESUMO ({id, code,
   // name}) — não traz `full_access`/`allowed_screens`. Esses só vêm da lista
   // completa de perfis (`eae/profiles/`, o mesmo endpoint que
