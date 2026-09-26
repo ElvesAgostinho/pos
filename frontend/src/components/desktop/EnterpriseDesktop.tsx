@@ -11,7 +11,7 @@ import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
 import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
-import { MENUS as PMS_MENU_GROUPS } from '../pms/PmsShell';
+import { MENUS as PMS_MENU_GROUPS } from '../pms/pmsMenus';
 
 // Fundo ambiente do Ambiente de Trabalho — manchas de cor desfocadas (mesh gradient,
 // linguagem de dashboards modernos) nas cores do próprio módulo, com uma silhueta de
@@ -274,14 +274,19 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
         {/* Poucos ícones — consulta rápida */}
         <div className="absolute top-5 left-5 grid gap-5 content-start" style={{ gridTemplateRows: 'repeat(3, auto)', gridAutoFlow: 'column' }}>
           {quick.map((ic, i) => (
-            <DesktopIcon key={i} ic={ic} accent={ws.accent} glow={ws.glow} onOpen={() => openIcon(ic)} />
+            <DesktopIcon key={`quick-${i}`} ic={ic} accent={ws.accent} glow={ws.glow} onOpen={() => openIcon(ic)} />
           ))}
           {/* MÓDULOS com "Mostrar no Desktop" — abrem como a ficha manda (open_as).
               São do backoffice POS (Configuração POS › Módulo) — no ambiente de
               trabalho do PMS não aparecem, o PMS é autossuficiente e traz só o seu
-              próprio ícone. */}
+              próprio ícone. Chave prefixada: partilha o painel com os ícones rápidos
+              acima (outro .map, outras chaves) — sem prefixo, um module_id como "1"
+              colidia com o índice de um ícone rápido (mesma chave "1" em irmãos).
+              Era isto que fazia aparecer "Encountered two children with the same
+              key" de vez em quando, sempre que o relógio (a cada 15s) forçava
+              este painel a voltar a renderizar. */}
           {wsKey !== 'pms' && modulos.map((m: any) => (
-            <DesktopIcon key={m.module_id}
+            <DesktopIcon key={`mod-${m.module_id}`}
               ic={{ label: m.name, icon: 'app' } as any}
               accent={ws.accent} glow={ws.glow} onOpen={() => abrirModulo(m)} />
           ))}
