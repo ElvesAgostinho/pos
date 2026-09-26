@@ -58,7 +58,7 @@ import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton } from './kit';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
-import { TOKENS, accentGradient } from '../../config/theme';
+import { TOKENS, accentGradient, RADIUS, SHADOW } from '../../config/theme';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -251,10 +251,10 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           {menu === '__ml' && (
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full z-[61] min-w-[230px] py-1 shadow-2xl"
-                style={{ background: TOKENS.bar, border: '1px solid #062A31' }}>
+              <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden"
+                style={{ background: TOKENS.bar, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                 <button onClick={() => { setMenu(null); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891]">
+                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891] transition-colors">
                   <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>Ambiente de Trabalho
                 </button>
               </div>
@@ -265,15 +265,16 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           <div key={m.title} className="relative">
             <button onClick={() => setMenu(menu === m.title ? null : m.title)}
               onMouseEnter={() => menu && setMenu(m.title)}
-              className={`px-4 py-2 text-[15px] font-semibold hover:bg-white/10 ${menu === m.title ? 'bg-white/10' : ''}`}>
+              className="px-3 py-1.5 text-[14px] font-semibold hover:bg-white/10 transition-colors"
+              style={{ background: menu === m.title ? 'rgba(255,255,255,0.1)' : 'transparent', borderRadius: RADIUS.sm }}>
               {m.title} ▾
             </button>
             {menu === m.title && (
               <>
                 {/* clicar fora fecha */}
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full z-[61] min-w-[250px] py-1 shadow-2xl"
-                  style={{ background: TOKENS.bar, border: '1px solid #062A31' }}>
+                <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[250px] py-1 overflow-hidden"
+                  style={{ background: TOKENS.bar, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                   {m.items.map((it: any, i: number) => it.sep ? (
                     <div key={i} className="my-1 border-t border-[#062A31]" />
                   ) : (
@@ -300,7 +301,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                         else if (it.view && onOpen) onOpen(it.view);
                         else if (it.url) window.open(it.url, '_blank');
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891]">
+                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891] transition-colors">
                       <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon={it.icon} size={16} /></span>
                       {it.label}
                     </button>
@@ -327,22 +328,16 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           </span>{' '}
           {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
         </div>
-        <div className="flex items-center gap-1 text-[12px] font-normal">
-          <div onClick={() => setLocked(true)} title="Bloquear ecrã"
-            className="w-6 h-5 flex items-center justify-center cursor-pointer hover:bg-white/15 mr-1">
-            <Lock size={12} />
-          </div>
-          <div title="Minimizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#041F24] hover:brightness-150">
-            <div className="w-2 h-[2px] bg-white mb-[-5px]" />
-          </div>
-          <div title="Maximizar" className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#041F24] hover:brightness-150">
-            <div className="w-2 h-2 border border-white" />
-          </div>
-          <div onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
+        <div className="flex items-center gap-0.5 text-[12px] font-normal">
+          <button onClick={() => setLocked(true)} title="Bloquear ecrã"
+            className="w-7 h-7 flex items-center justify-center hover:bg-white/15 transition-colors" style={{ borderRadius: RADIUS.sm }}>
+            <Lock size={13} />
+          </button>
+          <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
             title="Voltar ao Ambiente de Trabalho"
-            className="w-6 h-5 flex items-center justify-center cursor-pointer bg-[#062A31] border border-[#041F24] hover:brightness-150">
-            <Glyph icon="✕" size={12} />
-          </div>
+            className="w-7 h-7 flex items-center justify-center hover:bg-[#B0392B] transition-colors" style={{ borderRadius: RADIUS.sm }}>
+            <Glyph icon="✕" size={13} />
+          </button>
         </div>
       </div>
       {locked && <LockScreen onUnlock={() => setLocked(false)} />}
