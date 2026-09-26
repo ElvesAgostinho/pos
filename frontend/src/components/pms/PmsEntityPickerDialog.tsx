@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { RefreshCw, Plus, Pencil, Hand, User, Copy, X, Search } from 'lucide-react';
 import { apiClient } from '../../api/client';
-import { aviso } from '../../ui/dialogo';
 import { notifyError } from '../../utils/friendlyError';
 import ClassicGrid from '../ui/ClassicGrid';
 import EntityEditor from '../posconfig/EntityEditor';

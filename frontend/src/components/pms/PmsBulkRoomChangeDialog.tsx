@@ -68,6 +68,11 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
         </div>
         <label className="flex items-center gap-2 px-3 py-1.5 bg-white border-b border-[#EEF4F5] text-[12px]">
           <input type="checkbox" checked={allChecked} onChange={toggleAll} /> Selec. Todas
+          {lockedCount > 0 && (
+            <span className="ml-auto text-[11px] text-[#5C8891]">
+              🔒 {lockedCount} reserva(s) com "Não Mudar Qrt" — não entram em mudanças em massa
+            </span>
+          )}
         </label>
         <div className="flex-1 overflow-auto bg-white">
           <table className="w-full text-[11px] border-collapse">
@@ -83,9 +88,13 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
             </thead>
             <tbody>
               {rows.map((r: any) => (
-                <tr key={r.id} className="border-b border-[#F7FAFA]">
-                  <td className="text-center"><input type="checkbox" checked={checked.has(r.id)} onChange={() => toggle(r.id)} /></td>
-                  <td className="px-2 py-1">{r.guest_name}</td>
+                <tr key={r.id} className="border-b border-[#F7FAFA]" style={r.lock_room ? { opacity: 0.5 } : undefined}>
+                  <td className="text-center">
+                    <input type="checkbox" checked={checked.has(r.id)} disabled={!!r.lock_room}
+                      title={r.lock_room ? 'Reserva marcada como "Não Mudar Qrt" — não entra em mudanças em massa.' : undefined}
+                      onChange={() => toggle(r.id)} />
+                  </td>
+                  <td className="px-2 py-1">{r.guest_name}{r.lock_room && <span className="ml-1 text-[10px] text-[#B0392B]" title="Não Mudar Qrt">🔒</span>}</td>
                   <td className="px-2 py-1">{r.check_in}</td>
                   <td className="px-2 py-1">{r.check_out}</td>
                   <td className="px-2 py-1">{r.room_number}</td>
