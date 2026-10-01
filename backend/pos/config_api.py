@@ -3511,20 +3511,21 @@ class EntitySerializer(serializers.ModelSerializer):
 class EntityViewSet(viewsets.ModelViewSet):
     """PESQUISA DE ENTIDADES — o cadastro unico de clientes, visto pelo POS.
 
-    (Campos personalizados) "Mostrar na pesquisa": as definições marcadas vêm na
-    resposta da lista — o ecrã acrescenta-as como colunas. "É lista": o valor tem de
-    ser uma das opções definidas, não texto livre.
-    """
+    CAMPOS PERSONALIZADOS — o que FALTA, dito por extenso para ninguém voltar a
+    pensar que funciona: `CustomFieldDef` define o campo (onde aparece, que tipo
+    tem, se "Mostra na pesquisa"), mas NÃO EXISTE nenhum modelo que guarde o
+    VALOR desse campo para uma entidade concreta — nem aqui, nem em `mdm`. O
+    hotel pode definir "Nº do voo" e nunca ter onde o escrever.
 
-    def list(self, request, *args, **kwargs):
-        resp = super().list(request, *args, **kwargs)
-        from .models import CustomFieldDef
-        defs = CustomFieldDef.objects.filter(is_active=True, show_in_search=True,
-                                             location='ENTITY')
-        # As colunas extra que o ecrã deve desenhar — vêm da configuração, não do código.
-        if isinstance(resp.data, dict):
-            resp.data['custom_columns'] = [{'key': d.code, 'label': d.name} for d in defs]
-        return resp
+    Havia aqui um `list()` que acrescentava `custom_columns` à resposta, e era
+    duplamente inócuo: só disparava quando a lista vinha PAGINADA (o ecrã pede
+    esta lista sem `?page`, logo nunca), e nenhum ecrã lia esse campo. Foi
+    retirado: as definições já têm o seu endpoint próprio
+    (`pos/config/custom-fields/?location=ENTITY`), que é a fonte única, e
+    colunas sempre vazias por falta de valores não ajudavam ninguém.
+    Para a funcionalidade existir a sério falta o armazém de valores + o campo
+    na ficha + a coluna na pesquisa; está por decidir com o dono.
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = EntitySerializer
 
