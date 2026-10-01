@@ -615,7 +615,13 @@ class FolioViewSet(HotelScopedMixin, viewsets.ModelViewSet):
         if not charges:
             return Response({'detail': 'Folio sem consumos a faturar.'}, status=400)
         from fiscal.integration import emit_for_pms_folio
-        doc = emit_for_pms_folio(folio, charges, user=getattr(request, 'user', None))
+        from fiscal.signing import ChaveFiscalEmFalta
+        try:
+            doc = emit_for_pms_folio(folio, charges, user=getattr(request, 'user', None))
+        except ChaveFiscalEmFalta as e:
+            # Falta a chave certificada: não é um erro interno, é uma
+            # configuração por concluir — e o utilizador tem de saber qual.
+            return Response({'detail': str(e)}, status=409)
         if not doc:
             return Response({'detail': 'Não foi possível emitir o documento fiscal (verifique a série/config).'}, status=409)
         folio.fiscal_document_number = doc.invoice_no

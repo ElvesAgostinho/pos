@@ -20,8 +20,12 @@ import os
 from pathlib import Path
 
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.exceptions import InvalidSignature
+
+
+class ChaveFiscalEmFalta(Exception):
+    """Não há par de chaves para assinar — e não se pode inventar um em PRODUÇÃO."""
 
 # FISCAL_KEYS_DIR (opcional): mesmo motivo do LICENSING_KEYS_DIR do licenciamento —
 # num deploy em contentor a pasta de código é reconstruída a cada redeploy; a chave
@@ -36,7 +40,54 @@ def build_message(invoice_date, system_entry_date, invoice_no, gross_total, prev
     return f"{invoice_date};{system_entry_date};{invoice_no};{gross_total};{previous_hash or ''}"
 
 
+def ensure_keys():
+    """Garante que existe par de chaves ANTES de assinar seja o que for.
+
+    Numa instalação acabada de montar não há chaves nenhumas — elas só chegam
+    na certificação AGT (`apply_certification`, vindo do PCC ou do instalador).
+    Até aqui, a PRIMEIRA factura que alguém tentasse emitir rebentava com um
+    `FileNotFoundError` em bruto e um 500 no ecrã, sem dizer a ninguém o que
+    fazer. Duas situações, duas respostas diferentes:
+
+    - AMBIENTE DE TESTES: gera-se um par próprio na hora. É o que permite
+      montar o hotel, lançar contas e conferir facturas ANTES de a AGT
+      certificar o programa — sem isto não há como sequer testar o sistema.
+    - PRODUÇÃO: NUNCA se inventa uma chave. Uma factura real tem de sair
+      assinada com a chave certificada; auto-assinar em produção era declarar
+      à AGT uma conformidade que não existe. Falha com um erro explícito que
+      diz exactamente o que falta fazer.
+    """
+    if PRIVATE_KEY_PATH.exists() and PUBLIC_KEY_PATH.exists():
+        return
+    from .models import FiscalConfig
+    cfg = FiscalConfig.get()
+    if (cfg.environment or 'TEST').upper() == 'PROD':
+        raise ChaveFiscalEmFalta(
+            'Este sistema está em PRODUÇÃO e ainda não tem a chave de assinatura '
+            'fiscal instalada. Conclua a certificação AGT (Fiscal → Certificação) '
+            'antes de emitir documentos.')
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    ENGINE_DIR.mkdir(parents=True, exist_ok=True)
+    PRIVATE_KEY_PATH.write_bytes(key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption()))
+    PUBLIC_KEY_PATH.write_bytes(key.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo))
+    try:
+        from .models import FiscalAuditLog
+        FiscalAuditLog.objects.create(
+            event='CERT_PROVISION',
+            detail='Par de chaves de TESTE gerado automaticamente (ambiente TEST, '
+                   'ainda sem certificação AGT). Será substituído pela chave '
+                   'certificada quando a certificação for aplicada.')
+    except Exception:
+        pass   # o registo de auditoria nunca pode impedir a emissão
+
+
 def sign_message(message: str) -> str:
+    ensure_keys()
     key = serialization.load_pem_private_key(PRIVATE_KEY_PATH.read_bytes(), password=None)
     signature = key.sign(message.encode('utf-8'), padding.PKCS1v15(), hashes.SHA1())
     return base64.b64encode(signature).decode('ascii')
