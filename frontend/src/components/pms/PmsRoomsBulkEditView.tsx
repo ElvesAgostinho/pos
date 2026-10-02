@@ -51,16 +51,16 @@ export default function PmsRoomsBulkEditView() {
         <table className="border-collapse text-[12px] w-full max-w-[560px]">
           <thead>
             <tr>
-              <th className="text-left border-b border-[#7FA9B1] pb-1 pr-2">Número do quarto*</th>
-              <th className="text-left border-b border-[#7FA9B1] pb-1">Categoria*</th>
+              <th className="text-left border-b border-[#C8D2D5] pb-1 pr-2">Número do quarto*</th>
+              <th className="text-left border-b border-[#C8D2D5] pb-1">Categoria*</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r, i) => (
               <tr key={r.id ?? `new-${i}`}>
-                <td className="pr-2 py-1"><input value={r.number} onChange={(e) => setField(i, 'number', e.target.value)} className="border border-[#7FA9B1] p-1 w-full" /></td>
+                <td className="pr-2 py-1"><input value={r.number} onChange={(e) => setField(i, 'number', e.target.value)} className="border border-[#C8D2D5] p-1 w-full" /></td>
                 <td className="py-1">
-                  <select value={r.room_type} onChange={(e) => setField(i, 'room_type', Number(e.target.value))} className="border border-[#7FA9B1] p-1 bg-white w-full">
+                  <select value={r.room_type} onChange={(e) => setField(i, 'room_type', Number(e.target.value))} className="border border-[#C8D2D5] p-1 bg-white w-full">
                     <option value="">Escolha…</option>
                     {rtList.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
                   </select>
@@ -72,8 +72,8 @@ export default function PmsRoomsBulkEditView() {
         {rows.length === 0 && <div className="text-center text-gray-400 py-6">Sem quartos — clique em "Adicionar Linha".</div>}
       </div>
       <Toolbar actions={[
-        { label: 'Adicionar Linha', icon: '＋', color: '#062A31', onClick: addRow, disabled: rtList.length === 0 },
-        { label: saving ? 'A gravar…' : 'Gravar Tudo', icon: '💾', color: '#062A31', onClick: save, disabled: saving },
+        { label: 'Adicionar Linha', icon: '＋', color: '#062F35', onClick: addRow, disabled: rtList.length === 0 },
+        { label: saving ? 'A gravar…' : 'Gravar Tudo', icon: '💾', color: '#062F35', onClick: save, disabled: saving },
       ]} />
     </div>
   );

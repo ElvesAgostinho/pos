@@ -8,23 +8,23 @@ const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFracti
 const when = (v: any) => new Date(v).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
 const ACTION: Record<string, { label: string; bg: string; icon: any }> = {
-  CREATE: { label: 'Criado', bg: '#062A31', icon: Plus },
-  UPDATE: { label: 'Alterado', bg: '#5C8891', icon: Pencil },
-  DELETE: { label: 'ELIMINADO', bg: '#8C2B1F', icon: Trash2 },
-  VOID: { label: 'ANULADO', bg: '#B0392B', icon: Ban },
-  VIEW: { label: 'Consultado', bg: '#5C8891', icon: Eye },
-  EXPORT: { label: 'Exportado', bg: '#5C8891', icon: FileDown },
-  DENIED: { label: 'Acesso recusado', bg: '#8C2B1F', icon: AlertTriangle },
-  LOGIN: { label: 'Entrada', bg: '#062A31', icon: Eye },
-  SUBMIT: { label: 'Comunicado à AGT', bg: '#062A31', icon: FileDown },
-  PRINT: { label: 'Impresso', bg: '#062A31', icon: FileDown },
+  CREATE: { label: 'Criado', bg: '#062F35', icon: Plus },
+  UPDATE: { label: 'Alterado', bg: '#4B858E', icon: Pencil },
+  DELETE: { label: 'ELIMINADO', bg: '#A83A3A', icon: Trash2 },
+  VOID: { label: 'ANULADO', bg: '#C94A4A', icon: Ban },
+  VIEW: { label: 'Consultado', bg: '#4B858E', icon: Eye },
+  EXPORT: { label: 'Exportado', bg: '#4B858E', icon: FileDown },
+  DENIED: { label: 'Acesso recusado', bg: '#A83A3A', icon: AlertTriangle },
+  LOGIN: { label: 'Entrada', bg: '#062F35', icon: Eye },
+  SUBMIT: { label: 'Comunicado à AGT', bg: '#062F35', icon: FileDown },
+  PRINT: { label: 'Impresso', bg: '#062F35', icon: FileDown },
 };
 
 function Panel({ title, children, right }: any) {
   return (
-    <div className="bg-white border border-[#7FA9B1]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.10)' }}>
-      <div className="px-3 py-1.5 border-b border-[#CFE3E6] flex items-center justify-between text-[12px] font-bold text-[#062A31]"
-        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA)' }}>
+    <div className="bg-white border border-[#C8D2D5]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.10)' }}>
+      <div className="px-3 py-1.5 border-b border-[#C8D2D5] flex items-center justify-between text-[12px] font-bold text-[#1F292C]"
+        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F4F6F7)' }}>
         <span>{title}</span>{right}
       </div>
       <div className="p-0">{children}</div>
@@ -61,10 +61,10 @@ export default function AuditTrailView() {
 
   const Kpi = ({ label, value, color, onClick, active }: any) => (
     <button onClick={onClick}
-      className={`flex-1 bg-white border px-3 py-2 text-left ${active ? 'border-[#062A31] ring-1 ring-[#062A31]' : 'border-[#7FA9B1]'}`}
+      className={`flex-1 bg-white border px-3 py-2 text-left ${active ? 'border-[#062F35] ring-1 ring-[#062F35]' : 'border-[#C8D2D5]'}`}
       style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
       <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
-      <div className="text-[20px] font-black leading-tight" style={{ color: color || '#062A31' }}>{value ?? 0}</div>
+      <div className="text-[20px] font-black leading-tight" style={{ color: color || '#062F35' }}>{value ?? 0}</div>
     </button>
   );
 
@@ -73,19 +73,19 @@ export default function AuditTrailView() {
   return (
     <ClassicWindow title="Repositório & Pesquisa Global — Trilho de Auditoria" icon={<Archive size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{ov?.total_events ?? 0} acontecimentos registados · captura automática · nada se apaga deste trilho</div>}>
-      <div className="h-full flex flex-col bg-[#EEF4F5] overflow-auto p-3 gap-3">
+      <div className="h-full flex flex-col bg-[#F4F6F7] overflow-auto p-3 gap-3">
 
         {/* Pesquisa global */}
-        <div className="bg-white border border-[#7FA9B1] p-3">
+        <div className="bg-white border border-[#C8D2D5] p-3">
           <div className="flex items-center gap-2">
-            <Search size={16} className="text-[#062A31]" />
+            <Search size={16} className="text-[#1F292C]" />
             <input value={q} onChange={(e) => setQ(e.target.value)}
               placeholder="Pesquisar em TUDO — fatura, hóspede, quarto, comanda anulada, quem eliminou o quê, motivo…"
-              className="flex-1 border border-[#7FA9B1] px-3 py-1.5 text-[13px] outline-none focus:border-[#062A31]"
+              className="flex-1 border border-[#C8D2D5] px-3 py-1.5 text-[13px] outline-none focus:border-[#062F35]"
               style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.12)' }} />
             {(q || filter.action || filter.destructive) && (
               <button onClick={() => { setQ(''); setFilter({}); }}
-                className="text-[11px] font-bold text-[#B0392B] hover:underline">Limpar</button>
+                className="text-[11px] font-bold text-[#C94A4A] hover:underline">Limpar</button>
             )}
           </div>
           <div className="text-[10px] text-gray-500 mt-1">
@@ -95,21 +95,21 @@ export default function AuditTrailView() {
 
         {/* Pulso do sistema — últimas 24h */}
         <div className="flex gap-2">
-          <Kpi label="Criados (24h)" value={c24.CREATE} color="#062A31"
+          <Kpi label="Criados (24h)" value={c24.CREATE} color="#062F35"
             onClick={() => setFilter({ action: 'CREATE' })} active={filter.action === 'CREATE'} />
-          <Kpi label="Alterados (24h)" value={c24.UPDATE} color="#5C8891"
+          <Kpi label="Alterados (24h)" value={c24.UPDATE} color="#4B858E"
             onClick={() => setFilter({ action: 'UPDATE' })} active={filter.action === 'UPDATE'} />
-          <Kpi label="ANULADOS (24h)" value={c24.VOID} color="#B0392B"
+          <Kpi label="ANULADOS (24h)" value={c24.VOID} color="#C94A4A"
             onClick={() => setFilter({ action: 'VOID' })} active={filter.action === 'VOID'} />
-          <Kpi label="ELIMINADOS (24h)" value={c24.DELETE} color="#8C2B1F"
+          <Kpi label="ELIMINADOS (24h)" value={c24.DELETE} color="#A83A3A"
             onClick={() => setFilter({ action: 'DELETE' })} active={filter.action === 'DELETE'} />
-          <Kpi label="Consultas (24h)" value={c24.VIEW} color="#5C8891"
+          <Kpi label="Consultas (24h)" value={c24.VIEW} color="#4B858E"
             onClick={() => setFilter({ action: 'VIEW' })} active={filter.action === 'VIEW'} />
-          <Kpi label="Exportações (24h)" value={c24.EXPORT} color="#5C8891"
+          <Kpi label="Exportações (24h)" value={c24.EXPORT} color="#4B858E"
             onClick={() => setFilter({ action: 'EXPORT' })} active={filter.action === 'EXPORT'} />
-          <Kpi label="Acessos recusados" value={c24.DENIED} color="#8C2B1F"
+          <Kpi label="Acessos recusados" value={c24.DENIED} color="#A83A3A"
             onClick={() => setFilter({ action: 'DENIED' })} active={filter.action === 'DENIED'} />
-          <Kpi label="Valor anulado (7d)" value={money(ov?.destructive_value)} color="#B0392B"
+          <Kpi label="Valor anulado (7d)" value={money(ov?.destructive_value)} color="#C94A4A"
             onClick={() => setFilter({ destructive: true })} active={!!filter.destructive} />
         </div>
 
@@ -118,8 +118,8 @@ export default function AuditTrailView() {
           <div className="p-3 flex flex-wrap gap-2">
             {(ov?.by_module || []).map((m: any) => (
               <button key={`${m.module}-${m.area}`} onClick={() => setFilter({ module: m.module })}
-                className={`px-2.5 py-1.5 border text-[11px] text-left ${filter.module === m.module ? 'bg-[#F7FAFA] border-[#062A31]' : 'bg-[#FFFFFF] border-[#CFE3E6] hover:bg-[#F7FAFA]'}`}>
-                <div className="font-bold text-[#062A31]">{m.module}</div>
+                className={`px-2.5 py-1.5 border text-[11px] text-left ${filter.module === m.module ? 'bg-[#F4F6F7] border-[#062F35]' : 'bg-[#FFFFFF] border-[#C8D2D5] hover:bg-[#F4F6F7]'}`}>
+                <div className="font-bold text-[#1F292C]">{m.module}</div>
                 <div className="text-gray-500">{m.area || '—'} · <b>{m.n}</b> acontecimentos</div>
               </button>
             ))}
@@ -132,20 +132,20 @@ export default function AuditTrailView() {
           right={<span className="text-[11px] font-normal text-gray-500">{events.length} registo(s) · clique para ver o que mudou</span>}>
           <table className="w-full text-[12px] border-collapse">
             <thead>
-              <tr className="text-[#062A31] bg-[#F7FAFA]">
+              <tr className="text-[#1F292C] bg-[#F4F6F7]">
                 {['Quando', 'Ação', 'Módulo', 'Área', 'Registo', 'Quem', 'Motivo', 'Valor'].map((h) => (
-                  <th key={h} className="text-left font-bold px-2 py-1 border-b border-[#CFE3E6]">{h}</th>
+                  <th key={h} className="text-left font-bold px-2 py-1 border-b border-[#C8D2D5]">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {events.map((e: any) => {
-                const a = ACTION[e.action] || { label: e.action, bg: '#5C8891', icon: Eye };
+                const a = ACTION[e.action] || { label: e.action, bg: '#4B858E', icon: Eye };
                 const I = a.icon;
                 const bad = e.action === 'VOID' || e.action === 'DELETE' || e.action === 'DENIED';
                 return (
                   <tr key={e.id} onClick={() => setSel(e)}
-                    className={`border-b border-[#F7FAFA] cursor-pointer hover:bg-[#F7FAFA] ${bad ? 'bg-[#FFFFFF]' : ''}`}>
+                    className={`border-b border-[#E4E9EB] cursor-pointer hover:bg-[#F4F6F7] ${bad ? 'bg-[#FFFFFF]' : ''}`}>
                     <td className="px-2 py-1 font-mono text-[11px] whitespace-nowrap">{when(e.at)}</td>
                     <td className="px-2 py-1">
                       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: a.bg }}>
@@ -153,10 +153,10 @@ export default function AuditTrailView() {
                       </span>
                     </td>
                     <td className="px-2 py-1">{e.module}</td>
-                    <td className="px-2 py-1 font-bold text-[#062A31]">{e.area || '—'}</td>
+                    <td className="px-2 py-1 font-bold text-[#1F292C]">{e.area || '—'}</td>
                     <td className="px-2 py-1">{e.label}</td>
                     <td className="px-2 py-1 text-gray-600">{e.user || '—'}</td>
-                    <td className="px-2 py-1 text-[#B0392B]">{e.reason || ''}</td>
+                    <td className="px-2 py-1 text-[#C94A4A]">{e.reason || ''}</td>
                     <td className="px-2 py-1 font-mono text-right">{e.amount ? money(e.amount) : ''}</td>
                   </tr>
                 );
@@ -181,20 +181,20 @@ export default function AuditTrailView() {
                 <div><span className="text-gray-500">De onde:</span> <b>{sel.ip_address || '—'}</b></div>
                 <div><span className="text-gray-500">Registo:</span> <b>{sel.entity} #{sel.entity_id}</b></div>
               </div>
-              {sel.reason && <div className="mb-2 p-2 bg-[#F7FAFA] border border-[#B0392B] text-[#B0392B] font-bold">Motivo: {sel.reason}</div>}
+              {sel.reason && <div className="mb-2 p-2 bg-[#F4F6F7] border border-[#C94A4A] text-[#C94A4A] font-bold">Motivo: {sel.reason}</div>}
               {sel.changes ? (
                 <table className="w-full border-collapse">
-                  <thead><tr className="bg-[#F7FAFA] text-[#062A31]">
-                    <th className="text-left px-2 py-1 border-b border-[#CFE3E6] font-bold">Campo</th>
-                    <th className="text-left px-2 py-1 border-b border-[#CFE3E6] font-bold">Antes</th>
-                    <th className="text-left px-2 py-1 border-b border-[#CFE3E6] font-bold">Depois</th>
+                  <thead><tr className="bg-[#F4F6F7] text-[#1F292C]">
+                    <th className="text-left px-2 py-1 border-b border-[#C8D2D5] font-bold">Campo</th>
+                    <th className="text-left px-2 py-1 border-b border-[#C8D2D5] font-bold">Antes</th>
+                    <th className="text-left px-2 py-1 border-b border-[#C8D2D5] font-bold">Depois</th>
                   </tr></thead>
                   <tbody>
                     {Object.entries(sel.changes).map(([k, v]: any) => (
-                      <tr key={k} className="border-b border-[#F7FAFA]">
+                      <tr key={k} className="border-b border-[#E4E9EB]">
                         <td className="px-2 py-1 font-bold">{k}</td>
                         <td className="px-2 py-1 text-gray-600">{String(v?.antes ?? (typeof v === 'object' ? JSON.stringify(v) : v))}</td>
-                        <td className="px-2 py-1 text-[#062A31] font-bold">{String(v?.depois ?? '')}</td>
+                        <td className="px-2 py-1 text-[#1F292C] font-bold">{String(v?.depois ?? '')}</td>
                       </tr>
                     ))}
                   </tbody>

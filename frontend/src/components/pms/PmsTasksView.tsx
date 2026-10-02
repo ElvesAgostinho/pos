@@ -13,7 +13,7 @@ import { aviso, confirmar } from '../../ui/dialogo';
 
 const PRIORITY = [{ value: 'LOW', label: 'Baixa' }, { value: 'NORMAL', label: 'Normal' }, { value: 'HIGH', label: 'Alta' }];
 const STATUS = [{ value: 'PENDING', label: 'Pendente' }, { value: 'IN_PROGRESS', label: 'Em curso' }, { value: 'DONE', label: 'Concluída' }];
-const STATUS_COLOR: Record<string, string> = { PENDING: '#B0392B', IN_PROGRESS: '#5C8891', DONE: '#062A31' };
+const STATUS_COLOR: Record<string, string> = { PENDING: '#C94A4A', IN_PROGRESS: '#4B858E', DONE: '#062F35' };
 // O TIPO decide o que acontece ao quarto ao concluir: só "Limpeza" liberta um
 // quarto que esteja "Por limpar" (ver mark_done em pms/views.py).
 const TASK_TYPES = [{ value: 'CLEANING', label: 'Limpeza' }, { value: 'MAINTENANCE', label: 'Manutenção' }, { value: 'OTHER', label: 'Outra' }];
@@ -66,14 +66,14 @@ export default function PmsTasksView() {
     } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#7FA9B1] p-1';
+  const inp = 'border border-[#C8D2D5] p-1';
   const statusLabel = (v: string) => STATUS.find((s) => s.value === v)?.label || v;
   const priorityLabel = (v: string) => PRIORITY.find((p) => p.value === v)?.label || v;
 
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r border-[#7FA9B1]">
+        <div className="w-1/2 border-r border-[#C8D2D5]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
             { header: 'Título', accessor: 'title', width: '26%' },
             { header: 'Tipo', accessor: (r: any) => r.task_type_display || '—', width: '12%' },
@@ -84,7 +84,7 @@ export default function PmsTasksView() {
             {
               header: 'Estado', width: '16%',
               accessor: (r: any) => (
-                <span className="px-1.5 py-0.5 text-white text-[10px] font-semibold" style={{ background: STATUS_COLOR[r.status] || '#5C8891' }}>
+                <span className="px-1.5 py-0.5 text-white text-[10px] font-semibold" style={{ background: STATUS_COLOR[r.status] || '#4B858E' }}>
                   {statusLabel(r.status)}
                 </span>
               ),
@@ -92,13 +92,13 @@ export default function PmsTasksView() {
           ]} />
         </div>
         <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
-          <div className="font-bold text-[#062A31]">{selId ? 'Editar Tarefa' : 'Nova Tarefa'}</div>
+          <div className="font-bold text-[#1F292C]">{selId ? 'Editar Tarefa' : 'Nova Tarefa'}</div>
           <label className="flex flex-col">Título<input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inp} /></label>
           <label className="flex flex-col">Tipo de tarefa
             <select value={form.task_type || 'CLEANING'} onChange={(e) => setForm({ ...form, task_type: e.target.value })} className={inp}>
               {TASK_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
-            <span className="text-[10px] text-[#5C8891] mt-0.5">
+            <span className="text-[10px] text-[#657377] mt-0.5">
               Só "Limpeza" liberta o quarto (Por limpar → Livre/Limpo) ao ser concluída.
             </span>
           </label>
@@ -128,10 +128,10 @@ export default function PmsTasksView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Nova', icon: '＋', color: '#062A31', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#062A31', onClick: save },
-        { label: 'Marcar Concluída', icon: '✔', color: '#062A31', onClick: markDone, disabled: !selId || form.status === 'DONE' },
-        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#B0392B' },
+        { label: 'Nova', icon: '＋', color: '#062F35', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#062F35', onClick: save },
+        { label: 'Marcar Concluída', icon: '✔', color: '#062F35', onClick: markDone, disabled: !selId || form.status === 'DONE' },
+        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#C94A4A' },
       ]} />
     </div>
   );

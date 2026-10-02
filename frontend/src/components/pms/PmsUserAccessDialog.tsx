@@ -95,10 +95,10 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[520px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+      <div className="w-[520px] max-h-[75vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
           Acesso PMS — {user?.username}
-          <button onClick={onClose} title="Fechar" className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+          <button onClick={onClose} title="Fechar" className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
@@ -116,12 +116,12 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
             </div>
           ) : (
             <table className="w-full text-[12px] border-collapse">
-              <thead style={{ background: '#F7FAFA' }}>
-                <tr><th className="w-10 border-b border-[#CFE3E6]"></th><th className="text-left px-3 py-1.5 border-b border-[#CFE3E6] font-semibold">Ecrã do PMS</th></tr>
+              <thead style={{ background: '#F4F6F7' }}>
+                <tr><th className="w-10 border-b border-[#C8D2D5]"></th><th className="text-left px-3 py-1.5 border-b border-[#C8D2D5] font-semibold">Ecrã do PMS</th></tr>
               </thead>
               <tbody>
                 {PMS_SCREENS.map((scr) => (
-                  <tr key={scr.id} className="border-b border-[#F7FAFA] hover:bg-white">
+                  <tr key={scr.id} className="border-b border-[#E4E9EB] hover:bg-white">
                     <td className="text-center py-1.5"><input type="checkbox" checked={isChecked(scr.id)} onChange={() => toggle(scr.id)} /></td>
                     <td className="px-3 py-1.5">{scr.label}</td>
                   </tr>
@@ -130,14 +130,14 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
             </table>
           )}
         </div>
-        <div className="flex items-center gap-2 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 bg-[#F4F6F7] border-t border-[#C8D2D5] flex-shrink-0">
           <button onClick={gravar} disabled={saving || !profile || profile.full_access !== false}
-            className="flex items-center gap-2 text-[12px] font-semibold text-[#041F24] disabled:opacity-50 hover:text-black">
-            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: '#5C8891' }}><Check size={13} /></span>
+            className="flex items-center gap-2 text-[12px] font-semibold text-[#1F292C] disabled:opacity-50 hover:text-black">
+            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: '#4B858E' }}><Check size={13} /></span>
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black ml-auto">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black ml-auto">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
         </div>

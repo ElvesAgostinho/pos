@@ -17,41 +17,41 @@ export default function PosOnline() {
     refetchInterval: 8000,
   });
 
-  if (!d) return <div className="flex-1 flex items-center justify-center text-[#7FA9B1]">A carregar…</div>;
+  if (!d) return <div className="flex-1 flex items-center justify-center text-[#657377]">A carregar…</div>;
 
   const Card = ({ label, value, sub, color }: any) => (
     <div className="bg-white px-4 py-3 flex-1" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
-      <div className="text-[11px] text-[#5C8891] uppercase tracking-wide">{label}</div>
-      <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#041F24' }}>{value}</div>
-      {sub && <div className="text-[11px] text-[#5C8891]">{sub}</div>}
+      <div className="text-[11px] text-[#657377] uppercase tracking-wide">{label}</div>
+      <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#062F35' }}>{value}</div>
+      {sub && <div className="text-[11px] text-[#657377]">{sub}</div>}
     </div>
   );
   const panelStyle = { boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft };
   const panelHeader = 'px-3 py-1.5 text-[12px] font-bold border-b';
-  const panelHeaderStyle = { background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 100%)', borderColor: TOKENS.line, color: TOKENS.textOnLight };
+  const panelHeaderStyle = { background: 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 100%)', borderColor: TOKENS.line, color: TOKENS.textOnLight };
 
   const mesas = d.tables || {};
   const ocupadas = mesas.OCCUPIED || 0;
   const livres = mesas.FREE || 0;
 
   return (
-    <div className="flex-1 overflow-auto bg-[#F7FAFA] p-4">
+    <div className="flex-1 overflow-auto bg-[#F4F6F7] p-4">
       <div className="flex items-center mb-3">
-        <span className="text-[16px] font-bold text-[#041F24]">Informação Online</span>
-        <span className="ml-3 text-[11px] text-[#5C8891]">
+        <span className="text-[16px] font-bold text-[#1F292C]">Informação Online</span>
+        <span className="ml-3 text-[11px] text-[#657377]">
           em tempo real · {new Date(d.now).toLocaleTimeString('pt-PT')}
         </span>
       </div>
 
       <div className="flex gap-3 mb-3">
         <Card label="Vendas de hoje" value={`${money(d.today.total)} Kz`}
-          sub={`${d.today.tickets} conta(s) fechadas`} color="#062A31" />
+          sub={`${d.today.tickets} conta(s) fechadas`} color="#062F35" />
         <Card label="Ticket médio" value={`${money(d.today.avg)} Kz`} />
         <Card label="Contas abertas" value={d.open_tickets.length}
-          sub="por cobrar" color={d.open_tickets.length ? '#B0392B' : '#041F24'} />
+          sub="por cobrar" color={d.open_tickets.length ? '#C94A4A' : '#062F35'} />
         <Card label="Mesas ocupadas" value={`${ocupadas}`} sub={`${livres} livre(s)`} />
         <Card label="Cozinha" value={d.kitchen_queue}
-          sub="comandas na fila" color={d.kitchen_queue > 5 ? '#B0392B' : '#041F24'} />
+          sub="comandas na fila" color={d.kitchen_queue > 5 ? '#C94A4A' : '#062F35'} />
         <Card label="Caixas abertas" value={d.open_cash} />
       </div>
 
@@ -61,25 +61,25 @@ export default function PosOnline() {
             Contas abertas — quem está a ser servido agora
           </div>
           <table className="w-full text-[12px]">
-            <thead><tr className="bg-[#F7FAFA]">
+            <thead><tr className="bg-[#F4F6F7]">
               {['Conta', 'Onde', 'Operador', 'Há', 'Total'].map((h) => (
-                <th key={h} className="text-left font-normal px-2 py-1 border-b border-[#EEF4F5]">{h}</th>
+                <th key={h} className="text-left font-normal px-2 py-1 border-b border-[#E4E9EB]">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {d.open_tickets.map((t: any) => (
-                <tr key={t.ticket} className="border-b border-[#F7FAFA]">
+                <tr key={t.ticket} className="border-b border-[#E4E9EB]">
                   <td className="px-2 py-1 font-mono">{t.ticket}</td>
                   <td className="px-2 py-1">{t.where}</td>
                   <td className="px-2 py-1">{t.operator}</td>
-                  <td className="px-2 py-1 flex items-center gap-1" style={{ color: t.minutes > 90 ? '#B0392B' : '#5C8891' }}>
+                  <td className="px-2 py-1 flex items-center gap-1" style={{ color: t.minutes > 90 ? '#C94A4A' : '#4B858E' }}>
                     {t.minutes} min{t.minutes > 90 && <Glyph icon="⚠" size={12} />}
                   </td>
                   <td className="px-2 py-1 text-right font-bold">{money(t.total)}</td>
                 </tr>
               ))}
               {d.open_tickets.length === 0 && (
-                <tr><td colSpan={5} className="text-center text-[#062A31] py-6 font-semibold">
+                <tr><td colSpan={5} className="text-center text-[#1F292C] py-6 font-semibold">
                   <span className="inline-flex items-center gap-1.5"><Glyph icon="✔" size={14} /> Nada por cobrar.</span>
                 </td></tr>
               )}
@@ -95,14 +95,14 @@ export default function PosOnline() {
             <table className="w-full text-[12px]">
               <tbody>
                 {d.top_items.map((x: any) => (
-                  <tr key={x.name} className="border-b border-[#F7FAFA]">
+                  <tr key={x.name} className="border-b border-[#E4E9EB]">
                     <td className="px-2 py-1">{x.name}</td>
-                    <td className="px-2 py-1 text-right text-[#5C8891]">{Number(x.qty)}x</td>
+                    <td className="px-2 py-1 text-right text-[#657377]">{Number(x.qty)}x</td>
                     <td className="px-2 py-1 text-right font-bold">{money(x.total)}</td>
                   </tr>
                 ))}
                 {d.top_items.length === 0 && (
-                  <tr><td className="text-center text-[#7FA9B1] py-5">Ainda não se vendeu nada hoje.</td></tr>
+                  <tr><td className="text-center text-[#657377] py-5">Ainda não se vendeu nada hoje.</td></tr>
                 )}
               </tbody>
             </table>
@@ -115,14 +115,14 @@ export default function PosOnline() {
             <table className="w-full text-[12px]">
               <tbody>
                 {d.by_outlet.map((x: any) => (
-                  <tr key={x.outlet} className="border-b border-[#F7FAFA]">
+                  <tr key={x.outlet} className="border-b border-[#E4E9EB]">
                     <td className="px-2 py-1">{x.outlet}</td>
-                    <td className="px-2 py-1 text-right text-[#5C8891]">{x.tickets}</td>
+                    <td className="px-2 py-1 text-right text-[#657377]">{x.tickets}</td>
                     <td className="px-2 py-1 text-right font-bold">{money(x.total)}</td>
                   </tr>
                 ))}
                 {d.by_outlet.length === 0 && (
-                  <tr><td className="text-center text-[#7FA9B1] py-5">Sem vendas hoje.</td></tr>
+                  <tr><td className="text-center text-[#657377] py-5">Sem vendas hoje.</td></tr>
                 )}
               </tbody>
             </table>

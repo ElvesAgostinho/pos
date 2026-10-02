@@ -18,7 +18,7 @@ export default function BookingManage() {
   const [phone, setPhone] = useState('');
 
   useEffect(() => { apiClient.get('pms/booking/config/', { params: { slug } }).then((r) => setCfg(r.data)).catch(() => {}); }, [slug]);
-  const color = cfg?.primary_color || '#5C8891';
+  const color = cfg?.primary_color || '#4B858E';
 
   const lookup = async () => {
     setBusy(true); setMsg('');
@@ -59,24 +59,24 @@ export default function BookingManage() {
               <input placeholder="Código de reserva (ex.: WEB…)" value={conf} onChange={(e) => setConf(e.target.value)} className="w-full border rounded-lg px-3 py-2" />
               <input placeholder="Email da reserva" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border rounded-lg px-3 py-2" />
               <button onClick={lookup} disabled={busy || !conf} className="w-full py-3 rounded-lg text-white font-bold disabled:opacity-60" style={{ background: color }}>{busy ? '…' : 'Consultar reserva'}</button>
-              {msg && <p className="text-[#8C2B1F] text-sm text-center">{msg}</p>}
+              {msg && <p className="text-[#A83A3A] text-sm text-center">{msg}</p>}
             </div>
           ) : (
             <div className="space-y-3">
               <div className="flex justify-between items-start">
                 <div><div className="text-xs text-gray-400">Código</div><div className="font-mono font-bold">{res.confirmation}</div></div>
-                <span className="text-xs px-2 py-1 rounded-full text-white" style={{ background: res.status_code === 'CANCELLED' ? '#B0392B' : res.status_code === 'CHECKED_IN' ? '#062A31' : color }}>{res.status}</span>
+                <span className="text-xs px-2 py-1 rounded-full text-white" style={{ background: res.status_code === 'CANCELLED' ? '#C94A4A' : res.status_code === 'CHECKED_IN' ? '#062F35' : color }}>{res.status}</span>
               </div>
               <Line label="Hóspede" value={res.guest} />
               <Line label="Quarto" value={`${res.room_type}${res.room ? ` · Quarto ${res.room}` : ''}`} />
               <Line label="Estadia" value={`${res.check_in} → ${res.check_out} (${res.nights} noite(s))`} />
               <Line label="Pessoas" value={`${res.adults} adulto(s), ${res.children} criança(s)`} />
               <Line label="Total" value={money(res.total, cfg?.currency)} bold />
-              {res.online_checkin && <p className="text-[#062A31] text-sm text-center bg-[#F7FAFA] rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Check-in online concluído</p>}
+              {res.online_checkin && <p className="text-[#1F292C] text-sm text-center bg-[#F4F6F7] rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Check-in online concluído</p>}
               {res.status_code === 'BOOKED' && Number(cfg?.deposit_percent) > 0 && (
                 res.deposit_paid
-                  ? <p className="text-[#062A31] text-sm text-center bg-[#F7FAFA] rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Adiantamento pago</p>
-                  : <button onClick={payDeposit} disabled={busy} className="w-full py-2 rounded-lg text-white font-semibold" style={{ background: '#062A31' }}>Pagar adiantamento ({money(Number(res.total) * Number(cfg?.deposit_percent) / 100, cfg?.currency)})</button>
+                  ? <p className="text-[#1F292C] text-sm text-center bg-[#F4F6F7] rounded py-1 flex items-center justify-center gap-1"><Check size={14} strokeWidth={3} /> Adiantamento pago</p>
+                  : <button onClick={payDeposit} disabled={busy} className="w-full py-2 rounded-lg text-white font-semibold" style={{ background: '#062F35' }}>Pagar adiantamento ({money(Number(res.total) * Number(cfg?.deposit_percent) / 100, cfg?.currency)})</button>
               )}
 
               {res.status_code === 'BOOKED' && (
@@ -89,7 +89,7 @@ export default function BookingManage() {
                       <button onClick={() => doAction('pms/booking/reservation/checkin/', { document_id: doc, phone })} disabled={busy} className="w-full py-2 rounded-lg text-white font-semibold" style={{ background: color }}>Fazer check-in online</button>
                     </div>
                   )}
-                  <button onClick={() => { if (confirm('Cancelar esta reserva?')) doAction('pms/booking/reservation/cancel/'); }} disabled={busy} className="w-full py-2 rounded-lg border border-[#B0392B] text-[#8C2B1F] font-semibold hover:bg-[#FDECEA]">Cancelar reserva</button>
+                  <button onClick={() => { if (confirm('Cancelar esta reserva?')) doAction('pms/booking/reservation/cancel/'); }} disabled={busy} className="w-full py-2 rounded-lg border border-[#C94A4A] text-[#A83A3A] font-semibold hover:bg-[#FDECEA]">Cancelar reserva</button>
                 </div>
               )}
               {cfg?.cancellation_policy && <p className="text-xs text-gray-400">Política: {cfg.cancellation_policy}</p>}

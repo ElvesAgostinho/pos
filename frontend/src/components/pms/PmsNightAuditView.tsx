@@ -36,12 +36,12 @@ export default function PmsNightAuditView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex-1 overflow-auto p-4" style={{ background: '#F7FAFA' }}>
-        <div className="border border-[#CFE3E6] p-4 max-w-[480px] mb-6 bg-white">
-          <div className="font-bold text-[13px] text-[#062A31] mb-3 flex items-center gap-1.5">
+      <div className="flex-1 overflow-auto p-4" style={{ background: '#F4F6F7' }}>
+        <div className="border border-[#C8D2D5] p-4 max-w-[480px] mb-6 bg-white">
+          <div className="font-bold text-[13px] text-[#1F292C] mb-3 flex items-center gap-1.5">
             <Glyph icon="🌙" size={16} /> Auditoria da Noite
           </div>
-          <p className="text-[11px] text-[#5C8891] mb-3">
+          <p className="text-[11px] text-[#657377] mb-3">
             Lança a diária (Alojamento) das reservas em check-in cuja noite desta data ainda não
             foi faturada — a 1ª noite já é lançada no check-in; as seguintes entram aqui, uma vez
             por dia. Não pode ser corrida duas vezes para a mesma data.
@@ -49,21 +49,21 @@ export default function PmsNightAuditView() {
           <label className="flex items-center gap-2 text-[12px] mb-3">
             <span className="w-[90px]">Data</span>
             <input type="date" value={auditDate} onChange={(e) => setAuditDate(e.target.value)}
-              className="border border-[#7FA9B1] p-1.5 text-[12px]" />
+              className="border border-[#C8D2D5] p-1.5 text-[12px]" />
           </label>
           <button onClick={run} disabled={running}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#062A31] text-white text-[12px] font-semibold disabled:opacity-50">
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#062F35] text-white text-[12px] font-semibold disabled:opacity-50">
             <Glyph icon="🌙" size={14} /> {running ? 'A executar…' : 'Executar Auditoria'}
           </button>
           {lastResult && (
-            <div className="mt-3 text-[12px] border-t border-[#EEF4F5] pt-2">
+            <div className="mt-3 text-[12px] border-t border-[#E4E9EB] pt-2">
               <div>Quartos lançados: <b>{lastResult.rooms_charged}</b></div>
               <div>Total lançado: <b>{money(lastResult.total_posted)} Kz</b></div>
             </div>
           )}
         </div>
 
-        <div className="font-bold text-[12px] text-[#062A31] mb-2">Histórico de Execuções</div>
+        <div className="font-bold text-[12px] text-[#1F292C] mb-2">Histórico de Execuções</div>
         <div style={{ height: 300 }}>
           <ClassicGrid rowKey="id" data={rows} columns={[
             { header: 'Data Auditada', accessor: 'audit_date', width: '18%' },
@@ -74,7 +74,7 @@ export default function PmsNightAuditView() {
           ]} />
         </div>
       </div>
-      <Toolbar actions={[{ label: 'Atualizar Histórico', icon: '⟳', color: '#062A31', onClick: () => refetch() }]} />
+      <Toolbar actions={[{ label: 'Atualizar Histórico', icon: '⟳', color: '#062F35', onClick: () => refetch() }]} />
     </div>
   );
 }

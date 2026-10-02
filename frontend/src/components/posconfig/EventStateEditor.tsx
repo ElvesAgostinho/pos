@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-start gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#041F24] pt-1">{label}</span>
+      <span className="w-[120px] flex-shrink-0 text-[#1F292C] pt-1">{label}</span>
       {children}
     </label>
   );
@@ -30,7 +30,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
   const isNew = !row?.id;
   const [d, setD] = useState<any>({
     is_active: true, is_system: false, is_auto_reservation: false, sort_order: 0,
-    bg_color: '#062A31', text_color: '#FFFFFF', equivalent: '', ...row,
+    bg_color: '#062F35', text_color: '#FFFFFF', equivalent: '', ...row,
   });
 
   const save = useMutation({
@@ -53,9 +53,9 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Novo estado' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
+        <span className="text-[13px] font-bold text-[#1F292C]">{isNew ? 'Novo estado' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -65,7 +65,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
             <Row label="Código:">
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 disabled={d.is_system && !isNew}
-                className={`${inp} w-[290px] disabled:bg-[#F7FAFA] disabled:text-[#5C8891]`} style={inputStyle} />
+                className={`${inp} w-[290px] disabled:bg-[#F4F6F7] disabled:text-[#657377]`} style={inputStyle} />
             </Row>
             <Row label="Descrição:">
               <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
@@ -85,7 +85,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
                   <option value="CHECKIN">Check-in</option>
                   <option value="CHECKOUT">Check-out</option>
                 </select>
-                <div className={`text-[11px] mt-1 max-w-[290px] ${bloqueia ? 'text-[#B0392B]' : 'text-[#062A31]'}`}>
+                <div className={`text-[11px] mt-1 max-w-[290px] ${bloqueia ? 'text-[#C94A4A]' : 'text-[#1F292C]'}`}>
                   {bloqueia
                     ? 'Este estado BLOQUEIA o espaço — a sala sai do mercado.'
                     : 'Este estado NÃO bloqueia o espaço — a sala continua a poder ser vendida.'}
@@ -99,8 +99,8 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
             <Row label="Cor de Fundo:">
               <div className="flex items-center gap-2">
-                <input type="color" value={d.bg_color || '#062A31'}
-                  onChange={(e) => set('bg_color', e.target.value)} className="w-10 h-8 border border-[#7FA9B1]" />
+                <input type="color" value={d.bg_color || '#062F35'}
+                  onChange={(e) => set('bg_color', e.target.value)} className="w-10 h-8 border border-[#C8D2D5]" />
                 <input value={d.bg_color || ''} onChange={(e) => set('bg_color', e.target.value)}
                   className={`${inp} w-[130px] font-mono`} style={inputStyle} />
               </div>
@@ -108,7 +108,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
             <Row label="Cor do texto:">
               <div className="flex items-center gap-2">
                 <input type="color" value={d.text_color || '#FFFFFF'}
-                  onChange={(e) => set('text_color', e.target.value)} className="w-10 h-8 border border-[#7FA9B1]" />
+                  onChange={(e) => set('text_color', e.target.value)} className="w-10 h-8 border border-[#C8D2D5]" />
                 <input value={d.text_color || ''} onChange={(e) => set('text_color', e.target.value)}
                   className={`${inp} w-[130px] font-mono`} style={inputStyle} />
               </div>
@@ -128,7 +128,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
             <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_system} onChange={(e) => set('is_system', e.target.checked)} className="w-4 h-4" />
               Sistema
-              <span className="text-[11px] text-[#5C8891]">— o motor precisa dele; não se apaga</span>
+              <span className="text-[11px] text-[#657377]">— o motor precisa dele; não se apaga</span>
             </label>
             <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
@@ -154,8 +154,8 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
       ]} />
     </div>
   );

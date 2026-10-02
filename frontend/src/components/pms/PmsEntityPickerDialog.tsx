@@ -28,23 +28,23 @@ function RequiredFieldsDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[9300] flex items-center justify-center bg-black/40">
-      <div className="w-[440px] max-h-[70vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+      <div className="w-[440px] max-h-[70vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
           Campos obrigatórios
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
         <div className="p-3 overflow-auto bg-white text-[12px]">
-          <div className="text-[11px] text-[#5C8891] mb-2">
+          <div className="text-[11px] text-[#657377] mb-2">
             O servidor recusa gravar uma entidade sem estes campos. Não é um aviso — é uma regra.
           </div>
           {rows.map((r: any) => (
             <label key={r.id} className="flex items-center gap-2 py-1 cursor-pointer">
               <input type="checkbox" checked={!!r.is_required} disabled={r.field === 'name' || toggle.isPending}
                 onChange={(e) => toggle.mutate({ id: r.id, v: e.target.checked })} className="w-4 h-4" />
-              {r.label || r.field}{r.field === 'name' && <span className="text-[#7FA9B1] text-[11px]"> (sempre)</span>}
+              {r.label || r.field}{r.field === 'name' && <span className="text-[#657377] text-[11px]"> (sempre)</span>}
             </label>
           ))}
         </div>
@@ -68,15 +68,15 @@ function GuestInfoDialog({ guest, onClose }: { guest: any; onClose: () => void }
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[760px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+      <div className="w-[760px] max-h-[75vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
           Guest Info — {guest.name}
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="px-3 py-2 bg-white border-b border-[#CFE3E6] text-[12px] flex gap-6 flex-shrink-0">
+        <div className="px-3 py-2 bg-white border-b border-[#C8D2D5] text-[12px] flex gap-6 flex-shrink-0">
           <span><b>Nr. cliente:</b> {guest.code || '—'}</span>
           <span><b>Contacto:</b> {guest.contact || '—'}</span>
           <span><b>NIF:</b> {guest.tax_id || '—'}</span>
@@ -93,14 +93,14 @@ function GuestInfoDialog({ guest, onClose }: { guest: any; onClose: () => void }
               { header: 'Check-in', accessor: 'check_in', width: '13%' },
               { header: 'Check-out', accessor: 'check_out', width: '13%' },
               { header: 'Estado', accessor: (r: any) => (
-                <span style={{ color: STATUS_COLOR[r.status] || '#041F24', fontWeight: 700 }}>{r.status_display}</span>
+                <span style={{ color: STATUS_COLOR[r.status] || '#062F35', fontWeight: 700 }}>{r.status_display}</span>
               ), width: '15%' },
             ]} />
           )}
         </div>
-        <div className="flex justify-end px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
+        <div className="flex justify-end px-3 py-2 bg-[#F4F6F7] border-t border-[#C8D2D5] flex-shrink-0">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
         </div>
@@ -158,53 +158,53 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
 
   const Adv = ({ k, label }: { k: string; label: string }) => (
     <label className="flex items-center gap-2">
-      <span className="w-[110px] text-[#041F24]">{label}</span>
+      <span className="w-[110px] text-[#1F292C]">{label}</span>
       <input value={adv[k] || ''} onChange={(e) => setAdv((a: any) => ({ ...a, [k]: e.target.value }))}
-        className="border border-[#7FA9B1] p-1 bg-white flex-1" />
+        className="border border-[#C8D2D5] p-1 bg-white flex-1" />
     </label>
   );
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[1000px] max-h-[85vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
+      <div className="w-[1000px] max-h-[85vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#062F35' }}>
           Entidades
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
             <button onClick={onClose} title="Fechar"
-              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
               <X size={12} strokeWidth={3} />
             </button>
           </div>
         </div>
 
-        <div className="bg-white border-b border-[#EEF4F5] text-[12px]">
-          <div className="flex border-b border-[#EEF4F5]">
+        <div className="bg-white border-b border-[#E4E9EB] text-[12px]">
+          <div className="flex border-b border-[#E4E9EB]">
             <button onClick={() => setTab('S')}
-              className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#041F24]' : 'bg-[#F7FAFA] text-[#5C8891]'}`}>
+              className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#062F35]' : 'bg-[#F4F6F7] text-[#657377]'}`}>
               Pesquisa simples
             </button>
             <button onClick={() => setTab('A')}
-              className={`px-4 py-1.5 font-semibold ${tab === 'A' ? 'bg-white border-b-2 border-[#041F24]' : 'bg-[#F7FAFA] text-[#5C8891]'}`}>
+              className={`px-4 py-1.5 font-semibold ${tab === 'A' ? 'bg-white border-b-2 border-[#062F35]' : 'bg-[#F4F6F7] text-[#657377]'}`}>
               Pesquisa Avançada
             </button>
           </div>
           <div className="p-2 flex gap-3">
             <div className="flex-1">
               <label className="flex items-center gap-2 mb-1.5">
-                <span className="w-[110px] text-[#041F24]">Tipo de entidade:</span>
+                <span className="w-[110px] text-[#1F292C]">Tipo de entidade:</span>
                 <select value={entityType} onChange={(e) => setEntityType(e.target.value)}
-                  className="border border-[#7FA9B1] p-1 bg-white flex-1">
+                  className="border border-[#C8D2D5] p-1 bg-white flex-1">
                   <option value="">(Todos)</option>
                   {tipoList.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </label>
               {tab === 'S' ? (
                 <label className="flex items-center gap-2">
-                  <span className="w-[110px] text-[#041F24]">Pesquisa livre:</span>
+                  <span className="w-[110px] text-[#1F292C]">Pesquisa livre:</span>
                   <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus
                     onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
-                    className="border border-[#7FA9B1] p-1 bg-white flex-1" />
+                    className="border border-[#C8D2D5] p-1 bg-white flex-1" />
                 </label>
               ) : (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
@@ -221,7 +221,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
             </div>
             <button onClick={pesquisar}
               className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px]"
-              style={{ background: '#041F24' }}>
+              style={{ background: '#062F35' }}>
               <RefreshCw size={20} /> Pesquisar
             </button>
           </div>
@@ -233,7 +233,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
               onRowClick={(r: any) => setSelId(r.id)}
               onRowDoubleClick={(r: any) => onSelect(r)}
               columns={[
-                { header: '', accessor: () => <User size={14} className="text-[#7FA9B1]" />, width: '4%' },
+                { header: '', accessor: () => <User size={14} className="text-[#657377]" />, width: '4%' },
                 { header: 'Apelido', accessor: 'last_name', width: '13%' },
                 { header: 'Nome', accessor: 'name', width: '17%' },
                 { header: 'Outros nomes', accessor: 'other_names', width: '15%' },
@@ -245,31 +245,31 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
           )}
         </div>
 
-        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7FAFA] border-t border-[#CFE3E6] text-[12px]">
-          <button onClick={() => setEditing({ is_blocked: false })} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5]">
+        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F4F6F7] border-t border-[#C8D2D5] text-[12px]">
+          <button onClick={() => setEditing({ is_blocked: false })} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F4F6F7]">
             <Plus size={13} /> Adicionar
           </button>
           <button disabled={!sel} onClick={() => sel && setEditing({ ...sel })}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F4F6F7] disabled:opacity-30 disabled:hover:bg-transparent">
             <Pencil size={13} /> Editar
           </button>
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F4F6F7] disabled:opacity-30 disabled:hover:bg-transparent">
             <Hand size={13} /> Selecionar
           </button>
           <button disabled={!sel} onClick={() => sel && setShowGuestInfo(true)}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F4F6F7] disabled:opacity-30 disabled:hover:bg-transparent">
             <User size={13} /> Guest Info
           </button>
-          <button onClick={() => setShowRequired(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5]">
+          <button onClick={() => setShowRequired(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F4F6F7]">
             <Search size={13} /> Campos obrigatórios
           </button>
-          <button onClick={() => setShowDups(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF4F5]">
+          <button onClick={() => setShowDups(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F4F6F7]">
             <Copy size={13} /> Controlo de duplicação
           </button>
           <div className="flex-1" />
           <button onClick={onClose} className="flex items-center gap-1.5 font-semibold hover:text-black">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white">
               <X size={9} strokeWidth={3} />
             </span>
             Fechar

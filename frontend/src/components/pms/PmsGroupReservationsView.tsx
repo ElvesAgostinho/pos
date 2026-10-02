@@ -16,19 +16,19 @@ const SAVED_KEY = 'pms_saved_searches_group';
 function Field({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex flex-col gap-0.5 text-[11px]">
-      <span className="text-[#062A31] font-semibold whitespace-nowrap">{label}</span>
+      <span className="text-[#1F292C] font-semibold whitespace-nowrap">{label}</span>
       {children}
     </label>
   );
 }
-const inputCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
-const selCls = 'border border-[#7FA9B1] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
+const inputCls = 'border border-[#C8D2D5] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
+const selCls = 'border border-[#C8D2D5] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
 
-function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#041F24' }: any) {
+function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#062F35' }: any) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-2 py-1.5 text-[12px] font-semibold text-[#041F24] disabled:opacity-40 disabled:cursor-default hover:bg-[#EEF4F5]">
-      <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: disabled ? '#CFE3E6' : color }}>
+      className="flex items-center gap-2 px-2 py-1.5 text-[12px] font-semibold text-[#1F292C] disabled:opacity-40 disabled:cursor-default hover:bg-[#F4F6F7]">
+      <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: disabled ? '#C8D2D5' : color }}>
         <Icon size={13} />
       </span>
       {label}
@@ -49,11 +49,11 @@ function PickupDialog({ block, onClose }: { block: any; onClose: () => void }) {
   const rows = data || [];
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[820px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+      <div className="w-[820px] max-h-[75vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
           Pickup — {block.code} · {block.description}
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
@@ -200,9 +200,9 @@ export default function PmsGroupReservationsView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#CFE3E6] text-[11px]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[11px]">
         <label className="flex items-center gap-2">
-          <span className="font-semibold text-[#062A31]">Hotel:</span>
+          <span className="font-semibold text-[#1F292C]">Hotel:</span>
           {hotels.length > 1 ? (
             <select value={hotelId || String(hotels[0]?.id)}
               onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
@@ -210,38 +210,38 @@ export default function PmsGroupReservationsView() {
               {hotels.map((h: any) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
           ) : (
-            <div className="flex items-center gap-1 bg-white border border-[#7FA9B1] px-1.5 py-1 min-w-[180px]">
-              <Building2 size={12} className="text-[#5C8891]" /> {hotelName || '—'}
+            <div className="flex items-center gap-1 bg-white border border-[#C8D2D5] px-1.5 py-1 min-w-[180px]">
+              <Building2 size={12} className="text-[#657377]" /> {hotelName || '—'}
             </div>
           )}
         </label>
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-[#062A31]">Pesquisas:</span>
+          <span className="font-semibold text-[#1F292C]">Pesquisas:</span>
           <select value={savedName} onChange={(e) => e.target.value ? aplicarPesquisa(e.target.value) : setSavedName('')} className={selCls}>
             <option value="">(Nova pesquisa)</option>
             {saved.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
           </select>
-          <button onClick={() => setShowSaveDialog(true)} title="Nova pesquisa" className="w-6 h-6 flex items-center justify-center rounded-full bg-[#062A31] text-white hover:brightness-110 transition-[filter]"><Plus size={13} /></button>
-          <button onClick={() => setShowSaveDialog(true)} className="flex items-center gap-1 px-2.5 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] rounded-[6px] transition-colors"><Save size={12} /> Gravar</button>
-          <button onClick={apagarPesquisa} disabled={!savedName} className="flex items-center gap-1 px-2.5 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] disabled:opacity-40 rounded-[6px] transition-colors"><Trash2 size={12} className="text-[#B0392B]" /> Apagar</button>
+          <button onClick={() => setShowSaveDialog(true)} title="Nova pesquisa" className="w-6 h-6 flex items-center justify-center rounded-full bg-[#062F35] text-white hover:brightness-110 transition-[filter]"><Plus size={13} /></button>
+          <button onClick={() => setShowSaveDialog(true)} className="flex items-center gap-1 px-2.5 py-1 border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] rounded-[6px] transition-colors"><Save size={12} /> Gravar</button>
+          <button onClick={apagarPesquisa} disabled={!savedName} className="flex items-center gap-1 px-2.5 py-1 border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] disabled:opacity-40 rounded-[6px] transition-colors"><Trash2 size={12} className="text-[#C94A4A]" /> Apagar</button>
         </div>
       </div>
       <button onClick={() => setAvancadaAberta((o) => !o)}
-        className="flex items-center justify-end gap-1 px-3 py-1 bg-[#F7FAFA] border-b border-[#CFE3E6] text-[11px] font-semibold text-[#041F24] w-full hover:bg-[#EEF4F5]">
+        className="flex items-center justify-end gap-1 px-3 py-1 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[11px] font-semibold text-[#1F292C] w-full hover:bg-[#F4F6F7]">
         Pesquisa Avançada {avancadaAberta ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       </button>
 
       {avancadaAberta && (
-        <div className="flex gap-4 p-3 bg-[#F7FAFA] border-b border-[#EEF4F5]">
+        <div className="flex gap-4 p-3 bg-[#F4F6F7] border-b border-[#E4E9EB]">
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Pesquisa</div>
+            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Hóspede:"><input value={guestQuery} onChange={(e) => setGuestQuery(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Código do Bloco:"><input value={codigo} onChange={(e) => setCodigo(e.target.value)} className={inputCls + ' w-full'} /></Field>
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
-            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Datas</div>
+            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Datas</div>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'fixed'} onChange={() => setDateMode('fixed')} /> Fixo</label>
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'period'} onChange={() => setDateMode('period')} /> Período</label>
@@ -269,7 +269,7 @@ export default function PmsGroupReservationsView() {
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Quarto / Tarifa</div>
+            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Quarto / Tarifa</div>
             <Field label="Categoria:">
               <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -285,7 +285,7 @@ export default function PmsGroupReservationsView() {
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Comercial</div>
+            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Comercial</div>
             <Field label="Segmento:">
               <select value={segment} onChange={(e) => { setSegment(e.target.value); setSubSegment(''); }} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -309,14 +309,14 @@ export default function PmsGroupReservationsView() {
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
-            <div className="text-[10px] font-bold uppercase text-[#5C8891] mb-0.5">Visualização</div>
-            <button onClick={exportarExcel} className="flex items-center gap-1.5 px-2.5 py-1 border border-[#CFE3E6] bg-white hover:bg-[#F7FAFA] w-fit rounded-[6px] transition-colors"><FileSpreadsheet size={13} /> Excel</button>
+            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Visualização</div>
+            <button onClick={exportarExcel} className="flex items-center gap-1.5 px-2.5 py-1 border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] w-fit rounded-[6px] transition-colors"><FileSpreadsheet size={13} /> Excel</button>
             <div className="flex items-center gap-1.5">
               <label className="flex items-center gap-1.5 cursor-pointer">
                 <input type="checkbox" checked={autoUpdate} onChange={(e) => setAutoUpdate(e.target.checked)} /> Atualização automática
               </label>
               <button onClick={() => setAutoUpdate((v) => !v)}
-                className={`flex items-center gap-1.5 px-2 py-1 border border-[#7FA9B1] ml-auto ${autoUpdate ? 'bg-[#062A31] text-white' : 'bg-white hover:bg-[#F7FAFA]'}`}>
+                className={`flex items-center gap-1.5 px-2 py-1 border border-[#C8D2D5] ml-auto ${autoUpdate ? 'bg-[#062F35] text-white' : 'bg-white hover:bg-[#F4F6F7]'}`}>
                 <RefreshCw size={13} /> Auto
               </button>
             </div>
@@ -325,14 +325,14 @@ export default function PmsGroupReservationsView() {
 
           <button onClick={pesquisar}
             className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] hover:brightness-110 transition-[filter]"
-            style={{ background: '#062A31', borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
+            style={{ background: '#062F35', borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
             <RefreshCw size={20} /> Pesquisar
           </button>
         </div>
       )}
 
       <div className="flex-1 overflow-auto bg-white">
-        <div className="grid text-[11px] font-semibold text-[#062A31] border-b border-[#EEF4F5] bg-[#F7FAFA] sticky top-0 z-10"
+        <div className="grid text-[11px] font-semibold text-[#1F292C] border-b border-[#E4E9EB] bg-[#F4F6F7] sticky top-0 z-10"
           style={{ gridTemplateColumns: '8% 8% 24% 20% 22% 18%' }}>
           <div className="px-3 py-2">Hotel</div>
           <div className="px-3 py-2">Ações</div>
@@ -345,23 +345,23 @@ export default function PmsGroupReservationsView() {
           <div className="p-6 text-center text-gray-400 text-[12px]">Nenhum registo encontrado.</div>
         ) : pageRows.map((b: any) => (
           <div key={b.id} onClick={() => setSelId(b.id)}
-            className={`grid border-b border-[#EEF4F5] cursor-pointer text-[12px] ${selId === b.id ? 'bg-[#F7FAFA]' : 'hover:bg-[#FFFFFF]'}`}
+            className={`grid border-b border-[#E4E9EB] cursor-pointer text-[12px] ${selId === b.id ? 'bg-[#F4F6F7]' : 'hover:bg-[#FFFFFF]'}`}
             style={{ gridTemplateColumns: '8% 8% 24% 20% 22% 18%' }}>
-            <div className="px-3 py-3 flex items-start gap-2 text-[#041F24]">
-              <Building2 size={14} className="text-[#7FA9B1] flex-shrink-0 mt-0.5" /><span className="truncate">{hotelName || '—'}</span>
+            <div className="px-3 py-3 flex items-start gap-2 text-[#1F292C]">
+              <Building2 size={14} className="text-[#657377] flex-shrink-0 mt-0.5" /><span className="truncate">{hotelName || '—'}</span>
             </div>
             <div className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
               <button title="Ver Pickup" onClick={() => setShowPickup(b)}
-                className="w-7 h-7 rounded flex items-center justify-center bg-[#F7FAFA] text-[#062A31]"><Eye size={14} /></button>
+                className="w-7 h-7 rounded flex items-center justify-center bg-[#F4F6F7] text-[#1F292C]"><Eye size={14} /></button>
             </div>
             <div className="px-3 py-3 leading-tight">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-[15px]">{b.code}</span>
-                {b.is_guaranteed && <span className="text-[10px] text-white font-semibold px-2 py-0.5 rounded bg-[#5C8891]">Garantido</span>}
+                {b.is_guaranteed && <span className="text-[10px] text-white font-semibold px-2 py-0.5 rounded bg-[#4B858E]">Garantido</span>}
               </div>
               <div className="text-[11px] text-gray-600">{b.description}</div>
               <div className="mt-0.5">
-                <span className="text-[#062A31]">{b.valid_from}</span> <span className="text-gray-400">→</span> <span className="text-[#8C2B1F]">{b.valid_to}</span>
+                <span className="text-[#1F292C]">{b.valid_from}</span> <span className="text-gray-400">→</span> <span className="text-[#A83A3A]">{b.valid_to}</span>
                 <span className="text-gray-400"> · {b.nights} noite(s)</span>
               </div>
             </div>
@@ -384,7 +384,7 @@ export default function PmsGroupReservationsView() {
         ))}
       </div>
 
-      <div className="flex items-center gap-3 px-3 py-1 border-t border-[#CFE3E6] bg-[#F7FAFA] text-[11px] flex-wrap">
+      <div className="flex items-center gap-3 px-3 py-1 border-t border-[#C8D2D5] bg-[#F4F6F7] text-[11px] flex-wrap">
         <label className="flex items-center gap-1">Nº registos a visualizar:
           <select value={pageSize} disabled className={selCls + ' min-w-0 opacity-60'}><option>{pageSize}</option></select>
         </label>
@@ -398,9 +398,9 @@ export default function PmsGroupReservationsView() {
         <span className="ml-auto text-gray-500">{rows.length === 0 ? 'Não foram encontrados dados.' : `${rows.length} registo(s)`}</span>
       </div>
 
-      <div className="flex items-center gap-1 p-1.5 border-t border-[#CFE3E6] bg-[#F7FAFA]">
-        <ToolBtn icon={BedDouble} label="Nova Reserva" color="#5C8891" onClick={() => setShowNew(true)} />
-        <span className="w-px h-5 bg-[#CFE3E6] mx-1" />
+      <div className="flex items-center gap-1 p-1.5 border-t border-[#C8D2D5] bg-[#F4F6F7]">
+        <ToolBtn icon={BedDouble} label="Nova Reserva" color="#4B858E" onClick={() => setShowNew(true)} />
+        <span className="w-px h-5 bg-[#DCE6E8] mx-1" />
         <ToolBtn icon={Copy} label="Copiar reserva" disabled={!sel} onClick={() => setShowCopy(true)} />
       </div>
 

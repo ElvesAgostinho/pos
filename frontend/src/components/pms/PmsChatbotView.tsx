@@ -88,14 +88,14 @@ export default function PmsChatbotView() {
     } finally { setSending(false); }
   };
 
-  const inp = 'border border-[#7FA9B1] p-1.5 text-[12px] w-full';
+  const inp = 'border border-[#C8D2D5] p-1.5 text-[12px] w-full';
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex border-b border-[#7FA9B1] bg-[#F7FAFA]">
+      <div className="flex border-b border-[#C8D2D5] bg-[#F4F6F7]">
         {(['ligacao', 'config', 'sim'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#CFE3E6] ${tab === t ? 'bg-white text-[#062A31] border-b-2 border-b-[#0B4F5C]' : 'text-[#5C8891] hover:bg-white'}`}>
+            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#C8D2D5] ${tab === t ? 'bg-white text-[#1F292C] border-b-2 border-b-[#0A4148]' : 'text-[#657377] hover:bg-white'}`}>
             {t === 'ligacao' ? 'Ligação' : t === 'config' ? 'Configuração' : 'Simular Conversa'}
           </button>
         ))}
@@ -105,8 +105,8 @@ export default function PmsChatbotView() {
             <span className="w-2 h-2 rounded-full" style={{
               background: estado?.session_status === 'CONNECTED' ? '#1F9D55'
                 : estado?.session_status === 'PAIRING' ? '#D98324'
-                : estado?.session_status === 'ERROR' ? '#B0392B' : '#9AAFB5' }} />
-            <span className="text-[#5C8891]">{estado?.session_status_display || 'Desligado'}
+                : estado?.session_status === 'ERROR' ? '#C94A4A' : '#9AAFB5' }} />
+            <span className="text-[#657377]">{estado?.session_status_display || 'Desligado'}
               {estado?.connected_number ? ` · ${estado.connected_number}` : ''}</span>
           </div>
         )}
@@ -118,7 +118,7 @@ export default function PmsChatbotView() {
           testarPara={testarPara} setTestarPara={setTestarPara} inp={inp} />
       ) : tab === 'config' ? (
         <div className="flex-1 overflow-auto p-4 space-y-3 text-[12px]">
-          <div className="bg-[#F7FAFA] border border-[#CFE3E6] p-3">
+          <div className="bg-[#F4F6F7] border border-[#C8D2D5] p-3">
             <label className="flex items-center gap-2 mb-2">
               <input type="checkbox" checked={!!f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} />
               Assistente <b>ativo</b>
@@ -130,13 +130,13 @@ export default function PmsChatbotView() {
               <label className="flex flex-col gap-1 col-span-2">Mensagem de boas-vindas<textarea className={inp} rows={2} value={f.welcome_message || ''} onChange={(e) => setF({ ...f, welcome_message: e.target.value })} /></label>
             </div>
           </div>
-          <div className="p-3 bg-[#F7FAFA] border border-[#EEF4F5] text-[11px] text-[#5C8891]">
+          <div className="p-3 bg-[#F4F6F7] border border-[#E4E9EB] text-[11px] text-[#657377]">
             <b>Envio real por WhatsApp pendente:</b> estes campos ficam guardados, mas o envio de mensagens a sério só liga quando a conta WhatsApp Business do dono estiver homologada pela Meta (Cloud API) — o mesmo tipo de passo comercial do Channel Manager com as OTAs. Até lá, use a aba "Simular Conversa" para testar o comportamento com dados reais, sem enviar nada.
           </div>
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div ref={boxRef} className="flex-1 overflow-auto p-3 space-y-2 bg-[#F7FAFA]">
+          <div ref={boxRef} className="flex-1 overflow-auto p-3 space-y-2 bg-[#F4F6F7]">
             {msgs.length === 0 && (
               <div className="text-gray-400 text-[12px] text-center py-8">
                 Experimente escrever "olá" ou "disponibilidade de quartos" — a resposta de disponibilidade usa dados reais do sistema (próximos 7-9 dias), nunca envia nada por WhatsApp.
@@ -144,14 +144,14 @@ export default function PmsChatbotView() {
             )}
             {msgs.map((m, i) => (
               <div key={i} className={`flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[75%] px-3 py-2 text-[12px] whitespace-pre-wrap rounded ${m.from === 'user' ? 'bg-[#062A31] text-white' : 'bg-white border border-[#CFE3E6] text-[#041F24]'}`}>
+                <div className={`max-w-[75%] px-3 py-2 text-[12px] whitespace-pre-wrap rounded ${m.from === 'user' ? 'bg-[#062F35] text-white' : 'bg-white border border-[#C8D2D5] text-[#1F292C]'}`}>
                   {m.text}
                 </div>
               </div>
             ))}
             {sending && <div className="text-gray-400 text-[11px]">a responder…</div>}
           </div>
-          <div className="flex items-center gap-2 p-2 border-t border-[#CFE3E6] bg-white">
+          <div className="flex items-center gap-2 p-2 border-t border-[#C8D2D5] bg-white">
             <input className={inp} value={draft} onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') send(); }} placeholder="Escreva uma mensagem…" />
           </div>
@@ -159,12 +159,12 @@ export default function PmsChatbotView() {
       )}
 
       {(tab === 'config' || tab === 'ligacao') && (
-        <Toolbar actions={[{ label: 'Guardar', icon: '💾', color: '#062A31', onClick: () => save.mutate() }]} />
+        <Toolbar actions={[{ label: 'Guardar', icon: '💾', color: '#062F35', onClick: () => save.mutate() }]} />
       )}
       {tab === 'sim' && (
         <Toolbar actions={[
-          { label: 'Enviar', icon: '✔', color: '#062A31', onClick: send, disabled: !draft.trim() || sending },
-          { label: 'Limpar conversa', icon: '✕', color: '#B0392B', onClick: () => setMsgs([]), disabled: msgs.length === 0 },
+          { label: 'Enviar', icon: '✔', color: '#062F35', onClick: send, disabled: !draft.trim() || sending },
+          { label: 'Limpar conversa', icon: '✕', color: '#C94A4A', onClick: () => setMsgs([]), disabled: msgs.length === 0 },
         ]} />
       )}
     </div>
@@ -191,11 +191,11 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
   const Cartao = ({ valor, titulo, texto, selo }: any) => (
     <button type="button" onClick={() => setF({ ...f, connection_mode: valor })}
       className={`flex-1 text-left p-3 rounded-[10px] border transition-colors ${
-        modo === valor ? 'border-[#062A31] bg-white shadow-sm' : 'border-[#CFE3E6] bg-[#F7FAFA] hover:bg-white'}`}>
+        modo === valor ? 'border-[#062F35] bg-white shadow-sm' : 'border-[#C8D2D5] bg-[#F4F6F7] hover:bg-white'}`}>
       <div className="flex items-center gap-2">
-        <span className={`w-3.5 h-3.5 rounded-full border-[4px] ${modo === valor ? 'border-[#062A31]' : 'border-[#CFE3E6]'}`} />
-        <span className="font-bold text-[12.5px] text-[#062A31]">{titulo}</span>
-        {selo && <span className="text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#EEF4F5] text-[#5C8891] font-semibold uppercase tracking-wide">{selo}</span>}
+        <span className={`w-3.5 h-3.5 rounded-full border-[4px] ${modo === valor ? 'border-[#062F35]' : 'border-[#C8D2D5]'}`} />
+        <span className="font-bold text-[12.5px] text-[#1F292C]">{titulo}</span>
+        {selo && <span className="text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#F4F6F7] text-[#657377] font-semibold uppercase tracking-wide">{selo}</span>}
       </div>
       <div className="text-[11px] text-[#5b6b73] mt-1.5 leading-relaxed">{texto}</div>
     </button>
@@ -217,7 +217,7 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
       </div>
 
       {modo === 'BRIDGE' ? (
-        <div className="bg-white border border-[#CFE3E6] rounded-[10px] p-4 space-y-3">
+        <div className="bg-white border border-[#C8D2D5] rounded-[10px] p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">Endereço do serviço de ponte
               <input className={inp} value={f.bridge_url || ''} placeholder="https://wa.ohotel.ao"
@@ -228,15 +228,15 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
           </div>
 
           <div>
-            <div className="text-[11px] font-bold text-[#5C8891] uppercase tracking-wide mb-1.5">Como emparelhar</div>
+            <div className="text-[11px] font-bold text-[#657377] uppercase tracking-wide mb-1.5">Como emparelhar</div>
             <div className="flex gap-2">
               {[['QR', 'Ler QR Code', 'Abra o WhatsApp no telemóvel → Dispositivos ligados → Ligar dispositivo.'],
                 ['PHONE', 'Código para o telemóvel', 'O WhatsApp pede um código de 8 letras no telefone do hotel.']]
                 .map(([v, t, d]: any) => (
                 <button key={v} type="button" onClick={() => setF({ ...f, pairing_method: v })}
                   className={`flex-1 text-left px-3 py-2 rounded-[8px] border text-[11.5px] ${
-                    (f.pairing_method || 'QR') === v ? 'border-[#062A31] bg-[#F2F7F8]' : 'border-[#CFE3E6] hover:bg-[#F7FAFA]'}`}>
-                  <div className="font-semibold text-[#062A31]">{t}</div>
+                    (f.pairing_method || 'QR') === v ? 'border-[#062F35] bg-[#F2F7F8]' : 'border-[#C8D2D5] hover:bg-[#F4F6F7]'}`}>
+                  <div className="font-semibold text-[#1F292C]">{t}</div>
                   <div className="text-[10.5px] text-[#5b6b73] mt-0.5">{d}</div>
                 </button>
               ))}
@@ -250,11 +250,11 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
           )}
 
           {/* O PALCO: QR, código, ou a confirmação de que ficou ligado. */}
-          <div className="rounded-[10px] border border-[#D8E7EA] bg-[#F7FAFA] p-4 flex flex-col items-center justify-center min-h-[210px]">
+          <div className="rounded-[10px] border border-[#D8E7EA] bg-[#F4F6F7] p-4 flex flex-col items-center justify-center min-h-[210px]">
             {ligado ? (
               <>
                 <div className="w-12 h-12 rounded-full bg-[#1F9D55] text-white flex items-center justify-center text-[22px]">✓</div>
-                <div className="font-bold text-[13px] text-[#062A31] mt-2">WhatsApp ligado</div>
+                <div className="font-bold text-[13px] text-[#1F292C] mt-2">WhatsApp ligado</div>
                 <div className="text-[11.5px] text-[#5b6b73] mt-0.5">
                   {estado?.connected_number || f.whatsapp_phone_number}
                   {estado?.connected_at ? ` · desde ${new Date(estado.connected_at).toLocaleString('pt-PT')}` : ''}
@@ -271,8 +271,8 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
               </>
             ) : emparelhando && estado?.pairing_code ? (
               <>
-                <div className="text-[11px] text-[#5C8891] uppercase tracking-wide">Código de emparelhamento</div>
-                <div className="font-mono font-bold text-[30px] tracking-[0.18em] text-[#062A31] mt-1">
+                <div className="text-[11px] text-[#657377] uppercase tracking-wide">Código de emparelhamento</div>
+                <div className="font-mono font-bold text-[30px] tracking-[0.18em] text-[#1F292C] mt-1">
                   {estado.pairing_code}</div>
                 <div className="text-[11.5px] text-[#5b6b73] mt-2 text-center max-w-[340px]">
                   No telemóvel <b>{f.whatsapp_phone_number}</b>: WhatsApp → Dispositivos ligados →
@@ -281,8 +281,8 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
               </>
             ) : estado?.session_status === 'ERROR' ? (
               <>
-                <div className="w-11 h-11 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[20px]">!</div>
-                <div className="text-[11.5px] text-[#B0392B] mt-2 text-center max-w-[420px]">
+                <div className="w-11 h-11 rounded-full bg-[#C94A4A] text-white flex items-center justify-center text-[20px]">!</div>
+                <div className="text-[11.5px] text-[#C94A4A] mt-2 text-center max-w-[420px]">
                   {estado?.session_message || 'Não foi possível ligar.'}</div>
               </>
             ) : (
@@ -302,7 +302,7 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-[#CFE3E6] rounded-[10px] p-4 space-y-3">
+        <div className="bg-white border border-[#C8D2D5] rounded-[10px] p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">Nº WhatsApp Business
               <input className={inp} value={f.whatsapp_phone_number || ''} placeholder="+244 9XX XXX XXX"
@@ -314,7 +314,7 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
               <input className={inp} type="password" value={f.access_token || ''}
                 onChange={(e) => setF({ ...f, access_token: e.target.value })} /></label>
           </div>
-          <div className="text-[11px] text-[#5b6b73] bg-[#F7FAFA] border border-[#EEF4F5] rounded-[8px] p-3">
+          <div className="text-[11px] text-[#5b6b73] bg-[#F4F6F7] border border-[#E4E9EB] rounded-[8px] p-3">
             Estas credenciais obtêm-se no <b>Meta Business Suite → WhatsApp → Configuração da API</b>,
             depois de a conta do hotel ser verificada. Enquanto a Meta não aprovar o número, o envio
             real não sai — use a <b>API não oficial</b> para ligar já o número que o hotel tem.
@@ -329,22 +329,22 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => ligar.mutate()} disabled={ligar.isPending}
             className="px-4 py-2 rounded-[8px] text-white text-[12px] font-semibold disabled:opacity-50"
-            style={{ background: '#062A31' }}>
+            style={{ background: '#062F35' }}>
             {ligar.isPending ? 'A ligar…' : emparelhando ? 'Gerar novo código' : 'Ligar'}
           </button>
           {(ligado || emparelhando) && (
             <button onClick={() => desligar.mutate()} disabled={desligar.isPending}
-              className="px-4 py-2 rounded-[8px] text-[12px] font-semibold border border-[#CFE3E6] hover:bg-[#F7FAFA]">
+              className="px-4 py-2 rounded-[8px] text-[12px] font-semibold border border-[#C8D2D5] hover:bg-[#F4F6F7]">
               Desligar
             </button>
           )}
           {ligado && (
             <div className="flex items-center gap-2 ml-auto">
-              <input className="border border-[#7FA9B1] rounded-[6px] px-2 py-1.5 text-[12px] w-[180px]"
+              <input className="border border-[#C8D2D5] rounded-[6px] px-2 py-1.5 text-[12px] w-[180px]"
                 placeholder="+244 9XX XXX XXX" value={testarPara}
                 onChange={(e) => setTestarPara(e.target.value)} />
               <button onClick={() => testar.mutate()} disabled={!testarPara.trim() || testar.isPending}
-                className="px-3 py-2 rounded-[8px] text-[12px] font-semibold border border-[#CFE3E6] hover:bg-[#F7FAFA] disabled:opacity-40">
+                className="px-3 py-2 rounded-[8px] text-[12px] font-semibold border border-[#C8D2D5] hover:bg-[#F4F6F7] disabled:opacity-40">
                 Enviar mensagem de teste
               </button>
             </div>

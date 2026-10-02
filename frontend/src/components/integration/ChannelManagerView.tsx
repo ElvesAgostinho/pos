@@ -6,14 +6,14 @@ import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb,
 import ChannelRoomMapDialog from './ChannelRoomMapDialog';
 import { notifyError } from '../../utils/friendlyError';
 
-const btn = 'px-3 py-1.5 text-[12px] border border-[#CFE3E6] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] active:translate-y-px flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#C8D2D5] bg-gradient-to-b from-white to-[#F4F6F7] hover:to-[#F4F6F7] active:translate-y-px flex items-center gap-1.5';
 const PROVIDERS: [string, string][] = [['BOOKING', 'Booking.com'], ['EXPEDIA', 'Expedia'], ['AIRBNB', 'Airbnb'], ['AGODA', 'Agoda'], ['HOTELS', 'Hotels.com'], ['TRIVAGO', 'Trivago'], ['GOOGLE', 'Google Hotels'], ['OTHER', 'Outro']];
-const PROV_COLOR: Record<string, string> = { BOOKING: '#062A31', EXPEDIA: '#041F24', AIRBNB: '#B0392B', AGODA: '#062A31', HOTELS: '#B0392B', TRIVAGO: '#B0392B', GOOGLE: '#7FA9B1', OTHER: '#5C8891' };
+const PROV_COLOR: Record<string, string> = { BOOKING: '#062F35', EXPEDIA: '#062F35', AIRBNB: '#C94A4A', AGODA: '#062F35', HOTELS: '#C94A4A', TRIVAGO: '#C94A4A', GOOGLE: '#4B858E', OTHER: '#4B858E' };
 // Tem de bater certo com Channel.STATUS no backend (models.py): Desligado/
 // Credenciais pendentes/Ligado. Havia aqui 'ERROR'/'DISABLED', que nunca são
 // o `status` do canal (são estados do LOG de sincronização) — 'PENDING' e
 // 'DISCONNECTED', que são os valores reais, ficavam sem cor nenhuma.
-const ST_COLOR: Record<string, string> = { CONNECTED: '#062A31', PENDING: '#5C8891', DISCONNECTED: '#7FA9B1' };
+const ST_COLOR: Record<string, string> = { CONNECTED: '#062F35', PENDING: '#4B858E', DISCONNECTED: '#4B858E' };
 
 export default function ChannelManagerView() {
   const qc = useQueryClient();
@@ -30,17 +30,17 @@ export default function ChannelManagerView() {
     <ClassicWindow title="Channel Manager — Sincronização com OTAs" icon={<Network size={14} className="text-gray-300" />}
       footer={<div className="flex items-center justify-between w-full"><span className="text-gray-600">Booking.com · Expedia · Airbnb · Agoda · Hotels.com — disponibilidade/tarifas e reservas · anti-overbooking automático</span>
         <button onClick={() => syncAll.mutate()} className={btn}><RefreshCw size={12} className={syncAll.isPending ? 'animate-spin' : ''} />Sincronizar todos</button></div>}>
-      <div className="p-4 space-y-3 bg-[#F7FAFA] h-full overflow-auto">
+      <div className="p-4 space-y-3 bg-[#F4F6F7] h-full overflow-auto">
         {/* ONDE OBTER AS CREDENCIAIS de cada plataforma */}
-        <div className="bg-white border border-[#CFE3E6] p-3 text-[12px]">
-          <div className="font-bold text-[#5C8891] mb-2">Onde obter as credenciais de cada plataforma</div>
+        <div className="bg-white border border-[#C8D2D5] p-3 text-[12px]">
+          <div className="font-bold text-[#657377] mb-2">Onde obter as credenciais de cada plataforma</div>
           <table className="w-full border-collapse text-[11px]">
             <thead>
-              <tr className="bg-[#F7FAFA]">
-                <th className="border border-[#EEF4F5] px-2 py-1 text-left">Plataforma</th>
-                <th className="border border-[#EEF4F5] px-2 py-1 text-left">Onde pedir / encontrar</th>
-                <th className="border border-[#EEF4F5] px-2 py-1 text-left">Property ID</th>
-                <th className="border border-[#EEF4F5] px-2 py-1 text-left">Chave API</th>
+              <tr className="bg-[#F4F6F7]">
+                <th className="border border-[#E4E9EB] px-2 py-1 text-left">Plataforma</th>
+                <th className="border border-[#E4E9EB] px-2 py-1 text-left">Onde pedir / encontrar</th>
+                <th className="border border-[#E4E9EB] px-2 py-1 text-left">Property ID</th>
+                <th className="border border-[#E4E9EB] px-2 py-1 text-left">Chave API</th>
               </tr>
             </thead>
             <tbody>
@@ -52,34 +52,34 @@ export default function ChannelManagerView() {
                 ['Hotels.com', 'Gerido pela Expedia (mesma credencial).', 'Property ID Expedia', 'Chave Expedia'],
               ].map((r) => (
                 <tr key={r[0]}>
-                  <td className="border border-[#EEF4F5] px-2 py-1 font-bold">{r[0]}</td>
-                  <td className="border border-[#EEF4F5] px-2 py-1 text-gray-700">{r[1]}</td>
-                  <td className="border border-[#EEF4F5] px-2 py-1 text-gray-700">{r[2]}</td>
-                  <td className="border border-[#EEF4F5] px-2 py-1 text-gray-700">{r[3]}</td>
+                  <td className="border border-[#E4E9EB] px-2 py-1 font-bold">{r[0]}</td>
+                  <td className="border border-[#E4E9EB] px-2 py-1 text-gray-700">{r[1]}</td>
+                  <td className="border border-[#E4E9EB] px-2 py-1 text-gray-700">{r[2]}</td>
+                  <td className="border border-[#E4E9EB] px-2 py-1 text-gray-700">{r[3]}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="mt-2 p-2 bg-[#F7FAFA] border border-[#EEF4F5] text-[11px] text-[#5C8891]">
+          <div className="mt-2 p-2 bg-[#F4F6F7] border border-[#E4E9EB] text-[11px] text-[#657377]">
             <div className="flex items-start gap-1.5"><Lightbulb size={14} className="flex-shrink-0 mt-px" /> <span><b>Como funciona:</b> preenche em baixo o canal, o <b>Property ID</b> e a <b>Chave API</b> → o sistema envia disponibilidade e tarifas, e recebe as reservas automaticamente (com <b>anti-overbooking</b>). As reservas entram no <b>PMS → Reservas</b>.</span></div>
             <div className="flex items-start gap-1.5 mt-1"><TriangleAlert size={14} className="flex-shrink-0 mt-px" /> <span>As OTAs só dão as credenciais a software <b>homologado</b> por elas — este é o passo comercial a fazer com cada plataforma.</span></div>
           </div>
         </div>
 
         {/* Ligar canal */}
-        <div className="bg-white border border-[#CFE3E6] p-3 flex flex-wrap items-end gap-2 text-[12px]">
-          <label className="flex flex-col">Canal<select className="border border-[#7FA9B1] px-2 py-1" value={f.provider} onChange={e => setF({ ...f, provider: e.target.value })}>{PROVIDERS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
-          <label className="flex flex-col">Nome<input className="border border-[#7FA9B1] px-2 py-1 w-40" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="Ex: Booking Hotel X" /></label>
-          <label className="flex flex-col">Property ID<input className="border border-[#7FA9B1] px-2 py-1 w-32" value={f.property_id} onChange={e => setF({ ...f, property_id: e.target.value })} /></label>
-          <label className="flex flex-col">Chave API<input className="border border-[#7FA9B1] px-2 py-1 w-40" value={f.api_key} onChange={e => setF({ ...f, api_key: e.target.value })} type="password" /></label>
-          <label className="flex flex-col">Comissão %<input type="number" className="border border-[#7FA9B1] px-2 py-1 w-20" value={f.commission_percent} onChange={e => setF({ ...f, commission_percent: e.target.value })} /></label>
+        <div className="bg-white border border-[#C8D2D5] p-3 flex flex-wrap items-end gap-2 text-[12px]">
+          <label className="flex flex-col">Canal<select className="border border-[#C8D2D5] px-2 py-1" value={f.provider} onChange={e => setF({ ...f, provider: e.target.value })}>{PROVIDERS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+          <label className="flex flex-col">Nome<input className="border border-[#C8D2D5] px-2 py-1 w-40" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="Ex: Booking Hotel X" /></label>
+          <label className="flex flex-col">Property ID<input className="border border-[#C8D2D5] px-2 py-1 w-32" value={f.property_id} onChange={e => setF({ ...f, property_id: e.target.value })} /></label>
+          <label className="flex flex-col">Chave API<input className="border border-[#C8D2D5] px-2 py-1 w-40" value={f.api_key} onChange={e => setF({ ...f, api_key: e.target.value })} type="password" /></label>
+          <label className="flex flex-col">Comissão %<input type="number" className="border border-[#C8D2D5] px-2 py-1 w-20" value={f.commission_percent} onChange={e => setF({ ...f, commission_percent: e.target.value })} /></label>
           <button className={btn} disabled={!f.name} onClick={() => create.mutate()}><Plus size={13} />Ligar canal</button>
         </div>
 
         {/* Canais */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {channels.map((ch: any) => (
-            <div key={ch.id} className="bg-white border border-[#CFE3E6] p-3">
+            <div key={ch.id} className="bg-white border border-[#C8D2D5] p-3">
               <div className="flex items-center justify-between">
                 <span className="font-bold flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: PROV_COLOR[ch.provider] }} />{ch.provider_display}</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded text-white" style={{ background: ST_COLOR[ch.status] }}>{ch.status_display}</span>
@@ -87,18 +87,18 @@ export default function ChannelManagerView() {
               <div className="text-[12px] text-gray-700 mt-1">{ch.name}</div>
               <div className="text-[10px] text-gray-500">Property {ch.property_id || '—'} · comissão {Number(ch.commission_percent)}%</div>
               <button onClick={() => setMapeando(ch)}
-                className={`text-[10px] mt-0.5 underline-offset-2 hover:underline ${ch.mapped_rooms ? 'text-[#5C8891]' : 'text-[#B0392B] font-bold'}`}>
+                className={`text-[10px] mt-0.5 underline-offset-2 hover:underline ${ch.mapped_rooms ? 'text-[#657377]' : 'text-[#C94A4A] font-bold'}`}>
                 {ch.mapped_rooms ? `${ch.mapped_rooms} categoria(s) mapeada(s)` : 'Sem categorias mapeadas — nada a sincronizar'}
               </button>
               <div className="text-[10px] text-gray-400">{ch.last_sync_at ? `última sync ${new Date(ch.last_sync_at).toLocaleString('pt-PT')}` : 'nunca sincronizado'}</div>
               <div className="flex gap-1 mt-2 flex-wrap">
-                <button className="text-[11px] text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => setMapeando(ch)}><Rows3 size={12} />Mapeamento</button>
-                <button className="text-[11px] text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'sync_availability' })}><UploadCloud size={12} />Enviar disp.</button>
-                <button className="text-[11px] text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'pull' })}><DownloadCloud size={12} />Receber reservas</button>
+                <button className="text-[11px] text-[#657377] hover:underline flex items-center gap-0.5" onClick={() => setMapeando(ch)}><Rows3 size={12} />Mapeamento</button>
+                <button className="text-[11px] text-[#657377] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'sync_availability' })}><UploadCloud size={12} />Enviar disp.</button>
+                <button className="text-[11px] text-[#657377] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'pull' })}><DownloadCloud size={12} />Receber reservas</button>
                 {ch.status === 'CONNECTED' ? (
-                  <button className="text-[11px] text-[#B0392B] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'disconnect' })}><Unplug size={12} />Desligar</button>
+                  <button className="text-[11px] text-[#C94A4A] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'disconnect' })}><Unplug size={12} />Desligar</button>
                 ) : (
-                  <button className="text-[11px] text-[#062A31] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'connect' })}><Link2 size={12} />Marcar como ligado</button>
+                  <button className="text-[11px] text-[#1F292C] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'connect' })}><Link2 size={12} />Marcar como ligado</button>
                 )}
               </div>
             </div>
@@ -108,15 +108,15 @@ export default function ChannelManagerView() {
 
         {/* Log de sincronização */}
         <div>
-          <div className="text-[11px] font-bold text-[#5C8891] mb-1 uppercase flex items-center gap-1"><Link2 size={13} />Registo de sincronização</div>
-          <div className="bg-white border border-[#CFE3E6] text-[12px]">
-            <div className="grid grid-cols-[140px_100px_90px_1fr_130px] font-bold bg-[#F7FAFA] border-b border-[#EEF4F5] px-2 py-1"><span>Canal</span><span>Direção</span><span>Evento</span><span>Resumo</span><span>Quando</span></div>
+          <div className="text-[11px] font-bold text-[#657377] mb-1 uppercase flex items-center gap-1"><Link2 size={13} />Registo de sincronização</div>
+          <div className="bg-white border border-[#C8D2D5] text-[12px]">
+            <div className="grid grid-cols-[140px_100px_90px_1fr_130px] font-bold bg-[#F4F6F7] border-b border-[#E4E9EB] px-2 py-1"><span>Canal</span><span>Direção</span><span>Evento</span><span>Resumo</span><span>Quando</span></div>
             {logs.map((l: any) => (
-              <div key={l.id} className="grid grid-cols-[140px_100px_90px_1fr_130px] px-2 py-1 border-b border-[#F7FAFA] items-center">
+              <div key={l.id} className="grid grid-cols-[140px_100px_90px_1fr_130px] px-2 py-1 border-b border-[#E4E9EB] items-center">
                 <span className="font-bold">{l.channel_name}</span>
                 <span>{l.direction === 'PUSH' ? '↑ Enviado' : '↓ Recebido'}</span>
                 <span>{l.event}</span>
-                <span className="truncate" title={l.summary}>{l.summary} {l.status.includes('SIMULADO') && <em className="text-[#062A31]">· {l.status}</em>}</span>
+                <span className="truncate" title={l.summary}>{l.summary} {l.status.includes('SIMULADO') && <em className="text-[#1F292C]">· {l.status}</em>}</span>
                 <span className="text-gray-500">{new Date(l.created_at).toLocaleString('pt-PT')}</span>
               </div>
             ))}

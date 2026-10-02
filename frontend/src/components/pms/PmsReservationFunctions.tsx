@@ -7,8 +7,8 @@ import { aviso, confirmar, pedir } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 const esc = (s: any) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
-const inp = 'border border-[#7FA9B1] rounded-[6px] px-2 py-1 text-[12px]';
-const btn = 'px-3 py-1.5 text-[12px] border border-[#CFE3E6] rounded-[6px] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#E3EDEE] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
+const inp = 'border border-[#C8D2D5] rounded-[6px] px-2 py-1 text-[12px]';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#C8D2D5] rounded-[6px] bg-gradient-to-b from-white to-[#F4F6F7] hover:to-[#E3EDEE] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
 
 /** Moldura comum dos painéis das Funções da reserva. */
 export function Painel({ titulo, onClose, children, rodape }: any) {
@@ -17,12 +17,12 @@ export function Painel({ titulo, onClose, children, rodape }: any) {
       <div className="bg-white rounded-[10px] shadow-xl w-full max-w-2xl max-h-[86vh] flex flex-col overflow-hidden"
            onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-2.5 text-white"
-             style={{ background: 'linear-gradient(to bottom, #0B3A43, #062A31)' }}>
+             style={{ background: 'linear-gradient(to bottom, #0B3A43, #062F35)' }}>
           <span className="font-bold text-[13px]">{titulo}</span>
           <button onClick={onClose} className="hover:bg-white/15 rounded px-1.5"><X size={16} /></button>
         </div>
-        <div className="p-4 overflow-auto bg-[#F7FAFA] flex-1 min-h-0 text-[12px]">{children}</div>
-        <div className="px-4 py-2 border-t border-[#EEF4F5] bg-white flex items-center justify-between">
+        <div className="p-4 overflow-auto bg-[#F4F6F7] flex-1 min-h-0 text-[12px]">{children}</div>
+        <div className="px-4 py-2 border-t border-[#E4E9EB] bg-white flex items-center justify-between">
           <div>{rodape}</div>
           <button className={btn} onClick={onClose}>Fechar</button>
         </div>
@@ -68,23 +68,23 @@ export function EncargosFixos({ reserva, onClose }: any) {
   return (
     <Painel titulo={`Encargos fixos — ${reserva.confirmation}`} onClose={onClose}
       rodape={<span className="text-gray-600">Total estimado para a estadia: <b>{money(totalEstadia)} Kz</b></span>}>
-      <div className="bg-white border border-[#CFE3E6] rounded-[8px] overflow-hidden mb-3">
-        <div className="grid grid-cols-[1fr_120px_110px_90px_36px] gap-2 px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[11px] font-bold text-[#5C8891]">
+      <div className="bg-white border border-[#C8D2D5] rounded-[8px] overflow-hidden mb-3">
+        <div className="grid grid-cols-[1fr_120px_110px_90px_36px] gap-2 px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB] text-[11px] font-bold text-[#657377]">
           <span>Descrição</span><span>Tipo</span><span className="text-right">Valor</span><span>Frequência</span><span />
         </div>
         {linhas.map((l: any) => (
-          <div key={l.id} className="grid grid-cols-[1fr_120px_110px_90px_36px] gap-2 px-3 py-1.5 border-b border-[#F7FAFA] items-center">
+          <div key={l.id} className="grid grid-cols-[1fr_120px_110px_90px_36px] gap-2 px-3 py-1.5 border-b border-[#E4E9EB] items-center">
             <span className="font-semibold">{l.description}</span>
             <span className="text-gray-600">{l.charge_type_display}</span>
             <span className="text-right">{money(l.amount)}</span>
             <span className="text-gray-600">{l.per_night ? 'Por noite' : 'Uma vez'}</span>
-            <button className="text-[#B0392B] hover:bg-[#B0392B]/10 rounded p-1" onClick={() => apagar(l.id)}><Trash2 size={13} /></button>
+            <button className="text-[#C94A4A] hover:bg-[#C94A4A]/10 rounded p-1" onClick={() => apagar(l.id)}><Trash2 size={13} /></button>
           </div>
         ))}
         {linhas.length === 0 && <div className="px-3 py-3 text-gray-500">Sem encargos fixos nesta reserva.</div>}
       </div>
 
-      <div className="bg-white border border-[#CFE3E6] rounded-[8px] p-3 flex flex-wrap items-end gap-2">
+      <div className="bg-white border border-[#C8D2D5] rounded-[8px] p-3 flex flex-wrap items-end gap-2">
         <label className="flex flex-col flex-1 min-w-[180px]">Descrição
           <input className={inp} value={novo.description} placeholder="Ex: Estacionamento"
                  onChange={(e) => setNovo({ ...novo, description: e.target.value })} /></label>
@@ -138,7 +138,7 @@ export function Depositos({ reserva, onClose }: any) {
           quando o Booking Engine tem uma percentagem de depósito definida.
         </div>
       ) : linhas.map((p: any) => (
-        <div key={p.id} className="bg-white border border-[#CFE3E6] rounded-[8px] p-3 mb-2 flex items-center justify-between">
+        <div key={p.id} className="bg-white border border-[#C8D2D5] rounded-[8px] p-3 mb-2 flex items-center justify-between">
           <div>
             <div className="font-bold">{money(p.amount)} {p.currency} · {p.status_display}</div>
             <div className="text-[11px] text-gray-500">
@@ -173,7 +173,7 @@ export function Voucher({ reserva, onClose, onSaved }: any) {
   return (
     <Painel titulo={`Voucher — ${reserva.confirmation}`} onClose={onClose}
       rodape={<button className={btn} disabled={gravando} onClick={gravar}>Gravar</button>}>
-      <div className="bg-white border border-[#CFE3E6] rounded-[8px] p-3 space-y-2">
+      <div className="bg-white border border-[#C8D2D5] rounded-[8px] p-3 space-y-2">
         <label className="flex flex-col gap-1">Nº do voucher da agência / operador
           <input className={inp} value={valor} onChange={(e) => setValor(e.target.value)}
                  placeholder="Ex: BK-884512" /></label>
@@ -181,7 +181,7 @@ export function Voucher({ reserva, onClose, onSaved }: any) {
           É o número que a agência emitiu e que o hóspede traz consigo. Serve para a recepção
           conferir a reserva à chegada e para a faturação à agência no fim do mês.
         </div>
-        <div className="text-[11px] text-gray-600 border-t border-[#EEF4F5] pt-2">
+        <div className="text-[11px] text-gray-600 border-t border-[#E4E9EB] pt-2">
           Origem: <b>{reserva.source_display || reserva.source}</b>
           {reserva.channel_name ? ` · Canal: ${reserva.channel_name}` : ''}
           {reserva.block_code ? ` · Bloco: ${reserva.block_code}` : ''}
@@ -223,12 +223,12 @@ export function Comissoes({ reserva, onClose }: any) {
 
   return (
     <Painel titulo={`Comissões — ${reserva.confirmation}`} onClose={onClose}>
-      <div className="bg-white border border-[#CFE3E6] rounded-[8px] p-3 space-y-1.5">
+      <div className="bg-white border border-[#C8D2D5] rounded-[8px] p-3 space-y-1.5">
         <Linha l="Valor da estadia" v={`${money(valorEstadia)} Kz`} nota={`${noites} noite(s) × ${money(tarifa)}`} />
         <Linha l="Origem da comissão"
                v={canal ? `Canal ${canal.name}` : (pctEntidade ? `Ficha de ${hospede?.name}` : '—')} />
         <Linha l="Percentagem" v={`${pct.toFixed(2)} %`} />
-        <div className="border-t border-[#EEF4F5] pt-1.5">
+        <div className="border-t border-[#E4E9EB] pt-1.5">
           <Linha l="Comissão a pagar" v={`${money(comissao)} Kz`} forte />
           <Linha l="Receita líquida" v={`${money(valorEstadia - comissao)} Kz`} forte />
         </div>
@@ -247,7 +247,7 @@ function Linha({ l, v, nota, forte }: any) {
   return (
     <div className="flex justify-between items-baseline">
       <span className="text-gray-600">{l}{nota && <span className="text-[10px] text-gray-400"> · {nota}</span>}</span>
-      <span className={forte ? 'font-bold text-[#062A31]' : ''}>{v}</span>
+      <span className={forte ? 'font-bold text-[#1F292C]' : ''}>{v}</span>
     </div>
   );
 }
@@ -294,7 +294,7 @@ export function EnviarEmail({ reserva, tipo, onClose }: any) {
     <Painel titulo={`${titulo} — ${reserva.confirmation}`} onClose={onClose}
       rodape={<button className={btn} disabled={enviando || !para.trim()} onClick={enviar}>
         <Send size={13} />{enviando ? 'A enviar…' : 'Enviar'}</button>}>
-      <div className="bg-white border border-[#CFE3E6] rounded-[8px] p-3 space-y-2">
+      <div className="bg-white border border-[#C8D2D5] rounded-[8px] p-3 space-y-2">
         <label className="flex flex-col gap-1">Para
           <input className={inp} value={para} onChange={(e) => setPara(e.target.value)}
                  placeholder="endereco@exemplo.ao" /></label>
@@ -355,17 +355,17 @@ export function CartaoHospede({ reserva, onClose }: any) {
       @page { size: A4; margin: 0; }
       body { font-family: "Segoe UI", Arial, sans-serif; font-size: 12px; color: #15232b; padding: 18mm 16mm; }
       .top { display:flex; justify-content:space-between; align-items:flex-start;
-             border-bottom:2px solid #062A31; padding-bottom:10px; }
+             border-bottom:2px solid #062F35; padding-bottom:10px; }
       .logo { max-height:52px; max-width:190px; display:block; margin-bottom:6px; }
-      .brand { font-size:18px; font-weight:700; color:#062A31; }
+      .brand { font-size:18px; font-weight:700; color:#062F35; }
       .sub { color:#5b6b73; font-size:10.5px; }
-      h1 { font-size:15px; margin:16px 0 10px; color:#062A31; }
+      h1 { font-size:15px; margin:16px 0 10px; color:#062F35; }
       table { width:100%; border-collapse:collapse; }
-      td { padding:5px 8px; border-bottom:1px solid #EEF4F5; }
+      td { padding:5px 8px; border-bottom:1px solid #E4E9EB; }
       td.l { color:#5b6b73; width:170px; }
       td.v { font-weight:600; }
       .nota { margin-top:14px; font-size:10px; color:#5b6b73; line-height:1.6;
-              background:#F7FAFA; border:1px solid #D8E7EA; border-radius:6px; padding:10px; }
+              background:#F4F6F7; border:1px solid #D8E7EA; border-radius:6px; padding:10px; }
       .assin { margin-top:34px; display:flex; justify-content:space-between; gap:40px; }
       .assin div { flex:1; border-top:1px solid #15232b; text-align:center; font-size:10px;
                    color:#5b6b73; padding-top:4px; }
@@ -434,7 +434,7 @@ export function CartaoHospede({ reserva, onClose }: any) {
   return (
     <Painel titulo={`Cartão de hóspede — ${reserva.confirmation}`} onClose={onClose}
       rodape={<button className={btn} onClick={imprimir}><Printer size={13} />Imprimir</button>}>
-      <div className="bg-white border border-[#CFE3E6] rounded-[8px] p-3 space-y-1.5">
+      <div className="bg-white border border-[#C8D2D5] rounded-[8px] p-3 space-y-1.5">
         <Linha l="Hóspede" v={hospede?.name || reserva.guest_name} />
         <Linha l="Documento" v={hospede?.id_number || '— em falta na ficha —'} />
         <Linha l="Nacionalidade" v={hospede?.nationality || '— em falta na ficha —'} />
@@ -497,7 +497,7 @@ export function TiposLimpeza({ reserva, onClose }: any) {
   return (
     <Painel titulo={`Limpeza / manutenção — Quarto ${reserva.room_number}`} onClose={onClose}
       rodape={<button className={btn} disabled={criando} onClick={criar}><Plus size={13} />Criar tarefa</button>}>
-      <div className="bg-white border border-[#CFE3E6] rounded-[8px] p-3 flex flex-wrap items-end gap-2 mb-3">
+      <div className="bg-white border border-[#C8D2D5] rounded-[8px] p-3 flex flex-wrap items-end gap-2 mb-3">
         <label className="flex flex-col">Tipo
           <select className={inp} value={tipo} onChange={(e) => setTipo(e.target.value)}>
             <option value="CLEANING">Limpeza</option>
@@ -507,12 +507,12 @@ export function TiposLimpeza({ reserva, onClose }: any) {
         <label className="flex flex-col flex-1 min-w-[200px]">Descrição (vazia = automática)
           <input className={inp} value={titulo} onChange={(e) => setTitulo(e.target.value)} /></label>
       </div>
-      <div className="bg-white border border-[#CFE3E6] rounded-[8px] overflow-hidden">
-        <div className="px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[11px] font-bold text-[#5C8891]">
+      <div className="bg-white border border-[#C8D2D5] rounded-[8px] overflow-hidden">
+        <div className="px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB] text-[11px] font-bold text-[#657377]">
           Tarefas deste quarto
         </div>
         {tarefas.map((t: any) => (
-          <div key={t.id} className="px-3 py-1.5 border-b border-[#F7FAFA] flex justify-between">
+          <div key={t.id} className="px-3 py-1.5 border-b border-[#E4E9EB] flex justify-between">
             <span>{t.title}</span>
             <span className="text-gray-500">{t.status_display || t.status}</span>
           </div>

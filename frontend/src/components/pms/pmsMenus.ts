@@ -87,6 +87,7 @@ export const MENUS: { title: string; items: { icon: string; label: string; secti
     { icon: '💰', label: 'Tarifas (Rate Codes)', section: 'rate_plans' },
     { icon: '⚙', label: 'Diagnóstico', section: 'diag_pos', needs: 'pos' },
     { icon: '📋', label: 'Visualizar Logs', section: 'sys_logs_pms' },
+    { icon: '🖼', label: 'Papel de Parede', section: 'wallpaper' },
   ] },
   { title: 'Gestão de Utilizadores', items: [
     { icon: '👥', label: 'Grupos de Utilizadores', section: 'user_groups' },

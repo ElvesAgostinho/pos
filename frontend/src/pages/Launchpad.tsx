@@ -34,8 +34,8 @@ export default function Launchpad() {
   const logout = async () => { await authApi.logout(); navigate('/backoffice/login'); };
 
   return (
-    <div className="min-h-screen bg-[#F7FAFA] font-sans">
-      <div className="h-14 bg-[#5C8891] flex items-center px-5 text-white">
+    <div className="min-h-screen bg-[#F4F6F7] font-sans">
+      <div className="h-14 bg-[#4B858E] flex items-center px-5 text-white">
         <span className="font-bold text-lg tracking-wide">System Mwana Lodge</span>
         <span className="ml-3 text-white/70 text-sm">· Launchpad</span>
         <div className="flex-1" />
@@ -54,9 +54,9 @@ export default function Launchpad() {
             const Ico = ICONS[mod.key] || Folder;
             return (
               <button key={mod.key} onClick={() => open(mod)}
-                className="bg-white border border-[#EEF4F5] rounded-lg p-4 text-left shadow-sm hover:shadow-md hover:border-[#5C8891] transition group">
-                <div className="text-[#5C8891] mb-2"><Ico size={30} strokeWidth={1.8} /></div>
-                <div className="font-bold text-[#5C8891] text-sm leading-tight group-hover:underline">{mod.title}</div>
+                className="bg-white border border-[#E4E9EB] rounded-lg p-4 text-left shadow-sm hover:shadow-md hover:border-[#C8D2D5] transition group">
+                <div className="text-[#657377] mb-2"><Ico size={30} strokeWidth={1.8} /></div>
+                <div className="font-bold text-[#657377] text-sm leading-tight group-hover:underline">{mod.title}</div>
                 <div className="text-gray-400 text-xs mt-1">{mod.items.length} opções</div>
               </button>
             );

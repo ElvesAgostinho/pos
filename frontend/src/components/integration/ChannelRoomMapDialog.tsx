@@ -5,8 +5,8 @@ import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso } from '../../ui/dialogo';
 
-const inp = 'border border-[#7FA9B1] rounded-[6px] px-2 py-1 text-[12px]';
-const btn = 'px-3 py-1.5 text-[12px] border border-[#CFE3E6] rounded-[6px] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#E3EDEE] active:translate-y-px flex items-center gap-1.5 disabled:opacity-40';
+const inp = 'border border-[#C8D2D5] rounded-[6px] px-2 py-1 text-[12px]';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#C8D2D5] rounded-[6px] bg-gradient-to-b from-white to-[#F4F6F7] hover:to-[#E3EDEE] active:translate-y-px flex items-center gap-1.5 disabled:opacity-40';
 
 /**
  * MAPEAMENTO DE CATEGORIAS — a nossa categoria ↔ o código do quarto na OTA.
@@ -76,28 +76,28 @@ export default function ChannelRoomMapDialog({ channel, onClose }: { channel: an
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-[10px] shadow-xl w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden"
            onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-b from-[#0B3A43] to-[#062A31] text-white">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-b from-[#0B3A43] to-[#062F35] text-white">
           <span className="font-bold text-[13px] flex items-center gap-2">
             <Link2 size={14} />Mapeamento de categorias — {channel.provider_display} · {channel.name}
           </span>
           <button onClick={onClose} className="hover:bg-white/15 rounded px-1.5"><X size={16} /></button>
         </div>
 
-        <div className="p-4 space-y-3 overflow-auto bg-[#F7FAFA] flex-1 min-h-0">
-          <div className="bg-white border border-[#CFE3E6] rounded-[10px] p-3 text-[12px] text-gray-700">
+        <div className="p-4 space-y-3 overflow-auto bg-[#F4F6F7] flex-1 min-h-0">
+          <div className="bg-white border border-[#C8D2D5] rounded-[10px] p-3 text-[12px] text-gray-700">
             A OTA não conhece as nossas categorias — conhece o código de quarto dela. Ligue aqui cada
             categoria ao código correspondente no painel da <b>{channel.provider_display}</b>. Sem pelo menos
             uma categoria mapeada não há nada para sincronizar.
           </div>
 
           {/* Linhas já mapeadas */}
-          <div className="bg-white border border-[#CFE3E6] rounded-[10px] overflow-hidden">
-            <div className="grid grid-cols-[1.2fr_1fr_1fr_1.2fr_90px_40px] gap-2 px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[11px] font-bold text-[#5C8891]">
+          <div className="bg-white border border-[#C8D2D5] rounded-[10px] overflow-hidden">
+            <div className="grid grid-cols-[1.2fr_1fr_1fr_1.2fr_90px_40px] gap-2 px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB] text-[11px] font-bold text-[#657377]">
               <span>Categoria</span><span>ID do quarto na OTA</span><span>ID da tarifa (opcional)</span>
               <span>Tarifa a enviar</span><span>Limite</span><span />
             </div>
             {maps.map((m: any) => (
-              <div key={m.id} className="grid grid-cols-[1.2fr_1fr_1fr_1.2fr_90px_40px] gap-2 px-3 py-1.5 border-b border-[#F7FAFA] items-center text-[12px]">
+              <div key={m.id} className="grid grid-cols-[1.2fr_1fr_1fr_1.2fr_90px_40px] gap-2 px-3 py-1.5 border-b border-[#E4E9EB] items-center text-[12px]">
                 <span className="font-bold">{m.room_type_name}
                   <span className="text-gray-500 font-normal"> · {m.rooms_available} quarto(s)</span></span>
                 <input className={inp} defaultValue={m.ota_room_id}
@@ -112,7 +112,7 @@ export default function ChannelRoomMapDialog({ channel, onClose }: { channel: an
                 <input type="number" min={0} className={inp} defaultValue={m.max_rooms}
                        title="0 = todos os quartos livres"
                        onBlur={(e) => Number(e.target.value) !== m.max_rooms && gravar.mutate({ id: m.id, campos: { max_rooms: Number(e.target.value) || 0 } })} />
-                <button className="text-[#B0392B] hover:bg-[#B0392B]/10 rounded p-1 justify-self-center"
+                <button className="text-[#C94A4A] hover:bg-[#C94A4A]/10 rounded p-1 justify-self-center"
                         title="Remover mapeamento" onClick={() => apagar.mutate(m.id)}><Trash2 size={13} /></button>
               </div>
             ))}
@@ -124,7 +124,7 @@ export default function ChannelRoomMapDialog({ channel, onClose }: { channel: an
           </div>
 
           {/* Nova linha */}
-          <div className="bg-white border border-[#CFE3E6] rounded-[10px] p-3 flex flex-wrap items-end gap-2 text-[12px]">
+          <div className="bg-white border border-[#C8D2D5] rounded-[10px] p-3 flex flex-wrap items-end gap-2 text-[12px]">
             <label className="flex flex-col">Categoria
               <select className={inp + ' w-44'} value={novo.room_type}
                       onChange={(e) => setNovo({ ...novo, room_type: e.target.value, rate_plan: '' })}>
@@ -166,7 +166,7 @@ export default function ChannelRoomMapDialog({ channel, onClose }: { channel: an
           </div>
         </div>
 
-        <div className="px-4 py-2 border-t border-[#EEF4F5] bg-white flex items-center justify-between text-[12px]">
+        <div className="px-4 py-2 border-t border-[#E4E9EB] bg-white flex items-center justify-between text-[12px]">
           <span className="text-gray-600">{maps.length} categoria(s) mapeada(s)</span>
           <button className={btn} onClick={onClose}>Fechar</button>
         </div>

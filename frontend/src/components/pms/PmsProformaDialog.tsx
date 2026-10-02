@@ -114,31 +114,31 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
 
   const montarHtml = () => `<html><head><meta charset="utf-8"><title>Pró-forma — ${esc(r.confirmation)}</title><style>
       *{box-sizing:border-box}
-      body{font-family:'Segoe UI',Tahoma,sans-serif;color:#041F24;margin:0;padding:28px;font-size:12px}
+      body{font-family:'Segoe UI',Tahoma,sans-serif;color:#062F35;margin:0;padding:28px;font-size:12px}
       .topo{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
-            border-bottom:2px solid #062A31;padding-bottom:14px}
+            border-bottom:2px solid #062F35;padding-bottom:14px}
       .empresa{font-size:11px;line-height:1.5}
-      .empresa .nome{font-size:16px;font-weight:700;color:#062A31;margin-bottom:2px}
+      .empresa .nome{font-size:16px;font-weight:700;color:#062F35;margin-bottom:2px}
       .logo{max-height:64px;max-width:190px;object-fit:contain}
       .titulo{text-align:right}
-      .titulo h1{margin:0;font-size:19px;letter-spacing:1px;color:#062A31}
-      .titulo .sub{font-size:11px;color:#5C8891;margin-top:2px}
+      .titulo h1{margin:0;font-size:19px;letter-spacing:1px;color:#062F35}
+      .titulo .sub{font-size:11px;color:#4B858E;margin-top:2px}
       .caixas{display:flex;gap:14px;margin:16px 0}
-      .caixa{flex:1;border:1px solid #CFE3E6;border-radius:8px;padding:10px}
-      .caixa h4{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#5C8891}
+      .caixa{flex:1;border:1px solid #C8D2D5;border-radius:8px;padding:10px}
+      .caixa h4{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#4B858E}
       .caixa .l{display:flex;justify-content:space-between;gap:10px;padding:1px 0}
       table{border-collapse:collapse;width:100%;margin-top:6px}
-      th{background:#EEF4F5;color:#062A31;text-align:left;font-size:10px;text-transform:uppercase;
-         letter-spacing:.5px;padding:7px 8px;border-bottom:1px solid #CFE3E6}
-      td{padding:7px 8px;border-bottom:1px solid #EEF4F5;vertical-align:top}
+      th{background:#E4E9EB;color:#062F35;text-align:left;font-size:10px;text-transform:uppercase;
+         letter-spacing:.5px;padding:7px 8px;border-bottom:1px solid #C8D2D5}
+      td{padding:7px 8px;border-bottom:1px solid #E4E9EB;vertical-align:top}
       .totais{margin-left:auto;width:290px;margin-top:12px}
       .totais .l{display:flex;justify-content:space-between;padding:4px 8px}
-      .totais .grande{border-top:2px solid #062A31;margin-top:4px;padding-top:8px;
-                      font-size:15px;font-weight:700;color:#062A31}
-      .aviso{margin-top:22px;border:1px solid #B0392B;background:#FDECEA;color:#8C2B1F;
+      .totais .grande{border-top:2px solid #062F35;margin-top:4px;padding-top:8px;
+                      font-size:15px;font-weight:700;color:#062F35}
+      .aviso{margin-top:22px;border:1px solid #C94A4A;background:#FDECEA;color:#A83A3A;
              border-radius:8px;padding:10px 12px;font-size:11px}
       .rodape{margin-top:14px;font-size:10px;color:#7d8f92;text-align:center;
-              border-top:1px solid #EEF4F5;padding-top:8px}
+              border-top:1px solid #E4E9EB;padding-top:8px}
       @media print{body{padding:0}}
     </style></head><body>
 
@@ -244,46 +244,46 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[560px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
+      <div className="w-[560px] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#062F35' }}>
           Fatura Proforma para a reserva {r.confirmation}
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
         <div className="p-3 flex flex-col gap-2 text-[12px]">
           <label className="flex flex-col gap-0.5">Entidade:
-            <select disabled className="border border-[#7FA9B1] p-1.5 bg-[#F7FAFA] rounded-[6px]"><option>{r.guest_name}</option></select>
+            <select disabled className="border border-[#C8D2D5] p-1.5 bg-[#F4F6F7] rounded-[6px]"><option>{r.guest_name}</option></select>
           </label>
           <label className="flex flex-col gap-0.5">Formato:
-            <select value={formato} onChange={(e) => setFormato(e.target.value)} className="border border-[#7FA9B1] p-1.5 bg-white rounded-[6px]">
+            <select value={formato} onChange={(e) => setFormato(e.target.value)} className="border border-[#C8D2D5] p-1.5 bg-white rounded-[6px]">
               {FORMATOS.map((f) => <option key={f}>{f}</option>)}
             </select>
           </label>
           {/* Pré-visualização dos números — o que vai sair no papel, antes de imprimir. */}
-          <div className="border border-[#CFE3E6] rounded-[8px] bg-white p-2.5 text-[11px]">
-            <div className="flex justify-between"><span className="text-[#5C8891]">Consumos</span><span>{encargos.length}</span></div>
-            <div className="flex justify-between"><span className="text-[#5C8891]">Base tributável</span><span>{money(base)}</span></div>
-            <div className="flex justify-between"><span className="text-[#5C8891]">IVA ({pct}%)</span><span>{money(iva)}</span></div>
-            <div className="flex justify-between font-bold text-[#062A31] border-t border-[#EEF4F5] mt-1 pt-1">
+          <div className="border border-[#C8D2D5] rounded-[8px] bg-white p-2.5 text-[11px]">
+            <div className="flex justify-between"><span className="text-[#657377]">Consumos</span><span>{encargos.length}</span></div>
+            <div className="flex justify-between"><span className="text-[#657377]">Base tributável</span><span>{money(base)}</span></div>
+            <div className="flex justify-between"><span className="text-[#657377]">IVA ({pct}%)</span><span>{money(iva)}</span></div>
+            <div className="flex justify-between font-bold text-[#1F292C] border-t border-[#E4E9EB] mt-1 pt-1">
               <span>Total</span><span>{money(total)} Kz</span>
             </div>
             {totalPago > 0 && (
-              <div className="flex justify-between text-[#8C2B1F]"><span>Por pagar</span><span>{money(total - totalPago)} Kz</span></div>
+              <div className="flex justify-between text-[#A83A3A]"><span>Por pagar</span><span>{money(total - totalPago)} Kz</span></div>
             )}
           </div>
-          <div className="text-[10px] text-[#8C2B1F] leading-snug">
+          <div className="text-[10px] text-[#A83A3A] leading-snug">
             A pró-forma não é documento fiscal — a factura AGT sai no check-out.
           </div>
         </div>
-        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
-          <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black"><Printer size={14} /> Imprimir</button>
+        <div className="flex items-center gap-3 px-3 py-2 bg-[#F4F6F7] border-t border-[#C8D2D5]">
+          <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black"><Printer size={14} /> Imprimir</button>
           <button onClick={enviarEmail} disabled={enviando}
-            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black disabled:text-gray-400">
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black disabled:text-gray-400">
             <Mail size={14} /> {enviando ? 'A enviar…' : 'Enviar E-mail'}</button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black ml-auto">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black ml-auto">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
         </div>

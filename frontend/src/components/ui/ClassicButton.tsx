@@ -8,19 +8,19 @@ interface ClassicButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export default function ClassicButton({ icon: Icon, iconColor = 'text-gray-700', label, children, className = '', ...props }: ClassicButtonProps) {
-  const raised = 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 48%, #EEF4F5 52%, #EEF4F5 100%)';
+  const raised = 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 48%, #E4E9EB 52%, #E4E9EB 100%)';
   return (
     <button
-      className={`flex items-center gap-1.5 px-3 py-1.5 border text-[11px] font-semibold text-[#041F24] focus:outline-none focus:ring-1 focus:ring-[#5C8891] transition-none ${props.disabled ? 'opacity-45 cursor-not-allowed' : 'active:translate-y-px'} ${className}`}
+      className={`flex items-center gap-1.5 px-3 py-1.5 border text-[11px] font-semibold text-[#1F292C] focus:outline-none focus:ring-1 focus:ring-[#C8D2D5] transition-none ${props.disabled ? 'opacity-45 cursor-not-allowed' : 'active:translate-y-px'} ${className}`}
       style={{
-        background: raised, borderColor: '#7FA9B1',
+        background: raised, borderColor: '#4B858E',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.18)',
         ...(props.style || {}),
       }}
       {...props}
     >
       {Icon && (
-        <div className="flex items-center justify-center rounded-[3px] border border-[#CFE3E6] w-[19px] h-[19px]" style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7FAFA)', boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
+        <div className="flex items-center justify-center rounded-[3px] border border-[#C8D2D5] w-[19px] h-[19px]" style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F4F6F7)', boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
           <Icon size={12} className={iconColor} strokeWidth={2} />
         </div>
       )}

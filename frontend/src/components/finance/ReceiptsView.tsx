@@ -6,7 +6,7 @@ import { ArrowDownCircle, Plus, Check } from 'lucide-react';
 import { useReceipts, useCreateReceipt, useConfirmReceipt, useAccounts } from '../../hooks/useFinance';
 import { aviso } from '../../ui/dialogo';
 
-const ST: Record<string, string> = { DRAFT: 'text-gray-500', CONFIRMED: 'text-[#062A31] font-bold', CANCELLED: 'text-[#8C2B1F]' };
+const ST: Record<string, string> = { DRAFT: 'text-gray-500', CONFIRMED: 'text-[#1F292C] font-bold', CANCELLED: 'text-[#A83A3A]' };
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function ReceiptsView() {
@@ -26,13 +26,13 @@ export default function ReceiptsView() {
     <ClassicWindow title="Recebimentos (Financeiro)" icon={<ArrowDownCircle size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{receipts.length} recebimento(s) · confirmar credita a conta de tesouraria</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
-          <select value={draft.account} onChange={(e) => setDraft({ ...draft, account: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px]">
+          <select value={draft.account} onChange={(e) => setDraft({ ...draft, account: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
             <option value="">— conta —</option>{accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
-          <input placeholder="Pagador" value={draft.party_name} onChange={(e) => setDraft({ ...draft, party_name: e.target.value })} className="border border-[#7FA9B1] p-1" />
-          <input placeholder="Valor" type="number" value={draft.amount} onChange={(e) => setDraft({ ...draft, amount: e.target.value })} className="border border-[#7FA9B1] p-1 w-24" />
-          <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} className="border border-[#7FA9B1] p-1" />
+          <input placeholder="Pagador" value={draft.party_name} onChange={(e) => setDraft({ ...draft, party_name: e.target.value })} className="border border-[#C8D2D5] p-1" />
+          <input placeholder="Valor" type="number" value={draft.amount} onChange={(e) => setDraft({ ...draft, amount: e.target.value })} className="border border-[#C8D2D5] p-1 w-24" />
+          <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} className="border border-[#C8D2D5] p-1" />
           <ClassicButton icon={Plus} label="Registar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -46,7 +46,7 @@ export default function ReceiptsView() {
               { header: 'Valor', accessor: (r: any) => Number(r.amount).toFixed(2), width: '14%' },
               { header: 'Data', accessor: 'date', width: '12%' },
               { header: 'Estado', accessor: (r: any) => <span className={ST[r.status] || ''}>{r.status_display}</span>, width: '10%' },
-              { header: '', accessor: (r: any) => r.status === 'DRAFT' ? <button title="Confirmar" onClick={() => confirm.mutate(r.id)} className="text-[#062A31] hover:text-[#062A31]"><Check size={13} /></button> : null, width: '8%' },
+              { header: '', accessor: (r: any) => r.status === 'DRAFT' ? <button title="Confirmar" onClick={() => confirm.mutate(r.id)} className="text-[#1F292C] hover:text-[#1F292C]"><Check size={13} /></button> : null, width: '8%' },
             ]}
           />
         </div>

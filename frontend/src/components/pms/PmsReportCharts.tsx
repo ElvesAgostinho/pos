@@ -4,7 +4,7 @@ import { useState } from 'react';
     sistema), só com a família azul-petróleo (nunca uma cor por série: aqui
     é sempre UMA série por gráfico, a cor não precisa de distinguir nada). */
 
-const PETROL = '#0B4F5C';
+const PETROL = '#0A4148';
 const PETROL_SOFT = 'rgba(11,79,92,0.14)';
 
 export function MiniLineChart({ data, labelKey, valueKey, height = 120, formatValue }: {
@@ -42,8 +42,8 @@ export function MiniLineChart({ data, labelKey, valueKey, height = 120, formatVa
       {hover != null && (
         <g>
           <line x1={x(hover)} y1={padT} x2={x(hover)} y2={padT + innerH} stroke={PETROL} strokeWidth={1} strokeDasharray="2,2" opacity={0.4} />
-          <text x={x(hover)} y={height - 4} textAnchor="middle" fontSize="9" fill="#5C8891">{data[hover][labelKey]}</text>
-          <text x={x(hover)} y={y(values[hover]) - 6} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#062A31">
+          <text x={x(hover)} y={height - 4} textAnchor="middle" fontSize="9" fill="#4B858E">{data[hover][labelKey]}</text>
+          <text x={x(hover)} y={y(values[hover]) - 6} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#062F35">
             {formatValue ? formatValue(values[hover]) : values[hover]}
           </text>
         </g>
@@ -66,10 +66,10 @@ export function MiniBarChart({ data, labelKey, valueKey, formatValue }: {
         return (
           <div key={i} className="flex items-center gap-2 text-[11px]" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
             <div className="w-[110px] truncate text-[#5C7A80]" title={d[labelKey]}>{d[labelKey]}</div>
-            <div className="flex-1 bg-[#EEF4F5] h-4 relative">
-              <div className="h-4" style={{ width: `${pct}%`, background: hover === i ? '#062A31' : PETROL }} />
+            <div className="flex-1 bg-[#F4F6F7] h-4 relative">
+              <div className="h-4" style={{ width: `${pct}%`, background: hover === i ? '#062F35' : PETROL }} />
             </div>
-            <div className="w-[80px] text-right font-semibold text-[#062A31]">{formatValue ? formatValue(v) : v}</div>
+            <div className="w-[80px] text-right font-semibold text-[#1F292C]">{formatValue ? formatValue(v) : v}</div>
           </div>
         );
       })}

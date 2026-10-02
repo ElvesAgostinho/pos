@@ -177,7 +177,7 @@ export const SECTIONS = [
 export function Field({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
     <label className="flex items-center gap-2 text-[12px]">
-      <span className={`text-[#041F24] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
+      <span className={`text-[#1F292C] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
@@ -187,7 +187,7 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
   { value: any; onChange: (v: string) => void; options: { value: any; label: string }[]; all?: boolean; allLabel?: string }) {
   return (
     <select value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-      className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white min-w-[170px] flex-1"
+      className="border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white min-w-[170px] flex-1"
       style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.10)' }}>
       {all && <option value="">{allLabel}</option>}
       {options.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
@@ -203,10 +203,10 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
     <div className="flex items-center gap-1 px-2 py-1.5 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.line }}>
       {actions.map((a) => (
         <button key={a.label} onClick={a.onClick} disabled={a.disabled}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-[12px] text-[#041F24] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#CFE3E6] hover:bg-white transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1 text-[12px] text-[#1F292C] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#C8D2D5] hover:bg-white transition-colors"
           style={{ borderRadius: RADIUS.sm }}>
           <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
-            style={{ color: a.disabled ? '#7FA9B1' : a.color }}><Glyph icon={a.icon} size={15} /></span>
+            style={{ color: a.disabled ? '#4B858E' : a.color }}><Glyph icon={a.icon} size={15} /></span>
           {a.label}
         </button>
       ))}
@@ -219,7 +219,7 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
 export function Tab({ active, onClick, children }: any) {
   return (
     <button onClick={onClick}
-      className={`px-3 py-1.5 text-[13px] font-semibold border-b-[3px] ${active ? 'border-[#062A31] text-[#062A31] bg-white' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
+      className={`px-3 py-1.5 text-[13px] font-semibold border-b-[3px] ${active ? 'border-[#062F35] text-[#1F292C] bg-white' : 'border-transparent text-[#657377] hover:text-[#1F292C]'}`}>
       {children}
     </button>
   );
@@ -271,13 +271,13 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 export function Row({ label, children, w = 'w-[120px]' }: { label: string; children: ReactNode; w?: string }) {
   return (
     <label className="flex items-center gap-2 text-[12px] py-[3px] min-w-0">
-      <span className={`text-[#041F24] ${w} flex-shrink-0`}>{label}</span>
+      <span className={`text-[#1F292C] ${w} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
 }
 
-export const inputCls = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white flex-1 min-w-0 rounded-[6px]';
+export const inputCls = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white flex-1 min-w-0 rounded-[6px]';
 // Sombra interior discreta (substitui o "afundado" 3D de antes) — aplicada
 // inline (style={inputStyle}) para continuar a ganhar da regra global em
 // index.css em todos os formulários que já a usam.

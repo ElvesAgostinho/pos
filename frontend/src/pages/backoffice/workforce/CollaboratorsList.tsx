@@ -51,7 +51,7 @@ const CollaboratorsList: React.FC = () => {
       header: 'Ações', 
       accessor: (r: any) => (
         <div className="flex space-x-2">
-          <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(r); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>
+          <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(r); }} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button>
         </div>
       ), 
       width: '10%' 

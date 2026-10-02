@@ -11,18 +11,18 @@ import PmsReservationDetailDialog from './PmsReservationDetailDialog';
 const ROOM_STATUS_STYLE: Record<string, string> = {
   VACANT_CLEAN: 'bg-[#EAF6EC] border-[#4C8C5A] text-[#1F5C2C]',
   VACANT_DIRTY: 'bg-[#FFF6E0] border-[#C89B2C] text-[#7A5C0E]',
-  OCCUPIED: 'bg-[#FDECEA] border-[#B0392B] text-[#8C2B1F]',
+  OCCUPIED: 'bg-[#FDECEA] border-[#C94A4A] text-[#A83A3A]',
   OOO: 'bg-[#F1F1F1] border-[#9AA0A3] text-gray-500',
 };
 
 function StatCard({ label, value, sub, icon }: { label: string; value: any; sub?: string; icon: string }) {
   return (
-    <div className="border border-[#CFE3E6] p-3 flex items-center gap-3 bg-white">
-      <span className="text-[#062A31]"><Glyph icon={icon} size={22} /></span>
+    <div className="border border-[#C8D2D5] p-3 flex items-center gap-3 bg-white">
+      <span className="text-[#1F292C]"><Glyph icon={icon} size={22} /></span>
       <div className="min-w-0">
-        <div className="text-[10px] text-[#5C8891] uppercase font-semibold tracking-tight">{label}</div>
-        <div className="text-[18px] font-bold text-[#062A31] truncate">
-          {value}{sub && <span className="text-[11px] font-normal text-[#5C8891] ml-1">({sub})</span>}
+        <div className="text-[10px] text-[#657377] uppercase font-semibold tracking-tight">{label}</div>
+        <div className="text-[18px] font-bold text-[#1F292C] truncate">
+          {value}{sub && <span className="text-[11px] font-normal text-[#657377] ml-1">({sub})</span>}
         </div>
       </div>
     </div>
@@ -60,7 +60,7 @@ export default function PmsHotelStatusView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex-1 overflow-auto p-3" style={{ background: '#F7FAFA' }}>
+      <div className="flex-1 overflow-auto p-3" style={{ background: '#F4F6F7' }}>
         <div className="grid grid-cols-4 gap-3 mb-4">
           <StatCard label="Chegadas Hoje" value={data?.arrivals_count ?? '—'} icon="🏛" />
           <StatCard label="Saídas Hoje" value={data?.departures_count ?? '—'} icon="🕐" />
@@ -69,8 +69,8 @@ export default function PmsHotelStatusView() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="border border-[#CFE3E6] bg-white">
-            <div className="px-2 py-1 font-bold text-[11px] bg-[#F7FAFA] border-b border-[#CFE3E6]">
+          <div className="border border-[#C8D2D5] bg-white">
+            <div className="px-2 py-1 font-bold text-[11px] bg-[#F4F6F7] border-b border-[#C8D2D5]">
               Chegadas de Hoje ({data?.arrivals_count ?? 0})
             </div>
             <div style={{ height: 210 }}>
@@ -83,8 +83,8 @@ export default function PmsHotelStatusView() {
               ]} />
             </div>
           </div>
-          <div className="border border-[#CFE3E6] bg-white">
-            <div className="px-2 py-1 font-bold text-[11px] bg-[#F7FAFA] border-b border-[#CFE3E6]">
+          <div className="border border-[#C8D2D5] bg-white">
+            <div className="px-2 py-1 font-bold text-[11px] bg-[#F4F6F7] border-b border-[#C8D2D5]">
               Saídas de Hoje ({data?.departures_count ?? 0})
             </div>
             <div style={{ height: 210 }}>
@@ -99,8 +99,8 @@ export default function PmsHotelStatusView() {
           </div>
         </div>
 
-        <div className="font-bold text-[12px] text-[#062A31] mb-2">Mapa de Quartos</div>
-        <div className="grid grid-cols-8 gap-2 bg-white p-2 border border-[#CFE3E6]">
+        <div className="font-bold text-[12px] text-[#1F292C] mb-2">Mapa de Quartos</div>
+        <div className="grid grid-cols-8 gap-2 bg-white p-2 border border-[#C8D2D5]">
           {rooms.map((r: any) => (
             <button key={r.id} onClick={() => r.reservation && setSelId(r.reservation.id)}
               title={r.reservation ? `${r.reservation.confirmation} · ${r.reservation.guest_name}` : r.status_display}
@@ -114,7 +114,7 @@ export default function PmsHotelStatusView() {
           {rooms.length === 0 && !isLoading && <div className="col-span-8 text-center text-gray-400 py-6">Sem quartos criados.</div>}
         </div>
       </div>
-      <Toolbar actions={[{ label: 'Atualizar', icon: '⟳', color: '#062A31', onClick: refresh }]} />
+      <Toolbar actions={[{ label: 'Atualizar', icon: '⟳', color: '#062F35', onClick: refresh }]} />
 
       {selId && selRes && (
         <PmsReservationDetailDialog reservation={selRes} hotelName={hotelName}

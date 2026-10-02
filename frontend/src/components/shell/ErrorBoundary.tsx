@@ -30,21 +30,21 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.error) {
       return (
-        <div className="h-full w-full flex items-center justify-center p-6 bg-[#F7FAFA]">
-          <div className="bg-white border border-[#7FA9B1] shadow max-w-lg w-full">
-            <div className="bg-[#B0392B] text-white px-4 py-2 flex items-center gap-2 text-sm font-bold">
+        <div className="h-full w-full flex items-center justify-center p-6 bg-[#F4F6F7]">
+          <div className="bg-white border border-[#C8D2D5] shadow max-w-lg w-full">
+            <div className="bg-[#C94A4A] text-white px-4 py-2 flex items-center gap-2 text-sm font-bold">
               <AlertTriangle size={16} /> Ocorreu um erro neste ecrã
             </div>
             <div className="p-4 space-y-3 text-[12px] text-gray-700">
               <p>O ecrã não pôde ser apresentado. O resto do sistema continua a funcionar — pode voltar à árvore e abrir outro ecrã.</p>
-              <pre className="bg-[#F7FAFA] border border-[#EEF4F5] p-2 text-[11px] text-[#8C2B1F] overflow-auto max-h-40 whitespace-pre-wrap">{this.state.error.message}</pre>
+              <pre className="bg-[#F4F6F7] border border-[#E4E9EB] p-2 text-[11px] text-[#A83A3A] overflow-auto max-h-40 whitespace-pre-wrap">{this.state.error.message}</pre>
               <div className="flex gap-2">
                 <button onClick={() => this.setState({ error: null })}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-[#F7FAFA] border border-[#7FA9B1] text-[11px] hover:bg-[#F7FAFA]">
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[#F4F6F7] border border-[#C8D2D5] text-[11px] hover:bg-[#F4F6F7]">
                   <RefreshCw size={12} /> Tentar novamente
                 </button>
                 <button onClick={() => window.location.reload()}
-                  className="px-3 py-1.5 bg-[#5C8891] text-white text-[11px] hover:bg-[#062A31]">Recarregar sistema</button>
+                  className="px-3 py-1.5 bg-[#4B858E] text-white text-[11px] hover:bg-[#062F35]">Recarregar sistema</button>
               </div>
             </div>
           </div>

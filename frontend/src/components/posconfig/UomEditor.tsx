@@ -4,8 +4,8 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#E4E9EB] px-1.5 py-1 text-[12px] bg-white';
 
 /**
  * UNIDADE DE STOCK — Caixa de 12, Barril de 30L, Cápsula.
@@ -55,30 +55,30 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'Nova unidade' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
+        <span className="text-[13px] font-bold text-[#1F292C]">{isNew ? 'Nova unidade' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
         <Box title="Identificação" className="max-w-[820px]">
         <div className="space-y-2 pt-1.5">
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[110px] text-[#041F24]">Código:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[110px] text-[#1F292C]">Código:<span className="text-[#C94A4A]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[110px] text-[#041F24]">Descrição:<span className="text-[#B0392B]">*</span></span>
+            <span className="w-[110px] text-[#1F292C]">Descrição:<span className="text-[#C94A4A]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
               className={`${inp} flex-1`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
-            <span className="w-[110px] text-[#041F24]">Arredondar:</span>
+            <span className="w-[110px] text-[#1F292C]">Arredondar:</span>
             <input type="number" min={0} max={4} value={d.rounding ?? 0}
               onChange={(e) => set('rounding', Number(e.target.value))}
               className={`${inp} w-[130px]`} style={inputStyle} />
-            <span className="text-[11px] text-[#5C8891]">
+            <span className="text-[11px] text-[#657377]">
               casas decimais — 0 para o que se conta à unidade (cápsulas, garrafas)
             </span>
           </label>
@@ -89,17 +89,17 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
         </div>
         </Box>
 
-        <div className="max-w-[820px] mt-4" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+        <div className="max-w-[820px] mt-4" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="w-full text-[12px] border-collapse">
-            <thead><tr className="bg-[#F7FAFA]">
-              <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Código</th>
-              <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5]">Descrição</th>
-              <th className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5] w-[160px]">Fator de conversão</th>
+            <thead><tr className="bg-[#F4F6F7]">
+              <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">Código</th>
+              <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">Descrição</th>
+              <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB] w-[160px]">Fator de conversão</th>
             </tr></thead>
             <tbody>
               {cs.map((c, i) => (
                 <tr key={i} onClick={() => setSel(i)}
-                  className={`border-b border-[#F7FAFA] cursor-pointer ${sel === i ? 'bg-[#EEF4F5]' : ''}`}>
+                  className={`border-b border-[#E4E9EB] cursor-pointer ${sel === i ? 'bg-[#F4F6F7]' : ''}`}>
                   <td className="p-0.5" colSpan={2}>
                     <select value={c.to_uom || ''} onChange={(e) => setC(i, 'to_uom', Number(e.target.value) || null)}
                       className={cell}>
@@ -116,27 +116,27 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
                 </tr>
               ))}
               {cs.length === 0 && (
-                <tr><td colSpan={3} className="text-center text-[#7FA9B1] py-8">
+                <tr><td colSpan={3} className="text-center text-[#657377] py-8">
                   Sem conversões. Ex.: 1 {d.code || 'CX'} = 12 UN.
                 </td></tr>
               )}
             </tbody>
           </table>
-          <div className="flex items-center justify-end gap-4 px-3 py-2 bg-[#F7FAFA] border-t border-[#EEF4F5]">
-            <button onClick={addC} className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+          <div className="flex items-center justify-end gap-4 px-3 py-2 bg-[#F4F6F7] border-t border-[#E4E9EB]">
+            <button onClick={addC} className="flex items-center gap-2 text-[12px] hover:bg-[#F4F6F7] px-1 py-1">
+              <span className="w-5 h-5 rounded-full bg-[#062F35] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={delC} disabled={sel === null}
-              className="flex items-center gap-2 text-[12px] hover:bg-[#F7FAFA] px-1 py-1 disabled:opacity-35">
-              <span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[11px]">−</span> Remover
+              className="flex items-center gap-2 text-[12px] hover:bg-[#F4F6F7] px-1 py-1 disabled:opacity-35">
+              <span className="w-5 h-5 rounded-full bg-[#C94A4A] text-white flex items-center justify-center text-[11px]">−</span> Remover
             </button>
           </div>
         </div>
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
       ]} />
     </div>
   );

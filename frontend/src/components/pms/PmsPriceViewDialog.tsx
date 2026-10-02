@@ -21,37 +21,37 @@ export default function PmsPriceViewDialog({ reservation: r, onClose }: { reserv
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[720px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+      <div className="w-[720px] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
           Visualizar Preço
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
         <div className="p-3 text-[12px]">
           <div className="font-semibold mb-2">{r.confirmation} {r.guest_name}</div>
           <table className="w-full border-collapse mb-3">
-            <thead style={{ background: '#F7FAFA' }}>
-              <tr><th className="text-left px-2 py-1.5 border-b border-[#CFE3E6]">Data</th><th className="text-right px-2 py-1.5 border-b border-[#CFE3E6]">Alojamento</th><th className="text-right px-2 py-1.5 border-b border-[#CFE3E6]">Total</th></tr>
+            <thead style={{ background: '#F4F6F7' }}>
+              <tr><th className="text-left px-2 py-1.5 border-b border-[#C8D2D5]">Data</th><th className="text-right px-2 py-1.5 border-b border-[#C8D2D5]">Alojamento</th><th className="text-right px-2 py-1.5 border-b border-[#C8D2D5]">Total</th></tr>
             </thead>
             <tbody>
               {dias.map((d) => (
-                <tr key={d} className="border-b border-[#F7FAFA]"><td className="px-2 py-1">{d}</td><td className="px-2 py-1 text-right">{money(rate)}</td><td className="px-2 py-1 text-right">{money(rate)}</td></tr>
+                <tr key={d} className="border-b border-[#E4E9EB]"><td className="px-2 py-1">{d}</td><td className="px-2 py-1 text-right">{money(rate)}</td><td className="px-2 py-1 text-right">{money(rate)}</td></tr>
               ))}
               <tr className="font-bold"><td className="px-2 py-1">Dias: {nights}</td><td className="px-2 py-1 text-right">{money(total)}</td><td className="px-2 py-1 text-right">{money(total)}</td></tr>
             </tbody>
           </table>
-          <div className="flex items-center justify-between border-t border-[#CFE3E6] pt-2 text-[13px] font-bold">
+          <div className="flex items-center justify-between border-t border-[#C8D2D5] pt-2 text-[13px] font-bold">
             <span>Total: {money(total)}</span>
             <span>Diariamente: {money(nights ? total / nights : 0)}</span>
             <span>Saldo: {folio ? money(folio.balance) : money(total)}</span>
           </div>
         </div>
-        <div className="flex items-center justify-between px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#F4F6F7] border-t border-[#C8D2D5] flex-shrink-0">
           <button disabled className="flex items-center gap-1.5 text-[12px] text-gray-400 cursor-not-allowed"><RefreshCw size={13} /> Recálculo de Preços</button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
         </div>

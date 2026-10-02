@@ -34,7 +34,7 @@ export default function PmsRatePlansView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r border-[#7FA9B1]">
+        <div className="w-1/2 border-r border-[#C8D2D5]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
             { header: 'Código', accessor: 'code', width: '18%' },
             { header: 'Nome', accessor: 'name', width: '30%' },
@@ -44,32 +44,32 @@ export default function PmsRatePlansView() {
           ]} />
         </div>
         <div className="w-1/2 p-3 space-y-2 text-[11px]">
-          <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#7FA9B1] p-1" /></label>
-          <label className="flex flex-col">Nome<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>
+          <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#C8D2D5] p-1" /></label>
+          <label className="flex flex-col">Nome<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="border border-[#C8D2D5] p-1" /></label>
           <label className="flex flex-col">Categoria de Quarto
-            <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
+            <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
               <option value="">Escolha…</option>{rtList.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
             </select>
           </label>
           <label className="flex flex-col">Regime
-            <select value={form.board} onChange={(e) => setForm({ ...form, board: e.target.value })} className="border border-[#7FA9B1] p-1 bg-white">
+            <select value={form.board} onChange={(e) => setForm({ ...form, board: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
               {BOARDS.map(([c, l]) => <option key={c} value={c}>{l}</option>)}
             </select>
           </label>
           <div className="flex gap-2">
-            <label className="flex-1 flex flex-col">Preço/noite<input type="number" value={form.price_per_night} onChange={(e) => setForm({ ...form, price_per_night: e.target.value })} className="border border-[#7FA9B1] p-1" /></label>
-            <label className="flex-1 flex flex-col">Mín. noites<input type="number" value={form.min_nights} onChange={(e) => setForm({ ...form, min_nights: Number(e.target.value) })} className="border border-[#7FA9B1] p-1" /></label>
+            <label className="flex-1 flex flex-col">Preço/noite<input type="number" value={form.price_per_night} onChange={(e) => setForm({ ...form, price_per_night: e.target.value })} className="border border-[#C8D2D5] p-1" /></label>
+            <label className="flex-1 flex flex-col">Mín. noites<input type="number" value={form.min_nights} onChange={(e) => setForm({ ...form, min_nights: Number(e.target.value) })} className="border border-[#C8D2D5] p-1" /></label>
           </div>
           <div className="flex gap-2">
-            <label className="flex-1 flex flex-col">Válida de<input type="date" value={form.valid_from || ''} onChange={(e) => setForm({ ...form, valid_from: e.target.value || null })} className="border border-[#7FA9B1] p-1" /></label>
-            <label className="flex-1 flex flex-col">Válida até<input type="date" value={form.valid_to || ''} onChange={(e) => setForm({ ...form, valid_to: e.target.value || null })} className="border border-[#7FA9B1] p-1" /></label>
+            <label className="flex-1 flex flex-col">Válida de<input type="date" value={form.valid_from || ''} onChange={(e) => setForm({ ...form, valid_from: e.target.value || null })} className="border border-[#C8D2D5] p-1" /></label>
+            <label className="flex-1 flex flex-col">Válida até<input type="date" value={form.valid_to || ''} onChange={(e) => setForm({ ...form, valid_to: e.target.value || null })} className="border border-[#C8D2D5] p-1" /></label>
           </div>
           <div className="text-[10px] text-gray-500">Deixe em branco para a tarifa valer sempre. Preços por dia específico (ex.: só sextas e sábados) fazem-se no Calendário de Tarifas → Atualização em Massa.</div>
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Nova', icon: '＋', color: '#062A31', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#062A31', onClick: save },
+        { label: 'Nova', icon: '＋', color: '#062F35', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#062F35', onClick: save },
       ]} />
     </div>
   );

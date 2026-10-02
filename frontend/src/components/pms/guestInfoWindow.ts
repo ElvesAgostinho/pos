@@ -6,7 +6,7 @@ import { apiClient } from '../../api/client';
 export async function openGuestInfoWindow(reservation: any) {
   const w = window.open('', '_blank', 'width=760,height=640');
   if (!w) return;
-  w.document.write('<html><head><title>Guest Info</title></head><body style="background:#062A31;color:#EEF4F5;font-family:sans-serif;padding:20px">A carregar…</body></html>');
+  w.document.write('<html><head><title>Guest Info</title></head><body style="background:#062F35;color:#E4E9EB;font-family:sans-serif;padding:20px">A carregar…</body></html>');
   w.document.close();
 
   let guest: any = null;
@@ -28,14 +28,14 @@ export async function openGuestInfoWindow(reservation: any) {
 
   w.document.open();
   w.document.write(`<!doctype html><html><head><title>Guest Info - ${guest.name}</title><style>
-    body{background:#062A31;color:#EEF4F5;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:20px}
-    .card{background:#041F24;border-radius:4px;margin-bottom:16px}
+    body{background:#062F35;color:#E4E9EB;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:20px}
+    .card{background:#062F35;border-radius:4px;margin-bottom:16px}
     .head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-weight:bold;font-size:16px}
-    .close{background:#B0392B;color:#FFFFFF;border:none;padding:6px 14px;border-radius:3px;cursor:pointer}
+    .close{background:#C94A4A;color:#FFFFFF;border:none;padding:6px 14px;border-radius:3px;cursor:pointer}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px}
     .row b{color:#FFFFFF}
     table{width:100%;border-collapse:collapse;margin:0 16px 16px;width:calc(100% - 32px)}
-    th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #062A31;font-size:13px}
+    th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #062F35;font-size:13px}
   </style></head><body>
     <div class="card">
       <div class="head">${guest.name}<button class="close" onclick="window.close()">Close</button></div>
@@ -51,7 +51,7 @@ export async function openGuestInfoWindow(reservation: any) {
     <div class="card">
       <div class="head">Contracts and Reservations</div>
       <table><thead><tr><th></th><th>Check-In</th><th>Check-Out</th><th>Nº Reserva</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:#5C8891">Sem reservas.</td></tr>'}</tbody></table>
+      <tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:#4B858E">Sem reservas.</td></tr>'}</tbody></table>
     </div>
   </body></html>`);
   w.document.close();

@@ -18,7 +18,7 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
   const ActiveIcon = activeMeta.icon;
 
   return (
-    <div className="flex items-center justify-between bg-[#062A31] h-7 px-2 select-none border-b border-[#041F24]">
+    <div className="flex items-center justify-between bg-[#062F35] h-7 px-2 select-none border-b border-[#062F35]">
 
       {/* Window Title */}
       <div className="flex items-center text-white text-[12px] font-medium">
@@ -29,15 +29,15 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
       {/* Sessão + Window Controls (Classic Windows style) */}
       <div className="flex items-center space-x-1">
         {userName && (
-          <span className="text-[#F7FAFA] text-[11px] mr-2 flex items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#5C8891] mr-1.5" /> {userName}
+          <span className="text-[#657377] text-[11px] mr-2 flex items-center">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#4B858E] mr-1.5" /> {userName}
           </span>
         )}
         {onLock && (
           <div
             onClick={onLock}
             title="Bloquear ecrã"
-            className="w-5 h-5 flex items-center justify-center hover:bg-[#5C8891] cursor-pointer text-white"
+            className="w-5 h-5 flex items-center justify-center hover:bg-[#4B858E] cursor-pointer text-white"
           >
             <Lock size={12} />
           </div>
@@ -46,20 +46,20 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
           <div
             onClick={onLogout}
             title="Terminar sessão"
-            className="w-5 h-5 flex items-center justify-center hover:bg-[#8C2B1F] cursor-pointer text-white mr-1"
+            className="w-5 h-5 flex items-center justify-center hover:bg-[#A83A3A] cursor-pointer text-white mr-1"
           >
             <LogOut size={12} />
           </div>
         )}
-        <div className="w-5 h-5 flex items-center justify-center hover:bg-[#5C8891] cursor-pointer text-white">
+        <div className="w-5 h-5 flex items-center justify-center hover:bg-[#4B858E] cursor-pointer text-white">
           <div className="w-2.5 h-0.5 bg-white mb-[-8px]"></div>
         </div>
-        <div className="w-5 h-5 flex items-center justify-center hover:bg-[#5C8891] cursor-pointer text-white">
+        <div className="w-5 h-5 flex items-center justify-center hover:bg-[#4B858E] cursor-pointer text-white">
           <div className="w-2.5 h-2.5 border border-white"></div>
         </div>
         <div
           onClick={() => onCloseTab(activeView)}
-          className="w-5 h-5 flex items-center justify-center hover:bg-[#8C2B1F] hover:text-white cursor-pointer text-[#FDECEA]"
+          className="w-5 h-5 flex items-center justify-center hover:bg-[#A83A3A] hover:text-white cursor-pointer text-[#FDECEA]"
         >
           <X size={12} strokeWidth={3} />
         </div>

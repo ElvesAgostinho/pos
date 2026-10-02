@@ -100,11 +100,11 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
     const missing = fields.filter((f) => f.required && !editing[f.key]);
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-          <span className="text-[13px] font-bold text-[#041F24]">
+        <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
+          <span className="text-[13px] font-bold text-[#1F292C]">
             {editing.id ? `A editar ${editing.name || ''}` : `Novo ${title.toLowerCase()}`}
           </span>
-          <button onClick={() => setEditing(null)} className="text-[16px] text-[#5C8891] hover:text-black leading-none">×</button>
+          <button onClick={() => setEditing(null)} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
         </div>
 
         <div className="flex-1 overflow-auto p-4">
@@ -112,8 +112,8 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
             <div className="space-y-2.5 pt-1.5">
               {fields.map((f) => (
                 <label key={f.key} className={`flex gap-3 text-[13px] ${f.type === 'textarea' ? 'items-start' : 'items-center'}`}>
-                  <span className={`w-[160px] flex-shrink-0 text-[#041F24] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
-                    {f.label}{f.required && <span className="text-[#B0392B]">*</span>}
+                  <span className={`w-[160px] flex-shrink-0 text-[#1F292C] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
+                    {f.label}{f.required && <span className="text-[#C94A4A]">*</span>}
                   </span>
                   {f.type === 'textarea' ? (
                     <textarea value={editing[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} rows={5}
@@ -132,13 +132,13 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                     // do próprio servidor do hotel, como tudo o resto.
                     <div className={`flex items-center gap-2 ${f.width || 'w-[420px]'} flex-none min-w-0`}>
                       {editing[f.key] && (
-                        <img src={editing[f.key]} alt="" className="w-8 h-8 object-contain border border-[#EEF4F5] bg-white flex-shrink-0" />
+                        <img src={editing[f.key]} alt="" className="w-8 h-8 object-contain border border-[#E4E9EB] bg-white flex-shrink-0" />
                       )}
                       <label className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#062A31] bg-[#F7FAFA]`} style={inputStyle}>
+                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#1F292C] bg-[#F4F6F7]`} style={inputStyle}>
                           {editing[f.key] ? String(editing[f.key]).split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                         </span>
-                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#041F24] text-white hover:bg-[#062A31] flex-shrink-0">
+                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#062F35] text-white hover:bg-[#062F35] flex-shrink-0">
                           Carregar…
                         </span>
                         <input type="file" accept="image/*" className="hidden"
@@ -157,7 +157,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                       </label>
                       {editing[f.key] && (
                         <button onClick={() => set(f.key, '')} title="Remover imagem"
-                          className="px-2 py-1 text-[#B0392B] hover:bg-[#F7FAFA] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
+                          className="px-2 py-1 text-[#C94A4A] hover:bg-[#F4F6F7] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
                       )}
                     </div>
                   ) : (
@@ -165,7 +165,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                       onChange={(e) => set(f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
                       className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
                   )}
-                  {f.help && <span className="text-[11px] text-[#5C8891]">{f.help}</span>}
+                  {f.help && <span className="text-[11px] text-[#657377]">{f.help}</span>}
                 </label>
               ))}
             </div>
@@ -174,12 +174,12 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
         <Toolbar actions={[
           {
-            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062A31',
+            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35',
             onClick: () => missing.length
               ? notifyGuide({ title: 'Faltam campos', message: `Preencha: ${missing.map((m) => m.label).join(', ')}.` })
               : save.mutate(editing),
           },
-          { icon: '✖', label: 'Fechar', color: '#B0392B', onClick: () => setEditing(null) },
+          { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: () => setEditing(null) },
         ]} />
       </div>
     );
@@ -191,12 +191,12 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#EEF4F5] bg-[#F7FAFA] text-[13px]">
-        <span className="text-[#041F24]">Pesquisar:</span>
-        <div className="flex items-center border border-[#7FA9B1] bg-white" style={inputStyle}>
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#E4E9EB] bg-[#F4F6F7] text-[13px]">
+        <span className="text-[#1F292C]">Pesquisar:</span>
+        <div className="flex items-center border border-[#C8D2D5] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
             className="px-2 py-1 text-[12px] outline-none w-[220px]" />
-          <span className="px-2 text-[#5C8891]"><Glyph icon="🔍" size={13} /></span>
+          <span className="px-2 text-[#657377]"><Glyph icon="🔍" size={13} /></span>
         </div>
       </div>
 
@@ -208,11 +208,11 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
               verticais entre colunas — é o detalhe que faz uma grelha parecer folha de
               cálculo a sério, não uma lista HTML qualquer. */}
           <thead className="sticky top-0">
-            <tr className="text-[#041F24]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
+            <tr className="text-[#1F292C]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 55%, #E4E9EB 100%)' }}>
               {columns.map((c, i) => (
                 <th key={c.key}
                   className={`text-left font-semibold px-3 py-1 border-b-2 ${i > 0 ? 'border-l' : ''}`}
-                  style={{ width: c.width, borderBottomColor: TOKENS.border, borderLeftColor: '#EEF4F5' }}>
+                  style={{ width: c.width, borderBottomColor: TOKENS.border, borderLeftColor: '#E4E9EB' }}>
                   {c.label}
                 </th>
               ))}
@@ -223,7 +223,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => !readOnly && setEditing({ ...r })}
                 className="cursor-pointer border-b"
                 style={{
-                  borderColor: '#F7FAFA',
+                  borderColor: '#F4F6F7',
                   background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#FFFFFF' : TOKENS.surface,
                   color: sel === r.id ? TOKENS.selectedText : undefined,
                 }}
@@ -238,7 +238,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                         onChange={(e) => toggle.mutate({ id: r.id, key: c.key, value: e.target.checked })} />
                     ) : c.readOnlyCheck ? (
                       <span title="Vem da licenca assinada - nao e editavel.">
-                        {r[c.key] ? <span className="text-[#5C8891] font-bold">OK</span> : <span className="text-[#CFE3E6]">-</span>}
+                        {r[c.key] ? <span className="text-[#657377] font-bold">OK</span> : <span className="text-[#657377]">-</span>}
                       </span>
                     ) : c.render ? c.render(r) : (r[c.key] ?? '—')}
                   </td>
@@ -246,16 +246,16 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
               </tr>
             ))}
             {view.length === 0 && (
-              <tr><td colSpan={columns.length} className="text-center text-[#7FA9B1] py-10">Sem registos.</td></tr>
+              <tr><td colSpan={columns.length} className="text-center text-[#657377] py-10">Sem registos.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#CFE3E6] bg-[#F7FAFA] text-[12px]">
+      <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#C8D2D5] bg-[#F4F6F7] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-          className="border border-[#7FA9B1] px-2 py-0.5 bg-white">
+          className="border border-[#C8D2D5] px-2 py-0.5 bg-white">
           {[25, 50, 100, 250].map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
         <div className="flex items-center gap-1">
@@ -263,23 +263,23 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-1.5 disabled:opacity-30">◀</button>
           <span>Página</span>
           <input value={page} onChange={(e) => setPage(Math.min(totalPages, Math.max(1, Number(e.target.value) || 1)))}
-            className="w-12 border border-[#7FA9B1] px-1 py-0.5 text-center bg-white" />
+            className="w-12 border border-[#C8D2D5] px-1 py-0.5 text-center bg-white" />
           <span>de {totalPages}</span>
           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-1.5 disabled:opacity-30">▶</button>
           <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-1.5 disabled:opacity-30">⏭</button>
         </div>
-        <span className="ml-auto text-[#062A31]">
+        <span className="ml-auto text-[#1F292C]">
           Nº registos a visualizar {filtered.length ? (page - 1) * pageSize + 1 : 0} - {Math.min(page * pageSize, filtered.length)} de {filtered.length}
         </span>
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#062A31', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
-        { icon: '✎', label: 'Editar', color: '#5C8891', disabled: !sel || readOnly, onClick: () => setEditing({ ...selRow }) },
-        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#062A31', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
-        { icon: '−', label: 'Apagar', color: '#B0392B', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },
-        { icon: '🖶', label: 'Imprimir', color: '#041F24', onClick: () => window.print() },
-        { icon: '⤓', label: 'Exportar para Excel', color: '#062A31', onClick: exportCsv },
+        { icon: '＋', label: 'Adicionar', color: '#062F35', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
+        { icon: '✎', label: 'Editar', color: '#4B858E', disabled: !sel || readOnly, onClick: () => setEditing({ ...selRow }) },
+        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#062F35', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
+        { icon: '−', label: 'Apagar', color: '#C94A4A', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },
+        { icon: '🖶', label: 'Imprimir', color: '#062F35', onClick: () => window.print() },
+        { icon: '⤓', label: 'Exportar para Excel', color: '#062F35', onClick: exportCsv },
       ]} />
     </div>
   );

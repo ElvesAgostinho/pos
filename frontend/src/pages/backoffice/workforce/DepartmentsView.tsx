@@ -75,18 +75,18 @@ const DepartmentsView: React.FC = () => {
           </>
         }
       >
-        <div className="p-4 bg-[#F7FAFA] h-full overflow-y-auto">
+        <div className="p-4 bg-[#F4F6F7] h-full overflow-y-auto">
           <form onSubmit={handleSubmit} className="text-[11px] grid grid-cols-1 gap-4">
-            <div className="border border-[#7FA9B1] bg-white p-2">
-              <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Detalhes</h3>
+            <div className="border border-[#C8D2D5] bg-white p-2">
+              <h3 className="font-bold text-[#657377] border-b border-[#C8D2D5] mb-2 pb-1">Detalhes</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Nome *</label>
-                  <input required name="name" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
+                  <input required name="name" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Descrição</label>
-                  <input name="description" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
+                  <input name="description" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none" />
                 </div>
               </div>
             </div>
@@ -104,7 +104,7 @@ const DepartmentsView: React.FC = () => {
       header: 'Ações', 
       accessor: (r: any) => (
         <div className="flex space-x-2">
-          <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(r); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>
+          <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(r); }} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button>
         </div>
       ), 
       width: '10%' 

@@ -54,23 +54,23 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
   return (
     <>
       <button onClick={() => setAberto(true)} title={`Permissões: ${titulo}`}
-        className="w-8 h-8 flex items-center justify-center bg-[#F7FAFA] border border-[#CFE3E6] hover:bg-[#EEF4F5] text-[#041F24]">
+        className="w-8 h-8 flex items-center justify-center bg-[#F4F6F7] border border-[#C8D2D5] hover:bg-[#F4F6F7] text-[#1F292C]">
         <Users size={16} />
       </button>
 
       {aberto && (
         <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center">
-          <div className="w-[420px] bg-white border border-[#7FA9B1] shadow-xl rounded-[16px] overflow-hidden">
-            <div className="px-3 py-2 bg-[#041F24] text-white text-[14px] font-bold flex items-center justify-between">
+          <div className="w-[420px] bg-white border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden">
+            <div className="px-3 py-2 bg-[#062F35] text-white text-[14px] font-bold flex items-center justify-between">
               <span>Permissões — {titulo}</span>
-              <button onClick={() => setAberto(false)} className="w-6 h-6 bg-[#B0392B] text-white font-bold flex items-center justify-center"><X size={14} /></button>
+              <button onClick={() => setAberto(false)} className="w-6 h-6 bg-[#C94A4A] text-white font-bold flex items-center justify-center"><X size={14} /></button>
             </div>
             <div className="max-h-[50vh] overflow-auto">
-              <div className="grid grid-cols-[1fr_60px] px-3 py-1.5 text-[11px] font-bold text-[#5C8891] bg-[#F7FAFA] border-b border-[#EEF4F5]">
+              <div className="grid grid-cols-[1fr_60px] px-3 py-1.5 text-[11px] font-bold text-[#657377] bg-[#F4F6F7] border-b border-[#E4E9EB]">
                 <span>Grupo</span><span className="text-center">Tem</span>
               </div>
               {(data?.groups || []).map((g: any) => (
-                <label key={g.id} className="grid grid-cols-[1fr_60px] items-center px-3 py-1.5 text-[13px] border-b border-[#F7FAFA] hover:bg-[#F7FAFA] cursor-pointer">
+                <label key={g.id} className="grid grid-cols-[1fr_60px] items-center px-3 py-1.5 text-[13px] border-b border-[#E4E9EB] hover:bg-[#F4F6F7] cursor-pointer">
                   <span>{g.name}</span>
                   <span className="flex justify-center">
                     <input type="checkbox" checked={!!marcado[g.id]}
@@ -78,14 +78,14 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
                   </span>
                 </label>
               ))}
-              {!data && <div className="px-3 py-4 text-center text-[#7FA9B1] text-[12px]">A carregar…</div>}
+              {!data && <div className="px-3 py-4 text-center text-[#657377] text-[12px]">A carregar…</div>}
             </div>
-            <div className="grid grid-cols-2 gap-1 p-1 bg-[#F7FAFA]">
+            <div className="grid grid-cols-2 gap-1 p-1 bg-[#F4F6F7]">
               <button onClick={gravar} disabled={gravando || !data}
-                className="py-1.5 bg-[#062A31] text-white text-[13px] font-bold disabled:opacity-50">
+                className="py-1.5 bg-[#062F35] text-white text-[13px] font-bold disabled:opacity-50">
                 {gravando ? 'A gravar…' : 'Gravar'}
               </button>
-              <button onClick={() => setAberto(false)} className="py-1.5 bg-[#5C8891] text-white text-[13px] font-bold">Fechar</button>
+              <button onClick={() => setAberto(false)} className="py-1.5 bg-[#4B858E] text-white text-[13px] font-bold">Fechar</button>
             </div>
           </div>
         </div>

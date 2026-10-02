@@ -8,7 +8,7 @@ import { useAccounts } from '../../hooks/useFinance';
 import { aviso, pedir } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toFixed(2);
-const ST: Record<string, string> = { OPEN: 'text-[#8C2B1F] font-bold', PARTIAL: 'text-[#062A31] font-bold', PAID: 'text-[#062A31] font-bold', CANCELLED: 'text-gray-400' };
+const ST: Record<string, string> = { OPEN: 'text-[#A83A3A] font-bold', PARTIAL: 'text-[#1F292C] font-bold', PAID: 'text-[#1F292C] font-bold', CANCELLED: 'text-gray-400' };
 
 export default function AccountsPayableView() {
   const qc = useQueryClient();
@@ -34,9 +34,9 @@ export default function AccountsPayableView() {
     <ClassicWindow title="Contas a Pagar — Fornecedores (conta corrente)" icon={<Receipt size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{invoices.length} fatura(s) · em dívida: <b>{money(totalOpen)}</b> · nascem automaticamente da receção de mercadorias (GRN)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px]">
+        <div className="flex items-center gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px]">
           <label className="font-bold text-gray-700">Estado:</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-[#7FA9B1] p-1 bg-white">
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-[#C8D2D5] p-1 bg-white">
             <option value="">Todas</option><option value="OPEN">Em aberto</option><option value="PARTIAL">Parcial</option><option value="PAID">Pagas</option>
           </select>
         </div>
@@ -48,9 +48,9 @@ export default function AccountsPayableView() {
             { header: 'Data', accessor: 'date', width: '11%' },
             { header: 'Valor', accessor: (r: any) => money(r.amount), width: '11%' },
             { header: 'Pago', accessor: (r: any) => money(r.paid_amount), width: '10%' },
-            { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#8C2B1F] font-bold' : 'text-[#062A31]'}>{money(r.balance)}</span>, width: '11%' },
+            { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#A83A3A] font-bold' : 'text-[#1F292C]'}>{money(r.balance)}</span>, width: '11%' },
             { header: 'Estado', accessor: (r: any) => <span className={ST[r.status] || ''}>{r.status_display}</span>, width: '10%' },
-            { header: '', accessor: (r: any) => r.status !== 'PAID' && r.status !== 'CANCELLED' ? <button title="Pagar" onClick={() => doPay(r)} className="text-[#062A31] hover:text-[#062A31]"><DollarSign size={14} /></button> : null, width: '8%' },
+            { header: '', accessor: (r: any) => r.status !== 'PAID' && r.status !== 'CANCELLED' ? <button title="Pagar" onClick={() => doPay(r)} className="text-[#1F292C] hover:text-[#1F292C]"><DollarSign size={14} /></button> : null, width: '8%' },
           ]} />
         </div>
       </div>

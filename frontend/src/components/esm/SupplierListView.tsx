@@ -11,9 +11,9 @@ const STATUS_LABELS: Record<string, string> = {
   ACTIVE: 'Ativo', BLOCKED: 'Bloqueado', EVALUATION: 'Em Avaliação',
 };
 const STATUS_CLS: Record<string, string> = {
-  ACTIVE: 'text-[#062A31]', BLOCKED: 'text-[#8C2B1F]', EVALUATION: 'text-[#062A31]',
+  ACTIVE: 'text-[#1F292C]', BLOCKED: 'text-[#A83A3A]', EVALUATION: 'text-[#1F292C]',
 };
-const scoreColor = (s: number) => (s >= 80 ? 'text-[#062A31]' : s >= 50 ? 'text-[#5C8891]' : 'text-[#8C2B1F]');
+const scoreColor = (s: number) => (s >= 80 ? 'text-[#1F292C]' : s >= 50 ? 'text-[#657377]' : 'text-[#A83A3A]');
 
 export default function SupplierListView() {
   const [mode, setMode] = useState<'list' | 'detail'>('list');
@@ -56,7 +56,7 @@ export default function SupplierListView() {
       accessor: (r: Supplier) => (
         <button
           onClick={(e) => { e.stopPropagation(); if (confirm(`Apagar o fornecedor ${r.commercial_name}?`)) deleteSupplier.mutate(r.id!); }}
-          className="text-[#8C2B1F] hover:text-[#8C2B1F]"
+          className="text-[#A83A3A] hover:text-[#A83A3A]"
         >
           <Trash2 size={12} />
         </button>
@@ -80,8 +80,8 @@ export default function SupplierListView() {
     >
       <div className="flex flex-col h-full">
         {/* Barra de filtros */}
-        <div className="flex items-center gap-2 bg-[#F7FAFA] border-b border-[#7FA9B1] px-3 py-2 text-[11px] flex-shrink-0">
-          <div className="flex items-center border border-[#7FA9B1] bg-white px-1">
+        <div className="flex items-center gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px] flex-shrink-0">
+          <div className="flex items-center border border-[#C8D2D5] bg-white px-1">
             <Search size={12} className="text-gray-500" />
             <input
               placeholder="Pesquisar código, nome, NIF…"
@@ -90,7 +90,7 @@ export default function SupplierListView() {
               className="p-1 focus:outline-none w-64"
             />
           </div>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-[#7FA9B1] p-1 bg-white">
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-[#C8D2D5] p-1 bg-white">
             <option value="">Todos os estados</option>
             <option value="ACTIVE">Ativos</option>
             <option value="EVALUATION">Em Avaliação</option>

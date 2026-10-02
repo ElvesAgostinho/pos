@@ -27,10 +27,10 @@ function ImagemUpload({ titulo, url, folder, onChange }: {
     <Box title={titulo}>
       <div className="flex items-center gap-2">
         <label className="flex-1 flex items-center gap-2 cursor-pointer min-w-0">
-          <span className={`${inputCls} flex-1 min-w-0 truncate text-[#062A31] bg-[#F7FAFA]`} style={inputStyle}>
+          <span className={`${inputCls} flex-1 min-w-0 truncate text-[#1F292C] bg-[#F4F6F7]`} style={inputStyle}>
             {url ? url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
           </span>
-          <span className="px-3 py-1 text-[12px] font-semibold bg-[#041F24] text-white hover:bg-[#062A31] flex-shrink-0">
+          <span className="px-3 py-1 text-[12px] font-semibold bg-[#062F35] text-white hover:bg-[#062F35] flex-shrink-0">
             Carregar…
           </span>
           <input type="file" accept="image/*" className="hidden"
@@ -49,13 +49,13 @@ function ImagemUpload({ titulo, url, folder, onChange }: {
         </label>
         {url && (
           <button onClick={() => onChange('')} title="Remover imagem"
-            className="px-2 py-1 text-[#B0392B] hover:bg-[#F7FAFA] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
+            className="px-2 py-1 text-[#C94A4A] hover:bg-[#F4F6F7] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
         )}
       </div>
-      <div className="mt-2 h-24 flex items-center justify-center border border-[#EEF4F5] bg-white">
+      <div className="mt-2 h-24 flex items-center justify-center border border-[#E4E9EB] bg-white">
         {url
           ? <img src={url} alt="" className="max-h-full max-w-full object-contain" />
-          : <span className="text-[11px] text-[#7FA9B1]">Sem imagem</span>}
+          : <span className="text-[11px] text-[#657377]">Sem imagem</span>}
       </div>
     </Box>
   );
@@ -177,15 +177,15 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5]">
-        <span className="text-[13px] font-bold text-[#041F24]">{isNew ? 'A criar novo artigo' : `A editar ${d.name || ''}`}</span>
-        <span className="text-[11px] italic text-[#5C8891]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
+        <span className="text-[13px] font-bold text-[#1F292C]">{isNew ? 'A criar novo artigo' : `A editar ${d.name || ''}`}</span>
+        <span className="text-[11px] italic text-[#657377]">
           {d.updated_by && `Última alteração: ${d.updated_by}`}{d.created_by && ` | Criado por: ${d.created_by}`}
         </span>
       </div>
 
       {/* Identificação (fixa em todos os separadores) */}
-      <div className="px-3 pt-2 pb-1 border-b border-[#EEF4F5] bg-white">
+      <div className="px-3 pt-2 pb-1 border-b border-[#E4E9EB] bg-white">
       <Box title="Identificação">
       <div className="grid grid-cols-3 gap-x-6 gap-y-1 pt-1.5">
         <Row label="Código:">
@@ -221,7 +221,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
       </div>
 
       {/* Separadores */}
-      <div className="flex border-b-2 border-[#062A31] bg-[#F7FAFA] px-2">
+      <div className="flex border-b-2 border-[#062F35] bg-[#F4F6F7] px-2">
         {TABS.map(([k, label]) => <Tab key={k} active={tab === k} onClick={() => setTab(k)}>{label}</Tab>)}
       </div>
 
@@ -238,17 +238,17 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   ['Iva - Compra:', 'purchase_tax_percentage', 'purchase_exemption_code'],
                 ].map(([label, taxKey, exKey]) => (
                   <div key={taxKey} className="grid grid-cols-[92px_1fr_66px_1fr] items-center gap-2 py-[3px] text-[12px]">
-                    <span className="text-[#041F24]">{label}</span>
+                    <span className="text-[#1F292C]">{label}</span>
                     <select value={d[taxKey] ?? ''} onChange={(e) => set(taxKey, e.target.value)}
-                      className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white w-full" style={inputStyle}>
+                      className="border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white w-full" style={inputStyle}>
                       <option value="">(nenhum)</option>
                       {taxes.map((t: any) => (
                         <option key={t.id} value={t.rate}>{t.name || t.code} — {Number(t.rate).toFixed(2)}%</option>
                       ))}
                     </select>
-                    <span className="text-[#041F24]">Isenção:</span>
+                    <span className="text-[#1F292C]">Isenção:</span>
                     <input value={d[exKey] || ''} onChange={(e) => set(exKey, e.target.value)} placeholder="(nenhum)"
-                      className="border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white w-full" style={inputStyle} />
+                      className="border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white w-full" style={inputStyle} />
                   </div>
                 ))}
                 <Check checked={d.allow_tax_change_on_purchase} onChange={(v) => set('allow_tax_change_on_purchase', v)} label="Permitir alterar IVA nas compras" />
@@ -256,16 +256,16 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
 
               <Box title="Preço">
                 <table className="w-full text-[12px]">
-                  <thead><tr className="bg-[#F7FAFA]"><th className="text-left px-2 py-1 border border-[#EEF4F5]">Preço</th><th className="text-right px-2 py-1 border border-[#EEF4F5] w-[120px]">Valor</th></tr></thead>
+                  <thead><tr className="bg-[#F4F6F7]"><th className="text-left px-2 py-1 border border-[#E4E9EB]">Preço</th><th className="text-right px-2 py-1 border border-[#E4E9EB] w-[120px]">Valor</th></tr></thead>
                   <tbody>
                     {[1, 2, 3, 4, 5, 6].map((lvl) => {
                       const p = prices.find((x) => x.level === lvl);
                       return (
                         <tr key={lvl}>
-                          <td className="px-2 py-0.5 border border-[#F7FAFA] italic text-[#062A31]">
+                          <td className="px-2 py-0.5 border border-[#E4E9EB] italic text-[#1F292C]">
                             {lvl}{lvl === 1 ? ' (preço base do POS)' : ''}
                           </td>
-                          <td className="border border-[#F7FAFA]">
+                          <td className="border border-[#E4E9EB]">
                             <input type="number" value={p?.price ?? 0}
                               onChange={(e) => {
                                 const v = e.target.value;
@@ -281,7 +281,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                     })}
                   </tbody>
                 </table>
-                <div className="text-[10px] text-[#5C8891] mt-1">Cada terminal usa um nível — o mesmo artigo pode custar mais no bar da piscina.</div>
+                <div className="text-[10px] text-[#657377] mt-1">Cada terminal usa um nível — o mesmo artigo pode custar mais no bar da piscina.</div>
               </Box>
             </div>
 
@@ -309,18 +309,18 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                       placeholder={n === 1 ? 'TEMP' : n === 2 ? 'GELO' : 'LIMÃO'} className={inputCls} style={inputStyle} />
                   </Row>
                 ))}
-                <div className="text-[10px] text-[#5C8891]">Sugestões que o POS oferece ao operador ao pedir este artigo.</div>
+                <div className="text-[10px] text-[#657377]">Sugestões que o POS oferece ao operador ao pedir este artigo.</div>
               </Box>
             </div>
 
             <Box title="Impressoras" className="min-w-0">
-              <div className="text-[11px] text-[#5C8891] mb-1">Onde sai a comanda deste artigo.</div>
+              <div className="text-[11px] text-[#657377] mb-1">Onde sai a comanda deste artigo.</div>
               {printers.map((p: any) => (
                 <Check key={p.id} checked={(d.printer_ids || []).includes(p.id)}
                   onChange={() => toggleList('printer_ids', p.id)}
                   label={`${p.name} (${p.code})`} />
               ))}
-              {printers.length === 0 && <div className="text-[11px] text-[#7FA9B1]">Sem impressoras configuradas.</div>}
+              {printers.length === 0 && <div className="text-[11px] text-[#657377]">Sem impressoras configuradas.</div>}
             </Box>
           </div>
         )}
@@ -376,7 +376,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
               </Box>
             </div>
             <Box title="Línguas">
-              <div className="text-[11px] text-[#5C8891] mb-1">O nome do artigo no menu para hóspedes estrangeiros.</div>
+              <div className="text-[11px] text-[#657377] mb-1">O nome do artigo no menu para hóspedes estrangeiros.</div>
               {[1, 2, 3].map((n) => (
                 <Row key={n} label={`Língua ${n}:`} w="w-[80px]">
                   <input value={d[`name_lang_${n}`] || ''} onChange={(e) => set(`name_lang_${n}`, e.target.value)} className={inputCls} style={inputStyle} />
@@ -396,20 +396,20 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   onChange={(url) => set('composition_image_url', url)} />
               </div>
               <Box title="Notas">
-                <textarea value={d.notes || ''} onChange={(e) => set('notes', e.target.value)} rows={4} className="w-full border border-[#7FA9B1] p-2 text-[12px]" style={inputStyle} />
+                <textarea value={d.notes || ''} onChange={(e) => set('notes', e.target.value)} rows={4} className="w-full border border-[#C8D2D5] p-2 text-[12px]" style={inputStyle} />
               </Box>
               <Box title="Notas - Ficha técnica">
-                <textarea value={d.recipe_notes || ''} onChange={(e) => set('recipe_notes', e.target.value)} rows={3} className="w-full border border-[#7FA9B1] p-2 text-[12px]" style={inputStyle} />
+                <textarea value={d.recipe_notes || ''} onChange={(e) => set('recipe_notes', e.target.value)} rows={3} className="w-full border border-[#C8D2D5] p-2 text-[12px]" style={inputStyle} />
               </Box>
             </div>
             <Box title="Alergénios">
-              <div className="text-[11px] text-[#B0392B] font-bold mb-1">Esta informação chega à cozinha, ao bar e à pastelaria com o pedido.</div>
+              <div className="text-[11px] text-[#C94A4A] font-bold mb-1">Esta informação chega à cozinha, ao bar e à pastelaria com o pedido.</div>
               <div className="max-h-[420px] overflow-auto">
                 {allergens.map((a: any) => (
                   <Check key={a.id} checked={(d.allergen_ids || []).includes(a.id)}
                     onChange={() => toggleList('allergen_ids', a.id)} label={a.name} />
                 ))}
-                {allergens.length === 0 && <div className="text-[11px] text-[#7FA9B1]">Sem alergénios registados.</div>}
+                {allergens.length === 0 && <div className="text-[11px] text-[#657377]">Sem alergénios registados.</div>}
               </div>
             </Box>
           </div>
@@ -418,18 +418,18 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
         {tab === 'teclados' && (
           <Box title="Teclados onde este artigo aparece">
             <table className="w-full text-[12px]">
-              <thead><tr className="bg-[#F7FAFA]"><th className="text-left px-2 py-1 border border-[#EEF4F5] w-[40px]"></th><th className="text-left px-2 py-1 border border-[#EEF4F5]">Nome</th><th className="text-left px-2 py-1 border border-[#EEF4F5]">Localização</th></tr></thead>
+              <thead><tr className="bg-[#F4F6F7]"><th className="text-left px-2 py-1 border border-[#E4E9EB] w-[40px]"></th><th className="text-left px-2 py-1 border border-[#E4E9EB]">Nome</th><th className="text-left px-2 py-1 border border-[#E4E9EB]">Localização</th></tr></thead>
               <tbody>
                 {keyboards.map((kb: any) => {
                   const on = (kb.keys || []).some((k: any) => k.item === id);
                   return (
                     <tr key={kb.id}>
-                      <td className="px-2 py-1 border border-[#F7FAFA] text-center">
+                      <td className="px-2 py-1 border border-[#E4E9EB] text-center">
                         <GridCheck checked={on} onChange={(v) => toggleKb.mutate({ kb: kb.id, on: v })}
                           title="Ligar põe o artigo neste teclado do terminal; desligar tira-o" />
                       </td>
-                      <td className="px-2 py-1 border border-[#F7FAFA] font-bold">{kb.name}</td>
-                      <td className="px-2 py-1 border border-[#F7FAFA] italic text-[#062A31]">
+                      <td className="px-2 py-1 border border-[#E4E9EB] font-bold">{kb.name}</td>
+                      <td className="px-2 py-1 border border-[#E4E9EB] italic text-[#1F292C]">
                         {on
                           ? <>{d.group ? groups.find((g: any) => g.id === Number(d.group))?.name : '—'} ⇒{' '}
                               {d.family ? families.find((x: any) => x.id === Number(d.family))?.name : '—'} ⇒{' '}
@@ -440,11 +440,11 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   );
                 })}
                 {keyboards.length === 0 && (
-                  <tr><td colSpan={3} className="text-center text-[#7FA9B1] py-6">Ainda não há teclados. Crie-os em Parâmetros do Sistema → Teclados.</td></tr>
+                  <tr><td colSpan={3} className="text-center text-[#657377] py-6">Ainda não há teclados. Crie-os em Parâmetros do Sistema → Teclados.</td></tr>
                 )}
               </tbody>
             </table>
-            <div className="text-[11px] text-[#5C8891] mt-2">
+            <div className="text-[11px] text-[#657377] mt-2">
               A caixa põe/tira mesmo a tecla do terminal. Para a desenhar (cor, ordem, tamanho)
               use <b>Parâmetros do Sistema → Teclados</b>.
             </div>
@@ -453,37 +453,37 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
 
         {tab === 'composicao' && (
           isNew ? (
-            <div className="text-[12px] text-[#B0392B] p-4">Grave o artigo antes de montar a ficha técnica.</div>
+            <div className="text-[12px] text-[#C94A4A] p-4">Grave o artigo antes de montar a ficha técnica.</div>
           ) : (
             <div className="flex flex-col h-full">
               <div className="flex items-center gap-4 mb-2">
                 <Row label="Pax:" w="w-[40px]">
                   <input type="number" min={1} value={receita.pax}
                     onChange={(e) => setReceita((r: any) => ({ ...r, pax: Math.max(1, Number(e.target.value) || 1) }))}
-                    className="border border-[#7FA9B1] px-2 py-1 text-[12px] w-[70px]" style={inputStyle} />
+                    className="border border-[#C8D2D5] px-2 py-1 text-[12px] w-[70px]" style={inputStyle} />
                 </Row>
                 <Row label="Doses:" w="w-[50px]">
                   <input type="number" min={1} value={receita.doses}
                     onChange={(e) => setReceita((r: any) => ({ ...r, doses: Math.max(1, Number(e.target.value) || 1) }))}
-                    className="border border-[#7FA9B1] px-2 py-1 text-[12px] w-[70px]" style={inputStyle} />
+                    className="border border-[#C8D2D5] px-2 py-1 text-[12px] w-[70px]" style={inputStyle} />
                 </Row>
                 <button onClick={() => setVerLogs(true)}
-                  className="flex items-center gap-1 text-[12px] text-[#062A31] font-semibold hover:underline">
-                  <span className="w-4 h-4 rounded-full bg-[#062A31] text-white flex items-center justify-center text-[10px]">↻</span>
+                  className="flex items-center gap-1 text-[12px] text-[#1F292C] font-semibold hover:underline">
+                  <span className="w-4 h-4 rounded-full bg-[#062F35] text-white flex items-center justify-center text-[10px]">↻</span>
                   Histórico
                 </button>
               </div>
 
-              <div className="flex-1 overflow-auto" style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+              <div className="flex-1 overflow-auto" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
                 <table className="text-[12px] border-collapse w-full">
                   <thead className="sticky top-0 z-10">
-                    <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
+                    <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 55%, #E4E9EB 100%)' }}>
                       <th className="w-[28px] border-b-2" style={{ borderBottomColor: TOKENS.border }}></th>
                       {['Código', 'Descrição', 'Unidade', 'Quantidade', 'Desperdício%', 'Quantidade-',
                         'Custo', 'Custo Total', '%', 'Armazém', 'Tipo', 'Fornecedor', 'Stock Qtd.',
                         'Dose Qtd', 'Custo Dose'].map((h) => (
                         <th key={h} className="text-left px-2 py-1.5 border-b-2 border-l whitespace-nowrap font-semibold"
-                          style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#EEF4F5', color: TOKENS.selectedText }}>{h}</th>
+                          style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#E4E9EB', color: TOKENS.selectedText }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -495,7 +495,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                       const key = ing._key ?? ing.id;
                       const sel = selRecIds.includes(key);
                       return (
-                        <tr key={key} className="border-b" style={{ borderColor: '#F7FAFA', background: sel ? TOKENS.warningBg : i % 2 ? '#FFFFFF' : TOKENS.surface }}>
+                        <tr key={key} className="border-b" style={{ borderColor: '#F4F6F7', background: sel ? TOKENS.warningBg : i % 2 ? '#FFFFFF' : TOKENS.surface }}>
                           <td className="text-center">
                             <input type="checkbox" checked={sel}
                               onChange={() => setSelRecIds((s) => s.includes(key) ? s.filter((x) => x !== key) : [...s, key])} />
@@ -507,13 +507,13 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                             <input type="number" step="0.0001" value={ing.quantity}
                               onChange={(e) => setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
                                 x === ing ? { ...x, quantity: e.target.value } : x) }))}
-                              className="w-[80px] border border-[#7FA9B1] px-1 py-0.5" style={inputStyle} />
+                              className="w-[80px] border border-[#C8D2D5] px-1 py-0.5" style={inputStyle} />
                           </td>
                           <td className="px-1 py-1">
                             <input type="number" step="0.01" value={ing.waste_percentage}
                               onChange={(e) => setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
                                 x === ing ? { ...x, waste_percentage: e.target.value } : x) }))}
-                              className="w-[64px] border border-[#7FA9B1] px-1 py-0.5" style={inputStyle} />
+                              className="w-[64px] border border-[#C8D2D5] px-1 py-0.5" style={inputStyle} />
                           </td>
                           <td className="px-2 py-1 text-right">
                             {(Number(ing.quantity || 0) * (1 + Number(ing.waste_percentage || 0) / 100)).toFixed(4)}
@@ -531,7 +531,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                       );
                     })}
                     {(receita.ingredients || []).length === 0 && (
-                      <tr><td colSpan={15} className="text-center text-[#7FA9B1] py-8">
+                      <tr><td colSpan={15} className="text-center text-[#657377] py-8">
                         Sem componentes. Toque em <b>Adicionar</b> para montar a ficha técnica.
                       </td></tr>
                     )}
@@ -539,10 +539,10 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                 </table>
               </div>
 
-              <div className="flex items-center gap-3 py-2 border-t border-[#CFE3E6] mt-1">
+              <div className="flex items-center gap-3 py-2 border-t border-[#C8D2D5] mt-1">
                 <button onClick={() => setPickerAberto(true)} title="Adicionar componente à ficha técnica"
-                  className="flex items-center gap-1 text-[12px] font-semibold text-[#7FA9B1] hover:underline">
-                  <span className="w-5 h-5 rounded-full bg-[#7FA9B1] text-white flex items-center justify-center text-[13px]">+</span>
+                  className="flex items-center gap-1 text-[12px] font-semibold text-[#657377] hover:underline">
+                  <span className="w-5 h-5 rounded-full bg-[#4B858E] text-white flex items-center justify-center text-[13px]">+</span>
                   Adicionar
                 </button>
                 <button onClick={() => {
@@ -550,21 +550,21 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   setReceita((r: any) => ({ ...r, ingredients: r.ingredients.filter((x: any) => !selRecIds.includes(x._key ?? x.id)) }));
                   setSelRecIds([]);
                 }} disabled={!selRecIds.length}
-                  className="flex items-center gap-1 text-[12px] font-semibold text-[#B0392B] hover:underline disabled:opacity-30 disabled:no-underline">
-                  <span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center text-[13px]">−</span>
+                  className="flex items-center gap-1 text-[12px] font-semibold text-[#C94A4A] hover:underline disabled:opacity-30 disabled:no-underline">
+                  <span className="w-5 h-5 rounded-full bg-[#C94A4A] text-white flex items-center justify-center text-[13px]">−</span>
                   Apagar
                 </button>
-                <span className="text-[12px] text-[#062A31] ml-2">Multiplicar:</span>
+                <span className="text-[12px] text-[#1F292C] ml-2">Multiplicar:</span>
                 <input value={multiplicador} onChange={(e) => setMultiplicador(e.target.value)}
-                  className="w-[60px] border border-[#7FA9B1] px-2 py-1 text-[12px]" style={inputStyle} />
+                  className="w-[60px] border border-[#C8D2D5] px-2 py-1 text-[12px]" style={inputStyle} />
                 <button onClick={() => {
                   const f = Number(multiplicador) || 1;
                   if (!selRecIds.length) return;
                   setReceita((r: any) => ({ ...r, ingredients: r.ingredients.map((x: any) =>
                     selRecIds.includes(x._key ?? x.id) ? { ...x, quantity: (Number(x.quantity) * f).toFixed(4) } : x) }));
                 }} disabled={!selRecIds.length}
-                  className="flex items-center gap-1 text-[12px] font-semibold text-[#062A31] hover:underline disabled:opacity-30 disabled:no-underline">
-                  <span className="w-4 h-4 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={9} /></span>
+                  className="flex items-center gap-1 text-[12px] font-semibold text-[#1F292C] hover:underline disabled:opacity-30 disabled:no-underline">
+                  <span className="w-4 h-4 rounded-full bg-[#062F35] text-white flex items-center justify-center"><Glyph icon="✔" size={9} /></span>
                   Aplicar
                 </button>
                 <button onClick={() => {
@@ -575,17 +575,17 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                     `<td style="text-align:right">${i.quantity}</td><td style="text-align:right">${money(i.line_cost)}</td></tr>`).join('');
                   w.document.write(`<html><head><title>Ficha Técnica — ${d.name}</title>
                     <style>body{font-family:sans-serif;font-size:13px} table{width:100%;border-collapse:collapse}
-                    th,td{border:1px solid #7FA9B1;padding:4px 6px;text-align:left}</style></head><body>
+                    th,td{border:1px solid #4B858E;padding:4px 6px;text-align:left}</style></head><body>
                     <h2>${d.name}</h2><div>Pax: ${receita.pax} · Doses: ${receita.doses}</div>
                     <table><thead><tr><th>Código</th><th>Descrição</th><th>Un.</th><th>Qtd</th><th>Custo Total</th></tr></thead>
                     <tbody>${linhas}</tbody></table></body></html>`);
                   w.document.close();
                   w.print();
-                }} className="flex items-center gap-1 text-[12px] font-semibold text-[#062A31] hover:underline">
-                  <span className="w-4 h-4 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="🖶" size={9} /></span>
+                }} className="flex items-center gap-1 text-[12px] font-semibold text-[#1F292C] hover:underline">
+                  <span className="w-4 h-4 rounded-full bg-[#062F35] text-white flex items-center justify-center"><Glyph icon="🖶" size={9} /></span>
                   Imprimir
                 </button>
-                <div className="ml-auto text-[12px] text-[#041F24] text-right leading-tight">
+                <div className="ml-auto text-[12px] text-[#1F292C] text-right leading-tight">
                   <div>Total Custo: <b>{money((receita.ingredients || []).reduce((s: number, x: any) => s + Number(x.line_cost || 0), 0))}</b></div>
                   <div>Dose: <b>{money((receita.ingredients || []).reduce((s: number, x: any) => s + Number(x.line_cost || 0), 0) / (receita.doses || 1))}</b></div>
                 </div>
@@ -624,33 +624,33 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
         {tab === 'barras' && (
           <div>
             <Row label="Valor de Medição Base:" w="w-[150px]">
-              <input type="number" value={d.base_measure_value ?? 0} onChange={(e) => set('base_measure_value', e.target.value)} className="border border-[#7FA9B1] px-2 py-1 text-[12px] w-[140px]" style={inputStyle} />
-              <span className="text-[12px] text-[#062A31] ml-2">
+              <input type="number" value={d.base_measure_value ?? 0} onChange={(e) => set('base_measure_value', e.target.value)} className="border border-[#C8D2D5] px-2 py-1 text-[12px] w-[140px]" style={inputStyle} />
+              <span className="text-[12px] text-[#1F292C] ml-2">
                 1 {d.sale_uom ? uoms.find((u: any) => u.id === d.sale_uom)?.code : 'UNI'} = (1: {money(prices.find((p) => p.level === 1)?.price)})
               </span>
             </Row>
             <Box title="Código de Barras" className="mt-2">
               <div className="flex gap-2 mb-2">
                 <input value={newBc} onChange={(e) => setNewBc(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addBarcode()}
-                  placeholder="Ler ou escrever o código de barras…" className="border border-[#7FA9B1] px-2 py-1 text-[12px] flex-1" style={inputStyle} />
+                  placeholder="Ler ou escrever o código de barras…" className="border border-[#C8D2D5] px-2 py-1 text-[12px] flex-1" style={inputStyle} />
                 <button onClick={addBarcode} disabled={isNew}
-                  className="px-3 py-1 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#062A31' }}>Adicionar</button>
+                  className="px-3 py-1 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#062F35' }}>Adicionar</button>
               </div>
-              {isNew && <div className="text-[11px] text-[#B0392B]">Grave o artigo antes de acrescentar códigos de barras.</div>}
+              {isNew && <div className="text-[11px] text-[#C94A4A]">Grave o artigo antes de acrescentar códigos de barras.</div>}
               <table className="w-full text-[12px]">
-                <thead><tr className="bg-[#F7FAFA]"><th className="text-left px-2 py-1 border border-[#EEF4F5]">Código</th><th className="text-left px-2 py-1 border border-[#EEF4F5]">Unidade</th><th className="text-left px-2 py-1 border border-[#EEF4F5]">Qt.</th><th className="border border-[#EEF4F5] w-[70px]"></th></tr></thead>
+                <thead><tr className="bg-[#F4F6F7]"><th className="text-left px-2 py-1 border border-[#E4E9EB]">Código</th><th className="text-left px-2 py-1 border border-[#E4E9EB]">Unidade</th><th className="text-left px-2 py-1 border border-[#E4E9EB]">Qt.</th><th className="border border-[#E4E9EB] w-[70px]"></th></tr></thead>
                 <tbody>
                   {(d.barcodes || []).map((b: any) => (
                     <tr key={b.id}>
-                      <td className="px-2 py-1 border border-[#F7FAFA] font-mono">{b.barcode}</td>
-                      <td className="px-2 py-1 border border-[#F7FAFA]">{b.uom_code || '—'}</td>
-                      <td className="px-2 py-1 border border-[#F7FAFA]">{b.quantity}</td>
-                      <td className="px-2 py-1 border border-[#F7FAFA] text-center">
-                        <button onClick={() => delBarcode(b.id)} className="text-[#8C2B1F] font-bold text-[11px]">Remover</button>
+                      <td className="px-2 py-1 border border-[#E4E9EB] font-mono">{b.barcode}</td>
+                      <td className="px-2 py-1 border border-[#E4E9EB]">{b.uom_code || '—'}</td>
+                      <td className="px-2 py-1 border border-[#E4E9EB]">{b.quantity}</td>
+                      <td className="px-2 py-1 border border-[#E4E9EB] text-center">
+                        <button onClick={() => delBarcode(b.id)} className="text-[#A83A3A] font-bold text-[11px]">Remover</button>
                       </td>
                     </tr>
                   ))}
-                  {!(d.barcodes || []).length && <tr><td colSpan={4} className="text-center text-[#7FA9B1] py-6">Sem códigos de barras.</td></tr>}
+                  {!(d.barcodes || []).length && <tr><td colSpan={4} className="text-center text-[#657377] py-6">Sem códigos de barras.</td></tr>}
                 </tbody>
               </table>
             </Box>
@@ -661,16 +661,16 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
           <Box title="Descontos aplicáveis a este artigo">
             <div className="max-h-[440px] overflow-auto">
               {promos.map((p: any) => (
-                <label key={p.id} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F7FAFA] text-[12px] cursor-pointer hover:bg-[#F7FAFA]">
+                <label key={p.id} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#E4E9EB] text-[12px] cursor-pointer hover:bg-[#F4F6F7]">
                   <input type="checkbox" checked={(d.discount_ids || []).includes(p.id)} onChange={() => toggleList('discount_ids', p.id)} className="w-4 h-4" />
                   <div className="flex-1">
-                    <div className="italic text-[11px] text-[#5C8891]">{p.discount_type === 'PERCENT' ? 'Desconto Percentagem' : 'Desconto Valor'}</div>
+                    <div className="italic text-[11px] text-[#657377]">{p.discount_type === 'PERCENT' ? 'Desconto Percentagem' : 'Desconto Valor'}</div>
                     <div className="font-semibold">{p.code || ''}{p.code ? ' - ' : ''}{p.name}</div>
                   </div>
-                  <span className="text-[11px] italic text-[#5C8891]">{p.value}{p.discount_type === 'PERCENT' ? '%' : ''}</span>
+                  <span className="text-[11px] italic text-[#657377]">{p.value}{p.discount_type === 'PERCENT' ? '%' : ''}</span>
                 </label>
               ))}
-              {promos.length === 0 && <div className="text-[12px] text-[#7FA9B1] py-6 text-center">Sem descontos configurados (crie-os em Marketing → Promoções).</div>}
+              {promos.length === 0 && <div className="text-[12px] text-[#657377] py-6 text-center">Sem descontos configurados (crie-os em Marketing → Promoções).</div>}
             </div>
           </Box>
         )}
@@ -688,54 +688,54 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
             <div className="pt-2">
               <Check checked={d.no_stock_movement} onChange={(v) => set('no_stock_movement', v)} label="Não movimenta stock" />
             </div>
-            <div className="text-[11px] text-[#5C8891] pt-2">
+            <div className="text-[11px] text-[#657377] pt-2">
               Compra-se à <b>caixa</b>, guarda-se em <b>unidades</b>, vende-se à <b>unidade</b> — o sistema converte sozinho.
             </div>
           </Box>
         )}
 
         {tab === 'armazens' && (
-          <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+          <div style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="w-full text-[12px] border-collapse">
             <thead>
-              <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
+              <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 55%, #E4E9EB 100%)' }}>
                 {['Armazém', 'Stock Qtd.', 'Pendente', 'Total Custo', 'Mínimo', 'Máximo'].map((h, i) => (
                   <th key={h} className={`text-left px-3 py-1.5 border-b-2 font-semibold ${i > 0 ? 'border-l' : ''}`}
-                    style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#EEF4F5', color: TOKENS.selectedText }}>{h}</th>
+                    style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#E4E9EB', color: TOKENS.selectedText }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {whs.map((w: any, i: number) => (
-                <tr key={w.warehouse} className="border-b" style={{ borderColor: '#F7FAFA', background: i % 2 ? '#FFFFFF' : TOKENS.surface }}>
+                <tr key={w.warehouse} className="border-b" style={{ borderColor: '#F4F6F7', background: i % 2 ? '#FFFFFF' : TOKENS.surface }}>
                   <td className="px-3 py-1">{w.warehouse_name}</td>
-                  <td className={`px-3 py-1 text-right ${w.negative ? 'text-[#8C2B1F] font-bold' : ''}`}>{Number(w.quantity).toFixed(3)}</td>
+                  <td className={`px-3 py-1 text-right ${w.negative ? 'text-[#A83A3A] font-bold' : ''}`}>{Number(w.quantity).toFixed(3)}</td>
                   <td className="px-3 py-1 text-right">{Number(w.pending).toFixed(3)}</td>
                   <td className="px-3 py-1 text-right">{money(w.total_cost)}</td>
                   <td className="px-3 py-1 text-right">{Number(w.min_stock).toFixed(3)}</td>
                   <td className="px-3 py-1 text-right">{Number(w.max_stock).toFixed(3)}</td>
                 </tr>
               ))}
-              {whs.length === 0 && <tr><td colSpan={6} className="text-center text-[#7FA9B1] py-8">Sem armazéns.</td></tr>}
+              {whs.length === 0 && <tr><td colSpan={6} className="text-center text-[#657377] py-8">Sem armazéns.</td></tr>}
             </tbody>
           </table>
           </div>
         )}
 
         {tab === 'fornecedores' && (
-          <div style={{ border: '1px solid #CFE3E6', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+          <div style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="w-full text-[12px] border-collapse">
             <thead>
-              <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7FAFA 55%, #EEF4F5 100%)' }}>
+              <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 55%, #E4E9EB 100%)' }}>
                 {['Data', 'Fornecedor', 'Documento', 'Quantidade', 'Preço Líquido', 'Unidade', 'Desconto'].map((h, i) => (
                   <th key={h} className={`text-left px-3 py-1.5 border-b-2 font-semibold ${i > 0 ? 'border-l' : ''}`}
-                    style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#EEF4F5', color: TOKENS.selectedText }}>{h}</th>
+                    style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#E4E9EB', color: TOKENS.selectedText }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {sups.map((s: any, i: number) => (
-                <tr key={i} className="border-b" style={{ borderColor: '#F7FAFA', background: i % 2 ? '#FFFFFF' : TOKENS.surface }}>
+                <tr key={i} className="border-b" style={{ borderColor: '#F4F6F7', background: i % 2 ? '#FFFFFF' : TOKENS.surface }}>
                   <td className="px-3 py-1">{s.date || '—'}</td>
                   <td className="px-3 py-1">{s.supplier}</td>
                   <td className="px-3 py-1">{s.document}</td>
@@ -745,7 +745,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   <td className="px-3 py-1 text-right">{s.discount}</td>
                 </tr>
               ))}
-              {sups.length === 0 && <tr><td colSpan={7} className="text-center text-[#7FA9B1] py-8">Este artigo ainda não foi comprado a nenhum fornecedor.</td></tr>}
+              {sups.length === 0 && <tr><td colSpan={7} className="text-center text-[#657377] py-8">Este artigo ainda não foi comprado a nenhum fornecedor.</td></tr>}
             </tbody>
           </table>
           </div>
@@ -755,7 +755,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
           <div>
             <div className="flex justify-end gap-6 text-[12px] mb-2">
               <div><b>Última compra:</b> {dash.last_purchase?.at || '—'}</div>
-              <div><b>Última venda:</b> {dash.last_sale?.at ? new Date(dash.last_sale.at).toLocaleString('pt-PT') : '—'} <span className="text-[#5C8891]">{dash.last_sale?.ref || ''}</span></div>
+              <div><b>Última venda:</b> {dash.last_sale?.at ? new Date(dash.last_sale.at).toLocaleString('pt-PT') : '—'} <span className="text-[#657377]">{dash.last_sale?.ref || ''}</span></div>
             </div>
             <Box title={`Vendas e compras — ${dash.year}`}>
               <div className="flex items-end gap-2 h-[240px] pt-4">
@@ -766,17 +766,17 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                   return (
                     <div key={m} className="flex-1 flex flex-col items-center gap-1">
                       <div className="flex items-end gap-0.5 h-[200px]">
-                        <div className="w-3" style={{ height: hs, background: '#5C8891' }} title={`Vendas: ${dash.sales_qty[i]}`} />
-                        <div className="w-3" style={{ height: hp, background: '#7FA9B1' }} title={`Compras: ${dash.purchases_qty[i]}`} />
+                        <div className="w-3" style={{ height: hs, background: '#4B858E' }} title={`Vendas: ${dash.sales_qty[i]}`} />
+                        <div className="w-3" style={{ height: hp, background: '#4B858E' }} title={`Compras: ${dash.purchases_qty[i]}`} />
                       </div>
-                      <span className="text-[10px] text-[#5C8891]">{m}</span>
+                      <span className="text-[10px] text-[#657377]">{m}</span>
                     </div>
                   );
                 })}
               </div>
               <div className="flex gap-4 justify-center text-[11px] mt-2">
-                <span className="flex items-center gap-1"><span className="w-3 h-3 inline-block" style={{ background: '#5C8891' }} /> Vendas</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 inline-block" style={{ background: '#7FA9B1' }} /> Compras</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 inline-block" style={{ background: '#4B858E' }} /> Vendas</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 inline-block" style={{ background: '#4B858E' }} /> Compras</span>
               </div>
             </Box>
           </div>
@@ -786,21 +786,21 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
       {/* Barra inferior — "Visualizar Logs" à esquerda (como na referência), Gravar/Fechar à direita. */}
       <Toolbar
         actions={isNew ? [] : [
-          { icon: '☰', label: 'Visualizar Logs', color: '#062A31', onClick: () => setVerLogs(true) },
+          { icon: '☰', label: 'Visualizar Logs', color: '#062F35', onClick: () => setVerLogs(true) },
         ]}
         right={
           <div className="flex items-center gap-1">
             <button onClick={() => save.mutate()} disabled={save.isPending}
-              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#041F24] disabled:opacity-35 hover:bg-[#F7FAFA]">
+              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#1F292C] disabled:opacity-35 hover:bg-[#F4F6F7]">
               <span className="w-7 h-7 rounded-full flex items-center justify-center text-white"
-                style={{ background: '#062A31' }}><Glyph icon="✔" size={15} /></span>
+                style={{ background: '#062F35' }}><Glyph icon="✔" size={15} /></span>
               {save.isPending ? 'A gravar…' : 'Gravar'}
             </button>
-            <span className="w-px h-6 bg-[#EEF4F5]" />
+            <span className="w-px h-6 bg-[#F4F6F7]" />
             <button onClick={onClose}
-              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#041F24] hover:bg-[#F7FAFA]">
+              className="flex items-center gap-2 px-3 py-1 text-[13px] text-[#1F292C] hover:bg-[#F4F6F7]">
               <span className="w-7 h-7 rounded-full flex items-center justify-center text-white"
-                style={{ background: '#B0392B' }}><Glyph icon="✖" size={15} /></span>
+                style={{ background: '#C94A4A' }}><Glyph icon="✖" size={15} /></span>
               Fechar
             </button>
           </div>

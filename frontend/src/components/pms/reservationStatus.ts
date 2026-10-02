@@ -12,8 +12,8 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 
 export const STATUS_COLOR: Record<string, string> = {
-  OPTION: '#7FA9B1', BOOKED: '#5C8891', CHECKED_IN: '#062A31', CHECKED_OUT: '#B7C6C9',
-  CANCELLED: '#B0392B', NO_SHOW: '#B0392B', WAITLIST: '#B08B2C',
+  OPTION: '#4B858E', BOOKED: '#4B858E', CHECKED_IN: '#062F35', CHECKED_OUT: '#B7C6C9',
+  CANCELLED: '#C94A4A', NO_SHOW: '#C94A4A', WAITLIST: '#B08B2C',
 };
 
 export const SOURCE_LABEL: Record<string, string> = { DIRECT: 'Normal', ONLINE: 'Online', BLOCK: 'Bloco/Grupo' };

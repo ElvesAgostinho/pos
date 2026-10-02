@@ -44,30 +44,30 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[520px] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#041F24' }}>
+      <div className="w-[520px] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#062F35' }}>
           Check-In
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
         <div className="p-3 text-[12px] flex flex-col gap-3">
-          <div className="flex items-center justify-between border border-[#CFE3E6] bg-white p-2">
+          <div className="flex items-center justify-between border border-[#C8D2D5] bg-white p-2">
             <div>
               <div className="font-bold text-[15px]">{reservation.confirmation}</div>
               <div>{reservation.guest_name}</div>
             </div>
             <button onClick={() => setEditingGuest(true)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-[#F7FAFA] border border-[#CFE3E6] hover:bg-[#F7FAFA] font-semibold">
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#F4F6F7] border border-[#C8D2D5] hover:bg-[#F4F6F7] font-semibold">
               <User size={13} /> Editar Hóspede
             </button>
           </div>
           <label className="flex items-center gap-2">
             <span className="w-[70px]">Quarto:</span>
-            <input readOnly value={room ? room.number : ''} className="border border-[#7FA9B1] p-1.5 bg-white flex-1" />
+            <input readOnly value={room ? room.number : ''} className="border border-[#C8D2D5] p-1.5 bg-white flex-1" />
             <button onClick={() => setShowRoomPicker(true)} title="Mostrar quartos livres"
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-[#041F24] text-white"><Plus size={14} /></button>
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-[#062F35] text-white"><Plus size={14} /></button>
           </label>
           <label className="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" checked={allowDirty} onChange={(e) => setAllowDirty(e.target.checked)} /> Permitir mesmo se quarto estiver sujo
@@ -79,14 +79,14 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
               no modelo Room partilhado por todo o PMS, fora de alcance desta
               auditoria pontual. */}
         </div>
-        <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
+        <div className="flex justify-end gap-2 px-3 py-2 bg-[#F4F6F7] border-t border-[#C8D2D5]">
           <button onClick={doCheckIn} disabled={saving}
-            className="flex items-center gap-2 px-3 py-1.5 text-[12px] font-semibold text-[#041F24] disabled:opacity-50">
-            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: '#5C8891' }}>✓</span>
+            className="flex items-center gap-2 px-3 py-1.5 text-[12px] font-semibold text-[#1F292C] disabled:opacity-50">
+            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: '#4B858E' }}>✓</span>
             {saving ? 'A processar…' : 'Check-In'}
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
         </div>

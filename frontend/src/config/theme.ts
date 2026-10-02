@@ -18,47 +18,52 @@ import { getAppearance } from './appearance';
 
 export const TOKENS = {
   // Institucional — a cor de marca desta instalação (Aparência → Cor da barra).
-  // Azul petróleo + branco: só duas cores em todo o sistema (pedido do dono).
-  // O vermelho de "apagar/erro" (danger, abaixo) é a ÚNICA exceção — é o único
-  // sítio onde a cor É o aviso, sempre acompanhada de ícone+texto, nunca sozinha.
-  get accent() { return getAppearance('barColor') || '#062A31'; },
+  // O vermelho de erro é a única cor fora da família petróleo/cinza, e só onde
+  // a cor É o aviso — sempre com ícone e texto, nunca sozinha.
+  get accent() { return getAppearance('barColor') || '#062F35'; },
   // Mantido com o nome "gold" por compatibilidade (dezenas de ecrãs já leem
-  // TOKENS.gold) — mas já não é dourado: é o mesmo azul petróleo institucional,
-  // para o logótipo "ML" e realces de marca não destoarem do resto da paleta.
-  gold: '#062A31',
-  goldDark: '#041F24',
+  // TOKENS.gold) — mas já não é dourado: é o azul-petróleo institucional.
+  gold: '#062F35',
+  goldDark: '#0A4148',
 
-  // Neutros — a base de tudo (barras, fundos, linhas), agora dentro da família
-  // azul-petróleo em vez de cinzento neutro: bordas/linhas/fundos claros usam
-  // tons muito diluídos do mesmo azul, para lerem como a MESMA cor, não uma 3ª.
-  bar: '#041F24',            // barra de menus / título de janela (petróleo escuro)
-  barSoft: '#0B4F5C',        // barra secundária (título da secção, um tom mais claro que `bar`)
-  canvas: '#EEF4F5',         // fundo da área de trabalho (petróleo muito diluído)
-  surface: '#ffffff',        // fundo dos formulários/grelhas
-  toolbarBg: '#F7FAFA',      // fundo da barra de ferramentas (Toolbar do kit.tsx)
-  border: '#5C8891',         // contorno de campos de formulário (inputCls do kit.tsx)
-  line: '#C3D8DB',           // divisórias/linhas finas entre áreas
-  lineSoft: '#DCEAEC',       // divisórias mais subtis (dentro de grelhas)
+  // ── Navegação ─────────────────────────────────────────────────────────────
+  // O petróleo escuro é RESERVADO: cabeçalhos, navegação e acções importantes.
+  // Espalhá-lo por tudo tira-lhe o peso e deixa o ecrã pesado — a regra é usá-lo
+  // onde se quer que o olho pare.
+  bar: '#062F35',            // barra principal / cabeçalho
+  barSoft: '#0A4148',        // barra secundária, item de menu seleccionado
+  active: '#4B858E',         // elementos activos, gráficos, realces secundários
 
-  // Texto
-  textOnDark: '#F2F7F8',
-  textOnLight: '#0B2E36',
-  textMuted: '#5C7A80',
+  // ── Superfícies ───────────────────────────────────────────────────────────
+  canvas: '#F4F6F7',         // fundo da área de trabalho (alivia o peso visual)
+  surface: '#FFFFFF',        // formulários e grelhas
+  toolbarBg: '#F4F6F7',      // barra de ferramentas
 
-  // Seleção / destaque (linha escolhida numa grelha, item ativo numa árvore).
-  selectedBg: '#CFE3E6',
-  selectedText: '#041F24',
-  hover: '#E4F0F1',
+  // ── Linhas ────────────────────────────────────────────────────────────────
+  // Finas e rectangulares. `line` é o contorno a sério (campos, caixas);
+  // `lineSoft` é a divisória de dentro de uma grelha, que não deve competir.
+  border: '#C8D2D5',
+  line: '#C8D2D5',
+  lineSoft: '#E4E9EB',
 
-  // Semântica — o vermelho é a ÚNICA cor fora da família azul-petróleo/branco,
-  // e só para apagar/cancelar/erro (nunca decoração). "Sucesso"/"aviso" deixaram
-  // de ter cor própria — usam a mesma família petróleo (sempre com ícone+texto).
-  success: '#062A31',        // Gravar / confirmar
-  danger: '#B0392B',         // Apagar / cancelar
-  dangerSoft: '#8C2B1F',     // texto de erro sobre fundo claro
-  warning: '#062A31',
-  warningBg: '#EEF4F5',
-  warningBorder: '#5C8891',
+  // ── Texto ─────────────────────────────────────────────────────────────────
+  textOnDark: '#FFFFFF',
+  textOnLight: '#1F292C',    // texto principal e valores numéricos
+  textMuted: '#657377',      // etiquetas, eixos de gráficos, texto secundário
+
+  // ── Selecção ──────────────────────────────────────────────────────────────
+  selectedBg: '#DCE6E8',     // linha escolhida numa grelha
+  selectedText: '#1F292C',
+  hover: '#EDF1F2',
+
+  // ── Estados ───────────────────────────────────────────────────────────────
+  // Estes três são os únicos sítios onde a cor carrega significado próprio.
+  success: '#2E8B57',        // gravar, confirmar, finalizar pagamento
+  danger: '#C94A4A',         // apagar, cancelar, erro
+  dangerSoft: '#A83A3A',     // texto de erro sobre fundo claro
+  warning: '#D99A24',        // atenção
+  warningBg: '#FBF3E3',
+  warningBorder: '#E6C98A',
 } as const;
 
 // Aclara/escurece um hex por `pct` (±255) — usado para montar o gradiente de uma
@@ -74,7 +79,7 @@ export function shade(hex: string, pct: number): string {
 }
 
 // Gradiente de barra de título a partir da cor institucional (3 tons, sempre a
-// mesma receita) — para não se escrever "linear-gradient(...#062A31...)" fixo
+// mesma receita) — para não se escrever "linear-gradient(...#062F35...)" fixo
 // em cada ecrã: assim a personalização (Aparência → Cor da barra) chega a todo
 // o lado que usar isto, não só ao ecrã onde alguém se lembrou de a aplicar.
 export function accentGradient(accent: string = TOKENS.accent): string {
@@ -111,16 +116,16 @@ export const SHADOW = {
 export function classicTheme(dark: boolean) {
   return dark
     ? {
-        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#0B3E48', tree: '#062A31',
-        treeText: '#DCEAEC', line: '#1A5762', body: '#062A31', status: '#052128',
+        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#0B3E48', tree: '#062F35',
+        treeText: '#E4E9EB', line: '#1A5762', body: '#062F35', status: '#052128',
         hover: '#12505C', accent: TOKENS.gold,
       }
     : {
-        bar: 'linear-gradient(to bottom, #F7FAFA 0%, #EEF4F5 55%, #DCEAEC 100%)',
+        bar: 'linear-gradient(to bottom, #F4F6F7 0%, #E4E9EB 55%, #E4E9EB 100%)',
         barText: TOKENS.textOnLight,
-        ribbon: 'linear-gradient(to bottom, #F7FAFA 0%, #EEF4F5 60%, #DCEAEC 100%)',
+        ribbon: 'linear-gradient(to bottom, #F4F6F7 0%, #E4E9EB 60%, #E4E9EB 100%)',
         tree: TOKENS.surface, treeText: TOKENS.textOnLight, line: TOKENS.border,
-        body: '#DCEAEC', status: TOKENS.accent, hover: TOKENS.selectedBg,
+        body: '#E4E9EB', status: TOKENS.accent, hover: TOKENS.selectedBg,
         accent: TOKENS.accent,
       };
 }

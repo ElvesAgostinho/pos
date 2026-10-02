@@ -25,10 +25,10 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
   const singleModule = !!scopeKey;
 
   return (
-    <div className="w-60 bg-[#F7FAFA] border-r border-[#7FA9B1] flex flex-col text-[11px] font-sans select-none overflow-y-auto">
+    <div className="w-60 bg-[#F4F6F7] border-r border-[#C8D2D5] flex flex-col text-[11px] font-sans select-none overflow-y-auto">
       {/* Voltar ao ambiente de trabalho do módulo */}
       <button onClick={() => onSelectView && onSelectView(`home:${scopeKey || 'admin'}`)}
-        className="flex items-center gap-2 px-2 py-1.5 m-1.5 mb-1 bg-[#5C8891] text-white hover:bg-[#062A31] transition-colors"
+        className="flex items-center gap-2 px-2 py-1.5 m-1.5 mb-1 bg-[#4B858E] text-white hover:bg-[#062F35] transition-colors"
         style={{ borderRadius: RADIUS.sm }}>
         <LayoutGrid size={13} /> <span className="font-bold">Ambiente de trabalho</span>
       </button>
@@ -41,13 +41,13 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
         return (
           <div key={mod.key} className="mb-0.5">
             <div
-              className={`flex items-center px-2 py-1.5 cursor-pointer transition-colors ${hasActive ? 'bg-[#EEF4F5]' : 'hover:bg-[#EEF4F5]'}`}
+              className={`flex items-center px-2 py-1.5 cursor-pointer transition-colors ${hasActive ? 'bg-[#F4F6F7]' : 'hover:bg-[#F4F6F7]'}`}
               style={{ borderRadius: RADIUS.sm }}
               onClick={() => { setOpen((o) => ({ ...o, [mod.key]: true })); onSelectView && onSelectView(`home:${mod.key}`); }}
             >
               <span onClick={(e) => { e.stopPropagation(); toggle(mod.key); }}
                 className="mr-2 text-gray-500 font-mono text-xs w-3 text-center hover:text-black">{isOpen ? '−' : '+'}</span>
-              <span className="text-[#5C8891] text-[11px] flex-1 font-bold">{mod.title}</span>
+              <span className="text-[#657377] text-[11px] flex-1 font-bold">{mod.title}</span>
             </div>
 
             {isOpen && (
@@ -58,7 +58,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
                     <div
                       key={item.id}
                       onClick={() => onSelectView && onSelectView(item.id)}
-                      className={`flex items-center pl-7 pr-2 py-1 my-[1px] cursor-pointer transition-colors ${isActive ? 'bg-[#CFE3E6]' : 'hover:bg-[#F7FAFA]'}`}
+                      className={`flex items-center pl-7 pr-2 py-1 my-[1px] cursor-pointer transition-colors ${isActive ? 'bg-[#DCE6E8]' : 'hover:bg-[#F4F6F7]'}`}
                       style={{ borderRadius: RADIUS.sm }}
                     >
                       <div className="w-1 h-1 rounded-full bg-gray-500 mr-2" />

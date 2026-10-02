@@ -41,9 +41,9 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
   }, [baseData, filter]);
 
   return (
-    <div className="w-full bg-white border border-[#7FA9B1] overflow-auto h-full text-[11px] font-sans flex flex-col" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
+    <div className="w-full bg-white border border-[#C8D2D5] overflow-auto h-full text-[11px] font-sans flex flex-col" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
       {showFilter && (
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5] sticky top-0 z-20">
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB] sticky top-0 z-20">
           <Search size={12} className="text-gray-400" />
           <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filtrar nesta lista…"
             className="flex-1 bg-transparent outline-none text-[11px] py-0.5" />
@@ -76,14 +76,14 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
                 key={row[rowKey] || idx}
                 onClick={() => { setInnerSel(row[rowKey] ?? idx); onRowClick && onRowClick(row); }}
                 onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-                className="border-b border-[#EEF4F5] cursor-pointer transition-colors hover:bg-[#F7FAFA]"
+                className="border-b border-[#E4E9EB] cursor-pointer transition-colors hover:bg-[#F4F6F7]"
                 style={{
                   background: isSelected ? TOKENS.selectedBg : idx % 2 === 0 ? TOKENS.surface : '#FFFFFF',
                   color: isSelected ? TOKENS.selectedText : undefined,
                 }}
               >
                 {columns.map((col, cIdx) => (
-                  <td key={cIdx} className="py-1 px-2.5 border-r border-[#EEF4F5] truncate">
+                  <td key={cIdx} className="py-1 px-2.5 border-r border-[#E4E9EB] truncate">
                     {typeof col.accessor === 'function' ? col.accessor(row) : row[col.accessor]}
                   </td>
                 ))}

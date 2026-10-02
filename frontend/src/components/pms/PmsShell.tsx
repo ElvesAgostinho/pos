@@ -35,6 +35,7 @@ import BookingEngineView from '../integration/BookingEngineView';
 import ChannelManagerView from '../integration/ChannelManagerView';
 import PmsChatbotView from './PmsChatbotView';
 import PmsBookingDepositsView from './PmsBookingDepositsView';
+import DesktopWallpaperView from '../admin/DesktopWallpaperView';
 import {
   GruposDeUtilizadores, Utilizadores as UtilizadoresPartilhados, TiposRH, RecursosHumanos,
 } from '../shared/userManagement';
@@ -99,6 +100,17 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   tasks: { label: 'Tarefas', icon: '✔', Comp: PmsTasksView },
   phone_directory: { label: 'Lista Telefónica', icon: '☎', Comp: PmsPhoneDirectoryView },
   home_dashboard: { label: 'Início', icon: '🖥', Comp: PmsHomeDashboardView },
+  // PAPEL DE PAREDE PRÓPRIO DO PMS. É o MESMO ecrã do Ambiente de Trabalho, com
+  // outra chave: o trabalho (escolher ficheiro, limitar o tamanho, pré-visualizar,
+  // guardar por terminal) é idêntico, e duplicá-lo era ter dois sítios para
+  // corrigir o mesmo problema. A recepção pode assim pôr a fachada do hotel por
+  // trás do PMS sem mudar o fundo do Ambiente de Trabalho, que é partilhado.
+  wallpaper: {
+    label: 'Papel de Parede', icon: '🖼',
+    Comp: (p: any) => <DesktopWallpaperView {...p}
+      storageKey="ui_wallpaper_pms" title="Papel de Parede do PMS"
+      hint="Fundo do ecrã inicial do PMS. Recomendado 1920×1080. Não mexe no papel de parede do Ambiente de Trabalho — são dois fundos independentes." />,
+  },
   booking_engine: { label: 'Booking Engine', icon: '🔗', Comp: BookingEngineView },
   channel_manager: { label: 'Channel Manager', icon: '🔗', Comp: ChannelManagerView },
   chatbot: { label: 'Chatbot', icon: '✉', Comp: PmsChatbotView },
@@ -128,6 +140,8 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   // instalado: 'pos' entra sempre no esquema por razões técnicas — ver
   // licensing/views.py::_active_modules). Em erro, mostra-se tudo: trancar o
   // menu porque um pedido falhou seria pior do que mostrar a mais.
+  const fundoPms = typeof localStorage !== 'undefined'
+    ? localStorage.getItem('ui_wallpaper_pms') : null;
   const { data: modulos } = useActiveModules();
   const activos: string[] | null = modulos?.active ?? null;
   const temModulo = (m?: string) => !m || activos === null || activos.includes(m);
@@ -170,9 +184,9 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   const screenAllowed = (id: string) => accFull || accScreens.length === 0 || accScreens.includes(id);
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#F7FAFA', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+    <div className="h-full flex flex-col" style={{ background: '#F4F6F7', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* Barra de menus (topo escuro) — cabeçalho próprio do PMS */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#041F24', height: 56 }}>
+      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#062F35', height: 56 }}>
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
@@ -181,9 +195,9 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           {menu === '__ml' && (
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden" style={{ background: '#062A31', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+              <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden" style={{ background: '#062F35', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                 <button onClick={() => { setMenu(null); localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891] transition-colors">
+                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#4B858E] transition-colors">
                   <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>
                   Ambiente de Trabalho
                 </button>
@@ -209,7 +223,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
             {menu === m.title && (
               <>
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[260px] py-1 overflow-hidden" style={{ background: '#062A31', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+                <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[260px] py-1 overflow-hidden" style={{ background: '#062F35', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                   {m.items.map((it, i) => (
                     <button key={i}
                       onClick={() => {
@@ -221,7 +235,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                           setSection(it.section);
                         }
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#5C8891] transition-colors">
+                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#4B858E] transition-colors">
                       <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon={it.icon} size={16} /></span>
                       {it.label}{it.soon && <span className="ml-auto text-[10px] opacity-50">(brevemente)</span>}
                     </button>
@@ -238,11 +252,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
       </div>
 
       {/* Título da secção ativa */}
-      <div className="flex items-center gap-2 px-3.5 py-2.5 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#062A31' }}>
+      <div className="flex items-center gap-2 px-3.5 py-2.5 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
         <span className="inline-flex items-center opacity-90"><Glyph icon={cur.icon} size={17} /></span>
         {cur.label}{hotelName && <span className="font-normal opacity-70"> — {hotelName}</span>}
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
-          className="ml-auto w-7 h-7 flex items-center justify-center text-[#CFE3E6] hover:text-white hover:bg-white/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
+          className="ml-auto w-7 h-7 flex items-center justify-center text-[#657377] hover:text-white hover:bg-white/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
           <Users size={15} />
         </button>
       </div>
@@ -254,17 +268,29 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           barra de deslocamento (era o que acontecia no Diagnóstico: metade do
           ecrã inacessível). `min-h-0` é o que permite ao filho encolher dentro
           do flex em vez de empurrar o contentor. */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        <Comp onDesktop={onDesktop} onNavigate={setSection} />
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative"
+        style={fundoPms && section === 'home_dashboard'
+          ? { backgroundImage: `url('${fundoPms}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
+          : undefined}>
+        {/* O papel de parede só se vê no ECRÃ INICIAL: por trás de uma grelha de
+            reservas seria ruído, e o que importa aí é ler números. O véu escuro
+            garante que o conteúdo por cima continua legível seja qual for a
+            fotografia que o hotel escolher. */}
+        {fundoPms && section === 'home_dashboard' && (
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(6,47,53,0.55)' }} />
+        )}
+        <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
+          <Comp onDesktop={onDesktop} onNavigate={setSection} />
+        </div>
       </div>
 
       {/* Rodapé — um bar só (era dois empilhados: ação do ecrã + hora, e depois
           separador/versão/hotel — a mesma informação cabe toda numa linha). */}
-      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white text-[11px]" style={{ background: '#062A31' }}>
+      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white text-[11px]" style={{ background: '#062F35' }}>
         <span className="opacity-80">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
         {hotels.length > 1 && (
           <select value={hotelId || String(hotels[0]?.id)} onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
-            className="h-6 text-[11px] px-1.5 border" style={{ background: '#041F24', borderColor: '#0B4F5C', borderRadius: RADIUS.sm }}>
+            className="h-6 text-[11px] px-1.5 border" style={{ background: '#062F35', borderColor: '#0A4148', borderRadius: RADIUS.sm }}>
             {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
         )}
@@ -272,7 +298,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         <span className="opacity-50">PMS v1.0</span>
         <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
           className="flex items-center gap-1.5 font-semibold hover:text-white opacity-90 hover:opacity-100 transition-opacity" title="Fechar (volta ao Ambiente de Trabalho)">
-          <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white">
+          <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white">
             <X size={10} strokeWidth={3} />
           </span>
           Fechar

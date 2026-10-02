@@ -72,23 +72,23 @@ export default function WarehousesView() {
           </>
         }
       >
-        <div className="p-4 bg-[#F7FAFA] h-full overflow-y-auto">
+        <div className="p-4 bg-[#F4F6F7] h-full overflow-y-auto">
           <form id="warehouse-form" onSubmit={handleSave} className="text-[11px] grid grid-cols-1 gap-4">
             
-            <div className="border border-[#7FA9B1] bg-white p-2">
-              <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Identificação</h3>
+            <div className="border border-[#C8D2D5] bg-white p-2">
+              <h3 className="font-bold text-[#657377] border-b border-[#C8D2D5] mb-2 pb-1">Identificação</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Código *</label>
-                  <input required value={formData.code || ''} onChange={e => setFormData({...formData, code: e.target.value})} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
+                  <input required value={formData.code || ''} onChange={e => setFormData({...formData, code: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Nome *</label>
-                  <input required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none" />
+                  <input required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Tipo</label>
-                  <select value={formData.warehouse_type || 'FB'} onChange={e => setFormData({...formData, warehouse_type: e.target.value})} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none bg-white">
+                  <select value={formData.warehouse_type || 'FB'} onChange={e => setFormData({...formData, warehouse_type: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none bg-white">
                     <option value="FB">F&B</option>
                     <option value="ECON">Economato</option>
                     <option value="MAINT">Manutenção</option>
@@ -98,7 +98,7 @@ export default function WarehousesView() {
                 </div>
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Estado</label>
-                  <select value={formData.status || 'ACTIVE'} onChange={e => setFormData({...formData, status: e.target.value})} className="flex-1 border border-[#7FA9B1] p-1 focus:outline-none bg-white">
+                  <select value={formData.status || 'ACTIVE'} onChange={e => setFormData({...formData, status: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none bg-white">
                     <option value="ACTIVE">Ativo</option>
                     <option value="INACTIVE">Inativo</option>
                     <option value="INVENTORY">Em Inventário</option>
@@ -108,8 +108,8 @@ export default function WarehousesView() {
               </div>
             </div>
 
-            <div className="border border-[#7FA9B1] bg-white p-2 mt-2">
-              <h3 className="font-bold text-[#5C8891] border-b border-[#7FA9B1] mb-2 pb-1">Regras de Motor WMS</h3>
+            <div className="border border-[#C8D2D5] bg-white p-2 mt-2">
+              <h3 className="font-bold text-[#657377] border-b border-[#C8D2D5] mb-2 pb-1">Regras de Motor WMS</h3>
               <div className="flex flex-col space-y-2">
                 <label className="flex items-center space-x-2">
                   <input type="checkbox" checked={formData.allow_negative_stock} onChange={e => setFormData({...formData, allow_negative_stock: e.target.checked})} className="w-3 h-3" />
@@ -145,7 +145,7 @@ export default function WarehousesView() {
       header: 'Ações', 
       accessor: (r: any) => (
         <div className="flex space-x-2">
-          <button onClick={(e) => { e.stopPropagation(); handleDelete(r.id!); }} className="text-[#8C2B1F] hover:text-[#8C2B1F]"><Trash2 size={12} /></button>
+          <button onClick={(e) => { e.stopPropagation(); handleDelete(r.id!); }} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button>
         </div>
       ), 
       width: '10%' 

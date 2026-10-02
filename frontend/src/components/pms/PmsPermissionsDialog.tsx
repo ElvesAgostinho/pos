@@ -55,11 +55,11 @@ export default function PmsPermissionsDialog({ screenId, screenLabel, hotelName,
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[520px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+      <div className="w-[520px] max-h-[75vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
           Permissões - {screenLabel} - {hotelName}
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
@@ -68,12 +68,12 @@ export default function PmsPermissionsDialog({ screenId, screenLabel, hotelName,
             <div className="p-6 text-center text-gray-400 text-[12px]">Ainda não existem perfis criados (Acessos por Perfil).</div>
           ) : (
             <table className="w-full text-[12px] border-collapse">
-              <thead style={{ background: '#F7FAFA' }}>
-                <tr><th className="w-10 border-b border-[#CFE3E6]"></th><th className="text-left px-3 py-1.5 border-b border-[#CFE3E6] font-semibold">Grupo</th></tr>
+              <thead style={{ background: '#F4F6F7' }}>
+                <tr><th className="w-10 border-b border-[#C8D2D5]"></th><th className="text-left px-3 py-1.5 border-b border-[#C8D2D5] font-semibold">Grupo</th></tr>
               </thead>
               <tbody>
                 {rows.map((p: any) => (
-                  <tr key={p.id} className="border-b border-[#F7FAFA] hover:bg-[#FFFFFF]">
+                  <tr key={p.id} className="border-b border-[#E4E9EB] hover:bg-[#FFFFFF]">
                     <td className="text-center py-1.5">
                       <input type="checkbox" checked={isChecked(p)} onChange={() => toggle(p)} />
                     </td>
@@ -86,16 +86,16 @@ export default function PmsPermissionsDialog({ screenId, screenLabel, hotelName,
             </table>
           )}
         </div>
-        <div className="flex items-center gap-2 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6] flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 bg-[#F4F6F7] border-t border-[#C8D2D5] flex-shrink-0">
           <button onClick={gravar} disabled={saving}
-            className="flex items-center gap-2 text-[12px] font-semibold text-[#041F24] disabled:opacity-50 hover:text-black">
-            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: '#5C8891' }}>
+            className="flex items-center gap-2 text-[12px] font-semibold text-[#1F292C] disabled:opacity-50 hover:text-black">
+            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: '#4B858E' }}>
               <Check size={13} />
             </span>
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black ml-auto">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black ml-auto">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
         </div>

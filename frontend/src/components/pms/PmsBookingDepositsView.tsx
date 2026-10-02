@@ -6,8 +6,8 @@ import { Wallet, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso, confirmar } from '../../ui/dialogo';
 
-const btn = 'px-3 py-1.5 text-[12px] border border-[#CFE3E6] rounded-[6px] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#E3EDEE] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
-const ST_COLOR: Record<string, string> = { PENDING: '#5C8891', PAID: '#062A31', FAILED: '#B0392B', REFUNDED: '#7FA9B1' };
+const btn = 'px-3 py-1.5 text-[12px] border border-[#C8D2D5] rounded-[6px] bg-gradient-to-b from-white to-[#F4F6F7] hover:to-[#E3EDEE] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
+const ST_COLOR: Record<string, string> = { PENDING: '#4B858E', PAID: '#062F35', FAILED: '#C94A4A', REFUNDED: '#4B858E' };
 const METODOS: [string, string][] = [
   ['TRANSFER', 'Transferência bancária'], ['CASH', 'Numerário'],
   ['CARD', 'Cartão'], ['GATEWAY', 'Pagamento online'], ['OTHER', 'Outro'],
@@ -73,10 +73,10 @@ export default function PmsBookingDepositsView() {
           <button className={btn} onClick={() => refetch()}>
             <RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />Actualizar</button>
         </div>}>
-      <div className="p-4 space-y-3 bg-[#F7FAFA] h-full overflow-auto">
-        <div className="bg-white border border-[#CFE3E6] rounded-[10px] p-3 flex flex-wrap items-center gap-3 text-[12px]">
+      <div className="p-4 space-y-3 bg-[#F4F6F7] h-full overflow-auto">
+        <div className="bg-white border border-[#C8D2D5] rounded-[10px] p-3 flex flex-wrap items-center gap-3 text-[12px]">
           <label className="flex items-center gap-2">Mostrar
-            <select className="border border-[#7FA9B1] rounded-[6px] px-2 py-1" value={filtro}
+            <select className="border border-[#C8D2D5] rounded-[6px] px-2 py-1" value={filtro}
                     onChange={(e) => setFiltro(e.target.value)}>
               <option value="PENDING">Por receber</option>
               <option value="PAID">Já pagos</option>
@@ -85,20 +85,20 @@ export default function PmsBookingDepositsView() {
             </select>
           </label>
           {filtro === 'PENDING' && (
-            <span className="text-[#B0392B] font-bold">
+            <span className="text-[#C94A4A] font-bold">
               Por receber: {money(porReceber)} Kz · {pagamentos.length} reserva(s)
             </span>
           )}
         </div>
 
-        <div className="bg-white border border-[#CFE3E6] rounded-[10px] overflow-hidden">
-          <div className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-1.5 bg-[#F7FAFA] border-b border-[#EEF4F5] text-[11px] font-bold text-[#5C8891]">
+        <div className="bg-white border border-[#C8D2D5] rounded-[10px] overflow-hidden">
+          <div className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB] text-[11px] font-bold text-[#657377]">
             <span>Reserva</span><span>Hóspede</span><span>Entrada</span><span>Valor</span>
             <span>Situação</span><span>Confirmar entrada</span>
           </div>
           {pagamentos.map((p: any) => (
-            <div key={p.id} className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-2 border-b border-[#F7FAFA] items-center text-[12px]">
-              <span className="font-mono text-[#5C8891]">{p.confirmation}</span>
+            <div key={p.id} className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-2 border-b border-[#E4E9EB] items-center text-[12px]">
+              <span className="font-mono text-[#657377]">{p.confirmation}</span>
               <span className="font-bold">{p.guest_name || '—'}</span>
               <span>{p.check_in ? new Date(p.check_in).toLocaleDateString('pt-PT') : '—'}</span>
               <span className="font-bold">{money(p.amount)} {p.currency}</span>
@@ -115,23 +115,23 @@ export default function PmsBookingDepositsView() {
               {p.status === 'PENDING' ? (
                 <span className="flex flex-col gap-1">
                   <span className="flex gap-1">
-                    <select className="border border-[#7FA9B1] rounded-[6px] px-1 py-0.5 text-[11px] flex-1"
+                    <select className="border border-[#C8D2D5] rounded-[6px] px-1 py-0.5 text-[11px] flex-1"
                             value={metodo[p.id] || 'TRANSFER'}
                             onChange={(e) => setMetodo({ ...metodo, [p.id]: e.target.value })}>
                       {METODOS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
                   </span>
-                  <input className="border border-[#7FA9B1] rounded-[6px] px-1 py-0.5 text-[11px]"
+                  <input className="border border-[#C8D2D5] rounded-[6px] px-1 py-0.5 text-[11px]"
                          placeholder="Referência" value={refer[p.id] || ''}
                          onChange={(e) => setRefer({ ...refer, [p.id]: e.target.value })} />
                   <span className="flex gap-1">
-                    <button className="text-[11px] text-[#062A31] hover:underline inline-flex items-center gap-0.5"
+                    <button className="text-[11px] text-[#1F292C] hover:underline inline-flex items-center gap-0.5"
                             onClick={async () => {
                               if (await confirmar(
                                 `Confirma que entraram ${money(p.amount)} ${p.currency} da reserva ${p.confirmation}?`,
                                 'Confirmar depósito')) confirmarPagamento.mutate(p);
                             }}><CheckCircle2 size={12} />Recebido</button>
-                    <button className="text-[11px] text-[#B0392B] hover:underline inline-flex items-center gap-0.5"
+                    <button className="text-[11px] text-[#C94A4A] hover:underline inline-flex items-center gap-0.5"
                             onClick={() => marcarFalhado.mutate(p)}><XCircle size={12} />Falhou</button>
                   </span>
                 </span>

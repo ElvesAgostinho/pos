@@ -13,7 +13,7 @@ function RoomSelect({ reservation, value, onChange }: { reservation: any; value:
   });
   const rows = (Array.isArray(data) ? data : []).filter((r: any) => r.is_free && r.id !== reservation.room);
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="border border-[#7FA9B1] p-1 bg-white w-full text-[11px]">
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="border border-[#C8D2D5] p-1 bg-white w-full text-[11px]">
       <option value="">Escolha o quarto…</option>
       {rows.map((r: any) => <option key={r.id} value={r.id}>{r.number}</option>)}
     </select>
@@ -58,43 +58,43 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-h-[75vh] bg-[#F7FAFA] border border-[#5C8891] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#041F24' }}>
+      <div className="w-[900px] max-h-[75vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
           Mudanças de Quartos
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B0392B] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <label className="flex items-center gap-2 px-3 py-1.5 bg-white border-b border-[#EEF4F5] text-[12px]">
+        <label className="flex items-center gap-2 px-3 py-1.5 bg-white border-b border-[#E4E9EB] text-[12px]">
           <input type="checkbox" checked={allChecked} onChange={toggleAll} /> Selec. Todas
           {lockedCount > 0 && (
-            <span className="ml-auto text-[11px] text-[#5C8891]">
+            <span className="ml-auto text-[11px] text-[#657377]">
               🔒 {lockedCount} reserva(s) com "Não Mudar Qrt" — não entram em mudanças em massa
             </span>
           )}
         </label>
         <div className="flex-1 overflow-auto bg-white">
           <table className="w-full text-[11px] border-collapse">
-            <thead className="sticky top-0" style={{ background: '#F7FAFA' }}>
+            <thead className="sticky top-0" style={{ background: '#F4F6F7' }}>
               <tr>
-                <th className="w-8 border-b border-[#CFE3E6]"></th>
-                <th className="text-left px-2 py-1.5 border-b border-[#CFE3E6]">Hóspede</th>
-                <th className="text-left px-2 py-1.5 border-b border-[#CFE3E6]">Check-In</th>
-                <th className="text-left px-2 py-1.5 border-b border-[#CFE3E6]">Check-Out</th>
-                <th className="text-left px-2 py-1.5 border-b border-[#CFE3E6]">Quarto Atual</th>
-                <th className="text-left px-2 py-1.5 border-b border-[#CFE3E6]">Mudar para o quarto</th>
+                <th className="w-8 border-b border-[#C8D2D5]"></th>
+                <th className="text-left px-2 py-1.5 border-b border-[#C8D2D5]">Hóspede</th>
+                <th className="text-left px-2 py-1.5 border-b border-[#C8D2D5]">Check-In</th>
+                <th className="text-left px-2 py-1.5 border-b border-[#C8D2D5]">Check-Out</th>
+                <th className="text-left px-2 py-1.5 border-b border-[#C8D2D5]">Quarto Atual</th>
+                <th className="text-left px-2 py-1.5 border-b border-[#C8D2D5]">Mudar para o quarto</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r: any) => (
-                <tr key={r.id} className="border-b border-[#F7FAFA]" style={r.lock_room ? { opacity: 0.5 } : undefined}>
+                <tr key={r.id} className="border-b border-[#E4E9EB]" style={r.lock_room ? { opacity: 0.5 } : undefined}>
                   <td className="text-center">
                     <input type="checkbox" checked={checked.has(r.id)} disabled={!!r.lock_room}
                       title={r.lock_room ? 'Reserva marcada como "Não Mudar Qrt" — não entra em mudanças em massa.' : undefined}
                       onChange={() => toggle(r.id)} />
                   </td>
-                  <td className="px-2 py-1">{r.guest_name}{r.lock_room && <span className="ml-1 text-[10px] text-[#B0392B]" title="Não Mudar Qrt">🔒</span>}</td>
+                  <td className="px-2 py-1">{r.guest_name}{r.lock_room && <span className="ml-1 text-[10px] text-[#C94A4A]" title="Não Mudar Qrt">🔒</span>}</td>
                   <td className="px-2 py-1">{r.check_in}</td>
                   <td className="px-2 py-1">{r.check_out}</td>
                   <td className="px-2 py-1">{r.room_number}</td>
@@ -109,15 +109,15 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7FAFA] border-t border-[#CFE3E6]">
+        <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-t border-[#C8D2D5]">
           <button onClick={aplicar} disabled={applying || ![...checked].some((id) => target[id])}
-            className="flex items-center gap-2 text-[12px] font-semibold text-[#041F24] disabled:opacity-40 disabled:cursor-default hover:text-black">
+            className="flex items-center gap-2 text-[12px] font-semibold text-[#1F292C] disabled:opacity-40 disabled:cursor-default hover:text-black">
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0"
-              style={{ background: applying ? '#7FA9B1' : '#5C8891' }}><Check size={13} /></span>
+              style={{ background: applying ? '#4B858E' : '#4B858E' }}><Check size={13} /></span>
             {applying ? 'A aplicar…' : 'Efetuar a Mudança de Quarto para Reservas Selecionadas'}
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black flex-shrink-0">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black flex-shrink-0">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white">
               <X size={9} strokeWidth={3} />
             </span>
             Fechar

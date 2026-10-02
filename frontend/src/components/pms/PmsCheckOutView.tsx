@@ -62,10 +62,10 @@ export default function PmsCheckOutView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-[420px] flex-shrink-0 border-r border-[#EEF4F5] flex flex-col">
-          <div className="p-2 border-b border-[#EEF4F5]">
+        <div className="w-[420px] flex-shrink-0 border-r border-[#E4E9EB] flex flex-col">
+          <div className="p-2 border-b border-[#E4E9EB]">
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Pesquisar por hóspede, quarto ou confirmação…"
-              className="w-full border border-[#7FA9B1] p-1.5 text-[12px]" />
+              className="w-full border border-[#C8D2D5] p-1.5 text-[12px]" />
           </div>
           <div className="flex-1 overflow-hidden">
             <ClassicGrid rowKey="id" selectedRowId={selId ?? undefined} data={rows} onRowClick={(r: any) => setSelId(r.id)} columns={[
@@ -86,16 +86,16 @@ export default function PmsCheckOutView() {
             <>
               <div className="mb-3">
                 <div className="font-bold text-[15px]">{selRow?.guest_name}</div>
-                <div className="text-[11px] text-[#5C8891]">
+                <div className="text-[11px] text-[#657377]">
                   Quarto {selRow?.room_number || '—'} · {selRow?.confirmation} · {selRow?.check_in} → {selRow?.check_out}
                 </div>
               </div>
-              <div className="flex items-center justify-between border border-[#CFE3E6] px-3 py-2 mb-3">
+              <div className="flex items-center justify-between border border-[#C8D2D5] px-3 py-2 mb-3">
                 <span className="text-[12px]">{folio.label} · {folio.status_display}</span>
-                <span className={`font-bold text-[16px] ${balancePending ? 'text-[#B0392B]' : 'text-[#062A31]'}`}>Saldo: {folio.balance}</span>
+                <span className={`font-bold text-[16px] ${balancePending ? 'text-[#C94A4A]' : 'text-[#1F292C]'}`}>Saldo: {folio.balance}</span>
               </div>
               {balancePending && (
-                <div className="text-[11px] text-[#8C2B1F] bg-[#FDECEA] border border-[#B0392B] px-2 py-1.5 mb-3">
+                <div className="text-[11px] text-[#A83A3A] bg-[#FDECEA] border border-[#C94A4A] px-2 py-1.5 mb-3">
                   Conta por liquidar — registe o pagamento antes de fazer o check-out.
                 </div>
               )}
@@ -113,9 +113,9 @@ export default function PmsCheckOutView() {
       </div>
 
       <Toolbar actions={[
-        { label: 'Atualizar', icon: '⟳', color: '#062A31', onClick: invalidate },
-        { label: 'Registar Pagamento', icon: '💳', color: '#062A31', onClick: settle, disabled: !balancePending || busy },
-        { label: 'Check-Out', icon: '✔', color: '#062A31', onClick: doCheckOut, disabled: !selId || balancePending || busy },
+        { label: 'Atualizar', icon: '⟳', color: '#062F35', onClick: invalidate },
+        { label: 'Registar Pagamento', icon: '💳', color: '#062F35', onClick: settle, disabled: !balancePending || busy },
+        { label: 'Check-Out', icon: '✔', color: '#062F35', onClick: doCheckOut, disabled: !selId || balancePending || busy },
       ]} />
     </div>
   );

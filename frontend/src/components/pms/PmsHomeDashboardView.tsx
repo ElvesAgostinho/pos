@@ -34,58 +34,58 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
   const go = (section: string) => onNavigate?.(section);
 
   return (
-    <div className="flex flex-col h-full bg-[#F7FAFA] overflow-auto p-4 gap-4 text-[12px]">
-      <div className="bg-white border border-[#7FA9B1]">
-        <div className="px-3 py-2 bg-[#EEF4F5] border-b border-[#CFE3E6] font-bold text-[#062A31]">
+    <div className="flex flex-col h-full bg-[#F4F6F7] overflow-auto p-4 gap-4 text-[12px]">
+      <div className="bg-white border border-[#C8D2D5]">
+        <div className="px-3 py-2 bg-[#F4F6F7] border-b border-[#C8D2D5] font-bold text-[#1F292C]">
           Primeiros Passos
         </div>
         <div className="p-3 space-y-1">
           {STEPS.map((s) => (
             <button key={s.section} onClick={() => go(s.section)}
-              className="w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-[#F7FAFA] disabled:opacity-60"
+              className="w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-[#F4F6F7] disabled:opacity-60"
               disabled={!onNavigate}>
-              <Circle size={15} className="text-[#7FA9B1] flex-shrink-0" />
-              <span className="text-[#041F24]">{s.label}</span>
+              <Circle size={15} className="text-[#657377] flex-shrink-0" />
+              <span className="text-[#1F292C]">{s.label}</span>
             </button>
           ))}
           {!onNavigate && (
-            <div className="text-[10px] text-[#7FA9B1] px-2 pt-1">A navegação direta a partir daqui ainda não está ligada ao menu.</div>
+            <div className="text-[10px] text-[#657377] px-2 pt-1">A navegação direta a partir daqui ainda não está ligada ao menu.</div>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white border border-[#7FA9B1]">
-          <div className="px-3 py-2 bg-[#EEF4F5] border-b border-[#CFE3E6] font-bold text-[#062A31] flex items-center gap-2">
+        <div className="bg-white border border-[#C8D2D5]">
+          <div className="px-3 py-2 bg-[#F4F6F7] border-b border-[#C8D2D5] font-bold text-[#1F292C] flex items-center gap-2">
             <Glyph icon="🔍" size={14} /> Check-ins hoje ({arrivalRows.length})
           </div>
           <div className="max-h-[280px] overflow-auto">
-            {arrivalRows.length === 0 && <div className="text-center text-[#7FA9B1] py-6">Sem chegadas hoje.</div>}
+            {arrivalRows.length === 0 && <div className="text-center text-[#657377] py-6">Sem chegadas hoje.</div>}
             {arrivalRows.map((r: any) => (
-              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#F7FAFA]">
+              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#E4E9EB]">
                 <div>
-                  <div className="font-semibold text-[#041F24]">{r.guest_name}</div>
-                  <div className="text-[10px] text-[#5C8891]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
+                  <div className="font-semibold text-[#1F292C]">{r.guest_name}</div>
+                  <div className="text-[10px] text-[#657377]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
                 </div>
-                <span className="text-[10px] text-[#062A31]">{r.status_display}</span>
+                <span className="text-[10px] text-[#1F292C]">{r.status_display}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white border border-[#7FA9B1]">
-          <div className="px-3 py-2 bg-[#EEF4F5] border-b border-[#CFE3E6] font-bold text-[#062A31] flex items-center gap-2">
+        <div className="bg-white border border-[#C8D2D5]">
+          <div className="px-3 py-2 bg-[#F4F6F7] border-b border-[#C8D2D5] font-bold text-[#1F292C] flex items-center gap-2">
             <Glyph icon="🚫" size={14} /> Check-outs hoje ({departureRows.length})
           </div>
           <div className="max-h-[280px] overflow-auto">
-            {departureRows.length === 0 && <div className="text-center text-[#7FA9B1] py-6">Sem saídas hoje.</div>}
+            {departureRows.length === 0 && <div className="text-center text-[#657377] py-6">Sem saídas hoje.</div>}
             {departureRows.map((r: any) => (
-              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#F7FAFA]">
+              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#E4E9EB]">
                 <div>
-                  <div className="font-semibold text-[#041F24]">{r.guest_name}</div>
-                  <div className="text-[10px] text-[#5C8891]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
+                  <div className="font-semibold text-[#1F292C]">{r.guest_name}</div>
+                  <div className="text-[10px] text-[#657377]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
                 </div>
-                <span className="text-[10px] text-[#062A31]">{r.status_display}</span>
+                <span className="text-[10px] text-[#1F292C]">{r.status_display}</span>
               </div>
             ))}
           </div>
