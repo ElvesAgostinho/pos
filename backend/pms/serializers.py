@@ -3,6 +3,7 @@ from .models import (
     RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
     NightAuditRun, LostFoundItem, HousekeepingTask, PhoneDirectoryEntry,
     BookingSettings, Channel, ChannelSyncLog, ChatbotSettings, Event,
+    ChannelRoomMap, BookingPayment,
 )
 
 
@@ -230,13 +231,64 @@ class ChannelSerializer(serializers.ModelSerializer):
         extra_kwargs = {'hotel': {'required': False}}
 
     def get_mapped_rooms(self, obj):
-        # Não existe (ainda) um modelo de mapeamento categoria-de-quarto ↔
-        # categoria-na-OTA — devolve 0 com honestidade em vez de inventar um número.
-        return 0
+        # Contagem real das categorias ligadas a este canal (ChannelRoomMap).
+        # Era 0 à mão enquanto o mapeamento não existia.
+        return obj.room_maps.filter(is_active=True).count()
 
     def get_last_sync_at(self, obj):
         last = obj.sync_logs.order_by('-synced_at').first()
         return last.synced_at if last else None
+
+
+class ChannelRoomMapSerializer(serializers.ModelSerializer):
+    room_type_name = serializers.CharField(source='room_type.name', read_only=True)
+    room_type_code = serializers.CharField(source='room_type.code', read_only=True)
+    rate_plan_name = serializers.CharField(source='rate_plan.name', read_only=True, default=None)
+    channel_name = serializers.CharField(source='channel.name', read_only=True)
+    rooms_available = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChannelRoomMap
+        fields = ['id', 'channel', 'channel_name', 'room_type', 'room_type_name', 'room_type_code',
+                  'rate_plan', 'rate_plan_name', 'ota_room_id', 'ota_rate_id', 'max_rooms',
+                  'is_active', 'created_at', 'rooms_available']
+
+    def get_rooms_available(self, obj):
+        """Quantos quartos desta categoria existem — para o ecrã mostrar ao
+        lado do limite e o dono ver que não está a prometer 10 quartos à OTA
+        quando só tem 4."""
+        return obj.room_type.rooms.filter(is_active=True).count()
+
+    def validate(self, attrs):
+        """Um canal do Hotel A não pode mapear uma categoria do Hotel B — seria
+        publicar na OTA de uma propriedade o inventário de outra."""
+        canal = attrs.get('channel') or getattr(self.instance, 'channel', None)
+        categoria = attrs.get('room_type') or getattr(self.instance, 'room_type', None)
+        if canal and categoria and canal.hotel_id != categoria.hotel_id:
+            raise serializers.ValidationError(
+                {'room_type': f'A categoria "{categoria.name}" é de outra propriedade '
+                              f'({categoria.hotel}); o canal "{canal.name}" é de {canal.hotel}.'})
+        plano = attrs.get('rate_plan') or getattr(self.instance, 'rate_plan', None)
+        if plano and categoria and plano.room_type_id != categoria.id:
+            raise serializers.ValidationError(
+                {'rate_plan': f'A tarifa "{plano.name}" é da categoria '
+                              f'{plano.room_type.name}, não de {categoria.name}.'})
+        return attrs
+
+
+class BookingPaymentSerializer(serializers.ModelSerializer):
+    confirmation = serializers.CharField(source='reservation.confirmation', read_only=True)
+    guest_name = serializers.CharField(source='reservation.guest.name', read_only=True, default=None)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    method_display = serializers.CharField(source='get_method_display', read_only=True)
+    check_in = serializers.DateField(source='reservation.check_in', read_only=True)
+
+    class Meta:
+        model = BookingPayment
+        fields = ['id', 'reservation', 'confirmation', 'guest_name', 'check_in', 'provider',
+                  'amount', 'currency', 'status', 'status_display', 'method', 'method_display',
+                  'reference', 'message', 'confirmed_by', 'paid_at', 'posted_to_folio', 'created_at']
+        read_only_fields = ['paid_at', 'confirmed_by', 'posted_to_folio']
 
 
 class ChatbotSettingsSerializer(serializers.ModelSerializer):

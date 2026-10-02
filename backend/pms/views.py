@@ -53,6 +53,40 @@ class HotelDefaultMixin:
         return super().create(request, *args, **kwargs)
 
 
+
+def lancar_depositos_no_folio(reservation, folio, posted_by='reserva online'):
+    """Lança na conta do hóspede o que ele já pagou no site.
+
+    É a ligação que faltava entre o motor de reservas e a recepção: o hóspede
+    pagava o depósito online e, à chegada, era-lhe cobrada a estadia inteira
+    outra vez, porque o folio nascia a zero e nada sabia do pagamento. Agora o
+    depósito entra como pagamento na conta, e o saldo que a recepção vê já é o
+    que falta receber.
+
+    Só entram depósitos CONFIRMADOS (PAID) — um pedido de pagamento pendente
+    não é dinheiro. `posted_to_folio` evita o lançamento em dobro se isto for
+    chamado outra vez (um segundo check-in, uma confirmação repetida), e o
+    `source_reference` deixa o rasto até ao pagamento de origem.
+    """
+    if folio is None:
+        return 0
+    pendentes = reservation.booking_payments.filter(status='PAID', posted_to_folio=False)
+    lancados = 0
+    for pagamento in pendentes:
+        FolioCharge.objects.create(
+            folio=folio, charge_type='PAYMENT',
+            description=f'Depósito da reserva online ({pagamento.get_method_display()}'
+                        + (f' · {pagamento.reference}' if pagamento.reference else '') + ')',
+            amount=pagamento.amount,
+            source_reference=f'BOOKING-PAY-{pagamento.id}',
+            posted_by=posted_by,
+        )
+        pagamento.posted_to_folio = True
+        pagamento.save(update_fields=['posted_to_folio'])
+        lancados += 1
+    return lancados
+
+
 class RoomTypeViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
     queryset = RoomType.objects.all()
     serializer_class = RoomTypeSerializer
@@ -390,6 +424,7 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
             res.checked_in_at = timezone.now()
             res.save()
 
+            depositos = 0
             folio = Folio.objects.create(reservation=res, number=_next_number(Folio.objects, 'number', 'FOL'))
             rate = res.effective_rate  # única definição da regra — ver Reservation.effective_rate
             today = timezone.localdate()
@@ -400,7 +435,16 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
                     amount=rate, source_reference=f'ROOM-{today.isoformat()}',
                     posted_by=request.data.get('operator', 'reception'),
                 )
-        return Response(self.get_serializer(res).data)
+            # O que o hóspede já pagou no site entra agora na conta — senão
+            # pagava o depósito online e a estadia inteira à chegada.
+            depositos = lancar_depositos_no_folio(res, folio)
+
+        dados = self.get_serializer(res).data
+        if depositos:
+            dados['deposits_posted'] = depositos
+            dados['detail'] = (f'Check-in feito. {depositos} depósito(s) pago(s) online '
+                               f'lançado(s) na conta.')
+        return Response(dados)
 
     @action(detail=True, methods=['post'])
     def check_out(self, request, pk=None):

@@ -681,3 +681,104 @@ class MealPlanEntry(models.Model):
         db_table = 'pms_meal_plan_entry'
         unique_together = ('reservation', 'meal_code', 'date')
         ordering = ['date', 'meal_code']
+
+
+# ==========================================================================
+# CHANNEL MANAGER — mapeamento categoria ↔ categoria na OTA
+# ==========================================================================
+
+class ChannelRoomMap(models.Model):
+    """A tradução entre "Standard" aqui e o código que a OTA usa para o mesmo
+    quarto lá.
+
+    Sem isto não há sincronização possível, e era por isso que o ecrã do
+    Channel Manager mostrava sempre "0 tipo(s) mapeado(s)": o número era
+    devolvido a zero à mão porque não havia modelo nenhum por trás. A
+    Booking.com não sabe o que é o nosso `RoomType.id`; ela tem o *room id*
+    dela, e a tarifa tem o *rate plan id* dela. Enviar disponibilidade sem
+    esta tabela seria enviar inventário para um quarto que a OTA não
+    reconhece — na melhor das hipóteses é recusado, na pior é publicado no
+    quarto errado e vende-se a suite ao preço do duplo.
+
+    `rate_plan` diz QUE preço segue para este canal: o mesmo quarto pode ir à
+    Booking com a tarifa pública e à Expedia com uma tarifa negociada. Em
+    branco = a tarifa mais barata válida (a mesma regra do motor de reservas,
+    `booking_engine._room_type_price`), para quem não quer gerir duas tabelas.
+    """
+    channel = models.ForeignKey(Channel, on_delete=models.CASCADE, related_name='room_maps')
+    room_type = models.ForeignKey(RoomType, on_delete=models.CASCADE, related_name='channel_maps')
+    rate_plan = models.ForeignKey(RatePlan, on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name='channel_maps')
+    ota_room_id = models.CharField(max_length=80, verbose_name='ID do quarto na OTA')
+    ota_rate_id = models.CharField(max_length=80, blank=True, null=True, verbose_name='ID da tarifa na OTA')
+    # Quantos quartos desta categoria se deixam vender NESTE canal. 0 = todos
+    # os que estiverem livres. Serve para guardar inventário para a recepção
+    # ou para não dar o hotel inteiro a uma só OTA.
+    max_rooms = models.PositiveIntegerField(default=0, verbose_name='Limite de quartos no canal')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'pms_channel_room_map'
+        # Uma categoria não pode ir duas vezes ao mesmo canal (seria enviar
+        # duas disponibilidades contraditórias para o mesmo quarto), e dois
+        # quartos nossos não podem apontar ao mesmo quarto de lá (seria somar
+        # inventário de categorias diferentes no mesmo anúncio).
+        unique_together = [('channel', 'room_type'), ('channel', 'ota_room_id')]
+        ordering = ['channel', 'room_type']
+
+    def __str__(self):
+        return f"{self.channel.name}: {self.room_type.code} → {self.ota_room_id}"
+
+
+# ==========================================================================
+# MOTOR DE RESERVAS — pagamento/depósito da reserva online
+# ==========================================================================
+
+class BookingPayment(models.Model):
+    """O depósito de uma reserva feita no site.
+
+    O motor já calculava o `deposit_due` e mandava-o na resposta, mas nada
+    ficava registado: ninguém sabia se o hóspede tinha pago, e no check-in a
+    recepção cobrava a estadia inteira outra vez. Esta tabela é a memória
+    disso, e o check-in lança o valor pago como pagamento na conta (ver
+    `ReservationViewSet.check_in`) — é a ligação que faz o dinheiro de fora
+    chegar ao folio.
+
+    `status` nunca passa a PAGO sozinho num provedor real: Multicaixa/EMIS/
+    Stripe exigem a confirmação do próprio gateway, que esta instalação ainda
+    não tem credenciada (mesma disciplina do Channel Manager e do
+    `fiscal/agt_client.py` — não se fabrica um sucesso sem uma chamada real).
+    Passa a PAGO em dois casos honestos: no provedor SIMULATED (que se chama
+    "Simulado (testes)" precisamente por isso) e quando um funcionário
+    confirma à mão que o dinheiro entrou — transferência bancária, que é como
+    a maioria dos depósitos chega em Angola. Nesse caso fica registado QUEM
+    confirmou.
+    """
+    STATUS = [('PENDING', 'Pendente'), ('PAID', 'Pago'),
+              ('FAILED', 'Falhado'), ('REFUNDED', 'Devolvido')]
+    METHODS = [('GATEWAY', 'Pagamento online'), ('TRANSFER', 'Transferência bancária'),
+               ('CASH', 'Numerário'), ('CARD', 'Cartão'), ('OTHER', 'Outro')]
+
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name='booking_payments')
+    provider = models.CharField(max_length=20, default='SIMULATED')
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    currency = models.CharField(max_length=10, default='AOA')
+    status = models.CharField(max_length=10, choices=STATUS, default='PENDING')
+    method = models.CharField(max_length=10, choices=METHODS, default='GATEWAY')
+    reference = models.CharField(max_length=120, blank=True, null=True,
+                                 verbose_name='Referência do pagamento')
+    message = models.CharField(max_length=500, blank=True, null=True)
+    confirmed_by = models.CharField(max_length=100, blank=True, null=True)
+    paid_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Marcado quando o valor já foi lançado na conta do hóspede, para o
+    # check-in não o lançar duas vezes se for repetido.
+    posted_to_folio = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'pms_booking_payment'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.reservation.confirmation} · {self.amount} ({self.get_status_display()})"

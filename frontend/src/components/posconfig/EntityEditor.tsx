@@ -20,6 +20,7 @@ const NAV = [
   ['acordos', '🤝', 'Acordos'], ['salesmk', '📈', 'Sales & Marketing'],
   ['comissoes', '💰', 'Comissões'], ['pagperm', '💳', 'Pagamentos / Permissões'],
   ['historico', '🕓', 'Histórico'], ['protecao', '🔒', 'Proteção Dados'],
+  ['personalizados', '⚙', 'Campos personalizados'],
 ] as const;
 
 function Row({ l, children, w = 110 }: any) {
@@ -96,6 +97,22 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
   // (8201) "Newsletter - Interesses": a newsletter geral filtra por estes códigos
   // quando o parâmetro tem algum preenchido — sem marcar aqui, o cliente não conta.
   const { data: interesses = [] } = useQuery({ queryKey: ['ent-interesses'], queryFn: async () => { try { const r = await apiClient.get('pos/config/selection-codes/'); return r.data?.results || r.data || []; } catch { return []; } } });
+  // CAMPOS PERSONALIZADOS desta ficha — as definições vêm da configuração
+  // (POS → Campos personalizados, localização "Entidade"); os valores viajam
+  // em `custom_fields` = {código: valor}. Um campo novo passa a aparecer aqui
+  // sem se mexer numa linha de código.
+  const { data: camposPers = [] } = useQuery({
+    queryKey: ['ent-campos-pers'],
+    queryFn: async () => {
+      try {
+        const r = await apiClient.get('pos/config/custom-fields/', { params: { location: 'ENTITY' } });
+        return (r.data?.results || r.data || []) as any[];
+      } catch { return []; }
+    },
+  });
+  const cf = (d.custom_fields || {}) as Record<string, string>;
+  const setCF = (codigo: string, valor: string) => set('custom_fields', { ...cf, [codigo]: valor });
+
   const { data: hist } = useQuery({
     queryKey: ['ent-hist', eid],
     queryFn: async () => (await apiClient.get(`pos/marketing/entities/${eid}/history/`)).data,
@@ -352,6 +369,45 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               </>)}
             </>)}
 
+            {sec === 'personalizados' && (
+              <Box title="Campos personalizados">
+                {camposPers.length === 0 ? (
+                  <div className="text-[12px] text-gray-600 pt-2">
+                    Este hotel ainda não definiu nenhum campo próprio para as fichas de entidade.
+                    Defina-os em <b>Configuração POS → Campos personalizados</b>, com a localização
+                    <b> Entidade</b> — aparecem aqui logo a seguir.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
+                    {camposPers.map((c: any) => (
+                      <Row key={c.code} l={`${c.name}:`} w={150}>
+                        {c.is_list ? (
+                          <select value={cf[c.code] ?? ''} onChange={(e) => setCF(c.code, e.target.value)}
+                            className={inp} style={inputStyle}>
+                            <option value="">—</option>
+                            {(c.list_values || []).map((o: any) => <option key={String(o)} value={String(o)}>{String(o)}</option>)}
+                          </select>
+                        ) : c.field_type === 'BOOL' ? (
+                          <select value={cf[c.code] ?? ''} onChange={(e) => setCF(c.code, e.target.value)}
+                            className={inp} style={inputStyle}>
+                            <option value="">—</option><option value="true">Sim</option><option value="false">Não</option>
+                          </select>
+                        ) : (
+                          <input
+                            type={c.field_type === 'NUMBER' ? 'number' : c.field_type === 'DATE' ? 'date' : 'text'}
+                            value={cf[c.code] ?? ''} onChange={(e) => setCF(c.code, e.target.value)}
+                            maxLength={c.size || undefined} className={inp} style={inputStyle} />
+                        )}
+                      </Row>
+                    ))}
+                  </div>
+                )}
+                <div className="text-[11px] text-gray-500 pt-2">
+                  Os campos marcados com <b>"Mostrar na pesquisa"</b> aparecem também como coluna na
+                  Pesquisa de Entidades. Deixar em branco apaga o valor.
+                </div>
+              </Box>
+            )}
             {sec === 'protecao' && (<>
               <RecGrid eid={eid} kind="CONSENT" titulo="Consentimentos (RGPD)"
                 cols={[['codigo', 'Código'], ['descricao', 'Descrição'], ['dias', 'Duração (dias)'], ['metodo', 'Método']]} />

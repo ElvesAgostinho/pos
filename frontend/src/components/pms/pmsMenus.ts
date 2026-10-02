@@ -39,6 +39,7 @@ export const MENUS: { title: string; items: { icon: string; label: string; secti
     { icon: '🧾', label: 'Check-Out', section: 'checkout' },
     { icon: '📋', label: 'Financeiro (Receitas/Despesas)', section: 'finance_pms' },
     { icon: '💰', label: 'Contas Correntes', section: 'current_accounts' },
+    { icon: '💳', label: 'Depósitos de Reservas Online', section: 'booking_deposits' },
   ] },
   { title: 'Gestão de Canais', items: [
     { icon: '📊', label: 'Calendário de Tarifas', section: 'rates_calendar' },

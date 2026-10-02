@@ -360,30 +360,23 @@ class PmsMenusRestantesTests(PmsBase):
         self.assertEqual(len(self.client.get('/api/finance/payments/').data), 1)
 
     # --------------------------------------------------------------- MARKETING
-    def test_campos_personalizados_definem_se_mas_ainda_nao_se_preenchem(self):
-        """Trava a meia-funcionalidade onde ela está, em vez de a deixar
-        parecer pronta: a DEFINIÇÃO do campo tem endpoint e responde; o VALOR
-        por entidade não tem onde ser guardado (nenhum modelo o guarda), por
-        isso "Mostrar na pesquisa" ainda não pode desenhar coluna nenhuma.
-        No dia em que o armazém de valores existir, este teste falha — e é
-        isso que se quer: obriga a vir aqui acabar a história."""
-        from pos.models import CustomFieldDef
-        r = self.client.post('/api/pos/config/custom-fields/', {
+    def test_campos_personalizados_separam_se_por_onde_aparecem(self):
+        """Um campo definido para a Conta POS não é um campo da ficha do
+        cliente. Quem pergunta pelos campos de um sítio não pode receber os
+        do outro — era assim que um "Mesa preferida" ia parar à ficha de uma
+        empresa."""
+        self.client.post('/api/pos/config/custom-fields/', {
             'code': 'num_voo', 'name': 'No do voo', 'location': 'ENTITY',
             'field_type': 'TEXT', 'show_in_search': True, 'is_active': True}, format='json')
-        self.assertIn(r.status_code, (200, 201), r.content)
+        self.client.post('/api/pos/config/custom-fields/', {
+            'code': 'mesa_pref', 'name': 'Mesa preferida', 'location': 'TICKET',
+            'field_type': 'TEXT', 'is_active': True}, format='json')
 
-        porLocal = self.client.get('/api/pos/config/custom-fields/', {'location': 'ENTITY'})
-        self.assertEqual(porLocal.status_code, 200, porLocal.content)
-        self.assertEqual([c['code'] for c in porLocal.data], ['num_voo'])
-        self.assertEqual(len(self.client.get('/api/pos/config/custom-fields/',
-                                             {'location': 'TICKET'}).data), 0)
-
-        # Nada no sistema guarda o VALOR de um campo personalizado.
-        nomes = {f.name for f in CustomFieldDef._meta.get_fields()}
-        self.assertNotIn('values', nomes,
-                         'já existe armazém de valores — acabar a ligação à pesquisa '
-                         'de entidades e actualizar este teste')
+        entidade = self.client.get('/api/pos/config/custom-fields/', {'location': 'ENTITY'})
+        self.assertEqual(entidade.status_code, 200, entidade.content)
+        self.assertEqual([c['code'] for c in entidade.data], ['num_voo'])
+        self.assertEqual([c['code'] for c in self.client.get(
+            '/api/pos/config/custom-fields/', {'location': 'TICKET'}).data], ['mesa_pref'])
 
         # A lista de entidades responde e mantém a forma esperada pelo ecrã.
         lista = self.client.get('/api/pos/marketing/entities/')
@@ -521,3 +514,357 @@ class PmsMenusRestantesTests(PmsBase):
         self.guest.refresh_from_db()
         self.assertEqual(self.guest.id_number, 'N0012345')
         self.assertEqual(self.guest.nationality, 'Angolana')
+
+
+class PmsCanaisEDepositosTests(PmsBase):
+    """As três peças que faltavam: mapear categorias nas OTAs, cobrar o
+    depósito de uma reserva online, e os campos personalizados da ficha."""
+
+    # ------------------------------------------------- MAPEAMENTO NOS CANAIS
+    def _canal(self, nome='Booking Teste', com_credenciais=True):
+        dados = {'hotel': self.hotel.id, 'name': nome, 'provider': 'BOOKING',
+                 'commission_percent': '15'}
+        if com_credenciais:
+            dados.update({'property_id': '123456', 'api_key': 'chave-de-teste'})
+        r = self.client.post('/api/pms/channels/', dados, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        return r.data['id']
+
+    def test_canal_novo_nao_tem_categorias_mapeadas(self):
+        canal = self._canal()
+        self.assertEqual(self.client.get(f'/api/pms/channels/{canal}/').data['mapped_rooms'], 0)
+
+    def test_mapear_uma_categoria_conta_no_ecra(self):
+        canal = self._canal()
+        r = self.client.post('/api/pms/channel-room-maps/', {
+            'channel': canal, 'room_type': self.rt, 'ota_room_id': 'BK-77001',
+            'max_rooms': 2}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        self.assertEqual(r.data['room_type_name'], 'Standard')
+        self.assertEqual(r.data['rooms_available'], 3, 'não contou os quartos reais da categoria')
+
+        self.assertEqual(self.client.get(f'/api/pms/channels/{canal}/').data['mapped_rooms'], 1)
+        self.assertEqual(len(self.client.get('/api/pms/channel-room-maps/',
+                                             {'channel': canal}).data), 1)
+
+    def test_a_mesma_categoria_nao_vai_duas_vezes_ao_mesmo_canal(self):
+        """Seriam duas disponibilidades contraditórias para o mesmo quarto."""
+        canal = self._canal()
+        self.client.post('/api/pms/channel-room-maps/', {
+            'channel': canal, 'room_type': self.rt, 'ota_room_id': 'BK-77001'}, format='json')
+        r = self.client.post('/api/pms/channel-room-maps/', {
+            'channel': canal, 'room_type': self.rt, 'ota_room_id': 'BK-99999'}, format='json')
+        self.assertEqual(r.status_code, 400, 'aceitou a mesma categoria duas vezes no canal')
+
+    def test_dois_quartos_nossos_nao_apontam_ao_mesmo_quarto_da_ota(self):
+        """Somaria o inventário de categorias diferentes no mesmo anúncio."""
+        canal = self._canal()
+        outra = self.client.post('/api/pms/room-types/', {
+            'hotel': self.hotel.id, 'code': 'SUITE', 'name': 'Suite',
+            'base_rate': '70000', 'capacity_adults': 2}, format='json')
+        self.client.post('/api/pms/channel-room-maps/', {
+            'channel': canal, 'room_type': self.rt, 'ota_room_id': 'BK-77001'}, format='json')
+        r = self.client.post('/api/pms/channel-room-maps/', {
+            'channel': canal, 'room_type': outra.data['id'], 'ota_room_id': 'BK-77001'}, format='json')
+        self.assertEqual(r.status_code, 400, 'duas categorias nossas no mesmo quarto da OTA')
+
+    def test_canal_de_um_hotel_nao_mapeia_categoria_de_outro(self):
+        """Publicaria na OTA de uma propriedade o inventário de outra."""
+        from pms.models import RoomType
+        outro_grupo = EnterpriseGroup.objects.create(name='Grupo B')
+        outra_empresa = Company.objects.create(group=outro_grupo, name='Empresa B', tax_id='5000000001')
+        outro_hotel = Hotel.objects.create(company=outra_empresa, name='Hotel B')
+        # Criada pelo ORM de propósito: ao criar pela API, o isolamento por
+        # propriedade (HotelScopedMixin) força o hotel activo e a categoria
+        # nasceria neste hotel — o caso que se quer testar nunca existiria.
+        rt_b = RoomType.objects.create(hotel=outro_hotel, code='B1', name='Quarto B',
+                                       base_rate=10000)
+
+        canal = self._canal()
+        r = self.client.post('/api/pms/channel-room-maps/', {
+            'channel': canal, 'room_type': rt_b.id, 'ota_room_id': 'X-1'}, format='json')
+        self.assertEqual(r.status_code, 400, 'mapeou a categoria de outro hotel')
+        self.assertIn('propriedade', str(r.data).lower())
+
+    def test_tarifa_mapeada_tem_de_ser_da_mesma_categoria(self):
+        canal = self._canal()
+        outra = self.client.post('/api/pms/room-types/', {
+            'hotel': self.hotel.id, 'code': 'SUITE', 'name': 'Suite',
+            'base_rate': '70000'}, format='json')
+        plano_suite = self.client.post('/api/pms/rate-plans/', {
+            'hotel': self.hotel.id, 'room_type': outra.data['id'], 'code': 'SUI',
+            'name': 'Tarifa Suite', 'price_per_night': '70000'}, format='json')
+        r = self.client.post('/api/pms/channel-room-maps/', {
+            'channel': canal, 'room_type': self.rt, 'ota_room_id': 'BK-1',
+            'rate_plan': plano_suite.data['id']}, format='json')
+        self.assertEqual(r.status_code, 400, 'ligou a tarifa da Suite à categoria Standard')
+
+    def test_sincronizar_sem_mapeamento_e_recusado_e_explica_porque(self):
+        """Era o buraco: sincronizava-se um canal que não sabia traduzir
+        categoria nenhuma, e a mensagem só falava de credenciais."""
+        canal = self._canal()
+        r = self.client.post(f'/api/pms/channels/{canal}/sync_availability/', {}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        self.assertEqual(r.data['status'], 'SKIPPED')
+        self.assertIn('mapeada', r.data['summary'])
+
+    def test_com_mapeamento_a_queixa_passa_a_ser_das_credenciais(self):
+        canal = self._canal(com_credenciais=False)
+        self.client.post('/api/pms/channel-room-maps/', {
+            'channel': canal, 'room_type': self.rt, 'ota_room_id': 'BK-1'}, format='json')
+        r = self.client.post(f'/api/pms/channels/{canal}/sync_availability/', {}, format='json')
+        self.assertEqual(r.data['status'], 'SKIPPED')
+        self.assertIn('credenciais', r.data['summary'].lower())
+
+    def test_mapeamento_automatico_nao_repete_o_que_ja_existe(self):
+        canal = self._canal()
+        self.client.post('/api/pms/room-types/', {
+            'hotel': self.hotel.id, 'code': 'SUITE', 'name': 'Suite',
+            'base_rate': '70000'}, format='json')
+
+        r = self.client.post('/api/pms/channel-room-maps/auto-map/', {'channel': canal}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(r.data['created'], 2)
+        self.assertEqual(sorted(m['ota_room_id'] for m in r.data['results']), ['STD', 'SUITE'])
+
+        repetido = self.client.post('/api/pms/channel-room-maps/auto-map/',
+                                    {'channel': canal}, format='json')
+        self.assertEqual(repetido.data['created'], 0, 'o automático duplicou mapeamentos')
+        self.assertEqual(self.client.get(f'/api/pms/channels/{canal}/').data['mapped_rooms'], 2)
+
+    # -------------------------------------------- DEPÓSITO DA RESERVA ONLINE
+    def _motor_de_reservas(self, deposito='30', provedor='SIMULATED'):
+        r = self.client.post('/api/pms/booking-settings/', {
+            'hotel': self.hotel.id, 'slug': 'hotel-teste', 'enabled': True,
+            'deposit_percent': deposito, 'payment_enabled': True,
+            'payment_provider': provedor, 'currency': 'AOA'}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        return r.data
+
+    def _reservar_no_site(self):
+        entrada = self.hoje + timedelta(days=10)
+        r = self.client.post('/api/pms/booking/reserve/', {
+            'slug': 'hotel-teste', 'room_type': self.rt,
+            'check_in': str(entrada), 'check_out': str(entrada + timedelta(days=2)),
+            'adults': 2, 'guest': {'name': 'Hospede Web', 'email': 'web@teste.ao',
+                                   'phone': '+244900111222'}}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        return r.data
+
+    def test_reserva_online_deixa_o_deposito_registado(self):
+        """Antes o valor era calculado, mandado para o ecrã e esquecido."""
+        self._motor_de_reservas(deposito='30')
+        res = self._reservar_no_site()
+        # 2 noites x 30000 = 60000; 30% = 18000
+        self.assertEqual(res['total'], '60000.00')
+        self.assertEqual(res['deposit_due'], '18000.00')
+        self.assertIsNotNone(res['payment_id'], 'o depósito não ficou registado em lado nenhum')
+        self.assertEqual(res['payment_status'], 'PENDING')
+
+        pend = self.client.get('/api/pms/booking-payments/', {'status': 'PENDING'})
+        self.assertEqual(len(pend.data), 1, 'a recepção não vê o depósito por receber')
+        self.assertEqual(pend.data[0]['confirmation'], res['confirmation'])
+        self.assertEqual(pend.data[0]['guest_name'], 'Hospede Web')
+
+    def test_sem_percentagem_de_deposito_nao_se_inventa_pagamento(self):
+        self._motor_de_reservas(deposito='0')
+        res = self._reservar_no_site()
+        self.assertEqual(res['deposit_due'], '0.00')
+        self.assertIsNone(res['payment_id'])
+        self.assertEqual(len(self.client.get('/api/pms/booking-payments/').data), 0)
+
+    def test_pagar_no_site_e_o_deposito_entra_na_conta_no_check_in(self):
+        """O percurso inteiro do dinheiro: site → registo → conta do hóspede."""
+        self._motor_de_reservas(deposito='30')
+        res = self._reservar_no_site()
+
+        pago = self.client.post('/api/pms/booking/pay/', {
+            'slug': 'hotel-teste', 'confirmation': res['confirmation']}, format='json')
+        self.assertEqual(pago.status_code, 200, pago.content)
+        self.assertEqual(pago.data['status'], 'PAID')
+        self.assertTrue(pago.data['reference'])
+
+        reserva = Reservation.objects.get(confirmation=res['confirmation'])
+        rc = self.client.post(f'/api/pms/reservations/{reserva.id}/check_in/',
+                              {'room': self.quartos[0]}, format='json')
+        self.assertIn(rc.status_code, (200, 201), rc.content)
+        self.assertEqual(rc.data.get('deposits_posted'), 1,
+                         'o que o hóspede pagou online não entrou na conta')
+
+        folio = Folio.objects.get(reservation=reserva)
+        self.assertEqual(folio.payments_total, Decimal('18000'))
+        # Diária de 30000 lançada no check-in, menos os 18000 já pagos.
+        self.assertEqual(folio.balance, Decimal('12000'))
+
+    def test_o_deposito_nao_entra_duas_vezes_na_conta(self):
+        self._motor_de_reservas(deposito='50')
+        res = self._reservar_no_site()
+        self.client.post('/api/pms/booking/pay/', {
+            'slug': 'hotel-teste', 'confirmation': res['confirmation']}, format='json')
+        reserva = Reservation.objects.get(confirmation=res['confirmation'])
+        self.client.post(f'/api/pms/reservations/{reserva.id}/check_in/',
+                         {'room': self.quartos[0]}, format='json')
+        folio = Folio.objects.get(reservation=reserva)
+        antes = folio.payments_total
+
+        from pms.views import lancar_depositos_no_folio
+        self.assertEqual(lancar_depositos_no_folio(reserva, folio), 0)
+        folio.refresh_from_db()
+        self.assertEqual(folio.payments_total, antes, 'lançou o mesmo depósito outra vez')
+
+    def test_deposito_por_pagar_nao_entra_na_conta(self):
+        """Um pedido de pagamento pendente não é dinheiro."""
+        self._motor_de_reservas(deposito='30')
+        res = self._reservar_no_site()
+        reserva = Reservation.objects.get(confirmation=res['confirmation'])
+        rc = self.client.post(f'/api/pms/reservations/{reserva.id}/check_in/',
+                              {'room': self.quartos[0]}, format='json')
+        self.assertNotIn('deposits_posted', rc.data)
+        self.assertEqual(Folio.objects.get(reservation=reserva).payments_total, Decimal('0'))
+
+    def test_provedor_real_nao_se_dá_por_pago_porque_o_cliente_disse(self):
+        """Multicaixa/EMIS/Stripe: quem confirma é o gateway, não o browser."""
+        self._motor_de_reservas(deposito='30', provedor='MULTICAIXA')
+        res = self._reservar_no_site()
+        r = self.client.post('/api/pms/booking/pay/', {
+            'slug': 'hotel-teste', 'confirmation': res['confirmation'],
+            'reference': 'MCX-999'}, format='json')
+        self.assertEqual(r.status_code, 202, r.content)
+        self.assertEqual(r.data['status'], 'PENDING')
+
+        pagamento = self.client.get('/api/pms/booking-payments/').data[0]
+        self.assertEqual(pagamento['status'], 'PENDING')
+        self.assertIn('não está credenciado', pagamento['message'])
+
+    def test_recepcao_confirma_a_transferencia_e_fica_registado_quem_foi(self):
+        self._motor_de_reservas(deposito='30', provedor='MULTICAIXA')
+        res = self._reservar_no_site()
+        pagamento = self.client.get('/api/pms/booking-payments/').data[0]
+
+        r = self.client.post(f"/api/pms/booking-payments/{pagamento['id']}/mark-paid/", {
+            'method': 'TRANSFER', 'reference': 'BAI-00012'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['status'], 'PAID')
+        self.assertEqual(r.data['confirmed_by'], 'pms_test')
+        self.assertEqual(r.data['reference'], 'BAI-00012')
+        # Ainda não há conta aberta — entra no check-in.
+        self.assertEqual(r.data['posted_now'], 0)
+
+        repetido = self.client.post(f"/api/pms/booking-payments/{pagamento['id']}/mark-paid/",
+                                    {}, format='json')
+        self.assertEqual(repetido.status_code, 409, 'confirmou o mesmo depósito duas vezes')
+
+    def test_confirmar_com_o_hospede_ja_dentro_lanca_logo_na_conta(self):
+        self._motor_de_reservas(deposito='30', provedor='MULTICAIXA')
+        res = self._reservar_no_site()
+        reserva = Reservation.objects.get(confirmation=res['confirmation'])
+        self.client.post(f'/api/pms/reservations/{reserva.id}/check_in/',
+                         {'room': self.quartos[0]}, format='json')
+
+        pagamento = self.client.get('/api/pms/booking-payments/').data[0]
+        r = self.client.post(f"/api/pms/booking-payments/{pagamento['id']}/mark-paid/",
+                             {'method': 'CASH'}, format='json')
+        self.assertEqual(r.data['posted_now'], 1)
+        self.assertEqual(Folio.objects.get(reservation=reserva).payments_total, Decimal('18000'))
+
+    def test_pagar_uma_reserva_que_nao_deve_nada(self):
+        self._motor_de_reservas(deposito='30')
+        res = self._reservar_no_site()
+        self.client.post('/api/pms/booking/pay/', {
+            'slug': 'hotel-teste', 'confirmation': res['confirmation']}, format='json')
+        outra_vez = self.client.post('/api/pms/booking/pay/', {
+            'slug': 'hotel-teste', 'confirmation': res['confirmation']}, format='json')
+        self.assertEqual(outra_vez.status_code, 400)
+        self.assertIn('já está paga', outra_vez.data['detail'])
+
+    # ------------------------------------------------- CAMPOS PERSONALIZADOS
+    def _definir_campo(self, **kw):
+        dados = {'code': 'num_voo', 'name': 'No do voo', 'location': 'ENTITY',
+                 'field_type': 'TEXT', 'show_in_search': True, 'is_active': True}
+        dados.update(kw)
+        r = self.client.post('/api/pos/config/custom-fields/', dados, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        return r.data
+
+    def test_campo_personalizado_grava_e_le_se_na_ficha(self):
+        """A metade que faltava: definir o campo já dava, escrever o valor não."""
+        self._definir_campo()
+        r = self.client.patch(f'/api/pos/marketing/entities/{self.guest.id}/', {
+            'custom_fields': {'num_voo': 'TAAG DT651'}}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['custom_fields'], {'num_voo': 'TAAG DT651'})
+
+        relido = self.client.get(f'/api/pos/marketing/entities/{self.guest.id}/')
+        self.assertEqual(relido.data['custom_fields']['num_voo'], 'TAAG DT651')
+
+    def test_o_valor_aparece_na_pesquisa_de_entidades(self):
+        self._definir_campo()
+        self.client.patch(f'/api/pos/marketing/entities/{self.guest.id}/', {
+            'custom_fields': {'num_voo': 'TAAG DT651'}}, format='json')
+
+        lista = self.client.get('/api/pos/marketing/entities/')
+        self.assertEqual(lista.status_code, 200, lista.content)
+        linhas = lista.data if isinstance(lista.data, list) else lista.data.get('results', [])
+        self.assertEqual(linhas[0]['custom_fields'], {'num_voo': 'TAAG DT651'})
+
+        # As colunas a desenhar vêm da configuração — fonte única.
+        colunas = self.client.get('/api/pos/config/custom-fields/', {'location': 'ENTITY'}).data
+        self.assertEqual([c['code'] for c in colunas if c['show_in_search']], ['num_voo'])
+
+    def test_apagar_o_valor_limpa_a_ficha(self):
+        self._definir_campo()
+        alvo = f'/api/pos/marketing/entities/{self.guest.id}/'
+        self.client.patch(alvo, {'custom_fields': {'num_voo': 'TAAG DT651'}}, format='json')
+        r = self.client.patch(alvo, {'custom_fields': {'num_voo': ''}}, format='json')
+        self.assertEqual(r.data['custom_fields'], {})
+
+    def test_campo_inexistente_e_recusado_em_vez_de_ignorado(self):
+        self._definir_campo()
+        r = self.client.patch(f'/api/pos/marketing/entities/{self.guest.id}/', {
+            'custom_fields': {'num_vo': 'erro de escrita'}}, format='json')
+        self.assertEqual(r.status_code, 400, 'gravou em silêncio um campo que não existe')
+
+    def test_campo_de_numero_recusa_letras(self):
+        self._definir_campo(code='taxa_tur', name='Taxa turistica', field_type='NUMBER')
+        alvo = f'/api/pos/marketing/entities/{self.guest.id}/'
+        mau = self.client.patch(alvo, {'custom_fields': {'taxa_tur': 'muito'}}, format='json')
+        self.assertEqual(mau.status_code, 400, mau.content)
+        bom = self.client.patch(alvo, {'custom_fields': {'taxa_tur': '1500'}}, format='json')
+        self.assertEqual(bom.status_code, 200, bom.content)
+
+    def test_campo_de_lista_so_aceita_as_opcoes_definidas(self):
+        self._definir_campo(code='motivo', name='Motivo da estadia', is_list=True,
+                            list_values=['Lazer', 'Trabalho', 'Evento'])
+        alvo = f'/api/pos/marketing/entities/{self.guest.id}/'
+        self.assertEqual(self.client.patch(alvo, {
+            'custom_fields': {'motivo': 'Pesca'}}, format='json').status_code, 400)
+        ok = self.client.patch(alvo, {'custom_fields': {'motivo': 'Trabalho'}}, format='json')
+        self.assertEqual(ok.status_code, 200, ok.content)
+        self.assertEqual(ok.data['custom_fields']['motivo'], 'Trabalho')
+
+    def test_campo_de_data_e_de_simnao_sao_validados(self):
+        self._definir_campo(code='chegada_voo', name='Data do voo', field_type='DATE')
+        self._definir_campo(code='vegetariano', name='Vegetariano', field_type='BOOL')
+        alvo = f'/api/pos/marketing/entities/{self.guest.id}/'
+        self.assertEqual(self.client.patch(alvo, {
+            'custom_fields': {'chegada_voo': '31/02/2026'}}, format='json').status_code, 400)
+        r = self.client.patch(alvo, {'custom_fields': {
+            'chegada_voo': '2026-11-20', 'vegetariano': 'Sim'}}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['custom_fields']['vegetariano'], 'true')
+
+    def test_um_campo_tem_um_so_valor_por_ficha(self):
+        from pos.models import CustomFieldValue
+        self._definir_campo()
+        alvo = f'/api/pos/marketing/entities/{self.guest.id}/'
+        self.client.patch(alvo, {'custom_fields': {'num_voo': 'A'}}, format='json')
+        self.client.patch(alvo, {'custom_fields': {'num_voo': 'B'}}, format='json')
+        self.assertEqual(CustomFieldValue.objects.filter(object_id=self.guest.id).count(), 1)
+        self.assertEqual(CustomFieldValue.objects.get(object_id=self.guest.id).value, 'B')
+
+    def test_campo_de_outra_localizacao_nao_entra_na_ficha_do_cliente(self):
+        """Um campo definido para a Conta POS não é um campo da entidade."""
+        self._definir_campo(code='mesa_pref', name='Mesa preferida', location='TICKET')
+        r = self.client.patch(f'/api/pos/marketing/entities/{self.guest.id}/', {
+            'custom_fields': {'mesa_pref': '12'}}, format='json')
+        self.assertEqual(r.status_code, 400, r.content)

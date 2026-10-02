@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ClassicWindow from '../ui/ClassicWindow';
 import { apiClient } from '../../api/client';
-import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb, TriangleAlert, Unplug } from 'lucide-react';
+import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb, TriangleAlert, Unplug, Rows3 } from 'lucide-react';
+import ChannelRoomMapDialog from './ChannelRoomMapDialog';
 import { notifyError } from '../../utils/friendlyError';
 
 const btn = 'px-3 py-1.5 text-[12px] border border-[#CFE3E6] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#EEF4F5] active:translate-y-px flex items-center gap-1.5';
@@ -23,6 +24,7 @@ export default function ChannelManagerView() {
   const create = useMutation({ mutationFn: async () => (await apiClient.post('pms/channels/', { ...f, commission_percent: Number(f.commission_percent) })).data, onSuccess: () => { inval(); setF({ ...f, name: '', property_id: '', api_key: '' }); }, onError: notifyError });
   const act = useMutation({ mutationFn: async ({ id, a }: any) => (await apiClient.post(`pms/channels/${id}/${a}/`, {})).data, onSuccess: inval, onError: notifyError });
   const syncAll = useMutation({ mutationFn: async () => (await apiClient.post('pms/channels/sync_all/', {})).data, onSuccess: inval });
+  const [mapeando, setMapeando] = useState<any | null>(null);
 
   return (
     <ClassicWindow title="Channel Manager — Sincronização com OTAs" icon={<Network size={14} className="text-gray-300" />}
@@ -83,9 +85,14 @@ export default function ChannelManagerView() {
                 <span className="text-[10px] px-1.5 py-0.5 rounded text-white" style={{ background: ST_COLOR[ch.status] }}>{ch.status_display}</span>
               </div>
               <div className="text-[12px] text-gray-700 mt-1">{ch.name}</div>
-              <div className="text-[10px] text-gray-500">Property {ch.property_id || '—'} · comissão {Number(ch.commission_percent)}% · {ch.mapped_rooms} tipo(s) mapeado(s)</div>
+              <div className="text-[10px] text-gray-500">Property {ch.property_id || '—'} · comissão {Number(ch.commission_percent)}%</div>
+              <button onClick={() => setMapeando(ch)}
+                className={`text-[10px] mt-0.5 underline-offset-2 hover:underline ${ch.mapped_rooms ? 'text-[#5C8891]' : 'text-[#B0392B] font-bold'}`}>
+                {ch.mapped_rooms ? `${ch.mapped_rooms} categoria(s) mapeada(s)` : 'Sem categorias mapeadas — nada a sincronizar'}
+              </button>
               <div className="text-[10px] text-gray-400">{ch.last_sync_at ? `última sync ${new Date(ch.last_sync_at).toLocaleString('pt-PT')}` : 'nunca sincronizado'}</div>
               <div className="flex gap-1 mt-2 flex-wrap">
+                <button className="text-[11px] text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => setMapeando(ch)}><Rows3 size={12} />Mapeamento</button>
                 <button className="text-[11px] text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'sync_availability' })}><UploadCloud size={12} />Enviar disp.</button>
                 <button className="text-[11px] text-[#5C8891] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'pull' })}><DownloadCloud size={12} />Receber reservas</button>
                 {ch.status === 'CONNECTED' ? (
@@ -118,6 +125,7 @@ export default function ChannelManagerView() {
         </div>
         <div className="text-[11px] text-gray-500">As chamadas às APIs das OTAs ligam-se aqui quando as credenciais/certificação de cada canal estiverem disponíveis (Booking.com Connectivity, Expedia EPS, etc.). A arquitetura (mapeamento, push/pull, anti-overbooking) já está pronta.</div>
       </div>
+      {mapeando && <ChannelRoomMapDialog channel={mapeando} onClose={() => setMapeando(null)} />}
     </ClassicWindow>
   );
 }

@@ -33,6 +33,7 @@ import PmsHomeDashboardView from './PmsHomeDashboardView';
 import BookingEngineView from '../integration/BookingEngineView';
 import ChannelManagerView from '../integration/ChannelManagerView';
 import PmsChatbotView from './PmsChatbotView';
+import PmsBookingDepositsView from './PmsBookingDepositsView';
 import PmsEventsView from './PmsEventsView';
 import PmsEventsCalendarView from './PmsEventsCalendarView';
 import PmsEventsForecastView from './PmsEventsForecastView';
@@ -75,6 +76,7 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   // de UMA reserva de cada vez) — dava a entender que era uma conta corrente a
   // sério e não era; agora é a conta a sério, partilhada com o POS.
   current_accounts: { label: 'Contas Correntes', icon: '💰', Comp: PosCurrentAccounts },
+  booking_deposits: { label: 'Depósitos de Reservas Online', icon: '💳', Comp: PmsBookingDepositsView },
   reports: { label: 'Relatórios', icon: '🖨', Comp: PosReports },
   reports_pms: { label: 'Performance & Ocupação', icon: '📊', Comp: PmsReportsView },
   online: { label: 'Informação Online', icon: '📈', Comp: PosOnline },

@@ -15,8 +15,9 @@ from .frontdesk import HotelStatusView
 from .night_audit import NightAuditRunViewSet, NightAuditRunView
 from .booking_engine import (
     BookingSettingsViewSet, BookingConfigView, BookingAvailabilityView, BookingReserveView,
+    BookingPayView, BookingPaymentViewSet,
 )
-from .channel_manager import ChannelViewSet, ChannelSyncLogViewSet
+from .channel_manager import ChannelViewSet, ChannelSyncLogViewSet, ChannelRoomMapViewSet
 from .chatbot import ChatbotSettingsViewSet, ChatbotSimulateView
 from .events_api import EventViewSet, EventForecastView
 
@@ -36,6 +37,8 @@ router.register(r'phone-directory', PhoneDirectoryEntryViewSet, basename='pms-ph
 router.register(r'booking-settings', BookingSettingsViewSet, basename='pms-booking-settings')
 router.register(r'channels', ChannelViewSet, basename='pms-channel')
 router.register(r'channel-sync-logs', ChannelSyncLogViewSet, basename='pms-channel-sync-log')
+router.register(r'channel-room-maps', ChannelRoomMapViewSet, basename='pms-channel-room-map')
+router.register(r'booking-payments', BookingPaymentViewSet, basename='pms-booking-payment')
 router.register(r'chatbot-settings', ChatbotSettingsViewSet, basename='pms-chatbot-settings')
 router.register(r'events', EventViewSet, basename='pms-event')
 
@@ -54,6 +57,7 @@ urlpatterns = [
     path('booking/config/', BookingConfigView.as_view()),
     path('booking/availability/', BookingAvailabilityView.as_view()),
     path('booking/reserve/', BookingReserveView.as_view()),
+    path('booking/pay/', BookingPayView.as_view()),
     # EMS — antes do router para não ser interpretado como events/<pk>.
     path('events/forecast/', EventForecastView.as_view()),
     # Chatbot — simulador (autenticado, dados reais, nunca envia WhatsApp a sério).

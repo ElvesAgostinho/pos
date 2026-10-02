@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRightLeft, Undo2 } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
+import { printFiscalInvoice } from '../fiscal/printInvoice';
 import { aviso, confirmar, pedir } from '../../ui/dialogo';
 import { Toolbar, Glyph } from '../posconfig/kit';
 import ClassicGrid from '../ui/ClassicGrid';
@@ -61,7 +62,25 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
       invalidate();
     } catch (e) { notifyError(e); }
   };
+  // UMA CONTA, UMA FATURA. Faturada a conta, o botão deixa de oferecer emitir
+  // outra (o servidor recusa, e com razão) e passa a dar acesso à que existe —
+  // que é o que quem carrega ali quer: ver ou reimprimir o documento. Antes
+  // oferecia sempre "Gerar Fatura" e respondia com um erro a quem só queria o
+  // papel outra vez.
+  const abrirFatura = async () => {
+    try {
+      const docs = (await apiClient.get('fiscal/documents/', {
+        params: { source_module: 'pms', source_ref: activeFolioId },
+      })).data;
+      const arr = docs?.results || docs;
+      if (arr && arr[0]) await printFiscalInvoice(arr[0].id, false);
+      else aviso(`Esta conta está faturada (${folio.fiscal_document_number}), mas o documento não `
+               + `foi encontrado no arquivo fiscal. Procure-o em Fiscal → Documentos.`);
+    } catch (e) { notifyError(e); }
+  };
+
   const generateInvoice = async () => {
+    if (folio?.fiscal_document_number) return abrirFatura();
     if (!(await confirmar('Gerar a fatura fiscal (AGT) desta conta?'))) return;
     try {
       const r = await apiClient.post(`pms/folios/${activeFolioId}/generate-invoice/`, {});
@@ -111,7 +130,8 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
           { label: 'Lançar', icon: '＋', color: '#062A31', onClick: addCharge },
           { label: 'Dividir Conta', icon: '✂', color: '#5C8891', onClick: split },
           { label: 'Registar Pagamento', icon: '💳', color: '#062A31', onClick: settle },
-          { label: 'Gerar Fatura (AGT)', icon: '🧾', color: '#062A31', onClick: generateInvoice },
+          { label: folio?.fiscal_document_number ? `Ver Fatura (${folio.fiscal_document_number})` : 'Gerar Fatura (AGT)',
+            icon: '🧾', color: '#062A31', onClick: generateInvoice },
         ]} right={
           <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#041F24] border border-transparent hover:border-[#CFE3E6] hover:bg-[#F7FAFA] rounded-[6px]">Fechar</button>
         } />

@@ -31,6 +31,20 @@ const Painel = ({ title, children, right }: any) => (
 );
 
 // ═══════════════════════════════════════════════ PESQUISA DE ENTIDADES
+/** Mostra o valor de um campo personalizado como uma pessoa o lê: "true" é Sim,
+ *  uma data ISO sai no formato português, e vazio é um travessão (e não um
+ *  espaço em branco que parece um erro de carregamento). */
+function valorPersonalizado(linha: any, campo: any) {
+  const v = (linha.custom_fields || {})[campo.code];
+  if (v === undefined || v === null || v === '') return '—';
+  if (campo.field_type === 'BOOL') return v === 'true' ? 'Sim' : 'Não';
+  if (campo.field_type === 'DATE') {
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? v : d.toLocaleDateString('pt-PT');
+  }
+  return v;
+}
+
 export function EntitySearch() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<'S' | 'A'>('S');
@@ -46,6 +60,18 @@ export function EntitySearch() {
   const { data: tipos = [] } = useList('pos/config/customer-types/', 'ctypes');
   const { data: cartoes = [] } = useList('pos/config/member-cards/', 'cards');
   const { data: regras = [] } = useList('pos/marketing/entity-rules/', 'rules');
+  // COLUNAS PERSONALIZADAS — os campos que este hotel definiu para a ficha e
+  // marcou com "Mostrar na pesquisa". Vêm da configuração, não do código: o
+  // resort que precisa do nº do voo põe-no aqui sem ninguém mexer no sistema.
+  const { data: camposPers = [] } = useQuery({
+    queryKey: ['posmkt', 'campos-pers'],
+    queryFn: async () => {
+      try {
+        const r = await apiClient.get('pos/config/custom-fields/', { params: { location: 'ENTITY' } });
+        return ((r.data?.results || r.data || []) as any[]).filter((c) => c.show_in_search);
+      } catch { return []; }
+    },
+  });
 
   const { data: rows = [], isFetching } = useQuery({
     queryKey: ['posmkt', 'entities', aplicado],
@@ -265,7 +291,7 @@ export function EntitySearch() {
             <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0"><tr className="bg-[#F7FAFA]">
                 {['Apelido', 'Nome', 'Outros nomes', 'Nr. cliente', 'Tipo', 'Morada', 'Contacto',
-                  'Cartão', 'Informações'].map((h) => (
+                  'Cartão', ...camposPers.map((c: any) => c.name), 'Informações'].map((h) => (
                   <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EEF4F5] border-r border-r-[#F7FAFA]">{h}</th>
                 ))}
               </tr></thead>
@@ -284,6 +310,9 @@ export function EntitySearch() {
                     <td className="px-2 py-1">{r.address || '—'}</td>
                     <td className="px-2 py-1">{r.contact || '—'}</td>
                     <td className="px-2 py-1">{r.card_name ? `${r.card_name}${r.member_card_number ? ' · ' + r.member_card_number : ''}` : '—'}</td>
+                    {camposPers.map((c: any) => (
+                      <td key={c.code} className="px-2 py-1">{valorPersonalizado(r, c)}</td>
+                    ))}
                     <td className="px-2 py-1 text-[#5C8891]">
                       {r.documents ? `${r.documents} doc · ${money(r.spent)} Kz` : ''}
                       {r.events ? ` · ${r.events} evento(s)` : ''}
@@ -291,7 +320,7 @@ export function EntitySearch() {
                   </tr>
                 ))}
                 {vista.length === 0 && (
-                  <tr><td colSpan={9} className="text-center text-[#7FA9B1] py-10">
+                  <tr><td colSpan={9 + camposPers.length} className="text-center text-[#7FA9B1] py-10">
                     {isFetching ? 'A pesquisar…' : 'Não foram encontrados dados.'}
                   </td></tr>
                 )}

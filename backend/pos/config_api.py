@@ -3448,6 +3448,11 @@ class EntitySerializer(serializers.ModelSerializer):
     spent = serializers.SerializerMethodField()
     documents = serializers.SerializerMethodField()
     events = serializers.SerializerMethodField()
+    # CAMPOS PERSONALIZADOS — os campos que ESTE hotel inventou para a ficha
+    # (ver CustomFieldDef/CustomFieldValue). Vêm e vão como um dicionário
+    # {código: valor}: o ecrã não precisa de conhecer nenhum deles de antemão,
+    # e um campo novo aparece na ficha sem uma linha de código.
+    custom_fields = serializers.DictField(required=False, allow_null=True)
 
     class Meta:
         from mdm.models import Customer as _C
@@ -3462,6 +3467,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def create(self, validated):
         from mdm.models import Customer
+        personalizados = validated.pop('custom_fields', None)
         if not validated.get('code'):
             base = 'C'
             ultimo = (Customer.objects.filter(code__regex=r'^C\d+$')
@@ -3470,7 +3476,61 @@ class EntitySerializer(serializers.ModelSerializer):
             while Customer.objects.filter(code=f'{base}{n:05d}').exists():
                 n += 1
             validated['code'] = f'{base}{n:05d}'
-        return super().create(validated)
+        obj = super().create(validated)
+        self._gravar_personalizados(obj, personalizados)
+        return obj
+
+    def update(self, instance, validated):
+        personalizados = validated.pop('custom_fields', None)
+        obj = super().update(instance, validated)
+        self._gravar_personalizados(obj, personalizados)
+        return obj
+
+    def _gravar_personalizados(self, obj, valores):
+        """Grava {código: valor} nos campos personalizados desta ficha.
+
+        Um código desconhecido é recusado em vez de ignorado em silêncio: se o
+        ecrã manda "num_vo" por engano, é melhor dizê-lo do que deixar o
+        utilizador convencido de que gravou. Valor vazio apaga a linha — não se
+        guarda vazio, para a pesquisa não confundir "não preenchido" com
+        "preenchido em branco".
+        """
+        if not valores:
+            return
+        from .models import CustomFieldDef, CustomFieldValue
+        defs = {d.code: d for d in CustomFieldDef.objects.filter(location='ENTITY', is_active=True)}
+        desconhecidos = [c for c in valores if c not in defs]
+        if desconhecidos:
+            raise serializers.ValidationError(
+                {'custom_fields': f'Campo(s) personalizado(s) inexistente(s) ou inactivo(s): '
+                                  f'{", ".join(sorted(desconhecidos))}.'})
+        erros, limpos = {}, {}
+        for codigo, bruto in valores.items():
+            try:
+                limpos[codigo] = defs[codigo].clean_value(bruto)
+            except ValueError as e:
+                erros[codigo] = str(e)
+        if erros:
+            raise serializers.ValidationError({'custom_fields': erros})
+
+        for codigo, texto in limpos.items():
+            if texto == '':
+                CustomFieldValue.objects.filter(field=defs[codigo], object_id=obj.pk).delete()
+            else:
+                CustomFieldValue.objects.update_or_create(
+                    field=defs[codigo], object_id=obj.pk, defaults={'value': texto})
+
+    def to_representation(self, obj):
+        dados = super().to_representation(obj)
+        mapa = self.context.get('custom_values_map')
+        if mapa is None:
+            from .models import CustomFieldValue
+            mapa = {}
+            for v in (CustomFieldValue.objects.select_related('field')
+                      .filter(object_id=obj.pk, field__location='ENTITY')):
+                mapa.setdefault(v.object_id, {})[v.field.code] = v.value
+        dados['custom_fields'] = mapa.get(obj.pk, {})
+        return dados
 
     def get_contact(self, o):
         return o.phone or o.email or None
@@ -3511,22 +3571,35 @@ class EntitySerializer(serializers.ModelSerializer):
 class EntityViewSet(viewsets.ModelViewSet):
     """PESQUISA DE ENTIDADES — o cadastro unico de clientes, visto pelo POS.
 
-    CAMPOS PERSONALIZADOS — o que FALTA, dito por extenso para ninguém voltar a
-    pensar que funciona: `CustomFieldDef` define o campo (onde aparece, que tipo
-    tem, se "Mostra na pesquisa"), mas NÃO EXISTE nenhum modelo que guarde o
-    VALOR desse campo para uma entidade concreta — nem aqui, nem em `mdm`. O
-    hotel pode definir "Nº do voo" e nunca ter onde o escrever.
+    CAMPOS PERSONALIZADOS: `CustomFieldDef` define o campo que ESTE hotel
+    precisa (o nº do voo num resort, a taxa turística pré-paga num hotel de
+    cidade) e `CustomFieldValue` guarda o valor por ficha; cada entidade sai
+    daqui com `custom_fields` = {código: valor}.
 
-    Havia aqui um `list()` que acrescentava `custom_columns` à resposta, e era
-    duplamente inócuo: só disparava quando a lista vinha PAGINADA (o ecrã pede
-    esta lista sem `?page`, logo nunca), e nenhum ecrã lia esse campo. Foi
-    retirado: as definições já têm o seu endpoint próprio
-    (`pos/config/custom-fields/?location=ENTITY`), que é a fonte única, e
-    colunas sempre vazias por falta de valores não ajudavam ninguém.
-    Para a funcionalidade existir a sério falta o armazém de valores + o campo
-    na ficha + a coluna na pesquisa; está por decidir com o dono.
+    Quais desses campos viram COLUNA na pesquisa é uma pergunta sobre a
+    configuração, não sobre as entidades — por isso é respondida onde as
+    definições vivem (`pos/config/custom-fields/?location=ENTITY`, as marcadas
+    com "Mostrar na pesquisa"), e não enfiada dentro desta lista. Uma tentativa
+    anterior juntava-as ao corpo da resposta e só funcionava quando a lista
+    vinha paginada (o ecrã pede-a sem `?page`): nunca disparou uma única vez.
     """
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        """Na LISTA, carrega os valores personalizados de uma só vez.
+
+        Sem isto cada linha da grelha ia buscar os seus, e uma pesquisa com 500
+        clientes fazia 500 consultas à base de dados para mostrar uma coluna.
+        """
+        ctx = super().get_serializer_context()
+        if getattr(self, 'action', None) == 'list':
+            from .models import CustomFieldValue
+            mapa = {}
+            for v in (CustomFieldValue.objects.select_related('field')
+                      .filter(field__location='ENTITY')):
+                mapa.setdefault(v.object_id, {})[v.field.code] = v.value
+            ctx['custom_values_map'] = mapa
+        return ctx
     serializer_class = EntitySerializer
 
     # ── OS SATÉLITES da ficha (abas do "Nova entidade"): notas, ligações, redes

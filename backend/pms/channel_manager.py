@@ -21,12 +21,27 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.tenancy import HotelScopedMixin
-from .models import Channel, ChannelSyncLog
-from .serializers import ChannelSerializer, ChannelSyncLogSerializer
+from .models import Channel, ChannelSyncLog, ChannelRoomMap
+from .serializers import (
+    ChannelSerializer, ChannelSyncLogSerializer, ChannelRoomMapSerializer,
+)
 from .views import HotelDefaultMixin
 
 
 def _sync(channel, direction, event):
+    # SEM MAPEAMENTO NÃO HÁ NADA PARA ENVIAR. A OTA não conhece o nosso
+    # `RoomType`; conhece o código de quarto dela. Enviar disponibilidade antes
+    # de alguém dizer "o nosso Standard é o quarto 12345 lá" é enviar números
+    # sem destino — por isso esta é a primeira verificação, antes mesmo das
+    # credenciais: é a que o dono consegue resolver sozinho, sem esperar pela
+    # aprovação comercial da plataforma.
+    if not channel.room_maps.filter(is_active=True).exists():
+        return ChannelSyncLog.objects.create(
+            channel=channel, direction=direction, event=event, status='SKIPPED',
+            message='Nenhuma categoria de quarto mapeada neste canal — ligue as suas '
+                    'categorias aos códigos de quarto da OTA (botão "Mapeamento") antes '
+                    'de sincronizar.',
+        )
     if not channel.api_key or not channel.property_id:
         log = ChannelSyncLog.objects.create(
             channel=channel, direction=direction, event=event, status='SKIPPED',
@@ -87,6 +102,60 @@ class ChannelViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet)
             log = _sync(channel, 'PUSH', 'availability')
             results.append(ChannelSyncLogSerializer(log).data)
         return Response({'synced': len(results), 'results': results})
+
+
+class ChannelRoomMapViewSet(viewsets.ModelViewSet):
+    """O MAPEAMENTO: a nossa categoria ↔ o código do quarto na OTA.
+
+    É a peça que faltava para o Channel Manager poder sincronizar seja o que
+    for — e a razão por que o ecrã mostrava sempre "0 tipo(s) mapeado(s)".
+    """
+    queryset = ChannelRoomMap.objects.select_related('channel', 'room_type', 'rate_plan').all()
+    serializer_class = ChannelRoomMapSerializer
+
+    def get_queryset(self):
+        from core.tenancy import scope_qs
+        qs = scope_qs(self.request, super().get_queryset(), hotel_path='channel__hotel')
+        canal = self.request.query_params.get('channel')
+        return qs.filter(channel_id=canal) if canal else qs
+
+    @action(detail=False, methods=['post'], url_path='auto-map')
+    def auto_map(self, request):
+        """Propõe o mapeamento de todas as categorias ainda por ligar, usando o
+        nosso próprio código de categoria como código na OTA.
+
+        Não é adivinhar: várias plataformas deixam o hotel escolher o seu
+        próprio identificador, e nos restantes casos isto poupa a criação das
+        linhas — depois corrige-se o `ota_room_id` de cada uma, que é muito
+        menos trabalho do que criar tudo à mão. Nunca mexe num mapeamento que
+        já exista.
+        """
+        from .models import RoomType
+        try:
+            canal = Channel.objects.get(pk=request.data.get('channel'))
+        except (Channel.DoesNotExist, ValueError, TypeError):
+            return Response({'detail': 'Canal inválido.'}, status=400)
+
+        from core.tenancy import scope_qs
+        if not scope_qs(request, Channel.objects.filter(pk=canal.pk)).exists():
+            return Response({'detail': 'Não tem acesso a este canal.'}, status=403)
+
+        ja_mapeadas = set(canal.room_maps.values_list('room_type_id', flat=True))
+        usados = set(canal.room_maps.values_list('ota_room_id', flat=True))
+        criados = []
+        for rt in RoomType.objects.filter(hotel=canal.hotel, is_active=True):
+            if rt.id in ja_mapeadas or rt.code in usados:
+                continue
+            criados.append(ChannelRoomMap.objects.create(
+                channel=canal, room_type=rt, ota_room_id=rt.code))
+            usados.add(rt.code)
+        return Response({
+            'created': len(criados),
+            'detail': (f'{len(criados)} categoria(s) ligada(s) ao canal. Confirme o ID de cada '
+                       f'quarto no painel da {canal.get_ota_type_display()} e corrija se for '
+                       f'diferente.') if criados else 'Já estavam todas as categorias mapeadas.',
+            'results': ChannelRoomMapSerializer(criados, many=True).data,
+        }, status=201 if criados else 200)
 
 
 class ChannelSyncLogViewSet(viewsets.ReadOnlyModelViewSet):

@@ -1757,6 +1757,93 @@ class CustomFieldDef(models.Model):
     def __str__(self):
         return f'{self.code} · {self.name}'
 
+    def clean_value(self, raw):
+        """Valida e normaliza um valor para este campo. Devolve o texto a
+        guardar; levanta ValueError com a mensagem a mostrar ao utilizador.
+
+        A regra vive aqui, no campo, e não no ecrã: o mesmo campo é preenchido
+        na ficha do cliente, na pesquisa de entidades e (no dia em que lá
+        chegar) na reserva — se cada um validasse à sua maneira, o "Nº do voo"
+        aceitaria letras num sítio e não noutro.
+        """
+        import re as _re
+        from datetime import date as _date
+
+        texto = '' if raw is None else str(raw).strip()
+        if texto == '':
+            return ''
+
+        if self.is_list:
+            opcoes = [str(o) for o in (self.list_values or [])]
+            if opcoes and texto not in opcoes:
+                raise ValueError(f'{self.name}: "{texto}" não é uma das opções '
+                                 f'({", ".join(opcoes)}).')
+            return texto
+
+        if self.field_type == 'NUMBER':
+            try:
+                float(texto.replace(',', '.'))
+            except ValueError:
+                raise ValueError(f'{self.name}: tem de ser um número.')
+        elif self.field_type == 'DATE':
+            try:
+                _date.fromisoformat(texto)
+            except ValueError:
+                raise ValueError(f'{self.name}: tem de ser uma data (AAAA-MM-DD).')
+        elif self.field_type == 'BOOL':
+            if texto.lower() not in ('true', 'false', '1', '0', 'sim', 'não', 'nao'):
+                raise ValueError(f'{self.name}: tem de ser Sim ou Não.')
+            return 'true' if texto.lower() in ('true', '1', 'sim') else 'false'
+
+        if self.size and len(texto) > self.size:
+            raise ValueError(f'{self.name}: no máximo {self.size} caracteres.')
+        if self.regex:
+            try:
+                if not _re.fullmatch(self.regex, texto):
+                    raise ValueError(f'{self.name}: o valor não respeita o formato exigido.')
+            except _re.error:
+                pass    # expressão mal escrita na configuração não bloqueia a gravação
+        return texto
+
+
+
+class CustomFieldValue(models.Model):
+    """O VALOR de um campo personalizado numa ficha concreta.
+
+    Faltava a metade de baixo da funcionalidade: `CustomFieldDef` deixava o
+    hotel definir "Nº do voo", dizer onde aparece e marcar "Mostrar na
+    pesquisa" — e não havia onde escrever o número do voo de ninguém. O campo
+    definia-se e morria ali.
+
+    Guarda-se o valor sempre como TEXTO, de propósito: um campo pode mudar de
+    tipo depois de já ter valores gravados (o hotel percebe que afinal o "Nº
+    do quarto no voo" é texto e não número), e uma coluna tipada obrigaria a
+    migrar ou a perder o que lá estava. A validação por tipo faz-se à entrada
+    (ver `CustomFieldDef.clean_value`), não na forma de armazenar.
+
+    `object_id` é o ID da ficha a que o valor pertence, dentro do universo que
+    `field.location` já declara (ENTITY → mdm.Customer, RESERVATION →
+    pms.Reservation, TICKET → POSTicket, ITEM → inventory.Item, GUEST →
+    hóspede). Não se usa `ContentType` porque o destino não é livre: é uma
+    das cinco localizações fixas que o próprio campo escolhe, e uma chave
+    estrangeira real obrigaria a cinco colunas — uma por destino — para
+    representar a mesma ideia.
+    """
+    field = models.ForeignKey(CustomFieldDef, on_delete=models.CASCADE, related_name='values')
+    object_id = models.PositiveIntegerField(verbose_name='ID da ficha')
+    value = models.TextField(blank=True, default='')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pos_custom_field_value'
+        # Um campo tem UM valor por ficha. Sem isto, duas gravações seguidas
+        # deixavam duas linhas e a leitura passava a depender da ordem.
+        unique_together = ('field', 'object_id')
+        indexes = [models.Index(fields=['field', 'object_id'])]
+
+    def __str__(self):
+        return f'{self.field.code}#{self.object_id} = {self.value}'
+
 
 class CardType(models.Model):
     """TIPO DE CARTÃO — como se LÊ o cartão que o cliente encosta ao leitor.

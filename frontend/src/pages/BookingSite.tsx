@@ -42,6 +42,20 @@ export default function BookingSite() {
     } catch (e: any) { aviso(e?.response?.data?.detail || 'Erro na reserva'); } finally { setBusy(false); }
   };
 
+  // PAGAR O ADIANTAMENTO. O hotel fica sempre com o registo do pedido; o que
+  // muda é quem o confirma — ver `BookingPayView` no servidor. Com um provedor
+  // a sério, a resposta vem 202 e o depósito continua por confirmar até o
+  // dinheiro entrar, e é isso que se diz ao hóspede em vez de um "pago" que
+  // ninguém verificou.
+  const pagar = async () => {
+    setBusy(true);
+    try {
+      const r = await apiClient.post('pms/booking/pay/', { slug, confirmation: confirmation.confirmation });
+      setConfirmation({ ...confirmation, payment_status: r.data.status, payment_message: r.data.detail });
+    } catch (e: any) { aviso(e?.response?.data?.detail || 'Não foi possível registar o pagamento.'); }
+    finally { setBusy(false); }
+  };
+
   if (notFound) return <div className="min-h-screen flex items-center justify-center text-gray-500">Motor de reservas indisponível.</div>;
   if (!cfg) return <div className="min-h-screen flex items-center justify-center text-gray-400">A carregar…</div>;
 
@@ -119,7 +133,30 @@ export default function BookingSite() {
             <p className="text-gray-600 mt-2">Código: <b className="font-mono">{confirmation.confirmation}</b></p>
             <p className="text-gray-600">{confirmation.room_type} · {confirmation.check_in} → {confirmation.check_out}</p>
             <p className="text-gray-800 font-bold mt-2">Total: {money(confirmation.total, cfg.currency)}</p>
-            {Number(confirmation.deposit_due) > 0 && <p className="text-sm text-gray-500">Adiantamento devido: {money(confirmation.deposit_due, cfg.currency)}</p>}
+            {Number(confirmation.deposit_due) > 0 && (
+              <div className="mt-3 rounded-lg bg-gray-50 border border-gray-200 p-3">
+                <p className="text-sm text-gray-700">
+                  Adiantamento: <b>{money(confirmation.deposit_due, cfg.currency)}</b>
+                </p>
+                {confirmation.payment_status === 'PAID' ? (
+                  <p className="text-sm font-semibold mt-1" style={{ color: '#062A31' }}>
+                    ✓ Adiantamento recebido. Até já!
+                  </p>
+                ) : confirmation.payment_message ? (
+                  <p className="text-sm text-gray-600 mt-1">{confirmation.payment_message}</p>
+                ) : confirmation.payment_enabled ? (
+                  <button onClick={pagar} disabled={busy}
+                    className="mt-2 w-full px-4 py-2 rounded-lg text-white font-semibold disabled:opacity-50"
+                    style={{ background: color }}>
+                    {busy ? 'A processar…' : 'Pagar adiantamento'}
+                  </button>
+                ) : (
+                  <p className="text-sm text-gray-600 mt-1">
+                    O hotel entrará em contacto consigo com os dados para o pagamento.
+                  </p>
+                )}
+              </div>
+            )}
             <button onClick={() => { setConfirmation(null); setRooms(null); }} className="mt-5 px-5 py-2 rounded-lg text-white font-semibold" style={{ background: color }}>Nova pesquisa</button>
           </div>
         </div>
