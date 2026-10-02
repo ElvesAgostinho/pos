@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
 const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
 /**
@@ -44,20 +44,20 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
-        <span className="text-[13px] font-bold text-[#1F292C]">{isNew ? 'Novo horário' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
+        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Novo horário' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
-      <div className="p-4 border-b border-[#E4E9EB]">
+      <div className="p-4 border-b border-[#EBEEF0]">
         <Box title="Identificação">
         <div className="space-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[90px] text-[#1F292C]">Código:<span className="text-[#C94A4A]">*</span></span>
+          <span className="w-[90px] text-[#1A1D21]">Código:<span className="text-[#B42318]">*</span></span>
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[290px]`} style={inputStyle} />
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[90px] text-[#1F292C]">Descrição:<span className="text-[#C94A4A]">*</span></span>
+          <span className="w-[90px] text-[#1A1D21]">Descrição:<span className="text-[#B42318]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} placeholder="Happy Hour de Verão"
             className={`${inp} w-[420px]`} style={inputStyle} />
         </label>
@@ -70,32 +70,32 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <div className="flex-1 overflow-auto p-3">
-        <div className="text-[12px] text-[#657377] mb-2">
+        <div className="text-[12px] text-[#6B7280] mb-2">
           Marque em que <b>dias</b> cada <b>faixa horária</b> está em vigor.
         </div>
         <table className="text-[12px] border-collapse">
           <thead>
-            <tr className="bg-[#F4F6F7]">
-              <th className="text-left px-2 py-1.5 border border-[#E4E9EB] font-normal">Faixa horária</th>
-              {DAYS.map((x) => <th key={x} className="px-3 py-1.5 border border-[#E4E9EB] font-normal">{x}</th>)}
+            <tr className="bg-[#F3F4F6]">
+              <th className="text-left px-2 py-1.5 border border-[#EBEEF0] font-normal">Faixa horária</th>
+              {DAYS.map((x) => <th key={x} className="px-3 py-1.5 border border-[#EBEEF0] font-normal">{x}</th>)}
             </tr>
           </thead>
           <tbody>
             {bands.map((b: any) => (
-              <tr key={b.id} className="border-b border-[#E4E9EB]">
-                <td className="px-2 py-1.5 border border-[#E4E9EB] whitespace-nowrap">
+              <tr key={b.id} className="border-b border-[#EBEEF0]">
+                <td className="px-2 py-1.5 border border-[#EBEEF0] whitespace-nowrap">
                   <span className="inline-block w-4 h-4 mr-2 align-middle" style={{ background: b.color }} />
                   {b.code} · {b.name}
                 </td>
                 {DAYS.map((_, wd) => (
-                  <td key={wd} className="text-center border border-[#E4E9EB]">
+                  <td key={wd} className="text-center border border-[#EBEEF0]">
                     <input type="checkbox" checked={has(wd, b.id)} onChange={() => toggle(wd, b.id)} className="w-4 h-4" />
                   </td>
                 ))}
               </tr>
             ))}
             {bands.length === 0 && (
-              <tr><td colSpan={8} className="text-center text-[#657377] py-8">
+              <tr><td colSpan={8} className="text-center text-[#6B7280] py-8">
                 Sem faixas horárias — crie-as primeiro em "Horários - Períodos".
               </td></tr>
             )}
@@ -104,8 +104,8 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
       ]} />
     </div>
   );

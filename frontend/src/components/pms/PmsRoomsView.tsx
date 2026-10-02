@@ -5,10 +5,10 @@ import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 
 const STATUS_STYLE: Record<string, string> = {
-  VACANT_CLEAN: 'bg-[#F4F6F7] border-[#C8D2D5] text-[#1F292C]',
-  VACANT_DIRTY: 'bg-[#F4F6F7] border-[#C8D2D5] text-[#1F292C]',
-  OCCUPIED: 'bg-[#F4F6F7] border-[#C94A4A] text-[#A83A3A]',
-  OOO: 'bg-[#F4F6F7] border-[#C8D2D5] text-gray-500',
+  VACANT_CLEAN: 'bg-[#F3F4F6] border-[#D7DBDF] text-[#1A1D21]',
+  VACANT_DIRTY: 'bg-[#F3F4F6] border-[#D7DBDF] text-[#1A1D21]',
+  OCCUPIED: 'bg-[#F3F4F6] border-[#B42318] text-[#912018]',
+  OOO: 'bg-[#F3F4F6] border-[#D7DBDF] text-gray-500',
 };
 
 const blank = { number: '', room_type: '' };
@@ -50,20 +50,20 @@ export default function PmsRoomsView() {
             {r.status === 'VACANT_DIRTY' && (
               <button onClick={() => setStatus(r.id, 'VACANT_CLEAN')}
                 className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[6px] hover:brightness-110 transition-[filter]"
-                style={{ background: '#062F35' }}>
+                style={{ background: '#17375E' }}>
                 ✔ Marcar como limpo
               </button>
             )}
             {r.status === 'OOO' && (
               <button onClick={() => setStatus(r.id, 'VACANT_DIRTY')}
                 className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[6px] hover:brightness-110 transition-[filter]"
-                style={{ background: '#4B858E' }}>
+                style={{ background: '#2E75B6' }}>
                 ↩ Voltar ao serviço
               </button>
             )}
             {r.status === 'VACANT_CLEAN' && (
               <button onClick={() => setStatus(r.id, 'OOO')}
-                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold rounded-[6px] border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] transition-colors text-[#A83A3A]">
+                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold rounded-[6px] border border-[#D7DBDF] bg-white hover:bg-[#F3F4F6] transition-colors text-[#912018]">
                 ⊘ Pôr fora de serviço
               </button>
             )}
@@ -78,23 +78,23 @@ export default function PmsRoomsView() {
         ))}
         {rows.length === 0 && <div className="col-span-6 text-center text-gray-400 py-6">Sem quartos criados.</div>}
       </div>
-      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', color: '#062F35', onClick: () => setShowNew(true) }]} />
+      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', color: '#17375E', onClick: () => setShowNew(true) }]} />
 
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-          <div className="w-[360px] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden">
-            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #062F35, #062F35)' }}>Novo Quarto</div>
+          <div className="w-[360px] bg-[#F3F4F6] border border-[#D7DBDF] shadow-xl rounded-[16px] overflow-hidden">
+            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #17375E, #17375E)' }}>Novo Quarto</div>
             <div className="p-3 space-y-2 text-[11px]">
-              <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#C8D2D5] p-1" /></label>
+              <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
               <label className="flex flex-col">Categoria
-                <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
+                <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
                   <option value="">Escolha…</option>{rtList.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
                 </select>
               </label>
             </div>
             <Toolbar actions={[
-              { label: 'Cancelar', icon: '✕', color: '#4B858E', onClick: () => setShowNew(false) },
-              { label: 'Gravar', icon: '💾', color: '#062F35', onClick: create },
+              { label: 'Cancelar', icon: '✕', color: '#2E75B6', onClick: () => setShowNew(false) },
+              { label: 'Gravar', icon: '💾', color: '#17375E', onClick: create },
             ]} />
           </div>
         </div>

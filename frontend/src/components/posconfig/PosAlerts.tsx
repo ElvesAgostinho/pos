@@ -19,47 +19,47 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
     refetchInterval: 30000,
   });
 
-  if (!d) return <div className="flex-1 flex items-center justify-center text-[#657377]">A verificar o sistema…</div>;
+  if (!d) return <div className="flex-1 flex items-center justify-center text-[#6B7280]">A verificar o sistema…</div>;
 
   const CORES: Record<string, [string, string, string, string]> = {
     // fundo, borda, texto, etiqueta
-    CRITICO: ['#F4F6F7', '#C94A4A', '#A83A3A', 'CRÍTICO'],
-    AVISO: ['#F4F6F7', '#C8D2D5', '#062F35', 'AVISO'],
-    INFO: ['#F4F6F7', '#C8D2D5', '#062F35', 'INFORMAÇÃO'],
+    CRITICO: ['#F3F4F6', '#B42318', '#912018', 'CRÍTICO'],
+    AVISO: ['#F3F4F6', '#D7DBDF', '#17375E', 'AVISO'],
+    INFO: ['#F3F4F6', '#D7DBDF', '#17375E', 'INFORMAÇÃO'],
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F4F6F7]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#F3F4F6]">
       {/* Cabeçalho — o resumo que se lê em três segundos */}
-      <div className="flex items-stretch gap-px bg-[#F4F6F7] border-b border-[#C8D2D5]">
+      <div className="flex items-stretch gap-px bg-[#F3F4F6] border-b border-[#D7DBDF]">
         {[
-          ['Críticos', d.critical, '#A83A3A', 'dinheiro a sair, ou a lei a ser quebrada'],
-          ['Avisos', d.warning, '#062F35', 'vai custar dinheiro se ninguém mexer'],
-          ['Verificações', d.checked, '#062F35', 'regras corridas neste momento'],
+          ['Críticos', d.critical, '#912018', 'dinheiro a sair, ou a lei a ser quebrada'],
+          ['Avisos', d.warning, '#17375E', 'vai custar dinheiro se ninguém mexer'],
+          ['Verificações', d.checked, '#17375E', 'regras corridas neste momento'],
         ].map(([label, valor, cor, sub]: any) => (
           <div key={label} className="flex-1 bg-white px-4 py-3">
-            <div className="text-[11px] text-[#657377] uppercase tracking-wide">{label}</div>
-            <div className="text-[28px] font-bold leading-tight" style={{ color: valor ? cor : '#062F35' }}>
+            <div className="text-[11px] text-[#6B7280] uppercase tracking-wide">{label}</div>
+            <div className="text-[28px] font-bold leading-tight" style={{ color: valor ? cor : '#17375E' }}>
               {valor}
             </div>
-            <div className="text-[11px] text-[#657377]">{sub}</div>
+            <div className="text-[11px] text-[#6B7280]">{sub}</div>
           </div>
         ))}
         <div className="w-[240px] bg-white px-4 py-3 text-right">
-          <div className="text-[11px] text-[#657377] uppercase tracking-wide">Última verificação</div>
+          <div className="text-[11px] text-[#6B7280] uppercase tracking-wide">Última verificação</div>
           <div className="text-[14px] font-semibold">{new Date(d.at).toLocaleTimeString('pt-PT')}</div>
-          <div className="text-[11px] text-[#657377]">atualiza sozinho</div>
+          <div className="text-[11px] text-[#6B7280]">atualiza sozinho</div>
         </div>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
         {d.alerts.length === 0 ? (
-          <div className="border border-[#C8D2D5] bg-white p-10 text-center">
-            <div className="w-12 h-12 mx-auto rounded-full bg-[#062F35] text-white flex items-center justify-center font-bold">
+          <div className="border border-[#D7DBDF] bg-white p-10 text-center">
+            <div className="w-12 h-12 mx-auto rounded-full bg-[#17375E] text-white flex items-center justify-center font-bold">
               <Glyph icon="✔" size={22} />
             </div>
-            <div className="text-[16px] font-bold text-[#1F292C] mt-3">Nada a assinalar</div>
-            <div className="text-[12px] text-[#657377] mt-1">
+            <div className="text-[16px] font-bold text-[#1A1D21] mt-3">Nada a assinalar</div>
+            <div className="text-[12px] text-[#6B7280] mt-1">
               As {d.checked} verificações passaram: sem anulações fora do normal, sem contas
               esquecidas, sem margens negativas, sem stock a faltar.
             </div>
@@ -79,7 +79,7 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
                     <span className="text-[11px] font-bold tracking-wide" style={{ color: txt }}>
                       {etiqueta}
                     </span>
-                    <span className="text-[14px] font-bold text-[#1F292C]">{a.title}</span>
+                    <span className="text-[14px] font-bold text-[#1A1D21]">{a.title}</span>
                     {a.amount && (
                       <span className="ml-auto text-[15px] font-bold" style={{ color: txt }}>
                         {money(a.amount)} Kz
@@ -88,26 +88,26 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
                   </div>
 
                   <div className="p-3 text-[12px] space-y-2">
-                    <div className="text-[#1F292C]">{a.detail}</div>
+                    <div className="text-[#1A1D21]">{a.detail}</div>
 
                     <div className="flex gap-6">
                       <div className="flex-1">
-                        <div className="text-[11px] font-bold text-[#657377] uppercase tracking-wide mb-0.5">
+                        <div className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide mb-0.5">
                           Porque é que isto importa
                         </div>
-                        <div className="text-[#1F292C] leading-5">{a.why}</div>
+                        <div className="text-[#1A1D21] leading-5">{a.why}</div>
                       </div>
                       <div className="flex-1">
-                        <div className="text-[11px] font-bold text-[#657377] uppercase tracking-wide mb-0.5">
+                        <div className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wide mb-0.5">
                           O que fazer
                         </div>
-                        <div className="text-[#1F292C] leading-5">{a.action}</div>
+                        <div className="text-[#1A1D21] leading-5">{a.action}</div>
                       </div>
                     </div>
 
                     {a.screen && onOpen && (
                       <button onClick={() => onOpen(a.screen)}
-                        className="mt-1 px-4 py-1.5 bg-[#062F35] text-white text-[12px] hover:bg-[#062F35]">
+                        className="mt-1 px-4 py-1.5 bg-[#17375E] text-white text-[12px] hover:bg-[#17375E]">
                         Ir tratar disto
                       </button>
                     )}
@@ -119,14 +119,14 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
         )}
 
         {d.errors?.length > 0 && (
-          <div className="mt-4 max-w-[1100px] border border-[#E4E9EB] bg-white p-3 text-[11px] text-[#1F292C]">
+          <div className="mt-4 max-w-[1100px] border border-[#EBEEF0] bg-white p-3 text-[11px] text-[#1A1D21]">
             <b>Verificações que não correram:</b> {d.errors.join(' · ')}
           </div>
         )}
       </div>
 
       <Toolbar actions={[]} right={
-        <span className="text-[11px] text-[#657377]">
+        <span className="text-[11px] text-[#6B7280]">
           {d.checked} regras: anulações por operador, logins falhados, descontos, contas e caixas
           abertas, impressão, stock negativo, margem negativa, quebras, faturas vencidas e fiscal.
         </span>

@@ -15,23 +15,23 @@ export default function PmsBlockPickerDialog({ onClose, onSelect }: { onClose: (
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-h-[70vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#062F35' }}>
+      <div className="w-[900px] max-h-[70vh] bg-[#F3F4F6] border border-[#D7DBDF] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#17375E' }}>
           Search blocks
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
             <button onClick={onClose} title="Fechar"
-              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
+              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B42318] text-white hover:brightness-110">
               <X size={12} strokeWidth={3} />
             </button>
           </div>
         </div>
-        <div className="p-2 bg-white border-b border-[#E4E9EB] flex items-center gap-2 text-[12px]">
+        <div className="p-2 bg-white border-b border-[#EBEEF0] flex items-center gap-2 text-[12px]">
           Pesquisa livre:
           <span className="relative">
             <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus
-              className="border border-[#C8D2D5] p-1 pr-7 w-64" />
-            <Search size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#657377]" />
+              className="border border-[#D7DBDF] p-1 pr-7 w-64" />
+            <Search size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6B7280]" />
           </span>
         </div>
         <div className="flex-1 overflow-auto bg-white">
@@ -47,13 +47,13 @@ export default function PmsBlockPickerDialog({ onClose, onSelect }: { onClose: (
             { header: 'Bloco principal', accessor: () => '—', width: '14%' },
           ]} />
         </div>
-        <div className="flex justify-between items-center px-3 py-1.5 bg-[#F4F6F7] border-t border-[#C8D2D5]">
+        <div className="flex justify-between items-center px-3 py-1.5 bg-[#F3F4F6] border-t border-[#D7DBDF]">
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
-            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1A1D21] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
             <Hand size={13} /> Selecionar
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1A1D21] hover:text-black">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B42318] text-white">
               <X size={9} strokeWidth={3} />
             </span>
             Fechar

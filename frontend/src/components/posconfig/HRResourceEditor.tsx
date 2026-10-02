@@ -5,8 +5,8 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 import { SubFamilyPicker, ItemPicker } from './Pickers';
 
-const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#E4E9EB] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#EBEEF0] px-1.5 py-1 text-[12px] bg-white';
 const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const DAYS_LONG = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
@@ -123,11 +123,11 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
-        <span className="text-[13px] font-bold text-[#1F292C]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
+        <span className="text-[13px] font-bold text-[#1A1D21]">
           {isNew ? 'Novo recurso' : `A editar ${d.first_name || ''}`}
         </span>
-        <button onClick={onClose} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
+        <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto">
@@ -136,22 +136,22 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
           <Box title="Identificação" className="w-[52%]">
           <div className="space-y-2 pt-1.5">
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#1F292C]">Código:<span className="text-[#C94A4A]">*</span></span>
+              <span className="w-[100px] text-[#1A1D21]">Código:<span className="text-[#B42318]">*</span></span>
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 className={`${inp} w-[290px]`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#1F292C]">Nome:<span className="text-[#C94A4A]">*</span></span>
+              <span className="w-[100px] text-[#1A1D21]">Nome:<span className="text-[#B42318]">*</span></span>
               <input value={d.first_name || ''} onChange={(e) => set('first_name', e.target.value)}
                 className={`${inp} flex-1`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#1F292C]">Apelido:</span>
+              <span className="w-[100px] text-[#1A1D21]">Apelido:</span>
               <input value={d.last_name || ''} onChange={(e) => set('last_name', e.target.value)}
                 className={`${inp} flex-1`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#1F292C]">Tipo:<span className="text-[#C94A4A]">*</span></span>
+              <span className="w-[100px] text-[#1A1D21]">Tipo:<span className="text-[#B42318]">*</span></span>
               <select value={d.hr_type || ''} onChange={(e) => set('hr_type', Number(e.target.value) || null)}
                 className={`${inp} w-[290px]`} style={inputStyle}>
                 <option value="">(nenhum)</option>
@@ -159,7 +159,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
               </select>
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#1F292C]">Género:</span>
+              <span className="w-[100px] text-[#1A1D21]">Género:</span>
               <select value={d.gender || ''} onChange={(e) => set('gender', e.target.value || null)}
                 className={`${inp} w-[290px]`} style={inputStyle}>
                 <option value="">—</option>
@@ -169,17 +169,17 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
               </select>
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#1F292C]">Ordem:</span>
+              <span className="w-[100px] text-[#1A1D21]">Ordem:</span>
               <input type="number" value={d.sort_order ?? 0} onChange={(e) => set('sort_order', Number(e.target.value))}
                 className={`${inp} w-[290px]`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#1F292C]">Código Licença:</span>
+              <span className="w-[100px] text-[#1A1D21]">Código Licença:</span>
               <input value={d.license_code || ''} onChange={(e) => set('license_code', e.target.value)}
                 placeholder="cédula profissional" className={`${inp} w-[290px]`} style={inputStyle} />
             </label>
             <label className="flex items-center gap-3 text-[13px]">
-              <span className="w-[100px] text-[#1F292C]">Espaço:</span>
+              <span className="w-[100px] text-[#1A1D21]">Espaço:</span>
               <select value={d.space || ''} onChange={(e) => set('space', Number(e.target.value) || null)}
                 className={`${inp} w-[290px]`} style={inputStyle}>
                 <option value="">(nenhum)</option>
@@ -203,10 +203,10 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
         </div>
 
         {/* Separadores */}
-        <div className="flex border-b-2 border-[#062F35] px-3">
+        <div className="flex border-b-2 border-[#17375E] px-3">
           {TABS.map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#062F35] text-[#1F292C] bg-white' : 'border-transparent text-[#657377] hover:text-[#1F292C]'}`}>
+              className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#17375E] text-[#1A1D21] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#1A1D21]'}`}>
               {label}
             </button>
           ))}
@@ -215,8 +215,8 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
         <div className="p-3">
           {/* ---------------- Serviços ---------------- */}
           {tab === 'services' && (
-            <div style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-              <div className="flex items-center gap-3 px-3 py-2 bg-[#F4F6F7] border-b border-[#E4E9EB]">
+            <div style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+              <div className="flex items-center gap-3 px-3 py-2 bg-[#F3F4F6] border-b border-[#EBEEF0]">
                 <span className="text-[12px]">Filtro:</span>
                 <input value={srvFilter} onChange={(e) => setSrvFilter(e.target.value)} className={`${inp} w-[260px]`} style={inputStyle} />
                 <label className="flex items-center gap-2 text-[12px] ml-3">
@@ -227,18 +227,18 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                     className="w-4 h-4" />
                   Selecionar Tudo
                 </label>
-                <span className="ml-auto text-[11px] text-[#657377]">{svc.length} serviço(s) atribuído(s)</span>
+                <span className="ml-auto text-[11px] text-[#6B7280]">{svc.length} serviço(s) atribuído(s)</span>
               </div>
               <div className="h-[300px] overflow-auto">
                 <table className="w-full text-[12px] border-collapse">
-                  <thead className="sticky top-0"><tr className="bg-[#F4F6F7]">
-                    <th className="w-[42px] border-b border-[#E4E9EB]" />
-                    <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">Serviço</th>
+                  <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
+                    <th className="w-[42px] border-b border-[#EBEEF0]" />
+                    <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">Serviço</th>
                   </tr></thead>
                   <tbody>
                     {svcRows.map((a: any) => (
                       <tr key={a.id} onClick={() => toggleSvc(a.id)}
-                        className={`border-b border-[#E4E9EB] cursor-pointer ${svc.includes(a.id) ? 'bg-[#F4F6F7]' : 'hover:bg-[#FFFFFF]'}`}>
+                        className={`border-b border-[#EBEEF0] cursor-pointer ${svc.includes(a.id) ? 'bg-[#F3F4F6]' : 'hover:bg-[#FFFFFF]'}`}>
                         <td className="text-center py-1.5">
                           <input type="checkbox" checked={svc.includes(a.id)} onChange={() => toggleSvc(a.id)}
                             onClick={(e) => e.stopPropagation()} className="w-4 h-4" />
@@ -246,11 +246,11 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                         <td className="px-2 py-1.5"><b className="font-mono">{a.code}</b> · {a.name}</td>
                       </tr>
                     ))}
-                    {svcRows.length === 0 && <tr><td colSpan={2} className="text-center text-[#657377] py-10">Sem artigos.</td></tr>}
+                    {svcRows.length === 0 && <tr><td colSpan={2} className="text-center text-[#6B7280] py-10">Sem artigos.</td></tr>}
                   </tbody>
                 </table>
               </div>
-              <div className="px-3 py-1.5 bg-[#FFFFFF] border-t border-[#E4E9EB] text-[11px] text-[#657377]">
+              <div className="px-3 py-1.5 bg-[#FFFFFF] border-t border-[#EBEEF0] text-[11px] text-[#6B7280]">
                 No POS, esta pessoa só pode ser escolhida nos serviços que aqui estiverem marcados.
               </div>
             </div>
@@ -272,21 +272,21 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
 
               <div className="flex gap-3">
                 {/* Turnos */}
-                <div className="w-[420px] flex flex-col" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-                  <div className="px-2 py-1.5 bg-[#F4F6F7] text-[12px] font-bold border-b border-[#E4E9EB]">
+                <div className="w-[420px] flex flex-col" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+                  <div className="px-2 py-1.5 bg-[#F3F4F6] text-[12px] font-bold border-b border-[#EBEEF0]">
                     Dias: {lines.length ? Array.from(workDays).sort().map((w) => DAYS[w]).join(', ') : '—'}
                   </div>
                   <div className="h-[240px] overflow-auto">
                     <table className="w-full text-[12px] border-collapse">
-                      <thead className="sticky top-0"><tr className="bg-[#F4F6F7]">
-                        <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">Dia</th>
-                        <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">De</th>
-                        <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">Até</th>
+                      <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
+                        <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">Dia</th>
+                        <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">De</th>
+                        <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">Até</th>
                       </tr></thead>
                       <tbody>
                         {lines.map((l, i) => (
                           <tr key={i} onClick={() => setSelLine(i)}
-                            className={`border-b border-[#E4E9EB] cursor-pointer ${selLine === i ? 'bg-[#F4F6F7]' : ''}`}>
+                            className={`border-b border-[#EBEEF0] cursor-pointer ${selLine === i ? 'bg-[#F3F4F6]' : ''}`}>
                             <td className="p-0.5">
                               <select value={l.weekday} onChange={(e) => setLine(i, 'weekday', Number(e.target.value))} className={cell}>
                                 {DAYS_LONG.map((n, w) => <option key={w} value={w}>{n}</option>)}
@@ -296,43 +296,43 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                             <td className="p-0.5"><input type="time" value={(l.time_to || '').slice(0, 5)} onChange={(e) => setLine(i, 'time_to', e.target.value)} className={cell} /></td>
                           </tr>
                         ))}
-                        {lines.length === 0 && <tr><td colSpan={3} className="text-center text-[#657377] py-10">Sem turnos.</td></tr>}
+                        {lines.length === 0 && <tr><td colSpan={3} className="text-center text-[#6B7280] py-10">Sem turnos.</td></tr>}
                       </tbody>
                     </table>
                   </div>
-                  <div className="flex items-center gap-4 px-2 py-2 border-t border-[#E4E9EB] bg-[#F4F6F7]">
-                    <button onClick={addLine} className="flex items-center gap-2 text-[12px] hover:bg-[#F4F6F7] px-1 py-1">
-                      <span className="w-5 h-5 rounded-full bg-[#062F35] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+                  <div className="flex items-center gap-4 px-2 py-2 border-t border-[#EBEEF0] bg-[#F3F4F6]">
+                    <button onClick={addLine} className="flex items-center gap-2 text-[12px] hover:bg-[#F3F4F6] px-1 py-1">
+                      <span className="w-5 h-5 rounded-full bg-[#17375E] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
                     </button>
                     <button onClick={delLine} disabled={selLine === null}
-                      className="flex items-center gap-2 text-[12px] hover:bg-[#F4F6F7] px-1 py-1 disabled:opacity-35">
-                      <span className="w-5 h-5 rounded-full bg-[#C94A4A] text-white flex items-center justify-center text-[11px]">−</span> Apagar
+                      className="flex items-center gap-2 text-[12px] hover:bg-[#F3F4F6] px-1 py-1 disabled:opacity-35">
+                      <span className="w-5 h-5 rounded-full bg-[#B42318] text-white flex items-center justify-center text-[11px]">−</span> Apagar
                     </button>
                   </div>
                 </div>
 
                 {/* Calendário derivado */}
-                <div className="flex-1 overflow-auto" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+                <div className="flex-1 overflow-auto" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
                   <table className="text-[11px] border-collapse">
-                    <thead><tr className="bg-[#F4F6F7]">
-                      <th className="text-left font-normal px-2 py-1 border border-[#E4E9EB] sticky left-0 bg-[#F4F6F7] w-[90px]">Mês</th>
+                    <thead><tr className="bg-[#F3F4F6]">
+                      <th className="text-left font-normal px-2 py-1 border border-[#EBEEF0] sticky left-0 bg-[#F3F4F6] w-[90px]">Mês</th>
                       {Array.from({ length: 31 }, (_, i) => (
-                        <th key={i} className="font-normal border border-[#E4E9EB] w-[22px]">{i + 1}</th>
+                        <th key={i} className="font-normal border border-[#EBEEF0] w-[22px]">{i + 1}</th>
                       ))}
                     </tr></thead>
                     <tbody>
                       {months.map((m) => (
                         <tr key={`${m.year}-${m.month}`}>
-                          <td className="px-2 py-2 border border-[#E4E9EB] sticky left-0 bg-white whitespace-nowrap">{m.label}</td>
+                          <td className="px-2 py-2 border border-[#EBEEF0] sticky left-0 bg-white whitespace-nowrap">{m.label}</td>
                           {Array.from({ length: 31 }, (_, i) => {
                             const day = i + 1;
-                            if (day > m.days) return <td key={i} className="border border-[#E4E9EB] bg-[#4B858E]" />;
+                            if (day > m.days) return <td key={i} className="border border-[#EBEEF0] bg-[#2E75B6]" />;
                             const wd = new Date(m.year, m.month, day).getDay();
                             const on = workDays.has(wd);
                             return (
                               <td key={i} title={`${day} · ${DAYS_LONG[wd]}${on ? ' — trabalha' : ' — folga'}`}
-                                className="text-center border border-[#E4E9EB]"
-                                style={{ background: on ? '#C8D2D5' : '#FFFFFF', color: '#062F35' }}>
+                                className="text-center border border-[#EBEEF0]"
+                                style={{ background: on ? '#D7DBDF' : '#FFFFFF', color: '#17375E' }}>
                                 {String(day).padStart(2, '0')}
                               </td>
                             );
@@ -341,8 +341,8 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                       ))}
                     </tbody>
                   </table>
-                  <div className="px-2 py-1.5 text-[11px] text-[#657377] border-t border-[#E4E9EB]">
-                    <span className="inline-block w-3 h-3 align-middle mr-1" style={{ background: '#C8D2D5' }} /> dia de trabalho ·
+                  <div className="px-2 py-1.5 text-[11px] text-[#6B7280] border-t border-[#EBEEF0]">
+                    <span className="inline-block w-3 h-3 align-middle mr-1" style={{ background: '#D7DBDF' }} /> dia de trabalho ·
                     o calendário sai dos turnos da esquerda — mude o turno e ele muda.
                   </div>
                 </div>
@@ -352,44 +352,44 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
 
           {/* ---------------- Comissões ---------------- */}
           {tab === 'commissions' && (
-            <div style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+            <div style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               <div className="h-[280px] overflow-auto">
                 <table className="w-full text-[12px] border-collapse">
-                  <thead className="sticky top-0"><tr className="bg-[#F4F6F7]">
+                  <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
                     {['Código', 'Descrição', 'Tipo', 'Valor', ''].map((h) => (
-                      <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#E4E9EB]">{h}</th>
+                      <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#EBEEF0]">{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
                     {comms.map((c, i) => (
-                      <tr key={i} className="border-b border-[#E4E9EB]">
-                        <td className="px-2 py-1.5 border border-[#E4E9EB] font-mono">{c.code}</td>
-                        <td className="px-2 py-1.5 border border-[#E4E9EB]">{c.target}</td>
-                        <td className="p-0.5 border border-[#E4E9EB] w-[160px]">
+                      <tr key={i} className="border-b border-[#EBEEF0]">
+                        <td className="px-2 py-1.5 border border-[#EBEEF0] font-mono">{c.code}</td>
+                        <td className="px-2 py-1.5 border border-[#EBEEF0]">{c.target}</td>
+                        <td className="p-0.5 border border-[#EBEEF0] w-[160px]">
                           <select value={c.commission_type} onChange={(e) => setComm(i, 'commission_type', e.target.value)} className={cell}>
                             <option value="PERCENT">Percentagem</option>
                             <option value="VALUE">Valor fixo</option>
                           </select>
                         </td>
-                        <td className="p-0.5 border border-[#E4E9EB] w-[120px]">
+                        <td className="p-0.5 border border-[#EBEEF0] w-[120px]">
                           <input type="number" value={c.value} onChange={(e) => setComm(i, 'value', e.target.value)} className={`${cell} text-right`} />
                         </td>
-                        <td className="text-center border border-[#E4E9EB] w-[70px]">
+                        <td className="text-center border border-[#EBEEF0] w-[70px]">
                           <button onClick={() => set('commissions', comms.filter((_, j) => j !== i))}
-                            className="text-[#A83A3A] font-bold text-[11px]">Apagar</button>
+                            className="text-[#912018] font-bold text-[11px]">Apagar</button>
                         </td>
                       </tr>
                     ))}
-                    {comms.length === 0 && <tr><td colSpan={5} className="text-center text-[#657377] py-10">Sem comissões.</td></tr>}
+                    {comms.length === 0 && <tr><td colSpan={5} className="text-center text-[#6B7280] py-10">Sem comissões.</td></tr>}
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center gap-4 px-3 py-2 bg-[#F4F6F7] border-t border-[#E4E9EB]">
-                <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[12px] hover:bg-[#F4F6F7] px-1 py-1">
-                  <span className="w-5 h-5 rounded-full bg-[#062F35] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar - Sub-Famílias
+              <div className="flex items-center gap-4 px-3 py-2 bg-[#F3F4F6] border-t border-[#EBEEF0]">
+                <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[12px] hover:bg-[#F3F4F6] px-1 py-1">
+                  <span className="w-5 h-5 rounded-full bg-[#17375E] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar - Sub-Famílias
                 </button>
-                <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[12px] hover:bg-[#F4F6F7] px-1 py-1">
-                  <span className="w-5 h-5 rounded-full bg-[#062F35] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar - Artigos
+                <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[12px] hover:bg-[#F3F4F6] px-1 py-1">
+                  <span className="w-5 h-5 rounded-full bg-[#17375E] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar - Artigos
                 </button>
               </div>
             </div>
@@ -407,8 +407,8 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
       ]} />
     </div>
   );

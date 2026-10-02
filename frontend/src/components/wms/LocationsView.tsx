@@ -22,17 +22,17 @@ const LocationNode = ({
   const hasChildren = node.children && node.children.length > 0;
   
   const typeColors: Record<string, string> = {
-    'ZONE': 'bg-[#F4F6F7] border-[#C8D2D5]',
-    'AISLE': 'bg-white border-[#E4E9EB]',
-    'RACK': 'bg-white border-[#E4E9EB]',
-    'SHELF': 'bg-white border-[#E4E9EB]',
-    'BIN': 'bg-white border-[#E4E9EB]',
+    'ZONE': 'bg-[#F3F4F6] border-[#D7DBDF]',
+    'AISLE': 'bg-white border-[#EBEEF0]',
+    'RACK': 'bg-white border-[#EBEEF0]',
+    'SHELF': 'bg-white border-[#EBEEF0]',
+    'BIN': 'bg-white border-[#EBEEF0]',
   };
 
   return (
     <div className="select-none text-[11px] font-sans">
       <div 
-        className={`flex items-center p-1 border-b border-[#E4E9EB] hover:bg-[#F4F6F7] transition-colors`}
+        className={`flex items-center p-1 border-b border-[#EBEEF0] hover:bg-[#F3F4F6] transition-colors`}
         style={{ paddingLeft: `${level * 16 + 4}px` }}
       >
         <button 
@@ -42,23 +42,23 @@ const LocationNode = ({
           {expanded ? <ChevronDown size={12} className="text-gray-600" /> : <ChevronRight size={12} className="text-gray-600" />}
         </button>
         
-        <span className={`px-1 rounded-sm border mr-2 uppercase text-[9px] font-bold ${typeColors[node.location_type] || 'bg-white border-[#E4E9EB]'}`}>
+        <span className={`px-1 rounded-sm border mr-2 uppercase text-[9px] font-bold ${typeColors[node.location_type] || 'bg-white border-[#EBEEF0]'}`}>
           {node.location_type}
         </span>
         
-        <span className="font-bold text-[#1F292C] mr-2 w-16">{node.code}</span>
+        <span className="font-bold text-[#1A1D21] mr-2 w-16">{node.code}</span>
         <span className="text-gray-800 flex-1">{node.name}</span>
         
         <div className="flex space-x-2 mr-2">
           {node.location_type !== 'BIN' && (
-            <button onClick={() => onAddChild(node)} className="text-[#657377] hover:text-[#1F292C]" title="Adicionar Sub-localização">
+            <button onClick={() => onAddChild(node)} className="text-[#6B7280] hover:text-[#1A1D21]" title="Adicionar Sub-localização">
               <Plus size={12} />
             </button>
           )}
           <button onClick={() => onEdit(node)} className="text-gray-600 hover:text-black" title="Editar">
             <Edit2 size={12} />
           </button>
-          <button onClick={() => onDelete(node.id!)} className="text-[#C94A4A] hover:text-[#A83A3A]" title="Eliminar">
+          <button onClick={() => onDelete(node.id!)} className="text-[#B42318] hover:text-[#912018]" title="Eliminar">
             <Trash2 size={12} />
           </button>
         </div>
@@ -166,15 +166,15 @@ export default function LocationsView() {
           </>
         }
       >
-        <div className="p-4 bg-[#F4F6F7] h-full overflow-y-auto">
+        <div className="p-4 bg-[#F3F4F6] h-full overflow-y-auto">
           <form id="location-form" onSubmit={handleSave} className="text-[11px] grid grid-cols-1 gap-4">
             
-            <div className="border border-[#C8D2D5] bg-white p-2">
-              <h3 className="font-bold text-[#657377] border-b border-[#C8D2D5] mb-2 pb-1">Identificação</h3>
+            <div className="border border-[#D7DBDF] bg-white p-2">
+              <h3 className="font-bold text-[#6B7280] border-b border-[#D7DBDF] mb-2 pb-1">Identificação</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Nível Logístico</label>
-                  <select value={formData.location_type || 'ZONE'} onChange={e => setFormData({...formData, location_type: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none bg-white">
+                  <select value={formData.location_type || 'ZONE'} onChange={e => setFormData({...formData, location_type: e.target.value})} className="flex-1 border border-[#D7DBDF] p-1 focus:outline-none bg-white">
                     <option value="ZONE">Zona (Módulo Central)</option>
                     <option value="AISLE">Corredor (Aisle)</option>
                     <option value="RACK">Estante (Rack)</option>
@@ -184,25 +184,25 @@ export default function LocationsView() {
                 </div>
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Código Curto</label>
-                  <input required value={formData.code || ''} onChange={e => setFormData({...formData, code: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none" />
+                  <input required value={formData.code || ''} onChange={e => setFormData({...formData, code: e.target.value})} className="flex-1 border border-[#D7DBDF] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Nome Descritivo</label>
-                  <input required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="flex-1 border border-[#C8D2D5] p-1 focus:outline-none" />
+                  <input required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="flex-1 border border-[#D7DBDF] p-1 focus:outline-none" />
                 </div>
               </div>
             </div>
 
-            <div className="border border-[#C8D2D5] bg-white p-2 mt-2">
-              <h3 className="font-bold text-[#657377] border-b border-[#C8D2D5] mb-2 pb-1">Capacidades & Restrições</h3>
+            <div className="border border-[#D7DBDF] bg-white p-2 mt-2">
+              <h3 className="font-bold text-[#6B7280] border-b border-[#D7DBDF] mb-2 pb-1">Capacidades & Restrições</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Peso Máx. (Kg)</label>
-                  <input type="number" step="0.1" value={formData.max_weight_kg || ''} onChange={e => setFormData({...formData, max_weight_kg: parseFloat(e.target.value)})} className="w-24 border border-[#C8D2D5] p-1 focus:outline-none" />
+                  <input type="number" step="0.1" value={formData.max_weight_kg || ''} onChange={e => setFormData({...formData, max_weight_kg: parseFloat(e.target.value)})} className="w-24 border border-[#D7DBDF] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Temp. Ideal (ºC)</label>
-                  <input type="number" step="0.1" value={formData.ideal_temperature_c || ''} onChange={e => setFormData({...formData, ideal_temperature_c: parseFloat(e.target.value)})} className="w-24 border border-[#C8D2D5] p-1 focus:outline-none" />
+                  <input type="number" step="0.1" value={formData.ideal_temperature_c || ''} onChange={e => setFormData({...formData, ideal_temperature_c: parseFloat(e.target.value)})} className="w-24 border border-[#D7DBDF] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center mt-2">
                   <label className="flex items-center space-x-2">
@@ -242,12 +242,12 @@ export default function LocationsView() {
     >
       <div className="flex flex-col h-full bg-white">
         {/* Selector Header */}
-        <div className="flex items-center p-2 border-b border-[#C8D2D5] bg-[#F4F6F7] text-[11px]">
+        <div className="flex items-center p-2 border-b border-[#D7DBDF] bg-[#F3F4F6] text-[11px]">
           <span className="font-bold mr-2">Armazém:</span>
           <select 
             value={selectedWarehouseId || ''} 
             onChange={e => setSelectedWarehouseId(e.target.value)}
-            className="border border-[#C8D2D5] bg-white p-1 focus:outline-none w-64"
+            className="border border-[#D7DBDF] bg-white p-1 focus:outline-none w-64"
           >
             <option value="" disabled>Selecionar Armazém</option>
             {warehouses?.map(w => (
@@ -259,16 +259,16 @@ export default function LocationsView() {
         {/* Tree List */}
         <div className="flex-1 overflow-auto bg-white p-2">
           {!selectedWarehouseId ? (
-            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#E4E9EB] bg-[#FFFFFF]">
+            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#EBEEF0] bg-[#FFFFFF]">
               Selecione um armazém para gerir o seu layout.
             </div>
           ) : isLoading ? (
-            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#E4E9EB] bg-[#FFFFFF]">
+            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#EBEEF0] bg-[#FFFFFF]">
               A carregar árvore de localizações...
             </div>
           ) : locationsTree && locationsTree.length > 0 ? (
-            <div className="border border-[#C8D2D5] bg-white">
-              <div className="bg-[#F4F6F7] border-b border-[#C8D2D5] p-1 flex text-[10px] font-bold text-gray-800">
+            <div className="border border-[#D7DBDF] bg-white">
+              <div className="bg-[#F3F4F6] border-b border-[#D7DBDF] p-1 flex text-[10px] font-bold text-gray-800">
                 <div className="w-16">Nível</div>
                 <div className="w-16">Código</div>
                 <div className="flex-1">Nome / Descrição</div>
@@ -287,7 +287,7 @@ export default function LocationsView() {
               </div>
             </div>
           ) : (
-            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#E4E9EB] bg-[#FFFFFF]">
+            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#EBEEF0] bg-[#FFFFFF]">
               Nenhuma zona criada neste armazém. Comece por criar uma "Nova Zona".
             </div>
           )}

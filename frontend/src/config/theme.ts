@@ -2,8 +2,8 @@
  * PALETA OFICIAL — fonte única de cor para todo o sistema (exceto o POS Front
  * Office, que tem identidade própria, tátil, e não deve mudar por causa disto).
  *
- * Antes disto, cada ecrã escrevia o seu próprio hex (#1e3f66 aqui, #1a4f8a ali,
- * #8a95a3 acolá) — quase sempre a MESMA cor, escrita de memória, ligeiramente
+ * Antes disto, cada ecrã escrevia o seu próprio hex (#17375E aqui, #1F4E79 ali,
+ * #6B7280 acolá) — quase sempre a MESMA cor, escrita de memória, ligeiramente
  * diferente de ficheiro para ficheiro. Um sistema "a sério" (Primavera, SAP GUI,
  * Office clássico) repete SEMPRE as mesmas cores, sem variação — é isso que dá
  * o ar de desenhado, não de remendado. Este ficheiro fixa essas cores, uma vez,
@@ -17,53 +17,51 @@
 import { getAppearance } from './appearance';
 
 export const TOKENS = {
-  // Institucional — a cor de marca desta instalação (Aparência → Cor da barra).
-  // O vermelho de erro é a única cor fora da família petróleo/cinza, e só onde
-  // a cor É o aviso — sempre com ícone e texto, nunca sozinha.
-  get accent() { return getAppearance('barColor') || '#062F35'; },
-  // Mantido com o nome "gold" por compatibilidade (dezenas de ecrãs já leem
-  // TOKENS.gold) — mas já não é dourado: é o azul-petróleo institucional.
-  gold: '#062F35',
-  goldDark: '#0A4148',
+  // ── A COR DE MARCA ────────────────────────────────────────────────────────
+  // Azul-marinho, reservado para a navegação e para as acções que importam.
+  // A regra que faz um ERP parecer um ERP não é o tom do azul: é haver POUCA
+  // cor. Quase toda a interface é cinzento neutro e branco; a cor só aparece
+  // onde se quer que o olho pare. Quando tudo tem a mesma tinta — fundo azul
+  // claro, bordas azul claro, texto azul acinzentado — o resultado lê como um
+  // tema aplicado por cima, não como desenho.
+  get accent() { return getAppearance('barColor') || '#17375E'; },
+  gold: '#17375E',           // nome antigo, dezenas de ecrãs ainda o leem
+  goldDark: '#0F2744',
 
-  // ── Navegação ─────────────────────────────────────────────────────────────
-  // O petróleo escuro é RESERVADO: cabeçalhos, navegação e acções importantes.
-  // Espalhá-lo por tudo tira-lhe o peso e deixa o ecrã pesado — a regra é usá-lo
-  // onde se quer que o olho pare.
-  bar: '#062F35',            // barra principal / cabeçalho
-  barSoft: '#0A4148',        // barra secundária, item de menu seleccionado
-  active: '#4B858E',         // elementos activos, gráficos, realces secundários
+  bar: '#17375E',            // cabeçalho / barra de menus
+  barDeep: '#0F2744',        // rodapé e fundo do gradiente da barra
+  barSoft: '#1F4E79',        // barra secundária, item de menu seleccionado
+  active: '#2E75B6',         // elementos activos, gráficos, realces
 
-  // ── Superfícies ───────────────────────────────────────────────────────────
-  canvas: '#F4F6F7',         // fundo da área de trabalho (alivia o peso visual)
+  // ── SUPERFÍCIES — cinzento VERDADEIRO, sem tom ────────────────────────────
+  canvas: '#F3F4F6',         // fundo da área de trabalho
   surface: '#FFFFFF',        // formulários e grelhas
-  toolbarBg: '#F4F6F7',      // barra de ferramentas
+  toolbarBg: '#F3F4F6',
+  hover: '#F7F8F9',
 
-  // ── Linhas ────────────────────────────────────────────────────────────────
-  // Finas e rectangulares. `line` é o contorno a sério (campos, caixas);
-  // `lineSoft` é a divisória de dentro de uma grelha, que não deve competir.
-  border: '#C8D2D5',
-  line: '#C8D2D5',
-  lineSoft: '#E4E9EB',
+  // ── LINHAS — finas, rectangulares, neutras ────────────────────────────────
+  border: '#D7DBDF',         // contorno de campos e caixas
+  line: '#D7DBDF',
+  lineSoft: '#EBEEF0',       // divisória dentro de uma grelha, que não compete
 
-  // ── Texto ─────────────────────────────────────────────────────────────────
+  // ── TEXTO ─────────────────────────────────────────────────────────────────
   textOnDark: '#FFFFFF',
-  textOnLight: '#1F292C',    // texto principal e valores numéricos
-  textMuted: '#657377',      // etiquetas, eixos de gráficos, texto secundário
+  textOnLight: '#1A1D21',    // texto principal e valores
+  textMuted: '#6B7280',      // etiquetas, eixos, texto secundário
 
-  // ── Selecção ──────────────────────────────────────────────────────────────
-  selectedBg: '#DCE6E8',     // linha escolhida numa grelha
-  selectedText: '#1F292C',
-  hover: '#EDF1F2',
+  // ── SELECÇÃO ──────────────────────────────────────────────────────────────
+  selectedBg: '#DCE9F5',     // linha escolhida numa grelha
+  selectedText: '#1A1D21',
 
-  // ── Estados ───────────────────────────────────────────────────────────────
-  // Estes três são os únicos sítios onde a cor carrega significado próprio.
-  success: '#2E8B57',        // gravar, confirmar, finalizar pagamento
-  danger: '#C94A4A',         // apagar, cancelar, erro
-  dangerSoft: '#A83A3A',     // texto de erro sobre fundo claro
-  warning: '#D99A24',        // atenção
-  warningBg: '#FBF3E3',
+  // ── ESTADOS — os únicos sítios onde a cor tem significado próprio ─────────
+  success: '#1E7F4F',
+  successBg: '#E8F4EE',
+  warning: '#B45309',
+  warningBg: '#FDF3E3',
   warningBorder: '#E6C98A',
+  danger: '#B42318',
+  dangerSoft: '#912018',
+  dangerBg: '#FDECEA',
 } as const;
 
 // Aclara/escurece um hex por `pct` (±255) — usado para montar o gradiente de uma
@@ -79,7 +77,7 @@ export function shade(hex: string, pct: number): string {
 }
 
 // Gradiente de barra de título a partir da cor institucional (3 tons, sempre a
-// mesma receita) — para não se escrever "linear-gradient(...#062F35...)" fixo
+// mesma receita) — para não se escrever "linear-gradient(...#17375E...)" fixo
 // em cada ecrã: assim a personalização (Aparência → Cor da barra) chega a todo
 // o lado que usar isto, não só ao ecrã onde alguém se lembrou de a aplicar.
 export function accentGradient(accent: string = TOKENS.accent): string {
@@ -116,16 +114,16 @@ export const SHADOW = {
 export function classicTheme(dark: boolean) {
   return dark
     ? {
-        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#0B3E48', tree: '#062F35',
-        treeText: '#E4E9EB', line: '#1A5762', body: '#062F35', status: '#052128',
-        hover: '#12505C', accent: TOKENS.gold,
+        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#1F4E79', tree: '#17375E',
+        treeText: '#EBEEF0', line: '#1F4E79', body: '#17375E', status: '#0F2744',
+        hover: '#1F4E79', accent: TOKENS.gold,
       }
     : {
-        bar: 'linear-gradient(to bottom, #F4F6F7 0%, #E4E9EB 55%, #E4E9EB 100%)',
+        bar: 'linear-gradient(to bottom, #F3F4F6 0%, #EBEEF0 55%, #EBEEF0 100%)',
         barText: TOKENS.textOnLight,
-        ribbon: 'linear-gradient(to bottom, #F4F6F7 0%, #E4E9EB 60%, #E4E9EB 100%)',
+        ribbon: 'linear-gradient(to bottom, #F3F4F6 0%, #EBEEF0 60%, #EBEEF0 100%)',
         tree: TOKENS.surface, treeText: TOKENS.textOnLight, line: TOKENS.border,
-        body: '#E4E9EB', status: TOKENS.accent, hover: TOKENS.selectedBg,
+        body: '#EBEEF0', status: TOKENS.accent, hover: TOKENS.selectedBg,
         accent: TOKENS.accent,
       };
 }

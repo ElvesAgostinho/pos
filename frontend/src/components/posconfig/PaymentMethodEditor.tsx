@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle } from './kit';
 
-const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
 
 function Row({ label, children, w = 'w-[150px]' }: { label: string; children: any; w?: string }) {
   return (
     <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className={`${w} flex-shrink-0 text-[#1F292C]`}>{label}</span>
+      <span className={`${w} flex-shrink-0 text-[#1A1D21]`}>{label}</span>
       {children}
     </label>
   );
@@ -88,9 +88,9 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
-        <span className="text-[13px] font-bold text-[#1F292C]">{isNew ? 'Novo modo de pagamento' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
+        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Novo modo de pagamento' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -171,14 +171,14 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
               </label>
             </div>
             <div className="flex items-center gap-6 text-[12px] mb-3">
-              <span className="w-[80px] text-[#1F292C]">Módulos:</span>
+              <span className="w-[80px] text-[#1A1D21]">Módulos:</span>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_ems} onChange={(e) => set('for_ems', e.target.checked)} className="w-4 h-4" />Eventos</label>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_pos} onChange={(e) => set('for_pos', e.target.checked)} className="w-4 h-4" />POS</label>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_fnb} onChange={(e) => set('for_fnb', e.target.checked)} className="w-4 h-4" />F&B (contas a pagar)</label>
             </div>
 
-            <div style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-              <div className="px-3 py-1.5 bg-[#F4F6F7] text-[12px] font-bold text-[#1F292C] border-b border-[#E4E9EB]">Detalhes</div>
+            <div style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+              <div className="px-3 py-1.5 bg-[#F3F4F6] text-[12px] font-bold text-[#1A1D21] border-b border-[#EBEEF0]">Detalhes</div>
               <div className="p-3 space-y-2">
                 <CheckRow on={d.tip_from_change} onToggle={(v: boolean) => set('tip_from_change', v)}
                   label="Converter troco para gratificação">{artigo('tip_item')}</CheckRow>
@@ -241,7 +241,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
                   </label>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-1 border-t border-[#E4E9EB]">
+                <div className="grid grid-cols-2 gap-3 pt-1 border-t border-[#EBEEF0]">
                   <label className="flex items-center gap-2 text-[12px]">
                     <input type="checkbox" checked={!!d.allows_change} onChange={(e) => set('allows_change', e.target.checked)} className="w-4 h-4" />
                     Dá troco
@@ -254,7 +254,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
               </div>
 
               {/* Pickup */}
-              <div className="border-t border-[#E4E9EB] p-3 space-y-2">
+              <div className="border-t border-[#EBEEF0] p-3 space-y-2">
                 <label className="flex items-center gap-2 text-[12px] font-semibold">
                   <input type="checkbox" checked={!!d.allow_pickup} onChange={(e) => set('allow_pickup', e.target.checked)} className="w-4 h-4" />
                   Permite Pickup
@@ -273,7 +273,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
             </div>
 
             {d.internal_consumption && (
-              <div className="text-[11px] text-[#1F292C] bg-[#F4F6F7] border border-[#C8D2D5] px-2 py-1 mt-2">
+              <div className="text-[11px] text-[#1A1D21] bg-[#F3F4F6] border border-[#D7DBDF] px-2 py-1 mt-2">
                 Só os utilizadores com <b>"Consumo interno"</b> na ficha o podem lançar — o servidor recusa aos outros.
               </div>
             )}
@@ -282,8 +282,8 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
       ]} />
     </div>
   );

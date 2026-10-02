@@ -24,9 +24,9 @@ export default function CategoriesView() {
       footer={<div className="text-gray-600">Nº registos: {categories.length}</div>}
     >
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px]">
-          <input placeholder="Nome da categoria" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#C8D2D5] p-1" />
-          <select value={draft.parent} onChange={(e) => setDraft({ ...draft, parent: e.target.value === '' ? '' : Number(e.target.value) })} className="border border-[#C8D2D5] p-1 bg-white">
+        <div className="flex items-end gap-2 bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px]">
+          <input placeholder="Nome da categoria" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#D7DBDF] p-1" />
+          <select value={draft.parent} onChange={(e) => setDraft({ ...draft, parent: e.target.value === '' ? '' : Number(e.target.value) })} className="border border-[#D7DBDF] p-1 bg-white">
             <option value="">— sem pai —</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
@@ -39,7 +39,7 @@ export default function CategoriesView() {
             columns={[
               { header: 'Categoria', accessor: 'name', width: '50%' },
               { header: 'Categoria-Pai', accessor: (r: any) => nameById(r.parent), width: '40%' },
-              { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button>, width: '10%' },
+              { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button>, width: '10%' },
             ]}
           />
         </div>

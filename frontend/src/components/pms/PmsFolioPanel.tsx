@@ -91,24 +91,24 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[640px] max-h-[80vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #062F35, #062F35)' }}>
+      <div className="w-[640px] max-h-[80vh] bg-[#F3F4F6] border border-[#D7DBDF] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #17375E, #17375E)' }}>
           <span className="flex items-center gap-1.5"><Glyph icon="💳" size={13} /> Conta — {folio?.confirmation}</span>
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>
 
         {folio?.sibling_folios?.length > 0 && (
-          <div className="flex gap-1 px-2 py-1 bg-[#F4F6F7] border-b border-[#C8D2D5]">
-            <button onClick={() => setFolioId(folio.id)} className="px-2 py-0.5 text-[10px] font-bold bg-[#062F35] text-white">{folio.label}</button>
+          <div className="flex gap-1 px-2 py-1 bg-[#F3F4F6] border-b border-[#D7DBDF]">
+            <button onClick={() => setFolioId(folio.id)} className="px-2 py-0.5 text-[10px] font-bold bg-[#17375E] text-white">{folio.label}</button>
             {folio.sibling_folios.map((s: any) => (
-              <button key={s.id} onClick={() => setFolioId(s.id)} className="px-2 py-0.5 text-[10px] font-bold bg-white border border-[#C8D2D5] hover:bg-[#F4F6F7]">{s.label}</button>
+              <button key={s.id} onClick={() => setFolioId(s.id)} className="px-2 py-0.5 text-[10px] font-bold bg-white border border-[#D7DBDF] hover:bg-[#F3F4F6]">{s.label}</button>
             ))}
           </div>
         )}
 
-        <div className="px-3 py-2 bg-white border-b border-[#E4E9EB] flex items-center justify-between text-[11px]">
+        <div className="px-3 py-2 bg-white border-b border-[#EBEEF0] flex items-center justify-between text-[11px]">
           <span>{folio?.label} · {folio?.status_display} · {folio?.room_number ? `Quarto ${folio.room_number}` : ''}</span>
-          <span className="font-bold text-[14px] text-[#1F292C]">Saldo: {folio?.balance}</span>
+          <span className="font-bold text-[14px] text-[#1A1D21]">Saldo: {folio?.balance}</span>
         </div>
 
         <div className="flex-1 overflow-auto">
@@ -119,21 +119,21 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
             { header: 'Valor', accessor: (r: any) => r.amount, width: '13%' },
             { header: '', accessor: (r: any) => (r.is_void || r.charge_type === 'PAYMENT') ? null : (
               <div className="flex gap-1">
-                <button title="Transferir" onClick={() => transferCharge(r.id)} className="text-[#1F292C] hover:text-[#1F292C]"><ArrowRightLeft size={12} /></button>
-                <button title="Estornar" onClick={() => reverseCharge(r.id)} className="text-[#A83A3A] hover:text-[#A83A3A]"><Undo2 size={12} /></button>
+                <button title="Transferir" onClick={() => transferCharge(r.id)} className="text-[#1A1D21] hover:text-[#1A1D21]"><ArrowRightLeft size={12} /></button>
+                <button title="Estornar" onClick={() => reverseCharge(r.id)} className="text-[#912018] hover:text-[#912018]"><Undo2 size={12} /></button>
               </div>
             ), width: '12%' },
           ]} />
         </div>
 
         <Toolbar actions={[
-          { label: 'Lançar', icon: '＋', color: '#062F35', onClick: addCharge },
-          { label: 'Dividir Conta', icon: '✂', color: '#4B858E', onClick: split },
-          { label: 'Registar Pagamento', icon: '💳', color: '#062F35', onClick: settle },
+          { label: 'Lançar', icon: '＋', color: '#17375E', onClick: addCharge },
+          { label: 'Dividir Conta', icon: '✂', color: '#2E75B6', onClick: split },
+          { label: 'Registar Pagamento', icon: '💳', color: '#17375E', onClick: settle },
           { label: folio?.fiscal_document_number ? `Ver Fatura (${folio.fiscal_document_number})` : 'Gerar Fatura (AGT)',
-            icon: '🧾', color: '#062F35', onClick: generateInvoice },
+            icon: '🧾', color: '#17375E', onClick: generateInvoice },
         ]} right={
-          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#1F292C] border border-transparent hover:border-[#C8D2D5] hover:bg-[#F4F6F7] rounded-[6px]">Fechar</button>
+          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#1A1D21] border border-transparent hover:border-[#D7DBDF] hover:bg-[#F3F4F6] rounded-[6px]">Fechar</button>
         } />
       </div>
     </div>

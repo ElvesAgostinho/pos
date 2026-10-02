@@ -6,7 +6,7 @@ import { FileText, Plus, Check, DollarSign, Trash2 } from 'lucide-react';
 import { useInvoices, useCreateInvoice, useIssueInvoice, useMarkInvoicePaid } from '../../hooks/useFinance';
 import { aviso } from '../../ui/dialogo';
 
-const ST: Record<string, string> = { DRAFT: 'text-gray-500', ISSUED: 'text-[#657377] font-bold', PAID: 'text-[#1F292C] font-bold', CANCELLED: 'text-[#A83A3A]' };
+const ST: Record<string, string> = { DRAFT: 'text-gray-500', ISSUED: 'text-[#6B7280] font-bold', PAID: 'text-[#1A1D21] font-bold', CANCELLED: 'text-[#912018]' };
 const today = () => new Date().toISOString().slice(0, 10);
 const emptyLine = () => ({ description: '', quantity: '1', unit_price: '', tax_percentage: '14' });
 
@@ -34,21 +34,21 @@ export default function InvoicesView() {
     <ClassicWindow title="Faturação (Financeiro / AR)" icon={<FileText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{invoices.length} fatura(s) · emitir fixa a numeração; marcar paga liquida</div>}>
       <div className="flex flex-col h-full">
-        <div className="bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px] space-y-1">
+        <div className="bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px] space-y-1">
           <div className="flex flex-wrap items-end gap-2">
-            <input placeholder="Cliente" value={customer} onChange={(e) => setCustomer(e.target.value)} className="border border-[#C8D2D5] p-1" />
-            <input placeholder="NIF" value={taxId} onChange={(e) => setTaxId(e.target.value)} className="border border-[#C8D2D5] p-1 w-28" />
+            <input placeholder="Cliente" value={customer} onChange={(e) => setCustomer(e.target.value)} className="border border-[#D7DBDF] p-1" />
+            <input placeholder="NIF" value={taxId} onChange={(e) => setTaxId(e.target.value)} className="border border-[#D7DBDF] p-1 w-28" />
             <span className="font-bold text-gray-700">Total c/ IVA: {preview.toFixed(2)}</span>
             <ClassicButton icon={Plus} label="Criar Fatura (rascunho)" onClick={add} />
-            <button onClick={() => setLines([...lines, emptyLine()])} className="text-[#657377] underline">+ linha</button>
+            <button onClick={() => setLines([...lines, emptyLine()])} className="text-[#6B7280] underline">+ linha</button>
           </div>
           {lines.map((l, i) => (
             <div key={i} className="flex items-center gap-1">
-              <input placeholder="Descrição" value={l.description} onChange={(e) => setLine(i, 'description', e.target.value)} className="border border-[#C8D2D5] p-1 flex-1" />
-              <input placeholder="Qtd" type="number" value={l.quantity} onChange={(e) => setLine(i, 'quantity', e.target.value)} className="border border-[#C8D2D5] p-1 w-16" />
-              <input placeholder="Preço" type="number" value={l.unit_price} onChange={(e) => setLine(i, 'unit_price', e.target.value)} className="border border-[#C8D2D5] p-1 w-24" />
-              <input placeholder="IVA%" type="number" value={l.tax_percentage} onChange={(e) => setLine(i, 'tax_percentage', e.target.value)} className="border border-[#C8D2D5] p-1 w-16" />
-              {lines.length > 1 && <button onClick={() => setLines(lines.filter((_, idx) => idx !== i))} className="text-[#A83A3A]"><Trash2 size={12} /></button>}
+              <input placeholder="Descrição" value={l.description} onChange={(e) => setLine(i, 'description', e.target.value)} className="border border-[#D7DBDF] p-1 flex-1" />
+              <input placeholder="Qtd" type="number" value={l.quantity} onChange={(e) => setLine(i, 'quantity', e.target.value)} className="border border-[#D7DBDF] p-1 w-16" />
+              <input placeholder="Preço" type="number" value={l.unit_price} onChange={(e) => setLine(i, 'unit_price', e.target.value)} className="border border-[#D7DBDF] p-1 w-24" />
+              <input placeholder="IVA%" type="number" value={l.tax_percentage} onChange={(e) => setLine(i, 'tax_percentage', e.target.value)} className="border border-[#D7DBDF] p-1 w-16" />
+              {lines.length > 1 && <button onClick={() => setLines(lines.filter((_, idx) => idx !== i))} className="text-[#912018]"><Trash2 size={12} /></button>}
             </div>
           ))}
         </div>
@@ -65,8 +65,8 @@ export default function InvoicesView() {
               { header: 'Estado', accessor: (r: any) => <span className={ST[r.status] || ''}>{r.status_display}</span>, width: '12%' },
               { header: 'Ações', accessor: (r: any) => (
                 <div className="flex gap-2">
-                  {r.status === 'DRAFT' && <button title="Emitir" onClick={() => issue.mutate(r.id)} className="text-[#657377] hover:text-[#1F292C]"><Check size={13} /></button>}
-                  {r.status === 'ISSUED' && <button title="Marcar paga" onClick={() => markPaid.mutate(r.id)} className="text-[#1F292C] hover:text-[#1F292C]"><DollarSign size={13} /></button>}
+                  {r.status === 'DRAFT' && <button title="Emitir" onClick={() => issue.mutate(r.id)} className="text-[#6B7280] hover:text-[#1A1D21]"><Check size={13} /></button>}
+                  {r.status === 'ISSUED' && <button title="Marcar paga" onClick={() => markPaid.mutate(r.id)} className="text-[#1A1D21] hover:text-[#1A1D21]"><DollarSign size={13} /></button>}
                 </div>), width: '12%' },
             ]}
           />

@@ -57,9 +57,9 @@ export default function SubFamilyEditor({ row, families, onClose }:
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
-        <span className="text-[13px] font-bold text-[#1F292C]">{isNew ? 'Nova sub-família' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
+        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Nova sub-família' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
@@ -67,37 +67,37 @@ export default function SubFamilyEditor({ row, families, onClose }:
         <Box title="Identificação" className="mb-4">
         <div className="space-y-2 pt-1.5">
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[200px] text-[#1F292C]">Código:<span className="text-[#C94A4A]">*</span></span>
+            <span className="w-[200px] text-[#1A1D21]">Código:<span className="text-[#B42318]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inputCls} w-[290px] flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[200px] text-[#1F292C]">Descrição:<span className="text-[#C94A4A]">*</span></span>
+            <span className="w-[200px] text-[#1A1D21]">Descrição:<span className="text-[#B42318]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inputCls} w-[640px] flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[200px] text-[#1F292C]">Família:<span className="text-[#C94A4A]">*</span></span>
+            <span className="w-[200px] text-[#1A1D21]">Família:<span className="text-[#B42318]">*</span></span>
             <select value={d.family || ''} onChange={(e) => set('family', Number(e.target.value) || null)} className={`${inputCls} w-[290px] flex-none`} style={inputStyle}>
               <option value="">—</option>
               {families.map((f: any) => <option key={f.id} value={f.id}>{f.group_name} → {f.name}</option>)}
             </select>
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[200px] text-[#1F292C]">Ordem impressão no pedido:</span>
+            <span className="w-[200px] text-[#1A1D21]">Ordem impressão no pedido:</span>
             <input type="number" value={d.print_order ?? 0} onChange={(e) => set('print_order', Number(e.target.value))}
               className={`${inputCls} w-[210px] flex-none`} style={inputStyle} />
-            <span className="text-[11px] text-[#657377]">Ordem por que sai na comanda (as entradas antes dos pratos).</span>
+            <span className="text-[11px] text-[#6B7280]">Ordem por que sai na comanda (as entradas antes dos pratos).</span>
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[200px] text-[#1F292C]">Conta de Contabilidade:</span>
+            <span className="w-[200px] text-[#1A1D21]">Conta de Contabilidade:</span>
             <input value={d.accounting_account || ''} onChange={(e) => set('accounting_account', e.target.value)}
               className={`${inputCls} w-[210px] flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[13px]">
-            <span className="w-[200px] text-[#1F292C]">IVA por omissão (%):</span>
+            <span className="w-[200px] text-[#1A1D21]">IVA por omissão (%):</span>
             <input type="number" step="0.01" value={d.default_tax_percentage ?? ''}
               onChange={(e) => set('default_tax_percentage', e.target.value === '' ? null : Number(e.target.value))}
               placeholder="(nenhum)" className={`${inputCls} w-[210px] flex-none`} style={inputStyle} />
-            <span className="text-[11px] text-[#657377]">
+            <span className="text-[11px] text-[#6B7280]">
               Com o parâmetro 8209 ligado, um artigo novo desta sub-família nasce já com esta taxa.
             </span>
           </label>
@@ -105,29 +105,29 @@ export default function SubFamilyEditor({ row, families, onClose }:
         </Box>
 
         {isNew ? (
-          <div className="text-[12px] text-[#C94A4A]">Grave a sub-família para poder configurar os mapeamentos por outlet.</div>
+          <div className="text-[12px] text-[#B42318]">Grave a sub-família para poder configurar os mapeamentos por outlet.</div>
         ) : (
           <>
             {/* Separadores dos mapeamentos */}
             <div className="flex">
               {([['pms', 'Interface com PMS (Mapeamento de sub-famílias)'], ['wh', 'Mapeamentos Setor/Armazéns']] as const).map(([k, label]) => (
                 <button key={k} onClick={() => setTab(k)}
-                  className={`px-4 py-2 text-[13px] font-semibold border border-b-0 ${tab === k ? 'bg-white text-[#1F292C] border-[#C8D2D5]' : 'bg-[#F4F6F7] text-[#1F292C] border-[#E4E9EB]'}`}>
+                  className={`px-4 py-2 text-[13px] font-semibold border border-b-0 ${tab === k ? 'bg-white text-[#1A1D21] border-[#D7DBDF]' : 'bg-[#F3F4F6] text-[#1A1D21] border-[#EBEEF0]'}`}>
                   {label}
                 </button>
               ))}
             </div>
 
-            <div className="p-3" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+            <div className="p-3" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               {/* Barra de aplicação em massa */}
               <div className="flex items-center gap-3 mb-3 text-[13px]">
                 <span>Pesquisar:</span>
-                <input value={q} onChange={(e) => setQ(e.target.value)} className="border border-[#C8D2D5] px-2 py-1 text-[12px] w-[180px]" style={inputStyle} />
+                <input value={q} onChange={(e) => setQ(e.target.value)} className="border border-[#D7DBDF] px-2 py-1 text-[12px] w-[180px]" style={inputStyle} />
                 {tab === 'wh' ? (
                   <>
                     <span>Armazém:</span>
                     <select value={bulk.warehouse} onChange={(e) => setBulk({ ...bulk, warehouse: e.target.value })}
-                      className="border border-[#C8D2D5] px-2 py-1 text-[12px] w-[300px]" style={inputStyle}>
+                      className="border border-[#D7DBDF] px-2 py-1 text-[12px] w-[300px]" style={inputStyle}>
                       <option value="">(nenhum)</option>
                       {(map?.warehouses || []).map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
                     </select>
@@ -136,13 +136,13 @@ export default function SubFamilyEditor({ row, families, onClose }:
                   <>
                     <span>Encargo:</span>
                     <input value={bulk.pms_charge_code} onChange={(e) => setBulk({ ...bulk, pms_charge_code: e.target.value })}
-                      placeholder="(nenhum) — ex.: REST_BEB_N" className="border border-[#C8D2D5] px-2 py-1 text-[12px] w-[240px]" style={inputStyle} />
+                      placeholder="(nenhum) — ex.: REST_BEB_N" className="border border-[#D7DBDF] px-2 py-1 text-[12px] w-[240px]" style={inputStyle} />
                     <input type="number" value={bulk.pms_charge_tax} onChange={(e) => setBulk({ ...bulk, pms_charge_tax: e.target.value })}
-                      placeholder="Taxa %" className="border border-[#C8D2D5] px-2 py-1 text-[12px] w-[80px]" style={inputStyle} />
+                      placeholder="Taxa %" className="border border-[#D7DBDF] px-2 py-1 text-[12px] w-[80px]" style={inputStyle} />
                   </>
                 )}
-                <button onClick={applyToAll} className="flex items-center gap-1.5 text-[13px] text-[#1F292C] font-semibold">
-                  <span className="w-6 h-6 rounded-full bg-[#062F35] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
+                <button onClick={applyToAll} className="flex items-center gap-1.5 text-[13px] text-[#1A1D21] font-semibold">
+                  <span className="w-6 h-6 rounded-full bg-[#17375E] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
                   Aplicar à selecção
                 </button>
               </div>
@@ -150,12 +150,12 @@ export default function SubFamilyEditor({ row, families, onClose }:
               {/* Grelha: uma coluna por outlet */}
               <table className="w-full text-[12px] border-collapse">
                 <thead>
-                  <tr className="bg-[#F4F6F7]">
-                    <th className="text-left px-2 py-2 border border-[#E4E9EB] w-[280px]">Descrição</th>
+                  <tr className="bg-[#F3F4F6]">
+                    <th className="text-left px-2 py-2 border border-[#EBEEF0] w-[280px]">Descrição</th>
                     {rows.map((r: any) => (
-                      <th key={r.outlet} className="text-left px-2 py-1 border border-[#E4E9EB]">
+                      <th key={r.outlet} className="text-left px-2 py-1 border border-[#EBEEF0]">
                         <div className="font-bold">{r.outlet_name}</div>
-                        <div className="text-[10px] font-normal text-[#657377]">
+                        <div className="text-[10px] font-normal text-[#6B7280]">
                           Default: {tab === 'wh' ? (r.warehouse_name || '(nenhum)') : (r.pms_charge_code || '(nenhum)')}
                         </div>
                       </th>
@@ -164,13 +164,13 @@ export default function SubFamilyEditor({ row, families, onClose }:
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="px-2 py-1.5 border border-[#E4E9EB]">{d.code} - {d.name}</td>
+                    <td className="px-2 py-1.5 border border-[#EBEEF0]">{d.code} - {d.name}</td>
                     {rows.map((r: any) => (
-                      <td key={r.outlet} className={`px-1 py-1 border border-[#E4E9EB] ${tab === 'pms' && r.pms_charge_code ? 'bg-[#F4F6F7]' : ''}`}>
+                      <td key={r.outlet} className={`px-1 py-1 border border-[#EBEEF0] ${tab === 'pms' && r.pms_charge_code ? 'bg-[#F3F4F6]' : ''}`}>
                         {tab === 'wh' ? (
                           <select value={r.warehouse || ''}
                             onChange={(e) => setMap.mutate({ outlet: r.outlet, warehouse: e.target.value || null, pms_charge_code: r.pms_charge_code, pms_charge_tax: r.pms_charge_tax })}
-                            className="w-full border border-[#C8D2D5] px-1 py-0.5 text-[12px] bg-transparent">
+                            className="w-full border border-[#D7DBDF] px-1 py-0.5 text-[12px] bg-transparent">
                             <option value="">(nenhum)</option>
                             {(map?.warehouses || []).map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
                           </select>
@@ -178,20 +178,20 @@ export default function SubFamilyEditor({ row, families, onClose }:
                           <div className="flex gap-1">
                             <input defaultValue={r.pms_charge_code || ''}
                               onBlur={(e) => setMap.mutate({ outlet: r.outlet, warehouse: r.warehouse, pms_charge_code: e.target.value, pms_charge_tax: r.pms_charge_tax })}
-                              placeholder="(nenhum)" className="flex-1 min-w-0 border border-[#C8D2D5] px-1 py-0.5 text-[12px] bg-transparent" />
+                              placeholder="(nenhum)" className="flex-1 min-w-0 border border-[#D7DBDF] px-1 py-0.5 text-[12px] bg-transparent" />
                             <input type="number" defaultValue={r.pms_charge_tax || ''}
                               onBlur={(e) => setMap.mutate({ outlet: r.outlet, warehouse: r.warehouse, pms_charge_code: r.pms_charge_code, pms_charge_tax: e.target.value || null })}
-                              placeholder="%" className="w-[52px] border border-[#C8D2D5] px-1 py-0.5 text-[12px] bg-transparent" />
+                              placeholder="%" className="w-[52px] border border-[#D7DBDF] px-1 py-0.5 text-[12px] bg-transparent" />
                           </div>
                         )}
                       </td>
                     ))}
-                    {rows.length === 0 && <td className="px-2 py-6 text-center text-[#657377] border border-[#E4E9EB]">Sem outlets configurados.</td>}
+                    {rows.length === 0 && <td className="px-2 py-6 text-center text-[#6B7280] border border-[#EBEEF0]">Sem outlets configurados.</td>}
                   </tr>
                 </tbody>
               </table>
 
-              <div className="text-[11px] text-[#657377] mt-2">
+              <div className="text-[11px] text-[#6B7280] mt-2">
                 {tab === 'wh'
                   ? 'De que armazém sai o stock quando este tipo de artigo é vendido em cada ponto de venda.'
                   : 'Com que código de encargo o consumo entra no folio do quarto (e com que taxa).'}
@@ -202,8 +202,8 @@ export default function SubFamilyEditor({ row, families, onClose }:
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
       ]} />
     </div>
   );

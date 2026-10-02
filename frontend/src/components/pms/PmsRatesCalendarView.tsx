@@ -50,18 +50,18 @@ export default function PmsRatesCalendarView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <Toolbar actions={[
-        { label: '← 14 dias', icon: '◀', color: '#4B858E', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
-        { label: '14 dias →', icon: '▶', color: '#4B858E', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
-        { label: 'Hoje', icon: '🕐', color: '#4B858E', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
-        { label: 'Atualização em Massa', icon: '✎', color: '#062F35', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
+        { label: '← 14 dias', icon: '◀', color: '#2E75B6', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
+        { label: '14 dias →', icon: '▶', color: '#2E75B6', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
+        { label: 'Hoje', icon: '🕐', color: '#2E75B6', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
+        { label: 'Atualização em Massa', icon: '✎', color: '#17375E', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
       ]} />
       <div className="flex-1 overflow-auto">
         <table className="border-collapse text-[11px] w-full">
           <thead>
             <tr>
-              <th className="sticky left-0 bg-[#F4F6F7] border border-[#C8D2D5] px-2 py-1 text-left min-w-[220px] z-10">Categoria / Tarifa</th>
+              <th className="sticky left-0 bg-[#F3F4F6] border border-[#D7DBDF] px-2 py-1 text-left min-w-[220px] z-10">Categoria / Tarifa</th>
               {days.map((d) => (
-                <th key={d.toISOString()} className="border border-[#C8D2D5] px-1 py-1 min-w-[64px] font-normal text-[#657377]">
+                <th key={d.toISOString()} className="border border-[#D7DBDF] px-1 py-1 min-w-[64px] font-normal text-[#6B7280]">
                   {d.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: '2-digit' })}
                 </th>
               ))}
@@ -71,14 +71,14 @@ export default function PmsRatesCalendarView() {
             {Object.entries(grouped).map(([roomTypeName, plans]) => (
               <Fragment key={roomTypeName}>
                 <tr>
-                  <td colSpan={DAYS_VISIBLE + 1} className="bg-[#F4F6F7] border border-[#C8D2D5] px-2 py-1 font-bold text-[#1F292C]">{roomTypeName}</td>
+                  <td colSpan={DAYS_VISIBLE + 1} className="bg-[#F3F4F6] border border-[#D7DBDF] px-2 py-1 font-bold text-[#1A1D21]">{roomTypeName}</td>
                 </tr>
                 {plans.map((rp: any) => (
                   <tr key={rp.id}>
-                    <td className="sticky left-0 bg-white border border-[#C8D2D5] px-2 py-1">
+                    <td className="sticky left-0 bg-white border border-[#D7DBDF] px-2 py-1">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" checked={selected.has(rp.id)} onChange={() => toggle(rp.id)} />
-                        <span>{rp.name} <span className="text-[#657377]">({rp.code})</span></span>
+                        <span>{rp.name} <span className="text-[#6B7280]">({rp.code})</span></span>
                       </label>
                     </td>
                     {days.map((d) => {
@@ -88,7 +88,7 @@ export default function PmsRatesCalendarView() {
                       const closed = ov?.is_bookable === false;
                       const price = ov?.price_per_night ?? (inRange ? rp.price_per_night : null);
                       return (
-                        <td key={iso} className={`border border-[#C8D2D5] px-1 py-1 text-center ${closed ? 'bg-[#FDECEA] text-[#A83A3A]' : ov ? 'bg-[#F4F6F7] font-semibold text-[#1F292C]' : ''}`}>
+                        <td key={iso} className={`border border-[#D7DBDF] px-1 py-1 text-center ${closed ? 'bg-[#FDECEA] text-[#912018]' : ov ? 'bg-[#F3F4F6] font-semibold text-[#1A1D21]' : ''}`}>
                           {closed ? 'Fechado' : price != null ? money(Number(price)) : '—'}
                         </td>
                       );

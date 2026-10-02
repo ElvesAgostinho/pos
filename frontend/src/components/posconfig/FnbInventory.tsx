@@ -4,9 +4,9 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, SearchButton } from './kit';
 
-const inp = 'border border-[#C8D2D5] px-2 py-[3px] text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
-  <span className={`text-[12px] text-[#1F292C] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#1A1D21] ${w} flex-shrink-0`}>{children}</span>
 );
 const hoje = () => new Date().toISOString().slice(0, 10);
 
@@ -98,14 +98,14 @@ export default function FnbInventory() {
       s + (n(l.quantity) - n(l.theoretical_qty)) * n(l.theoretical_cost), 0);
 
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#F4F6F7]">
-        <div className="px-3 py-2 bg-[#062F35] text-white text-[13px] font-bold">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#F3F4F6]">
+        <div className="px-3 py-2 bg-[#17375E] text-white text-[13px] font-bold">
           {edit.id ? `Inventário ${edit.number}` : 'Novo documento'}
-          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#062F35] text-[11px]">LANÇADO</span>}
+          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#17375E] text-[11px]">LANÇADO</span>}
         </div>
 
         <div className="flex gap-3 p-3">
-          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
             <legend className="text-[12px] px-1 font-bold">Geral</legend>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="flex items-center gap-2">
@@ -133,7 +133,7 @@ export default function FnbInventory() {
               <div className="flex items-center gap-2">
                 <L>Data lançamento:</L>
                 <input disabled value={edit.posted_at ? new Date(edit.posted_at).toLocaleString('pt-PT') : ''}
-                  className={`${inp} w-[170px] bg-[#F4F6F7]`} style={inputStyle} placeholder="(por lançar)" />
+                  className={`${inp} w-[170px] bg-[#F3F4F6]`} style={inputStyle} placeholder="(por lançar)" />
               </div>
               <div className="flex items-center gap-2 col-span-2">
                 <L>Responsável:</L>
@@ -144,7 +144,7 @@ export default function FnbInventory() {
             </div>
           </fieldset>
 
-          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+          <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
             <legend className="text-[12px] px-1 font-bold">Filtros</legend>
             <div className="flex gap-4">
               <div className="space-y-2">
@@ -199,13 +199,13 @@ export default function FnbInventory() {
           </fieldset>
         </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3 border border-[#C8D2D5] bg-white">
-          <div className="flex items-center gap-2 px-2 py-1.5 border-b border-[#E4E9EB] text-[12px]">
+        <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3 border border-[#D7DBDF] bg-white">
+          <div className="flex items-center gap-2 px-2 py-1.5 border-b border-[#EBEEF0] text-[12px]">
             <span>Filtro:</span>
             <input value={filtro} onChange={(e) => setFiltro(e.target.value)}
               className={`${inp} w-[240px]`} style={inputStyle} />
             <span className="ml-auto">
-              Diferença total: <b style={{ color: difQtd < 0 ? '#C94A4A' : '#062F35' }}>
+              Diferença total: <b style={{ color: difQtd < 0 ? '#B42318' : '#17375E' }}>
                 {difQtd.toFixed(3)} un · {money(difVal)} Kz
               </b>
             </span>
@@ -213,17 +213,17 @@ export default function FnbInventory() {
           <div className="flex-1 overflow-auto">
             <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
-                <tr className="bg-[#F4F6F7]">
-                  <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#E4E9EB]">Código</th>
-                  <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#E4E9EB]">Descrição</th>
-                  <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#E4E9EB]">Unidade</th>
-                  <th colSpan={3} className="text-center font-bold px-2 py-1 border-b border-r border-[#E4E9EB] bg-[#F4F6F7]">Contagem física</th>
-                  <th colSpan={3} className="text-center font-bold px-2 py-1 border-b border-r border-[#E4E9EB] bg-[#F4F6F7]">Stock Teórico</th>
-                  <th colSpan={2} className="text-center font-bold px-2 py-1 border-b border-[#E4E9EB] bg-[#F4F6F7]">Diferença</th>
+                <tr className="bg-[#F3F4F6]">
+                  <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#EBEEF0]">Código</th>
+                  <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#EBEEF0]">Descrição</th>
+                  <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#EBEEF0]">Unidade</th>
+                  <th colSpan={3} className="text-center font-bold px-2 py-1 border-b border-r border-[#EBEEF0] bg-[#F3F4F6]">Contagem física</th>
+                  <th colSpan={3} className="text-center font-bold px-2 py-1 border-b border-r border-[#EBEEF0] bg-[#F3F4F6]">Stock Teórico</th>
+                  <th colSpan={2} className="text-center font-bold px-2 py-1 border-b border-[#EBEEF0] bg-[#F3F4F6]">Diferença</th>
                 </tr>
-                <tr className="bg-[#F4F6F7]">
+                <tr className="bg-[#F3F4F6]">
                   {['Quantidade', 'Custo', 'Total Custo', 'Quantidade', 'Custo', 'Total Custo', 'Quantidade', 'Custo'].map((h, i) => (
-                    <th key={i} className="text-right font-normal px-2 py-1 border-b border-r border-[#E4E9EB]">{h}</th>
+                    <th key={i} className="text-right font-normal px-2 py-1 border-b border-r border-[#EBEEF0]">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -234,10 +234,10 @@ export default function FnbInventory() {
                   const tQ = n(l.theoretical_qty), tC = n(l.theoretical_cost);
                   const dQ = cQ - tQ, dV = dQ * tC;
                   return (
-                    <tr key={i} className={`border-b border-[#E4E9EB] ${dQ ? 'bg-[#FFFFFF]' : ''}`}>
-                      <td className="px-2 py-1 font-mono text-[#657377]">{l.code}</td>
+                    <tr key={i} className={`border-b border-[#EBEEF0] ${dQ ? 'bg-[#FFFFFF]' : ''}`}>
+                      <td className="px-2 py-1 font-mono text-[#6B7280]">{l.code}</td>
                       <td className="px-2 py-1">{l.name}</td>
-                      <td className="px-2 py-1 text-[#657377]">{l.unit || 'UN'}</td>
+                      <td className="px-2 py-1 text-[#6B7280]">{l.unit || 'UN'}</td>
                       <td className="px-1 py-1">
                         <input type="number" value={l.quantity ?? 0} disabled={edit.posted}
                           onChange={(e) => setLinha(idx, 'quantity', e.target.value)}
@@ -245,29 +245,29 @@ export default function FnbInventory() {
                       </td>
                       <td className="px-2 py-1 text-right">{money(cC)}</td>
                       <td className="px-2 py-1 text-right">{money(cQ * cC)}</td>
-                      <td className="px-2 py-1 text-right text-[#657377]">{tQ.toFixed(3)}</td>
-                      <td className="px-2 py-1 text-right text-[#657377]">{money(tC)}</td>
-                      <td className="px-2 py-1 text-right text-[#657377]">{money(tQ * tC)}</td>
+                      <td className="px-2 py-1 text-right text-[#6B7280]">{tQ.toFixed(3)}</td>
+                      <td className="px-2 py-1 text-right text-[#6B7280]">{money(tC)}</td>
+                      <td className="px-2 py-1 text-right text-[#6B7280]">{money(tQ * tC)}</td>
                       <td className="px-2 py-1 text-right font-bold"
-                        style={{ color: dQ < 0 ? '#C94A4A' : dQ > 0 ? '#062F35' : '#4B858E' }}>
+                        style={{ color: dQ < 0 ? '#B42318' : dQ > 0 ? '#17375E' : '#2E75B6' }}>
                         {dQ.toFixed(3)}
                       </td>
                       <td className="px-2 py-1 text-right font-bold"
-                        style={{ color: dV < 0 ? '#C94A4A' : dV > 0 ? '#062F35' : '#4B858E' }}>
+                        style={{ color: dV < 0 ? '#B42318' : dV > 0 ? '#17375E' : '#2E75B6' }}>
                         {money(dV)}
                       </td>
                     </tr>
                   );
                 })}
                 {linhas.length === 0 && (
-                  <tr><td colSpan={11} className="text-center text-[#657377] py-10">
+                  <tr><td colSpan={11} className="text-center text-[#6B7280] py-10">
                     Escolha o armazém e clique em <b>Atualizar</b> para gerar a folha de contagem.
                   </td></tr>
                 )}
               </tbody>
             </table>
           </div>
-          <div className="px-3 py-2 text-[11px] text-[#1F292C] bg-[#F4F6F7] border-t border-[#C8D2D5]">
+          <div className="px-3 py-2 text-[11px] text-[#1A1D21] bg-[#F3F4F6] border-t border-[#D7DBDF]">
             Ao <b>lançar</b>, o stock passa a ser o que se contou. A diferença fica como movimento
             de ajuste no histórico, com o nome do responsável — quebras não desaparecem em silêncio.
           </div>
@@ -302,7 +302,7 @@ export default function FnbInventory() {
             a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
             a.download = 'inventario.csv'; a.click();
           } },
-          { label: 'Fechar', icon: '✖', color: '#4B858E', onClick: () => setEdit(null) },
+          { label: 'Fechar', icon: '✖', color: '#2E75B6', onClick: () => setEdit(null) },
         ]} />
       </div>
     );
@@ -310,8 +310,8 @@ export default function FnbInventory() {
 
   // ─────────────────────────────── LISTA
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F4F6F7]">
-      <div className="flex gap-6 p-3 bg-white border-b border-[#E4E9EB]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#F3F4F6]">
+      <div className="flex gap-6 p-3 bg-white border-b border-[#EBEEF0]">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <L w="w-[80px]">Armazéns:</L>
@@ -347,19 +347,19 @@ export default function FnbInventory() {
 
       <div className="flex-1 overflow-auto bg-white">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F4F6F7]">
+          <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
             {['Número', 'Criado em', 'Armazém', 'Responsável', 'Data referência', 'Estado'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB] border-r border-r-[#E4E9EB]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0] border-r border-r-[#EBEEF0]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {rows.map((r) => {
-              const estado = r.voided ? ['Anulado', '#F4F6F7', '#C94A4A']
-                : r.posted ? ['Lançado', '#F4F6F7', '#062F35']
-                  : ['Em contagem', '#F4F6F7', '#062F35'];
+              const estado = r.voided ? ['Anulado', '#F3F4F6', '#B42318']
+                : r.posted ? ['Lançado', '#F3F4F6', '#17375E']
+                  : ['Em contagem', '#F3F4F6', '#17375E'];
               return (
                 <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
-                  className={`border-b border-[#E4E9EB] cursor-pointer ${sel === r.id ? 'bg-[#F4F6F7]' : 'hover:bg-[#FFFFFF]'}`}>
+                  className={`border-b border-[#EBEEF0] cursor-pointer ${sel === r.id ? 'bg-[#F3F4F6]' : 'hover:bg-[#FFFFFF]'}`}>
                   <td className="px-2 py-1 font-mono font-semibold">{r.number}</td>
                   <td className="px-2 py-1">{new Date(r.created_at).toLocaleString('pt-PT')}</td>
                   <td className="px-2 py-1">{r.warehouse_name}</td>
@@ -373,7 +373,7 @@ export default function FnbInventory() {
               );
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={6} className="text-center text-[#657377] py-12">Não foram encontrados dados.</td></tr>
+              <tr><td colSpan={6} className="text-center text-[#6B7280] py-12">Não foram encontrados dados.</td></tr>
             )}
           </tbody>
         </table>
@@ -400,7 +400,7 @@ export default function FnbInventory() {
           },
         },
       ]} right={
-        <span className="text-[11px] text-[#657377]">
+        <span className="text-[11px] text-[#6B7280]">
           Contagem física vs stock teórico. A diferença é o que desapareceu.
         </span>
       } />

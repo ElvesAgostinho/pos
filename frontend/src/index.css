@@ -11,9 +11,9 @@
 @theme {
   --color-brand-bar: #18181B;
   --color-brand-bar-soft: #242428;
-  --color-brand-gold: #B08D3C;
+  --color-brand-gold: #B45309;
   --color-brand-gold-dark: #8a6a24;
-  --color-brand-border: #8a95a3;
+  --color-brand-border: #6B7280;
   --color-brand-line: #c0c0c0;
   --color-brand-selected-bg: #f2ecdc;
   --color-brand-selected-text: #18181B;
@@ -64,7 +64,7 @@ select { background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgb
 
 /* Foco visível e consistente nos campos (aspeto enterprise) */
 input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 2px rgba(30,63,102,0.35); }
-::selection { background: #B08D3C; color: #fff; }
+::selection { background: #B45309; color: #fff; }
 
 /* Impressão: esconde a moldura/menus, imprime só o conteúdo */
 @media print {

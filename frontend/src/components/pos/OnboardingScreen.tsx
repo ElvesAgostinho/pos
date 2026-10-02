@@ -33,7 +33,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364] flex items-center justify-center p-4 font-sans selection:bg-cyan-900">
+    <div className="min-h-screen bg-gradient-to-br from-[#0F2744] via-[#17375E] to-[#1F4E79] flex items-center justify-center p-4 font-sans selection:bg-cyan-900">
       <div className="bg-white/10 backdrop-blur-md border border-white/20 p-10 rounded-3xl shadow-2xl w-full max-w-lg text-white relative overflow-hidden">
         
         <div className="absolute top-0 right-0 p-4 opacity-30">

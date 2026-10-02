@@ -5,7 +5,7 @@ import { apiClient } from '../../api/client';
     Mantido simples de propósito (MVP): uma grelha mensal a sério só faria
     sentido com um modelo de salas/venue, que ainda não existe. */
 
-const STATUS_COLOR: Record<string, string> = { INQUIRY: '#4B858E', CONFIRMED: '#062F35', CANCELLED: '#C94A4A', COMPLETED: '#4B858E' };
+const STATUS_COLOR: Record<string, string> = { INQUIRY: '#2E75B6', CONFIRMED: '#17375E', CANCELLED: '#B42318', COMPLETED: '#2E75B6' };
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 export default function PmsEventsCalendarView() {
@@ -28,13 +28,13 @@ export default function PmsEventsCalendarView() {
         const label = key === 'sem-data' ? 'Sem data' : `${MESES[Number(m) - 1]} ${y}`;
         return (
           <div key={key} className="mb-4">
-            <div className="text-[13px] font-bold text-[#1F292C] bg-[#F4F6F7] border border-[#C8D2D5] px-3 py-1.5">{label} <span className="text-gray-500 font-normal">({evs.length})</span></div>
-            <div className="border border-t-0 border-[#C8D2D5]">
+            <div className="text-[13px] font-bold text-[#1A1D21] bg-[#F3F4F6] border border-[#D7DBDF] px-3 py-1.5">{label} <span className="text-gray-500 font-normal">({evs.length})</span></div>
+            <div className="border border-t-0 border-[#D7DBDF]">
               {evs.map((ev) => (
-                <div key={ev.id} className="flex items-center gap-3 px-3 py-2 border-b border-[#E4E9EB] text-[12px] hover:bg-[#F4F6F7]">
+                <div key={ev.id} className="flex items-center gap-3 px-3 py-2 border-b border-[#EBEEF0] text-[12px] hover:bg-[#F3F4F6]">
                   <span className="w-16 font-mono text-gray-500">{ev.event_date?.slice(8, 10)}/{ev.event_date?.slice(5, 7)}</span>
                   <span className="w-16 text-gray-400">{ev.start_time ? ev.start_time.slice(0, 5) : '—'}</span>
-                  <span className="flex-1 font-semibold text-[#1F292C]">{ev.name}</span>
+                  <span className="flex-1 font-semibold text-[#1A1D21]">{ev.name}</span>
                   <span className="w-40 text-gray-500">{ev.venue || '—'}</span>
                   <span className="w-32 text-gray-500">{ev.client_name || '—'}</span>
                   <span className="w-20 text-right">{Number(ev.estimated_revenue || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</span>

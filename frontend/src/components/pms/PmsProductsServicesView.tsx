@@ -59,12 +59,12 @@ export default function PmsProductsServicesView() {
     try { await delItem.mutateAsync(selId); novo(); } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#C8D2D5] p-1';
+  const inp = 'border border-[#D7DBDF] p-1';
 
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r border-[#C8D2D5]">
+        <div className="w-1/2 border-r border-[#D7DBDF]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
             { header: 'Nome', accessor: 'name', width: '40%' },
             { header: 'Preço', accessor: (r: MdItem) => `${money(r.sale_price)} Kz`, width: '20%' },
@@ -74,7 +74,7 @@ export default function PmsProductsServicesView() {
           ]} />
         </div>
         <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
-          <div className="font-bold text-[#1F292C]">{selId ? 'Editar Produto/Serviço' : 'Novo Produto/Serviço'}</div>
+          <div className="font-bold text-[#1A1D21]">{selId ? 'Editar Produto/Serviço' : 'Novo Produto/Serviço'}</div>
           <label className="flex flex-col">Nome<input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inp} /></label>
           <div className="flex gap-2">
             <label className="flex-1 flex flex-col">Preço de venda (Kz)
@@ -95,9 +95,9 @@ export default function PmsProductsServicesView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Novo', icon: '＋', color: '#062F35', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#062F35', onClick: save },
-        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#C94A4A' },
+        { label: 'Novo', icon: '＋', color: '#17375E', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#17375E', onClick: save },
+        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#B42318' },
       ]} />
     </div>
   );

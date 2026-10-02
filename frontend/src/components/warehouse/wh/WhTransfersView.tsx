@@ -39,13 +39,13 @@ export default function WhTransfersView() {
       footer={<div className="text-gray-600">Documentos: {transfers.length}</div>}>
       <div className="flex h-full">
         {/* Documentos */}
-        <div className="w-1/2 border-r border-[#C8D2D5] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[11px]">
-            <select value={hdr.source} onChange={(e) => setHdr({ ...hdr, source: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
+        <div className="w-1/2 border-r border-[#D7DBDF] flex flex-col">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px]">
+            <select value={hdr.source} onChange={(e) => setHdr({ ...hdr, source: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
               <option value="">Origem…</option>{warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
             <span>→</span>
-            <select value={hdr.destination} onChange={(e) => setHdr({ ...hdr, destination: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
+            <select value={hdr.destination} onChange={(e) => setHdr({ ...hdr, destination: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
               <option value="">Destino…</option>{warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
             <ClassicButton icon={Plus} label="Nova" onClick={createTransfer} />
@@ -54,8 +54,8 @@ export default function WhTransfersView() {
             <ClassicGrid rowKey="id" data={transfers} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '20%' },
               { header: 'Origem → Destino', accessor: (r: any) => `${r.source_name} → ${r.destination_name}`, width: '46%' },
-              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#1F292C] font-bold' : 'text-[#1F292C]'}>{r.status_display}</span>, width: '22%' },
-              { header: '', accessor: (r: any) => r.status !== 'CONFIRMED' ? <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button> : null, width: '12%' },
+              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#1A1D21] font-bold' : 'text-[#1A1D21]'}>{r.status_display}</span>, width: '22%' },
+              { header: '', accessor: (r: any) => r.status !== 'CONFIRMED' ? <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button> : null, width: '12%' },
             ]} />
           </div>
         </div>
@@ -64,19 +64,19 @@ export default function WhTransfersView() {
         <div className="w-1/2 flex flex-col">
           {sel ? (
             <>
-              <div className="flex items-center justify-between p-2 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[11px]">
+              <div className="flex items-center justify-between p-2 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px]">
                 <span className="font-bold">{sel.number} · {sel.source_name} → {sel.destination_name}</span>
                 {sel.status !== 'CONFIRMED'
                   ? <ClassicButton icon={CheckCircle} label="Confirmar" onClick={() => confirm.mutate(sel.id!)} />
-                  : <span className="text-[#1F292C] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
+                  : <span className="text-[#1A1D21] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
               </div>
               {sel.status !== 'CONFIRMED' && (
-                <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[11px]">
-                  <input placeholder="Pesquisar artigo" value={itemSearch} onChange={(e) => setItemSearch(e.target.value)} className="border border-[#C8D2D5] p-1 w-28" />
-                  <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white max-w-[150px]">
+                <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px]">
+                  <input placeholder="Pesquisar artigo" value={itemSearch} onChange={(e) => setItemSearch(e.target.value)} className="border border-[#D7DBDF] p-1 w-28" />
+                  <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white max-w-[150px]">
                     <option value="">Artigo…</option>{items.map((i: any) => <option key={i.id} value={i.id}>{i.name}</option>)}
                   </select>
-                  <input type="number" placeholder="Qtd" value={ln.quantity} onChange={(e) => setLn({ ...ln, quantity: e.target.value })} className="border border-[#C8D2D5] p-1 w-16" />
+                  <input type="number" placeholder="Qtd" value={ln.quantity} onChange={(e) => setLn({ ...ln, quantity: e.target.value })} className="border border-[#D7DBDF] p-1 w-16" />
                   <ClassicButton icon={Plus} label="Linha" onClick={addLine} />
                 </div>
               )}
@@ -85,12 +85,12 @@ export default function WhTransfersView() {
                   { header: 'Artigo', accessor: (r: any) => `${r.item_code || ''} ${r.item_name || ''}`.trim(), width: '58%' },
                   { header: 'Qtd', accessor: 'quantity', width: '27%' },
                   { header: '', accessor: (r: any) => sel.status !== 'CONFIRMED'
-                      ? <button onClick={() => removeLine(r._idx)} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button>
+                      ? <button onClick={() => removeLine(r._idx)} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button>
                       : null, width: '15%' },
                 ]} />
               </div>
               {sel.status !== 'CONFIRMED' && (
-                <div className="p-2 border-t border-[#C8D2D5] text-[11px] text-gray-500">
+                <div className="p-2 border-t border-[#D7DBDF] text-[11px] text-gray-500">
                   {(sel.lines || []).length === 0 ? 'Adicione linhas e confirme para movimentar o stock.' : `${(sel.lines || []).length} linha(s). Confirmar move o stock (origem → destino).`}
                 </div>
               )}

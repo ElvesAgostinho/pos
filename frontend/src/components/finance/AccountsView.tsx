@@ -21,14 +21,14 @@ export default function AccountsView() {
     <ClassicWindow title="Tesouraria — Contas (Financeiro)" icon={<Landmark size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{accounts.length} conta(s) · saldo = abertura + recebimentos confirmados − pagamentos confirmados</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px]">
-          <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#C8D2D5] p-1 w-24" />
-          <input placeholder="Nome" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#C8D2D5] p-1" />
-          <select value={draft.account_type} onChange={(e) => setDraft({ ...draft, account_type: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px]">
+          <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#D7DBDF] p-1 w-24" />
+          <input placeholder="Nome" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#D7DBDF] p-1" />
+          <select value={draft.account_type} onChange={(e) => setDraft({ ...draft, account_type: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
             <option value="CASH">Caixa</option><option value="BANK">Banco</option>
           </select>
-          <input placeholder="Moeda" value={draft.currency} onChange={(e) => setDraft({ ...draft, currency: e.target.value.toUpperCase() })} className="border border-[#C8D2D5] p-1 w-20" />
-          <input placeholder="Saldo inicial" type="number" value={draft.opening_balance} onChange={(e) => setDraft({ ...draft, opening_balance: e.target.value })} className="border border-[#C8D2D5] p-1 w-28" />
+          <input placeholder="Moeda" value={draft.currency} onChange={(e) => setDraft({ ...draft, currency: e.target.value.toUpperCase() })} className="border border-[#D7DBDF] p-1 w-20" />
+          <input placeholder="Saldo inicial" type="number" value={draft.opening_balance} onChange={(e) => setDraft({ ...draft, opening_balance: e.target.value })} className="border border-[#D7DBDF] p-1 w-28" />
           <ClassicButton icon={Plus} label="Nova Conta" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -40,7 +40,7 @@ export default function AccountsView() {
               { header: 'Nome', accessor: 'name', width: '32%' },
               { header: 'Tipo', accessor: 'account_type_display', width: '14%' },
               { header: 'Moeda', accessor: 'currency', width: '12%' },
-              { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) < 0 ? 'text-[#A83A3A] font-bold' : 'text-[#1F292C] font-bold'}>{Number(r.balance).toFixed(2)}</span>, width: '28%' },
+              { header: 'Saldo', accessor: (r: any) => <span className={Number(r.balance) < 0 ? 'text-[#912018] font-bold' : 'text-[#1A1D21] font-bold'}>{Number(r.balance).toFixed(2)}</span>, width: '28%' },
             ]}
           />
         </div>

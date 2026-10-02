@@ -4,9 +4,9 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
-const inp = 'border border-[#C8D2D5] px-2 py-[3px] text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
-  <span className={`text-[12px] text-[#1F292C] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#1A1D21] ${w} flex-shrink-0`}>{children}</span>
 );
 
 /**
@@ -87,10 +87,10 @@ export default function PosDocSearch() {
     w.document.write(`
       <html><head><title>${doc.invoice_no}</title><style>
         body{font-family:'Segoe UI',sans-serif;font-size:12px;padding:24px;max-width:700px}
-        h1{font-size:16px;margin:0} .muted{color:#4B858E} table{width:100%;border-collapse:collapse;margin-top:12px}
-        th{text-align:left;border-bottom:1px solid #062F35;padding:4px} td{padding:4px;border-bottom:1px solid #F4F6F7}
+        h1{font-size:16px;margin:0} .muted{color:#2E75B6} table{width:100%;border-collapse:collapse;margin-top:12px}
+        th{text-align:left;border-bottom:1px solid #17375E;padding:4px} td{padding:4px;border-bottom:1px solid #F3F4F6}
         .r{text-align:right} .tot{font-size:15px;font-weight:bold}
-        .mention{margin-top:16px;font-size:10px;color:#062F35}
+        .mention{margin-top:16px;font-size:10px;color:#17375E}
       </style></head><body>
       <h1>${doc.company}</h1><div class="muted">NIF: ${doc.company_tax_id}</div>
       <h2>${doc.type} ${doc.invoice_no}${doc.print_count > 0 ? ' — 2ª VIA' : ''}</h2>
@@ -113,40 +113,40 @@ export default function PosDocSearch() {
   // ─────────── pré-visualização do documento
   if (ver && doc) {
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#F4F6F7]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#F3F4F6]">
         <div className="flex-1 overflow-auto p-6">
-          <div className="max-w-[720px] mx-auto bg-white border border-[#E4E9EB] p-8 shadow">
+          <div className="max-w-[720px] mx-auto bg-white border border-[#EBEEF0] p-8 shadow">
             {doc.voided && (
-              <div className="mb-3 px-3 py-2 bg-[#F4F6F7] border border-[#C94A4A] text-[#C94A4A] font-bold text-[13px]">
+              <div className="mb-3 px-3 py-2 bg-[#F3F4F6] border border-[#B42318] text-[#B42318] font-bold text-[13px]">
                 DOCUMENTO ANULADO
               </div>
             )}
             <div className="flex justify-between">
               <div>
                 <div className="text-[17px] font-bold">{doc.company}</div>
-                <div className="text-[12px] text-[#657377]">NIF: {doc.company_tax_id}</div>
+                <div className="text-[12px] text-[#6B7280]">NIF: {doc.company_tax_id}</div>
               </div>
               <div className="text-right">
                 <div className="text-[15px] font-bold">{doc.type}</div>
                 <div className="text-[14px] font-mono">{doc.invoice_no}</div>
-                <div className="text-[12px] text-[#657377]">{doc.date}</div>
+                <div className="text-[12px] text-[#6B7280]">{doc.date}</div>
                 {doc.print_count > 0 && (
-                  <div className="text-[11px] text-[#C94A4A] font-bold">2ª VIA (impressa {doc.print_count}x)</div>
+                  <div className="text-[11px] text-[#B42318] font-bold">2ª VIA (impressa {doc.print_count}x)</div>
                 )}
               </div>
             </div>
 
-            <div className="mt-5 text-[12px] border-t border-b border-[#E4E9EB] py-3">
+            <div className="mt-5 text-[12px] border-t border-b border-[#EBEEF0] py-3">
               <div><b>Cliente:</b> {doc.customer}</div>
               <div><b>NIF:</b> {doc.customer_tax_id || 'Consumidor Final'}</div>
-              <div className="text-[#657377] mt-1">
+              <div className="text-[#6B7280] mt-1">
                 Operador: {doc.operator || '—'}{doc.place ? ` · ${doc.place}` : ''}
                 {doc.payment ? ` · ${doc.payment}` : ''}
               </div>
             </div>
 
             <table className="w-full text-[12px] mt-4">
-              <thead><tr className="border-b border-[#062F35]">
+              <thead><tr className="border-b border-[#17375E]">
                 <th className="text-left py-1">Artigo</th>
                 <th className="text-right">Qtd</th>
                 <th className="text-right">Preço</th>
@@ -155,7 +155,7 @@ export default function PosDocSearch() {
               </tr></thead>
               <tbody>
                 {doc.lines.map((l: any, i: number) => (
-                  <tr key={i} className="border-b border-[#E4E9EB]">
+                  <tr key={i} className="border-b border-[#EBEEF0]">
                     <td className="py-1">{l.description}</td>
                     <td className="text-right">{Number(l.quantity)}</td>
                     <td className="text-right">{money(l.unit_price)}</td>
@@ -171,10 +171,10 @@ export default function PosDocSearch() {
               <div>IVA: {money(doc.tax)}</div>
               <div className="text-[17px] font-bold">TOTAL: {money(doc.gross)} Kz</div>
             </div>
-            <div className="mt-2 text-[12px] italic text-[#1F292C]">
+            <div className="mt-2 text-[12px] italic text-[#1A1D21]">
               Valor por extenso: {doc.amount_in_words}
             </div>
-            <div className="mt-6 text-[10px] text-[#657377] break-all">
+            <div className="mt-6 text-[10px] text-[#6B7280] break-all">
               {(doc.hash || '').slice(0, 1)}{(doc.hash || '').slice(10, 11)}{(doc.hash || '').slice(20, 21)}{(doc.hash || '').slice(30, 31)}
               -Processado por programa validado n.º {doc.certificate}
             </div>
@@ -182,14 +182,14 @@ export default function PosDocSearch() {
         </div>
 
         <Toolbar actions={[
-          { label: 'Voltar', icon: '◀', color: '#4B858E', onClick: () => setVer(null) },
-          { label: 'Imprimir', icon: '🖨', color: '#062F35', onClick: imprimir },
+          { label: 'Voltar', icon: '◀', color: '#2E75B6', onClick: () => setVer(null) },
+          { label: 'Imprimir', icon: '🖨', color: '#17375E', onClick: imprimir },
           {
             label: 'Anular (nota de crédito)', icon: '🚫', disabled: doc.voided,
             onClick: () => setAnular({ id: ver, number: doc.invoice_no }),
           },
         ]} right={
-          <span className="text-[11px] text-[#657377]">
+          <span className="text-[11px] text-[#6B7280]">
             Um documento fiscal não se apaga — anula-se com nota de crédito, também assinada.
           </span>
         } />
@@ -201,8 +201,8 @@ export default function PosDocSearch() {
 
   // ─────────── pesquisa
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F4F6F7]">
-      <div className="flex gap-6 p-3 bg-white border-b border-[#E4E9EB]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#F3F4F6]">
+      <div className="flex gap-6 p-3 bg-white border-b border-[#EBEEF0]">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <L>Tipo Documento:</L>
@@ -268,15 +268,15 @@ export default function PosDocSearch() {
 
       <div className="flex-1 overflow-auto bg-white">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F4F6F7]">
+          <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
             {['Nome', 'Número', 'Data', 'Total', 'NIF', 'Entidade', 'Operador', 'Estado'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB] border-r border-r-[#E4E9EB]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0] border-r border-r-[#EBEEF0]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {vista.map((r) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setVer(r.id)}
-                className={`border-b border-[#E4E9EB] cursor-pointer ${sel === r.id ? 'bg-[#F4F6F7]' : 'hover:bg-[#FFFFFF]'}`}>
+                className={`border-b border-[#EBEEF0] cursor-pointer ${sel === r.id ? 'bg-[#F3F4F6]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="px-2 py-1">{r.name}</td>
                 <td className="px-2 py-1 font-mono font-semibold">{r.number}</td>
                 <td className="px-2 py-1">{r.date}</td>
@@ -284,24 +284,24 @@ export default function PosDocSearch() {
                   style={{ textDecoration: r.voided ? 'line-through' : undefined }}>{money(r.total)}</td>
                 <td className="px-2 py-1">{r.tax_id || '—'}</td>
                 <td className="px-2 py-1">{r.entity}</td>
-                <td className="px-2 py-1 text-[#657377]">{r.operator}</td>
+                <td className="px-2 py-1 text-[#6B7280]">{r.operator}</td>
                 <td className="px-2 py-1">
                   <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.voided
-                    ? 'bg-[#F4F6F7] text-[#C94A4A]'
-                    : r.settled ? 'bg-[#F4F6F7] text-[#1F292C]' : 'bg-[#F4F6F7] text-[#1F292C]'}`}>
+                    ? 'bg-[#F3F4F6] text-[#B42318]'
+                    : r.settled ? 'bg-[#F3F4F6] text-[#1A1D21]' : 'bg-[#F3F4F6] text-[#1A1D21]'}`}>
                     {r.voided ? 'Anulado' : r.settled ? 'Liquidado' : 'Por receber'}
                   </span>
                 </td>
               </tr>
             ))}
             {vista.length === 0 && (
-              <tr><td colSpan={8} className="text-center text-[#657377] py-12">Não foram encontrados dados.</td></tr>
+              <tr><td colSpan={8} className="text-center text-[#6B7280] py-12">Não foram encontrados dados.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F4F6F7] border-t border-[#E4E9EB] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F3F4F6] border-t border-[#EBEEF0] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -316,13 +316,13 @@ export default function PosDocSearch() {
       </div>
 
       <Toolbar actions={[
-        { label: 'Pré-visualizar', icon: '🔍', color: '#4B858E', disabled: !sel, onClick: () => setVer(sel) },
-        { label: 'Imprimir', icon: '🖨', color: '#062F35', disabled: !sel, onClick: () => setVer(sel) },
+        { label: 'Pré-visualizar', icon: '🔍', color: '#2E75B6', disabled: !sel, onClick: () => setVer(sel) },
+        { label: 'Imprimir', icon: '🖨', color: '#17375E', disabled: !sel, onClick: () => setVer(sel) },
         {
           label: 'Anular', icon: '🚫', disabled: !sel || selRow?.voided,
           onClick: () => setAnular({ id: sel, number: selRow.number }),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#062F35', onClick: exportar },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#17375E', onClick: exportar },
       ]} />
 
       {anular && <PopupAnular anular={anular} setAnular={setAnular} acao={acao} />}
@@ -335,12 +335,12 @@ function PopupAnular({ anular, setAnular, acao }: any) {
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setAnular(null)} />
-      <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#C8D2D5] shadow-2xl w-[460px]">
-        <div className="px-3 py-2 bg-[#062F35] text-white text-[13px] font-bold flex justify-between">
+      <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#D7DBDF] shadow-2xl w-[460px]">
+        <div className="px-3 py-2 bg-[#17375E] text-white text-[13px] font-bold flex justify-between">
           Anular {anular.number} <button onClick={() => setAnular(null)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
         </div>
         <div className="p-4 space-y-3 text-[12px]">
-          <div className="text-[#1F292C] bg-[#F4F6F7] border border-[#C8D2D5] px-2 py-1.5">
+          <div className="text-[#1A1D21] bg-[#F3F4F6] border border-[#D7DBDF] px-2 py-1.5">
             O documento não é apagado: é emitida uma <b>nota de crédito</b>, assinada e
             encadeada. É o que a AGT exige.
           </div>
@@ -348,10 +348,10 @@ function PopupAnular({ anular, setAnular, acao }: any) {
           <input value={motivo} onChange={(e) => setMotivo(e.target.value)} autoFocus
             className={`${inp} w-full`} style={inputStyle} />
           <div className="flex gap-2 justify-end pt-1">
-            <button onClick={() => setAnular(null)} className="px-4 py-1.5 border border-[#C8D2D5]">Voltar</button>
+            <button onClick={() => setAnular(null)} className="px-4 py-1.5 border border-[#D7DBDF]">Voltar</button>
             <button disabled={!motivo}
               onClick={() => acao.mutate({ id: anular.id, action: 'void', reason: motivo })}
-              className="px-4 py-1.5 bg-[#C94A4A] text-white disabled:bg-[#DCE6E8]">
+              className="px-4 py-1.5 bg-[#B42318] text-white disabled:bg-[#DCE9F5]">
               Emitir nota de crédito
             </button>
           </div>

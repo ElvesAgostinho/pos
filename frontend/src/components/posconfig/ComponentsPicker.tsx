@@ -55,112 +55,112 @@ export default function ComponentsPicker({ onClose, onPick }: {
 
   const pesquisar = () => { setPage(1); setQAplicado(q); refetch(); };
 
-  const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] w-full';
+  const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] w-full';
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="bg-white w-[1100px] max-w-[95vw] h-[720px] max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 bg-[#062F35] text-white">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#17375E] text-white">
           <span className="text-[14px] font-bold">Componentes</span>
           <button onClick={onClose} className="text-white/80 hover:text-white"><Glyph icon="✕" size={16} /></button>
         </div>
 
-        <div className="p-3 border-b border-[#E4E9EB] grid grid-cols-4 gap-2 items-end">
-          <label className="text-[11px] text-[#1F292C] flex flex-col gap-0.5">Grupo:
+        <div className="p-3 border-b border-[#EBEEF0] grid grid-cols-4 gap-2 items-end">
+          <label className="text-[11px] text-[#1A1D21] flex flex-col gap-0.5">Grupo:
             <select value={grupo} onChange={(e) => { setGrupo(e.target.value); setFamilia(''); setSubfamilia(''); }} className={inp}>
               <option value="">(Todos)</option>
               {groups.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
           </label>
-          <label className="text-[11px] text-[#1F292C] flex flex-col gap-0.5">Família:
+          <label className="text-[11px] text-[#1A1D21] flex flex-col gap-0.5">Família:
             <select value={familia} onChange={(e) => { setFamilia(e.target.value); setSubfamilia(''); }} className={inp}>
               <option value="">(Todas)</option>
               {families.filter((f: any) => !grupo || f.group === Number(grupo)).map((f: any) => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
           </label>
-          <label className="text-[11px] text-[#1F292C] flex flex-col gap-0.5">Sub Família:
+          <label className="text-[11px] text-[#1A1D21] flex flex-col gap-0.5">Sub Família:
             <select value={subfamilia} onChange={(e) => setSubfamilia(e.target.value)} className={inp}>
               <option value="">(Todas)</option>
               {subfamilies.filter((s: any) => !familia || s.family === Number(familia)).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </label>
-          <label className="text-[11px] text-[#1F292C] flex flex-col gap-0.5">Tipo:
+          <label className="text-[11px] text-[#1A1D21] flex flex-col gap-0.5">Tipo:
             <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={inp}>
               {TIPOS.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
             </select>
           </label>
-          <label className="text-[11px] text-[#1F292C] flex flex-col gap-0.5">Estado:
+          <label className="text-[11px] text-[#1A1D21] flex flex-col gap-0.5">Estado:
             <select value={estado} onChange={(e) => setEstado(e.target.value)} className={inp}>
               <option value="">(Todos)</option>
               <option value="ACTIVE">Ativo</option>
               <option value="INACTIVE">Inativo</option>
             </select>
           </label>
-          <label className="text-[11px] text-[#1F292C] flex flex-col gap-0.5 col-span-2">Pesquisa por texto livre:
+          <label className="text-[11px] text-[#1A1D21] flex flex-col gap-0.5 col-span-2">Pesquisa por texto livre:
             <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
               placeholder="Código, nome, código de barras…" className={inp} />
           </label>
           <button onClick={pesquisar}
-            className="h-[30px] px-4 text-[12px] font-bold text-white bg-[#062F35] hover:bg-[#062F35]">
+            className="h-[30px] px-4 text-[12px] font-bold text-white bg-[#17375E] hover:bg-[#17375E]">
             {isFetching ? 'A procurar…' : 'Pesquisar'}
           </button>
         </div>
 
         <div className="flex-1 overflow-auto">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0 bg-[#F4F6F7]">
+            <thead className="sticky top-0 bg-[#F3F4F6]">
               <tr>
-                <th className="w-[28px] border border-[#E4E9EB]"></th>
+                <th className="w-[28px] border border-[#EBEEF0]"></th>
                 {['Código', 'Descrição', 'Grupo', 'Família', 'Sub Família', 'Preço', 'Ativo'].map((h) => (
-                  <th key={h} className="text-left px-2 py-1 border border-[#E4E9EB] font-semibold">{h}</th>
+                  <th key={h} className="text-left px-2 py-1 border border-[#EBEEF0] font-semibold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {linhas.map((it: any) => (
                 <tr key={it.id} onClick={() => setSel(it)} onDoubleClick={() => onPick(it)}
-                  className={`cursor-pointer ${sel?.id === it.id ? 'bg-[#F4F6F7]' : 'hover:bg-[#F4F6F7]'}`}>
-                  <td className="text-center border border-[#E4E9EB]">
+                  className={`cursor-pointer ${sel?.id === it.id ? 'bg-[#F3F4F6]' : 'hover:bg-[#F3F4F6]'}`}>
+                  <td className="text-center border border-[#EBEEF0]">
                     <input type="radio" checked={sel?.id === it.id} onChange={() => setSel(it)} />
                   </td>
-                  <td className="px-2 py-1 border border-[#E4E9EB]">{it.code}</td>
-                  <td className="px-2 py-1 border border-[#E4E9EB]">{it.name}</td>
-                  <td className="px-2 py-1 border border-[#E4E9EB]">{it.group_name || '—'}</td>
-                  <td className="px-2 py-1 border border-[#E4E9EB]">{it.family_name || '—'}</td>
-                  <td className="px-2 py-1 border border-[#E4E9EB]">{it.subfamily_name || '—'}</td>
-                  <td className="px-2 py-1 border border-[#E4E9EB] text-right">{money(it.sale_price)}</td>
-                  <td className="px-2 py-1 border border-[#E4E9EB] text-center">{it.is_active ? <Glyph icon="✔" size={13} /> : '—'}</td>
+                  <td className="px-2 py-1 border border-[#EBEEF0]">{it.code}</td>
+                  <td className="px-2 py-1 border border-[#EBEEF0]">{it.name}</td>
+                  <td className="px-2 py-1 border border-[#EBEEF0]">{it.group_name || '—'}</td>
+                  <td className="px-2 py-1 border border-[#EBEEF0]">{it.family_name || '—'}</td>
+                  <td className="px-2 py-1 border border-[#EBEEF0]">{it.subfamily_name || '—'}</td>
+                  <td className="px-2 py-1 border border-[#EBEEF0] text-right">{money(it.sale_price)}</td>
+                  <td className="px-2 py-1 border border-[#EBEEF0] text-center">{it.is_active ? <Glyph icon="✔" size={13} /> : '—'}</td>
                 </tr>
               ))}
               {!isFetching && linhas.length === 0 && (
-                <tr><td colSpan={8} className="text-center text-[#657377] py-8">Sem artigos com estes filtros.</td></tr>
+                <tr><td colSpan={8} className="text-center text-[#6B7280] py-8">Sem artigos com estes filtros.</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-3 py-2 border-t border-[#E4E9EB] bg-[#F4F6F7] text-[12px]">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-[#EBEEF0] bg-[#F3F4F6] text-[12px]">
           <span>
             {total > 0
               ? `${(page - 1) * pageSize + 1}-${Math.min(page * pageSize, total)} de ${total} · Página ${page} de ${totalPaginas}`
               : '0 registos'}
           </span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage(1)} disabled={page <= 1} className="px-2 py-1 border border-[#E4E9EB] disabled:opacity-30 inline-flex"><Glyph icon="⏮" size={13} /></button>
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-2 py-1 border border-[#E4E9EB] disabled:opacity-30">‹</button>
-            <button onClick={() => setPage((p) => Math.min(totalPaginas, p + 1))} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#E4E9EB] disabled:opacity-30">›</button>
-            <button onClick={() => setPage(totalPaginas)} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#E4E9EB] disabled:opacity-30 inline-flex"><Glyph icon="⏭" size={13} /></button>
+            <button onClick={() => setPage(1)} disabled={page <= 1} className="px-2 py-1 border border-[#EBEEF0] disabled:opacity-30 inline-flex"><Glyph icon="⏮" size={13} /></button>
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-2 py-1 border border-[#EBEEF0] disabled:opacity-30">‹</button>
+            <button onClick={() => setPage((p) => Math.min(totalPaginas, p + 1))} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#EBEEF0] disabled:opacity-30">›</button>
+            <button onClick={() => setPage(totalPaginas)} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#EBEEF0] disabled:opacity-30 inline-flex"><Glyph icon="⏭" size={13} /></button>
           </div>
         </div>
 
-        <div className="flex justify-between px-3 py-2 border-t border-[#E4E9EB]">
+        <div className="flex justify-between px-3 py-2 border-t border-[#EBEEF0]">
           <button onClick={() => sel && onPick(sel)} disabled={!sel}
-            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#062F35' }}>
+            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#17375E' }}>
             <Glyph icon="✔" size={14} /> OK
           </button>
           <button onClick={onClose}
-            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#C94A4A' }}>
+            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#B42318' }}>
             <Glyph icon="✖" size={14} /> Fechar
           </button>
         </div>

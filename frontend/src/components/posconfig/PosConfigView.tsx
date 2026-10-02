@@ -235,7 +235,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   };
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#F4F6F7', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+    <div className="h-full flex flex-col" style={{ background: '#F3F4F6', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* ---------- BARRA DE MENUS (mesma barra do Ambiente de Trabalho — dourada,
           com o logótipo, letra preta) ---------- */}
       <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: accentGradient(), height: 56 }}>
@@ -254,7 +254,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden"
                 style={{ background: TOKENS.bar, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                 <button onClick={() => { setMenu(null); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#4B858E] transition-colors">
+                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#2E75B6] transition-colors">
                   <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>Ambiente de Trabalho
                 </button>
               </div>
@@ -276,7 +276,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[250px] py-1 overflow-hidden"
                   style={{ background: TOKENS.bar, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                   {m.items.map((it: any, i: number) => it.sep ? (
-                    <div key={i} className="my-1 border-t border-[#062F35]" />
+                    <div key={i} className="my-1 border-t border-[#17375E]" />
                   ) : (
                     <button key={i}
                       onClick={() => {
@@ -301,7 +301,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                         else if (it.view && onOpen) onOpen(it.view);
                         else if (it.url) window.open(it.url, '_blank');
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#4B858E] transition-colors">
+                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#2E75B6] transition-colors">
                       <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon={it.icon} size={16} /></span>
                       {it.label}
                     </button>
@@ -323,7 +323,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
         style={{ background: TOKENS.barSoft }}>
         <div className="flex items-center gap-2">
-          <span className="text-[#1F292C] inline-flex items-center">
+          <span className="text-[#1A1D21] inline-flex items-center">
             <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
           </span>{' '}
           {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
@@ -335,7 +335,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           </button>
           <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
             title="Voltar ao Ambiente de Trabalho"
-            className="w-7 h-7 flex items-center justify-center hover:bg-[#C94A4A] transition-colors" style={{ borderRadius: RADIUS.sm }}>
+            className="w-7 h-7 flex items-center justify-center hover:bg-[#B42318] transition-colors" style={{ borderRadius: RADIUS.sm }}>
             <Glyph icon="✕" size={13} />
           </button>
         </div>
@@ -348,15 +348,15 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             um relatório com uma lista de configurações ao lado não é um relatório —
             é um formulário espremido. */}
         {!SEM_ARVORE.includes(section) && (
-        <div className="w-[236px] flex-shrink-0 border-r border-[#C8D2D5] bg-white overflow-auto">
+        <div className="w-[236px] flex-shrink-0 border-r border-[#D7DBDF] bg-white overflow-auto">
           {favs.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[13px] font-semibold text-[#1F292C] bg-[#F4F6F7] border-b border-[#C8D2D5] flex items-center gap-1.5">
+              <div className="px-3 py-2 text-[13px] font-semibold text-[#1A1D21] bg-[#F3F4F6] border-b border-[#D7DBDF] flex items-center gap-1.5">
                 <Glyph icon="♥" size={13} /> Favoritos
               </div>
               {favs.map((f) => (
                 <div key={f.key}
-                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[13px] border-b border-[#E4E9EB] cursor-pointer ${section === f.key ? 'bg-[#F4F6F7] text-[#1F292C] font-bold' : 'text-[#1F292C] hover:bg-[#FFFFFF]'}`}>
+                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[13px] border-b border-[#EBEEF0] cursor-pointer ${section === f.key ? 'bg-[#F3F4F6] text-[#1A1D21] font-bold' : 'text-[#1A1D21] hover:bg-[#FFFFFF]'}`}>
                   <span className="flex-1" onClick={() => { setSection(f.key); setEditing(null); }}>{f.label}</span>
                   <button title="Tirar dos favoritos"
                     onClick={() => {
@@ -364,7 +364,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                       localStorage.setItem('posc_favs', JSON.stringify(novos));
                       setFavs(novos);
                     }}
-                    className="opacity-0 group-hover:opacity-100 text-[#C94A4A] font-bold px-1">×</button>
+                    className="opacity-0 group-hover:opacity-100 text-[#B42318] font-bold px-1">×</button>
                 </div>
               ))}
             </div>
@@ -378,9 +378,9 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             <div key={grp.key}>
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
                 className="w-full flex items-center justify-between px-3 py-1.5 text-[12px] font-bold uppercase tracking-tight border-b-2 hover:brightness-[0.98]"
-                style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 55%, #E4E9EB 100%)', borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>
+                style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F3F4F6 55%, #EBEEF0 100%)', borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>
                 <span>{grp.title}</span>
-                <span className="text-[16px] leading-none text-[#657377]">{open[grp.key] ? '−' : '+'}</span>
+                <span className="text-[16px] leading-none text-[#6B7280]">{open[grp.key] ? '−' : '+'}</span>
               </button>
               {open[grp.key] && (
                 <div className="max-h-[260px] overflow-y-auto">
@@ -390,17 +390,17 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                     <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
                       className="w-full flex items-center gap-2 pl-3 pr-3 py-1.5 text-[13px] text-left border-b border-l-[3px]"
                       style={{
-                        borderBottomColor: '#F4F6F7',
+                        borderBottomColor: '#F3F4F6',
                         borderLeftColor: ativo ? TOKENS.accent : 'transparent',
                         background: ativo ? TOKENS.selectedBg : 'transparent',
-                        color: ativo ? TOKENS.selectedText : '#062F35',
+                        color: ativo ? TOKENS.selectedText : '#17375E',
                         fontWeight: ativo ? 700 : 400,
                       }}
                       onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = TOKENS.hover; }}
                       onMouseLeave={(e) => { if (!ativo) e.currentTarget.style.background = 'transparent'; }}>
                       {(it as any).icon
                         ? <span className="w-5 flex items-center justify-center"><Glyph icon={(it as any).icon} size={15} /></span>
-                        : <span className="w-5 flex justify-center"><span className="w-1.5 h-1.5 rounded-full" style={{ background: ativo ? TOKENS.accent : '#4B858E' }} /></span>}
+                        : <span className="w-5 flex justify-center"><span className="w-1.5 h-1.5 rounded-full" style={{ background: ativo ? TOKENS.accent : '#2E75B6' }} /></span>}
                       {it.label}
                     </button>
                     );
@@ -475,7 +475,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'photo_url', label: '', width: '52px',
                   render: (r: any) => r.photo_url
                     ? <img src={r.photo_url} alt="" className="w-7 h-7 object-contain" />
-                    : <span className="text-[10px] text-[#657377]">sem foto</span> },
+                    : <span className="text-[10px] text-[#6B7280]">sem foto</span> },
                 { key: 'code', label: 'Código', width: '18%' },
                 { key: 'name', label: 'Descrição' },
                 { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
@@ -740,8 +740,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   render: (r: any) => r.kind === 'PRICE' ? 'Preço' : 'Desconto' },
                 { key: 'active_now', label: 'Em vigor agora', width: '18%',
                   render: (r: any) => r.active_now
-                    ? <span className="text-[#1F292C] font-bold">{r.kind === 'PRICE' ? `Preço ${r.active_now}` : `-${r.active_now}%`}</span>
-                    : <span className="text-[#657377]">—</span> },
+                    ? <span className="text-[#1A1D21] font-bold">{r.kind === 'PRICE' ? `Preço ${r.active_now}` : `-${r.active_now}%`}</span>
+                    : <span className="text-[#6B7280]">—</span> },
                 { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
               ]}
               fields={[]}
@@ -946,8 +946,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'is_active', label: 'Ativo', width: '8%', toggle: true },
                 { key: 'missing', label: 'Tradução em falta', width: '18%',
                   render: (r: any) => r.missing
-                    ? <span className="text-[#C94A4A] font-bold">{r.missing}</span>
-                    : <span className="text-[#657377]">—</span> },
+                    ? <span className="text-[#B42318] font-bold">{r.missing}</span>
+                    : <span className="text-[#6B7280]">—</span> },
               ]}
               fields={[]}
               renderEditor={(row, close) => <EmailTemplateEditor row={row} onClose={close} />} />
@@ -1075,7 +1075,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'code', label: 'Código', width: '14%' },
                 { key: 'name', label: 'Descrição', width: '26%' },
                 { key: 'manager_name', label: 'Gestor Ev.', width: '18%',
-                  render: (r: any) => r.manager_name || <span className="text-[#657377]">(nenhum)</span> },
+                  render: (r: any) => r.manager_name || <span className="text-[#6B7280]">(nenhum)</span> },
                 { key: 'is_event_type', label: 'Tipo de Evento', width: '14%', toggle: true },
                 { key: 'is_service_type', label: 'Tipo de Serviço', width: '14%', toggle: true },
                 { key: 'is_active', label: 'Ativo', width: '8%', toggle: true },
@@ -1121,7 +1121,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'image_url', label: 'Imagem', width: '36%',
                   render: (r: any) => r.image_url
                     ? <img src={r.image_url} alt="" className="h-8" />
-                    : <span className="text-[#657377]">—</span> },
+                    : <span className="text-[#6B7280]">—</span> },
                 { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
               ]}
               fields={[
@@ -1209,7 +1209,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                       style={{ background: r.bg_color, color: r.text_color }}>{r.name}</span>
                   ) },
                 { key: 'equivalent', label: 'Estado equivalente', width: '18%',
-                  render: (r: any) => r.equivalent || <span className="text-[#657377]">Nenhum</span> },
+                  render: (r: any) => r.equivalent || <span className="text-[#6B7280]">Nenhum</span> },
                 { key: 'sort_order', label: 'Ordem', width: '10%' },
                 { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
                 { key: 'is_system', label: 'Sistema', width: '10%', readOnlyCheck: true },
@@ -1219,8 +1219,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'name', label: 'Descrição:', required: true, width: 'w-[620px]' },
                 { key: 'equivalent', label: 'Estado equivalente:', width: 'w-[240px]' },
                 { key: 'text_key', label: 'Chave do Texto:', width: 'w-[440px]' },
-                { key: 'bg_color', label: 'Cor de Fundo:', width: 'w-[200px]', help: '#4B858E' },
-                { key: 'text_color', label: 'Cor do texto:', width: 'w-[200px]', help: '#C94A4A' },
+                { key: 'bg_color', label: 'Cor de Fundo:', width: 'w-[200px]', help: '#2E75B6' },
+                { key: 'text_color', label: 'Cor do texto:', width: 'w-[200px]', help: '#B42318' },
                 { key: 'sort_order', label: 'Ordenar:', type: 'number', width: 'w-[140px]' },
                 { key: 'notes', label: 'Observações:', type: 'textarea', width: 'w-[620px]' },
                 { key: 'is_active', label: 'Ativo', type: 'checkbox' },
@@ -1232,7 +1232,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'name', label: 'Descrição', width: '38%' },
                 { key: 'days', label: 'Dias', width: '14%' },
                 { key: 'discount_percent', label: 'Desconto', width: '16%',
-                  render: (r: any) => Number(r.discount_percent) ? `${Number(r.discount_percent)}%` : <span className="text-[#657377]">(nenhum)</span> },
+                  render: (r: any) => Number(r.discount_percent) ? `${Number(r.discount_percent)}%` : <span className="text-[#6B7280]">(nenhum)</span> },
                 { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
               ]}
               fields={[
@@ -1291,7 +1291,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'is_active', label: 'Ativo:', type: 'checkbox' },
               ]} />
           ) : section !== 'articles' ? (
-            <div className="flex-1 flex items-center justify-center text-[#657377] text-[13px]">
+            <div className="flex-1 flex items-center justify-center text-[#6B7280] text-[13px]">
               {SECTIONS.flatMap((g) => g.items).find((i) => i.key === section)?.label} — a construir a seguir.
             </div>
           ) : editing !== null ? (
@@ -1299,7 +1299,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           ) : (
             <>
               {/* FILTROS */}
-              <div className="p-3 border-b border-[#C8D2D5] bg-white">
+              <div className="p-3 border-b border-[#D7DBDF] bg-white">
               <Box title="Filtros">
               <div className="flex gap-6 pt-1.5">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-2 flex-1">
@@ -1341,7 +1341,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   <Field label="Pesquisa por texto livre:" wide>
                     <input value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })}
                       onKeyDown={(e) => e.key === 'Enter' && search()}
-                      className="border border-[#C8D2D5] px-2 py-1 text-[12px] w-[220px] bg-white"
+                      className="border border-[#D7DBDF] px-2 py-1 text-[12px] w-[220px] bg-white"
                       style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.10)' }} />
                   </Field>
                 </div>
@@ -1355,11 +1355,11 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               <div className="flex-1 overflow-auto bg-white">
                 <table className="w-full text-[12px] border-collapse">
                   <thead className="sticky top-0">
-                    <tr className="text-[#1F292C]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 55%, #E4E9EB 100%)' }}>
+                    <tr className="text-[#1A1D21]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F3F4F6 55%, #EBEEF0 100%)' }}>
                       {['Código', 'Descrição', 'Sub Família', 'Preço', 'Iva', 'Isenções', 'Stock', 'Impressoras', 'Unidades (Compra/Stock/Venda)', 'Ativo'].map((h, i) => (
                         <th key={h}
                           className={`text-left font-semibold px-3 py-1 border-b-2 whitespace-nowrap ${i > 0 ? 'border-l' : ''}`}
-                          style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#E4E9EB' }}>{h}</th>
+                          style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#EBEEF0' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -1368,7 +1368,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                       <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEditing(r.id)}
                         className="cursor-pointer border-b"
                         style={{
-                          borderColor: '#F4F6F7',
+                          borderColor: '#F3F4F6',
                           background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#FFFFFF' : TOKENS.surface,
                           color: sel === r.id ? TOKENS.selectedText : undefined,
                         }}
@@ -1383,10 +1383,10 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                             : '—'}
                         </td>
                         <td className="px-3 py-1 whitespace-nowrap">
-                          <span className="text-[#657377] italic">IVA{r.tax_percentage} - {Number(r.tax_percentage).toFixed(2)}</span>
+                          <span className="text-[#6B7280] italic">IVA{r.tax_percentage} - {Number(r.tax_percentage).toFixed(2)}</span>
                         </td>
                         <td className="px-3 py-1">{r.exemption_code_1 || ''}</td>
-                        <td className={`px-3 py-1 text-right ${Number(r.stock_qty) < 0 ? 'text-[#A83A3A] font-bold' : ''}`}>
+                        <td className={`px-3 py-1 text-right ${Number(r.stock_qty) < 0 ? 'text-[#912018] font-bold' : ''}`}>
                           {Number(r.stock_qty).toFixed(2)}
                         </td>
                         <td className="px-3 py-1 whitespace-nowrap">{r.printers_label || '—'}</td>
@@ -1398,17 +1398,17 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                       </tr>
                     ))}
                     {view.length === 0 && (
-                      <tr><td colSpan={10} className="text-center text-[#657377] py-10">Sem artigos para estes filtros.</td></tr>
+                      <tr><td colSpan={10} className="text-center text-[#6B7280] py-10">Sem artigos para estes filtros.</td></tr>
                     )}
                   </tbody>
                 </table>
               </div>
 
               {/* PAGINAÇÃO */}
-              <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#C8D2D5] bg-[#F4F6F7] text-[12px]">
+              <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#D7DBDF] bg-[#F3F4F6] text-[12px]">
                 <span>Nº registos a visualizar:</span>
                 <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                  className="border border-[#C8D2D5] px-2 py-0.5 bg-white">
+                  className="border border-[#D7DBDF] px-2 py-0.5 bg-white">
                   {[25, 50, 100, 250].map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
                 <div className="flex items-center gap-1">
@@ -1416,12 +1416,12 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="◀" size={14} /></button>
                   <span>Página</span>
                   <input value={page} onChange={(e) => setPage(Math.min(totalPages, Math.max(1, Number(e.target.value) || 1)))}
-                    className="w-12 border border-[#C8D2D5] px-1 py-0.5 text-center bg-white" />
+                    className="w-12 border border-[#D7DBDF] px-1 py-0.5 text-center bg-white" />
                   <span>de {totalPages}</span>
                   <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="▶" size={14} /></button>
                   <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-1.5 disabled:opacity-30 inline-flex"><Glyph icon="⏭" size={14} /></button>
                 </div>
-                <span className="ml-auto text-[#1F292C]">
+                <span className="ml-auto text-[#1A1D21]">
                   Nº registos a visualizar {rows.length ? (page - 1) * pageSize + 1 : 0} - {Math.min(page * pageSize, rows.length)} de {rows.length}
                 </span>
               </div>
@@ -1429,13 +1429,13 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               {/* BARRA DE FERRAMENTAS */}
               <Toolbar
                 actions={[
-                  { icon: '＋', label: 'Adicionar', color: '#062F35', onClick: () => setEditing('new') },
-                  { icon: '✎', label: 'Editar', color: '#4B858E', disabled: !sel, onClick: () => setEditing(sel!) },
-                  { icon: '−', label: 'Apagar', color: '#C94A4A', disabled: !sel, onClick: () => confirm(`Apagar "${selRow?.name}"? Fica registado na auditoria.`) && del.mutate(sel!) },
-                  { icon: '⧉', label: 'Copiar', color: '#062F35', disabled: !sel, onClick: () => copy.mutate(sel!) },
-                  { icon: '🖶', label: 'Imprimir', color: '#062F35', onClick: () => window.print() },
-                  { icon: '⤓', label: 'Exportar para Excel', color: '#062F35', onClick: exportExcel },
-                  { icon: '⤒', label: 'Importar', color: '#062F35', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
+                  { icon: '＋', label: 'Adicionar', color: '#17375E', onClick: () => setEditing('new') },
+                  { icon: '✎', label: 'Editar', color: '#2E75B6', disabled: !sel, onClick: () => setEditing(sel!) },
+                  { icon: '−', label: 'Apagar', color: '#B42318', disabled: !sel, onClick: () => confirm(`Apagar "${selRow?.name}"? Fica registado na auditoria.`) && del.mutate(sel!) },
+                  { icon: '⧉', label: 'Copiar', color: '#17375E', disabled: !sel, onClick: () => copy.mutate(sel!) },
+                  { icon: '🖶', label: 'Imprimir', color: '#17375E', onClick: () => window.print() },
+                  { icon: '⤓', label: 'Exportar para Excel', color: '#17375E', onClick: exportExcel },
+                  { icon: '⤒', label: 'Importar', color: '#17375E', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
                 ]}
               />
             </>
@@ -1446,7 +1446,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
       {/* Rodapé — nº de certificação AGT, sempre em tempo real (fiscal.FiscalConfig,
           a mesma fonte que assina as faturas). Nunca um texto fixo no código: enquanto
           não há certificação real diz isso mesmo, sem fingir um número. */}
-      <div className="h-6 flex items-center px-3 text-[10px] text-[#657377] bg-[#F4F6F7] border-t border-[#C8D2D5] flex-shrink-0">
+      <div className="h-6 flex items-center px-3 text-[10px] text-[#6B7280] bg-[#F3F4F6] border-t border-[#D7DBDF] flex-shrink-0">
         <span>System Mwana Lodge</span>
         <span className="mx-2 opacity-40">|</span>
         <span>

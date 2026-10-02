@@ -50,18 +50,18 @@ export default function PlanningOptions() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="px-3 py-1.5 bg-[#F4F6F7] text-[13px] font-bold text-[#1F292C] border-b border-[#E4E9EB]">
+      <div className="px-3 py-1.5 bg-[#F3F4F6] text-[13px] font-bold text-[#1A1D21] border-b border-[#EBEEF0]">
         Arraste para ordenar
       </div>
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F4F6F7]">
-            <th className="w-[40px] border-b border-[#E4E9EB]" />
-            <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">Espaço</th>
-            <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB] w-[180px]">Cor de Fundo</th>
-            <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB] w-[180px]">Cor do texto</th>
-            <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB] w-[200px]">Como fica</th>
+          <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
+            <th className="w-[40px] border-b border-[#EBEEF0]" />
+            <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">Espaço</th>
+            <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0] w-[180px]">Cor de Fundo</th>
+            <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0] w-[180px]">Cor do texto</th>
+            <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0] w-[200px]">Como fica</th>
           </tr></thead>
           <tbody>
             {rows.map((r, i) => (
@@ -69,21 +69,21 @@ export default function PlanningOptions() {
                 onDragStart={() => setDrag(i)}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => largar(i)}
-                className={`border-b border-[#E4E9EB] cursor-move ${drag === i ? 'opacity-40' : 'hover:bg-[#FFFFFF]'}`}>
-                <td className="text-center text-[#657377] select-none">⠿</td>
+                className={`border-b border-[#EBEEF0] cursor-move ${drag === i ? 'opacity-40' : 'hover:bg-[#FFFFFF]'}`}>
+                <td className="text-center text-[#6B7280] select-none">⠿</td>
                 <td className="px-2 py-1.5 font-semibold">{r.name}</td>
                 <td className="p-1">
                   <div className="flex items-center gap-2">
                     <input type="color" value={r.bg_color} onChange={(e) => set(i, 'bg_color', e.target.value)}
-                      className="w-9 h-7 border border-[#C8D2D5]" />
-                    <span className="font-mono text-[11px] text-[#657377]">{r.bg_color}</span>
+                      className="w-9 h-7 border border-[#D7DBDF]" />
+                    <span className="font-mono text-[11px] text-[#6B7280]">{r.bg_color}</span>
                   </div>
                 </td>
                 <td className="p-1">
                   <div className="flex items-center gap-2">
                     <input type="color" value={r.text_color} onChange={(e) => set(i, 'text_color', e.target.value)}
-                      className="w-9 h-7 border border-[#C8D2D5]" />
-                    <span className="font-mono text-[11px] text-[#657377]">{r.text_color}</span>
+                      className="w-9 h-7 border border-[#D7DBDF]" />
+                    <span className="font-mono text-[11px] text-[#6B7280]">{r.text_color}</span>
                   </div>
                 </td>
                 <td className="p-1">
@@ -95,7 +95,7 @@ export default function PlanningOptions() {
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={5} className="text-center text-[#657377] py-10">
+              <tr><td colSpan={5} className="text-center text-[#6B7280] py-10">
                 Sem espaços. Crie-os em Parâmetros do Sistema → Setores.
               </td></tr>
             )}
@@ -104,7 +104,7 @@ export default function PlanningOptions() {
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
       ]} />
     </div>
   );

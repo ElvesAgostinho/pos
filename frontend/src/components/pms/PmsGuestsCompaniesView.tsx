@@ -75,20 +75,20 @@ export default function PmsGuestsCompaniesView() {
     try { await apiClient.delete(`mdm/customers/${selId}/`); refetch(); novo(); } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#C8D2D5] p-1';
+  const inp = 'border border-[#D7DBDF] p-1';
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex border-b border-[#C8D2D5] bg-[#F4F6F7]">
+      <div className="flex border-b border-[#D7DBDF] bg-[#F3F4F6]">
         {(['guests', 'companies'] as const).map((t) => (
           <button key={t} onClick={() => trocarAba(t)}
-            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#C8D2D5] ${tab === t ? 'bg-white text-[#1F292C] border-b-2 border-b-[#0A4148]' : 'text-[#657377] hover:bg-white'}`}>
+            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#D7DBDF] ${tab === t ? 'bg-white text-[#1A1D21] border-b-2 border-b-[#1F4E79]' : 'text-[#6B7280] hover:bg-white'}`}>
             {t === 'guests' ? 'Hóspedes' : 'Empresas'}
           </button>
         ))}
       </div>
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r border-[#C8D2D5]">
+        <div className="w-1/2 border-r border-[#D7DBDF]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={
             tab === 'guests'
               ? [
@@ -125,9 +125,9 @@ export default function PmsGuestsCompaniesView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', color: '#062F35', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#062F35', onClick: save },
-        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#C94A4A' },
+        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', color: '#17375E', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#17375E', onClick: save },
+        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#B42318' },
       ]} />
     </div>
   );

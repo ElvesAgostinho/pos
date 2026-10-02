@@ -16,14 +16,14 @@ const DEFAULTS: Record<string, string> = {
   ui_erp_name: 'ML',
   ui_welcome_text: 'Bem-vindo. Inicie sessão para continuar.',
   // Azul petróleo bem escuro — cor institucional única do sistema (era
-  // dourado #B08D3C; passou por um azul-petróleo mais claro #0A4148 antes
+  // dourado #B45309; passou por um azul-petróleo mais claro #1F4E79 antes
   // deste tom, pedido do dono por ser "mais carregado, quase preto").
-  ui_bar_color: '#062F35',
+  ui_bar_color: '#17375E',
 };
 
 // Cores da barra que já foram o valor por omissão do código em versões
-// anteriores (azul-marinho #1e3f66, azul-aço #336699, o dourado #b08d3c da
-// paleta preto+branco+dourado, e o primeiro azul-petróleo #0A4148, mais
+// anteriores (azul-marinho #17375E, azul-aço #2E75B6, o dourado #B45309 da
+// paleta preto+branco+dourado, e o primeiro azul-petróleo #1F4E79, mais
 // claro do que o pedido) — um terminal que nunca mexeu em Aparência mas
 // visitou o ecrã de Personalização podia acabar com uma destas gravada no
 // localStorage sem ninguém ter escolhido nada, e isso continuava a ganhar
@@ -32,7 +32,7 @@ const DEFAULTS: Record<string, string> = {
 // primeira vez que se lê. ESTES SÃO VALORES HISTÓRICOS DE DADOS (o que uma
 // versão antiga gravava) — NUNCA se rebrandam para a paleta atual, senão o
 // próprio mecanismo de limpeza deixa de reconhecer o lixo antigo.
-const STALE_BAR_COLORS = ['#1e3f66', '#336699', '#b08d3c', '#0A4148'];
+const STALE_BAR_COLORS = ['#17375E', '#2E75B6', '#B45309', '#1F4E79'];
 
 export function getAppearance(key: keyof typeof APPEARANCE_KEYS): string {
   const k = APPEARANCE_KEYS[key];

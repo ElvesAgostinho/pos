@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, Glyph } from './kit';
 
-const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
 
 /**
  * PLANTA DA SALA — desenha-se as mesas onde elas estão de verdade.
@@ -20,7 +20,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
   const qc = useQueryClient();
   const [tables, setTables] = useState<any[]>([]);
   const [sel, setSel] = useState<number | null>(null);     // índice selecionado
-  const [bg, setBg] = useState(sector.map_bg_color || '#F4F6F7');
+  const [bg, setBg] = useState(sector.map_bg_color || '#F3F4F6');
   const [txt, setTxt] = useState(sector.map_text_color || '#FFFFFF');
   const [showNums, setShowNums] = useState(true);
   const [clip, setClip] = useState<any>(null);
@@ -56,7 +56,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
     setTables([...tables, {
       table_number: `M${n}`, shape, pos_x: 40, pos_y: 40,
       width: shape === 'ROUND' ? 100 : 90, height: shape === 'ROUND' ? 100 : 110,
-      color: '#062F35', text_color: '#FFFFFF', seats: 4,
+      color: '#17375E', text_color: '#FFFFFF', seats: 4,
       online_reservation: false, min_seats: 0, max_seats: 0, preferred_seats: 0,
     }]);
     setSel(tables.length);
@@ -114,27 +114,27 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
   const Btn = ({ onClick, children, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-3 py-1.5 bg-[#062F35] text-white text-[12px] hover:bg-[#062F35] disabled:opacity-35">
+      className="flex items-center gap-2 px-3 py-1.5 bg-[#17375E] text-white text-[12px] hover:bg-[#17375E] disabled:opacity-35">
       {children}
     </button>
   );
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-6" onClick={onClose}>
-      <div className="bg-[#F4F6F7] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#062F35' }}>
+      <div className="bg-[#F3F4F6] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#17375E' }}>
           <span>{mode === 'online' ? 'Mesas - Online' : 'Mesas'} — {sector.name}</span>
           <button onClick={onClose} className="text-white"><Glyph icon="✕" size={16} /></button>
         </div>
 
         {/* Barra de ferramentas do desenho (só no modo planta) */}
         {mode === 'design' && (
-          <div className="flex items-center gap-2 p-2 border-b border-[#C8D2D5] bg-white flex-wrap">
+          <div className="flex items-center gap-2 p-2 border-b border-[#D7DBDF] bg-white flex-wrap">
             <Btn onClick={cutSel} disabled={sel === null}><Glyph icon="✂" size={13} /> Cortar</Btn>
             <Btn onClick={copySel} disabled={sel === null}><Glyph icon="⧉" size={13} /> Copiar</Btn>
-            <Btn onClick={delSel} disabled={sel === null}><span className="text-[#C94A4A]">●</span> Apagar</Btn>
+            <Btn onClick={delSel} disabled={sel === null}><span className="text-[#B42318]">●</span> Apagar</Btn>
             <Btn onClick={paste} disabled={!clip}><Glyph icon="📋" size={13} /> Colar</Btn>
-            <span className="w-px h-6 bg-[#F4F6F7] mx-1" />
+            <span className="w-px h-6 bg-[#F3F4F6] mx-1" />
             <Btn onClick={() => align('top')} disabled={sel === null}>⇥ Alinhar topo</Btn>
             <Btn onClick={() => align('left')} disabled={sel === null}>⇤ Alinhar esquerda</Btn>
             <Btn onClick={() => distribute('V')}>↕ Vertical</Btn>
@@ -145,37 +145,37 @@ export default function TableMapDesigner({ sector, mode, onClose }:
         <div className="flex-1 flex overflow-hidden">
           {/* Formas / propriedades */}
           {mode === 'design' && (
-            <div className="w-[250px] flex-shrink-0 border-r border-[#C8D2D5] bg-white overflow-auto">
-              <div className="px-3 py-1.5 bg-[#F4F6F7] text-[13px] font-bold border-b border-[#E4E9EB]">Formas</div>
-              <div className="flex gap-2 p-3 border-b border-[#E4E9EB]">
+            <div className="w-[250px] flex-shrink-0 border-r border-[#D7DBDF] bg-white overflow-auto">
+              <div className="px-3 py-1.5 bg-[#F3F4F6] text-[13px] font-bold border-b border-[#EBEEF0]">Formas</div>
+              <div className="flex gap-2 p-3 border-b border-[#EBEEF0]">
                 {[['SQUARE', 'rounded-none w-12 h-12'], ['RECT', 'rounded-none w-12 h-9'], ['ROUND', 'rounded-full w-12 h-12']].map(([shape, cls]) => (
                   <button key={shape} onClick={() => addTable(shape)} title="Arraste para a sala"
-                    className={`${cls} border border-[#062F35]`} style={{ background: '#062F35' }} />
+                    className={`${cls} border border-[#17375E]`} style={{ background: '#17375E' }} />
                 ))}
               </div>
 
               <div className="p-3 space-y-2 text-[12px]">
                 <button onClick={() => sel !== null && upd(sel, { table_number: prompt('Número da mesa:', S?.table_number) || S.table_number })}
-                  disabled={sel === null} className="w-full py-1.5 bg-[#062F35] text-white disabled:opacity-35">Alterar número</button>
+                  disabled={sel === null} className="w-full py-1.5 bg-[#17375E] text-white disabled:opacity-35">Alterar número</button>
                 <button onClick={() => sel !== null && upd(sel, { name: prompt('Texto da mesa:', S?.name || '') || '' })}
-                  disabled={sel === null} className="w-full py-1.5 bg-[#062F35] text-white disabled:opacity-35">Alterar texto</button>
+                  disabled={sel === null} className="w-full py-1.5 bg-[#17375E] text-white disabled:opacity-35">Alterar texto</button>
 
                 <label className="flex items-center gap-2"><input type="checkbox" checked={showNums} onChange={(e) => setShowNums(e.target.checked)} className="w-4 h-4" />Visualizar números</label>
 
                 <label className="flex items-center gap-2">Cor de Fundo:
-                  <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-9 h-7 border border-[#C8D2D5]" />
+                  <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-9 h-7 border border-[#D7DBDF]" />
                   <input value={bg} onChange={(e) => setBg(e.target.value)} className={`${inp} flex-1 min-w-0`} />
                 </label>
                 <label className="flex items-center gap-2">Cor do texto:
-                  <input type="color" value={txt} onChange={(e) => setTxt(e.target.value)} className="w-9 h-7 border border-[#C8D2D5]" />
+                  <input type="color" value={txt} onChange={(e) => setTxt(e.target.value)} className="w-9 h-7 border border-[#D7DBDF]" />
                   <input value={txt} onChange={(e) => setTxt(e.target.value)} className={`${inp} flex-1 min-w-0`} />
                 </label>
 
                 {S && (
-                  <div className="pt-2 border-t border-[#E4E9EB] space-y-1.5">
-                    <div className="font-bold text-[#1F292C]">Mesa {S.table_number}</div>
+                  <div className="pt-2 border-t border-[#EBEEF0] space-y-1.5">
+                    <div className="font-bold text-[#1A1D21]">Mesa {S.table_number}</div>
                     <label className="flex items-center gap-2">Cor:
-                      <input type="color" value={S.color} onChange={(e) => upd(sel!, { color: e.target.value })} className="w-9 h-7 border border-[#C8D2D5]" />
+                      <input type="color" value={S.color} onChange={(e) => upd(sel!, { color: e.target.value })} className="w-9 h-7 border border-[#D7DBDF]" />
                     </label>
                     <label className="flex items-center gap-2">Largura:
                       <input type="number" value={S.width} onChange={(e) => upd(sel!, { width: Number(e.target.value) })} className={`${inp} w-[70px]`} />
@@ -202,41 +202,41 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                   left: t.pos_x, top: t.pos_y, width: t.width, height: t.height,
                   background: t.color,
                   borderRadius: t.shape === 'ROUND' ? '50%' : 0,
-                  outline: sel === i ? '3px solid #062F35' : 'none',
+                  outline: sel === i ? '3px solid #17375E' : 'none',
                   color: txt,
                 }}>
                 {mode === 'design' && (
-                  <span className="absolute left-2 top-2 w-4 h-4 rounded-full" style={{ background: '#4B858E' }} />
+                  <span className="absolute left-2 top-2 w-4 h-4 rounded-full" style={{ background: '#2E75B6' }} />
                 )}
                 {showNums && <span className="font-bold text-[15px] drop-shadow">{t.table_number}</span>}
               </div>
             ))}
             {tables.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-[#657377] text-[13px]">
+              <div className="absolute inset-0 flex items-center justify-center text-[#6B7280] text-[13px]">
                 Sala vazia — escolha uma forma à esquerda para acrescentar mesas.
               </div>
             )}
           </div>
 
           {/* Lugares / Reservas online */}
-          <div className="w-[420px] flex-shrink-0 border-l border-[#C8D2D5] bg-white flex flex-col">
-            <div className="px-3 py-1.5 bg-[#F4F6F7] text-[13px] font-bold border-b border-[#E4E9EB]">Lugares</div>
+          <div className="w-[420px] flex-shrink-0 border-l border-[#D7DBDF] bg-white flex flex-col">
+            <div className="px-3 py-1.5 bg-[#F3F4F6] text-[13px] font-bold border-b border-[#EBEEF0]">Lugares</div>
             <div className="flex-1 overflow-auto">
               <table className="w-full text-[12px] border-collapse">
                 <thead className="sticky top-0">
-                  <tr className="bg-[#F4F6F7]">
-                    <th className="px-2 py-1 border-b border-[#E4E9EB] w-[36px]" />
-                    <th className="text-left font-normal px-2 py-1 border-b border-[#E4E9EB]">Código</th>
-                    <th className="text-center font-normal px-1 py-1 border-b border-[#E4E9EB]">Reservas Online</th>
-                    <th className="text-center font-normal px-1 py-1 border-b border-[#E4E9EB]">Mínimo</th>
-                    <th className="text-center font-normal px-1 py-1 border-b border-[#E4E9EB]">Máximo</th>
-                    <th className="text-center font-normal px-1 py-1 border-b border-[#E4E9EB]">Preferido</th>
+                  <tr className="bg-[#F3F4F6]">
+                    <th className="px-2 py-1 border-b border-[#EBEEF0] w-[36px]" />
+                    <th className="text-left font-normal px-2 py-1 border-b border-[#EBEEF0]">Código</th>
+                    <th className="text-center font-normal px-1 py-1 border-b border-[#EBEEF0]">Reservas Online</th>
+                    <th className="text-center font-normal px-1 py-1 border-b border-[#EBEEF0]">Mínimo</th>
+                    <th className="text-center font-normal px-1 py-1 border-b border-[#EBEEF0]">Máximo</th>
+                    <th className="text-center font-normal px-1 py-1 border-b border-[#EBEEF0]">Preferido</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tables.map((t, i) => (
                     <tr key={i} onClick={() => setSel(i)}
-                      className={`border-b border-[#E4E9EB] cursor-pointer ${sel === i ? 'bg-[#F4F6F7]' : 'hover:bg-[#FFFFFF]'}`}>
+                      className={`border-b border-[#EBEEF0] cursor-pointer ${sel === i ? 'bg-[#F3F4F6]' : 'hover:bg-[#FFFFFF]'}`}>
                       <td className="text-center"><span className="inline-block w-3 h-3 rounded-sm" style={{ background: t.color }} /></td>
                       <td className="px-2 py-1 font-bold">{t.table_number}</td>
                       <td className="text-center">
@@ -245,7 +245,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                       {['min_seats', 'max_seats', 'preferred_seats'].map((k) => (
                         <td key={k} className="p-0.5">
                           <input type="number" value={t[k] ?? 0} onChange={(e) => upd(i, { [k]: Number(e.target.value) })}
-                            className="w-full border border-[#E4E9EB] px-1 py-0.5 text-[12px] text-center" />
+                            className="w-full border border-[#EBEEF0] px-1 py-0.5 text-[12px] text-center" />
                         </td>
                       ))}
                     </tr>
@@ -253,7 +253,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                 </tbody>
               </table>
             </div>
-            <div className="border-t border-[#E4E9EB] p-3 grid grid-cols-2 gap-x-6 gap-y-1 text-[12px]">
+            <div className="border-t border-[#EBEEF0] p-3 grid grid-cols-2 gap-x-6 gap-y-1 text-[12px]">
               <div className="flex justify-between font-bold"><span>Total:</span><span>{total}</span></div>
               <div className="flex justify-between font-bold"><span>Reservas Online:</span><span>{online}</span></div>
               <div className="flex justify-between"><span>Lugares (mín.):</span><span>{tables.reduce((a, t) => a + (t.min_seats || 0), 0)}</span></div>
@@ -265,8 +265,8 @@ export default function TableMapDesigner({ sector, mode, onClose }:
         </div>
 
         <Toolbar actions={[
-          { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
-          { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
+          { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
+          { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
         ]} />
       </div>
     </div>

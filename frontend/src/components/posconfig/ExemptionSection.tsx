@@ -5,7 +5,7 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import SimpleSection from './SimpleSection';
 import { Toolbar, inputStyle, Glyph } from './kit';
 
-const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
 
 /**
  * ISENÇÕES DE IVA — o texto legal que sai impresso na fatura e vai no SAF-T.
@@ -38,8 +38,8 @@ export default function ExemptionSection() {
 
   const banner = (
     <div className={`flex items-center gap-3 px-3 py-2 text-[12px] border-b ${unlocked
-      ? 'bg-[#F4F6F7] border-[#C8D2D5] text-[#1F292C]'
-      : 'bg-[#F4F6F7] border-[#C8D2D5] text-[#1F292C]'}`}>
+      ? 'bg-[#F3F4F6] border-[#D7DBDF] text-[#1A1D21]'
+      : 'bg-[#F3F4F6] border-[#D7DBDF] text-[#1A1D21]'}`}>
       <Glyph icon={unlocked ? '🔓' : '🔒'} size={15} />
       {unlocked ? (
         <span>Edição <b>desbloqueada</b>. Cada alteração fica na auditoria com o seu nome.</span>
@@ -50,7 +50,7 @@ export default function ExemptionSection() {
             todas as faturas que a usam e o que a AGT lê no SAF-T.
           </span>
           <button onClick={() => setAsk(true)}
-            className="ml-auto px-3 py-1 bg-[#062F35] text-white text-[12px] hover:bg-[#062F35]">
+            className="ml-auto px-3 py-1 bg-[#17375E] text-white text-[12px] hover:bg-[#17375E]">
             Desbloquear edição
           </button>
         </>
@@ -80,15 +80,15 @@ export default function ExemptionSection() {
 
       {ask && (
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={fechar}>
-          <div className="bg-[#F4F6F7] border border-[#C8D2D5] w-[560px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[#F3F4F6] border border-[#D7DBDF] w-[560px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold"
-              style={{ background: '#062F35' }}>
+              style={{ background: '#17375E' }}>
               <span>Password</span>
-              <button onClick={fechar} className="w-5 h-5 bg-[#C94A4A] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
+              <button onClick={fechar} className="w-5 h-5 bg-[#B42318] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
             </div>
             <div className="p-5 bg-white">
               <label className="flex items-center gap-4 text-[13px]">
-                <span className="text-[#1F292C]">Password:</span>
+                <span className="text-[#1A1D21]">Password:</span>
                 <input type="password" value={pw} autoFocus onChange={(e) => setPw(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && pw) check.mutate();
@@ -96,15 +96,15 @@ export default function ExemptionSection() {
                   }}
                   className={`${inp} flex-1`} style={inputStyle} />
               </label>
-              <div className="text-[11px] text-[#657377] mt-3">
+              <div className="text-[11px] text-[#6B7280] mt-3">
                 É a <b>sua</b> password — o servidor confirma-a. Serve para provar quem está a mexer
                 no texto legal das faturas.
               </div>
             </div>
             <Toolbar actions={[
-              { icon: '✔', label: check.isPending ? 'A confirmar…' : 'OK', color: '#062F35',
+              { icon: '✔', label: check.isPending ? 'A confirmar…' : 'OK', color: '#17375E',
                 disabled: !pw, onClick: () => check.mutate() },
-              { icon: '✖', label: 'Cancelar', color: '#C94A4A', onClick: fechar },
+              { icon: '✖', label: 'Cancelar', color: '#B42318', onClick: fechar },
             ]} />
           </div>
         </div>

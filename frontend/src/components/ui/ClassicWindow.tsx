@@ -18,7 +18,7 @@ interface ClassicWindowProps {
 export default function ClassicWindow({ title, icon, children, footer, width, onClose }: ClassicWindowProps) {
   return (
     <div
-      className="flex flex-col bg-[#F4F6F7] font-sans text-xs overflow-hidden flex-1 h-full relative"
+      className="flex flex-col bg-[#F3F4F6] font-sans text-xs overflow-hidden flex-1 h-full relative"
       style={width ? { maxWidth: width, borderRadius: RADIUS.lg, boxShadow: SHADOW.panel } : undefined}
     >
       {/* Barra de título */}
@@ -32,7 +32,7 @@ export default function ClassicWindow({ title, icon, children, footer, width, on
             <span className="font-bold text-[12px] tracking-tight truncate">{title}</span>
           </div>
           {onClose && (
-            <button onClick={onClose} className="w-6 h-6 flex items-center justify-center bg-white/10 hover:bg-[#C94A4A] text-white text-[13px] leading-none transition-colors" style={{ borderRadius: RADIUS.sm }}>×</button>
+            <button onClick={onClose} className="w-6 h-6 flex items-center justify-center bg-white/10 hover:bg-[#B42318] text-white text-[13px] leading-none transition-colors" style={{ borderRadius: RADIUS.sm }}>×</button>
           )}
         </div>
       )}
@@ -46,7 +46,7 @@ export default function ClassicWindow({ title, icon, children, footer, width, on
 
         {/* Barra de estado / ações */}
         {footer && (
-          <div className="min-h-[44px] bg-[#F4F6F7] border-t border-[#E4E9EB] flex items-center justify-between px-4 py-1.5 flex-shrink-0 gap-2"
+          <div className="min-h-[44px] bg-[#F3F4F6] border-t border-[#EBEEF0] flex items-center justify-between px-4 py-1.5 flex-shrink-0 gap-2"
             style={width ? { borderBottomLeftRadius: RADIUS.lg, borderBottomRightRadius: RADIUS.lg } : undefined}>
             {footer}
           </div>

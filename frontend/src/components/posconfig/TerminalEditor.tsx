@@ -4,8 +4,8 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#E4E9EB] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#EBEEF0] px-1.5 py-1 text-[12px] bg-white';
 
 const HW_TYPES = [
   { value: 'DRAWER', label: 'Gaveta' }, { value: 'SCALE', label: 'Balança' },
@@ -63,28 +63,28 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
-      className={`px-5 py-1.5 text-[13px] font-semibold border-b-[3px] ${tab === id ? 'border-[#062F35] text-[#1F292C]' : 'border-transparent text-[#657377] hover:text-[#1F292C]'}`}>
+      className={`px-5 py-1.5 text-[13px] font-semibold border-b-[3px] ${tab === id ? 'border-[#17375E] text-[#1A1D21]' : 'border-transparent text-[#6B7280] hover:text-[#1A1D21]'}`}>
       {label}
     </button>
   );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
-        <span className="text-[13px] font-bold text-[#1F292C]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
+        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       {/* Identificação */}
-      <div className="px-4 py-3 border-b border-[#E4E9EB]">
+      <div className="px-4 py-3 border-b border-[#EBEEF0]">
       <Box title="Identificação">
       <div className="grid grid-cols-2 gap-x-10 gap-y-2 pt-1.5">
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[90px] text-[#1F292C]">Código:<span className="text-[#C94A4A]">*</span></span>
+          <span className="w-[90px] text-[#1A1D21]">Código:<span className="text-[#B42318]">*</span></span>
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[220px]`} style={inputStyle} />
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[70px] text-[#1F292C]">Tipo:</span>
+          <span className="w-[70px] text-[#1A1D21]">Tipo:</span>
           <select value={d.terminal_type} onChange={(e) => set('terminal_type', e.target.value)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="NORMAL">Normal</option>
             <option value="VIRTUAL">Virtual</option>
@@ -92,11 +92,11 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
           </select>
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[90px] text-[#1F292C]">Descrição:<span className="text-[#C94A4A]">*</span></span>
+          <span className="w-[90px] text-[#1A1D21]">Descrição:<span className="text-[#B42318]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inp} w-[300px]`} style={inputStyle} />
         </label>
         <label className="flex items-center gap-3 text-[13px]">
-          <span className="w-[70px] text-[#1F292C]">Outlet:</span>
+          <span className="w-[70px] text-[#1A1D21]">Outlet:</span>
           <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="">—</option>
             {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
@@ -106,17 +106,17 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       </Box>
       </div>
 
-      <div className="flex border-b-2 border-[#062F35] bg-[#F4F6F7] px-2">
+      <div className="flex border-b-2 border-[#17375E] bg-[#F3F4F6] px-2">
         <Tab id="geral" label="Geral" /><Tab id="printers" label="Impressoras" /><Tab id="hardware" label="Hardware" />
       </div>
 
       <div className="flex-1 overflow-auto p-3">
         {tab === 'geral' && (
           <>
-            <div className="flex items-center gap-3 mb-2 text-[13px] bg-[#F4F6F7] px-3 py-2 border border-[#E4E9EB]">
+            <div className="flex items-center gap-3 mb-2 text-[13px] bg-[#F3F4F6] px-3 py-2 border border-[#EBEEF0]">
               <span>Pesquisar:</span>
               <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[240px]`} style={inputStyle} />
-              <span className="text-[11px] text-[#657377] ml-auto">
+              <span className="text-[11px] text-[#6B7280] ml-auto">
                 O número (ex.: 8610) é a referência do parâmetro — é por ele que o suporte fala consigo.
               </span>
             </div>
@@ -124,18 +124,18 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
               <tbody>
                 {shown.map((g: any) => (
                   <Fragment key={g.group}>
-                    <tr className="bg-[#F4F6F7]">
-                      <td colSpan={2} className="px-2 py-1.5 border border-[#E4E9EB] font-bold">{g.group}</td>
+                    <tr className="bg-[#F3F4F6]">
+                      <td colSpan={2} className="px-2 py-1.5 border border-[#EBEEF0] font-bold">{g.group}</td>
                     </tr>
                     {g.params.map((p: any) => {
                       const v = (d.params || {})[p.number] ?? p.default;
                       return (
-                        <tr key={p.number} className="border-b border-[#E4E9EB] hover:bg-[#FFFFFF]">
-                          <td className="px-2 py-1.5 border border-[#E4E9EB]" title={p.help_text}>
-                            <span className="text-[#657377]">({p.number})</span> {p.name}
-                            {p.help_text && <div className="text-[10px] text-[#657377] mt-0.5">{p.help_text}</div>}
+                        <tr key={p.number} className="border-b border-[#EBEEF0] hover:bg-[#FFFFFF]">
+                          <td className="px-2 py-1.5 border border-[#EBEEF0]" title={p.help_text}>
+                            <span className="text-[#6B7280]">({p.number})</span> {p.name}
+                            {p.help_text && <div className="text-[10px] text-[#6B7280] mt-0.5">{p.help_text}</div>}
                           </td>
-                          <td className="px-2 py-1 border border-[#E4E9EB] w-[45%]">
+                          <td className="px-2 py-1 border border-[#EBEEF0] w-[45%]">
                             {p.kind === 'BOOL' ? (
                               <input type="checkbox" checked={v === true || v === 'true'} onChange={(e) => setParam(p.number, e.target.checked)} className="w-4 h-4" />
                             ) : p.kind === 'CHOICE' ? (
@@ -154,7 +154,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                   </Fragment>
                 ))}
                 {shown.length === 0 && (
-                  <tr><td colSpan={2} className="text-center text-[#657377] py-8">Nenhum parâmetro corresponde à pesquisa.</td></tr>
+                  <tr><td colSpan={2} className="text-center text-[#6B7280] py-8">Nenhum parâmetro corresponde à pesquisa.</td></tr>
                 )}
               </tbody>
             </table>
@@ -163,38 +163,38 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
         {tab === 'printers' && (
           <table className="w-full text-[12px] border-collapse">
-            <thead><tr className="bg-[#F4F6F7]">
+            <thead><tr className="bg-[#F3F4F6]">
               {['Ativo', 'Código', 'Descrição', 'Porta', 'Localização Impressora', 'Um artigo por talão', 'Monitores de cozinha'].map((h) => (
-                <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#E4E9EB]">{h}</th>
+                <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#EBEEF0]">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {printers.map((p: any) => {
                 const tp = tprinters.find((x) => x.printer === p.id);
                 return (
-                  <tr key={p.id} className="border-b border-[#E4E9EB]">
-                    <td className="text-center border border-[#E4E9EB]">
+                  <tr key={p.id} className="border-b border-[#EBEEF0]">
+                    <td className="text-center border border-[#EBEEF0]">
                       <input type="checkbox" checked={!!tp} onChange={() => togglePrinter(p.id)} className="w-4 h-4" />
                     </td>
-                    <td className="px-2 py-1.5 border border-[#E4E9EB] font-mono">{p.code}</td>
-                    <td className="px-2 py-1.5 border border-[#E4E9EB]">{p.name}</td>
-                    <td className="p-0.5 border border-[#E4E9EB] w-[110px]">
+                    <td className="px-2 py-1.5 border border-[#EBEEF0] font-mono">{p.code}</td>
+                    <td className="px-2 py-1.5 border border-[#EBEEF0]">{p.name}</td>
+                    <td className="p-0.5 border border-[#EBEEF0] w-[110px]">
                       <input value={tp?.port || ''} disabled={!tp} onChange={(e) => setP(p.id, 'port', e.target.value)}
-                        placeholder="COM1 / IP" className={`${cell} disabled:bg-[#F4F6F7]`} />
+                        placeholder="COM1 / IP" className={`${cell} disabled:bg-[#F3F4F6]`} />
                     </td>
-                    <td className="p-0.5 border border-[#E4E9EB] w-[150px]">
+                    <td className="p-0.5 border border-[#EBEEF0] w-[150px]">
                       <select value={tp?.location || 'TERMINAL'} disabled={!tp} onChange={(e) => setP(p.id, 'location', e.target.value)}
-                        className={`${cell} disabled:bg-[#F4F6F7]`}>
+                        className={`${cell} disabled:bg-[#F3F4F6]`}>
                         <option value="TERMINAL">Terminal</option><option value="SERVER">Servidor</option><option value="NETWORK">Rede</option>
                       </select>
                     </td>
-                    <td className="text-center border border-[#E4E9EB]">
+                    <td className="text-center border border-[#EBEEF0]">
                       <input type="checkbox" checked={!!tp?.one_item_per_ticket} disabled={!tp}
                         onChange={(e) => setP(p.id, 'one_item_per_ticket', e.target.checked)} className="w-4 h-4" />
                     </td>
-                    <td className="p-0.5 border border-[#E4E9EB] w-[150px]">
+                    <td className="p-0.5 border border-[#EBEEF0] w-[150px]">
                       <input value={tp?.kds_monitor || ''} disabled={!tp} onChange={(e) => setP(p.id, 'kds_monitor', e.target.value)}
-                        placeholder="(nenhum)" className={`${cell} disabled:bg-[#F4F6F7]`} />
+                        placeholder="(nenhum)" className={`${cell} disabled:bg-[#F3F4F6]`} />
                     </td>
                   </tr>
                 );
@@ -206,41 +206,41 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
         {tab === 'hardware' && (
           <div>
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#F4F6F7]">
+              <thead><tr className="bg-[#F3F4F6]">
                 {['Código', 'Descrição', 'Tipo', 'Porta', 'Ativo', ''].map((h) => (
-                  <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#E4E9EB]">{h}</th>
+                  <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#EBEEF0]">{h}</th>
                 ))}
               </tr></thead>
               <tbody>
                 {hw.map((h, i) => (
-                  <tr key={i} className="border-b border-[#E4E9EB]">
-                    <td className="p-0.5 border border-[#E4E9EB]"><input value={h.code} onChange={(e) => setHw(i, 'code', e.target.value)} className={cell} /></td>
-                    <td className="p-0.5 border border-[#E4E9EB]"><input value={h.description} onChange={(e) => setHw(i, 'description', e.target.value)} className={cell} /></td>
-                    <td className="p-0.5 border border-[#E4E9EB] w-[180px]">
+                  <tr key={i} className="border-b border-[#EBEEF0]">
+                    <td className="p-0.5 border border-[#EBEEF0]"><input value={h.code} onChange={(e) => setHw(i, 'code', e.target.value)} className={cell} /></td>
+                    <td className="p-0.5 border border-[#EBEEF0]"><input value={h.description} onChange={(e) => setHw(i, 'description', e.target.value)} className={cell} /></td>
+                    <td className="p-0.5 border border-[#EBEEF0] w-[180px]">
                       <select value={h.hw_type} onChange={(e) => setHw(i, 'hw_type', e.target.value)} className={cell}>
                         {HW_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select>
                     </td>
-                    <td className="p-0.5 border border-[#E4E9EB] w-[120px]"><input value={h.port || ''} onChange={(e) => setHw(i, 'port', e.target.value)} placeholder="COM1" className={cell} /></td>
-                    <td className="text-center border border-[#E4E9EB]"><input type="checkbox" checked={!!h.is_active} onChange={(e) => setHw(i, 'is_active', e.target.checked)} className="w-4 h-4" /></td>
-                    <td className="text-center border border-[#E4E9EB]">
-                      <button onClick={() => set('hardware', hw.filter((_, j) => j !== i))} className="text-[#A83A3A] font-bold text-[11px]">Apagar</button>
+                    <td className="p-0.5 border border-[#EBEEF0] w-[120px]"><input value={h.port || ''} onChange={(e) => setHw(i, 'port', e.target.value)} placeholder="COM1" className={cell} /></td>
+                    <td className="text-center border border-[#EBEEF0]"><input type="checkbox" checked={!!h.is_active} onChange={(e) => setHw(i, 'is_active', e.target.checked)} className="w-4 h-4" /></td>
+                    <td className="text-center border border-[#EBEEF0]">
+                      <button onClick={() => set('hardware', hw.filter((_, j) => j !== i))} className="text-[#912018] font-bold text-[11px]">Apagar</button>
                     </td>
                   </tr>
                 ))}
-                {hw.length === 0 && <tr><td colSpan={6} className="text-center text-[#657377] py-8">Sem periféricos ligados a este terminal.</td></tr>}
+                {hw.length === 0 && <tr><td colSpan={6} className="text-center text-[#6B7280] py-8">Sem periféricos ligados a este terminal.</td></tr>}
               </tbody>
             </table>
-            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[13px] text-[#1F292C] px-1 py-1 hover:bg-[#F4F6F7]">
-              <span className="w-6 h-6 rounded-full bg-[#062F35] text-white flex items-center justify-center">＋</span> Adicionar
+            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[13px] text-[#1A1D21] px-1 py-1 hover:bg-[#F3F4F6]">
+              <span className="w-6 h-6 rounded-full bg-[#17375E] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
           </div>
         )}
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
       ]} />
     </div>
   );

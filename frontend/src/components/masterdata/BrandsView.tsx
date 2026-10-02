@@ -20,9 +20,9 @@ export default function BrandsView() {
       footer={<div className="text-gray-600">Nº registos: {brands.length}</div>}
     >
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px]">
-          <input placeholder="Marca" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#C8D2D5] p-1" />
-          <input placeholder="Fabricante (opcional)" value={draft.manufacturer} onChange={(e) => setDraft({ ...draft, manufacturer: e.target.value })} className="border border-[#C8D2D5] p-1" />
+        <div className="flex items-end gap-2 bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px]">
+          <input placeholder="Marca" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#D7DBDF] p-1" />
+          <input placeholder="Fabricante (opcional)" value={draft.manufacturer} onChange={(e) => setDraft({ ...draft, manufacturer: e.target.value })} className="border border-[#D7DBDF] p-1" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -32,7 +32,7 @@ export default function BrandsView() {
             columns={[
               { header: 'Marca', accessor: 'name', width: '45%' },
               { header: 'Fabricante', accessor: (r: any) => r.manufacturer || '—', width: '45%' },
-              { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button>, width: '10%' },
+              { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button>, width: '10%' },
             ]}
           />
         </div>

@@ -32,11 +32,11 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#062F35]">
-      <div className="w-80 bg-[#062F35] border border-[#062F35] rounded-[16px] p-8 flex flex-col items-center shadow-2xl">
-        <Lock size={48} className="text-[#657377] mb-6" />
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#17375E]">
+      <div className="w-80 bg-[#17375E] border border-[#17375E] rounded-[16px] p-8 flex flex-col items-center shadow-2xl">
+        <Lock size={48} className="text-[#6B7280] mb-6" />
         <h2 className="text-white text-lg font-bold mb-1">Sessão Bloqueada</h2>
-        <p className="text-[#657377] text-xs mb-4 flex items-center gap-1">
+        <p className="text-[#6B7280] text-xs mb-4 flex items-center gap-1">
           <User size={12} /> {user?.username || '—'}
         </p>
 
@@ -47,16 +47,16 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
             value={password}
             onChange={(e) => { setPassword(e.target.value); if (error) setError(''); }}
             placeholder="A sua password"
-            className={`w-full h-11 px-3 mb-3 bg-[#062F35] text-white text-sm rounded-sm border ${error ? 'border-[#C94A4A]' : 'border-[#062F35]'} focus:outline-none focus:border-[#C8D2D5]`}
+            className={`w-full h-11 px-3 mb-3 bg-[#17375E] text-white text-sm rounded-sm border ${error ? 'border-[#B42318]' : 'border-[#17375E]'} focus:outline-none focus:border-[#D7DBDF]`}
           />
           <button
             type="submit"
             disabled={loading || !password}
-            className="w-full h-11 bg-[#062F35] text-white text-sm font-medium rounded-sm hover:bg-[#062F35] border border-[#062F35] flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full h-11 bg-[#17375E] text-white text-sm font-medium rounded-sm hover:bg-[#17375E] border border-[#17375E] flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <Unlock size={16} /> {loading ? 'A verificar…' : 'Desbloquear'}
           </button>
-          {error && <p className="text-[#C94A4A] text-xs font-bold mt-3">{error}</p>}
+          {error && <p className="text-[#B42318] text-xs font-bold mt-3">{error}</p>}
         </form>
       </div>
     </div>

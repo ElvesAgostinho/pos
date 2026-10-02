@@ -49,21 +49,21 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
       footer={<>
         <div className="flex items-center gap-2">
           {!paid && hasNewLines && <ClassicButton icon={ChefHat} label="Enviar p/ Cozinha" onClick={() => fire.mutate(ticketId)} />}
-          <span className="text-[11px]">Total: <b className="text-[#657377] text-[13px]">{fmt(ticket?.grand_total)}</b> · Saldo: <b className={Number(ticket?.balance_due) > 0 ? 'text-[#A83A3A]' : 'text-[#1F292C]'}>{fmt(ticket?.balance_due)}</b></span>
+          <span className="text-[11px]">Total: <b className="text-[#6B7280] text-[13px]">{fmt(ticket?.grand_total)}</b> · Saldo: <b className={Number(ticket?.balance_due) > 0 ? 'text-[#912018]' : 'text-[#1A1D21]'}>{fmt(ticket?.balance_due)}</b></span>
         </div>
         <ClassicButton icon={ArrowLeft} label="Voltar" onClick={onBack} />
       </>}
     >
       <div className="flex h-full">
         {/* Produtos disponíveis no POS (deste outlet) */}
-        <div className="w-1/2 border-r border-[#C8D2D5] flex flex-col">
-          <div className="px-3 py-1.5 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[11px] font-bold text-gray-700">Produtos POS {paid ? '(ticket pago)' : ''}</div>
+        <div className="w-1/2 border-r border-[#D7DBDF] flex flex-col">
+          <div className="px-3 py-1.5 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px] font-bold text-gray-700">Produtos POS {paid ? '(ticket pago)' : ''}</div>
           <div className="flex-1 overflow-y-auto p-2 grid grid-cols-2 gap-2 content-start">
             {products.filter((p: any) => p.is_available).map((p: any) => (
               <button key={p.id} disabled={paid} onClick={() => addLine.mutate({ id: ticketId, line: { item: p.item, quantity: 1 } })}
-                className={`border p-2 text-left text-[11px] ${paid ? 'opacity-50' : 'bg-white hover:bg-[#F4F6F7] border-[#C8D2D5] active:bg-[#F4F6F7]'}`}>
+                className={`border p-2 text-left text-[11px] ${paid ? 'opacity-50' : 'bg-white hover:bg-[#F3F4F6] border-[#D7DBDF] active:bg-[#F3F4F6]'}`}>
                 <div className="font-bold text-gray-800 truncate">{p.item_name}</div>
-                <div className="text-[#657377] font-bold">{fmt(p.effective_price)}</div>
+                <div className="text-[#6B7280] font-bold">{fmt(p.effective_price)}</div>
               </button>
             ))}
             {products.length === 0 && <div className="text-gray-500 text-[11px] col-span-2">Sem produtos configurados neste outlet (POS Config → Produtos POS).</div>}
@@ -81,22 +81,22 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
                 { header: 'Qtd', accessor: (r: any) => fmt(r.quantity), width: '14%' },
                 { header: 'Preço', accessor: (r: any) => fmt(r.unit_price), width: '18%' },
                 { header: 'Total', accessor: (r: any) => fmt(r.line_total), width: '17%' },
-                { header: '', accessor: (r: any) => (!paid ? <button onClick={() => delLine.mutate(r.id)} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button> : null), width: '5%' },
+                { header: '', accessor: (r: any) => (!paid ? <button onClick={() => delLine.mutate(r.id)} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button> : null), width: '5%' },
               ]}
             />
           </div>
-          <div className="border-t border-[#C8D2D5] bg-[#F4F6F7] p-2 text-[11px]">
+          <div className="border-t border-[#D7DBDF] bg-[#F3F4F6] p-2 text-[11px]">
             <div className="flex justify-between px-1"><span>Subtotal</span><span>{fmt(ticket?.subtotal)}</span></div>
             <div className="flex justify-between px-1"><span>IVA</span><span>{fmt(ticket?.tax_total)}</span></div>
-            <div className="flex justify-between px-1 font-bold text-[#657377] text-[13px]"><span>TOTAL</span><span>{fmt(ticket?.grand_total)}</span></div>
+            <div className="flex justify-between px-1 font-bold text-[#6B7280] text-[13px]"><span>TOTAL</span><span>{fmt(ticket?.grand_total)}</span></div>
           </div>
 
           {/* Documentos (Motor 7) */}
-          <div className="border-t border-[#C8D2D5] bg-white p-2">
+          <div className="border-t border-[#D7DBDF] bg-white p-2">
             <div className="flex items-center gap-1 mb-1">
               <FileText size={12} className="text-gray-500" />
-              <button disabled={!hasLines} onClick={() => doIssue('PROFORMA')} className="px-2 py-1 text-[11px] border border-[#C8D2D5] bg-[#F4F6F7] hover:bg-[#F4F6F7] disabled:opacity-50">Pré-conta</button>
-              <button disabled={!hasLines} onClick={() => doIssue('INVOICE')} className="px-2 py-1 text-[11px] border border-[#C8D2D5] bg-[#F4F6F7] hover:bg-[#F4F6F7] disabled:opacity-50">Fatura</button>
+              <button disabled={!hasLines} onClick={() => doIssue('PROFORMA')} className="px-2 py-1 text-[11px] border border-[#D7DBDF] bg-[#F3F4F6] hover:bg-[#F3F4F6] disabled:opacity-50">Pré-conta</button>
+              <button disabled={!hasLines} onClick={() => doIssue('INVOICE')} className="px-2 py-1 text-[11px] border border-[#D7DBDF] bg-[#F3F4F6] hover:bg-[#F3F4F6] disabled:opacity-50">Fatura</button>
             </div>
             {documents.map((d: any) => (
               <div key={d.id} className="flex justify-between text-[10px] px-1">
@@ -106,14 +106,14 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
             ))}
           </div>
           {!paid ? (
-            <div className="border-t border-[#C8D2D5] bg-white p-2">
+            <div className="border-t border-[#D7DBDF] bg-white p-2">
               <div className="flex items-center gap-2 mb-2 text-[11px]">
                 <CreditCard size={13} className="text-gray-500" />
-                <input placeholder={`Valor (default: saldo ${fmt(ticket?.balance_due)})`} type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="flex-1 border border-[#C8D2D5] p-1" />
+                <input placeholder={`Valor (default: saldo ${fmt(ticket?.balance_due)})`} type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="flex-1 border border-[#D7DBDF] p-1" />
               </div>
               <div className="flex flex-wrap gap-1">
                 {methods.map((m: any) => (
-                  <button key={m.id} onClick={() => doPay(m.payment_method)} className="px-2 py-1 bg-[#4B858E] hover:bg-[#4B858E] text-white text-[11px] font-bold border border-[#C8D2D5]">
+                  <button key={m.id} onClick={() => doPay(m.payment_method)} className="px-2 py-1 bg-[#2E75B6] hover:bg-[#2E75B6] text-white text-[11px] font-bold border border-[#D7DBDF]">
                     {m.payment_method_name}
                   </button>
                 ))}
@@ -121,7 +121,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
               </div>
             </div>
           ) : (
-            <div className="border-t border-[#C8D2D5] bg-[#F4F6F7] p-2 text-center text-[#1F292C] font-bold text-[12px] flex items-center justify-center gap-1"><Check size={13} strokeWidth={3} /> Ticket pago</div>
+            <div className="border-t border-[#D7DBDF] bg-[#F3F4F6] p-2 text-center text-[#1A1D21] font-bold text-[12px] flex items-center justify-center gap-1"><Check size={13} strokeWidth={3} /> Ticket pago</div>
           )}
         </div>
       </div>
@@ -150,13 +150,13 @@ export default function SalesView() {
     <ClassicWindow title="Vendas (POS)" icon={<Receipt size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Nº tickets: {tickets.length}</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px]">
-          <select value={form.outlet} onChange={(e) => setForm({ ...form, outlet: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px]">
+          <select value={form.outlet} onChange={(e) => setForm({ ...form, outlet: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
             <option value="">— outlet —</option>
             {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
           </select>
-          <input placeholder="Operador" value={form.operator_name} onChange={(e) => setForm({ ...form, operator_name: e.target.value })} className="border border-[#C8D2D5] p-1" />
-          <select value={form.cash_session} onChange={(e) => setForm({ ...form, cash_session: e.target.value })} className="border border-[#C8D2D5] p-1 bg-white">
+          <input placeholder="Operador" value={form.operator_name} onChange={(e) => setForm({ ...form, operator_name: e.target.value })} className="border border-[#D7DBDF] p-1" />
+          <select value={form.cash_session} onChange={(e) => setForm({ ...form, cash_session: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
             <option value="">— caixa (opcional) —</option>
             {openSessions.map((s: any) => <option key={s.id} value={s.id}>{s.operator_name} · {s.terminal_name || 'caixa'}</option>)}
           </select>
@@ -171,10 +171,10 @@ export default function SalesView() {
               { header: 'Ticket', accessor: 'ticket_number', width: '20%' },
               { header: 'Outlet', accessor: 'outlet_name', width: '24%' },
               { header: 'Operador', accessor: 'operator_name', width: '18%' },
-              { header: 'Estado', accessor: (r: POSTicket) => <span className={r.status === 'PAID' ? 'text-[#1F292C] font-bold' : r.status === 'VOID' ? 'text-gray-400' : 'text-[#657377] font-bold'}>{r.status_display}</span>, width: '12%' },
+              { header: 'Estado', accessor: (r: POSTicket) => <span className={r.status === 'PAID' ? 'text-[#1A1D21] font-bold' : r.status === 'VOID' ? 'text-gray-400' : 'text-[#6B7280] font-bold'}>{r.status_display}</span>, width: '12%' },
               { header: 'Total', accessor: (r: POSTicket) => fmt(r.grand_total), width: '12%' },
               { header: '', accessor: (r: POSTicket) => r.status === 'PAID' ? (
-                <button className="text-[#A83A3A] hover:underline text-[11px]" title="Anular venda (emite Nota de Crédito)"
+                <button className="text-[#912018] hover:underline text-[11px]" title="Anular venda (emite Nota de Crédito)"
                   onClick={async (e) => { e.stopPropagation();
                     if (!confirm(`Anular a venda ${r.ticket_number}? Será emitida a Nota de Crédito do documento fiscal.`)) return;
                     try { const res = await apiClient.post(`pos/tickets/${r.id}/credit_note/`, { reason: 'Anulação de venda' }); aviso(`Venda anulada. NC: ${res.data.credit_note || '(sem doc fiscal)'}`); qc.invalidateQueries({ queryKey: ['pos-tickets'] }); }

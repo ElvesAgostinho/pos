@@ -35,35 +35,35 @@ const COLS = '8% 8% 24% 18% 24% 18%';
 function ReservationRow({ r, hotelName, selected, onSelect, onCheckIn, onCheckOut, onCancel, onVerConta }: any) {
   return (
     <div onClick={onSelect}
-      className={`grid border-b border-[#E4E9EB] cursor-pointer text-[12px] ${selected ? 'bg-[#F4F6F7]' : 'hover:bg-[#FFFFFF]'}`}
+      className={`grid border-b border-[#EBEEF0] cursor-pointer text-[12px] ${selected ? 'bg-[#F3F4F6]' : 'hover:bg-[#FFFFFF]'}`}
       style={{ gridTemplateColumns: COLS }}>
-      <div className="px-3 py-3 flex items-start gap-2 text-[#1F292C]">
-        <Building2 size={14} className="text-[#657377] flex-shrink-0 mt-0.5" />
+      <div className="px-3 py-3 flex items-start gap-2 text-[#1A1D21]">
+        <Building2 size={14} className="text-[#6B7280] flex-shrink-0 mt-0.5" />
         <span className="truncate">{hotelName || '—'}</span>
       </div>
       <div className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
         <div className="grid grid-cols-2 gap-1 w-fit">
           <button title="Check-in" disabled={r.status !== 'OPTION' && r.status !== 'BOOKED'} onClick={() => onCheckIn(r)}
-            className="w-7 h-7 rounded flex items-center justify-center bg-[#F4F6F7] text-[#1F292C] disabled:opacity-30 disabled:bg-[#F4F6F7]"><LogIn size={14} /></button>
+            className="w-7 h-7 rounded flex items-center justify-center bg-[#F3F4F6] text-[#1A1D21] disabled:opacity-30 disabled:bg-[#F3F4F6]"><LogIn size={14} /></button>
           <button title="Check-out" disabled={r.status !== 'CHECKED_IN'} onClick={() => onCheckOut(r.id)}
-            className="w-7 h-7 rounded flex items-center justify-center bg-[#F4F6F7] text-[#1F292C] disabled:opacity-30 disabled:bg-[#F4F6F7]"><LogOut size={14} /></button>
+            className="w-7 h-7 rounded flex items-center justify-center bg-[#F3F4F6] text-[#1A1D21] disabled:opacity-30 disabled:bg-[#F3F4F6]"><LogOut size={14} /></button>
           <button title="Cancelar" disabled={r.status === 'CHECKED_OUT' || r.status === 'CANCELLED'} onClick={() => onCancel(r.id)}
-            className="w-7 h-7 rounded flex items-center justify-center bg-[#F4F6F7] text-[#A83A3A] disabled:opacity-30 disabled:bg-[#F4F6F7]"><XCircle size={14} /></button>
+            className="w-7 h-7 rounded flex items-center justify-center bg-[#F3F4F6] text-[#912018] disabled:opacity-30 disabled:bg-[#F3F4F6]"><XCircle size={14} /></button>
           <button title="Ver Conta" onClick={() => onVerConta(r)}
-            className="w-7 h-7 rounded flex items-center justify-center bg-[#F4F6F7] text-[#657377]"><Wallet size={14} /></button>
+            className="w-7 h-7 rounded flex items-center justify-center bg-[#F3F4F6] text-[#6B7280]"><Wallet size={14} /></button>
         </div>
       </div>
       <div className="px-3 py-3 leading-tight">
         <div className="text-[10px] text-gray-400">{fmtDT(r.created_at)}</div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="font-bold text-[15px]">{r.confirmation}</span>
-          <span className="text-[10px] text-white font-semibold px-2 py-0.5 rounded" style={{ background: STATUS_COLOR[r.status] || '#4B858E' }}>
+          <span className="text-[10px] text-white font-semibold px-2 py-0.5 rounded" style={{ background: STATUS_COLOR[r.status] || '#2E75B6' }}>
             {STATUS_LABEL[r.status] || r.status}
           </span>
         </div>
         <div className="text-[11px] text-gray-600">{r.room_type_name}{r.rate_plan_code ? ` · ${r.rate_plan_code}` : ''} · Pax {r.adults}/{r.children}</div>
         <div className="mt-0.5">
-          <span className="text-[#1F292C]">{fmtD(r.check_in)}</span> <span className="text-gray-400">→</span> <span className="text-[#A83A3A]">{fmtD(r.check_out)}</span>
+          <span className="text-[#1A1D21]">{fmtD(r.check_in)}</span> <span className="text-gray-400">→</span> <span className="text-[#912018]">{fmtD(r.check_out)}</span>
         </div>
         {Number(r.rate) > 0 && <div className="font-bold text-[13px] mt-0.5">{Number(r.rate).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} Kz</div>}
       </div>
@@ -76,13 +76,13 @@ function ReservationRow({ r, hotelName, selected, onSelect, onCheckIn, onCheckOu
         <div>{r.room_number ? `Quarto ${r.room_number}` : 'Sem quarto atribuído'}</div>
         {r.block_code && <div className="text-[10px] text-gray-500">Bloco {r.block_code}</div>}
         {r.voucher && <div className="text-[10px] text-gray-500">Voucher {r.voucher}</div>}
-        {r.is_guaranteed && <div className="text-[10px] text-[#1F292C]">Garantido</div>}
+        {r.is_guaranteed && <div className="text-[10px] text-[#1A1D21]">Garantido</div>}
       </div>
       <div className="px-3 py-3 leading-tight" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => onVerConta(r)} className="text-[11px] px-2 py-1 border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] rounded-[6px] transition-colors">Ver Conta</button>
+        <button onClick={() => onVerConta(r)} className="text-[11px] px-2 py-1 border border-[#D7DBDF] bg-white hover:bg-[#F3F4F6] rounded-[6px] transition-colors">Ver Conta</button>
         <div className="text-[10px] text-gray-500 mt-1">{r.folios_count || 0} conta(s) ativa(s)</div>
         {r.folio_balance != null && (
-          <div className={`font-bold ${Number(r.folio_balance) > 0 ? 'text-[#A83A3A]' : 'text-[#1F292C]'}`}>{r.folio_balance}</div>
+          <div className={`font-bold ${Number(r.folio_balance) > 0 ? 'text-[#912018]' : 'text-[#1A1D21]'}`}>{r.folio_balance}</div>
         )}
       </div>
     </div>
@@ -92,11 +92,11 @@ function ReservationRow({ r, hotelName, selected, onSelect, onCheckIn, onCheckOu
 
 /** Botão da barra inferior — plano, sem moldura em relevo (esse era o estilo
  * clássico do ERP antigo; o PMS usa ícone em círculo colorido + texto). */
-function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#062F35' }: any) {
+function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#17375E' }: any) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-2 py-1.5 text-[12px] font-semibold text-[#1F292C] disabled:opacity-40 disabled:cursor-default hover:bg-[#F4F6F7]">
-      <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: disabled ? '#C8D2D5' : color }}>
+      className="flex items-center gap-2 px-2 py-1.5 text-[12px] font-semibold text-[#1A1D21] disabled:opacity-40 disabled:cursor-default hover:bg-[#F3F4F6]">
+      <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: disabled ? '#D7DBDF' : color }}>
         <Icon size={13} />
       </span>
       {label}
@@ -107,13 +107,13 @@ function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#062F35' }: an
 function Field({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex flex-col gap-0.5 text-[11px]">
-      <span className="text-[#1F292C] font-semibold whitespace-nowrap">{label}</span>
+      <span className="text-[#1A1D21] font-semibold whitespace-nowrap">{label}</span>
       {children}
     </label>
   );
 }
-const inputCls = 'border border-[#C8D2D5] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
-const selCls = 'border border-[#C8D2D5] px-1.5 py-1 text-[11px] bg-white min-w-[130px] rounded-[6px]';
+const inputCls = 'border border-[#D7DBDF] px-1.5 py-1 text-[11px] bg-white rounded-[6px]';
+const selCls = 'border border-[#D7DBDF] px-1.5 py-1 text-[11px] bg-white min-w-[130px] rounded-[6px]';
 
 function loadSaved(): { name: string; filters: any }[] {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch { return []; }
@@ -301,7 +301,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
       h3{margin:0 0 12px}
       table{border-collapse:collapse;width:100%}
       th,td{border:1px solid #999;padding:4px 6px;text-align:left}
-      th{background:#F0F0F0}
+      th{background:#F3F4F6}
     </style></head><body>` +
       `<h3>Reservas — ${esc(hotelName)}</h3><table>` +
       `<tr><th>Confirmação</th><th>Hóspede</th><th>Categoria</th><th>Check-In</th><th>Check-Out</th><th>Estado</th></tr>${linhas}</table>` +
@@ -354,9 +354,9 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
   return (
     <>
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[11px]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px]">
         <label className="flex items-center gap-2">
-          <span className="font-semibold text-[#1F292C]">Hotel:</span>
+          <span className="font-semibold text-[#1A1D21]">Hotel:</span>
           {hotels.length > 1 ? (
             <select value={hotelId || String(hotels[0]?.id)}
               onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
@@ -364,31 +364,31 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
               {hotels.map((h: any) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
           ) : (
-            <div className="flex items-center gap-1 bg-white border border-[#C8D2D5] px-1.5 py-1 min-w-[180px]">
-              <Building2 size={12} className="text-[#657377]" /> {hotelName || '—'}
+            <div className="flex items-center gap-1 bg-white border border-[#D7DBDF] px-1.5 py-1 min-w-[180px]">
+              <Building2 size={12} className="text-[#6B7280]" /> {hotelName || '—'}
             </div>
           )}
         </label>
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-[#1F292C]">Pesquisas:</span>
+          <span className="font-semibold text-[#1A1D21]">Pesquisas:</span>
           <select value={savedName} onChange={(e) => e.target.value ? aplicarPesquisa(e.target.value) : setSavedName('')} className={selCls}>
             <option value="">(Nova pesquisa)</option>
             {saved.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
           </select>
-          <button onClick={() => setShowSaveDialog(true)} title="Nova pesquisa" className="w-6 h-6 flex items-center justify-center rounded-full bg-[#062F35] text-white hover:brightness-110 transition-[filter]"><Plus size={13} /></button>
-          <button onClick={() => setShowSaveDialog(true)} className="flex items-center gap-1 px-2.5 py-1 border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] rounded-[6px] transition-colors"><Save size={12} /> Gravar</button>
-          <button onClick={apagarPesquisa} disabled={!savedName} className="flex items-center gap-1 px-2.5 py-1 border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] disabled:opacity-40 rounded-[6px] transition-colors"><Trash2 size={12} className="text-[#C94A4A]" /> Apagar</button>
+          <button onClick={() => setShowSaveDialog(true)} title="Nova pesquisa" className="w-6 h-6 flex items-center justify-center rounded-full bg-[#17375E] text-white hover:brightness-110 transition-[filter]"><Plus size={13} /></button>
+          <button onClick={() => setShowSaveDialog(true)} className="flex items-center gap-1 px-2.5 py-1 border border-[#D7DBDF] bg-white hover:bg-[#F3F4F6] rounded-[6px] transition-colors"><Save size={12} /> Gravar</button>
+          <button onClick={apagarPesquisa} disabled={!savedName} className="flex items-center gap-1 px-2.5 py-1 border border-[#D7DBDF] bg-white hover:bg-[#F3F4F6] disabled:opacity-40 rounded-[6px] transition-colors"><Trash2 size={12} className="text-[#B42318]" /> Apagar</button>
         </div>
       </div>
       <button onClick={() => setAvancadaAberta((o) => !o)}
-        className="flex items-center justify-end gap-1 px-3 py-1 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[11px] font-semibold text-[#1F292C] w-full hover:bg-[#F4F6F7]">
+        className="flex items-center justify-end gap-1 px-3 py-1 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px] font-semibold text-[#1A1D21] w-full hover:bg-[#F3F4F6]">
         Pesquisa Avançada {avancadaAberta ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       </button>
 
       {avancadaAberta && (
-        <div className="flex gap-4 p-3 bg-[#F4F6F7] border-b border-[#E4E9EB]">
+        <div className="flex gap-4 p-3 bg-[#F3F4F6] border-b border-[#EBEEF0]">
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Pesquisa</div>
+            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Hóspede:"><input value={guestQuery} onChange={(e) => setGuestQuery(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Nº Reserva:"><input value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className={inputCls + ' w-full'} /></Field>
@@ -403,7 +403,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
-            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Datas</div>
+            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Datas</div>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'fixed'} onChange={() => setDateMode('fixed')} /> Fixo</label>
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'period'} onChange={() => setDateMode('period')} /> Período</label>
@@ -434,7 +434,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Quarto / Tarifa</div>
+            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Quarto / Tarifa</div>
             <Field label="Categoria:">
               <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -460,7 +460,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Comercial</div>
+            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Comercial</div>
             <Field label="Segmento:">
               <select value={segment} onChange={(e) => { setSegment(e.target.value); setSubSegment(''); }} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -484,7 +484,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           </div>
 
           <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
-            <div className="text-[10px] font-bold uppercase text-[#657377] mb-0.5">Visualização</div>
+            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Visualização</div>
             <Field label="Estado:">
               <select value={status} onChange={(e) => setStatus(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -495,7 +495,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
               <label className="flex items-center gap-1.5 cursor-pointer" title="Reservas com origem Online (channel/booking automático), sem intervenção da receção.">
                 <input type="checkbox" checked={apenasAuto} onChange={(e) => setApenasAuto(e.target.checked)} /> Apenas reservas automáticas
               </label>
-              <button onClick={imprimir} className="flex items-center gap-1.5 px-2 py-1 border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] rounded-[6px] transition-colors ml-auto"><Printer size={13} /> Imprimir</button>
+              <button onClick={imprimir} className="flex items-center gap-1.5 px-2 py-1 border border-[#D7DBDF] bg-white hover:bg-[#F3F4F6] rounded-[6px] transition-colors ml-auto"><Printer size={13} /> Imprimir</button>
             </div>
             <div className="flex items-center gap-1.5">
               <label className="flex items-center gap-1.5 cursor-pointer">
@@ -503,7 +503,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
               </label>
               {!autoMode && (
                 <button onClick={() => setShowAutoDialog(true)}
-                  className="flex items-center gap-1.5 px-2 py-1 border border-[#C8D2D5] bg-white hover:bg-[#F4F6F7] rounded-[6px] transition-colors ml-auto">
+                  className="flex items-center gap-1.5 px-2 py-1 border border-[#D7DBDF] bg-white hover:bg-[#F3F4F6] rounded-[6px] transition-colors ml-auto">
                   <RefreshCw size={13} /> Auto
                 </button>
               )}
@@ -513,14 +513,14 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
 
           <button onClick={pesquisar}
             className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] hover:brightness-110 transition-[filter]"
-            style={{ background: '#062F35', borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
+            style={{ background: '#17375E', borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
             <RefreshCw size={20} /> Pesquisar
           </button>
         </div>
       )}
 
       <div className="flex-1 overflow-auto bg-white">
-        <div className="grid text-[11px] font-semibold text-[#1F292C] border-b border-[#E4E9EB] bg-[#F4F6F7] sticky top-0 z-10"
+        <div className="grid text-[11px] font-semibold text-[#1A1D21] border-b border-[#EBEEF0] bg-[#F3F4F6] sticky top-0 z-10"
           style={{ gridTemplateColumns: COLS }}>
           <div className="px-3 py-2">Hotel</div>
           <div className="px-3 py-2">Ações</div>
@@ -538,7 +538,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
         ))}
       </div>
 
-      <div className="flex items-center gap-3 px-3 py-1 border-t border-[#C8D2D5] bg-[#F4F6F7] text-[11px] flex-wrap">
+      <div className="flex items-center gap-3 px-3 py-1 border-t border-[#D7DBDF] bg-[#F3F4F6] text-[11px] flex-wrap">
         <label className="flex items-center gap-1">Ordenar:
           <select value={sortField} onChange={(e) => setSortField(e.target.value)} className={selCls + ' min-w-0'}>
             <option value="created_at">Data de criação</option>
@@ -567,18 +567,18 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
         <span className="ml-auto text-gray-500">{sortedRows.length === 0 ? 'Não foram encontrados dados.' : `${sortedRows.length} registo(s)`}</span>
       </div>
 
-      <div className="flex items-center gap-1 p-1.5 border-t border-[#C8D2D5] bg-[#F4F6F7] relative">
-        {!autoMode && <ToolBtn icon={BedDouble} label="Nova reserva" color="#4B858E" onClick={() => setShowNew(true)} />}
+      <div className="flex items-center gap-1 p-1.5 border-t border-[#D7DBDF] bg-[#F3F4F6] relative">
+        {!autoMode && <ToolBtn icon={BedDouble} label="Nova reserva" color="#2E75B6" onClick={() => setShowNew(true)} />}
         <ToolBtn icon={Copy} label={copying ? 'A copiar…' : 'Copiar reserva'} disabled={!sel || copying} onClick={doCopy} />
         <div className="relative">
           <button onClick={() => setShowFuncoes((o) => !o)} disabled={!sel}
-            className="flex items-center gap-1 px-2 py-1.5 text-[12px] font-semibold text-[#1F292C] disabled:opacity-40 hover:bg-[#F4F6F7]">
+            className="flex items-center gap-1 px-2 py-1.5 text-[12px] font-semibold text-[#1A1D21] disabled:opacity-40 hover:bg-[#F3F4F6]">
             Funções <ChevronDown size={12} />
           </button>
           {showFuncoes && sel && (
             <>
               <div className="fixed inset-0 z-[8000]" onClick={() => setShowFuncoes(false)} />
-              <div className="absolute bottom-full left-0 mb-1.5 z-[8001] min-w-[220px] bg-white border border-[#E4E9EB] py-1 overflow-hidden" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+              <div className="absolute bottom-full left-0 mb-1.5 z-[8001] min-w-[220px] bg-white border border-[#EBEEF0] py-1 overflow-hidden" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                 {/* MESMAS funções do detalhe da reserva, abrindo os MESMOS painéis
                     (PmsReservationFunctions.tsx). Antes esta lista era uma segunda
                     cópia com os seus próprios "ainda não construído" — duas listas
@@ -597,7 +597,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
                       setShowFuncoes(false);
                       if (accao === 'folio') setShowFolio(true); else setFuncaoRes(accao);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-[12px] hover:bg-[#F4F6F7]">
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-[12px] hover:bg-[#F3F4F6]">
                     {accao === 'folio' ? <Wallet size={13} /> : <span className="w-[13px]" />} {label}
                   </button>
                 ))}
@@ -606,10 +606,10 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
           )}
         </div>
         <ToolBtn icon={Repeat} label="Mudanças de Quartos" onClick={() => setShowBulkChange(true)} />
-        <ToolBtn icon={Bed} label="Atribuição rápida de quartos" color="#4B858E" onClick={() => setShowQuickAssign(true)} />
+        <ToolBtn icon={Bed} label="Atribuição rápida de quartos" color="#2E75B6" onClick={() => setShowQuickAssign(true)} />
         {autoMode && onCloseDialog && (
-          <button onClick={onCloseDialog} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black ml-auto">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white"><XCircle size={9} strokeWidth={3} /></span>
+          <button onClick={onCloseDialog} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1A1D21] hover:text-black ml-auto">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B42318] text-white"><XCircle size={9} strokeWidth={3} /></span>
             Fechar
           </button>
         )}
@@ -644,13 +644,13 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
       )}
       {showAutoDialog && !autoMode && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-          <div className="w-[97vw] h-[92vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-2xl rounded-[16px] overflow-hidden flex flex-col">
-            <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
+          <div className="w-[97vw] h-[92vh] bg-[#F3F4F6] border border-[#D7DBDF] shadow-2xl rounded-[16px] overflow-hidden flex flex-col">
+            <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#17375E' }}>
               Reservation Search (automatic reservations)
               <div className="flex items-center gap-2">
                 <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
                 <button onClick={() => setShowAutoDialog(false)} title="Fechar"
-                  className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
+                  className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B42318] text-white hover:brightness-110">
                   <XCircle size={12} strokeWidth={3} />
                 </button>
               </div>

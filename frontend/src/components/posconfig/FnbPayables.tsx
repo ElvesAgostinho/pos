@@ -4,9 +4,9 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
-const inp = 'border border-[#C8D2D5] px-2 py-[3px] text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[100px]', children }: any) => (
-  <span className={`text-[12px] text-[#1F292C] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#1A1D21] ${w} flex-shrink-0`}>{children}</span>
 );
 
 /**
@@ -42,7 +42,7 @@ export default function FnbPayables() {
     w.document.write(`<html><head><title>Recibo de Pagamento — ${doc.number}</title>
       <style>body{font-family:sans-serif;font-size:13px;padding:16px}
       h2{margin:0 0 4px}table{width:100%;border-collapse:collapse;margin-top:12px}
-      td{padding:4px 0}.tot{font-weight:bold;font-size:16px;border-top:1px solid #4B858E;padding-top:6px}</style>
+      td{padding:4px 0}.tot{font-weight:bold;font-size:16px;border-top:1px solid #2E75B6;padding-top:6px}</style>
       </head><body>
       <h2>Recibo de Pagamento</h2>
       <div>${aberta?.name || ''}${aberta?.other ? ` — NIF ${aberta.other}` : ''}</div>
@@ -87,40 +87,40 @@ export default function FnbPayables() {
   if (aberta) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-3 py-2 bg-[#F4F6F7] text-[#1F292C] text-[13px] font-bold border-b border-[#C8D2D5] flex">
+        <div className="px-3 py-2 bg-[#F3F4F6] text-[#1A1D21] text-[13px] font-bold border-b border-[#D7DBDF] flex">
           <span>{aberta.name} — NIF {aberta.other || '—'}</span>
           <span className="ml-auto">
-            Saldo: <b className="text-[16px] text-[#C94A4A]">{money(aberta.balance)} Kz</b>
+            Saldo: <b className="text-[16px] text-[#B42318]">{money(aberta.balance)} Kz</b>
           </span>
         </div>
         <div className="flex-1 overflow-auto">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0"><tr className="bg-[#F4F6F7]">
+            <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
               {['Documento', 'Data', 'Vencimento', 'Ref. fornecedor', 'Total', 'Stock', ''].map((h) => (
-                <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">{h}</th>
+                <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {aberta.documents.map((d: any) => {
                 const vencido = d.due_date && new Date(d.due_date) < new Date();
                 return (
-                  <tr key={d.id} className="border-b border-[#E4E9EB]">
+                  <tr key={d.id} className="border-b border-[#EBEEF0]">
                     <td className="px-2 py-1 font-mono">{d.number}</td>
                     <td className="px-2 py-1">{d.date}</td>
-                    <td className="px-2 py-1 flex items-center gap-1" style={{ color: vencido ? '#C94A4A' : undefined }}>
+                    <td className="px-2 py-1 flex items-center gap-1" style={{ color: vencido ? '#B42318' : undefined }}>
                       {d.due_date || '—'}{vencido && <><Glyph icon="⚠" size={12} /> vencido</>}
                     </td>
-                    <td className="px-2 py-1 text-[#657377]">{d.external_ref || '—'}</td>
+                    <td className="px-2 py-1 text-[#6B7280]">{d.external_ref || '—'}</td>
                     <td className="px-2 py-1 text-right font-bold">{money(d.total)}</td>
                     <td className="px-2 py-1">
                       <span className={`px-2 py-0.5 text-[11px] ${d.posted
-                        ? 'bg-[#F4F6F7] text-[#1F292C]' : 'bg-[#F4F6F7] text-[#1F292C]'}`}>
+                        ? 'bg-[#F3F4F6] text-[#1A1D21]' : 'bg-[#F3F4F6] text-[#1A1D21]'}`}>
                         {d.posted ? 'Lançado' : 'Por lançar'}
                       </span>
                     </td>
                     <td className="px-2 py-1 text-right">
                       <button onClick={() => pagar.mutate(d.id)}
-                        className="text-[11px] text-[#1F292C] hover:underline">Marcar como pago</button>
+                        className="text-[11px] text-[#1A1D21] hover:underline">Marcar como pago</button>
                     </td>
                   </tr>
                 );
@@ -128,8 +128,8 @@ export default function FnbPayables() {
             </tbody>
           </table>
         </div>
-        <Toolbar actions={[{ label: 'Voltar', icon: '◀', color: '#4B858E', onClick: () => setAberta(null) }]} right={
-          <span className="text-[11px] text-[#657377]">
+        <Toolbar actions={[{ label: 'Voltar', icon: '◀', color: '#2E75B6', onClick: () => setAberta(null) }]} right={
+          <span className="text-[11px] text-[#6B7280]">
             Pagar tira o documento daqui. O que já foi lançado no stock não muda — a mercadoria entrou.
           </span>
         } />
@@ -138,9 +138,9 @@ export default function FnbPayables() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F4F6F7]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#F3F4F6]">
       <div className="p-3">
-        <fieldset className="bg-white px-3 pb-3" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+        <fieldset className="bg-white px-3 pb-3" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <legend className="text-[12px] px-1">Critérios de pesquisa</legend>
           <div className="flex gap-10">
             <div className="space-y-2">
@@ -158,33 +158,33 @@ export default function FnbPayables() {
         </fieldset>
       </div>
 
-      <div className="flex-1 overflow-auto bg-white border-t border-[#E4E9EB]">
+      <div className="flex-1 overflow-auto bg-white border-t border-[#EBEEF0]">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F4F6F7]">
+          <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
             {['Principal', 'Morada', 'Contacto', 'Outra', 'Documentos', 'Saldo'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB] border-r border-r-[#E4E9EB]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0] border-r border-r-[#EBEEF0]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {vista.map((r) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setAberta(r)}
-                className={`border-b border-[#E4E9EB] cursor-pointer ${sel === r.id ? 'bg-[#F4F6F7]' : 'hover:bg-[#FFFFFF]'}`}>
+                className={`border-b border-[#EBEEF0] cursor-pointer ${sel === r.id ? 'bg-[#F3F4F6]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="px-2 py-1.5 font-semibold">{r.name}</td>
                 <td className="px-2 py-1.5">{r.address || '—'}</td>
                 <td className="px-2 py-1.5">{r.contact || '—'}</td>
-                <td className="px-2 py-1.5 text-[#657377]">{r.other || '—'}</td>
+                <td className="px-2 py-1.5 text-[#6B7280]">{r.other || '—'}</td>
                 <td className="px-2 py-1.5 text-right">{r.documents.length}</td>
-                <td className="px-2 py-1.5 text-right font-bold text-[#C94A4A]">{money(r.balance)}</td>
+                <td className="px-2 py-1.5 text-right font-bold text-[#B42318]">{money(r.balance)}</td>
               </tr>
             ))}
             {vista.length === 0 && (
-              <tr><td colSpan={6} className="text-center text-[#657377] py-12">Não foram encontrados dados.</td></tr>
+              <tr><td colSpan={6} className="text-center text-[#6B7280] py-12">Não foram encontrados dados.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F4F6F7] border-t border-[#E4E9EB] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F3F4F6] border-t border-[#EBEEF0] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -194,14 +194,14 @@ export default function FnbPayables() {
         <span>Página {page} de {paginas}</span>
         <button disabled={page >= paginas} onClick={() => setPage(page + 1)} className="px-2 disabled:opacity-30">▶</button>
         <span className="ml-auto">
-          Total a pagar: <b className="text-[#C94A4A] text-[14px]">{money(data?.total_due || 0)} Kz</b>
+          Total a pagar: <b className="text-[#B42318] text-[14px]">{money(data?.total_due || 0)} Kz</b>
         </span>
       </div>
 
       <Toolbar actions={[
-        { label: 'Abrir', icon: '▸', color: '#4B858E', disabled: !sel, onClick: () => setAberta(selRow) },
+        { label: 'Abrir', icon: '▸', color: '#2E75B6', disabled: !sel, onClick: () => setAberta(selRow) },
       ]} right={
-        <span className="text-[11px] text-[#657377]">
+        <span className="text-[11px] text-[#6B7280]">
           Vem das Compras: só entram as séries marcadas como "Documento a pagar".
         </span>
       } />

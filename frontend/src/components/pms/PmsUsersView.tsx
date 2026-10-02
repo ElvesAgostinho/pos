@@ -43,7 +43,7 @@ export default function PmsUsersView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[12px] text-[#657377]">
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[12px] text-[#6B7280]">
         <ShieldCheck size={14} />
         A criação de utilizadores, senha e acesso a hotéis é feita em Segurança → Utilizadores. Aqui só se ajusta o acesso aos ecrãs do PMS.
       </div>
@@ -52,11 +52,11 @@ export default function PmsUsersView() {
           { header: 'Utilizador', accessor: 'username', width: '20%' },
           { header: 'Email', accessor: (r: any) => r.email || '—', width: '25%' },
           { header: 'Perfil', accessor: (r: any) => r.profiles?.[0]?.name || '—', width: '20%' },
-          { header: 'Estado', accessor: (r: any) => <span className={r.is_active ? 'text-[#1F292C] font-bold' : 'text-[#A83A3A]'}>{r.is_active ? 'Ativo' : 'Inativo'}</span>, width: '10%' },
-          { header: 'Acesso PMS', accessor: (r: any) => <span className="text-[#1F292C]">{accessLabel(r)}</span>, width: '15%' },
+          { header: 'Estado', accessor: (r: any) => <span className={r.is_active ? 'text-[#1A1D21] font-bold' : 'text-[#912018]'}>{r.is_active ? 'Ativo' : 'Inativo'}</span>, width: '10%' },
+          { header: 'Acesso PMS', accessor: (r: any) => <span className="text-[#1A1D21]">{accessLabel(r)}</span>, width: '15%' },
           { header: 'Ações', accessor: (r: any) => (
             <button onClick={() => setTarget(r)} disabled={r.is_superuser}
-              className="text-[11px] text-[#657377] hover:underline disabled:opacity-40 disabled:no-underline">
+              className="text-[11px] text-[#6B7280] hover:underline disabled:opacity-40 disabled:no-underline">
               Permissões PMS…
             </button>
           ), width: '10%' },

@@ -23,9 +23,9 @@ export default function GiftCardsView() {
     <ClassicWindow title="Gift Cards / Vouchers (POS · Motor 6)" icon={<Gift size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{cards.length} cartão(ões) · o saldo é debitado no pagamento (redeem) do ticket</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px]">
-          <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#C8D2D5] p-1 w-40" />
-          <input placeholder="Saldo inicial" type="number" value={draft.initial_balance} onChange={(e) => setDraft({ ...draft, initial_balance: e.target.value })} className="border border-[#C8D2D5] p-1 w-28" />
+        <div className="flex flex-wrap items-end gap-2 bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px]">
+          <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#D7DBDF] p-1 w-40" />
+          <input placeholder="Saldo inicial" type="number" value={draft.initial_balance} onChange={(e) => setDraft({ ...draft, initial_balance: e.target.value })} className="border border-[#D7DBDF] p-1 w-28" />
           <ClassicButton icon={Plus} label="Emitir Gift Card" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -35,7 +35,7 @@ export default function GiftCardsView() {
             columns={[
               { header: 'Código', accessor: 'code', width: '26%' },
               { header: 'Valor inicial', accessor: (r: any) => Number(r.initial_balance).toFixed(2), width: '20%' },
-              { header: 'Saldo atual', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#1F292C] font-bold' : 'text-gray-400'}>{Number(r.balance).toFixed(2)}</span>, width: '20%' },
+              { header: 'Saldo atual', accessor: (r: any) => <span className={Number(r.balance) > 0 ? 'text-[#1A1D21] font-bold' : 'text-gray-400'}>{Number(r.balance).toFixed(2)}</span>, width: '20%' },
               { header: 'Ativo', accessor: (r: any) => r.is_active ? 'Sim' : 'Não', width: '14%' },
               { header: 'Emitido', accessor: (r: any) => r.created_at ? new Date(r.created_at).toLocaleDateString('pt-PT') : '—', width: '20%' },
             ]}

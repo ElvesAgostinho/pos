@@ -46,23 +46,23 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[1000px] max-h-[75vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#062F35' }}>
+      <div className="w-[1000px] max-h-[75vh] bg-[#F3F4F6] border border-[#D7DBDF] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#17375E' }}>
           Mostrar quartos livres
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B42318] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="p-2 bg-white border-b border-[#E4E9EB] flex flex-wrap items-end gap-3 text-[12px]">
+        <div className="p-2 bg-white border-b border-[#EBEEF0] flex flex-wrap items-end gap-3 text-[12px]">
           <label className="flex flex-col gap-0.5">De:
-            <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className="border border-[#C8D2D5] p-1 bg-white" />
+            <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className="border border-[#D7DBDF] p-1 bg-white" />
           </label>
           <label className="flex flex-col gap-0.5">Até:
-            <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="border border-[#C8D2D5] p-1 bg-white" />
+            <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="border border-[#D7DBDF] p-1 bg-white" />
           </label>
           <label className="flex flex-col gap-0.5">Categoria:
-            <select value={cat} onChange={(e) => setCat(e.target.value)} className="border border-[#C8D2D5] p-1 bg-white min-w-[160px]">
+            <select value={cat} onChange={(e) => setCat(e.target.value)} className="border border-[#D7DBDF] p-1 bg-white min-w-[160px]">
               <option value="">(Todas)</option>
               {roomTypes.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
             </select>
@@ -73,7 +73,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
           {atributos.length > 0 && (
             <div className="flex flex-col gap-0.5 min-w-[180px]">
               <span>Atributos:</span>
-              <div className="flex flex-wrap gap-x-3 gap-y-0.5 border border-[#C8D2D5] bg-white p-1 max-h-[58px] overflow-auto">
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 border border-[#D7DBDF] bg-white p-1 max-h-[58px] overflow-auto">
                 {atributos.map((a: any) => (
                   <label key={a.id} className="flex items-center gap-1 text-[11px] whitespace-nowrap">
                     <input type="checkbox" checked={atribSel.includes(a.id)}
@@ -86,11 +86,11 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
             </div>
           )}
           <label className="flex flex-col gap-0.5 flex-1 min-w-[140px]">Pesquisar:
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nº do quarto…" className="border border-[#C8D2D5] p-1 bg-white" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nº do quarto…" className="border border-[#D7DBDF] p-1 bg-white" />
           </label>
           <button onClick={() => refetch()}
             className="w-[130px] flex-shrink-0 flex items-center justify-center gap-2 text-white font-bold text-[13px] py-2"
-            style={{ background: '#062F35' }}>
+            style={{ background: '#17375E' }}>
             <RefreshCw size={16} /> Pesquisar
           </button>
         </div>
@@ -116,13 +116,13 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
               ]} />
           )}
         </div>
-        <div className="flex justify-between items-center px-3 py-1.5 bg-[#F4F6F7] border-t border-[#C8D2D5]">
+        <div className="flex justify-between items-center px-3 py-1.5 bg-[#F3F4F6] border-t border-[#D7DBDF]">
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
-            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1A1D21] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
             <Hand size={13} /> Selecionar
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1F292C] hover:text-black">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1A1D21] hover:text-black">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B42318] text-white">
               <X size={9} strokeWidth={3} />
             </span>
             Fechar

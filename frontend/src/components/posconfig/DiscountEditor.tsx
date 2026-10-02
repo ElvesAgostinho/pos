@@ -5,12 +5,12 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck } from './kit';
 import { ItemPicker } from './Pickers';
 
-const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
     <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[130px] flex-shrink-0 text-[#1F292C]">{label}</span>
+      <span className="w-[130px] flex-shrink-0 text-[#1A1D21]">{label}</span>
       {children}
     </label>
   );
@@ -76,16 +76,16 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F4F6F7] border-b border-[#E4E9EB]">
-        <span className="text-[13px] font-bold text-[#1F292C]">{isNew ? 'Novo desconto' : `A editar ${d.name}`}</span>
-        <button onClick={onClose} className="text-[16px] text-[#657377] hover:text-black leading-none">×</button>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
+        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Novo desconto' : `A editar ${d.name}`}</span>
+        <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Esquerda: a ficha */}
-        <div className="w-[54%] p-4 space-y-2 overflow-auto border-r border-[#E4E9EB]">
+        <div className="w-[54%] p-4 space-y-2 overflow-auto border-r border-[#EBEEF0]">
           <div className="flex items-center gap-6 text-[12px]">
-            <span className="w-[130px] text-[#1F292C]">Módulos:</span>
+            <span className="w-[130px] text-[#1A1D21]">Módulos:</span>
             <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_pms} onChange={(e) => set('for_pms', e.target.checked)} className="w-4 h-4" />PMS</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_ems} onChange={(e) => set('for_ems', e.target.checked)} className="w-4 h-4" />Eventos</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_pos} onChange={(e) => set('for_pos', e.target.checked)} className="w-4 h-4" />POS</label>
@@ -120,7 +120,7 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
           <Row label="Valor:">
             <input type="number" step="any" value={d.value ?? 0} onChange={(e) => set('value', e.target.value)}
               className={`${inp} w-[130px]`} style={inputStyle} />
-            <span className="text-[11px] text-[#657377]">{d.base === 'PERCENT' ? '%' : 'Kz'}</span>
+            <span className="text-[11px] text-[#6B7280]">{d.base === 'PERCENT' ? '%' : 'Kz'}</span>
           </Row>
 
           <label className="flex items-center gap-2 text-[12px] pt-1">
@@ -134,10 +134,10 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
               <option value="NIGHTS">Por noites</option>
               <option value="FIRST">Primeira noite</option>
             </select>
-            <span className="text-[12px] text-[#657377] ml-2">Base:</span>
+            <span className="text-[12px] text-[#6B7280] ml-2">Base:</span>
             <select value={d.calc_base || ''} onChange={(e) => set('calc_base', e.target.value)}
               disabled={d.calc_mode === 'GENERAL'}
-              className={`${inp} w-[140px] disabled:bg-[#F4F6F7] disabled:text-[#657377]`} style={inputStyle}>
+              className={`${inp} w-[140px] disabled:bg-[#F3F4F6] disabled:text-[#6B7280]`} style={inputStyle}>
               <option value="">Geral</option>
               <option value="ROOM">Alojamento</option>
               <option value="FNB">F&B</option>
@@ -152,12 +152,12 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
           <Row label="Dias Estadia:">
             <input type="number" value={d.stay_nights ?? 0} disabled={!d.set_nights}
               onChange={(e) => set('stay_nights', Number(e.target.value))}
-              className={`${inp} w-[130px] disabled:bg-[#F4F6F7] disabled:text-[#657377]`} style={inputStyle} />
+              className={`${inp} w-[130px] disabled:bg-[#F3F4F6] disabled:text-[#6B7280]`} style={inputStyle} />
           </Row>
           <Row label="Dias Pagos:">
             <input type="number" value={d.paid_nights ?? 0} disabled={!d.set_nights}
               onChange={(e) => set('paid_nights', Number(e.target.value))}
-              className={`${inp} w-[130px] disabled:bg-[#F4F6F7] disabled:text-[#657377]`} style={inputStyle} />
+              className={`${inp} w-[130px] disabled:bg-[#F3F4F6] disabled:text-[#6B7280]`} style={inputStyle} />
           </Row>
           <label className="flex items-center gap-2 text-[12px] pt-1">
             <input type="checkbox" checked={!!d.use_intervals} onChange={(e) => set('use_intervals', e.target.checked)} className="w-4 h-4" />
@@ -169,7 +169,7 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
           </label>
 
           {gids.length === 0 && (
-            <div className="text-[11px] text-[#1F292C] bg-[#F4F6F7] border border-[#C8D2D5] px-2 py-1 mt-2">
+            <div className="text-[11px] text-[#1A1D21] bg-[#F3F4F6] border border-[#D7DBDF] px-2 py-1 mt-2">
               Sem nenhum grupo marcado, <b>ninguém</b> consegue aplicar este desconto no POS.
             </div>
           )}
@@ -177,10 +177,10 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
 
         {/* Direita: quem o pode dar / a que artigos se aplica */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex border-b-2 border-[#062F35] px-2">
+          <div className="flex border-b-2 border-[#17375E] px-2">
             {([['groups', 'Grupos de Utilizadores'], ['fnb', 'F&B']] as const).map(([k, l]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#062F35] text-[#1F292C] bg-white' : 'border-transparent text-[#657377] hover:text-[#1F292C]'}`}>
+                className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#17375E] text-[#1A1D21] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#1A1D21]'}`}>
                 {l}
               </button>
             ))}
@@ -188,7 +188,7 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
 
           {tab === 'groups' ? (
             <div className="flex-1 overflow-auto">
-              <label className="flex items-center gap-2 px-3 py-2 text-[12px] bg-[#F4F6F7] border-b border-[#E4E9EB]">
+              <label className="flex items-center gap-2 px-3 py-2 text-[12px] bg-[#F3F4F6] border-b border-[#EBEEF0]">
                 <input type="checkbox"
                   checked={gids.length === (groups as any[]).length && gids.length > 0}
                   onChange={(e) => set('group_ids', e.target.checked ? (groups as any[]).map((g) => g.id) : [])}
@@ -196,64 +196,64 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
                 Selecionar Tudo
               </label>
               <table className="w-full text-[12px] border-collapse">
-                <thead><tr className="bg-[#F4F6F7]">
-                  <th className="w-[46px] border-b border-[#E4E9EB]" />
-                  <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">Grupo de Utilizador</th>
+                <thead><tr className="bg-[#F3F4F6]">
+                  <th className="w-[46px] border-b border-[#EBEEF0]" />
+                  <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">Grupo de Utilizador</th>
                 </tr></thead>
                 <tbody>
                   {(groups as any[]).map((g) => (
                     <tr key={g.id} onClick={() => toggleG(g.id)}
-                      className={`border-b border-[#E4E9EB] cursor-pointer ${gids.includes(g.id) ? 'bg-[#F4F6F7]' : 'hover:bg-[#FFFFFF]'}`}>
+                      className={`border-b border-[#EBEEF0] cursor-pointer ${gids.includes(g.id) ? 'bg-[#F3F4F6]' : 'hover:bg-[#FFFFFF]'}`}>
                       <td className="text-center py-1.5"><GridCheck checked={gids.includes(g.id)} onChange={() => toggleG(g.id)} /></td>
                       <td className="px-2 py-1.5">{g.name}</td>
                     </tr>
                   ))}
                   {(groups as any[]).length === 0 && (
-                    <tr><td colSpan={2} className="text-center text-[#657377] py-8">Sem grupos de utilizadores.</td></tr>
+                    <tr><td colSpan={2} className="text-center text-[#6B7280] py-8">Sem grupos de utilizadores.</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex items-center gap-3 px-3 py-2 bg-[#F4F6F7] border-b border-[#E4E9EB]">
+              <div className="flex items-center gap-3 px-3 py-2 bg-[#F3F4F6] border-b border-[#EBEEF0]">
                 <span className="text-[12px]">Filtro:</span>
                 <input value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inp} w-[220px]`} style={inputStyle} />
-                <span className="ml-auto text-[11px] text-[#657377]">
+                <span className="ml-auto text-[11px] text-[#6B7280]">
                   {iids.length === 0 ? 'Sem artigos = aplica-se à conta toda' : `${iids.length} artigo(s)`}
                 </span>
               </div>
               <div className="flex-1 overflow-auto">
                 <table className="w-full text-[12px] border-collapse">
-                  <thead><tr className="bg-[#F4F6F7]">
-                    <th className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">Artigo</th>
-                    <th className="w-[70px] border-b border-[#E4E9EB]" />
+                  <thead><tr className="bg-[#F3F4F6]">
+                    <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">Artigo</th>
+                    <th className="w-[70px] border-b border-[#EBEEF0]" />
                   </tr></thead>
                   <tbody>
                     {chosen.map((a: any) => (
-                      <tr key={a.id} className="border-b border-[#E4E9EB]">
+                      <tr key={a.id} className="border-b border-[#EBEEF0]">
                         <td className="px-2 py-1.5"><b className="font-mono">{a.code}</b> · {a.name}</td>
                         <td className="text-center">
                           <button onClick={() => set('item_ids', iids.filter((x) => x !== a.id))}
-                            className="text-[#A83A3A] font-bold text-[11px]">Apagar</button>
+                            className="text-[#912018] font-bold text-[11px]">Apagar</button>
                         </td>
                       </tr>
                     ))}
                     {chosen.length === 0 && (
-                      <tr><td colSpan={2} className="text-center text-[#657377] py-8">
+                      <tr><td colSpan={2} className="text-center text-[#6B7280] py-8">
                         Sem artigos — o desconto aplica-se à conta toda.
                       </td></tr>
                     )}
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center gap-4 px-3 py-2 bg-[#F4F6F7] border-t border-[#E4E9EB]">
-                <button onClick={() => setPicker(true)} className="flex items-center gap-2 text-[12px] hover:bg-[#F4F6F7] px-1 py-1">
-                  <span className="w-5 h-5 rounded-full bg-[#062F35] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+              <div className="flex items-center gap-4 px-3 py-2 bg-[#F3F4F6] border-t border-[#EBEEF0]">
+                <button onClick={() => setPicker(true)} className="flex items-center gap-2 text-[12px] hover:bg-[#F3F4F6] px-1 py-1">
+                  <span className="w-5 h-5 rounded-full bg-[#17375E] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
                 </button>
                 <button onClick={() => set('item_ids', [])} disabled={iids.length === 0}
-                  className="flex items-center gap-2 text-[12px] hover:bg-[#F4F6F7] px-1 py-1 disabled:opacity-35">
-                  <span className="w-5 h-5 rounded-full bg-[#C94A4A] text-white flex items-center justify-center text-[11px]">−</span> Apagar tudo
+                  className="flex items-center gap-2 text-[12px] hover:bg-[#F3F4F6] px-1 py-1 disabled:opacity-35">
+                  <span className="w-5 h-5 rounded-full bg-[#B42318] text-white flex items-center justify-center text-[11px]">−</span> Apagar tudo
                 </button>
               </div>
             </div>
@@ -268,8 +268,8 @@ export default function DiscountEditor({ row, onClose }: { row: any; onClose: ()
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#062F35', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#C94A4A', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
       ]} />
     </div>
   );

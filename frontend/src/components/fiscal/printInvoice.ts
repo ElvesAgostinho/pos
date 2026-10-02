@@ -69,80 +69,80 @@ function montarHtml(p: any, imprimir: boolean) {
   <style>
     * { box-sizing: border-box; }
     @page { size: A4; margin: 0; }
-    body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; font-size: 11.5px; color: #15232b;
+    body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; font-size: 11.5px; color: #1A1D21;
            margin: 0; padding: 18mm 16mm; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
     /* Cabeçalho */
     .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
-            border-bottom: 2px solid #062F35; padding-bottom: 10px; }
+            border-bottom: 2px solid #17375E; padding-bottom: 10px; }
     .logo { max-height: 56px; max-width: 200px; display: block; margin-bottom: 6px; }
-    .brand { font-size: 19px; font-weight: 700; color: #062F35; letter-spacing: .2px; }
-    .company-line { color: #5b6b73; font-size: 10.5px; line-height: 1.45; margin-top: 2px; }
+    .brand { font-size: 19px; font-weight: 700; color: #17375E; letter-spacing: .2px; }
+    .company-line { color: #6B7280; font-size: 10.5px; line-height: 1.45; margin-top: 2px; }
     .party { text-align: right; min-width: 210px; }
-    .party-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: #4B858E; }
+    .party-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: #2E75B6; }
     .party-name { font-weight: 700; font-size: 13px; margin-top: 1px; }
-    .party-line { color: #5b6b73; font-size: 10.5px; }
+    .party-line { color: #6B7280; font-size: 10.5px; }
 
     /* Faixa do documento */
     .docbar { display: flex; justify-content: space-between; align-items: center; gap: 16px;
-              background: #F2F7F8; border: 1px solid #D8E7EA; border-radius: 6px;
+              background: #FFFFFF; border: 1px solid #DCE9F5; border-radius: 6px;
               padding: 9px 12px; margin-top: 14px; }
-    .doc-title { font-size: 15px; font-weight: 700; color: #062F35; }
+    .doc-title { font-size: 15px; font-weight: 700; color: #17375E; }
     .badge { display: inline-block; font-size: 9.5px; font-weight: 700; text-transform: uppercase;
              letter-spacing: .6px; padding: 2px 8px; border-radius: 999px; margin-left: 8px;
-             background: #062F35; color: #fff; }
-    .badge.copy { background: #C94A4A; }
+             background: #17375E; color: #fff; }
+    .badge.copy { background: #B42318; }
     .meta { display: flex; gap: 18px; font-size: 10.5px; }
-    .meta div span { color: #4B858E; display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .5px; }
+    .meta div span { color: #2E75B6; display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .5px; }
 
     /* Linhas */
     table { width: 100%; border-collapse: collapse; }
     .items { margin-top: 12px; }
-    .items th { background: #062F35; color: #fff; text-align: left; font-weight: 600;
+    .items th { background: #17375E; color: #fff; text-align: left; font-weight: 600;
                 padding: 6px 8px; font-size: 10.5px; }
-    .items td { padding: 6px 8px; border-bottom: 1px solid #E6EFF1; vertical-align: top; }
-    .items tbody tr:nth-child(even) td { background: #FAFCFC; }
+    .items td { padding: 6px 8px; border-bottom: 1px solid #EBEEF0; vertical-align: top; }
+    .items tbody tr:nth-child(even) td { background: #F7F8F9; }
     .num { text-align: right; white-space: nowrap; }
     .strong { font-weight: 700; }
-    .exempt { font-size: 9.5px; color: #C94A4A; margin-top: 2px; }
+    .exempt { font-size: 9.5px; color: #B42318; margin-top: 2px; }
 
     /* IVA + totais */
     .rowbox { display: flex; gap: 20px; margin-top: 14px; align-items: flex-start;
               justify-content: space-between; }
-    .vat { width: auto; border: 1px solid #D8E7EA; border-radius: 6px; overflow: hidden; }
-    .vat th { background: #F2F7F8; color: #062F35; font-size: 9.5px; font-weight: 700;
-              text-transform: uppercase; letter-spacing: .4px; padding: 4px 8px; border-bottom: 1px solid #D8E7EA; }
-    .vat td { padding: 4px 8px; font-size: 10.5px; border-bottom: 1px solid #E4E9EB; }
+    .vat { width: auto; border: 1px solid #DCE9F5; border-radius: 6px; overflow: hidden; }
+    .vat th { background: #FFFFFF; color: #17375E; font-size: 9.5px; font-weight: 700;
+              text-transform: uppercase; letter-spacing: .4px; padding: 4px 8px; border-bottom: 1px solid #DCE9F5; }
+    .vat td { padding: 4px 8px; font-size: 10.5px; border-bottom: 1px solid #EBEEF0; }
     .totals { width: 258px; }
     .totals td { padding: 4px 10px; font-size: 11.5px; }
-    .totals .lbl { color: #5b6b73; }
+    .totals .lbl { color: #6B7280; }
     .totals .val { text-align: right; font-weight: 600; }
-    .totals .grand td { background: #062F35; color: #fff; font-size: 13.5px; font-weight: 700;
+    .totals .grand td { background: #17375E; color: #fff; font-size: 13.5px; font-weight: 700;
                         padding: 8px 10px; }
     .totals .grand td:last-child { text-align: right; }
 
-    .words { margin-top: 10px; font-style: italic; color: #41535c; font-size: 11px; }
+    .words { margin-top: 10px; font-style: italic; color: #6B7280; font-size: 11px; }
 
     /* Rodapé legal */
     .legal { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px;
-             margin-top: 22px; border-top: 1px solid #D8E7EA; padding-top: 10px; }
+             margin-top: 22px; border-top: 1px solid #DCE9F5; padding-top: 10px; }
     .qr { text-align: center; }
     .qr img { width: 96px; height: 96px; display: block; }
-    .qr small { font-size: 8.5px; color: #4B858E; }
-    .mention { font-size: 9.5px; color: #41535c; line-height: 1.5; flex: 1; }
+    .qr small { font-size: 8.5px; color: #2E75B6; }
+    .mention { font-size: 9.5px; color: #6B7280; line-height: 1.5; flex: 1; }
 
     /* Bancos */
-    .banks { margin-top: 16px; border: 1px solid #D8E7EA; border-radius: 6px; overflow: hidden; }
-    .banks-title { background: #F2F7F8; padding: 5px 10px; font-size: 9.5px; font-weight: 700;
-                   text-transform: uppercase; letter-spacing: .5px; color: #062F35;
-                   border-bottom: 1px solid #D8E7EA; }
-    .banks-tbl th { background: #FAFCFC; text-align: left; font-size: 9.5px; color: #5b6b73;
-                    padding: 4px 10px; border-bottom: 1px solid #E4E9EB; }
-    .banks-tbl td { padding: 4px 10px; font-size: 10.5px; border-bottom: 1px solid #F3F8F9; }
+    .banks { margin-top: 16px; border: 1px solid #DCE9F5; border-radius: 6px; overflow: hidden; }
+    .banks-title { background: #FFFFFF; padding: 5px 10px; font-size: 9.5px; font-weight: 700;
+                   text-transform: uppercase; letter-spacing: .5px; color: #17375E;
+                   border-bottom: 1px solid #DCE9F5; }
+    .banks-tbl th { background: #F7F8F9; text-align: left; font-size: 9.5px; color: #6B7280;
+                    padding: 4px 10px; border-bottom: 1px solid #EBEEF0; }
+    .banks-tbl td { padding: 4px 10px; font-size: 10.5px; border-bottom: 1px solid #F7F8F9; }
     .mono { font-family: "Courier New", monospace; }
 
-    .foot { margin-top: 18px; padding-top: 8px; border-top: 1px solid #E4E9EB;
-            font-size: 9.5px; color: #7b8a91; line-height: 1.55; text-align: center; }
+    .foot { margin-top: 18px; padding-top: 8px; border-top: 1px solid #EBEEF0;
+            font-size: 9.5px; color: #6B7280; line-height: 1.55; text-align: center; }
     @media print { body { padding: 12mm 14mm; } .noprint { display: none; } }
   </style></head><body${imprimir ? ' onload="window.print()"' : ''}>
 
@@ -218,7 +218,7 @@ function montarHtml(p: any, imprimir: boolean) {
           </tr>`).join('')}
         </tbody>
       </table>
-      ${p.bank_accounts[0]?.account_holder ? `<div style="padding:4px 10px;font-size:10px;color:#5b6b73">Titular: ${esc(p.bank_accounts[0].account_holder)}</div>` : ''}
+      ${p.bank_accounts[0]?.account_holder ? `<div style="padding:4px 10px;font-size:10px;color:#6B7280">Titular: ${esc(p.bank_accounts[0].account_holder)}</div>` : ''}
     </div>` : ''}
 
     <div class="legal">

@@ -28,7 +28,7 @@ export default function BookingSite() {
       .then((r) => setCfg(r.data)).catch(() => setNotFound(true));
   }, [slug]);
 
-  const color = cfg?.primary_color || '#4B858E';
+  const color = cfg?.primary_color || '#2E75B6';
   const search = async () => {
     setBusy(true); setRooms(null);
     try { const r = await apiClient.get('pms/booking/availability/', { params: { slug, check_in: ci, check_out: co, adults, children } }); setRooms(r.data.rooms || []); }
@@ -128,7 +128,7 @@ export default function BookingSite() {
       {confirmation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl w-full max-w-md p-6 text-center">
-            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white" style={{ background: '#062F35' }}><Check size={30} strokeWidth={3} /></div>
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white" style={{ background: '#17375E' }}><Check size={30} strokeWidth={3} /></div>
             <h3 className="text-xl font-bold">Reserva confirmada!</h3>
             <p className="text-gray-600 mt-2">Código: <b className="font-mono">{confirmation.confirmation}</b></p>
             <p className="text-gray-600">{confirmation.room_type} · {confirmation.check_in} → {confirmation.check_out}</p>
@@ -139,7 +139,7 @@ export default function BookingSite() {
                   Adiantamento: <b>{money(confirmation.deposit_due, cfg.currency)}</b>
                 </p>
                 {confirmation.payment_status === 'PAID' ? (
-                  <p className="text-sm font-semibold mt-1" style={{ color: '#062F35' }}>
+                  <p className="text-sm font-semibold mt-1" style={{ color: '#17375E' }}>
                     ✓ Adiantamento recebido. Até já!
                   </p>
                 ) : confirmation.payment_message ? (

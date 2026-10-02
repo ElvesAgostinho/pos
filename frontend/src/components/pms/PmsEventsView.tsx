@@ -17,7 +17,7 @@ const STATUS = [
   { value: 'CANCELLED', label: 'Cancelado' },
   { value: 'COMPLETED', label: 'Concluído' },
 ];
-const STATUS_COLOR: Record<string, string> = { INQUIRY: '#4B858E', CONFIRMED: '#062F35', CANCELLED: '#C94A4A', COMPLETED: '#4B858E' };
+const STATUS_COLOR: Record<string, string> = { INQUIRY: '#2E75B6', CONFIRMED: '#17375E', CANCELLED: '#B42318', COMPLETED: '#2E75B6' };
 
 const blank = {
   name: '', event_date: '', start_time: '', end_time: '', venue: '', client: '',
@@ -65,17 +65,17 @@ export default function PmsEventsView() {
     try { await apiClient.delete(`pms/events/${selId}/`); refetch(); novo(); } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#C8D2D5] p-1';
+  const inp = 'border border-[#D7DBDF] p-1';
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#F4F6F7] border-b border-[#C8D2D5] text-[12px]">
-        <span className="font-semibold text-[#657377]">Pesquisar:</span>
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[12px]">
+        <span className="font-semibold text-[#6B7280]">Pesquisar:</span>
         <input className={`${inp} flex-1 max-w-xs`} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nome, local, cliente…" />
         <span className="text-gray-500">{rows.length} evento(s)</span>
       </div>
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r border-[#C8D2D5]">
+        <div className="w-1/2 border-r border-[#D7DBDF]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
             { header: 'Data', accessor: 'event_date', width: '15%' },
             { header: 'Nome', accessor: 'name', width: '30%' },
@@ -113,9 +113,9 @@ export default function PmsEventsView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Novo Evento', icon: '＋', color: '#062F35', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#062F35', onClick: save },
-        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#C94A4A' },
+        { label: 'Novo Evento', icon: '＋', color: '#17375E', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#17375E', onClick: save },
+        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#B42318' },
       ]} />
     </div>
   );

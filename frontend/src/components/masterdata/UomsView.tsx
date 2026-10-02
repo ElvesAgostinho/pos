@@ -20,9 +20,9 @@ export default function UomsView() {
       footer={<div className="text-gray-600">Nº registos: {uoms.length}</div>}
     >
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F4F6F7] border-b border-[#C8D2D5] px-3 py-2 text-[11px]">
-          <input placeholder="Código (ex: KG)" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#C8D2D5] p-1 w-28" />
-          <input placeholder="Nome (ex: Quilograma)" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#C8D2D5] p-1" />
+        <div className="flex items-end gap-2 bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px]">
+          <input placeholder="Código (ex: KG)" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#D7DBDF] p-1 w-28" />
+          <input placeholder="Nome (ex: Quilograma)" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#D7DBDF] p-1" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -32,7 +32,7 @@ export default function UomsView() {
             columns={[
               { header: 'Código', accessor: 'code', width: '25%' },
               { header: 'Nome', accessor: 'name', width: '65%' },
-              { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#A83A3A] hover:text-[#A83A3A]"><Trash2 size={12} /></button>, width: '10%' },
+              { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button>, width: '10%' },
             ]}
           />
         </div>

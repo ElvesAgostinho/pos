@@ -5,7 +5,7 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { inputStyle, Box, SearchButton } from './kit';
 import { TOKENS } from '../../config/theme';
 
-const inp = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
 
 /**
  * UTILITÁRIOS DE F&B — RECALCULAR O STOCK.
@@ -45,15 +45,15 @@ export default function FnbUtilities() {
   return (
     <div className="flex-1 flex overflow-hidden bg-white">
       {/* Operações */}
-      <div className="w-[300px] flex-shrink-0 border-r border-[#E4E9EB] p-3 space-y-2 bg-[#FFFFFF]">
+      <div className="w-[300px] flex-shrink-0 border-r border-[#EBEEF0] p-3 space-y-2 bg-[#FFFFFF]">
         <button onClick={() => setOp('recalc')}
           className={`w-full py-4 text-[14px] font-semibold ${op === 'recalc'
-            ? 'bg-[#062F35] text-white' : 'bg-[#062F35] text-white/80 hover:bg-[#062F35]'}`}>
+            ? 'bg-[#17375E] text-white' : 'bg-[#17375E] text-white/80 hover:bg-[#17375E]'}`}>
           Recalcular
         </button>
         <button onClick={() => setOp('saft')}
           className={`w-full py-4 text-[14px] font-semibold ${op === 'saft'
-            ? 'bg-[#062F35] text-white' : 'bg-[#062F35] text-white/80 hover:bg-[#062F35]'}`}>
+            ? 'bg-[#17375E] text-white' : 'bg-[#17375E] text-white/80 hover:bg-[#17375E]'}`}>
           SAF-T — Comunicação de Inventário
         </button>
       </div>
@@ -61,14 +61,14 @@ export default function FnbUtilities() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {op === 'recalc' ? (
           <>
-            <div className="p-4 border-b border-[#E4E9EB]">
+            <div className="p-4 border-b border-[#EBEEF0]">
               <Box title="Recalcular o stock" className="max-w-[900px]">
                 <div className="flex items-end gap-6 pt-1.5">
                   <div className="grid grid-cols-1 gap-y-2">
                     <label className="flex items-center gap-2 text-[12px]">
                       <input type="checkbox" checked={d.cost_items} onChange={(e) => set('cost_items', e.target.checked)} className="w-4 h-4" />
                       Custo - Artigos
-                      <span className="text-[11px] text-[#657377]">(custo médio ponderado)</span>
+                      <span className="text-[11px] text-[#6B7280]">(custo médio ponderado)</span>
                     </label>
                     <label className="flex items-center gap-2 text-[12px]">
                       <input type="checkbox" checked={d.cost_sales} onChange={(e) => set('cost_sales', e.target.checked)} className="w-4 h-4" />
@@ -77,18 +77,18 @@ export default function FnbUtilities() {
                     <label className="flex items-center gap-2 text-[12px]">
                       <input type="checkbox" checked={d.stock_qty} onChange={(e) => set('stock_qty', e.target.checked)} className="w-4 h-4" />
                       Stock Qtd. - Vendas
-                      <span className="text-[11px] text-[#657377]">(saldo por armazém)</span>
+                      <span className="text-[11px] text-[#6B7280]">(saldo por armazém)</span>
                     </label>
                   </div>
 
                   <label className="text-[12px]">
-                    <div className="text-[#1F292C] mb-1">Armazém:</div>
+                    <div className="text-[#1A1D21] mb-1">Armazém:</div>
                     <select multiple value={warehouses.map(String)} size={4}
                       onChange={(e) => setWarehouses(Array.from(e.target.selectedOptions, (o) => Number(o.value)))}
                       className={`${inp} w-[240px]`} style={inputStyle}>
                       {(armazens as any[]).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                     </select>
-                    <div className="text-[11px] text-[#657377] mt-1">Nenhum selecionado = todos.</div>
+                    <div className="text-[11px] text-[#6B7280] mt-1">Nenhum selecionado = todos.</div>
                   </label>
 
                   <SearchButton onClick={() => correr.mutate()} disabled={nada || correr.isPending}
@@ -96,38 +96,38 @@ export default function FnbUtilities() {
                 </div>
 
                 {nada && (
-                  <div className="text-[11px] text-[#1F292C] mt-3">
+                  <div className="text-[11px] text-[#1A1D21] mt-3">
                     Escolha o que quer recalcular. Nada é feito às cegas.
                   </div>
                 )}
               </Box>
             </div>
 
-            <div className="px-3 py-1.5 border-y border-[#E4E9EB] text-[13px] font-bold"
-              style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F4F6F7 55%, #E4E9EB 100%)', color: TOKENS.selectedText }}>
+            <div className="px-3 py-1.5 border-y border-[#EBEEF0] text-[13px] font-bold"
+              style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F3F4F6 55%, #EBEEF0 100%)', color: TOKENS.selectedText }}>
               Status
             </div>
             <div className="flex-1 overflow-auto">
               {resultado ? (
                 <>
-                  <div className="px-3 py-2 text-[12px] bg-[#F4F6F7] text-[#1F292C] border-b border-[#C8D2D5]">
+                  <div className="px-3 py-2 text-[12px] bg-[#F3F4F6] text-[#1A1D21] border-b border-[#D7DBDF]">
                     {resultado.detail}
                   </div>
                   {resultado.changes?.length > 0 && (
                     <table className="w-full text-[12px] border-collapse">
-                      <thead><tr className="bg-[#F4F6F7]">
+                      <thead><tr className="bg-[#F3F4F6]">
                         {['Artigo', 'Armazém', 'Campo', 'Antes', 'Depois'].map((h) => (
-                          <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#E4E9EB]">{h}</th>
+                          <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">{h}</th>
                         ))}
                       </tr></thead>
                       <tbody>
                         {resultado.changes.map((c: any, i: number) => (
-                          <tr key={i} className="border-b border-[#E4E9EB]">
+                          <tr key={i} className="border-b border-[#EBEEF0]">
                             <td className="px-2 py-1">{c.item}</td>
                             <td className="px-2 py-1">{c.warehouse}</td>
                             <td className="px-2 py-1">{c.field}</td>
-                            <td className="px-2 py-1 text-right text-[#C94A4A] line-through">{c.before}</td>
-                            <td className="px-2 py-1 text-right font-bold text-[#1F292C]">{c.after}</td>
+                            <td className="px-2 py-1 text-right text-[#B42318] line-through">{c.before}</td>
+                            <td className="px-2 py-1 text-right font-bold text-[#1A1D21]">{c.after}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -135,7 +135,7 @@ export default function FnbUtilities() {
                   )}
                 </>
               ) : (
-                <div className="text-center text-[#657377] py-16 text-[13px]">
+                <div className="text-center text-[#6B7280] py-16 text-[13px]">
                   Escolha o que recalcular e carregue em Começar.
                   <div className="text-[11px] mt-2 max-w-[520px] mx-auto">
                     O saldo e o custo são refeitos a partir dos <b>movimentos</b> — e o que estiver
@@ -182,29 +182,29 @@ function InventarioAgt() {
   return (
     <div className="flex-1 p-4">
       <Box title="SAF-T — Comunicação de Inventário (AGT)" className="max-w-[700px]">
-        <div className="space-y-3 text-[12px] text-[#1F292C] pt-1.5">
+        <div className="space-y-3 text-[12px] text-[#1A1D21] pt-1.5">
           <p>A AGT exige a comunicação anual das existências. O ficheiro sai <b>daqui</b>,
             do stock real dos armazéns, valorizado ao custo médio.</p>
           <div className="flex items-end gap-3">
             <label className="flex flex-col gap-1">
-              <span className="text-[#657377]">Ano fiscal</span>
+              <span className="text-[#6B7280]">Ano fiscal</span>
               <input type="number" value={ano} onChange={(e) => setAno(Number(e.target.value))}
-                className="h-8 w-[110px] px-2 border border-[#C8D2D5]" style={inputStyle} />
+                className="h-8 w-[110px] px-2 border border-[#D7DBDF]" style={inputStyle} />
             </label>
             <button onClick={descarregar}
-              className="h-8 px-5 text-[13px] font-bold text-[#1F292C] hover:brightness-110"
+              className="h-8 px-5 text-[13px] font-bold text-[#1A1D21] hover:brightness-110"
               style={{ background: TOKENS.gold }}>
               ⬇ Gerar e descarregar o XML
             </button>
           </div>
           {meta && (
-            <div className="bg-white p-3 grid grid-cols-3 gap-2 text-[12px]" style={{ border: '1px solid #C8D2D5', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-              <div><span className="text-[#657377]">Artigos com existência</span><br /><b>{meta.items}</b></div>
-              <div><span className="text-[#657377]">Valor total (custo médio)</span><br /><b>{Number(meta.total_value).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} Kz</b></div>
-              <div><span className="text-[#657377]">Empresa / NIF</span><br /><b>{meta.company}</b> · {meta.nif}</div>
+            <div className="bg-white p-3 grid grid-cols-3 gap-2 text-[12px]" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+              <div><span className="text-[#6B7280]">Artigos com existência</span><br /><b>{meta.items}</b></div>
+              <div><span className="text-[#6B7280]">Valor total (custo médio)</span><br /><b>{Number(meta.total_value).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} Kz</b></div>
+              <div><span className="text-[#6B7280]">Empresa / NIF</span><br /><b>{meta.company}</b> · {meta.nif}</div>
             </div>
           )}
-          <div className="text-[11px] text-[#657377]">
+          <div className="text-[11px] text-[#6B7280]">
             O SAF-T de <b>vendas</b> continua a sair em Utilitários › SAFT-AO — são dois
             ficheiros diferentes que a AGT pede: um é o que se vendeu, este é o que ficou.
           </div>

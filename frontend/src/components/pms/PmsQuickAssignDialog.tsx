@@ -44,16 +44,16 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[1100px] max-h-[80vh] bg-[#F4F6F7] border border-[#C8D2D5] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
+      <div className="w-[1100px] max-h-[80vh] bg-[#F3F4F6] border border-[#D7DBDF] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#17375E' }}>
           Atribuição rápida de quartos
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#C94A4A] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B42318] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
         <div className="flex-1 flex overflow-hidden bg-white">
-          <div className="w-1/2 overflow-auto border-r border-[#C8D2D5]">
+          <div className="w-1/2 overflow-auto border-r border-[#D7DBDF]">
             <ClassicGrid rowKey="id" data={resRows} selectedRowId={selResId ?? undefined}
               onRowClick={(r: any) => setSelResId(r.id)}
               columns={[
@@ -81,19 +81,19 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
             )}
           </div>
         </div>
-        <div className="flex items-stretch gap-3 px-3 py-2 bg-[#F4F6F7] border-t border-[#C8D2D5] text-[11px] flex-shrink-0">
+        <div className="flex items-stretch gap-3 px-3 py-2 bg-[#F3F4F6] border-t border-[#D7DBDF] text-[11px] flex-shrink-0">
           <label className="flex flex-col gap-0.5 flex-1">Reservation info:
-            <textarea readOnly rows={2} className="border border-[#C8D2D5] p-1 bg-white resize-none"
+            <textarea readOnly rows={2} className="border border-[#D7DBDF] p-1 bg-white resize-none"
               value={selRes ? `${selRes.confirmation} · ${selRes.guest_name} · ${selRes.room_type_name} · ${selRes.check_in} → ${selRes.check_out}` : ''} />
           </label>
-          <div className="text-[#1F292C]">
+          <div className="text-[#1A1D21]">
             <b>Instructions:</b>
             <div>1) Select one reservation from the left panel</div>
             <div>2) Select the desired room from the right panel</div>
             <div>3) The room will be assigned to the reservation immediately</div>
           </div>
-          <button onClick={onClose} className="flex items-start gap-1.5 font-semibold text-[#1F292C] hover:text-black flex-shrink-0">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white flex-shrink-0">
+          <button onClick={onClose} className="flex items-start gap-1.5 font-semibold text-[#1A1D21] hover:text-black flex-shrink-0">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B42318] text-white flex-shrink-0">
               <X size={9} strokeWidth={3} />
             </span>
             Fechar

@@ -14,9 +14,9 @@ import type { ReactNode } from 'react';
 export function FormSection({ title, hint, children, cols = 2 }:
   { title: string; hint?: string; children: ReactNode; cols?: 1 | 2 | 3 }) {
   return (
-    <div className="bg-white border border-[#C8D2D5] mb-3" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.10)' }}>
-      <div className="px-3 py-1.5 border-b border-[#C8D2D5] text-[12px] font-bold text-[#1F292C]"
-        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F4F6F7)' }}>
+    <div className="bg-white border border-[#D7DBDF] mb-3" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.10)' }}>
+      <div className="px-3 py-1.5 border-b border-[#D7DBDF] text-[12px] font-bold text-[#1A1D21]"
+        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F3F4F6)' }}>
         {title}
         {hint && <span className="ml-2 font-normal text-[11px] text-gray-500">{hint}</span>}
       </div>
@@ -27,7 +27,7 @@ export function FormSection({ title, hint, children, cols = 2 }:
   );
 }
 
-const inputCls = 'border border-[#C8D2D5] px-2 py-1 text-[12px] bg-white w-full outline-none focus:border-[#062F35]';
+const inputCls = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white w-full outline-none focus:border-[#17375E]';
 const inputStyle = { boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.12)' };
 
 interface FieldProps {
@@ -48,11 +48,11 @@ export function Field({ label, value, onChange, required, help, type = 'text', o
   return (
     <label className={`flex flex-col gap-0.5 ${span ? 'col-span-full' : ''}`}>
       <span className="text-[11px] font-bold text-gray-700">
-        {label}{required && <span className="text-[#C94A4A] ml-0.5">*</span>}
+        {label}{required && <span className="text-[#B42318] ml-0.5">*</span>}
       </span>
       {options ? (
         <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} disabled={disabled}
-          className={inputCls} style={{ ...inputStyle, borderColor: missing ? '#C94A4A' : undefined }}>
+          className={inputCls} style={{ ...inputStyle, borderColor: missing ? '#B42318' : undefined }}>
           <option value="">— escolher —</option>
           {options.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
         </select>
@@ -62,23 +62,23 @@ export function Field({ label, value, onChange, required, help, type = 'text', o
       ) : (
         <input type={type} value={value ?? ''} onChange={(e) => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
           disabled={disabled} className={inputCls}
-          style={{ ...inputStyle, borderColor: missing ? '#C94A4A' : undefined, background: disabled ? '#F4F6F7' : '#FFFFFF' }} />
+          style={{ ...inputStyle, borderColor: missing ? '#B42318' : undefined, background: disabled ? '#F3F4F6' : '#FFFFFF' }} />
       )}
       {/* Só se diz o que falta QUANDO falta — nunca uma parede de avisos. */}
-      {missing && help && <span className="text-[10px] text-[#C94A4A]">{help}</span>}
+      {missing && help && <span className="text-[10px] text-[#B42318]">{help}</span>}
       {!missing && help && <span className="text-[10px] text-gray-500">{help}</span>}
     </label>
   );
 }
 
 export const btnPrimary = {
-  className: 'px-4 py-1.5 text-[12px] font-bold text-white border border-[#062F35]',
-  style: { background: 'linear-gradient(to bottom, #062F35, #4B858E)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
+  className: 'px-4 py-1.5 text-[12px] font-bold text-white border border-[#17375E]',
+  style: { background: 'linear-gradient(to bottom, #17375E, #2E75B6)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
 };
 export const btnNormal = {
-  className: 'px-3 py-1.5 text-[12px] font-semibold border border-[#C8D2D5] text-[#1F292C]',
+  className: 'px-3 py-1.5 text-[12px] font-semibold border border-[#D7DBDF] text-[#1A1D21]',
   style: {
-    background: 'linear-gradient(to bottom, #FFFFFF, #F4F6F7 48%, #E4E9EB 52%, #E4E9EB)',
+    background: 'linear-gradient(to bottom, #FFFFFF, #F3F4F6 48%, #EBEEF0 52%, #EBEEF0)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
   },
 };

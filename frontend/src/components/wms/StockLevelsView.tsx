@@ -41,7 +41,7 @@ export default function StockLevelsView() {
     >
       <div className="flex flex-col h-full">
         {/* Filtros */}
-        <div className="bg-[#F4F6F7] border-b border-[#C8D2D5] p-2 flex items-center space-x-4">
+        <div className="bg-[#F3F4F6] border-b border-[#D7DBDF] p-2 flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <label className="text-gray-700">Pesquisa livre:</label>
             <div className="relative">
@@ -49,7 +49,7 @@ export default function StockLevelsView() {
                 type="text" 
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="border border-[#C8D2D5] px-2 py-0.5 w-64 focus:outline-none"
+                className="border border-[#D7DBDF] px-2 py-0.5 w-64 focus:outline-none"
               />
               <Search size={12} className="absolute right-2 top-1.5 text-gray-400" />
             </div>

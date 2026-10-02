@@ -184,9 +184,9 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   const screenAllowed = (id: string) => accFull || accScreens.length === 0 || accScreens.includes(id);
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#F4F6F7', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+    <div className="h-full flex flex-col" style={{ background: '#F3F4F6', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* Barra de menus (topo escuro) — cabeçalho próprio do PMS */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#062F35', height: 56 }}>
+      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#17375E', height: 56 }}>
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
@@ -195,9 +195,9 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           {menu === '__ml' && (
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden" style={{ background: '#062F35', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+              <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden" style={{ background: '#17375E', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                 <button onClick={() => { setMenu(null); localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#4B858E] transition-colors">
+                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#2E75B6] transition-colors">
                   <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>
                   Ambiente de Trabalho
                 </button>
@@ -223,7 +223,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
             {menu === m.title && (
               <>
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[260px] py-1 overflow-hidden" style={{ background: '#062F35', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+                <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[260px] py-1 overflow-hidden" style={{ background: '#17375E', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                   {m.items.map((it, i) => (
                     <button key={i}
                       onClick={() => {
@@ -235,7 +235,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                           setSection(it.section);
                         }
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#4B858E] transition-colors">
+                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#2E75B6] transition-colors">
                       <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon={it.icon} size={16} /></span>
                       {it.label}{it.soon && <span className="ml-auto text-[10px] opacity-50">(brevemente)</span>}
                     </button>
@@ -252,11 +252,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
       </div>
 
       {/* Título da secção ativa */}
-      <div className="flex items-center gap-2 px-3.5 py-2.5 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#062F35' }}>
+      <div className="flex items-center gap-2 px-3.5 py-2.5 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#17375E' }}>
         <span className="inline-flex items-center opacity-90"><Glyph icon={cur.icon} size={17} /></span>
         {cur.label}{hotelName && <span className="font-normal opacity-70"> — {hotelName}</span>}
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
-          className="ml-auto w-7 h-7 flex items-center justify-center text-[#657377] hover:text-white hover:bg-white/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
+          className="ml-auto w-7 h-7 flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
           <Users size={15} />
         </button>
       </div>
@@ -286,11 +286,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
 
       {/* Rodapé — um bar só (era dois empilhados: ação do ecrã + hora, e depois
           separador/versão/hotel — a mesma informação cabe toda numa linha). */}
-      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white text-[11px]" style={{ background: '#062F35' }}>
+      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white text-[11px]" style={{ background: '#17375E' }}>
         <span className="opacity-80">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
         {hotels.length > 1 && (
           <select value={hotelId || String(hotels[0]?.id)} onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
-            className="h-6 text-[11px] px-1.5 border" style={{ background: '#062F35', borderColor: '#0A4148', borderRadius: RADIUS.sm }}>
+            className="h-6 text-[11px] px-1.5 border" style={{ background: '#17375E', borderColor: '#1F4E79', borderRadius: RADIUS.sm }}>
             {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
         )}
@@ -298,7 +298,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         <span className="opacity-50">PMS v1.0</span>
         <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
           className="flex items-center gap-1.5 font-semibold hover:text-white opacity-90 hover:opacity-100 transition-opacity" title="Fechar (volta ao Ambiente de Trabalho)">
-          <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#C94A4A] text-white">
+          <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B42318] text-white">
             <X size={10} strokeWidth={3} />
           </span>
           Fechar

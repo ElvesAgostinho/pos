@@ -49,13 +49,13 @@ export default function PmsLostFoundView() {
     try { await apiClient.delete(`pms/lost-found-items/${selId}/`); refetch(); novo(); } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#C8D2D5] p-1';
+  const inp = 'border border-[#D7DBDF] p-1';
   const statusLabel = (v: string) => STATUS.find((s) => s.value === v)?.label || v;
 
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r border-[#C8D2D5]">
+        <div className="w-1/2 border-r border-[#D7DBDF]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
             { header: 'Descrição', accessor: 'description', width: '35%' },
             { header: 'Local', accessor: (r: any) => r.found_location || '—', width: '20%' },
@@ -65,7 +65,7 @@ export default function PmsLostFoundView() {
           ]} />
         </div>
         <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
-          <div className="font-bold text-[#1F292C]">{selId ? 'Editar Objeto' : 'Novo Objeto Encontrado'}</div>
+          <div className="font-bold text-[#1A1D21]">{selId ? 'Editar Objeto' : 'Novo Objeto Encontrado'}</div>
           <label className="flex flex-col">Descrição<input value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inp} /></label>
           <div className="flex gap-2">
             <label className="flex-1 flex flex-col">Local onde foi encontrado<input value={form.found_location || ''} onChange={(e) => setForm({ ...form, found_location: e.target.value })} className={inp} /></label>
@@ -81,9 +81,9 @@ export default function PmsLostFoundView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Novo', icon: '＋', color: '#062F35', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#062F35', onClick: save },
-        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#C94A4A' },
+        { label: 'Novo', icon: '＋', color: '#17375E', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#17375E', onClick: save },
+        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#B42318' },
       ]} />
     </div>
   );

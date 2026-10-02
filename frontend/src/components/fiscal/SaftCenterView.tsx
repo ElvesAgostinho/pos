@@ -9,9 +9,9 @@ import { notifyError } from '../../utils/friendlyError';
 // Painel com título (janela dentro da janela) — aspeto Windows, não SaaS.
 function Panel({ title, children, right }: any) {
   return (
-    <div className="bg-white border border-[#C8D2D5]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
-      <div className="px-3 py-1.5 border-b border-[#C8D2D5] flex items-center justify-between text-[12px] font-bold text-[#1F292C]"
-        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F4F6F7)' }}>
+    <div className="bg-white border border-[#D7DBDF]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
+      <div className="px-3 py-1.5 border-b border-[#D7DBDF] flex items-center justify-between text-[12px] font-bold text-[#1A1D21]"
+        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F3F4F6)' }}>
         <span>{title}</span>{right}
       </div>
       <div className="p-3">{children}</div>
@@ -19,9 +19,9 @@ function Panel({ title, children, right }: any) {
   );
 }
 
-const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#C8D2D5] text-[#1F292C]';
+const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#D7DBDF] text-[#1A1D21]';
 const btnStyle = {
-  background: 'linear-gradient(to bottom, #FFFFFF, #F4F6F7 48%, #E4E9EB 52%, #E4E9EB)',
+  background: 'linear-gradient(to bottom, #FFFFFF, #F3F4F6 48%, #EBEEF0 52%, #EBEEF0)',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
 };
 
@@ -61,16 +61,16 @@ export default function SaftCenterView() {
   return (
     <ClassicWindow title="Centro SAF-T — Exportações Fiscais" icon={<FileCode2 size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Motor Fiscal: o PMS/Restauração/POS apenas emitem documentos — toda a lógica fiscal (SAF-T, séries, impostos, validação) vive aqui</div>}>
-      <div className="p-4 space-y-3 bg-[#F4F6F7] h-full overflow-auto">
+      <div className="p-4 space-y-3 bg-[#F3F4F6] h-full overflow-auto">
 
         {/* Estado fiscal */}
         <Panel title="Configuração Fiscal">
           {f ? (
             <div className="flex items-center gap-4 text-[12px]">
-              <div className={`flex items-center gap-2 px-3 py-2 border ${f.certified ? 'bg-[#F4F6F7] border-[#C8D2D5]' : 'bg-[#F4F6F7] border-[#C8D2D5]'}`}>
-                {f.certified ? <ShieldCheck size={22} className="text-[#1F292C]" /> : <ShieldAlert size={22} className="text-[#1F292C]" />}
+              <div className={`flex items-center gap-2 px-3 py-2 border ${f.certified ? 'bg-[#F3F4F6] border-[#D7DBDF]' : 'bg-[#F3F4F6] border-[#D7DBDF]'}`}>
+                {f.certified ? <ShieldCheck size={22} className="text-[#1A1D21]" /> : <ShieldAlert size={22} className="text-[#1A1D21]" />}
                 <div>
-                  <div className={`font-bold ${f.certified ? 'text-[#1F292C]' : 'text-[#1F292C]'}`}>
+                  <div className={`font-bold ${f.certified ? 'text-[#1A1D21]' : 'text-[#1A1D21]'}`}>
                     {f.certified ? `Certificado AGT nº ${f.certificate_number}` : 'Não certificado (ambiente de testes)'}
                   </div>
                   <div className="text-[11px] text-gray-600">{f.company_name} · NIF {f.company_nif} · SAF-T v{f.saft_version} · {f.environment === 'PROD' ? 'Produção' : 'Testes'}</div>
@@ -78,9 +78,9 @@ export default function SaftCenterView() {
               </div>
               <div className="flex items-end gap-2">
                 <label className="flex flex-col text-[11px] text-gray-600">Período de
-                  <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="border border-[#C8D2D5] px-2 py-1 bg-white" /></label>
+                  <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="border border-[#D7DBDF] px-2 py-1 bg-white" /></label>
                 <label className="flex flex-col text-[11px] text-gray-600">até
-                  <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="border border-[#C8D2D5] px-2 py-1 bg-white" /></label>
+                  <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="border border-[#D7DBDF] px-2 py-1 bg-white" /></label>
               </div>
             </div>
           ) : <div className="text-gray-400 text-[12px]">A carregar…</div>}
@@ -90,7 +90,7 @@ export default function SaftCenterView() {
         <div className="grid grid-cols-2 gap-3">
           {profiles.map((p: any) => (
             <Panel key={p.key} title={p.label}
-              right={p.required ? <span className="text-[10px] bg-[#C94A4A] text-white px-1.5 py-0.5 font-bold">OBRIGATÓRIO AGT</span>
+              right={p.required ? <span className="text-[10px] bg-[#B42318] text-white px-1.5 py-0.5 font-bold">OBRIGATÓRIO AGT</span>
                 : <span className="text-[10px] text-gray-500">opcional</span>}>
               <div className="text-[11px] text-gray-700 mb-3 min-h-[32px]">{p.description}</div>
               <div className="flex gap-2">
@@ -98,18 +98,18 @@ export default function SaftCenterView() {
                   {busy === p.key ? 'A validar…' : 'Validar XML'}
                 </button>
                 <button onClick={() => exportar(p.key)} disabled={busy === p.key} className={`${btn} flex items-center gap-1`}
-                  style={{ ...btnStyle, background: 'linear-gradient(to bottom, #062F35, #4B858E)', color: '#FFFFFF', borderColor: '#062F35' }}>
+                  style={{ ...btnStyle, background: 'linear-gradient(to bottom, #17375E, #2E75B6)', color: '#FFFFFF', borderColor: '#17375E' }}>
                   <Download size={12} /> Exportar
                 </button>
               </div>
               {check?.key === p.key && (
-                <div className={`mt-2 p-2 border text-[11px] ${check.valid ? 'bg-[#F4F6F7] border-[#C8D2D5]' : 'bg-[#F4F6F7] border-[#C94A4A]'}`}>
+                <div className={`mt-2 p-2 border text-[11px] ${check.valid ? 'bg-[#F3F4F6] border-[#D7DBDF]' : 'bg-[#F3F4F6] border-[#B42318]'}`}>
                   <div className="flex items-center gap-1.5 font-bold">
-                    {check.valid ? <CheckCircle2 size={13} className="text-[#1F292C]" /> : <XCircle size={13} className="text-[#A83A3A]" />}
+                    {check.valid ? <CheckCircle2 size={13} className="text-[#1A1D21]" /> : <XCircle size={13} className="text-[#912018]" />}
                     {check.valid ? 'XML válido' : 'XML com problemas'} · {check.elements} elementos · {(check.size_bytes / 1024).toFixed(1)} KB
                   </div>
                   {(check.problems || []).map((pr: string, i: number) => (
-                    <div key={i} className={pr.startsWith('Aviso') ? 'text-[#1F292C]' : 'text-[#A83A3A]'}>• {pr}</div>
+                    <div key={i} className={pr.startsWith('Aviso') ? 'text-[#1A1D21]' : 'text-[#912018]'}>• {pr}</div>
                   ))}
                 </div>
               )}
@@ -124,7 +124,7 @@ export default function SaftCenterView() {
             { header: 'Período', accessor: (r: any) => `${r.start_date} → ${r.end_date}`, width: '20%' },
             { header: 'Ficheiro', accessor: 'filename', width: '26%' },
             { header: 'Tamanho', accessor: (r: any) => `${(r.size_bytes / 1024).toFixed(1)} KB`, width: '9%' },
-            { header: 'Válido', accessor: (r: any) => r.is_valid ? <CheckCircle2 size={14} className="text-[#1F292C]" /> : <XCircle size={14} className="text-[#A83A3A]" />, width: '7%' },
+            { header: 'Válido', accessor: (r: any) => r.is_valid ? <CheckCircle2 size={14} className="text-[#1A1D21]" /> : <XCircle size={14} className="text-[#912018]" />, width: '7%' },
             { header: 'Impressão digital (SHA-256)', accessor: (r: any) => <span className="font-mono text-[10px]">{(r.sha256 || '').slice(0, 20)}…</span>, width: '18%' },
           ]} />
         </Panel>

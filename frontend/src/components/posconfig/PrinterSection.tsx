@@ -32,7 +32,7 @@ export default function PrinterSection() {
         { key: 'device_name', label: 'Impressora', width: '20%',
           render: (r: any) => r.device_name
             ? r.device_name
-            : <span className="text-[#C94A4A]">sem aparelho</span> },
+            : <span className="text-[#B42318]">sem aparelho</span> },
         { key: 'warn_on_failure', label: 'Emitir Aviso', width: '10%', toggle: true },
         { key: 'is_active', label: 'Ativo', width: '8%', toggle: true },
       ]}
