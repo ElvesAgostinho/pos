@@ -5,6 +5,7 @@ from .views import (
     RoomTypeViewSet, RoomViewSet, RatePlanViewSet, RateOverrideViewSet, BlockViewSet,
     ReservationViewSet, FolioViewSet, MealPlanEntryViewSet,
     LostFoundItemViewSet, HousekeepingTaskViewSet, PhoneDirectoryEntryViewSet,
+    ReservationFixedChargeViewSet, RoomAttributeViewSet,
 )
 from .availability import AvailabilityView
 from .reports import (
@@ -24,11 +25,13 @@ from .events_api import EventViewSet, EventForecastView
 router = DefaultRouter()
 router.register(r'room-types', RoomTypeViewSet)
 router.register(r'rooms', RoomViewSet)
+router.register(r'room-attributes', RoomAttributeViewSet, basename='pms-room-attribute')
 router.register(r'rate-plans', RatePlanViewSet, basename='pms-rate-plan')
 router.register(r'rate-overrides', RateOverrideViewSet, basename='pms-rate-override')
 router.register(r'blocks', BlockViewSet, basename='pms-block')
 router.register(r'reservations', ReservationViewSet, basename='pms-reservation')
 router.register(r'folios', FolioViewSet, basename='pms-folio')
+router.register(r'fixed-charges', ReservationFixedChargeViewSet, basename='pms-fixed-charge')
 router.register(r'meal-plan-entries', MealPlanEntryViewSet, basename='pms-meal-plan-entry')
 router.register(r'night-audit-runs', NightAuditRunViewSet, basename='pms-night-audit-run')
 router.register(r'lost-found-items', LostFoundItemViewSet, basename='pms-lost-found-item')

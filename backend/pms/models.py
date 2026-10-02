@@ -54,6 +54,9 @@ class Room(models.Model):
     number = models.CharField(max_length=20)
     status = models.CharField(max_length=15, choices=STATUS, default='VACANT_CLEAN')
     is_active = models.BooleanField(default=True)
+    # Características deste quarto (vista mar, varanda…) — ver RoomAttribute.
+    attributes = models.ManyToManyField('RoomAttribute', blank=True, related_name='rooms',
+                                        verbose_name='Características')
 
     class Meta:
         db_table = 'pms_room'
@@ -782,3 +785,56 @@ class BookingPayment(models.Model):
 
     def __str__(self):
         return f"{self.reservation.confirmation} · {self.amount} ({self.get_status_display()})"
+
+
+class ReservationFixedCharge(models.Model):
+    """ENCARGO FIXO — o que esta reserva paga todos os dias, além da diária.
+
+    O estacionamento, a cama extra, a taxa de resort, o berço. Sem isto a
+    recepção tinha de se lembrar de lançar o mesmo valor à mão em cada noite de
+    cada estadia — e esquecer-se uma vez é dinheiro que o hotel não cobra e
+    ninguém dá por falta.
+
+    Quem o lança é a Auditoria da Noite, na mesma passagem em que lança a
+    diária (ver `night_audit.py`): uma noite, um lançamento, com a mesma trava
+    contra duplicados. `per_night=False` é o encargo que se cobra UMA vez na
+    estadia (uma taxa de limpeza final, por exemplo) — esse entra no check-in.
+    """
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name='fixed_charges')
+    description = models.CharField(max_length=255)
+    charge_type = models.CharField(max_length=8, choices=FolioCharge.CHARGE_TYPES, default='MISC')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    per_night = models.BooleanField(default=True, verbose_name='Por noite')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'pms_reservation_fixed_charge'
+        ordering = ['description']
+
+    def __str__(self):
+        return f"{self.description} · {self.amount}{' /noite' if self.per_night else ''}"
+
+
+class RoomAttribute(models.Model):
+    """CARACTERÍSTICA de um quarto — vista mar, varanda, piso alto, adaptado,
+    quarto comunicante, não fumador.
+
+    Não é a CATEGORIA (essa é o produto que se vende e tem preço): dois quartos
+    Standard custam o mesmo e um tem vista para o mar. É o que a recepção
+    procura quando o hóspede pede "um com varanda" e o que faz falta ao filtro
+    de quartos livres — sem isto, a pergunta respondia-se de cabeça, quarto a
+    quarto, e um hotel com 80 quartos não tem cabeça que chegue.
+    """
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_room_attributes')
+    code = models.CharField(max_length=20)
+    name = models.CharField(max_length=80)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pms_room_attribute'
+        unique_together = ('hotel', 'code')
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name

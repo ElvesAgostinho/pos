@@ -5,8 +5,11 @@ import {
   Building2, Printer, RefreshCw, Save, Trash2, ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import {
+  EncargosFixos, Depositos, Voucher, Comissoes, CartaoHospede, TiposLimpeza,
+} from './PmsReservationFunctions';
 import { notifyError } from '../../utils/friendlyError';
-import { aviso, confirmar } from '../../ui/dialogo';
+import { confirmar } from '../../ui/dialogo';
 import { RADIUS, SHADOW } from '../../config/theme';
 import PmsFolioPanel from './PmsFolioPanel';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
@@ -86,7 +89,6 @@ function ReservationRow({ r, hotelName, selected, onSelect, onCheckIn, onCheckOu
   );
 }
 
-const naoConstruido = (label: string) => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
 
 /** Botão da barra inferior — plano, sem moldura em relevo (esse era o estilo
  * clássico do ERP antigo; o PMS usa ícone em círculo colorido + texto). */
@@ -168,6 +170,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
   const [showDetail, setShowDetail] = useState(false);
   const [checkInTarget, setCheckInTarget] = useState<any>(null);
   const [showFuncoes, setShowFuncoes] = useState(false);
+  const [funcaoRes, setFuncaoRes] = useState<string | null>(null);
   const [copying, setCopying] = useState(false);
 
   // ---------- Pesquisas guardadas ----------
@@ -576,15 +579,26 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             <>
               <div className="fixed inset-0 z-[8000]" onClick={() => setShowFuncoes(false)} />
               <div className="absolute bottom-full left-0 mb-1.5 z-[8001] min-w-[220px] bg-white border border-[#EEF4F5] py-1 overflow-hidden" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+                {/* MESMAS funções do detalhe da reserva, abrindo os MESMOS painéis
+                    (PmsReservationFunctions.tsx). Antes esta lista era uma segunda
+                    cópia com os seus próprios "ainda não construído" — duas listas
+                    a dizer coisas diferentes sobre a mesma reserva.
+                    "Key Pass" saiu: programar o cartão da porta exige a fechadura
+                    electrónica do hotel (Onity/Salto/Assa Abloy) e esta instalação
+                    não tem nenhuma integrada — um botão que nunca pode funcionar é
+                    pior do que a sua ausência. */}
                 {[
-                  ['Instruções de Faturação', false], ['Encargos Fixos', false], ['Depósitos', false],
-                  ['Vouchers', false], ['Comissões', false], ['Informação do pagamento', true],
-                  ['Recriar conta', false], ['Cartão de Hóspede', false], ['Key Pass', false],
-                  ['Edit Statistics Codes', false],
-                ].map(([label, real]: any) => (
-                  <button key={label} onClick={() => { setShowFuncoes(false); real ? setShowFolio(true) : naoConstruido(label); }}
-                    className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-[12px] hover:bg-[#F7FAFA] ${real ? '' : 'text-gray-400'}`}>
-                    {real ? <Wallet size={13} /> : <span className="w-[13px]" />} {label}
+                  ['Informação do pagamento', 'folio'], ['Encargos Fixos', 'encargos'],
+                  ['Depósitos', 'depositos'], ['Voucher', 'voucher'], ['Comissões', 'comissoes'],
+                  ['Cartão de Hóspede', 'cartao'], ['Tipos de limpeza', 'limpeza'],
+                ].map(([label, accao]: any) => (
+                  <button key={label}
+                    onClick={() => {
+                      setShowFuncoes(false);
+                      if (accao === 'folio') setShowFolio(true); else setFuncaoRes(accao);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-[12px] hover:bg-[#F7FAFA]">
+                    {accao === 'folio' ? <Wallet size={13} /> : <span className="w-[13px]" />} {label}
                   </button>
                 ))}
               </div>
@@ -608,6 +622,12 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
       )}
       {showBulkChange && <PmsBulkRoomChangeDialog onClose={() => { setShowBulkChange(false); invalidate(); }} />}
       {showQuickAssign && <PmsQuickAssignDialog onClose={() => { setShowQuickAssign(false); invalidate(); }} />}
+      {funcaoRes === 'encargos' && sel && <EncargosFixos reserva={sel} onClose={() => setFuncaoRes(null)} />}
+      {funcaoRes === 'depositos' && sel && <Depositos reserva={sel} onClose={() => setFuncaoRes(null)} />}
+      {funcaoRes === 'voucher' && sel && <Voucher reserva={sel} onClose={() => setFuncaoRes(null)} onSaved={() => refetch()} />}
+      {funcaoRes === 'comissoes' && sel && <Comissoes reserva={sel} onClose={() => setFuncaoRes(null)} />}
+      {funcaoRes === 'cartao' && sel && <CartaoHospede reserva={sel} onClose={() => setFuncaoRes(null)} />}
+      {funcaoRes === 'limpeza' && sel && <TiposLimpeza reserva={sel} onClose={() => setFuncaoRes(null)} />}
       {showFolio && sel && (
         <PmsFolioPanel reservationId={sel.id} onClose={() => setShowFolio(false)} />
       )}

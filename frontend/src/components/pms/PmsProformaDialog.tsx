@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { X, Printer, Mail } from 'lucide-react';
 import { apiClient } from '../../api/client';
-import { aviso } from '../../ui/dialogo';
+import { aviso, pedir } from '../../ui/dialogo';
+import { notifyError } from '../../utils/friendlyError';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 const FORMATOS = ['Fatura: Detalhada', 'Fatura: Sumário por Dia', 'Fatura: Sumário por Estadia'];
@@ -23,6 +24,7 @@ const esc = (s: any) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;'
  */
 export default function PmsProformaDialog({ reservation: r, onClose }: { reservation: any; onClose: () => void }) {
   const [formato, setFormato] = useState('Fatura: Sumário por Estadia');
+  const [enviando, setEnviando] = useState(false);
 
   const { data: folio } = useQuery({
     queryKey: ['pms', 'folios', r.folio_id],
@@ -110,8 +112,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
       `<td style="text-align:right">${money(c.amount)}</td></tr>`).join('');
   };
 
-  const imprimir = () => {
-    const html = `<html><head><meta charset="utf-8"><title>Pró-forma — ${esc(r.confirmation)}</title><style>
+  const montarHtml = () => `<html><head><meta charset="utf-8"><title>Pró-forma — ${esc(r.confirmation)}</title><style>
       *{box-sizing:border-box}
       body{font-family:'Segoe UI',Tahoma,sans-serif;color:#041F24;margin:0;padding:28px;font-size:12px}
       .topo{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
@@ -205,6 +206,8 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
       </div>
     </body></html>`;
 
+  const imprimir = () => {
+    const html = montarHtml();
     // Iframe escondido em vez de janela nova: uma janela nova traz a moldura do
     // navegador (barra de endereço) para dentro da pré-visualização de impressão.
     const frame = document.createElement('iframe');
@@ -218,6 +221,25 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
       frame.contentWindow?.print();
       setTimeout(() => document.body.removeChild(frame), 1000);
     };
+  };
+
+  // ENVIAR POR E-MAIL — reutiliza o motor do POS (pos/mailer.py + EmailOutbox),
+  // o mesmo que manda a factura do terminal; o PMS não tem carteiro próprio.
+  // Vai o MESMO HTML que sai na impressora, para o papel e o e-mail nunca
+  // mostrarem contas diferentes.
+  const enviarEmail = async () => {
+    const paraQuem = await pedir({
+      titulo: 'Enviar por e-mail', mensagem: 'Enviar a pró-forma para que endereço?',
+      valor: r.guest_email || '',
+    });
+    if (paraQuem === null) return;
+    setEnviando(true);
+    try {
+      const { data } = await apiClient.post(`pms/reservations/${r.id}/send-email/`, {
+        kind: 'PROFORMA', to: paraQuem || undefined, body: montarHtml(),
+      });
+      aviso(data.detail, data.status === 'FAILED' ? 'Não foi possível enviar' : 'E-mail');
+    } catch (e) { notifyError(e); } finally { setEnviando(false); }
   };
 
   return (
@@ -257,8 +279,9 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
         </div>
         <div className="flex items-center gap-3 px-3 py-2 bg-[#F7FAFA] border-t border-[#CFE3E6]">
           <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black"><Printer size={14} /> Imprimir</button>
-          <button onClick={() => aviso('"Enviar E-mail" ainda não está construído nesta fase do PMS.')}
-            className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400"><Mail size={14} /> Enviar E-mail</button>
+          <button onClick={enviarEmail} disabled={enviando}
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black disabled:text-gray-400">
+            <Mail size={14} /> {enviando ? 'A enviar…' : 'Enviar E-mail'}</button>
           <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#041F24] hover:text-black ml-auto">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B0392B] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar

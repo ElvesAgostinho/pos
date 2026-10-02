@@ -72,6 +72,7 @@ class NightAuditRunView(APIView):
 
         ref = f'ROOM-{audit_date.isoformat()}'
         rooms_charged = 0
+        extras_charged = 0
         total_posted = Decimal('0')
         try:
             with transaction.atomic():
@@ -79,6 +80,7 @@ class NightAuditRunView(APIView):
                                           .select_related('room_type', 'rate_plan', 'room')
                                           .prefetch_related('folios__charges'))
                                  .filter(status='CHECKED_IN', check_in__lte=audit_date, check_out__gt=audit_date))
+                operador = str(getattr(request.user, 'username', '') or 'night-audit')
                 for res in reservations:
                     folio = res.folio
                     if not folio or folio.status != 'OPEN':
@@ -93,10 +95,27 @@ class NightAuditRunView(APIView):
                         description=f"Alojamento {audit_date.isoformat()} · Quarto "
                                     f"{res.room.number if res.room_id else '?'}",
                         amount=rate, source_reference=ref,
-                        posted_by=str(getattr(request.user, 'username', '') or 'night-audit'),
+                        posted_by=operador,
                     )
                     rooms_charged += 1
                     total_posted += rate
+
+                    # ENCARGOS FIXOS da reserva (estacionamento, cama extra, taxa
+                    # de resort): mesma passagem, mesma trava contra duplicados.
+                    # Esquecer de os lançar à mão numa noite é dinheiro que o
+                    # hotel não cobra e de que ninguém dá por falta.
+                    for enc in res.fixed_charges.filter(is_active=True, per_night=True):
+                        ref_enc = f'FIX-{enc.id}-{audit_date.isoformat()}'
+                        if folio.charges.filter(source_reference=ref_enc).exists():
+                            continue
+                        if not enc.amount or enc.amount <= 0:
+                            continue
+                        FolioCharge.objects.create(
+                            folio=folio, charge_type=enc.charge_type,
+                            description=f'{enc.description} · {audit_date.isoformat()}',
+                            amount=enc.amount, source_reference=ref_enc, posted_by=operador)
+                        extras_charged += 1
+                        total_posted += enc.amount
 
                 run = NightAuditRun.objects.create(
                     hotel=hotel, audit_date=audit_date,
@@ -106,4 +125,6 @@ class NightAuditRunView(APIView):
         except IntegrityError:
             return Response({'detail': f'A Auditoria da Noite de {audit_date.isoformat()} já foi '
                                        f'executada para este hotel.'}, status=409)
-        return Response(NightAuditRunSerializer(run).data, status=201)
+        dados = NightAuditRunSerializer(run).data
+        dados['extras_charged'] = extras_charged
+        return Response(dados, status=201)

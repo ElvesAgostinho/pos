@@ -3,8 +3,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
 import { X, Copy, LogIn, LogOut, RefreshCw, Save, Pencil, Users, History, DollarSign, FileText, Utensils, User } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import { printFiscalInvoice } from '../fiscal/printInvoice';
 import { notifyError } from '../../utils/friendlyError';
-import { aviso } from '../../ui/dialogo';
+import { aviso, confirmar } from '../../ui/dialogo';
 import PmsFolioPanel from './PmsFolioPanel';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
 import PmsCheckInDialog from './PmsCheckInDialog';
@@ -15,8 +16,10 @@ import PmsProformaDialog from './PmsProformaDialog';
 import PmsMealPlanDialog from './PmsMealPlanDialog';
 import { openGuestInfoWindow } from './guestInfoWindow';
 import { STATUS_LABEL, STATUS_COLOR } from './reservationStatus';
+import {
+  EncargosFixos, Depositos, Voucher, Comissoes, EnviarEmail, CartaoHospede, TiposLimpeza,
+} from './PmsReservationFunctions';
 
-const naoConstruido = (label: string) => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
 const fmtD = (iso: string) => iso ? new Date(iso).toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 const fmtDT = (iso: string) => iso ? new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 
@@ -29,9 +32,6 @@ function TabBtn({ active, onClick, children }: any) {
       {children}
     </button>
   );
-}
-function Placeholder({ label }: { label: string }) {
-  return <div className="p-6 text-center text-gray-400 text-[12px]">"{label}" ainda não está construído nesta fase do PMS.</div>;
 }
 /** Ação da barra inferior — ícone + texto, plana, sem moldura. Uma linha só
  * (a barra desliza na horizontal em vez de quebrar para uma 2ª linha). */
@@ -59,6 +59,19 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
   const [showPreco, setShowPreco] = useState(false);
   const [showSharer, setShowSharer] = useState(false);
   const [showProforma, setShowProforma] = useState(false);
+  // Qual dos painéis das Funções está aberto (null = nenhum).
+  const [funcao, setFuncao] = useState<string | null>(null);
+
+  const recriarConta = async () => {
+    if (!(await confirmar('Abrir uma conta nova para esta reserva? As contas já existentes não são alteradas.'))) return;
+    try {
+      const { data } = await apiClient.post(`pms/reservations/${res.id}/recreate-folio/`, {});
+      refetch();
+      aviso(data.deposits_posted
+        ? `${data.detail} ${data.deposits_posted} depósito(s) lançado(s).`
+        : data.detail, 'Conta aberta');
+    } catch (e) { notifyError(e); }
+  };
   const [showMealPlan, setShowMealPlan] = useState(false);
   const [notes, setNotes] = useState(reservation.notes || '');
   const [savingNotes, setSavingNotes] = useState(false);
@@ -239,9 +252,9 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
             <div className="p-4 flex gap-4 flex-wrap">
               {[
                 { title: 'Geral', items: [['Verificar Contas', 'folio'], ['Editar Reserva', 'editar'], ['Atualizar', 'atualizar']] },
-                { title: 'Financeiro', items: [['Encargos Fixos', false], ['Depósitos', false], ['Vouchers', false], ['Comissões', false]] },
-                { title: 'Relacionamento com o hóspede', items: [['Mensagem', false], ['Carta de Confirmação', false], ['Cartão de Hóspede', false]] },
-                { title: 'Outros', items: [['Recriar conta', false], ['Tipos de limpeza', false]] },
+                { title: 'Financeiro', items: [['Encargos Fixos', 'encargos'], ['Depósitos', 'depositos'], ['Voucher', 'voucher'], ['Comissões', 'comissoes']] },
+                { title: 'Relacionamento com o hóspede', items: [['Mensagem', 'msg'], ['Carta de Confirmação', 'carta'], ['Cartão de Hóspede', 'cartao']] },
+                { title: 'Outros', items: [['Recriar conta', 'recriar'], ['Tipos de limpeza', 'limpeza']] },
               ].map((g) => (
                 <div key={g.title} className="w-[220px]">
                   <div className="px-2 py-1 font-bold text-[11px] bg-[#F7FAFA] border border-[#CFE3E6] border-b-0">{g.title}</div>
@@ -252,9 +265,10 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                           if (action === 'folio') setShowFolio(true);
                           else if (action === 'editar') setShowEditar(true);
                           else if (action === 'atualizar') refetch();
-                          else naoConstruido(label);
+                          else if (action === 'recriar') recriarConta();
+                          else setFuncao(action);
                         }}
-                        className={`w-full text-left px-3 py-2 text-[12px] border-b last:border-b-0 border-[#F7FAFA] hover:bg-[#F7FAFA] ${action ? '' : 'text-gray-400'}`}>
+                        className="w-full text-left px-3 py-2 text-[12px] border-b last:border-b-0 border-[#F7FAFA] hover:bg-[#F7FAFA]">
                         {label}
                       </button>
                     ))}
@@ -264,8 +278,8 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
             </div>
           )}
 
-          {tab === 'Documentos' && <Placeholder label="Documentos" />}
-          {tab === 'Campos personalizados' && <Placeholder label="Campos personalizados" />}
+          {tab === 'Documentos' && <AbaDocumentos reservaId={res.id} />}
+          {tab === 'Campos personalizados' && <AbaCamposPersonalizados reservaId={res.id} />}
 
           {tab === 'Outras reservas do hóspede' && (
             outrasRows.length === 0 ? (
@@ -351,8 +365,161 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
       {showHistorico && <PmsHistoryDialog reservation={res} onClose={() => setShowHistorico(false)} />}
       {showPreco && <PmsPriceViewDialog reservation={res} onClose={() => setShowPreco(false)} />}
       {showSharer && <PmsSharerManagerDialog reservation={res} onClose={() => setShowSharer(false)} />}
+      {funcao === 'encargos' && <EncargosFixos reserva={res} onClose={() => setFuncao(null)} />}
+      {funcao === 'depositos' && <Depositos reserva={res} onClose={() => setFuncao(null)} />}
+      {funcao === 'voucher' && <Voucher reserva={res} onClose={() => setFuncao(null)} onSaved={refetch} />}
+      {funcao === 'comissoes' && <Comissoes reserva={res} onClose={() => setFuncao(null)} />}
+      {funcao === 'msg' && <EnviarEmail reserva={res} tipo="MESSAGE" onClose={() => setFuncao(null)} />}
+      {funcao === 'carta' && <EnviarEmail reserva={res} tipo="CONFIRMATION" onClose={() => setFuncao(null)} />}
+      {funcao === 'cartao' && <CartaoHospede reserva={res} onClose={() => setFuncao(null)} />}
+      {funcao === 'limpeza' && <TiposLimpeza reserva={res} onClose={() => setFuncao(null)} />}
       {showProforma && <PmsProformaDialog reservation={res} onClose={() => setShowProforma(false)} />}
       {showMealPlan && <PmsMealPlanDialog reservation={res} onClose={() => setShowMealPlan(false)} />}
+    </div>
+  );
+}
+
+
+/**
+ * DOCUMENTOS da reserva — as facturas que o arquivo fiscal já guarda para as
+ * contas desta reserva, e os documentos da ficha do hóspede (passaporte/BI).
+ * Nenhuma das duas listas é nova: são os registos que o Centro Fiscal e a ficha
+ * da entidade já têm, trazidos para onde a recepção precisa deles.
+ */
+function AbaDocumentos({ reservaId }: { reservaId: number }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['pms', 'reservation-documents', reservaId],
+    queryFn: async () => (await apiClient.get(`pms/reservations/${reservaId}/documents/`)).data,
+  });
+  if (isLoading) return <div className="p-6 text-center text-gray-400 text-[12px]">A carregar…</div>;
+  const faturas = data?.invoices || [];
+  const docsHospede = data?.guest_documents || [];
+
+  const abrir = async (id: number) => {
+    try { await printFiscalInvoice(id, false); } catch (e) { notifyError(e); }
+  };
+
+  return (
+    <div className="p-4 space-y-4 text-[12px]">
+      <div>
+        <div className="font-bold text-[11px] text-[#5C8891] uppercase mb-1">Facturas desta reserva</div>
+        <div className="border border-[#CFE3E6] rounded-[8px] overflow-hidden bg-white">
+          {faturas.map((f: any) => (
+            <div key={f.id} className="grid grid-cols-[1fr_130px_120px_110px_90px] gap-2 px-3 py-1.5 border-b border-[#F7FAFA] items-center">
+              <span className="font-semibold">{f.type_name}</span>
+              <span className="font-mono text-[#5C8891]">{f.number}</span>
+              <span className="text-gray-600">{f.date}</span>
+              <span className="text-right font-semibold">{Number(f.total).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</span>
+              <button className="text-[11px] text-[#062A31] hover:underline" onClick={() => abrir(f.id)}>Ver / Imprimir</button>
+            </div>
+          ))}
+          {faturas.length === 0 && (
+            <div className="px-3 py-3 text-gray-500">
+              Ainda não foi emitida nenhuma factura para esta reserva. A factura fiscal nasce ao
+              facturar a conta (Verificar Contas → Gerar Fatura).
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div className="font-bold text-[11px] text-[#5C8891] uppercase mb-1">Documentos do hóspede</div>
+        <div className="border border-[#CFE3E6] rounded-[8px] overflow-hidden bg-white">
+          {docsHospede.map((d: any) => (
+            <div key={d.id} className="grid grid-cols-[1fr_140px_110px_90px] gap-2 px-3 py-1.5 border-b border-[#F7FAFA] items-center">
+              <span className="font-semibold">{d.type_name}</span>
+              <span className="font-mono text-[#5C8891]">{d.number || '—'}</span>
+              <span className="text-gray-600">{d.date || '—'}</span>
+              {d.url
+                ? <a className="text-[11px] text-[#062A31] hover:underline" href={d.url} target="_blank" rel="noreferrer">Abrir</a>
+                : <span className="text-[11px] text-gray-400">sem ficheiro</span>}
+            </div>
+          ))}
+          {docsHospede.length === 0 && (
+            <div className="px-3 py-3 text-gray-500">
+              A ficha deste hóspede não tem documentos anexados. Anexam-se em Hóspedes &amp;
+              Empresas → ficha → Informação, ou pelo Leitor de Documentos.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * CAMPOS PERSONALIZADOS da reserva — os campos que ESTE hotel acrescentou.
+ * Mesmo motor da ficha do cliente (pos.CustomFieldDef + CustomFieldValue),
+ * filtrado por localização "Reserva": o hotel define-os todos no mesmo sítio.
+ */
+function AbaCamposPersonalizados({ reservaId }: { reservaId: number }) {
+  const qc = useQueryClient();
+  const chave = ['pms', 'reservation-custom-fields', reservaId];
+  const { data, isLoading } = useQuery({
+    queryKey: chave,
+    queryFn: async () => (await apiClient.get(`pms/reservations/${reservaId}/custom-fields/`)).data,
+  });
+  const [valores, setValores] = useState<Record<string, string> | null>(null);
+  const [gravando, setGravando] = useState(false);
+
+  if (isLoading) return <div className="p-6 text-center text-gray-400 text-[12px]">A carregar…</div>;
+  const campos = data?.fields || [];
+  const actual = valores ?? Object.fromEntries(campos.map((c: any) => [c.code, c.value || '']));
+  const set = (k: string, v: string) => setValores({ ...actual, [k]: v });
+
+  const gravar = async () => {
+    setGravando(true);
+    try {
+      await apiClient.post(`pms/reservations/${reservaId}/custom-fields/`, { values: actual });
+      setValores(null);
+      qc.invalidateQueries({ queryKey: chave });
+      aviso('Campos gravados.');
+    } catch (e) { notifyError(e); } finally { setGravando(false); }
+  };
+
+  if (campos.length === 0) {
+    return (
+      <div className="p-6 text-center text-gray-500 text-[12px] leading-relaxed">
+        Este hotel ainda não definiu campos próprios para as reservas.<br />
+        Defina-os em <b>Configuração POS → Campos personalizados</b>, com a localização
+        <b> Reserva (Detalhe)</b> — aparecem aqui logo a seguir.
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 text-[12px]">
+      <div className="bg-white border border-[#CFE3E6] rounded-[8px] p-3 grid grid-cols-2 gap-x-8 gap-y-2">
+        {campos.map((c: any) => (
+          <label key={c.code} className="flex items-center gap-2">
+            <span className="text-[#041F24] text-right flex-shrink-0" style={{ width: 160 }}>{c.name}:</span>
+            {c.is_list ? (
+              <select className="border border-[#7FA9B1] rounded-[6px] px-2 py-1 flex-1"
+                      value={actual[c.code] || ''} onChange={(e) => set(c.code, e.target.value)}>
+                <option value="">—</option>
+                {(c.list_values || []).map((o: any) => <option key={String(o)} value={String(o)}>{String(o)}</option>)}
+              </select>
+            ) : c.field_type === 'BOOL' ? (
+              <select className="border border-[#7FA9B1] rounded-[6px] px-2 py-1 flex-1"
+                      value={actual[c.code] || ''} onChange={(e) => set(c.code, e.target.value)}>
+                <option value="">—</option><option value="true">Sim</option><option value="false">Não</option>
+              </select>
+            ) : (
+              <input className="border border-[#7FA9B1] rounded-[6px] px-2 py-1 flex-1"
+                     type={c.field_type === 'NUMBER' ? 'number' : c.field_type === 'DATE' ? 'date' : 'text'}
+                     maxLength={c.size || undefined}
+                     value={actual[c.code] || ''} onChange={(e) => set(c.code, e.target.value)} />
+            )}
+          </label>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <button disabled={gravando || !valores} onClick={gravar}
+          className="px-3 py-1.5 text-[12px] border border-[#CFE3E6] rounded-[6px] bg-gradient-to-b from-white to-[#EEF4F5] hover:to-[#E3EDEE] disabled:opacity-40">
+          {gravando ? 'A gravar…' : 'Gravar campos'}
+        </button>
+        {valores && <span className="text-[11px] text-[#B0392B]">Há alterações por gravar.</span>}
+      </div>
     </div>
   );
 }

@@ -25,3 +25,7 @@ redis==5.2.1             # cache/sessões/rate-limit partilhados (escala horizon
 celery==5.4.0            # tarefas assíncronas (SAF-T, relatórios, emails, sync OTA)
 SQLAlchemy>=2.0,<2.1     # fila do Celery embutida na própria BD (sqla+sqlite/postgresql) — sem Redis por omissão
 # Opcional: django-tenants (multi-tenant), opensearch-py (pesquisa à escala), sentry-sdk (observabilidade)
+
+# QR Code da factura (exigido pela AGT no documento impresso) — ver fiscal/views.py::_qr_png
+qrcode
+Pillow

@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from core.tenancy import HotelScopedMixin, default_hotel_id, scope_qs
 from .models import (
+    ReservationFixedCharge, RoomAttribute,
     RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
     LostFoundItem, HousekeepingTask, PhoneDirectoryEntry,
 )
@@ -17,6 +18,7 @@ from .serializers import (
     BlockSerializer, BlockRoomTypeSerializer,
     ReservationSerializer, FolioSerializer, FolioChargeSerializer, MealPlanEntrySerializer,
     LostFoundItemSerializer, HousekeepingTaskSerializer, PhoneDirectoryEntrySerializer,
+    ReservationFixedChargeSerializer, RoomAttributeSerializer,
 )
 
 
@@ -92,6 +94,23 @@ class RoomTypeViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet
     serializer_class = RoomTypeSerializer
 
 
+
+class RoomAttributeViewSet(HotelScopedMixin, viewsets.ModelViewSet):
+    """Características dos quartos (vista mar, varanda, piso alto, adaptado…).
+
+    Tabela do hotel, não do código: cada propriedade define as suas. Os quartos
+    ligam-se a elas por `Room.attributes`, e a pesquisa de quartos livres filtra
+    por aqui (`?attributes=1,4`).
+    """
+    queryset = RoomAttribute.objects.all()
+    serializer_class = RoomAttributeSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.query_params.get('active') == '1':
+            qs = qs.filter(is_active=True)
+        return qs
+
 class RoomViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
     queryset = Room.objects.select_related('room_type', 'floor').all()
     serializer_class = RoomSerializer
@@ -114,13 +133,20 @@ class RoomViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
         p = request.query_params
         d_from = _parse_date(p.get('date_from'))
         d_to = _parse_date(p.get('date_to'))
-        qs = self.filter_queryset(self.get_queryset()).filter(is_active=True)
+        qs = self.filter_queryset(self.get_queryset()).prefetch_related('attributes').filter(is_active=True)
         rt = p.get('room_type')
         if rt:
             qs = qs.filter(room_type_id=rt)
         q = p.get('q')
         if q:
             qs = qs.filter(number__icontains=q)
+        # ATRIBUTOS: "um com varanda e vista mar" tem de devolver os quartos que
+        # têm AS DUAS coisas, não os que têm uma ou outra — daí um filtro por
+        # característica de cada vez, em vez de um único `__in` (que seria OU).
+        atribs = [a for a in (p.get('attributes') or '').split(',') if a.strip().isdigit()]
+        for a in atribs:
+            qs = qs.filter(attributes__id=a)
+        qs = qs.distinct()
         today = timezone.localdate()
         rows = []
         for room in qs.order_by('number'):
@@ -133,6 +159,7 @@ class RoomViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
                 'room_type': room.room_type_id, 'room_type_code': room.room_type.code,
                 'status': room.status, 'status_display': room.get_status_display(),
                 'is_free': clash is None,
+                'attributes': [a.name for a in room.attributes.all() if a.is_active],
                 'next_reservation': next_res.check_in.isoformat() if next_res else None,
             })
         return Response(rows)
@@ -435,6 +462,16 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
                     amount=rate, source_reference=f'ROOM-{today.isoformat()}',
                     posted_by=request.data.get('operator', 'reception'),
                 )
+            # Encargos fixos de uma vez só (taxa de limpeza final, por ex.):
+            # os "por noite" ficam para a Auditoria da Noite, que já os lança
+            # com a diária — aqui seriam lançados a dobrar.
+            for enc in res.fixed_charges.filter(is_active=True, per_night=False):
+                if enc.amount and enc.amount > 0:
+                    FolioCharge.objects.create(
+                        folio=folio, charge_type=enc.charge_type, description=enc.description,
+                        amount=enc.amount, source_reference=f'FIX-{enc.id}',
+                        posted_by=request.data.get('operator', 'reception'))
+
             # O que o hóspede já pagou no site entra agora na conta — senão
             # pagava o depósito online e a estadia inteira à chegada.
             depositos = lancar_depositos_no_folio(res, folio)
@@ -445,6 +482,231 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
             dados['detail'] = (f'Check-in feito. {depositos} depósito(s) pago(s) online '
                                f'lançado(s) na conta.')
         return Response(dados)
+
+    # ------------------------------------------------------------------ E-MAIL
+    ASSUNTOS = {
+        'PROFORMA': 'Conta da sua estadia — {conf}',
+        'CONFIRMATION': 'Confirmação da sua reserva — {conf}',
+        'MESSAGE': 'Mensagem do {hotel}',
+    }
+
+    @action(detail=True, methods=['post'], url_path='send-email')
+    def send_email(self, request, pk=None):
+        """Envia um documento/mensagem desta reserva ao hóspede.
+
+        NÃO há motor de e-mail do PMS: é o do POS (`pos/mailer.py` +
+        `EmailOutbox` + os modelos por língua de `EmailTemplate`), o mesmo que
+        já manda a factura do terminal e as newsletters do Marketing. Escrever
+        aqui um segundo carteiro era ter duas caixas de saída, duas listas de
+        falhados e dois sítios para configurar o SMTP.
+
+        O `body` pode vir do ecrã já composto em HTML — é o caso da pró-forma,
+        que o diálogo monta para imprimir e aproveita tal e qual para o
+        e-mail, de modo que o papel e o e-mail nunca mostrem contas
+        diferentes. Sem `body`, escreve-se aqui um texto com os dados da
+        reserva.
+
+        Sem SMTP configurado (Parâmetros 9500-9505) o envio fica SIMULADO e
+        registado — o fluxo testa-se sem mandar e-mails a clientes reais. Quem
+        chama fica a saber qual dos dois aconteceu pelo `status` devolvido.
+        """
+        from pos import mailer
+        res = self.get_object()
+
+        tipo = (request.data.get('kind') or 'MESSAGE').upper()
+        if tipo not in self.ASSUNTOS:
+            return Response({'detail': f'Tipo de e-mail desconhecido: {tipo}.'}, status=400)
+
+        destino = (request.data.get('to') or '').strip() or (
+            (res.guest.email or '').strip() if res.guest_id else '')
+        if not destino:
+            return Response({'detail': f'{res.guest.name if res.guest_id else "O hóspede"} não tem '
+                                       f'e-mail na ficha. Escreva o endereço ou preencha a ficha '
+                                       f'do cliente.'}, status=400)
+
+        hotel = res.hotel.name if res.hotel_id else ''
+        assunto = (request.data.get('subject') or '').strip() or \
+            self.ASSUNTOS[tipo].format(conf=res.confirmation, hotel=hotel)
+        corpo = request.data.get('body') or self._corpo_por_defeito(tipo, res, hotel)
+
+        # Modelo do Marketing, se o ecrã escolheu um: assim o hotel controla o
+        # texto (e a língua do hóspede) sem passar por nós.
+        modelo = None
+        codigo = (request.data.get('template') or '').strip()
+        if codigo:
+            from pos.models import EmailTemplate
+            modelo = EmailTemplate.objects.filter(code=codigo).first()
+            if not modelo:
+                return Response({'detail': f'Modelo de e-mail "{codigo}" não encontrado.'}, status=404)
+
+        if modelo:
+            reg = mailer.send_template(
+                modelo, destino, ctx=self._contexto_email(res, hotel),
+                culture=(request.data.get('culture') or 'pt-PT'),
+                context_ref=res.confirmation)
+        else:
+            reg = mailer.send(destino, assunto, corpo, context_ref=res.confirmation)
+
+        legenda = {'SENT': 'E-mail enviado.',
+                   'SIMULATED': 'E-mail registado em modo simulado — esta instalação ainda não '
+                                'tem servidor de e-mail (SMTP) configurado. Veja-o em '
+                                'Marketing → Caixa de saída.',
+                   'QUEUED': 'E-mail em fila de envio.',
+                   'FAILED': f'Não foi possível enviar: {reg.error or "erro desconhecido"}.'}
+        return Response({'id': reg.id, 'to': reg.to, 'subject': reg.subject,
+                         'status': reg.status, 'detail': legenda.get(reg.status, reg.status)},
+                        status=200 if reg.status != 'FAILED' else 502)
+
+    @staticmethod
+    def _contexto_email(res, hotel):
+        """As variáveis que os modelos de e-mail (@Model[0].Campo) podem usar."""
+        return {
+            'ReservationNumber': res.confirmation, 'HotelName': hotel,
+            'GuestName': res.guest.name if res.guest_id else '',
+            'CheckIn': res.check_in.isoformat(), 'CheckOut': res.check_out.isoformat(),
+            'Nights': res.nights, 'Adults': res.adults, 'Children': res.children,
+            'RoomType': res.room_type.name if res.room_type_id else '',
+            'Room': res.room.number if res.room_id else '',
+            'Rate': str(res.effective_rate or 0),
+            'Total': str((res.effective_rate or 0) * (res.nights or 0)),
+            'Status': res.get_status_display(),
+        }
+
+    def _corpo_por_defeito(self, tipo, res, hotel):
+        c = self._contexto_email(res, hotel)
+        cabecalho = (f"<p>Exmo.(s) Sr.(s) <b>{c['GuestName']}</b>,</p>")
+        detalhe = (
+            f"<table style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px'>"
+            f"<tr><td style='padding:3px 10px 3px 0;color:#5b6b73'>Reserva</td>"
+            f"<td><b>{c['ReservationNumber']}</b></td></tr>"
+            f"<tr><td style='padding:3px 10px 3px 0;color:#5b6b73'>Entrada</td><td>{c['CheckIn']}</td></tr>"
+            f"<tr><td style='padding:3px 10px 3px 0;color:#5b6b73'>Saída</td><td>{c['CheckOut']}</td></tr>"
+            f"<tr><td style='padding:3px 10px 3px 0;color:#5b6b73'>Noites</td><td>{c['Nights']}</td></tr>"
+            f"<tr><td style='padding:3px 10px 3px 0;color:#5b6b73'>Categoria</td><td>{c['RoomType']}</td></tr>"
+            f"</table>")
+        if tipo == 'CONFIRMATION':
+            meio = "<p>A sua reserva está confirmada. Seguem os detalhes:</p>"
+            fim = "<p>Até breve!</p>"
+        elif tipo == 'PROFORMA':
+            meio = "<p>Segue a conta da sua estadia, para conferência:</p>"
+            fim = ("<p style='color:#B0392B'><i>Este documento não é uma factura e não serve "
+                   "para efeitos fiscais.</i></p>")
+        else:
+            meio = "<p>Seguem os dados da sua reserva:</p>"
+            fim = ''
+        return f"{cabecalho}{meio}{detalhe}{fim}<p style='color:#5b6b73'>{hotel}</p>"
+
+    # ------------------------------------------- CAMPOS PERSONALIZADOS / DOCS
+    @action(detail=True, methods=['get', 'post'], url_path='custom-fields')
+    def custom_fields(self, request, pk=None):
+        """Os campos que ESTE hotel acrescentou à reserva.
+
+        Mesmo motor da ficha do cliente — `pos.CustomFieldDef` (a definição) e
+        `pos.CustomFieldValue` (o valor), filtrados por `location='RESERVATION'`.
+        Não há um segundo sistema de campos personalizados para o PMS: o hotel
+        define-os todos no mesmo sítio e escolhe, campo a campo, onde aparecem.
+        """
+        from pos.models import CustomFieldDef, CustomFieldValue
+        res = self.get_object()
+        defs = list(CustomFieldDef.objects.filter(location='RESERVATION', is_active=True))
+
+        if request.method == 'POST':
+            valores = request.data.get('values') or {}
+            porCodigo = {d.code: d for d in defs}
+            desconhecidos = [c for c in valores if c not in porCodigo]
+            if desconhecidos:
+                return Response({'detail': f'Campo(s) inexistente(s) ou inactivo(s): '
+                                           f'{", ".join(sorted(desconhecidos))}.'}, status=400)
+            erros, limpos = {}, {}
+            for codigo, bruto in valores.items():
+                try:
+                    limpos[codigo] = porCodigo[codigo].clean_value(bruto)
+                except ValueError as e:
+                    erros[codigo] = str(e)
+            if erros:
+                return Response(erros, status=400)
+            for codigo, texto in limpos.items():
+                if texto == '':
+                    CustomFieldValue.objects.filter(field=porCodigo[codigo], object_id=res.pk).delete()
+                else:
+                    CustomFieldValue.objects.update_or_create(
+                        field=porCodigo[codigo], object_id=res.pk, defaults={'value': texto})
+
+        atuais = {v.field.code: v.value for v in CustomFieldValue.objects.select_related('field')
+                  .filter(object_id=res.pk, field__location='RESERVATION')}
+        return Response({
+            'fields': [{'code': d.code, 'name': d.name, 'field_type': d.field_type,
+                        'is_list': d.is_list, 'list_values': d.list_values or [],
+                        'size': d.size, 'value': atuais.get(d.code, '')} for d in defs],
+        })
+
+    @action(detail=True, methods=['get'])
+    def documents(self, request, pk=None):
+        """Os documentos desta reserva, juntos num sítio só.
+
+        Duas origens, nenhuma delas nova: as FACTURAS que o arquivo fiscal já
+        guarda (`fiscal.FiscalDocument` com `source_module='pms'` e o folio como
+        referência — é assim que `emit_for_pms_folio` as grava) e os DOCUMENTOS
+        DA FICHA do hóspede (`mdm.CustomerRecord` com `kind='DOC'`, os anexos da
+        aba Documentos da entidade, onde já se guarda o passaporte/BI).
+        """
+        res = self.get_object()
+        folio_ids = list(res.folios.values_list('id', flat=True))
+
+        faturas = []
+        if folio_ids:
+            from fiscal.models import FiscalDocument
+            for d in (FiscalDocument.objects
+                      .filter(source_module='pms', source_ref__in=[str(i) for i in folio_ids])
+                      .select_related('doc_type').order_by('-system_entry_date')):
+                faturas.append({
+                    'id': d.id, 'kind': 'FISCAL', 'number': d.invoice_no,
+                    'type_name': d.doc_type.name if d.doc_type_id else '',
+                    'date': d.system_entry_date.strftime('%Y-%m-%d %H:%M') if d.system_entry_date else '',
+                    'total': str(d.gross_total), 'status': d.get_status_display(),
+                })
+
+        ficha = []
+        if res.guest_id:
+            from mdm.models import CustomerRecord
+            for r in CustomerRecord.objects.filter(customer_id=res.guest_id, kind='DOC').order_by('-id'):
+                dados = r.data or {}
+                ficha.append({
+                    'id': r.id, 'kind': 'GUEST_DOC',
+                    'number': dados.get('number') or dados.get('numero') or '',
+                    'type_name': dados.get('type') or dados.get('tipo') or 'Documento',
+                    'date': dados.get('valid_until') or dados.get('validade') or '',
+                    'url': dados.get('url') or dados.get('file') or '',
+                    'notes': dados.get('notes') or dados.get('notas') or '',
+                })
+
+        return Response({'invoices': faturas, 'guest_documents': ficha})
+
+    @action(detail=True, methods=['post'], url_path='recreate-folio')
+    def recreate_folio(self, request, pk=None):
+        """Abre uma conta nova para esta reserva.
+
+        Serve para o caso real em que a reserva ficou sem conta onde lançar: a
+        conta foi fechada/facturada e o hóspede ainda consome, ou um check-in
+        antigo não deixou folio nenhum. Nunca mexe no que já existe — abre mais
+        uma e marca-a como principal só se não houver nenhuma aberta, para o
+        histórico e as facturas emitidas ficarem onde estão.
+        """
+        res = self.get_object()
+        abertas = res.folios.filter(status='OPEN')
+        if abertas.exists():
+            return Response({'detail': f'Esta reserva já tem uma conta aberta '
+                                       f'({abertas.first().number}). Feche-a antes de abrir outra.'},
+                            status=409)
+        tem_principal = res.folios.filter(is_primary=True).exists()
+        letra = chr(ord('A') + res.folios.count())
+        folio = Folio.objects.create(
+            reservation=res, number=_next_number(Folio.objects, 'number', 'FOL'),
+            label=f'{letra} · Nova conta', is_primary=not tem_principal)
+        lancados = lancar_depositos_no_folio(res, folio)
+        return Response({'id': folio.id, 'number': folio.number, 'label': folio.label,
+                         'deposits_posted': lancados,
+                         'detail': f'Conta {folio.number} aberta.'}, status=201)
 
     @action(detail=True, methods=['post'])
     def check_out(self, request, pk=None):
@@ -531,6 +793,22 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
 # ==========================================================================
 # FOLIO — a conta do hóspede
 # ==========================================================================
+
+
+class ReservationFixedChargeViewSet(HotelScopedMixin, viewsets.ModelViewSet):
+    """Encargos fixos de uma reserva (estacionamento, cama extra, taxa de resort).
+
+    Quem os lança na conta é a Auditoria da Noite, noite a noite (`per_night`),
+    ou o check-in, uma vez só — ver `night_audit.py` e `check_in`.
+    """
+    queryset = ReservationFixedCharge.objects.select_related('reservation').all()
+    serializer_class = ReservationFixedChargeSerializer
+    hotel_path = 'reservation__hotel'
+
+    def get_queryset(self):
+        qs = scope_qs(self.request, super().get_queryset(), hotel_path='reservation__hotel')
+        reserva = self.request.query_params.get('reservation')
+        return qs.filter(reservation_id=reserva) if reserva else qs
 
 class FolioViewSet(HotelScopedMixin, viewsets.ModelViewSet):
     hotel_path = 'reservation__hotel'

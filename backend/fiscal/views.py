@@ -31,6 +31,33 @@ def _bank_accounts():
     } for b in CompanyBankAccount.objects.filter(is_active=True, show_on_invoice=True)]
 
 
+def _qr_png(dados):
+    """O QR da factura como imagem (data URI), não como texto.
+
+    A AGT exige o QR Code impresso no documento. O que saía no papel era a
+    *string* de dados em bruto ("A:5000000000|B:999999999|C:AO|…") colada ao
+    rodapé: ilegível para uma pessoa e inútil para um leitor, porque nenhum
+    telemóvel lê texto. Fica aqui, no servidor, porque é o servidor que já
+    compõe o conteúdo do QR (`signing.build_qr_data`) — e assim qualquer
+    consumidor (impressão A4, e-mail, PDF) recebe a mesma imagem.
+
+    Se a biblioteca não estiver instalada devolve None em vez de rebentar: a
+    factura continua a sair com os dados em texto, como saía antes, e o
+    documento nunca deixa de ser emitido por causa de um desenho.
+    """
+    if not dados:
+        return None
+    try:
+        import base64
+        from io import BytesIO
+        import qrcode
+        img = qrcode.make(dados, box_size=4, border=1)
+        buf = BytesIO()
+        img.save(buf, format='PNG')
+        return 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('ascii')
+    except Exception:
+        return None
+
 class CommercialDocumentViewSet(viewsets.ModelViewSet):
     """Documentos comerciais (Orçamento/Proforma/Encomenda) — editáveis só em rascunho."""
     permission_classes = [IsAuthenticated]
@@ -344,6 +371,7 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
             },
             'amount_in_words': doc.amount_in_words,
             'qr_data': doc.qr_data,
+            'qr_png': _qr_png(doc.qr_data),
             'print_mention': doc.print_mention,
             'hash': doc.doc_hash,
         })

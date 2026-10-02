@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, X, Hand } from 'lucide-react';
 import { apiClient } from '../../api/client';
-import { aviso } from '../../ui/dialogo';
 import ClassicGrid from '../ui/ClassicGrid';
 
-const naoConstruido = (label: string) => aviso(`"${label}" ainda não está construído nesta fase do PMS.`);
 
 /** "Mostrar quartos livres" — usado a partir do "+" ao lado de Quarto, na Nova
  * Reserva. Cruza o inventário real (`pms.Room`) com as reservas vivas no
@@ -19,11 +17,27 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
   const [cat, setCat] = useState(roomType);
   const [q, setQ] = useState('');
   const [selId, setSelId] = useState<number | null>(null);
+  const [atribSel, setAtribSel] = useState<number[]>([]);
+
+  // As características são as deste hotel (pms.RoomAttribute) — não uma lista
+  // escrita no código: cada propriedade define as suas.
+  const { data: atributos = [] } = useQuery({
+    queryKey: ['pms', 'room-attributes'],
+    queryFn: async () => {
+      try {
+        const r = await apiClient.get('pms/room-attributes/', { params: { active: 1 } });
+        return (r.data?.results || r.data || []) as any[];
+      } catch { return []; }
+    },
+  });
 
   const { data, isFetching, refetch } = useQuery({
-    queryKey: ['pms', 'rooms', 'free', de, ate, cat],
+    queryKey: ['pms', 'rooms', 'free', de, ate, cat, atribSel.join(',')],
     queryFn: async () => (await apiClient.get('pms/rooms/free/', {
-      params: { date_from: de, date_to: ate, room_type: cat || undefined },
+      params: {
+        date_from: de, date_to: ate, room_type: cat || undefined,
+        attributes: atribSel.length ? atribSel.join(',') : undefined,
+      },
     })).data,
   });
   const rows = (Array.isArray(data) ? data : []).filter((r: any) => r.is_free
@@ -53,10 +67,24 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
               {roomTypes.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
             </select>
           </label>
-          <label className="flex items-center gap-1.5 text-gray-400 cursor-not-allowed" title="Ainda não está construído nesta fase do PMS."
-            onClick={() => naoConstruido('Atributos')}>
-            <input type="checkbox" disabled /> Atributos
-          </label>
+          {/* ATRIBUTOS — "um com varanda e vista mar". O servidor exige TODAS as
+              marcadas (e não uma qualquer delas), que é o que a recepção quer
+              quando o hóspede pede duas coisas ao mesmo tempo. */}
+          {atributos.length > 0 && (
+            <div className="flex flex-col gap-0.5 min-w-[180px]">
+              <span>Atributos:</span>
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 border border-[#7FA9B1] bg-white p-1 max-h-[58px] overflow-auto">
+                {atributos.map((a: any) => (
+                  <label key={a.id} className="flex items-center gap-1 text-[11px] whitespace-nowrap">
+                    <input type="checkbox" checked={atribSel.includes(a.id)}
+                      onChange={(e) => setAtribSel(e.target.checked
+                        ? [...atribSel, a.id] : atribSel.filter((x) => x !== a.id))} />
+                    {a.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
           <label className="flex flex-col gap-0.5 flex-1 min-w-[140px]">Pesquisar:
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nº do quarto…" className="border border-[#7FA9B1] p-1 bg-white" />
           </label>
@@ -70,17 +98,21 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
           {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A carregar…</div> : (
             <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined}
               onRowClick={(r: any) => setSelId(r.id)} onRowDoubleClick={(r: any) => onSelect(r)}
+              // As colunas "Camas Extra", "C.O. Esperado hoje", "Inspeccionado",
+              // "Fumador", "Alérgico" e "Mobilidade reduzida" saíram daqui: vinham
+              // todas vazias por construção (um `() => ''`), o que é pior do que
+              // não as ter — uma coluna "Fumador" sempre em branco faz parecer que
+              // nenhum quarto é de fumadores. O que elas queriam dizer é agora uma
+              // coisa só e real: as CARACTERÍSTICAS do quarto (pms.RoomAttribute),
+              // que o hotel define e pelas quais se pode filtrar aqui em cima.
               columns={[
                 { header: 'Categoria', accessor: 'room_type_code', width: '10%' },
-                { header: 'Quarto', accessor: 'number', width: '10%' },
-                { header: 'Camas Extra', accessor: () => '—', width: '10%' },
-                { header: 'C.O. Esperado hoje', accessor: () => '—', width: '13%' },
-                { header: 'Próxima Reserva', accessor: (r: any) => r.next_reservation || '—', width: '13%' },
+                { header: 'Quarto', accessor: 'number', width: '8%' },
+                { header: 'Estado', accessor: (r: any) => r.status_display, width: '14%' },
+                { header: 'Características',
+                  accessor: (r: any) => (r.attributes || []).join(' · ') || '—', width: '38%' },
+                { header: 'Próxima Reserva', accessor: (r: any) => r.next_reservation || '—', width: '16%' },
                 { header: 'LIMPO', accessor: (r: any) => r.status === 'VACANT_CLEAN' ? '✔' : '', width: '8%' },
-                { header: 'Inspeccionado', accessor: () => '', width: '10%' },
-                { header: 'Fumador', accessor: () => '', width: '8%' },
-                { header: 'Alérgico', accessor: () => '', width: '8%' },
-                { header: 'Mobilidade reduzida', accessor: () => '', width: '10%' },
               ]} />
           )}
         </div>

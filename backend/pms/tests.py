@@ -868,3 +868,300 @@ class PmsCanaisEDepositosTests(PmsBase):
         r = self.client.patch(f'/api/pos/marketing/entities/{self.guest.id}/', {
             'custom_fields': {'mesa_pref': '12'}}, format='json')
         self.assertEqual(r.status_code, 400, r.content)
+
+
+class PmsFichaDaReservaTests(PmsBase):
+    """O que estava marcado como "ainda não construído" no detalhe da reserva:
+    encargos fixos, campos personalizados, documentos, recriar conta, e-mail,
+    e as características dos quartos."""
+
+    # ------------------------------------------------------------ E-MAIL
+    def test_email_da_reserva_usa_o_motor_do_pos(self):
+        """Não há carteiro do PMS: é o `pos.mailer`, com registo no EmailOutbox."""
+        from pos.models import EmailOutbox
+        self.guest.email = 'hospede@teste.ao'
+        self.guest.save(update_fields=['email'])
+        res_id = self._reserva_em_checkin()
+
+        r = self.client.post(f'/api/pms/reservations/{res_id}/send-email/',
+                             {'kind': 'CONFIRMATION'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        # Sem SMTP configurado o envio é SIMULADO — e isso é dito, não escondido.
+        self.assertEqual(r.data['status'], 'SIMULATED')
+        self.assertIn('simulado', r.data['detail'].lower())
+
+        registo = EmailOutbox.objects.get(id=r.data['id'])
+        self.assertEqual(registo.to, 'hospede@teste.ao')
+        self.assertIn('RES-', registo.subject + registo.context_ref)
+        self.assertIn('Hospede Teste', registo.body)
+
+    def test_email_sem_endereco_diz_o_que_falta(self):
+        res_id = self._reserva_em_checkin()
+        r = self.client.post(f'/api/pms/reservations/{res_id}/send-email/',
+                             {'kind': 'MESSAGE'}, format='json')
+        self.assertEqual(r.status_code, 400, r.content)
+        self.assertIn('não tem e-mail', r.data['detail'])
+
+    def test_email_aceita_destino_e_corpo_do_ecra(self):
+        """A pró-forma manda o MESMO HTML que imprime — papel e e-mail não
+        podem mostrar contas diferentes."""
+        from pos.models import EmailOutbox
+        res_id = self._reserva_em_checkin()
+        r = self.client.post(f'/api/pms/reservations/{res_id}/send-email/', {
+            'kind': 'PROFORMA', 'to': 'outro@teste.ao',
+            'subject': 'A sua conta', 'body': '<p>TOTAL 30000</p>'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        reg = EmailOutbox.objects.get(id=r.data['id'])
+        self.assertEqual(reg.to, 'outro@teste.ao')
+        self.assertEqual(reg.subject, 'A sua conta')
+        self.assertIn('TOTAL 30000', reg.body)
+
+    def test_tipo_de_email_desconhecido_e_recusado(self):
+        res_id = self._reserva_em_checkin()
+        self.assertEqual(self.client.post(f'/api/pms/reservations/{res_id}/send-email/',
+                                          {'kind': 'INVENTADO', 'to': 'a@b.ao'},
+                                          format='json').status_code, 400)
+
+    # --------------------------------------------------- ENCARGOS FIXOS
+    def _reserva_simples(self):
+        r = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'room': self.quartos[0], 'check_in': str(self.hoje),
+            'check_out': str(self.hoje + timedelta(days=2)), 'adults': 2}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        return r.data['id']
+
+    def test_encargo_por_noite_e_lancado_pela_auditoria_da_noite(self):
+        """Esquecer de lançar o estacionamento numa noite é dinheiro perdido
+        sem ninguém dar por falta — por isso quem o lança é a auditoria."""
+        res_id = self._reserva_simples()
+        r = self.client.post('/api/pms/fixed-charges/', {
+            'reservation': res_id, 'description': 'Estacionamento',
+            'charge_type': 'MISC', 'amount': '2000', 'per_night': True}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        self.assertEqual(r.data['total_estimado'], '4000.00', '2 noites × 2000')
+
+        self.client.post(f'/api/pms/reservations/{res_id}/check_in/', {}, format='json')
+        folio = Reservation.objects.get(id=res_id).folio
+        # O check-in lança só a diária: o "por noite" é da auditoria.
+        self.assertEqual(folio.charges_total, Decimal('30000'))
+
+        amanha = self.hoje + timedelta(days=1)
+        aud = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        self.assertIn(aud.status_code, (200, 201), aud.content)
+        self.assertEqual(aud.data['rooms_charged'], 1)
+        self.assertEqual(aud.data['extras_charged'], 1, 'o encargo fixo não foi lançado')
+        folio.refresh_from_db()
+        self.assertEqual(folio.charges_total, Decimal('62000'), '30000 + 30000 + 2000')
+
+    def test_encargo_de_uma_vez_entra_no_check_in(self):
+        res_id = self._reserva_simples()
+        self.client.post('/api/pms/fixed-charges/', {
+            'reservation': res_id, 'description': 'Taxa de limpeza final',
+            'charge_type': 'MISC', 'amount': '5000', 'per_night': False}, format='json')
+        self.client.post(f'/api/pms/reservations/{res_id}/check_in/', {}, format='json')
+        folio = Reservation.objects.get(id=res_id).folio
+        self.assertEqual(folio.charges_total, Decimal('35000'), '30000 da diária + 5000 da taxa')
+
+        # E a auditoria não o volta a lançar (é "uma vez", não "por noite").
+        amanha = self.hoje + timedelta(days=1)
+        aud = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        self.assertEqual(aud.data['extras_charged'], 0)
+        folio.refresh_from_db()
+        self.assertEqual(folio.charges_total, Decimal('65000'))
+
+    def test_auditoria_repetida_nao_duplica_o_encargo_fixo(self):
+        res_id = self._reserva_simples()
+        self.client.post('/api/pms/fixed-charges/', {
+            'reservation': res_id, 'description': 'Cama extra',
+            'amount': '3000', 'per_night': True}, format='json')
+        self.client.post(f'/api/pms/reservations/{res_id}/check_in/', {}, format='json')
+        amanha = self.hoje + timedelta(days=1)
+        self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        folio = Reservation.objects.get(id=res_id).folio
+        folio.refresh_from_db()
+        antes = folio.charges_total
+        # A trava da auditoria (uma data, uma corrida) protege também os extras.
+        repetida = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        self.assertEqual(repetida.status_code, 409)
+        folio.refresh_from_db()
+        self.assertEqual(folio.charges_total, antes)
+
+    # ------------------------------------------ CAMPOS PERSONALIZADOS
+    def test_campos_personalizados_da_reserva(self):
+        """Mesmo motor da ficha do cliente, filtrado por localização Reserva."""
+        self.client.post('/api/pos/config/custom-fields/', {
+            'code': 'transfer', 'name': 'Transfer do aeroporto', 'location': 'RESERVATION',
+            'field_type': 'BOOL', 'is_active': True}, format='json')
+        self.client.post('/api/pos/config/custom-fields/', {
+            'code': 'num_voo_res', 'name': 'No do voo', 'location': 'RESERVATION',
+            'field_type': 'TEXT', 'is_active': True}, format='json')
+        # Um campo de ENTIDADE não é um campo da reserva.
+        self.client.post('/api/pos/config/custom-fields/', {
+            'code': 'so_ficha', 'name': 'So na ficha', 'location': 'ENTITY',
+            'field_type': 'TEXT', 'is_active': True}, format='json')
+
+        res_id = self._reserva_simples()
+        r = self.client.get(f'/api/pms/reservations/{res_id}/custom-fields/')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(sorted(c['code'] for c in r.data['fields']), ['num_voo_res', 'transfer'])
+
+        g = self.client.post(f'/api/pms/reservations/{res_id}/custom-fields/', {
+            'values': {'transfer': 'Sim', 'num_voo_res': 'DT651'}}, format='json')
+        self.assertEqual(g.status_code, 200, g.content)
+        valores = {c['code']: c['value'] for c in g.data['fields']}
+        self.assertEqual(valores['transfer'], 'true')
+        self.assertEqual(valores['num_voo_res'], 'DT651')
+
+        # Relido do servidor, continua lá.
+        relido = self.client.get(f'/api/pms/reservations/{res_id}/custom-fields/')
+        self.assertEqual({c['code']: c['value'] for c in relido.data['fields']}['num_voo_res'], 'DT651')
+
+        # Campo da ficha do cliente não se grava pela reserva.
+        self.assertEqual(self.client.post(f'/api/pms/reservations/{res_id}/custom-fields/', {
+            'values': {'so_ficha': 'x'}}, format='json').status_code, 400)
+
+    def test_valor_de_reserva_e_de_cliente_nao_se_misturam(self):
+        """As duas localizações partilham a tabela de valores — se o filtro por
+        localização falhasse, o nº do voo do cliente nº 1 aparecia na reserva nº 1."""
+        self.client.post('/api/pos/config/custom-fields/', {
+            'code': 'campo_res', 'name': 'Da reserva', 'location': 'RESERVATION',
+            'field_type': 'TEXT', 'is_active': True}, format='json')
+        self.client.post('/api/pos/config/custom-fields/', {
+            'code': 'campo_ent', 'name': 'Da ficha', 'location': 'ENTITY',
+            'field_type': 'TEXT', 'is_active': True}, format='json')
+
+        res_id = self._reserva_simples()
+        self.client.post(f'/api/pms/reservations/{res_id}/custom-fields/',
+                         {'values': {'campo_res': 'RESERVA'}}, format='json')
+        self.client.patch(f'/api/pos/marketing/entities/{self.guest.id}/',
+                          {'custom_fields': {'campo_ent': 'FICHA'}}, format='json')
+
+        daReserva = self.client.get(f'/api/pms/reservations/{res_id}/custom-fields/').data['fields']
+        self.assertEqual([c['code'] for c in daReserva], ['campo_res'])
+        daFicha = self.client.get(f'/api/pos/marketing/entities/{self.guest.id}/').data['custom_fields']
+        self.assertEqual(daFicha, {'campo_ent': 'FICHA'})
+
+    # ----------------------------------------------------- DOCUMENTOS
+    def test_documentos_da_reserva_juntam_facturas_e_ficha(self):
+        from mdm.models import CustomerRecord
+        CustomerRecord.objects.create(customer=self.guest, kind='DOC',
+                                      data={'type': 'Passaporte', 'number': 'N0012345'})
+        res_id = self._reserva_em_checkin()
+
+        r = self.client.get(f'/api/pms/reservations/{res_id}/documents/')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['invoices'], [], 'ainda não foi facturada')
+        self.assertEqual(len(r.data['guest_documents']), 1)
+        self.assertEqual(r.data['guest_documents'][0]['number'], 'N0012345')
+        self.assertEqual(r.data['guest_documents'][0]['type_name'], 'Passaporte')
+
+    def test_a_factura_emitida_aparece_nos_documentos(self):
+        cfg = FiscalConfig.get()
+        cfg.company_name, cfg.company_nif, cfg.environment = 'Hotel Teste Lda', '5000000000', 'TEST'
+        cfg.save()
+        TaxRate.objects.create(code='IVA14', name='IVA 14%', percentage=Decimal('14'),
+                               is_default=True, is_active=True)
+        tipo = FiscalDocType.objects.create(code='FR', name='Factura-Recibo', signable=True)
+        FiscalSeries.objects.create(code='T', doc_type=tipo, year=self.hoje.year,
+                                    certified=True, is_active=True, environment='TEST')
+
+        res_id = self._reserva_em_checkin()
+        folio = Reservation.objects.get(id=res_id).folio
+        self.client.post(f'/api/pms/folios/{folio.id}/settle/', {}, format='json')
+        emit = self.client.post(f'/api/pms/folios/{folio.id}/generate-invoice/', {}, format='json')
+        self.assertIn(emit.status_code, (200, 201), emit.content)
+
+        docs = self.client.get(f'/api/pms/reservations/{res_id}/documents/').data
+        self.assertEqual(len(docs['invoices']), 1, 'a factura emitida não aparece na reserva')
+        self.assertEqual(docs['invoices'][0]['number'], emit.data['invoice_number'])
+
+    def test_a_factura_impressa_leva_logotipo_e_qr(self):
+        """O papel que o hóspede leva: QR como imagem (nenhum telemóvel lê a
+        string de dados em texto) e o logótipo que o cliente carregou."""
+        cfg = FiscalConfig.get()
+        cfg.company_name, cfg.company_nif, cfg.environment = 'Hotel Teste Lda', '5000000000', 'TEST'
+        cfg.logo_url = 'https://exemplo.ao/logo.png'
+        cfg.save()
+        TaxRate.objects.create(code='IVA14', name='IVA 14%', percentage=Decimal('14'),
+                               is_default=True, is_active=True)
+        tipo = FiscalDocType.objects.create(code='FR', name='Factura-Recibo', signable=True)
+        FiscalSeries.objects.create(code='T', doc_type=tipo, year=self.hoje.year,
+                                    certified=True, is_active=True, environment='TEST')
+
+        res_id = self._reserva_em_checkin()
+        folio = Reservation.objects.get(id=res_id).folio
+        self.client.post(f'/api/pms/folios/{folio.id}/settle/', {}, format='json')
+        emit = self.client.post(f'/api/pms/folios/{folio.id}/generate-invoice/', {}, format='json')
+
+        from fiscal.models import FiscalDocument
+        doc = FiscalDocument.objects.get(invoice_no=emit.data['invoice_number'])
+        p = self.client.get(f'/api/fiscal/documents/{doc.id}/printout/')
+        self.assertEqual(p.status_code, 200, p.content)
+        self.assertEqual(p.data['company']['logo_url'], 'https://exemplo.ao/logo.png')
+        self.assertTrue(p.data['qr_png'], 'a factura saiu sem imagem de QR')
+        self.assertTrue(p.data['qr_png'].startswith('data:image/png;base64,'))
+        self.assertTrue(p.data['print_mention'], 'falta a menção do programa validado')
+
+    # -------------------------------------------------- RECRIAR CONTA
+    def test_recriar_conta_so_com_as_outras_fechadas(self):
+        res_id = self._reserva_em_checkin()
+        aberta = self.client.post(f'/api/pms/reservations/{res_id}/recreate-folio/', {}, format='json')
+        self.assertEqual(aberta.status_code, 409, 'abriu uma segunda conta com uma já aberta')
+
+        folio = Reservation.objects.get(id=res_id).folio
+        self.client.post(f'/api/pms/folios/{folio.id}/settle/', {}, format='json')
+        folio.status = 'CLOSED'
+        folio.save(update_fields=['status'])
+
+        nova = self.client.post(f'/api/pms/reservations/{res_id}/recreate-folio/', {}, format='json')
+        self.assertEqual(nova.status_code, 201, nova.content)
+        self.assertEqual(Reservation.objects.get(id=res_id).folios.count(), 2)
+        # A conta antiga fica exactamente como estava (as facturas emitidas vivem lá).
+        folio.refresh_from_db()
+        self.assertEqual(folio.status, 'CLOSED')
+
+    # ------------------------------------------ CARACTERÍSTICAS DO QUARTO
+    def test_procurar_quarto_por_caracteristicas(self):
+        """"Um com varanda E vista mar" devolve os que têm AS DUAS coisas."""
+        from pms.models import Room
+        a1 = self.client.post('/api/pms/room-attributes/', {
+            'hotel': self.hotel.id, 'code': 'MAR', 'name': 'Vista mar'}, format='json')
+        a2 = self.client.post('/api/pms/room-attributes/', {
+            'hotel': self.hotel.id, 'code': 'VAR', 'name': 'Varanda'}, format='json')
+        self.assertIn(a1.status_code, (200, 201), a1.content)
+
+        Room.objects.get(id=self.quartos[0]).attributes.set([a1.data['id'], a2.data['id']])
+        Room.objects.get(id=self.quartos[1]).attributes.set([a1.data['id']])
+
+        def livres(attrs=None):
+            p = {'date_from': str(self.hoje), 'date_to': str(self.hoje + timedelta(days=1))}
+            if attrs:
+                p['attributes'] = ','.join(str(a) for a in attrs)
+            r = self.client.get('/api/pms/rooms/free/', p)
+            self.assertEqual(r.status_code, 200, r.content)
+            return sorted(x['number'] for x in r.data)
+
+        self.assertEqual(livres(), ['101', '102', '103'])
+        self.assertEqual(livres([a1.data['id']]), ['101', '102'])
+        # As DUAS características: só o 101.
+        self.assertEqual(livres([a1.data['id'], a2.data['id']]), ['101'])
+
+    def test_caracteristicas_saem_na_lista_de_quartos_livres(self):
+        from pms.models import Room
+        a = self.client.post('/api/pms/room-attributes/', {
+            'hotel': self.hotel.id, 'code': 'ADAP', 'name': 'Mobilidade reduzida'}, format='json')
+        Room.objects.get(id=self.quartos[2]).attributes.set([a.data['id']])
+
+        r = self.client.get('/api/pms/rooms/free/', {
+            'date_from': str(self.hoje), 'date_to': str(self.hoje + timedelta(days=1))})
+        linha = [x for x in r.data if x['number'] == '103'][0]
+        self.assertEqual(linha['attributes'], ['Mobilidade reduzida'])
+        self.assertEqual([x for x in r.data if x['number'] == '101'][0]['attributes'], [])
+
+    def test_codigo_de_caracteristica_nao_se_repete_no_hotel(self):
+        self.client.post('/api/pms/room-attributes/', {
+            'hotel': self.hotel.id, 'code': 'MAR', 'name': 'Vista mar'}, format='json')
+        r = self.client.post('/api/pms/room-attributes/', {
+            'hotel': self.hotel.id, 'code': 'MAR', 'name': 'Vista para o mar'}, format='json')
+        self.assertEqual(r.status_code, 400, 'aceitou duas características com o mesmo código')

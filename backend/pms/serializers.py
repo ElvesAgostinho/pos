@@ -3,7 +3,7 @@ from .models import (
     RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
     NightAuditRun, LostFoundItem, HousekeepingTask, PhoneDirectoryEntry,
     BookingSettings, Channel, ChannelSyncLog, ChatbotSettings, Event,
-    ChannelRoomMap, BookingPayment,
+    ChannelRoomMap, BookingPayment, ReservationFixedCharge, RoomAttribute,
 )
 
 
@@ -14,7 +14,20 @@ class RoomTypeSerializer(serializers.ModelSerializer):
         extra_kwargs = {'hotel': {'required': False}}
 
 
+class RoomAttributeSerializer(serializers.ModelSerializer):
+    rooms_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RoomAttribute
+        fields = ['id', 'hotel', 'code', 'name', 'is_active', 'rooms_count']
+        extra_kwargs = {'hotel': {'required': False}}
+
+    def get_rooms_count(self, obj):
+        return obj.rooms.filter(is_active=True).count()
+
+
 class RoomSerializer(serializers.ModelSerializer):
+    attribute_names = serializers.SerializerMethodField()
     room_type_name = serializers.CharField(source='room_type.name', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     floor_name = serializers.CharField(source='floor.name', read_only=True, default=None)
@@ -23,6 +36,9 @@ class RoomSerializer(serializers.ModelSerializer):
         model = Room
         fields = '__all__'
         extra_kwargs = {'hotel': {'required': False}}
+
+    def get_attribute_names(self, obj):
+        return [a.name for a in obj.attributes.all() if a.is_active]
 
 
 class RatePlanSerializer(serializers.ModelSerializer):
@@ -99,6 +115,7 @@ class FolioSerializer(serializers.ModelSerializer):
 class ReservationSerializer(serializers.ModelSerializer):
     guest_name = serializers.CharField(source='guest.name', read_only=True)
     guest_tax_id = serializers.CharField(source='guest.tax_id', read_only=True)
+    guest_email = serializers.CharField(source='guest.email', read_only=True, default=None)
     room_type_name = serializers.CharField(source='room_type.name', read_only=True)
     room_number = serializers.CharField(source='room.number', read_only=True, default=None)
     block_code = serializers.CharField(source='block.code', read_only=True, default=None)
@@ -289,6 +306,24 @@ class BookingPaymentSerializer(serializers.ModelSerializer):
                   'amount', 'currency', 'status', 'status_display', 'method', 'method_display',
                   'reference', 'message', 'confirmed_by', 'paid_at', 'posted_to_folio', 'created_at']
         read_only_fields = ['paid_at', 'confirmed_by', 'posted_to_folio']
+
+
+class ReservationFixedChargeSerializer(serializers.ModelSerializer):
+    charge_type_display = serializers.CharField(source='get_charge_type_display', read_only=True)
+    confirmation = serializers.CharField(source='reservation.confirmation', read_only=True)
+    total_estimado = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ReservationFixedCharge
+        fields = ['id', 'reservation', 'confirmation', 'description', 'charge_type',
+                  'charge_type_display', 'amount', 'per_night', 'is_active',
+                  'created_at', 'total_estimado']
+
+    def get_total_estimado(self, obj):
+        """O que este encargo vai somar à conta no fim da estadia — para quem
+        o lança ver o efeito antes de gravar, e não só o valor por noite."""
+        noites = obj.reservation.nights or 0
+        return str(obj.amount * noites if obj.per_night else obj.amount)
 
 
 class ChatbotSettingsSerializer(serializers.ModelSerializer):
