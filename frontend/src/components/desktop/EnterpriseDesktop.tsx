@@ -207,7 +207,6 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           title="Trocar de módulo"
           className={`flex items-center gap-2 px-2.5 py-1 pr-3.5 mr-2 leading-none rounded-full transition-colors ${modMenu ? 'bg-white/20' : 'hover:bg-white/10'}`}>
           {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
-          <span className="text-[13px] text-white">▾</span>
         </button>
         {modMenu && (
           <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#F7FAFA] border border-[#041F24] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
@@ -227,8 +226,8 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           <div key={m} className="relative">
             <button onClick={(e) => { e.stopPropagation(); setTopMenu((o) => (o === m ? null : m)); setModMenu(false); }}
               onMouseEnter={() => topMenu && setTopMenu(m)}
-              className={`px-4 py-2 text-[15px] font-semibold ${topMenu === m ? 'bg-white/15' : 'hover:bg-white/10'}`}>
-              {m} ▾
+              className={`px-4 py-2 text-[15px] font-semibold whitespace-nowrap ${topMenu === m ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+              {m}
             </button>
             {topMenu === m && (
               <div className="absolute left-0 top-full min-w-[260px] py-1 shadow-2xl z-[120]"

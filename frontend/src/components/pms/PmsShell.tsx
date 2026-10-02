@@ -177,7 +177,6 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
             {logoUrl ? <img src={logoUrl} alt="" className="h-9 w-9 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={20} className="flex-shrink-0" />}
-            <span className="text-[13px] text-white">▾</span>
           </button>
           {menu === '__ml' && (
             <>
