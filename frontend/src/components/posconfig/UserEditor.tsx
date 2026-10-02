@@ -4,16 +4,23 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Glyph } from './kit';
 import { SubFamilyPicker, ItemPicker } from './Pickers';
+import { useActiveModules } from '../../hooks/useActiveModules';
 
 const inp = 'border border-[#7FA9B1] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border border-[#EEF4F5] px-1.5 py-1 text-[12px] bg-white';
 
 type Tab = 'user' | 'imp' | 'complex' | 'rate' | 'personal' | 'pos' | 'ems' | 'fnb' | 'memo' | 'sign' | 'comm';
-const TABS: [Tab, string][] = [
+// O terceiro elemento é o MÓDULO que a aba exige. Este editor é partilhado pelo
+// POS e pelo PMS (ver components/shared/userManagement.tsx): num hotel que não
+// comprou o POS, as abas "Dados POS", "Dados F&B" e "Comissões" falam de caixas,
+// cozinhas e comissões de venda que ele não tem — mostrá-las é vender-lhe um
+// produto que não comprou e confundir quem está a criar um recepcionista.
+const TABS: [Tab, string, string?][] = [
   ['user', 'Dados do Utilizador'], ['imp', 'Impersonation'], ['complex', 'Complexos'],
-  ['rate', 'Secções para Rate Codes'], ['personal', 'Dados Pessoais'], ['pos', 'Dados POS'],
-  ['ems', 'Dados EMS'], ['fnb', 'Dados F&B'], ['memo', 'Memo'],
-  ['sign', 'Assinatura E-mail'], ['comm', 'Comissões'],
+  ['rate', 'Secções para Rate Codes'], ['personal', 'Dados Pessoais'],
+  ['pos', 'Dados POS', 'pos'],
+  ['ems', 'Dados EMS'], ['fnb', 'Dados F&B', 'pos'], ['memo', 'Memo'],
+  ['sign', 'Assinatura E-mail'], ['comm', 'Comissões', 'pos'],
 ];
 
 function R({ label, children, w = 'w-[110px]' }: any) {
@@ -35,6 +42,13 @@ function R({ label, children, w = 'w-[110px]' }: any) {
  * devolve. Nem o dono os consegue ler.
  */
 export default function UserEditor({ row, onClose }: { row: any; onClose: () => void }) {
+  // Abas que este cliente pode ver — as do POS só com o POS comprado.
+  // Em erro no pedido mostra-se tudo: esconder abas por causa de uma falha de
+  // rede seria pior do que mostrar uma a mais.
+  const { data: modulos } = useActiveModules();
+  const activos: string[] | null = modulos?.active ?? null;
+  const TABS_VISIVEIS = TABS.filter(([, , precisa]) =>
+    !precisa || activos === null || activos.includes(precisa));
   const qc = useQueryClient();
   const isNew = !row?.id;
   const [tab, setTab] = useState<Tab>('user');
@@ -149,7 +163,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
 
         {/* Separadores */}
         <div className="flex border-b-2 border-[#062A31] overflow-x-auto">
-          {TABS.map(([k, label]) => (
+          {TABS_VISIVEIS.map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
               className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#062A31] text-[#062A31] bg-white' : 'border-transparent text-[#5C8891] hover:text-[#062A31]'}`}>
               {label}

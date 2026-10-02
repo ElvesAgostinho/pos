@@ -527,4 +527,3 @@ export function TiposLimpeza({ reserva, onClose }: any) {
   );
 }
 
-export { money as _money };

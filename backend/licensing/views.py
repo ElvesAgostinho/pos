@@ -604,10 +604,40 @@ class LicenseLimitsView(APIView):
         return Response(status())
 
 
+# Estes três entram SEMPRE no INSTALLED_APPS, mesmo sem licença: `mdm` tem campos
+# que apontam para `pos.SelectionCode`/`inventory.Item`/`commercial.Promotion`, e sem
+# as tabelas o próprio `migrate` rebenta (fields.E307 — ver settings.py). Logo,
+# "estar instalado" NÃO quer dizer "estar vendido" para eles: quem decide é a
+# licença. Sem esta distinção, um cliente que comprou só o PMS via o sistema
+# declarar o POS como ativo e o PMS mostrava-lhe o Terminal POS, o Fecho do Dia e
+# tudo o resto que ele não comprou.
+SEMPRE_INSTALADOS_MAS_OPCIONAIS = ('pos', 'inventory', 'commercial')
+
+
 def _active_modules():
+    """Os módulos que este cliente COMPROU e que estão carregados.
+
+    Activo = instalado E licenciado. As duas condições são precisas:
+
+    · Instalado — sem a app carregada não há endpoints nem tabelas.
+    · Licenciado — porque `pos`, `inventory` e `commercial` entram sempre no
+      INSTALLED_APPS (ver `SEMPRE_INSTALADOS_MAS_OPCIONAIS` acima), e porque uma
+      licença pode ser reduzida depois de a instalação já ter arrancado com mais
+      módulos carregados. Olhar só para o instalado dava o POS como activo a
+      quem comprou só o PMS.
+
+    Se a licença não disser nada (instalação acabada de montar, ainda sem chave),
+    não se filtra: mostra-se o que está carregado. Esconder tudo porque ainda não
+    há licença deixaria o instalador sem ecrãs para configurar o sistema.
+    """
     installed = set(settings.INSTALLED_APPS)
-    active = [c for c in optional_app_labels() if c in installed]
-    # 'fiscal' é núcleo (sempre instalado) mas as suas features contam como módulo ativo.
+    licenciados = set(str(m).lower() for m in (_real_license().get('modules') or []))
+    tudo = '*' in licenciados or not licenciados
+
+    active = [c for c in optional_app_labels()
+              if c in installed and (tudo or c in licenciados)]
+    # 'fiscal' é núcleo (sempre instalado) mas as suas features contam como módulo
+    # ativo — a facturação/AGT não é opcional em Angola.
     if 'fiscal' in installed:
         active.append('fiscal')
     return active

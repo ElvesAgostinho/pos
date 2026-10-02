@@ -1640,3 +1640,282 @@ class GestaoDeUtilizadoresPartilhadaTests(PmsBase):
         outro.force_authenticate(auth)
         r = outro.get('/api/pms/rooms/')
         self.assertEqual(r.status_code, 200, 'quem opera o POS não consegue usar o PMS')
+
+
+class ModulosVendidosSeparadamenteTests(PmsBase):
+    """Um cliente que compra só o PMS não pode ver o POS — nem ao contrário.
+
+    O risco concreto: `pos`, `inventory` e `commercial` entram SEMPRE no
+    `INSTALLED_APPS` porque `mdm` tem campos que apontam para as tabelas deles e
+    sem elas o `migrate` rebenta. Quem olhasse só para o que está instalado
+    concluía que o POS está activo em toda a parte — e o PMS mostrava o Terminal
+    POS, o Fecho do Dia e o Diagnóstico dos terminais a quem não os comprou.
+    """
+
+    def _licenca(self, modulos):
+        """A licença da instalação, que é quem manda. Fica no `clm.License`, que
+        tem precedência sobre o `license.key` do disco (ver `_real_license`) —
+        por isso dá para escrever aqui o cenário de cada cliente."""
+        from clm.models import License, Client
+        cliente = Client.objects.create(commercial_name='Hotel Teste')
+        return License.objects.create(
+            client=cliente, license_number=f'LIC-{len(modulos)}', modules=modulos,
+            valid_until=date.today() + timedelta(days=365))
+
+    def test_so_pms_nao_liga_o_pos_apesar_de_instalado(self):
+        from licensing.views import _active_modules
+        from django.conf import settings
+
+        # As tabelas existem (têm de existir)…
+        self.assertIn('pos', settings.INSTALLED_APPS)
+        self.assertIn('inventory', settings.INSTALLED_APPS)
+
+        self._licenca(['pms'])
+        activos = _active_modules()
+        self.assertNotIn('pos', activos,
+                         'o POS está a ser dado como activo só por estar instalado')
+        self.assertNotIn('inventory', activos)
+        self.assertNotIn('commercial', activos)
+        self.assertIn('pms', activos)
+
+    def test_so_pos_nao_liga_o_pms(self):
+        from licensing.views import _active_modules
+        self._licenca(['pos'])
+        activos = _active_modules()
+        self.assertIn('pos', activos)
+        self.assertNotIn('pms', activos)
+
+    def test_a_licenca_e_quem_liga_o_pos(self):
+        from licensing.views import _active_modules
+        self._licenca(['pos', 'pms'])
+        activos = _active_modules()
+        self.assertIn('pos', activos, 'a licença lista o POS e ele não ficou activo')
+        self.assertIn('pms', activos)
+
+    def test_o_motor_fiscal_esta_sempre_activo(self):
+        """A facturação e a AGT não são um módulo opcional: um hotel em Angola
+        emite facturas certificadas tenha ou não restaurante."""
+        from licensing.views import _active_modules
+        self._licenca(['pms'])
+        self.assertIn('fiscal', _active_modules())
+
+    def test_o_endpoint_diz_ao_ecra_o_que_mostrar(self):
+        self._licenca(['pms'])
+        r = self.client.get('/api/licensing/active-modules/')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertIn('active', r.data)
+        self.assertNotIn('pos', r.data['active'],
+                         'o ecrã ia mostrar o POS a quem só comprou o PMS')
+        self.assertIn('pms', r.data['active'])
+
+    def test_o_que_os_dois_modulos_partilham_continua_a_responder(self):
+        """O que fica de pé sem POS, porque é obrigação do hotel e não do
+        produto POS: facturação/AGT, clientes, utilizadores e descontos.
+
+        Se algum destes passar a exigir licença do POS, um cliente só-PMS fica
+        sem emitir facturas ou sem criar os seus empregados — e este teste
+        falha antes de isso chegar a um hotel."""
+        self._licenca(['pms'])
+        obrigatorios = [
+            ('/api/fiscal/config/', 'configuração fiscal (AGT)'),
+            ('/api/fiscal/documents/', 'documentos fiscais'),
+            ('/api/fiscal/tax-rates/', 'taxas de IVA'),
+            ('/api/mdm/customers/', 'ficha de clientes'),
+            ('/api/pos/config/users/', 'utilizadores'),
+            ('/api/pos/config/user-groups/', 'grupos de utilizadores'),
+            ('/api/pos/config/hr-types/', 'tipos de R.H.'),
+            ('/api/pos/config/human-resources/', 'recursos humanos'),
+            ('/api/pos/config/discounts/', 'descontos'),
+        ]
+        falhas = []
+        for caminho, nome in obrigatorios:
+            r = self.client.get(caminho)
+            if r.status_code != 200:
+                falhas.append(f'{nome} ({caminho}): {r.status_code}')
+        self.assertEqual(falhas, [], 'Partilhados que deixaram de responder:\n  '
+                         + '\n  '.join(falhas))
+
+    def test_a_factura_do_pms_nao_precisa_do_pos(self):
+        """A prova de ponta a ponta: com o POS desligado na licença, o PMS emite
+        uma factura certificada na mesma."""
+        from licensing.views import _active_modules
+        self._licenca(['pms'])
+        self.assertNotIn('pos', _active_modules())
+
+        cfg = FiscalConfig.get()
+        cfg.company_name, cfg.company_nif, cfg.environment = 'Hotel Teste Lda', '5000000000', 'TEST'
+        cfg.save()
+        TaxRate.objects.create(code='IVA14', name='IVA 14%', percentage=Decimal('14'),
+                               is_default=True, is_active=True)
+        tipo = FiscalDocType.objects.create(code='FR', name='Factura-Recibo', signable=True)
+        FiscalSeries.objects.create(code='T', doc_type=tipo, year=self.hoje.year,
+                                    certified=True, is_active=True, environment='TEST')
+
+        res_id = self._reserva_em_checkin()
+        folio = Reservation.objects.get(id=res_id).folio
+        self.client.post(f'/api/pms/folios/{folio.id}/settle/', {}, format='json')
+        r = self.client.post(f'/api/pms/folios/{folio.id}/generate-invoice/', {}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        self.assertTrue(r.data['invoice_number'])
+
+
+class RelatoriosDoPmsTests(PmsBase):
+    """Os relatórios do alojamento no MESMO ecrã dos do POS.
+
+    O dono abria "Relatórios", via as vendas do restaurante, o IVA e a caixa, e
+    nem uma linha sobre quartos — tendo o PMS os dados todos. Estas pastas
+    acrescentam-se ao catálogo existente em vez de montar um segundo motor.
+    """
+
+    def _catalogo(self):
+        r = self.client.get('/api/pos/reports/catalog/')
+        self.assertEqual(r.status_code, 200, r.content)
+        return {f['code']: f for f in (r.data.get('folders') or [])}
+
+    def _correr(self, code, params=None):
+        # "Incluir detalhes? Sim" — a pergunta que o motor faz a TODOS os
+        # relatórios antes de os abrir. Sem ela, devolve só o resumo (nº de
+        # registos + totais), que é uma vista legítima mas não a que se quer
+        # conferir aqui; há um teste próprio para o resumo mais abaixo.
+        p = dict(params or {})
+        p.setdefault('detailed', 'S')
+        r = self.client.post('/api/pos/reports/run/',
+                             {'code': code, 'params': p}, format='json')
+        self.assertEqual(r.status_code, 200, f'{code}: {r.content}')
+        return r.data
+
+    def test_as_pastas_do_pms_estao_no_mesmo_catalogo(self):
+        pastas = self._catalogo()
+        for code, nome in (('PM', 'Alojamento'), ('PO', 'Ocupação'), ('PC', 'Contas')):
+            self.assertIn(code, pastas, f'a pasta {nome} não aparece nos Relatórios')
+            self.assertGreater(pastas[code]['count'], 0)
+        # E as do POS continuam lá — não se substituiu nada.
+        self.assertIn('06', pastas, 'as pastas do POS desapareceram')
+
+    def test_relatorio_de_reservas_traz_a_reserva_que_existe(self):
+        self._reserva_em_checkin()      # 2 noites × 30000, quarto 101
+        p = {'from': str(self.hoje), 'to': str(self.hoje + timedelta(days=1))}
+        d = self._correr('pms_reservas', p)
+
+        self.assertEqual(len(d['rows']), 1)
+        linha = d['rows'][0]
+        self.assertEqual(linha['guest'], 'Hospede Teste')
+        self.assertEqual(linha['room'], '101')
+        self.assertEqual(linha['nights'], 2)
+        self.assertEqual(linha['rate'], 30000.0)
+        self.assertEqual(linha['total'], 60000.0)
+        self.assertEqual(d['totals']['total'], 60000.0)
+        # O cabeçalho da empresa vem do motor, como nos relatórios do POS.
+        self.assertIn('company', d)
+
+    def test_ocupacao_com_adr_e_revpar(self):
+        """3 quartos no hotel, 1 vendido a 30000: ocupação 33,3%, ADR 30000,
+        RevPAR 10000 — é esta conta que diz se o hotel está cheio a perder."""
+        self._reserva_em_checkin()
+        d = self._correr('pms_ocupacao', {'from': str(self.hoje), 'to': str(self.hoje)})
+        linha = d['rows'][0]
+        self.assertEqual(linha['rooms'], 3)
+        self.assertEqual(linha['occupied'], 1)
+        self.assertEqual(linha['free'], 2)
+        self.assertEqual(linha['occupancy'], 33.3)
+        self.assertEqual(linha['adr'], 30000.0)
+        self.assertEqual(linha['revpar'], 10000.0)
+
+    def test_entradas_e_saidas_por_dia(self):
+        self._reserva_em_checkin()      # entra hoje, sai daqui a 2 dias
+        d = self._correr('pms_entradas_saidas',
+                         {'from': str(self.hoje), 'to': str(self.hoje + timedelta(days=2))})
+        self.assertEqual(d['rows'][0]['arrivals'], 1)
+        self.assertEqual(d['rows'][1]['stayovers'], 1, 'o hóspede que fica não é contado')
+        self.assertEqual(d['rows'][2]['departures'], 1)
+        self.assertEqual(d['totals']['arrivals'], 1)
+
+    def test_receita_por_categoria_e_por_origem(self):
+        self._reserva_em_checkin()
+        p = {'from': str(self.hoje), 'to': str(self.hoje + timedelta(days=1))}
+
+        cat = self._correr('pms_receita_categoria', p)
+        self.assertEqual(cat['rows'][0]['category'], 'Standard')
+        self.assertEqual(cat['rows'][0]['nights'], 2)
+        self.assertEqual(cat['rows'][0]['revenue'], 60000.0)
+        self.assertEqual(cat['rows'][0]['share'], 100.0)
+
+        orig = self._correr('pms_origem', p)
+        self.assertEqual(orig['rows'][0]['source'], 'Direto (receção)')
+        self.assertEqual(orig['rows'][0]['reservations'], 1)
+
+    def test_contas_em_aberto_e_consumos(self):
+        res_id = self._reserva_em_checkin()
+        folio = Reservation.objects.get(id=res_id).folio
+        self.client.post(f'/api/pms/folios/{folio.id}/post_charge/', {
+            'charge_type': 'FNB', 'description': 'Jantar', 'amount': '6000'}, format='json')
+
+        abertas = self._correr('pms_contas_abertas')
+        self.assertEqual(len(abertas['rows']), 1)
+        self.assertEqual(abertas['rows'][0]['guest'], 'Hospede Teste')
+        self.assertEqual(abertas['rows'][0]['balance'], 36000.0)
+        self.assertEqual(abertas['totals']['balance'], 36000.0)
+
+        consumos = self._correr('pms_consumos', {'from': str(self.hoje), 'to': str(self.hoje)})
+        porTipo = {l['kind']: l['amount'] for l in consumos['rows']}
+        self.assertEqual(porTipo['Alojamento'], 30000.0)
+        self.assertEqual(porTipo['F&B (POS)'], 6000.0)
+        self.assertEqual(consumos['totals']['amount'], 36000.0)
+
+    def test_governanta_e_previsao(self):
+        self._reserva_em_checkin()
+
+        gov = self._correr('pms_governanta')
+        self.assertEqual(len(gov['rows']), 3, 'faltam quartos no mapa da governanta')
+        ocupado = [l for l in gov['rows'] if l['room'] == '101'][0]
+        self.assertEqual(ocupado['status'], 'Ocupado')
+
+        prev = self._correr('pms_previsao', {'days': 3})
+        self.assertEqual(len(prev['rows']), 3)
+        self.assertEqual(prev['rows'][0]['sold'], 1)
+        self.assertEqual(prev['rows'][0]['free'], 2)
+
+    def test_depositos_no_relatorio(self):
+        self.client.post('/api/pms/booking-settings/', {
+            'hotel': self.hotel.id, 'slug': 'hotel-teste', 'enabled': True,
+            'deposit_percent': '50', 'payment_enabled': True,
+            'payment_provider': 'SIMULATED'}, format='json')
+        entrada = self.hoje + timedelta(days=10)
+        self.client.post('/api/pms/booking/reserve/', {
+            'slug': 'hotel-teste', 'room_type': self.rt,
+            'check_in': str(entrada), 'check_out': str(entrada + timedelta(days=2)),
+            'adults': 2, 'guest': {'name': 'Hospede Web', 'email': 'web@teste.ao'}}, format='json')
+
+        d = self._correr('pms_depositos', {'from': str(self.hoje), 'to': str(self.hoje)})
+        self.assertEqual(len(d['rows']), 1)
+        self.assertEqual(d['rows'][0]['guest'], 'Hospede Web')
+        self.assertEqual(d['rows'][0]['amount'], 30000.0)   # 50% de 60000
+        self.assertEqual(d['rows'][0]['status'], 'Pendente')
+        self.assertEqual(d['rows'][0]['posted'], 'Não')
+
+    def test_o_resumo_mostra_os_totais_em_dinheiro(self):
+        """"Incluir detalhes? Não" tem de dar o total, não uma linha vazia.
+
+        O motor resume usando as colunas marcadas como dinheiro; um relatório
+        que não as marque resume-se a "Registos: 1" e o dono fica sem saber
+        quanto foi — que é precisamente o que ele queria saber ao pedir o
+        resumo."""
+        self._reserva_em_checkin()
+        r = self.client.post('/api/pos/reports/run/', {
+            'code': 'pms_reservas',
+            'params': {'from': str(self.hoje), 'to': str(self.hoje + timedelta(days=1)),
+                       'detailed': 'N'}}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        colunas = [c[0] for c in r.data['columns']]
+        self.assertIn('total', colunas, 'o resumo não traz o total em dinheiro')
+        self.assertEqual(r.data['rows'][0]['n'], 1)
+        self.assertEqual(float(r.data['rows'][0]['total']), 60000.0)
+
+    def test_um_relatorio_do_pms_sem_dados_nao_rebenta(self):
+        """Um hotel acabado de montar abre os Relatórios e não pode ver um erro."""
+        for code in ('pms_reservas', 'pms_ocupacao', 'pms_entradas_saidas',
+                     'pms_receita_categoria', 'pms_origem', 'pms_contas_abertas',
+                     'pms_consumos', 'pms_governanta', 'pms_depositos', 'pms_previsao'):
+            d = self._correr(code, {'from': str(self.hoje), 'to': str(self.hoje)})
+            self.assertIn('columns', d, f'{code} não devolveu colunas')
+            self.assertIn('rows', d)

@@ -15,7 +15,26 @@
  * ÚNICA fonte, só que agora num sítio que não força PmsShell.tsx a recarregar
  * o resto do sistema sempre que se lhe mexe.
  */
-export const MENUS: { title: string; items: { icon: string; label: string; section?: string; url?: string; soon?: boolean }[] }[] = [
+/**
+ * `needs` — o módulo que ESTE item exige. Sem ele, o item não aparece.
+ *
+ * Os módulos vendem-se separados: quem comprou só o PMS não pode ver o Terminal
+ * do POS, o Fecho do Dia do POS nem o Diagnóstico dos terminais — são coisas de
+ * um produto que não tem. O que FICA, mesmo sem POS, é o que um hotel é
+ * obrigado a ter por lei ou por natureza do negócio e que por acaso nasceu do
+ * lado do POS:
+ *
+ *   · FACTURAÇÃO e AGT — SAF-T, documentos fiscais, contas correntes. Um hotel
+ *     em Angola emite facturas certificadas tenha ou não restaurante.
+ *   · CLIENTES — a mesma ficha que assina a factura (mdm.Customer).
+ *   · UTILIZADORES — quem entra no sistema; sem isto o hotel não cria o seu
+ *     próprio pessoal.
+ *   · DESCONTOS e tabelas de preço — regras comerciais do alojamento também.
+ *
+ * Esses não levam `needs`: são do sistema, não do POS, e estão no mesmo sítio
+ * para os dois módulos em vez de duplicados (ver components/shared/).
+ */
+export const MENUS: { title: string; items: { icon: string; label: string; section?: string; url?: string; soon?: boolean; needs?: string }[] }[] = [
   { title: 'Reserva', items: [
     { icon: '📊', label: 'Disponibilidade', section: 'availability' },
     { icon: '🔍', label: 'Reservas', section: 'reservations' },
@@ -51,22 +70,22 @@ export const MENUS: { title: string; items: { icon: string; label: string; secti
   ] },
   { title: 'Marketing', items: [
     { icon: '🔎', label: 'Pesquisa de Entidades', section: 'entity_search' },
-    { icon: '🎉', label: 'Lista de Eventos', section: 'event_list' },
+    { icon: '🎉', label: 'Lista de Eventos', section: 'event_list', needs: 'pos' },
     { icon: '⭐', label: 'Gestão de Pontos', section: 'membership_points' },
   ] },
   { title: 'Reporting', items: [
     { icon: '📊', label: 'Performance & Ocupação', section: 'reports_pms' },
     { icon: '🖨', label: 'Relatórios', section: 'reports' },
-    { icon: '📈', label: 'Informação Online', section: 'online' },
+    { icon: '📈', label: 'Informação Online', section: 'online', needs: 'pos' },
   ] },
   { title: 'Utilitários', items: [
     { icon: '🌙', label: 'Auditoria da Noite', section: 'night_audit' },
-    { icon: '🖥', label: 'POS Front Office', url: '/pos/terminal' },
-    { icon: '🌙', label: 'Fecho do dia POS', section: 'dayclose_pos' },
-    { icon: '🧾', label: 'SAFT-AO', section: 'saft_pos' },
+    { icon: '🖥', label: 'POS Front Office', url: '/pos/terminal', needs: 'pos' },
+    { icon: '🌙', label: 'Fecho do dia POS', section: 'dayclose_pos', needs: 'pos' },
+    { icon: '🧾', label: 'SAFT-AO (AGT)', section: 'saft_pos' },
     { icon: '🛏', label: 'Categorias de Quarto', section: 'room_types' },
     { icon: '💰', label: 'Tarifas (Rate Codes)', section: 'rate_plans' },
-    { icon: '⚙', label: 'Diagnóstico', section: 'diag_pos' },
+    { icon: '⚙', label: 'Diagnóstico', section: 'diag_pos', needs: 'pos' },
     { icon: '📋', label: 'Visualizar Logs', section: 'sys_logs_pms' },
   ] },
   { title: 'Gestão de Utilizadores', items: [

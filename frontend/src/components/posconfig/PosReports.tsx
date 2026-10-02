@@ -385,10 +385,23 @@ export default function PosReports() {
             {folders.map((f: any) => (
               <button key={f.code} onClick={() => setPasta(f)}
                 className="flex items-start gap-3 text-left hover:bg-[#FFFFFF] p-2">
-                {/* pasta desenhada, como nos ERP clássicos — não um emoji */}
-                <span className="w-9 h-7 flex-shrink-0 relative">
-                  <span className="absolute inset-x-0 bottom-0 h-6 bg-[#7FA9B1] border border-[#5C8891]" />
-                  <span className="absolute left-0 top-0 w-4 h-2 bg-[#7FA9B1] border border-[#5C8891] border-b-0" />
+                {/* PASTA AMARELA com volume, como nos ERP clássicos — desenhada,
+                    não um emoji (um emoji muda de forma conforme o sistema do
+                    cliente). A aba por trás é mais escura, a frente leva um
+                    degradê de cima para baixo e uma luz no rebordo superior: é
+                    o que dá o relevo sem recorrer a uma imagem. */}
+                <span className="w-10 h-8 flex-shrink-0 relative drop-shadow-sm">
+                  {/* aba de trás */}
+                  <span className="absolute left-0 top-0 w-5 h-3 rounded-t-[3px]"
+                    style={{ background: 'linear-gradient(to bottom, #E0A824, #C8901A)',
+                             borderTop: '1px solid #F2C75C', borderLeft: '1px solid #F2C75C' }} />
+                  <span className="absolute inset-x-0 top-[6px] bottom-0 rounded-[3px] rounded-tl-none"
+                    style={{ background: 'linear-gradient(to bottom, #E8B53A, #D19B1E 55%, #B8860F)',
+                             border: '1px solid #A8790C',
+                             boxShadow: 'inset 0 1px 0 #F7DA93, inset 0 -2px 3px rgba(120,80,0,.35)' }} />
+                  {/* brilho da frente — a dobra do cartão */}
+                  <span className="absolute left-[2px] right-[2px] top-[9px] h-[3px] rounded-[2px]"
+                    style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,.55), rgba(255,255,255,0))' }} />
                 </span>
                 <span>
                   <span className="text-[14px] text-[#041F24]">{f.code} {f.name}</span>

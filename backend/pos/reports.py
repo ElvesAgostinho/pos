@@ -1248,6 +1248,29 @@ CATALOG = [
     ]},
 ]
 
+# ── RELATÓRIOS DE OUTROS MÓDULOS ───────────────────────────────────────────
+# O ecrã de Relatórios (pastas, filtro universal, comparação, exportação,
+# impressão com o cabeçalho da empresa) é um motor bom e caro de fazer; não se
+# constrói um segundo por módulo. Quem tiver relatórios acrescenta PASTAS a este
+# catálogo, com o mesmo contrato de função — e herda tudo o resto de graça.
+#
+# Só entram os módulos INSTALADOS: um cliente que comprou só o POS não vê pastas
+# de alojamento, e um que comprou só o PMS vê as suas. O `try` é a rede de
+# segurança — um relatório de um módulo nunca pode impedir o ecrã de abrir.
+def _pastas_de_outros_modulos():
+    extra = []
+    try:
+        from django.apps import apps
+        if apps.is_installed('pms'):
+            from pms.reports_catalog import PASTAS
+            extra += PASTAS
+    except Exception:
+        pass
+    return extra
+
+
+CATALOG = CATALOG + _pastas_de_outros_modulos()
+
 BY_CODE = {r['code']: (f, r) for f in CATALOG for r in f['reports']}
 
 

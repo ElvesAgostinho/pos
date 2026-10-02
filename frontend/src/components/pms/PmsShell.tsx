@@ -5,6 +5,7 @@ import { aviso } from '../../ui/dialogo';
 import { Glyph } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
 import { MENUS } from './pmsMenus';
+import { useActiveModules } from '../../hooks/useActiveModules';
 import { RADIUS, SHADOW } from '../../config/theme';
 import PmsPermissionsDialog from './PmsPermissionsDialog';
 import { useMyAccess } from '../../hooks/useActiveModules';
@@ -122,6 +123,17 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
 // nesse ficheiro sobre porquê (Fast Refresh + cascata de invalidação).
 
 export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: (id: string) => void; onDesktop?: () => void }) {
+  // MENUS VISÍVEIS — um módulo que o cliente não comprou não aparece.
+  // `licensing/active-modules/` diz o que a licença autoriza (e não o que está
+  // instalado: 'pos' entra sempre no esquema por razões técnicas — ver
+  // licensing/views.py::_active_modules). Em erro, mostra-se tudo: trancar o
+  // menu porque um pedido falhou seria pior do que mostrar a mais.
+  const { data: modulos } = useActiveModules();
+  const activos: string[] | null = modulos?.active ?? null;
+  const temModulo = (m?: string) => !m || activos === null || activos.includes(m);
+  const MENUS_VISIVEIS = MENUS
+    .map((g) => ({ ...g, items: g.items.filter((it) => temModulo(it.needs)) }))
+    .filter((g) => g.items.length > 0);
   // A secção com que se abre: quem manda abrir o PMS (o Ambiente de Trabalho, um
   // atalho dos seus próprios menus) deixa-a aqui — mesmo padrão do posc_section
   // que a Configuração POS já usa.
@@ -181,16 +193,19 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           )}
         </div>
 
-        {MENUS.map((m) => (
+        {MENUS_VISIVEIS.map((m) => (
           <div key={m.title} className="relative">
             {/* Só troca de menu ao CLICAR — havia um onMouseEnter aqui que trocava
                 de menu só de o rato passar por cima do título ao caminho de outro
                 sítio, sem se clicar em nada: o operador achava que o sistema
                 "saltava sozinho" de secção. */}
             <button onClick={() => setMenu(menu === m.title ? null : m.title)}
-              className="px-3 py-1.5 text-[14px] font-semibold hover:bg-white/10 transition-colors"
+              // A seta "▾" saiu: com os títulos todos na barra, não cabia ao lado
+              // do texto e caía para uma segunda linha debaixo de cada menu.
+              // Que um título de menu abre uma lista já se percebe por si.
+              className="px-3 py-1.5 text-[14px] font-semibold hover:bg-white/10 transition-colors whitespace-nowrap"
               style={{ background: menu === m.title ? 'rgba(255,255,255,0.1)' : 'transparent', borderRadius: RADIUS.sm }}>
-              {m.title} ▾
+              {m.title}
             </button>
             {menu === m.title && (
               <>
