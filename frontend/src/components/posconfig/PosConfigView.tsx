@@ -18,9 +18,9 @@ import Parameters from './Parameters';
 import KeyboardEditor from './KeyboardEditor';
 import TimeBandEditor from './TimeBandEditor';
 import ScheduleEditor from './ScheduleEditor';
-import UserGroupEditor from './UserGroupEditor';
-import UserEditor from './UserEditor';
-import HRResourceEditor from './HRResourceEditor';
+import {
+  GruposDeUtilizadores, Utilizadores, TiposRH, RecursosHumanos,
+} from '../shared/userManagement';
 import CurrencyEditor from './CurrencyEditor';
 import DiscountEditor from './DiscountEditor';
 import TaxEditor from './TaxEditor';
@@ -623,55 +623,17 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               fields={[]}
               renderEditor={(row, close) => <ScheduleEditor row={row} onClose={close} />} />
           ) : section === 'u_groups' ? (
-            <SimpleSection title="Grupo de Utilizadores" queryKey="ugroups" endpoint="pos/config/user-groups/"
-              columns={[
-                { key: 'code', label: 'Código', width: '22%' },
-                { key: 'name', label: 'Descrição', width: '34%' },
-                { key: 'memo', label: 'Memo', width: '22%' },
-                { key: 'rights_count', label: 'Permissões', width: '12%' },
-                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
-              ]}
-              fields={[]}
-              renderEditor={(row, close) => <UserGroupEditor row={row} onClose={close} />} />
+            // GESTÃO DE UTILIZADORES — os mesmos componentes que o PMS monta no
+            // seu menu (components/shared/userManagement.tsx). Não é uma cópia
+            // parecida: é o mesmo código, para o hotel não ter de criar cada
+            // empregado duas vezes nem o sistema ter dois cadastros a divergir.
+            <GruposDeUtilizadores />
           ) : section === 'u_users' ? (
-            <SimpleSection title="Utilizador" queryKey="posusers" endpoint="pos/config/users/"
-              columns={[
-                { key: 'number', label: 'Nr', width: '6%' },
-                { key: 'code', label: 'Código', width: '14%' },
-                { key: 'first_name', label: 'Nome', width: '14%' },
-                { key: 'last_name', label: 'Apelido', width: '14%' },
-                { key: 'group_name', label: 'Grupo', width: '16%' },
-                { key: 'section', label: 'Secção', width: '14%' },
-                { key: 'internal_consumption', label: 'Consumo interno', width: '11%', toggle: true },
-                { key: 'is_blocked', label: 'Bloqueado', width: '9%', toggle: true },
-              ]}
-              fields={[]}
-              renderEditor={(row, close) => <UserEditor row={row} onClose={close} />} />
+            <Utilizadores />
           ) : section === 'u_hr_type' ? (
-            <SimpleSection title="Tipo R.H." queryKey="hrtypes" endpoint="pos/config/hr-types/"
-              columns={[
-                { key: 'code', label: 'Código', width: '30%' },
-                { key: 'name', label: 'Descrição', width: '45%' },
-                { key: 'resources_count', label: 'Pessoas', width: '12%' },
-                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
-              ]}
-              fields={[
-                { key: 'code', label: 'Código:', required: true, width: 'w-[290px]' },
-                { key: 'name', label: 'Descrição:', required: true, width: 'w-[600px]' },
-                { key: 'notes', label: 'Observações:', type: 'textarea', width: 'w-[600px]' },
-                { key: 'is_active', label: 'Ativo', type: 'checkbox' },
-              ]} />
+            <TiposRH />
           ) : section === 'u_hr' ? (
-            <SimpleSection title="Recurso Humano" queryKey="hr" endpoint="pos/config/human-resources/"
-              columns={[
-                { key: 'code', label: 'Código', width: '16%' },
-                { key: 'full_name', label: 'Descrição', width: '30%' },
-                { key: 'type_name', label: 'Tipo', width: '22%' },
-                { key: 'sort_order', label: 'Ordem', width: '10%' },
-                { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
-              ]}
-              fields={[]}
-              renderEditor={(row, close) => <HRResourceEditor row={row} onClose={close} />} />
+            <RecursosHumanos />
           ) : section === 'f_currencies' ? (
             <SimpleSection title="Moeda" queryKey="currencies" endpoint="pos/config/currencies/"
               columns={[

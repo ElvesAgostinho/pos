@@ -582,24 +582,58 @@ class PosUserSerializer(serializers.ModelSerializer):
     # A password NUNCA sai da API. Entra (write_only) e é logo transformada em hash.
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
     pin = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    # "Entra no sistema": tem identidade ligada E senha utilizável. Sem isto,
+    # um utilizador sem credenciais parecia pronto na grelha.
+    has_login = serializers.SerializerMethodField()
+    login_username = serializers.CharField(source='auth_user.username', read_only=True, default=None)
+
+    def get_has_login(self, obj):
+        return bool(obj.auth_user_id and obj.auth_user.has_usable_password())
 
     class Meta:
         model = PosUser
         exclude = ('sectors', 'pos_pin', 'auth_user')
 
+    def _ligar_identidade(self, user):
+        """UMA PESSOA, UMA IDENTIDADE — nos dois módulos.
+
+        O `PosUser` é a parte da pessoa que o POS precisa (PIN, caixas, setores,
+        comissões); quem ela É para o sistema é o `auth.User`, e é por aí que
+        entra no PMS, no backoffice e no terminal. A ligação entre os dois só se
+        criava quando alguém definia uma senha — resultado: um empregado criado
+        sem senha ficava com ar de estar pronto e não conseguia entrar em lado
+        nenhum, e o hotel acabava a criá-lo outra vez em Segurança →
+        Utilizadores, passando a ter a mesma pessoa duas vezes no sistema.
+
+        Agora a identidade nasce com ele. Nasce SEM senha utilizável
+        (`set_unusable_password`), que é o estado honesto de quem ainda não tem
+        credenciais: existe, está ligado, mas não entra até alguém lhe dar uma
+        senha. Se já houver uma conta com o mesmo código, aproveita-se essa em
+        vez de criar uma segunda.
+        """
+        from django.contrib.auth.models import User
+        if user.auth_user_id:
+            return user.auth_user
+        au = User.objects.filter(username=user.code).first()
+        if not au:
+            au = User.objects.create(username=user.code, email=user.email or '')
+            au.set_unusable_password()
+            au.first_name = (user.first_name or '')[:150]
+            au.last_name = (user.last_name or '')[:150]
+            au.is_active = not user.is_blocked
+            au.save()
+        user.auth_user = au
+        user.save(update_fields=['auth_user'])
+        return au
+
     def _apply_secrets(self, user, password, pin):
         from django.contrib.auth.hashers import make_password
-        from django.contrib.auth.models import User
         from django.utils import timezone
+        au = self._ligar_identidade(user)
         if password:
-            # O utilizador do POS é também um utilizador do sistema — uma só identidade.
-            au = user.auth_user or User.objects.filter(username=user.code).first()
-            if not au:
-                au = User.objects.create(username=user.code, email=user.email or '')
             au.set_password(password)
             au.email = user.email or au.email
             au.save()
-            user.auth_user = au
             user.password_changed_at = timezone.now()
         if pin:
             # hasher RÁPIDO (pos.PosPinHasher) — o login por PIN verifica-o contra
@@ -607,6 +641,12 @@ class PosUserSerializer(serializers.ModelSerializer):
             user.pos_pin = make_password(pin, hasher='pbkdf2_pos_pin')
         if password or pin:
             user.save()
+        # Bloquear a pessoa no POS bloqueia-a no sistema todo: um empregado
+        # despedido não pode continuar a entrar pelo PMS porque foi bloqueado
+        # "só no POS".
+        if au.is_active == bool(user.is_blocked):
+            au.is_active = not user.is_blocked
+            au.save(update_fields=['is_active'])
 
     def create(self, validated):
         comms = validated.pop('commissions', [])

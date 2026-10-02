@@ -1522,3 +1522,121 @@ class PmsWhatsAppTests(PmsBase):
         r = self.client.post('/api/pms/chatbot/simulate/', {'message': 'Ola'}, format='json')
         self.assertEqual(r.status_code, 200, r.content)
         self.assertEqual(r.data['intent'], 'greeting')
+
+
+class GestaoDeUtilizadoresPartilhadaTests(PmsBase):
+    """Gestão de Utilizadores partilhada entre o POS e o PMS.
+
+    Os módulos vendem-se separados, mas quem usa o sistema é a mesma pessoa. O
+    que se prova aqui: há UM cadastro, uma pessoa tem UMA identidade, e os
+    ecrãs respondem mesmo a quem só comprou um dos módulos.
+    """
+
+    def _criar(self, **kw):
+        dados = {'code': 'ANA', 'first_name': 'Ana', 'last_name': 'Silva', 'number': 1}
+        dados.update(kw)
+        r = self.client.post('/api/pos/config/users/', dados, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        return r.data
+
+    def test_criar_um_utilizador_cria_a_identidade_de_login(self):
+        """Era a origem do cadastro duplicado: sem senha, não se criava a
+        identidade, a pessoa não entrava em lado nenhum, e o hotel criava-a
+        outra vez em Segurança → Utilizadores."""
+        from django.contrib.auth.models import User
+        from pos.models import PosUser
+
+        u = self._criar()
+        posuser = PosUser.objects.get(id=u['id'])
+        self.assertIsNotNone(posuser.auth_user_id, 'o utilizador ficou sem identidade de login')
+        self.assertEqual(posuser.auth_user.username, 'ANA')
+        self.assertEqual(User.objects.filter(username='ANA').count(), 1)
+
+        # Sem senha ainda não entra — e a grelha di-lo em vez de o esconder.
+        self.assertFalse(u['has_login'])
+        self.assertFalse(posuser.auth_user.has_usable_password())
+
+    def test_dar_senha_deixa_a_pessoa_entrar(self):
+        from pos.models import PosUser
+        u = self._criar(code='BRUNO', first_name='Bruno')
+        r = self.client.patch(f"/api/pos/config/users/{u['id']}/",
+                              {'password': 'Senha#2026'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertTrue(r.data['has_login'])
+        self.assertEqual(r.data['login_username'], 'BRUNO')
+
+        auth = PosUser.objects.get(id=u['id']).auth_user
+        self.assertTrue(auth.check_password('Senha#2026'),
+                        'a senha não ficou na identidade do sistema')
+
+    def test_nao_se_cria_uma_segunda_conta_para_a_mesma_pessoa(self):
+        """Se já existe uma conta com aquele código, aproveita-se."""
+        from django.contrib.auth.models import User
+        from pos.models import PosUser
+        existente = User.objects.create_user('CARLA', password='x')
+
+        u = self._criar(code='CARLA', first_name='Carla')
+        self.assertEqual(User.objects.filter(username='CARLA').count(), 1)
+        self.assertEqual(PosUser.objects.get(id=u['id']).auth_user_id, existente.id)
+
+    def test_bloquear_no_pos_bloqueia_no_sistema_todo(self):
+        """Um empregado despedido não pode continuar a entrar pelo PMS só
+        porque foi bloqueado "no POS"."""
+        from pos.models import PosUser
+        u = self._criar(code='DORA', first_name='Dora')
+        self.client.patch(f"/api/pos/config/users/{u['id']}/", {'password': 'Senha#2026'}, format='json')
+        self.assertTrue(PosUser.objects.get(id=u['id']).auth_user.is_active)
+
+        self.client.patch(f"/api/pos/config/users/{u['id']}/", {'is_blocked': True}, format='json')
+        self.assertFalse(PosUser.objects.get(id=u['id']).auth_user.is_active,
+                         'bloqueado no POS mas ainda entra no sistema')
+
+        self.client.patch(f"/api/pos/config/users/{u['id']}/", {'is_blocked': False}, format='json')
+        self.assertTrue(PosUser.objects.get(id=u['id']).auth_user.is_active)
+
+    def test_os_quatro_ecras_respondem_a_quem_so_tem_um_modulo(self):
+        """Independência dos módulos: a gestão de utilizadores não pode exigir
+        licença do POS — senão um cliente que compre só o PMS fica sem forma de
+        criar os seus empregados."""
+        for caminho in ('user-groups', 'users', 'hr-types', 'human-resources'):
+            r = self.client.get(f'/api/pos/config/{caminho}/')
+            self.assertEqual(r.status_code, 200, f'{caminho}: {r.content}')
+
+    def test_grupo_de_utilizadores_e_tipo_rh_sao_o_mesmo_cadastro_nos_dois(self):
+        """O que se cria num módulo aparece no outro — é a mesma tabela, não
+        duas listas parecidas."""
+        g = self.client.post('/api/pos/config/user-groups/', {
+            'code': 'FO', 'name': 'Front Office', 'is_active': True}, format='json')
+        self.assertIn(g.status_code, (200, 201), g.content)
+
+        t = self.client.post('/api/pos/config/hr-types/', {
+            'code': 'GOV', 'name': 'Governanta', 'is_active': True}, format='json')
+        self.assertIn(t.status_code, (200, 201), t.content)
+
+        pessoa = self.client.post('/api/pos/config/human-resources/', {
+            'code': 'HR-1', 'first_name': 'Elsa', 'last_name': 'Mendes',
+            'hr_type': t.data['id'], 'is_active': True}, format='json')
+        self.assertIn(pessoa.status_code, (200, 201), pessoa.content)
+
+        u = self._criar(code='ELSA', first_name='Elsa', group=g.data['id'])
+        self.assertEqual(u['group_name'], 'Front Office')
+
+        # O tipo passa a contar a pessoa — e não se apaga com gente lá dentro.
+        tipos = self.client.get('/api/pos/config/hr-types/').data
+        linha = [x for x in (tipos if isinstance(tipos, list) else tipos['results'])
+                 if x['code'] == 'GOV'][0]
+        self.assertEqual(linha['resources_count'], 1)
+
+    def test_a_pessoa_que_opera_o_pos_e_a_que_entra_no_pms(self):
+        """A prova de que não são dois sistemas: o utilizador criado pela gestão
+        partilhada autentica-se e usa o PMS com a mesma credencial."""
+        from pos.models import PosUser
+        u = self._criar(code='FILIPE', first_name='Filipe')
+        self.client.patch(f"/api/pos/config/users/{u['id']}/",
+                          {'password': 'Senha#2026'}, format='json')
+        auth = PosUser.objects.get(id=u['id']).auth_user
+
+        outro = self.client_class()
+        outro.force_authenticate(auth)
+        r = outro.get('/api/pms/rooms/')
+        self.assertEqual(r.status_code, 200, 'quem opera o POS não consegue usar o PMS')

@@ -67,8 +67,14 @@ export const MENUS: { title: string; items: { icon: string; label: string; secti
     { icon: '🛏', label: 'Categorias de Quarto', section: 'room_types' },
     { icon: '💰', label: 'Tarifas (Rate Codes)', section: 'rate_plans' },
     { icon: '⚙', label: 'Diagnóstico', section: 'diag_pos' },
-    { icon: '👤', label: 'Utilizadores (PMS)', section: 'users' },
     { icon: '📋', label: 'Visualizar Logs', section: 'sys_logs_pms' },
+  ] },
+  { title: 'Gestão de Utilizadores', items: [
+    { icon: '👥', label: 'Grupos de Utilizadores', section: 'user_groups' },
+    { icon: '👤', label: 'Utilizadores', section: 'user_list' },
+    { icon: '●', label: 'Tipo R.H.', section: 'hr_types' },
+    { icon: '🧑', label: 'Recursos Humanos', section: 'hr_people' },
+    { icon: '🛡', label: 'Acesso aos ecrãs do PMS', section: 'users' },
   ] },
   { title: 'EMS', items: [
     { icon: '🎉', label: 'EMS (Eventos)', section: 'events' },

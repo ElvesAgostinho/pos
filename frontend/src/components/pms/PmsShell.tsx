@@ -34,6 +34,9 @@ import BookingEngineView from '../integration/BookingEngineView';
 import ChannelManagerView from '../integration/ChannelManagerView';
 import PmsChatbotView from './PmsChatbotView';
 import PmsBookingDepositsView from './PmsBookingDepositsView';
+import {
+  GruposDeUtilizadores, Utilizadores as UtilizadoresPartilhados, TiposRH, RecursosHumanos,
+} from '../shared/userManagement';
 import PmsEventsView from './PmsEventsView';
 import PmsEventsCalendarView from './PmsEventsCalendarView';
 import PmsEventsForecastView from './PmsEventsForecastView';
@@ -102,6 +105,15 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   events_calendar: { label: 'Calendário EMS', icon: '🕐', Comp: PmsEventsCalendarView },
   events_forecast: { label: 'Previsão EMS', icon: '📈', Comp: PmsEventsForecastView },
   users: { label: 'Utilizadores (PMS)', icon: '👤', Comp: PmsUsersView },
+  // GESTÃO DE UTILIZADORES — os MESMOS ecrãs da Configuração POS, montados aqui
+  // (components/shared/userManagement.tsx). Os módulos vendem-se separados, mas
+  // quem usa o sistema é a mesma pessoa: o recepcionista que lança o consumo no
+  // quarto é o mesmo que abre a conta no restaurante. Dois cadastros seria criar
+  // cada empregado duas vezes — e esquecer de o despedir num deles.
+  user_groups: { label: 'Grupos de Utilizadores', icon: '👥', Comp: GruposDeUtilizadores },
+  user_list: { label: 'Utilizadores', icon: '👤', Comp: UtilizadoresPartilhados },
+  hr_types: { label: 'Tipo R.H.', icon: '●', Comp: TiposRH },
+  hr_people: { label: 'Recursos Humanos', icon: '🧑', Comp: RecursosHumanos },
   sys_logs_pms: { label: 'Logs', icon: '📋', Comp: SysLogsView },
   document_scan: { label: 'Leitor de Documentos', icon: '🪪', Comp: PmsDocumentScanView },
 };
