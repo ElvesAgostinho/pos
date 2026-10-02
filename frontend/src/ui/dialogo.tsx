@@ -118,7 +118,15 @@ export default function DialogoHost() {
     const naErro = (e: ErrorEvent) => {
       // erros de recursos (imagens, scripts) não trazem mensagem útil ao operador
       if (!e?.message) return;
-      aviso(`${e.message}\n\n${(e.filename || '').split('/').pop() || ''}${e.lineno ? `:${e.lineno}` : ''}`,
+      // O browser às vezes dá só "Uncaught" em `message` e guarda a razão a
+      // sério em `error.message` — mostrar "Uncaught" e um número de linha não
+      // diz nada a quem está ao balcão, nem a quem assiste à distância.
+      const bruto = String(e.message).trim();
+      const real = (e as any)?.error?.message;
+      const nome = (e as any)?.error?.name;
+      const texto = (/^uncaught$/i.test(bruto) && real) ? real : bruto;
+      const onde = (e.filename || '').split('/').pop()?.split('?')[0] || '';
+      aviso(`${nome && !texto.startsWith(nome) ? nome + ': ' : ''}${texto}\n\n${onde}${e.lineno ? `:${e.lineno}` : ''}`,
         'Erro no terminal');
     };
     const naPromessa = (e: PromiseRejectionEvent) => {
