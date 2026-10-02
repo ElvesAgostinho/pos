@@ -96,6 +96,11 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
   const { data: canais = [] } = useQuery({ queryKey: ['ent-canais'], queryFn: async () => { try { const r = await apiClient.get('pos/config/channels/'); return r.data?.results || r.data || []; } catch { return []; } } });
   // (8201) "Newsletter - Interesses": a newsletter geral filtra por estes códigos
   // quando o parâmetro tem algum preenchido — sem marcar aqui, o cliente não conta.
+  // Cabeçalho da ficha impressa: nome e logótipo do hotel — a MESMA fonte do
+  // ecrã de login e do ambiente de trabalho, nunca uma marca escrita no código.
+  const { data: marca } = useQuery({ queryKey: ['platform', 'branding'],
+    queryFn: async () => (await apiClient.get('platform/branding/')).data,
+    staleTime: 5 * 60 * 1000 });
   const { data: interesses = [] } = useQuery({ queryKey: ['ent-interesses'], queryFn: async () => { try { const r = await apiClient.get('pos/config/selection-codes/'); return r.data?.results || r.data || []; } catch { return []; } } });
   // CAMPOS PERSONALIZADOS desta ficha — as definições vêm da configuração
   // (POS → Campos personalizados, localização "Entidade"); os valores viajam
@@ -118,6 +123,145 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
     queryFn: async () => (await apiClient.get(`pos/marketing/entities/${eid}/history/`)).data,
     enabled: !!eid && sec === 'historico',
   });
+
+  // IMPRIMIR A FICHA — não a janela. `window.print()` mandava para o papel o
+  // ecrã inteiro: o diálogo, a navegação por trás, a barra do PMS e os campos
+  // vazios todos. O que se quer imprimir é a FICHA DO CLIENTE, e é isso que se
+  // compõe aqui: só os campos preenchidos, agrupados como no ecrã, com o
+  // cabeçalho do hotel. Sai por um iframe escondido porque uma janela nova
+  // arrasta a barra de endereço do navegador para dentro do documento.
+  const fichaHtml = () => {
+    const esc = (v: any) => String(v ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
+    const bool = (v: any) => (v ? 'Sim' : 'Não');
+    const nomeDe = (lista: any[], id: any) => lista.find((x: any) => x.id === id)?.name || '';
+
+    const seccoes: [string, [string, any][]][] = [
+      ['Perfil', [
+        ['Nr. cliente', d.code], ['Id interno', d.internal_id],
+        ['Tipo de entidade', nomeDe(tipos, d.entity_type)],
+        ['Título', d.title], ['Nome', d.name], ['Apelido', d.last_name],
+        ['Outros nomes', d.other_names], ['Língua', d.language],
+        ['É fornecedor', d.is_supplier ? 'Sim' : ''], ['Ativo', bool(d.is_active)],
+      ]],
+      ['Morada', [
+        ['Morada', d.address], ['Morada 2', d.address2], ['Morada 3', d.address3],
+        ['Código postal', d.postal_code], ['Cidade', d.city], ['Província/Região', d.region],
+        ['País', d.country],
+      ]],
+      ['Identificação', [
+        ['NIF', d.tax_id], ['Tipo de documento', d.doc_type], ['Nº do documento', d.id_number],
+        ['Emitido em', d.doc_issue_date], ['Válido até', d.doc_valid_until],
+        ['Local de emissão', d.doc_issue_place], ['Emitido por', d.doc_issued_by],
+        ['Nacionalidade', d.nationality], ['Data de nascimento', d.birth_date],
+        ['Local de nascimento', d.birth_place], ['Género', d.gender],
+      ]],
+      ['Contactos', [
+        ['Telefone', d.phone], ['Telefone 2', d.phone2], ['Telemóvel', d.mobile],
+        ['Telemóvel 2', d.mobile2], ['E-mail', d.email], ['E-mail 2', d.email2],
+        ['Fax', d.fax], ['Site', d.site],
+      ]],
+      ['Cartão de membro', [
+        ['Cartão', nomeDe(cartoes, d.member_card)], ['Nº do cartão', d.member_card_number],
+        ['VIP', d.is_vip ? `Sim (${d.vip_discount_percent || 0}%)` : ''], ['Código VIP', d.vip_code],
+      ]],
+      ['Reserva', [
+        ['Complexo preferido', d.pref_complex], ['Categoria preferida', d.pref_category],
+        ['Quarto preferido', d.pref_room], ['Regime preferido', d.pref_meals],
+        ['Tabela de preços', d.pref_price_list], ['Package', d.pref_package],
+        ['Cor no planning', d.planning_color], ['Matrícula', d.plate],
+      ]],
+      ['Sales & Marketing', [
+        ['Segmento', nomeDe(segs, d.segment)], ['Sub-segmento', nomeDe(subsegs, d.sub_segment)],
+        ['Canal', nomeDe(canais, d.channel)], ['Agregador estatístico', d.stat_aggregator],
+        ['Programa de distinção', d.distinction_program ? 'Sim' : ''],
+        ['Mailings', d.include_mailings ? 'Sim' : ''],
+      ]],
+      ['Comissões', [
+        ['Código de comissão', d.commission_code], ['Percentagem', d.commission_pct ? `${d.commission_pct} %` : ''],
+      ]],
+      ['Pagamentos / Permissões', [
+        ['Conta', d.account_number], ['Limite de crédito', d.credit_limit],
+        ['Modo do limite', d.credit_limit_mode], ['Dias de crédito', d.credit_days],
+        ['Só numerário', d.only_cash ? 'Sim' : ''], ['Fatura electrónica', d.einvoice_mode],
+        ['Retenção na fonte', d.withholding_tax],
+      ]],
+      ['Avisos e bloqueios', [
+        ['Bloqueado', d.is_blocked ? 'Sim' : ''], ['Motivo', d.block_reason],
+        ['Tem avisos', d.has_warnings ? 'Sim' : ''], ['Aviso', d.warning_text],
+        ['Sugerir na reserva', d.suggest_on_reservation ? 'Sim' : ''], ['Sugestão', d.suggestion_text],
+        ['Notas', d.notes],
+      ]],
+    ];
+
+    const personalizados: [string, any][] = camposPers.map((c: any) =>
+      [c.name, c.field_type === 'BOOL' ? (cf[c.code] === 'true' ? 'Sim' : cf[c.code] === 'false' ? 'Não' : '')
+        : cf[c.code]] as [string, any]);
+    if (personalizados.length) seccoes.push(['Campos personalizados', personalizados]);
+
+    const blocos = seccoes.map(([titulo, campos]) => {
+      const linhas = campos.filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '');
+      if (!linhas.length) return '';
+      return `<h2>${esc(titulo)}</h2><table>${linhas.map(([l, v]) =>
+        `<tr><td class="l">${esc(l)}</td><td class="v">${esc(v)}</td></tr>`).join('')}</table>`;
+    }).join('');
+
+    return `<!doctype html><html lang="pt"><head><meta charset="utf-8">
+      <title>Ficha de cliente — ${esc(d.name || d.code || '')}</title><style>
+        @page { size: A4; margin: 0; }
+        body { font-family: "Segoe UI", Arial, sans-serif; font-size: 11.5px; color: #15232b;
+               padding: 16mm 15mm; }
+        .top { display:flex; justify-content:space-between; align-items:flex-start;
+               border-bottom:2px solid #062A31; padding-bottom:10px; margin-bottom:4px; }
+        .logo { max-height:50px; max-width:180px; display:block; margin-bottom:5px; }
+        .brand { font-size:17px; font-weight:700; color:#062A31; }
+        .sub { color:#5b6b73; font-size:10px; }
+        .who { text-align:right; }
+        .who .nome { font-size:15px; font-weight:700; }
+        h2 { font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:#5C8891;
+             margin:14px 0 4px; border-bottom:1px solid #D8E7EA; padding-bottom:3px; }
+        table { width:100%; border-collapse:collapse; }
+        td { padding:3px 8px; border-bottom:1px solid #F2F7F8; vertical-align:top; }
+        td.l { color:#5b6b73; width:190px; }
+        td.v { font-weight:600; }
+        .foot { margin-top:18px; padding-top:7px; border-top:1px solid #EEF4F5;
+                font-size:9px; color:#8a979d; text-align:center; }
+        .vazio { color:#8a979d; font-style:italic; padding:20px 0; }
+      </style></head><body onload="window.print()">
+        <div class="top">
+          <div>
+            ${marca?.logo_url ? `<img class="logo" src="${esc(marca.logo_url)}" alt="" />` : ''}
+            <div class="brand">${esc(marca?.name || '')}</div>
+            <div class="sub">Ficha de cliente · impressa em ${new Date().toLocaleString('pt-PT')}</div>
+          </div>
+          <div class="who">
+            <div class="sub">Cliente</div>
+            <div class="nome">${esc(d.name || '')}</div>
+            <div class="sub">${esc(d.code || '')}${d.tax_id ? ' · NIF ' + esc(d.tax_id) : ''}</div>
+          </div>
+        </div>
+        ${blocos || '<div class="vazio">Esta ficha ainda não tem dados preenchidos.</div>'}
+        <div class="foot">${esc(marca?.name || '')} — documento interno, sem valor fiscal.</div>
+      </body></html>`;
+  };
+
+  const verFicha = () => {
+    const w = window.open('', '_blank', 'width=820,height=980');
+    if (w) { w.document.write(fichaHtml().replace(' onload="window.print()"', '')); w.document.close(); }
+  };
+
+  const imprimirFicha = () => {
+    const frame = document.createElement('iframe');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(frame);
+    const doc = frame.contentWindow?.document;
+    if (!doc) { document.body.removeChild(frame); return; }
+    doc.open(); doc.write(fichaHtml()); doc.close();
+    frame.onload = () => {
+      frame.contentWindow?.focus();
+      frame.contentWindow?.print();
+      setTimeout(() => document.body.removeChild(frame), 1000);
+    };
+  };
 
   const gravar = async () => {
     try {
@@ -435,9 +579,15 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
 
         {/* rodapé clássico */}
         <div className="h-12 flex items-center gap-5 px-4 bg-[#EEF4F5] border-t border-[#CFE3E6] text-[13px]">
-          <span className="text-[#5C8891] flex items-center gap-1"><Glyph icon="👤" size={14} /> Guest Info</span>
-          <span className="text-[#5C8891] flex items-center gap-1"><Glyph icon="⎇" size={14} /> Sincronizar</span>
-          <button onClick={() => window.print()} className="hover:underline flex items-center gap-1"><Glyph icon="🖨" size={14} /> Imprimir</button>
+          {/* "Guest Info" e "Sincronizar" eram <span> inertes — pareciam botões e
+              não faziam nada. O primeiro passa a mostrar a ficha composta (a
+              mesma que vai para o papel); o segundo saiu: não há destino nenhum
+              com que sincronizar uma ficha de cliente, e a caixa "Sincronizar"
+              do Perfil já é o campo que marca a ficha para sincronização. */}
+          <button onClick={verFicha} className="hover:underline flex items-center gap-1 text-[#041F24]">
+            <Glyph icon="👤" size={14} /> Ver ficha</button>
+          <button onClick={imprimirFicha} className="hover:underline flex items-center gap-1">
+            <Glyph icon="🖨" size={14} /> Imprimir</button>
           <div className="flex-1" />
           <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#062A31] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
           <button onClick={onClose} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#B0392B] text-white flex items-center justify-center"><Glyph icon="✕" size={12} /></span> Fechar</button>

@@ -31,6 +31,44 @@ def _bank_accounts():
     } for b in CompanyBankAccount.objects.filter(is_active=True, show_on_invoice=True)]
 
 
+def _emitente(cfg):
+    """Quem emite o documento — nome, NIF, morada e LOGÓTIPO, num sítio só.
+
+    O logótipo do cliente é carregado em Administração → Empresa e fica em
+    `Hotel.logo_url`; é esse que o ecrã de login, o ambiente de trabalho e a
+    pró-forma mostram. A factura olhava só para `FiscalConfig.logo_url`, um
+    segundo campo que quase ninguém preenche — resultado: o hotel carregava o
+    seu logótipo, via-o em todo o lado, e a factura (o único papel que sai de
+    casa) saía sem ele. Aqui vale o da configuração fiscal quando existe, e o
+    da empresa quando não: um logótipo, dois sítios onde pode estar, nunca uma
+    factura anónima.
+
+    O mesmo para o NOME e a MORADA: uma factura sem o nome de quem a emitiu não
+    é um documento, e o nome legal da empresa está em `identity.Company` mesmo
+    quando a configuração fiscal ainda não foi preenchida.
+    """
+    hotel = empresa = None
+    try:
+        from identity.models import Hotel
+        hotel = Hotel.objects.filter(is_master=True).first() or Hotel.objects.order_by('id').first()
+        empresa = hotel.company if hotel and hotel.company_id else None
+    except Exception:
+        pass
+
+    nome = cfg.company_name or (empresa.name if empresa else '') or (hotel.name if hotel else '')
+    return {
+        'name': nome,
+        'trade_name': cfg.trade_name or (hotel.name if hotel else '') or nome,
+        'nif': cfg.company_nif or (empresa.tax_id if empresa else ''),
+        'address': cfg.address_line or (getattr(empresa, 'address', '') if empresa else ''),
+        'city': cfg.city, 'province': cfg.province,
+        'phone': cfg.phone or (getattr(empresa, 'phone', '') if empresa else ''),
+        'fax': cfg.fax, 'email': cfg.email or (getattr(empresa, 'email', '') if empresa else ''),
+        'share_capital': cfg.share_capital, 'crc_number': cfg.crc_number,
+        'logo_url': cfg.logo_url or (hotel.logo_url if hotel else '') or '',
+        'certificate_number': cfg.certificate_number,
+    }
+
 def _qr_png(dados):
     """O QR da factura como imagem (data URI), não como texto.
 
@@ -148,13 +186,7 @@ class CommercialDocumentViewSet(viewsets.ModelViewSet):
         summ = services.summarize_by_rate([(l.tax_percentage, l.line_total + l.tax_amount) for l in doc.lines.all()])
         from .num2words_pt import amount_to_words
         return Response({
-            'company': {
-                'name': cfg.company_name, 'trade_name': cfg.trade_name or cfg.company_name,
-                'nif': cfg.company_nif, 'address': cfg.address_line, 'city': cfg.city,
-                'phone': cfg.phone, 'share_capital': cfg.share_capital, 'crc_number': cfg.crc_number,
-                'certificate_number': cfg.certificate_number,
-                'logo_url': cfg.logo_url,
-            },
+            'company': _emitente(cfg),
             'bank_accounts': _bank_accounts(),
             'document': {
                 'invoice_no': doc.number, 'type_name': doc.get_kind_display(),
@@ -337,13 +369,7 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
         tax_summary = [{'rate': float(s['rate']), 'base': str(s['base']),
                         'tax': str(s['tax']), 'total': str(s['gross'])} for s in summ]
         return Response({
-            'company': {
-                'name': cfg.company_name, 'trade_name': cfg.trade_name or cfg.company_name,
-                'nif': cfg.company_nif, 'address': cfg.address_line, 'city': cfg.city,
-                'province': cfg.province, 'phone': cfg.phone, 'fax': cfg.fax, 'email': cfg.email,
-                'share_capital': cfg.share_capital, 'crc_number': cfg.crc_number,
-                'logo_url': cfg.logo_url, 'certificate_number': cfg.certificate_number,
-            },
+            'company': _emitente(cfg),
             'bank_accounts': _bank_accounts(),
             'document': {
                 'invoice_no': doc.invoice_no, 'type_name': doc.doc_type.name,

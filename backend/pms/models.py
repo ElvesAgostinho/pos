@@ -586,11 +586,50 @@ class ChatbotSettings(models.Model):
     `chatbot.py`: falta a credenciação/homologação da conta Business do
     dono). O "Simular Conversa" no ecrã usa dados REAIS (disponibilidade) sem
     nunca enviar uma mensagem WhatsApp verdadeira."""
+    # DUAS MANEIRAS DE LIGAR O WHATSAPP, porque as duas existem na vida real:
+    #
+    #  OFFICIAL — a Meta Cloud API. É o caminho homologado (sem risco de bloqueio,
+    #    com modelos de mensagem aprovados), mas exige conta Business verificada
+    #    e aprovação da Meta: um hotel pequeno pode esperar semanas por isso.
+    #  BRIDGE — a API não oficial: um serviço à parte (Baileys/whatsapp-web.js e
+    #    afins) que se liga ao WhatsApp como se fosse o WhatsApp Web, com o número
+    #    que o hotel já usa. Liga-se em minutos, lendo um QR Code com o telemóvel
+    #    ou pedindo um código de 8 letras para introduzir no telefone.
+    #
+    # A ponte NÃO vive dentro do Django (essas bibliotecas são Node e precisam de
+    # manter uma sessão aberta ao WhatsApp): vive como serviço próprio, e aqui
+    # guarda-se o endereço e a chave com que se fala com ela. O sistema nunca
+    # inventa um estado "ligado" — quem diz que a sessão está viva é a ponte.
+    MODES = [('OFFICIAL', 'API oficial (Meta Cloud API)'),
+             ('BRIDGE', 'API não oficial (ponte WhatsApp Web)')]
+    PAIRING = [('QR', 'Ler QR Code com o telemóvel'),
+               ('PHONE', 'Código para o número de telemóvel')]
+    SESSION = [('DISCONNECTED', 'Desligado'), ('PAIRING', 'À espera de emparelhar'),
+               ('CONNECTED', 'Ligado'), ('ERROR', 'Erro')]
+
     hotel = models.OneToOneField(Hotel, on_delete=models.CASCADE, related_name='chatbot_settings')
     whatsapp_phone_number = models.CharField(max_length=30, blank=True, null=True)
     whatsapp_business_account_id = models.CharField(max_length=60, blank=True, null=True)
     access_token = models.CharField(max_length=500, blank=True, null=True)
     is_active = models.BooleanField(default=False)
+
+    connection_mode = models.CharField(max_length=10, choices=MODES, default='OFFICIAL',
+                                       verbose_name='Forma de ligação')
+    bridge_url = models.CharField(max_length=300, blank=True, null=True,
+                                  verbose_name='Endereço do serviço de ponte')
+    bridge_token = models.CharField(max_length=300, blank=True, null=True,
+                                    verbose_name='Chave do serviço de ponte')
+    pairing_method = models.CharField(max_length=6, choices=PAIRING, default='QR',
+                                      verbose_name='Como emparelhar')
+    session_status = models.CharField(max_length=14, choices=SESSION, default='DISCONNECTED')
+    session_message = models.CharField(max_length=500, blank=True, null=True)
+    # O que a ponte devolveu para emparelhar: o conteúdo do QR (desenha-se no
+    # ecrã) ou o código de 8 letras que se escreve no telemóvel.
+    qr_payload = models.TextField(blank=True, null=True)
+    pairing_code = models.CharField(max_length=20, blank=True, null=True)
+    pairing_expires_at = models.DateTimeField(blank=True, null=True)
+    connected_number = models.CharField(max_length=30, blank=True, null=True)
+    connected_at = models.DateTimeField(blank=True, null=True)
     welcome_message = models.TextField(default='Olá! Posso ajudar a verificar disponibilidade e criar uma reserva. Como posso ajudar?')
 
     class Meta:

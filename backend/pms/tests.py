@@ -1165,3 +1165,360 @@ class PmsFichaDaReservaTests(PmsBase):
         r = self.client.post('/api/pms/room-attributes/', {
             'hotel': self.hotel.id, 'code': 'MAR', 'name': 'Vista para o mar'}, format='json')
         self.assertEqual(r.status_code, 400, 'aceitou duas características com o mesmo código')
+
+
+class PmsFichaCompletaDoClienteTests(PmsBase):
+    """Uma ficha de cliente com TUDO preenchido, aba a aba, e a prova de que
+    cada campo lá fica.
+
+    É o teste que o dono pediu por palavras dele: criar um cliente com todas as
+    informações para ver se tudo funciona. Um campo que o ecrã mostra mas que o
+    servidor deita fora na gravação é a avaria mais silenciosa que há — o
+    utilizador escreve, carrega em Gravar, não vê erro nenhum, e o dado
+    desaparece. Isto apanha isso campo a campo.
+    """
+
+    # Os campos de cada aba do "Nova entidade", pela ordem do ecrã.
+    PERFIL = {
+        'code': 'CLI-TOTAL', 'internal_id': 'INT-9910', 'title': 'Sr.',
+        'long_title': 'Senhor Doutor', 'short_title': 'Dr.', 'prefix': 'Dr',
+        'name': 'Joaquim Mateus Andrade', 'last_name': 'Andrade',
+        'other_names': 'Joca', 'language': 'pt-PT', 'mailing_language': 'pt-PT',
+        'is_supplier': True, 'sync_enabled': True, 'is_active': True,
+        'online_checkin_pct': 80, 'stat_aggregator': 'CORP-AO',
+        'planning_color': '#1F9D55',
+    }
+    MORADA = {
+        'address': 'Rua Rainha Ginga, nº 14', 'address2': '3º andar', 'address3': 'Porta B',
+        'postal_code': '1000-LAD', 'city': 'Luanda', 'region': 'Luanda',
+        'district': 'Ingombota', 'country': 'Angola', 'phone_prefix': '+244',
+        'billing_address': 'Rua Rainha Ginga, nº 14', 'billing_address2': 'Dept. Financeiro',
+        'billing_postal': '1000-LAD', 'billing_city': 'Luanda', 'billing_country': 'Angola',
+    }
+    IDENTIFICACAO = {
+        'tax_id': '5417829301', 'doc_type': 'Passaporte', 'id_number': 'N0123456',
+        'doc_issue_date': '2023-05-10', 'doc_valid_until': '2033-05-09',
+        'doc_issue_place': 'Luanda', 'doc_issued_by': 'SME',
+        'nationality': 'Angolana', 'birth_date': '1984-03-22',
+        'birth_place': 'Benguela', 'gender': 'M', 'other_number': 'OUT-771',
+    }
+    CONTACTOS = {
+        'phone': '+244222300400', 'phone2': '+244222300401', 'mobile': '+244923111222',
+        'mobile2': '+244912333444', 'email': 'joaquim.andrade@exemplo.ao',
+        'email2': 'financeiro@exemplo.ao', 'fax': '+244222300499', 'fax2': '+244222300498',
+        'site': 'https://exemplo.ao', 'site2': 'https://loja.exemplo.ao',
+        'position': 'Director Financeiro',
+    }
+    RESERVA = {
+        'pref_complex': 'Edifício Principal', 'pref_category': 'Standard',
+        'pref_room': '101', 'pref_meals': 'BB', 'pref_meal_type': 'Pequeno-almoço',
+        'pref_price_list': 'Tarifa Corporate', 'pref_package': 'Fim-de-semana',
+        'pref_pos_price': 2, 'pref_rest_table': 'Mesa 7',
+        'pref_discount': '10', 'pref_discount_rule': 'Sobre alojamento',
+        'plate': 'LD-45-78-AB', 'brand': 'Toyota',
+        'pay_tv': 'Incluída', 'video': 'Sem acesso', 'minibar': 'Reposição diária',
+        'suggest_on_reservation': True, 'suggestion_text': 'Prefere andar alto, longe do elevador.',
+        'has_warnings': True, 'warning_text': 'Alérgico a amendoim — avisar a cozinha.',
+    }
+    MARKETING = {
+        'include_mailings': True, 'mailing_general': True, 'mailing_events': True,
+        'mailing_birthday': True, 'distinction_program': True, 'vip_code': 'OURO',
+        'is_vip': True, 'vip_discount_percent': '12.50',
+    }
+    COMISSOES = {'commission_code': 'AG-15', 'commission_pct': '15.00'}
+    PAGAMENTOS = {
+        'account_number': 'CC-000771', 'financial_number': 'FIN-771',
+        'credit_limit': '750000.00', 'credit_limit_mode': 'Bloquear acima do limite',
+        'credit_limit_pos_enabled': True, 'credit_limit_pos': '50000.00',
+        'credit_days': 30, 'only_cash': False, 'allow_cc_checkout': True,
+        'cc_by': 'Direcção Financeira', 'einvoice_mode': 'Email',
+        'withholding_tax': '6.5', 'portal_password': 'portal-2026',
+    }
+    OUTROS = {
+        'notes': 'Cliente de longa data. Factura sempre em nome da empresa.',
+        'is_blocked': False, 'internal_status': 'Activo',
+        'signature_url': 'https://exemplo.ao/assinaturas/771.png',
+        'photo_url': 'https://exemplo.ao/fotos/771.jpg',
+    }
+
+    def _todos_os_campos(self):
+        campos = {}
+        for bloco in (self.PERFIL, self.MORADA, self.IDENTIFICACAO, self.CONTACTOS,
+                      self.RESERVA, self.MARKETING, self.COMISSOES, self.PAGAMENTOS, self.OUTROS):
+            campos.update(bloco)
+        return campos
+
+    def test_criar_cliente_com_todas_as_abas_preenchidas(self):
+        """Grava TUDO e confere campo a campo o que voltou do servidor."""
+        payload = self._todos_os_campos()
+        r = self.client.post('/api/pos/marketing/entities/', payload, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        eid = r.data['id']
+
+        relido = self.client.get(f'/api/pos/marketing/entities/{eid}/')
+        self.assertEqual(relido.status_code, 200, relido.content)
+        guardado = relido.data
+
+        perdidos = []
+        for campo, esperado in payload.items():
+            if campo not in guardado:
+                perdidos.append(f'{campo}: não existe na resposta')
+                continue
+            obtido = guardado[campo]
+            if isinstance(esperado, bool):
+                ok = bool(obtido) == esperado
+            elif isinstance(esperado, int):
+                ok = int(obtido or 0) == esperado
+            else:
+                ok = str(obtido or '') == str(esperado)
+            if not ok:
+                perdidos.append(f'{campo}: gravei {esperado!r}, voltou {obtido!r}')
+        self.assertEqual(perdidos, [], 'Campos que o servidor não guardou:\n  ' + '\n  '.join(perdidos))
+
+    def test_cada_aba_grava_e_relê_sozinha(self):
+        """Gravar uma aba de cada vez (é o que o utilizador faz) não pode apagar
+        o que foi gravado nas outras."""
+        r = self.client.post('/api/pos/marketing/entities/',
+                             {'code': 'CLI-ABAS', 'name': 'Cliente Abas'}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        eid = r.data['id']
+
+        abas = [('Perfil', self.PERFIL), ('Morada', self.MORADA),
+                ('Identificação', self.IDENTIFICACAO), ('Contactos', self.CONTACTOS),
+                ('Reserva', self.RESERVA), ('Sales & Marketing', self.MARKETING),
+                ('Comissões', self.COMISSOES), ('Pagamentos', self.PAGAMENTOS),
+                ('Outros', self.OUTROS)]
+        for nome, campos in abas:
+            dados = {k: v for k, v in campos.items() if k != 'code'}
+            resp = self.client.patch(f'/api/pos/marketing/entities/{eid}/', dados, format='json')
+            self.assertEqual(resp.status_code, 200, f'{nome}: {resp.content}')
+
+        # No fim, TUDO o que se gravou aba a aba continua lá.
+        final = self.client.get(f'/api/pos/marketing/entities/{eid}/').data
+        self.assertEqual(final['name'], 'Joaquim Mateus Andrade')
+        self.assertEqual(final['tax_id'], '5417829301')
+        self.assertEqual(final['city'], 'Luanda')
+        self.assertEqual(final['mobile'], '+244923111222')
+        self.assertEqual(final['pref_room'], '101')
+        self.assertTrue(final['is_vip'])
+        self.assertEqual(str(final['commission_pct']), '15.00')
+        self.assertEqual(str(final['credit_limit']), '750000.00')
+        self.assertIn('amendoim', final['warning_text'])
+
+    def test_os_sateliltes_de_cada_aba(self):
+        """As grelhas das abas (notas, documentos, acordos, comissões, RGPD…)
+        são todas o mesmo motor — `mdm.CustomerRecord` com um tipo. Se o tipo
+        deixar de ser respeitado, a nota de uma aba aparece noutra."""
+        r = self.client.post('/api/pos/marketing/entities/',
+                             {'code': 'CLI-SAT', 'name': 'Cliente Satelites'}, format='json')
+        eid = r.data['id']
+
+        satelites = {
+            'NOTE': {'text': 'Prefere quarto longe do elevador.'},
+            'SOCIAL': {'network': 'LinkedIn', 'handle': 'joaquim-andrade'},
+            'DOC': {'type': 'Passaporte', 'number': 'N0123456', 'valid_until': '2033-05-09'},
+            'LINK': {'relation': 'Cônjuge', 'name': 'Maria Andrade'},
+            'AGREEMENT': {'name': 'Acordo Corporate 2026', 'discount': '12'},
+            'BILLING': {'instruction': 'Faturar à empresa, envio por e-mail.'},
+            'COMMISSION': {'agency': 'Agência Sol', 'pct': '15'},
+            'CONSENT': {'kind': 'Marketing', 'given': True, 'date': '2026-01-15'},
+            'CHILD': {'name': 'Tomás', 'birth_date': '2018-07-03'},
+        }
+        for tipo, dados in satelites.items():
+            resp = self.client.post(f'/api/pos/marketing/entities/{eid}/records/',
+                                    {'kind': tipo, 'data': dados}, format='json')
+            self.assertEqual(resp.status_code, 201, f'{tipo}: {resp.content}')
+
+        # Cada aba só vê os seus.
+        for tipo, dados in satelites.items():
+            lista = self.client.get(f'/api/pos/marketing/entities/{eid}/records/', {'kind': tipo})
+            self.assertEqual(lista.status_code, 200, lista.content)
+            self.assertEqual(len(lista.data), 1, f'{tipo}: a aba trouxe {len(lista.data)} linhas')
+            self.assertEqual(lista.data[0]['data'], dados)
+
+        # E sem filtro vêm todos.
+        self.assertEqual(len(self.client.get(f'/api/pos/marketing/entities/{eid}/records/').data),
+                         len(satelites))
+
+    def test_campos_personalizados_na_ficha_completa(self):
+        """A aba que faltava construir: o campo do hotel, na ficha, com valor."""
+        self.client.post('/api/pos/config/custom-fields/', {
+            'code': 'num_voo', 'name': 'No do voo', 'location': 'ENTITY',
+            'field_type': 'TEXT', 'show_in_search': True, 'is_active': True}, format='json')
+        self.client.post('/api/pos/config/custom-fields/', {
+            'code': 'motivo', 'name': 'Motivo', 'location': 'ENTITY', 'is_list': True,
+            'list_values': ['Lazer', 'Trabalho'], 'is_active': True}, format='json')
+
+        payload = dict(self._todos_os_campos())
+        payload['code'] = 'CLI-CF'
+        payload['custom_fields'] = {'num_voo': 'DT651', 'motivo': 'Trabalho'}
+        r = self.client.post('/api/pos/marketing/entities/', payload, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        self.assertEqual(r.data['custom_fields'], {'num_voo': 'DT651', 'motivo': 'Trabalho'})
+
+        # E aparecem na pesquisa, ao lado dos outros dados da ficha.
+        lista = self.client.get('/api/pos/marketing/entities/')
+        linha = [e for e in (lista.data if isinstance(lista.data, list) else lista.data['results'])
+                 if e['code'] == 'CLI-CF'][0]
+        self.assertEqual(linha['custom_fields']['num_voo'], 'DT651')
+
+    def test_a_ficha_completa_serve_para_reservar_e_facturar(self):
+        """Prova que não é um cadastro paralelo: o cliente criado aqui é o que
+        reserva, o que entra no quarto e o que sai no NIF da factura."""
+        cfg = FiscalConfig.get()
+        cfg.company_name, cfg.company_nif, cfg.environment = 'Hotel Teste Lda', '5000000000', 'TEST'
+        cfg.save()
+        TaxRate.objects.create(code='IVA14', name='IVA 14%', percentage=Decimal('14'),
+                               is_default=True, is_active=True)
+        tipo = FiscalDocType.objects.create(code='FR', name='Factura-Recibo', signable=True)
+        FiscalSeries.objects.create(code='T', doc_type=tipo, year=self.hoje.year,
+                                    certified=True, is_active=True, environment='TEST')
+
+        payload = dict(self._todos_os_campos())
+        payload['code'] = 'CLI-FACT'
+        cliente = self.client.post('/api/pos/marketing/entities/', payload, format='json')
+        self.assertIn(cliente.status_code, (200, 201), cliente.content)
+
+        reserva = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': cliente.data['id'], 'room_type': self.rt,
+            'room': self.quartos[0], 'check_in': str(self.hoje),
+            'check_out': str(self.hoje + timedelta(days=1)), 'adults': 1}, format='json')
+        self.assertIn(reserva.status_code, (200, 201), reserva.content)
+        self.assertEqual(reserva.data['guest_name'], 'Joaquim Mateus Andrade')
+        self.assertEqual(reserva.data['guest_tax_id'], '5417829301')
+        self.assertEqual(reserva.data['guest_email'], 'joaquim.andrade@exemplo.ao')
+
+        self.client.post(f"/api/pms/reservations/{reserva.data['id']}/check_in/", {}, format='json')
+        folio = Reservation.objects.get(id=reserva.data['id']).folio
+        self.client.post(f'/api/pms/folios/{folio.id}/settle/', {}, format='json')
+        fact = self.client.post(f'/api/pms/folios/{folio.id}/generate-invoice/', {}, format='json')
+        self.assertIn(fact.status_code, (200, 201), fact.content)
+
+        from fiscal.models import FiscalDocument
+        doc = FiscalDocument.objects.get(invoice_no=fact.data['invoice_number'])
+        self.assertEqual(doc.customer_name, 'Joaquim Mateus Andrade')
+        self.assertEqual(doc.customer_tax_id, '5417829301',
+                         'a factura saiu com outro NIF que não o da ficha')
+
+    def test_a_factura_leva_o_logotipo_da_empresa_dona_do_hotel(self):
+        """O logótipo é carregado em Administração → Empresa (Hotel.logo_url) e
+        a factura olhava só para a configuração fiscal — saía sem ele."""
+        self.hotel.logo_url = 'https://exemplo.ao/logo-hotel.png'
+        self.hotel.save(update_fields=['logo_url'])
+        cfg = FiscalConfig.get()
+        cfg.company_name, cfg.company_nif, cfg.environment = '', '5000000000', 'TEST'
+        cfg.logo_url = ''
+        cfg.save()
+        TaxRate.objects.create(code='IVA14', name='IVA 14%', percentage=Decimal('14'),
+                               is_default=True, is_active=True)
+        tipo = FiscalDocType.objects.create(code='FR', name='Factura-Recibo', signable=True)
+        FiscalSeries.objects.create(code='T', doc_type=tipo, year=self.hoje.year,
+                                    certified=True, is_active=True, environment='TEST')
+
+        res_id = self._reserva_em_checkin()
+        folio = Reservation.objects.get(id=res_id).folio
+        self.client.post(f'/api/pms/folios/{folio.id}/settle/', {}, format='json')
+        emit = self.client.post(f'/api/pms/folios/{folio.id}/generate-invoice/', {}, format='json')
+
+        from fiscal.models import FiscalDocument
+        doc = FiscalDocument.objects.get(invoice_no=emit.data['invoice_number'])
+        p = self.client.get(f'/api/fiscal/documents/{doc.id}/printout/')
+        self.assertEqual(p.data['company']['logo_url'], 'https://exemplo.ao/logo-hotel.png',
+                         'a factura saiu sem o logótipo da empresa')
+        # E sem nome na configuração fiscal, vale o nome legal da empresa.
+        self.assertEqual(p.data['company']['name'], 'Empresa Teste')
+        self.assertEqual(p.data['company']['nif'], '5000000000')
+
+
+class PmsWhatsAppTests(PmsBase):
+    """Ligar o WhatsApp pelas duas vias — e nunca dar por ligada uma sessão que
+    o outro lado não confirmou."""
+
+    def _config(self, **kw):
+        dados = {'hotel': self.hotel.id, 'welcome_message': 'Bem-vindo!'}
+        dados.update(kw)
+        r = self.client.post('/api/pms/chatbot-settings/', dados, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        return r.data
+
+    def test_api_oficial_exige_as_credenciais_da_meta(self):
+        cfg = self._config(connection_mode='OFFICIAL')
+        r = self.client.post(f"/api/pms/chatbot-settings/{cfg['id']}/connect/", {}, format='json')
+        self.assertEqual(r.status_code, 400, r.content)
+        self.assertIn('Access Token', r.data['detail'])
+
+        self.client.patch(f"/api/pms/chatbot-settings/{cfg['id']}/", {
+            'whatsapp_phone_number': '+244923000111',
+            'whatsapp_business_account_id': '123456789',
+            'access_token': 'EAA-token'}, format='json')
+        ok = self.client.post(f"/api/pms/chatbot-settings/{cfg['id']}/connect/", {}, format='json')
+        self.assertEqual(ok.status_code, 200, ok.content)
+        self.assertEqual(ok.data['session_status'], 'CONNECTED')
+        self.assertEqual(ok.data['connected_number'], '+244923000111')
+
+    def test_api_nao_oficial_sem_ponte_diz_o_que_falta(self):
+        """Não se finge uma ligação: sem serviço de ponte, diz-se porquê."""
+        cfg = self._config(connection_mode='BRIDGE', pairing_method='QR')
+        r = self.client.post(f"/api/pms/chatbot-settings/{cfg['id']}/connect/", {}, format='json')
+        self.assertEqual(r.status_code, 502, r.content)
+        self.assertIn('ponte', r.data['detail'].lower())
+
+        estado = self.client.get(f"/api/pms/chatbot-settings/{cfg['id']}/").data
+        self.assertEqual(estado['session_status'], 'ERROR')
+        self.assertNotEqual(estado['session_status'], 'CONNECTED')
+
+    def test_emparelhar_por_telefone_exige_o_numero(self):
+        cfg = self._config(connection_mode='BRIDGE', pairing_method='PHONE',
+                           bridge_url='https://ponte.exemplo.ao')
+        r = self.client.post(f"/api/pms/chatbot-settings/{cfg['id']}/connect/", {}, format='json')
+        self.assertEqual(r.status_code, 502, r.content)
+        self.assertIn('número de telemóvel', r.data['detail'])
+
+    def test_qr_da_ponte_chega_ao_ecra_como_imagem(self):
+        """A ponte devolve o TEXTO do QR; ninguém aponta a câmara a um texto."""
+        from pms.models import ChatbotSettings
+        cfg = self._config(connection_mode='BRIDGE', pairing_method='QR',
+                           bridge_url='https://ponte.exemplo.ao')
+        obj = ChatbotSettings.objects.get(id=cfg['id'])
+        obj.session_status, obj.qr_payload = 'PAIRING', '2@abc123DEF456,xyz/789=='
+        obj.save()
+
+        r = self.client.get(f"/api/pms/chatbot-settings/{cfg['id']}/")
+        self.assertEqual(r.data['session_status'], 'PAIRING')
+        self.assertTrue(r.data['qr_png'], 'o QR não veio como imagem')
+        self.assertTrue(r.data['qr_png'].startswith('data:image/png;base64,'))
+
+        # Ligado, já não há QR nenhum para mostrar.
+        obj.session_status, obj.qr_payload = 'CONNECTED', None
+        obj.save()
+        self.assertIsNone(self.client.get(f"/api/pms/chatbot-settings/{cfg['id']}/").data['qr_png'])
+
+    def test_desligar_limpa_a_sessao(self):
+        from pms.models import ChatbotSettings
+        cfg = self._config(connection_mode='BRIDGE', bridge_url='')
+        obj = ChatbotSettings.objects.get(id=cfg['id'])
+        obj.session_status, obj.connected_number = 'CONNECTED', '+244923000111'
+        obj.save()
+
+        r = self.client.post(f"/api/pms/chatbot-settings/{cfg['id']}/disconnect/", {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['session_status'], 'DISCONNECTED')
+        self.assertIsNone(r.data['connected_number'])
+
+    def test_mensagem_de_teste_so_com_a_sessao_ligada(self):
+        cfg = self._config(connection_mode='BRIDGE', bridge_url='https://ponte.exemplo.ao')
+        r = self.client.post(f"/api/pms/chatbot-settings/{cfg['id']}/send-test/",
+                             {'to': '+244923000111'}, format='json')
+        self.assertEqual(r.status_code, 409, r.content)
+
+        semDestino = self.client.post(f"/api/pms/chatbot-settings/{cfg['id']}/send-test/",
+                                      {}, format='json')
+        self.assertEqual(semDestino.status_code, 400)
+
+    def test_o_simulador_continua_a_funcionar_sem_ligacao(self):
+        """A simulação é o que deixa testar o assistente antes de ligar o
+        WhatsApp — não pode depender da sessão."""
+        self._config(connection_mode='BRIDGE')
+        r = self.client.post('/api/pms/chatbot/simulate/', {'message': 'Ola'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['intent'], 'greeting')

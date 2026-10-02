@@ -328,6 +328,17 @@ class ReservationFixedChargeSerializer(serializers.ModelSerializer):
 
 class ChatbotSettingsSerializer(serializers.ModelSerializer):
     hotel_name = serializers.CharField(source='hotel.name', read_only=True)
+    connection_mode_display = serializers.CharField(source='get_connection_mode_display', read_only=True)
+    session_status_display = serializers.CharField(source='get_session_status_display', read_only=True)
+    # O QR vai como IMAGEM: o que a ponte devolve é a string do WhatsApp Web, e
+    # ninguém aponta a câmara a um texto. Gerado no servidor, como o da factura.
+    qr_png = serializers.SerializerMethodField()
+
+    def get_qr_png(self, obj):
+        if obj.session_status != 'PAIRING' or not obj.qr_payload:
+            return None
+        from .whatsapp_bridge import qr_png
+        return qr_png(obj.qr_payload)
 
     class Meta:
         model = ChatbotSettings

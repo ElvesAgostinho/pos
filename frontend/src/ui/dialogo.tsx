@@ -95,6 +95,13 @@ export default function DialogoHost() {
   const [pendentes, setPendentes] = useState<Pedido[]>([]);
   const [texto, setTexto] = useState('');
   const [maiusc, setMaiusc] = useState(false);
+  // TÁTIL = sem teclado físico. `(pointer: coarse)` é verdade num terminal POS
+  // com ecrã tátil e falso num posto com rato — é a diferença que decide se o
+  // teclado no ecrã nasce aberto. O Terminal POS fica exactamente como estava.
+  const tatil = typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && window.matchMedia('(pointer: coarse)').matches;
+  const [mostrarTeclado, setMostrarTeclado] = useState(tatil);
 
   useEffect(() => {
     empurrar = (p: Pedido) => setPendentes((v) => [...v, p]);
@@ -184,11 +191,34 @@ export default function DialogoHost() {
 
         {atual.tipo === 'PEDIR' && (
           <div className="px-2 pb-2">
-            <div className="min-h-[62px] bg-[#5C8891]/60 border-2 border-black text-white
-              text-[20px] px-4 py-3 mb-1 break-words">
-              {texto || <span className="text-white/30">escreva…</span>}
-            </div>
-            {atual.entrada === 'numero' ? (
+            {/* UM CAMPO A SÉRIO, não uma caixa a mostrar texto. Era um <div>: no
+                terminal tátil não fazia diferença (escreve-se nas teclas de
+                baixo), mas no backoffice — rato e teclado físico — o utilizador
+                carregava em "Lançar", via um teclado gigante a ocupar o ecrã e
+                não conseguia escrever no teclado que tem à frente. Agora
+                escreve-se directamente, e Enter confirma. */}
+            <input autoFocus value={texto}
+              inputMode={atual.entrada === 'numero' ? 'decimal' : 'text'}
+              onChange={(e) => setTexto(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { e.preventDefault(); fechar(texto.trim() || null); }
+                if (e.key === 'Escape') { e.preventDefault(); fechar(null); }
+              }}
+              placeholder="escreva…"
+              className="w-full min-h-[62px] bg-[#5C8891]/60 border-2 border-black text-white
+                text-[20px] px-4 py-3 mb-1 outline-none placeholder:text-white/30
+                focus:border-[#7FA9B1]" />
+            {/* O TECLADO NO ECRÃ só aparece onde não há outro: num terminal
+                tátil (dedo, sem teclado físico) ou se o utilizador o pedir.
+                Num posto de recepção com teclado, ocupava meio ecrã para nada —
+                e era o que se via ao lançar um consumo no backoffice. */}
+            {!mostrarTeclado ? (
+              <button onClick={() => setMostrarTeclado(true)}
+                className="w-full h-[42px] rounded-[3px] text-white/60 text-[14px] hover:text-white
+                  border border-white/15 hover:border-white/30">
+                mostrar teclado no ecrã
+              </button>
+            ) : atual.entrada === 'numero' ? (
               <div className="grid grid-cols-3 gap-1.5">
                 {NUMEROS.flat().map((t) => (
                   <button key={t} onClick={() => tecla(t)}
