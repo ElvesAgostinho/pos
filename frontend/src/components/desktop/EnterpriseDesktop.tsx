@@ -37,7 +37,6 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   const { data: lic } = useActiveModules();
   const user = tokenStore.getUser();
   const erpName = getAppearance('erpName');
-  const customBg = getAppearance('wallpaper') || getAppearance('loginBg');
   // Logótipo real da empresa (Administração → Empresa) — o ambiente de trabalho só
   // mostrava a palavra "System Mwana Lodge" estilizada, nunca a imagem que o dono
   // carregou lá. Mesma fonte que o login e os documentos fiscais usam.
@@ -177,15 +176,32 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       })),
     ]),
   );
-  // "Papel de Parede" e "Terminar sessão" são ações do Ambiente de Trabalho em si
-  // (não secções do PMS) — continuam à parte, acrescentadas ao grupo Utilitários.
+  // "Terminar sessão" é uma acção do Ambiente de Trabalho em si (não uma secção
+  // do PMS) — fica à parte, acrescentada ao grupo Utilitários.
+  //
+  // "Papel de Parede" NÃO se acrescenta aqui: desde que o PMS passou a ter o seu
+  // próprio, a entrada já vem da lista partilhada (pmsMenus.ts) e acrescentá-la
+  // outra vez punha duas linhas com o MESMO nome no mesmo menu — e, pior, a
+  // fazerem coisas diferentes (uma abria o fundo do PMS, a outra o do Ambiente
+  // de Trabalho). O fundo do Ambiente de Trabalho continua a chegar-se pelo menu
+  // do POS e pela própria árvore (Administração → Papel de Parede).
   PMS_MENUS['Utilitários'] = [
     ...PMS_MENUS['Utilitários'],
-    { label: 'Papel de Parede', act: () => open('adm_appearance', 'Papel de Parede') },
     { label: 'Terminar sessão', act: logout },
   ];
 
   const MENUS = wsKey === 'pms' ? PMS_MENUS : POS_MENUS;
+
+  // CADA MÓDULO PODE TER O SEU FUNDO. O papel de parede era um só, partilhado
+  // por todos os ambientes de trabalho — mudá-lo no PMS mudava-o também no POS,
+  // e era por isso que trocar o fundo "do PMS" não dava diferença nenhuma aqui:
+  // o ecrã lia a chave partilhada e ignorava a do PMS. Agora, no ambiente do
+  // PMS, manda o fundo do PMS; sem nenhum definido, cai para o partilhado, que
+  // continua a ser o do Ambiente de Trabalho em geral.
+  const fundoDoModulo = wsKey === 'pms'
+    ? (typeof localStorage !== 'undefined' ? localStorage.getItem('ui_wallpaper_pms') : null)
+    : null;
+  const customBg = fundoDoModulo || getAppearance('wallpaper') || getAppearance('loginBg');
 
   const bgStyle = customBg
     ? { backgroundImage: `linear-gradient(${ws.color}66, ${ws.colorDark}cc), url(${customBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }

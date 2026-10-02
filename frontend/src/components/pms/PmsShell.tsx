@@ -109,7 +109,7 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
     label: 'Papel de Parede', icon: '🖼',
     Comp: (p: any) => <DesktopWallpaperView {...p}
       storageKey="ui_wallpaper_pms" title="Papel de Parede do PMS"
-      hint="Fundo do ecrã inicial do PMS. Recomendado 1920×1080. Não mexe no papel de parede do Ambiente de Trabalho — são dois fundos independentes." />,
+      hint="Fundo do Ambiente de Trabalho do PMS — o ecrã com os ícones, o relógio e o painel de estado. É independente do fundo do POS: trocar aqui não mexe no outro." />,
   },
   booking_engine: { label: 'Booking Engine', icon: '🔗', Comp: BookingEngineView },
   channel_manager: { label: 'Channel Manager', icon: '🔗', Comp: ChannelManagerView },
@@ -140,8 +140,6 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   // instalado: 'pos' entra sempre no esquema por razões técnicas — ver
   // licensing/views.py::_active_modules). Em erro, mostra-se tudo: trancar o
   // menu porque um pedido falhou seria pior do que mostrar a mais.
-  const fundoPms = typeof localStorage !== 'undefined'
-    ? localStorage.getItem('ui_wallpaper_pms') : null;
   const { data: modulos } = useActiveModules();
   const activos: string[] | null = modulos?.active ?? null;
   const temModulo = (m?: string) => !m || activos === null || activos.includes(m);
@@ -268,20 +266,14 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           barra de deslocamento (era o que acontecia no Diagnóstico: metade do
           ecrã inacessível). `min-h-0` é o que permite ao filho encolher dentro
           do flex em vez de empurrar o contentor. */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative"
-        style={fundoPms && section === 'home_dashboard'
-          ? { backgroundImage: `url('${fundoPms}')`, backgroundSize: 'cover', backgroundPosition: 'center' }
-          : undefined}>
-        {/* O papel de parede só se vê no ECRÃ INICIAL: por trás de uma grelha de
-            reservas seria ruído, e o que importa aí é ler números. O véu escuro
-            garante que o conteúdo por cima continua legível seja qual for a
-            fotografia que o hotel escolher. */}
-        {fundoPms && section === 'home_dashboard' && (
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(6,47,53,0.55)' }} />
-        )}
-        <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
-          <Comp onDesktop={onDesktop} onNavigate={setSection} />
-        </div>
+      {/* O papel de parede do PMS vive no AMBIENTE DE TRABALHO do PMS
+          (EnterpriseDesktop), que é onde um fundo faz sentido e onde o dono o
+          foi procurar. Cheguei a pô-lo também aqui, por trás do ecrã inicial,
+          com um véu escuro por cima — era a mesma imagem com dois tratamentos
+          diferentes em dois sítios, e dentro da aplicação, onde se lêem números,
+          um fundo fotográfico é só ruído. */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <Comp onDesktop={onDesktop} onNavigate={setSection} />
       </div>
 
       {/* Rodapé — um bar só (era dois empilhados: ação do ecrã + hora, e depois
