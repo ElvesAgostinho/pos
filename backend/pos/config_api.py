@@ -2451,8 +2451,8 @@ class WarehouseViewSet(viewsets.ModelViewSet):
         return Warehouse.objects.select_related('sale_stock_doc')
 
     def perform_create(self, serializer):
-        from identity.models import Hotel
-        serializer.save(hotel=Hotel.objects.first())
+        from core.tenancy import hotel_obrigatorio
+        serializer.save(hotel_id=hotel_obrigatorio(self.request))
 
 
 class StockRecalcView(APIView):

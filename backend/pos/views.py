@@ -220,8 +220,8 @@ class OutletViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         if not serializer.validated_data.get('hotel'):
-            from identity.models import Hotel
-            serializer.save(hotel=Hotel.objects.first())
+            from core.tenancy import hotel_obrigatorio
+            serializer.save(hotel_id=hotel_obrigatorio(self.request))
         else:
             serializer.save()
 

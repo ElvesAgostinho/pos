@@ -18,12 +18,17 @@ def _next_number(model, field, prefix):
 
 
 class HotelDefaultMixin:
+    """Preenche o hotel ao criar — e diz o que falta quando não há nenhum.
+
+    Era `Hotel.objects.first()`, que numa instalação nova devolve None e faz a
+    gravação rebentar com um 500 sem explicação. Ver `hotel_obrigatorio`.
+    """
     def perform_create(self, serializer):
-        if not serializer.validated_data.get('hotel'):
-            from identity.models import Hotel
-            serializer.save(hotel=Hotel.objects.first())
-        else:
+        if serializer.validated_data.get('hotel'):
             serializer.save()
+            return
+        from core.tenancy import hotel_obrigatorio
+        serializer.save(hotel_id=hotel_obrigatorio(self.request))
 
 
 class CostCenterViewSet(HotelDefaultMixin, viewsets.ModelViewSet):
@@ -159,8 +164,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if not serializer.validated_data.get('number'):
             serializer.validated_data['number'] = _next_number(Invoice, 'number', 'FT')
         if not serializer.validated_data.get('hotel'):
-            from identity.models import Hotel
-            serializer.validated_data['hotel'] = Hotel.objects.first()
+            from core.tenancy import hotel_obrigatorio
+            serializer.validated_data['hotel_id'] = hotel_obrigatorio(self.request)
         serializer.save()
 
     @action(detail=True, methods=['post'])

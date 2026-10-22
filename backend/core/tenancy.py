@@ -65,6 +65,29 @@ def default_hotel_id(request):
     return h.id if h else None
 
 
+def hotel_obrigatorio(request):
+    """O hotel a usar ao criar — ou um erro que uma pessoa entende.
+
+    Quase todos os registos do sistema pertencem a um hotel, e os viewsets
+    preenchiam-no com `Hotel.objects.first()`. Numa instalação ACABADA DE
+    MONTAR ainda não há hotel nenhum: `first()` devolve None, a gravação viola
+    o NOT NULL da base de dados e o utilizador recebe "Ocorreu um erro interno
+    ao processar o pedido" — numa dezena de ecrãs diferentes, sem nada que lhe
+    diga o que fazer. É o primeiro ecrã que um cliente novo vê.
+
+    O erro não é interno: falta um passo, e o passo tem nome. Aqui diz-se qual.
+    """
+    hid = default_hotel_id(request)
+    if hid:
+        return hid
+    from rest_framework.exceptions import ValidationError
+    raise ValidationError({'detail':
+        'Ainda não há nenhuma empresa/hotel configurada nesta instalação. Abra a '
+        'Configuração POS → Parâmetros do Sistema → Empresa e carregue em '
+        '"Adicionar" para criar a empresa; só depois é possível gravar registos, '
+        'porque todos pertencem a um hotel.'})
+
+
 def scope_qs(request, qs, hotel_path='hotel'):
     """Aplica o isolamento a um queryset já construído (para viewsets com get_queryset próprio)."""
     allowed = allowed_hotel_ids(request.user)
