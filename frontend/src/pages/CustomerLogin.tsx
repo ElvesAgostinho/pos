@@ -3,11 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { authApi, tokenStore } from '../api/auth';
 import { apiClient } from '../api/client';
 import { getAppearance } from '../config/appearance';
-import { TOKENS, shade } from '../config/theme';
+import { TOKENS, RADIUS, shade } from '../config/theme';
 import { User, Lock, LogIn, Eye, EyeOff, Settings, Building2, X, Wifi, KeyRound } from 'lucide-react';
 
-// Login estilo Primavera / Windows clássico — janela retangular, barra de título,
-// imagem à esquerda, formulário à direita, barra de estado no rodapé.
+/**
+ * INÍCIO DE SESSÃO — o primeiro ecrã, e o único que alguns clientes mostram a
+ * visitas.
+ *
+ * Era uma janela cinzenta com barra de título, relevos e botões de sistema
+ * operativo: lia-se como um programa instalado em 2004. O conteúdo estava certo
+ * — empresa, utilizador, password, memorizar, repor, estado do servidor — e por
+ * isso NADA disso saiu daqui. O que mudou foi a moldura: fotografia do hotel a
+ * ocupar o ecrã, um cartão de vidro por cima, campos com ícone e uma só acção
+ * em destaque.
+ *
+ * A fotografia é a do CLIENTE (Administração → Aparência → imagem de fundo).
+ * Sem ela não se inventa uma imagem de marca nenhuma: fica um fundo próprio,
+ * desenhado em CSS a partir da cor da instalação, que continua a parecer
+ * deliberado em vez de inacabado.
+ */
 const CustomerLogin: React.FC = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState(() => localStorage.getItem('ui_last_user') || '');
@@ -109,203 +123,306 @@ const CustomerLogin: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  const winBtn ='h-8 px-4 text-[12px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] hover:bg-[#EEF1F5] active:shadow-[inset_1px_1px_0_#3B82F6] active:translate-y-px';
+  // ── vocabulário visual do ecrã ───────────────────────────────────────────
+  const campo = 'w-full h-11 pl-10 pr-3 text-[14px] text-[#111827] bg-white border border-[#E6E8EC]'
+    + ' outline-none transition-shadow placeholder:text-[#9CA3AF]'
+    + ' focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]';
+  const rotulo = 'block text-[12px] font-medium text-[#6B7280] mb-1.5';
+  const botaoClaro = 'h-10 px-4 text-[13px] font-medium text-[#374151] bg-white border border-[#E6E8EC]'
+    + ' hover:bg-[#F3F4F6] transition-colors';
+
+  /** Campo com ícone à esquerda — o mesmo desenho nos três sítios onde aparece. */
+  const Campo = ({ icone, children }: { icone: React.ReactNode; children: React.ReactNode }) => (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none">{icone}</span>
+      {children}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4"
-      style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif", background: loginBg ? undefined : 'linear-gradient(135deg,#3B82F6 0%,#2563EB 100%)' }}>
-      {loginBg && <img src={loginBg} alt="" className="fixed inset-0 w-full h-full object-cover -z-10" />}
-      {loginBg && <div className="fixed inset-0 bg-black/30 -z-10" />}
+    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden"
+      style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif" }}>
 
-      {/* Janela de login */}
-      <div className="w-[760px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden">
-        {/* Barra de título */}
-        <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: `linear-gradient(180deg, ${barColor} 0%, ${shade(barColor, -18)} 100%)` }}>
-          <span className="flex items-center gap-2"><Building2 size={14} /> {erpName} — Início de Sessão</span>
-          <button onClick={() => setConfig(true)} title="Configurações" className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><Settings size={14} /></button>
-        </div>
+      {/* FUNDO. A fotografia do cliente quando existe; senão, um fundo construído
+          a partir da cor da instalação — nunca uma imagem de marca que não é dele. */}
+      {loginBg ? (
+        <>
+          <img src={loginBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(120deg, rgba(8,15,30,0.78) 0%, rgba(8,15,30,0.52) 55%, rgba(8,15,30,0.70) 100%)' }} />
+        </>
+      ) : (
+        <>
+          <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${shade(barColor, -40)} 0%, ${shade(barColor, -62)} 55%, #070D1A 100%)` }} />
+          <div className="absolute inset-0 opacity-70" style={{
+            background: `radial-gradient(60% 55% at 18% 12%, ${shade(barColor, 18)}55 0%, transparent 70%),`
+              + `radial-gradient(52% 48% at 88% 82%, ${shade(barColor, 4)}44 0%, transparent 72%)`,
+          }} />
+        </>
+      )}
 
-        <div className="flex">
-          {/* Imagem / Branding (esquerda) */}
-          <div className="hidden md:flex w-64 flex-shrink-0 flex-col items-center justify-center gap-4 p-6 border-r border-[#E6E8EC]"
-            style={{ background: loginBg ? 'rgba(255,255,255,0.06)' : `linear-gradient(160deg, ${shade(barColor, 12)} 0%, ${shade(barColor, -24)} 100%)` }}>
-            {logo ? <img src={logo} alt="Logo" className="max-h-24 max-w-[180px] object-contain" />
-              : <div className="text-5xl font-black"><span className="text-[#111827]">M</span><span className="text-white">L</span></div>}
-            <div className="text-center text-white">
-              <div className="text-lg font-bold leading-tight">{company}</div>
-              <div className="text-[11px] opacity-80 mt-1">{erpName}</div>
+      {/* CARTÃO DE VIDRO */}
+      <div className="relative w-[980px] max-w-full overflow-hidden"
+        style={{
+          borderRadius: RADIUS.lg,
+          border: '1px solid rgba(255,255,255,0.16)',
+          boxShadow: '0 24px 70px rgba(2,8,23,0.55)',
+          backdropFilter: 'blur(18px)',
+          background: 'rgba(255,255,255,0.08)',
+        }}>
+        <div className="flex flex-col md:flex-row">
+
+          {/* ── Marca (esquerda) ───────────────────────────────────────────── */}
+          <div className="md:w-[360px] flex-shrink-0 px-8 py-9 flex flex-col text-white"
+            style={{ background: 'rgba(8,15,30,0.42)' }}>
+            <div className="flex items-center gap-3">
+              {logo
+                ? <img src={logo} alt="" className="max-h-14 max-w-[150px] object-contain" />
+                : <span className="w-12 h-12 flex items-center justify-center bg-white/12 border border-white/20"
+                    style={{ borderRadius: RADIUS.md }}><Building2 size={24} /></span>}
             </div>
+            <div className="mt-6">
+              <div className="text-[22px] font-semibold leading-tight">{company}</div>
+              <div className="text-[13px] text-white/60 mt-1">{erpName}</div>
+            </div>
+            <p className="text-[13px] leading-relaxed text-white/70 mt-5">{welcome}</p>
+
+            <div className="flex-1" />
+
+            {/* Estado da instalação — a mesma informação da antiga barra de
+                estado, agora onde não concorre com o formulário. */}
+            <dl className="mt-8 space-y-2 text-[12px]">
+              <Linha rotulo="Servidor" valor="localhost:8000" />
+              <Linha rotulo="Base de dados" valor="ERP_2026" />
+              <Linha rotulo="Versão" valor="1.0.0" />
+              <div className="flex items-center justify-between gap-3 pt-1.5 border-t border-white/10">
+                <span className="text-white/55 flex items-center gap-1.5"><Wifi size={13} />Ligação</span>
+                <span className="flex items-center gap-1.5 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full" style={{
+                    background: online === null ? '#9CA3AF' : online ? '#22C55E' : '#F87171',
+                  }} />
+                  {online === null ? 'a verificar…' : online ? 'Online' : 'Offline'}
+                </span>
+              </div>
+            </dl>
           </div>
 
-          {/* Formulário (direita) */}
-          <div className="flex-1 p-6">
+          {/* ── Formulário (direita) ───────────────────────────────────────── */}
+          <div className="flex-1 bg-white px-8 py-9 relative">
+            <button onClick={() => setConfig(true)} title="Configurações de ligação"
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+              style={{ borderRadius: RADIUS.sm }}>
+              <Settings size={16} />
+            </button>
+
             {trocar ? (
               /* TROCA OBRIGATÓRIA: o gestor marcou "Obrigar a mudar a password" — não
                  se entra sem a trocar. A caixa desliga-se sozinha ao gravar. */
-              <form onSubmit={handleTrocarPassword} className="space-y-3">
-                <div className="text-[12px] font-bold text-gray-800 mb-1">Mudança de palavra-passe obrigatória</div>
-                <div className="text-[12px] text-gray-600 mb-3">
-                  A sua conta foi entregue com uma palavra-passe provisória. Defina a sua antes de continuar.
+              <form onSubmit={handleTrocarPassword} className="space-y-4">
+                <div>
+                  <h1 className="text-[20px] font-semibold text-[#111827]">Defina a sua palavra-passe</h1>
+                  <p className="text-[13px] text-[#6B7280] mt-1.5">
+                    A sua conta foi entregue com uma palavra-passe provisória. Defina a sua antes de continuar.
+                  </p>
                 </div>
-                <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-                  <label className="text-[12px] text-gray-700 text-right">Nova palavra-passe:</label>
-                  <div className="flex items-center gap-1.5 bg-white border border-[#E6E8EC] h-9 px-2">
-                    <Lock size={14} className="text-gray-500" />
+                <div>
+                  <label className={rotulo}>Nova palavra-passe</label>
+                  <Campo icone={<Lock size={16} />}>
                     <input type="password" autoFocus value={novaPw} onChange={(e) => setNovaPw(e.target.value)}
-                      className="flex-1 outline-none text-[12px]" />
-                  </div>
-                  <label className="text-[12px] text-gray-700 text-right">Confirmar:</label>
-                  <div className="flex items-center gap-1.5 bg-white border border-[#E6E8EC] h-9 px-2">
-                    <Lock size={14} className="text-gray-500" />
+                      className={campo} style={{ borderRadius: RADIUS.sm }} />
+                  </Campo>
+                </div>
+                <div>
+                  <label className={rotulo}>Confirmar</label>
+                  <Campo icone={<Lock size={16} />}>
                     <input type="password" value={confirmaPw} onChange={(e) => setConfirmaPw(e.target.value)}
-                      className="flex-1 outline-none text-[12px]" />
-                  </div>
+                      className={campo} style={{ borderRadius: RADIUS.sm }} />
+                  </Campo>
                 </div>
-                {error && <div className="ml-[158px] text-[12px] text-[#B91C1C] bg-[#FEF2F2] border border-[#DC2626] px-2 py-1">{error}</div>}
-                <div className="flex justify-end gap-2 pt-1">
-                  <button type="submit" disabled={loading || novaPw.length < 6}
-                    className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#EEF1F5' }}>
-                    {loading ? 'A gravar…' : 'Gravar e entrar'}
-                  </button>
-                </div>
-                <div className="text-[11px] text-gray-500">Mínimo 6 caracteres, diferente da atual.</div>
+                {error && <Erro texto={error} />}
+                <button type="submit" disabled={loading || novaPw.length < 6}
+                  className="w-full h-11 text-[14px] font-semibold text-white transition-opacity disabled:opacity-50"
+                  style={{ background: barColor, borderRadius: RADIUS.sm }}>
+                  {loading ? 'A gravar…' : 'Gravar e entrar'}
+                </button>
+                <p className="text-[12px] text-[#9CA3AF]">Mínimo 6 caracteres, diferente da atual.</p>
               </form>
             ) : (
-            <>
-            <div className="text-[12px] text-gray-600 mb-4">{welcome}</div>
-            <form onSubmit={handleLogin} className="space-y-3">
-              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-                <label className="text-[12px] text-gray-700 text-right">Empresa:</label>
-                <div className="flex items-center gap-2 bg-white border border-[#E6E8EC] h-9 px-2">
-                  <Building2 size={14} className="text-gray-500" />
-                  <select className="flex-1 outline-none text-[12px] bg-white">
-                    <option>{company}</option>
-                  </select>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <h1 className="text-[20px] font-semibold text-[#111827]">Início de sessão</h1>
+                  <p className="text-[13px] text-[#6B7280] mt-1.5">Entre com as suas credenciais para continuar.</p>
                 </div>
 
-                <label className="text-[12px] text-gray-700 text-right">Utilizador:</label>
-                <div className="flex items-center gap-1.5 bg-white border border-[#E6E8EC] h-9 px-2">
-                  <User size={14} className="text-gray-500" />
-                  <input autoFocus value={username} onChange={(e) => setUsername(e.target.value)} className="flex-1 outline-none text-[12px]" />
+                <div>
+                  <label className={rotulo}>Empresa</label>
+                  <Campo icone={<Building2 size={16} />}>
+                    <select className={`${campo} appearance-none cursor-pointer`} style={{ borderRadius: RADIUS.sm }}>
+                      <option>{company}</option>
+                    </select>
+                  </Campo>
                 </div>
 
-                <label className="text-[12px] text-gray-700 text-right">Palavra-passe:</label>
-                <div className="flex items-center gap-1.5 bg-white border border-[#E6E8EC] h-9 px-2">
-                  <Lock size={14} className="text-gray-500" />
-                  <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="flex-1 outline-none text-[12px]" />
-                  <button type="button" onClick={() => setShowPw((s) => !s)} className="text-gray-500 hover:text-gray-800">{showPw ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+                <div>
+                  <label className={rotulo}>Utilizador</label>
+                  <Campo icone={<User size={16} />}>
+                    <input autoFocus value={username} onChange={(e) => setUsername(e.target.value)}
+                      placeholder="o seu utilizador" className={campo} style={{ borderRadius: RADIUS.sm }} />
+                  </Campo>
                 </div>
-              </div>
 
-              <div className="pl-[118px] space-y-1 text-[12px] text-gray-700">
-                <label className="flex items-center gap-1.5"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Memorizar utilizador</label>
-                <label className="flex items-center gap-1.5"><input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} /> Entrar automaticamente</label>
-                <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
-                  className="flex items-center gap-1 text-[#111827] hover:underline pt-1">
-                  <KeyRound size={12} /> Esqueci-me da password
+                <div>
+                  <label className={rotulo}>Palavra-passe</label>
+                  <Campo icone={<Lock size={16} />}>
+                    <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••" className={`${campo} pr-11`} style={{ borderRadius: RADIUS.sm }} />
+                    <button type="button" onClick={() => setShowPw((s) => !s)} tabIndex={-1}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#374151] transition-colors">
+                      {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </Campo>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-[13px] flex-wrap">
+                  <div className="flex items-center gap-4 text-[#374151]">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                      Memorizar
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} />
+                      Entrar automaticamente
+                    </label>
+                  </div>
+                  <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
+                    className="flex items-center gap-1.5 text-[#2563EB] hover:underline">
+                    <KeyRound size={13} />Esqueci-me da password
+                  </button>
+                </div>
+
+                {error && <Erro texto={error} />}
+
+                <button type="submit" disabled={loading || !username}
+                  className="w-full h-11 flex items-center justify-center gap-2 text-[14px] font-semibold text-white transition-opacity disabled:opacity-50"
+                  style={{ background: barColor, borderRadius: RADIUS.sm }}>
+                  <LogIn size={16} />{loading ? 'A entrar…' : 'Entrar'}
                 </button>
-              </div>
-
-              {error && <div className="ml-[118px] text-[12px] text-[#B91C1C] bg-[#FEF2F2] border border-[#DC2626] px-2 py-1">{error}</div>}
-
-              <div className="flex justify-end gap-2 pt-1">
-                <button type="button" onClick={() => { setUsername(''); setPassword(''); setError(''); }} className={winBtn}>Cancelar</button>
-                <button type="submit" disabled={loading || !username} className={`${winBtn} font-bold flex items-center gap-1.5 disabled:opacity-50`} style={{ background: '#EEF1F5' }}>
-                  <LogIn size={14} />{loading ? 'A entrar…' : 'Entrar'}
-                </button>
-              </div>
-            </form>
-            </>
+              </form>
             )}
           </div>
-        </div>
-
-        {/* Barra de estado (rodapé) */}
-        <div className="h-7 flex items-center gap-4 px-3 text-[11px] text-gray-700 border-t border-[#E6E8EC] bg-[#EEF1F5]">
-          <span>Servidor: <b>localhost:8000</b></span>
-          <span className="opacity-40">|</span>
-          <span>Base: <b>ERP_2026</b></span>
-          <span className="opacity-40">|</span>
-          <span>Versão: <b>1.0.0</b></span>
-          <div className="flex-1" />
-          <span className="flex items-center gap-1">
-            <Wifi size={12} className={online === false ? 'text-[#B91C1C]' : 'text-[#6B7280]'} />
-            Ligação: <b className={online === false ? 'text-[#B91C1C]' : 'text-[#111827]'}>{online === null ? '…' : online ? 'Online' : 'Offline'}</b>
-          </span>
         </div>
       </div>
 
       {/* Diálogo Configurações */}
       {config && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfig(false)}>
-          <div className="w-[420px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-            <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: barColor }}>
-              <span className="flex items-center gap-2"><Settings size={14} />Configurações de Ligação</span>
-              <button onClick={() => setConfig(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
+        <Modal titulo="Configurações de ligação" icone={<Settings size={15} />} cor={barColor} onClose={() => setConfig(false)}>
+          <div className="p-5 space-y-3 text-[13px]">
+            <Row label="Servidor SQL / API" value="localhost:8000" />
+            <Row label="Base de dados" value="ERP_2026" />
+            <Row label="Idioma" value="Português (Angola)" />
+            <div className="flex items-center justify-between pt-1">
+              <span className="flex items-center gap-1.5 text-[13px] text-[#374151]">
+                <Wifi size={14} className={online ? 'text-[#16A34A]' : 'text-[#B91C1C]'} />
+                {online ? 'Servidor acessível' : 'Sem ligação'}
+              </span>
+              <button onClick={() => { setOnline(null); apiClient.get('licensing/status/').then(() => setOnline(true)).catch((e) => setOnline(!!e?.response)); }}
+                className={botaoClaro} style={{ borderRadius: RADIUS.sm }}>Testar ligação</button>
             </div>
-            <div className="p-4 space-y-2 text-[12px]">
-              <Row label="Servidor SQL / API" value="localhost:8000" />
-              <Row label="Base de dados" value="ERP_2026" />
-              <Row label="Idioma" value="Português (Angola)" />
-              <div className="flex items-center justify-between pt-2">
-                <span className="flex items-center gap-1 text-[12px]"><Wifi size={13} className={online ? 'text-[#6B7280]' : 'text-[#B91C1C]'} />{online ? 'Servidor acessível' : 'Sem ligação'}</span>
-                <button onClick={() => { setOnline(null); apiClient.get('licensing/status/').then(() => setOnline(true)).catch((e) => setOnline(!!e?.response)); }} className={winBtn}>Testar ligação</button>
-              </div>
-              <div className="text-[11px] text-gray-500 pt-1">Para personalizar logo/imagem/cores use Administração → Aparência.</div>
-            </div>
+            <p className="text-[12px] text-[#9CA3AF] pt-1">
+              Para personalizar logótipo, imagem de fundo e cores use Administração → Aparência.
+            </p>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* Diálogo "Esqueci-me da password" */}
       {showReset && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowReset(false)}>
-          <div className="w-[420px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-            <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: barColor }}>
-              <span className="flex items-center gap-2"><KeyRound size={14} />Repor password</span>
-              <button onClick={() => setShowReset(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
+        <Modal titulo="Repor password" icone={<KeyRound size={15} />} cor={barColor} onClose={() => setShowReset(false)}>
+          <form onSubmit={handleResetPassword} className="p-5 space-y-3.5 text-[13px]">
+            <p className="text-[#6B7280] leading-relaxed">
+              Peça ao fornecedor um código (válido 30 min, só serve uma vez) e escreva-o aqui com a sua nova password.
+            </p>
+            <div>
+              <label className={rotulo}>Código do fornecedor</label>
+              <input autoFocus value={resetCode} onChange={(e) => setResetCode(e.target.value)}
+                className={`${campo} pl-3 font-mono tracking-wide`} style={{ borderRadius: RADIUS.sm }} />
             </div>
-            <form onSubmit={handleResetPassword} className="p-4 space-y-3 text-[12px]">
-              <p className="text-gray-600 text-[12px]">
-                Peça ao fornecedor um código (válido 30 min, só serve uma vez) e escreva-o aqui com a sua nova password.
-              </p>
-              <label className="block">
-                <span className="text-gray-700 block mb-1">Código do fornecedor:</span>
-                <input autoFocus value={resetCode} onChange={(e) => setResetCode(e.target.value)}
-                  className="w-full h-9 px-2 bg-white border border-[#E6E8EC] outline-none font-mono tracking-wide" />
-              </label>
-              <label className="block">
-                <span className="text-gray-700 block mb-1">Nova password:</span>
-                <input type="password" value={resetPw} onChange={(e) => setResetPw(e.target.value)}
-                  className="w-full h-9 px-2 bg-white border border-[#E6E8EC] outline-none" />
-              </label>
-              <label className="block">
-                <span className="text-gray-700 block mb-1">Confirmar:</span>
-                <input type="password" value={resetPw2} onChange={(e) => setResetPw2(e.target.value)}
-                  className="w-full h-9 px-2 bg-white border border-[#E6E8EC] outline-none" />
-              </label>
-              {resetMsg && (
-                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-[#111827] bg-[#EEF1F5] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
-                  {resetMsg.text}
-                </div>
-              )}
-              <div className="flex justify-end gap-2 pt-1">
-                <button type="button" onClick={() => setShowReset(false)} className={winBtn}>Fechar</button>
-                <button type="submit" disabled={resetLoading || !resetCode || !resetPw}
-                  className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#EEF1F5' }}>
-                  {resetLoading ? 'A repor…' : 'Repor password'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            <div>
+              <label className={rotulo}>Nova password</label>
+              <input type="password" value={resetPw} onChange={(e) => setResetPw(e.target.value)}
+                className={`${campo} pl-3`} style={{ borderRadius: RADIUS.sm }} />
+            </div>
+            <div>
+              <label className={rotulo}>Confirmar</label>
+              <input type="password" value={resetPw2} onChange={(e) => setResetPw2(e.target.value)}
+                className={`${campo} pl-3`} style={{ borderRadius: RADIUS.sm }} />
+            </div>
+            {resetMsg && (resetMsg.ok
+              ? <div className="px-3 py-2 text-[12px] text-[#166534] bg-[#F0FDF4] border border-[#BBF7D0]" style={{ borderRadius: RADIUS.sm }}>{resetMsg.text}</div>
+              : <Erro texto={resetMsg.text} />)}
+            <div className="flex justify-end gap-2 pt-1">
+              <button type="button" onClick={() => setShowReset(false)} className={botaoClaro} style={{ borderRadius: RADIUS.sm }}>Fechar</button>
+              <button type="submit" disabled={resetLoading || !resetCode || !resetPw}
+                className="h-10 px-5 text-[13px] font-semibold text-white transition-opacity disabled:opacity-50"
+                style={{ background: barColor, borderRadius: RADIUS.sm }}>
+                {resetLoading ? 'A repor…' : 'Repor password'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </div>
   );
 };
 
+/** Uma linha do painel de estado, à esquerda. */
+function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <dt className="text-white/55">{rotulo}</dt>
+      <dd className="font-medium text-white/90">{valor}</dd>
+    </div>
+  );
+}
+
+function Erro({ texto }: { texto: string }) {
+  return (
+    <div className="px-3 py-2.5 text-[12.5px] text-[#B91C1C] bg-[#FEF2F2] border border-[#FECACA]"
+      style={{ borderRadius: RADIUS.sm }}>
+      {texto}
+    </div>
+  );
+}
+
+/** A moldura dos dois diálogos deste ecrã — cabeçalho na cor da instalação. */
+function Modal({ titulo, icone, cor, onClose, children }: {
+  titulo: string; icone: React.ReactNode; cor: string; onClose: () => void; children: React.ReactNode;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(2px)' }} onClick={onClose}>
+      <div className="w-[440px] max-w-full bg-white overflow-hidden" onClick={(e) => e.stopPropagation()}
+        style={{ borderRadius: RADIUS.lg, boxShadow: '0 24px 60px rgba(2,8,23,0.35)' }}>
+        <div className="h-11 flex items-center justify-between px-4 text-white" style={{ background: cor }}>
+          <span className="flex items-center gap-2 text-[14px] font-semibold">{icone}{titulo}</span>
+          <button onClick={onClose}
+            className="w-7 h-7 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors"
+            style={{ borderRadius: RADIUS.sm }}><X size={15} /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
-  return <div className="grid grid-cols-[130px_1fr] items-center gap-2"><span className="text-gray-600">{label}:</span><input readOnly value={value} className="h-8 px-2 bg-white border border-[#E6E8EC] text-gray-700 outline-none" /></div>;
+  return (
+    <div className="grid grid-cols-[140px_1fr] items-center gap-2">
+      <span className="text-[#6B7280]">{label}</span>
+      <input readOnly value={value}
+        className="h-9 px-3 bg-[#F9FAFB] border border-[#E6E8EC] text-[#374151] outline-none text-[13px]"
+        style={{ borderRadius: RADIUS.sm }} />
+    </div>
+  );
 }
 
 export default CustomerLogin;

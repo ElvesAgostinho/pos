@@ -290,7 +290,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
         {/* Poucos ícones — consulta rápida */}
         <div className="absolute top-5 left-5 grid gap-5 content-start" style={{ gridTemplateRows: 'repeat(3, auto)', gridAutoFlow: 'column' }}>
           {quick.map((ic, i) => (
-            <DesktopIcon key={`quick-${i}`} ic={ic} accent={ws.accent} glow={ws.glow} onOpen={() => openIcon(ic)} />
+            <DesktopIcon key={`quick-${i}`} ic={ic} accent={ws.accent} glow={ws.glow} sobreFoto={!!customBg} onOpen={() => openIcon(ic)} />
           ))}
           {/* MÓDULOS com "Mostrar no Desktop" — abrem como a ficha manda (open_as).
               São do backoffice POS (Configuração POS › Módulo) — no ambiente de
@@ -304,7 +304,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           {wsKey !== 'pms' && modulos.map((m: any) => (
             <DesktopIcon key={`mod-${m.module_id}`}
               ic={{ label: m.name, icon: 'app' } as any}
-              accent={ws.accent} glow={ws.glow} onOpen={() => abrirModulo(m)} />
+              accent={ws.accent} glow={ws.glow} sobreFoto={!!customBg} onOpen={() => abrirModulo(m)} />
           ))}
         </div>
 
@@ -389,7 +389,14 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
 // Ícone do Ambiente de Trabalho — tile plano moderno (fundo translúcido + vidro fosco),
 // sem o bisel/gloss 3D de antes.
-function DesktopIcon({ ic, accent, onOpen }: { ic: DeskIcon; accent: string; glow?: string; onOpen: () => void }) {
+//
+// O NOME do ícone muda de cor conforme o que está por baixo. O fundo de fábrica
+// é claro (um sopro de cor sobre cinzento-claro) e pede texto escuro; mas quando
+// o hotel carrega a sua fotografia, o ecrã fica coberto por um véu escuro — e o
+// mesmo cinzento-escuro passa a ser escuro sobre escuro. Era exactamente o que
+// acontecia: quem punha a fotografia do hotel deixava de conseguir ler os nomes
+// dos seus próprios ícones.
+function DesktopIcon({ ic, accent, sobreFoto, onOpen }: { ic: DeskIcon; accent: string; glow?: string; sobreFoto?: boolean; onOpen: () => void }) {
   return (
     <button onClick={onOpen} className="w-[96px] flex flex-col items-center gap-2 group focus:outline-none" title={ic.label}>
       <div className="relative w-[64px] h-[64px] rounded-[18px] flex items-center justify-center transition-all duration-150 group-active:scale-95 group-hover:-translate-y-0.5"
@@ -404,7 +411,8 @@ function DesktopIcon({ ic, accent, onOpen }: { ic: DeskIcon; accent: string; glo
           ? <img src={`/icons/${ic.img}`} alt="" className="w-9 h-9 relative object-contain" />
           : <span className="relative"><ClassicIcon name={ic.icon} size={28} cor={accent} /></span>}
       </div>
-      <span className="text-[#374151] text-[11px] text-center leading-tight px-0.5 font-medium">{ic.label}</span>
+      <span className={`text-[11px] text-center leading-tight px-0.5 font-medium ${sobreFoto ? 'text-white' : 'text-[#374151]'}`}
+        style={sobreFoto ? { textShadow: '0 1px 3px rgba(2,8,23,0.65)' } : undefined}>{ic.label}</span>
     </button>
   );
 }
