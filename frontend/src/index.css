@@ -54,7 +54,11 @@ body {
 input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
 select,
 textarea {
-  border-color: #E6E8EC;
+  /* #D0D5DD, não #E6E8EC: o cinzento das divisórias é claro de propósito (uma
+     divisória deve desaparecer), mas num campo branco sobre fundo branco deixa
+     uma aresta que quase não existe — o formulário lê-se desfocado e não se vê
+     onde se pode escrever. Ver TOKENS.field. */
+  border-color: #D0D5DD;
 }
 
 input:focus, select:focus, textarea:focus {

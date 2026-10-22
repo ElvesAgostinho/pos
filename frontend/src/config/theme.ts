@@ -51,6 +51,14 @@ export const TOKENS = {
   border: '#E6E8EC',
   line: '#E6E8EC',
   lineSoft: '#F1F2F4',
+  // O CONTORNO DE UM CAMPO NÃO É UMA LINHA DE SEPARAÇÃO. Os campos usavam o
+  // mesmo #E6E8EC das divisórias e dos painéis — e a um campo branco sobre
+  // fundo branco isso deixa uma aresta quase inexistente: o formulário lê-se
+  // como texto a flutuar, desfocado, sem se perceber onde se pode escrever.
+  // Uma divisória deve desaparecer; um campo tem de se ver. São trabalhos
+  // diferentes, e por isso são cores diferentes — esta é só para os campos,
+  // para não escurecer tudo o resto ao mesmo tempo.
+  field: '#D0D5DD',
 
   // ── TEXTO ─────────────────────────────────────────────────────────────────
   textOnDark: '#FFFFFF',

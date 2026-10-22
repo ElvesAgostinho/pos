@@ -368,7 +368,7 @@ export function Row({ label, children, w = 'w-[120px]' }: { label: string; child
   );
 }
 
-export const inputCls = 'border border-[#E6E8EC] px-3 py-1.5 text-[12px] bg-white flex-1 min-w-0 '
+export const inputCls = 'border border-[#D0D5DD] px-3 py-1.5 text-[12px] bg-white flex-1 min-w-0 '
   + 'rounded-[8px] outline-none focus:border-[#2563EB] transition-colors';
 // Sombra interior discreta (substitui o "afundado" 3D de antes) — aplicada
 // inline (style={inputStyle}) para continuar a ganhar da regra global em
