@@ -83,7 +83,7 @@ const NUMEROS = [['7', '8', '9'], ['4', '5', '6'], ['1', '2', '3'], ['.', '0', '
 
 const RELEVO = 'border-2 border-black shadow-[inset_0_2px_0_rgba(255,255,255,0.18),'
   + 'inset_0_-2px_0_rgba(0,0,0,0.55)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]';
-const CINZA = 'bg-gradient-to-b from-[#17375E] to-[#17375E]';
+const CINZA = 'bg-gradient-to-b from-[#1E2A44] to-[#1E2A44]';
 
 /**
  * MONTA-SE UMA VEZ, no arranque (main.tsx). Sem isto os diálogos não aparecem — e os
@@ -165,7 +165,7 @@ export default function DialogoHost() {
   return (
     <div className="fixed inset-0 z-[9000] bg-black/65 flex items-center justify-center p-4"
       onClick={() => fechar(atual.tipo === 'CONFIRMAR' ? false : null)}>
-      <div ref={ref} className="max-w-[95vw] bg-[#17375E] border-2 border-black shadow-2xl"
+      <div ref={ref} className="max-w-[95vw] bg-[#1E2A44] border-2 border-black shadow-2xl"
         style={{
           width: atual.tipo === 'PEDIR' ? 860 : 620,
           ...(pos ? { position: 'fixed' as const, left: pos.x, top: pos.y, margin: 0 } : {}),
@@ -173,7 +173,7 @@ export default function DialogoHost() {
         onClick={(e) => e.stopPropagation()}>
         {/* PEGA — o teclado move-se: fixo, tapava o campo que se esta a preencher. */}
         <div onMouseDown={pegar} onTouchStart={pegar}
-          className="h-[34px] flex items-center px-3 gap-1 bg-[#17375E] border-b-2 border-black
+          className="h-[34px] flex items-center px-3 gap-1 bg-[#1E2A44] border-b-2 border-black
             cursor-grab active:cursor-grabbing select-none">
           <span className="w-[42px] flex flex-col gap-[3px] opacity-50">
             <span className="h-[2px] bg-white rounded" />
@@ -185,8 +185,8 @@ export default function DialogoHost() {
 
 
         <div className={`h-[62px] flex items-center justify-center border-b-2 border-black
-          ${perigo ? 'bg-gradient-to-b from-[#B42318] to-[#912018]'
-            : 'bg-gradient-to-b from-[#17375E] to-[#17375E]'}`}>
+          ${perigo ? 'bg-gradient-to-b from-[#DC2626] to-[#B91C1C]'
+            : 'bg-gradient-to-b from-[#1E2A44] to-[#1E2A44]'}`}>
           <span className="text-white text-[23px] font-bold">{atual.titulo}</span>
         </div>
 
@@ -213,16 +213,16 @@ export default function DialogoHost() {
                 if (e.key === 'Escape') { e.preventDefault(); fechar(null); }
               }}
               placeholder="escreva…"
-              className="w-full min-h-[62px] bg-[#2E75B6]/60 border-2 border-black text-white
+              className="w-full min-h-[62px] bg-[#3B82F6]/60 border-2 border-black text-white
                 text-[20px] px-4 py-3 mb-1 outline-none placeholder:text-white/30
-                focus:border-[#D7DBDF]" />
+                focus:border-[#E6E8EC]" />
             {/* O TECLADO NO ECRÃ só aparece onde não há outro: num terminal
                 tátil (dedo, sem teclado físico) ou se o utilizador o pedir.
                 Num posto de recepção com teclado, ocupava meio ecrã para nada —
                 e era o que se via ao lançar um consumo no backoffice. */}
             {!mostrarTeclado ? (
               <button onClick={() => setMostrarTeclado(true)}
-                className="w-full h-[42px] rounded-[3px] text-white/60 text-[14px] hover:text-white
+                className="w-full h-[42px] rounded-[8px] text-white/60 text-[14px] hover:text-white
                   border border-white/15 hover:border-white/30">
                 mostrar teclado no ecrã
               </button>
@@ -230,7 +230,7 @@ export default function DialogoHost() {
               <div className="grid grid-cols-3 gap-1.5">
                 {NUMEROS.flat().map((t) => (
                   <button key={t} onClick={() => tecla(t)}
-                    className={`h-[62px] rounded-[3px] text-white text-[24px] font-bold ${RELEVO} ${CINZA}`}>
+                    className={`h-[62px] rounded-[8px] text-white text-[24px] font-bold ${RELEVO} ${CINZA}`}>
                     {t}
                   </button>
                 ))}
@@ -242,7 +242,7 @@ export default function DialogoHost() {
                     style={{ gridTemplateColumns: `repeat(${linha.length}, minmax(0,1fr))` }}>
                     {linha.map((t) => (
                       <button key={t} onClick={() => tecla(t)}
-                        className={`h-[54px] rounded-[3px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>
+                        className={`h-[54px] rounded-[8px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>
                         {maiusc ? t.toUpperCase() : t}
                       </button>
                     ))}
@@ -250,21 +250,21 @@ export default function DialogoHost() {
                 ))}
                 <div className="grid gap-1" style={{ gridTemplateColumns: '1.4fr 5fr 1fr 1fr 1fr 1fr' }}>
                   <button onClick={() => setMaiusc(!maiusc)}
-                    className={`h-[54px] rounded-[3px] text-[19px] font-bold ${RELEVO}
-                      ${maiusc ? 'bg-gradient-to-b from-[#2E75B6] to-[#17375E] text-white' : `${CINZA} text-white`}`}>
+                    className={`h-[54px] rounded-[8px] text-[19px] font-bold ${RELEVO}
+                      ${maiusc ? 'bg-gradient-to-b from-[#3B82F6] to-[#1E2A44] text-white' : `${CINZA} text-white`}`}>
                     ABC
                   </button>
                   <button onClick={() => setTexto(texto + ' ')}
-                    className={`h-[54px] rounded-[3px] ${RELEVO} ${CINZA}`} />
+                    className={`h-[54px] rounded-[8px] ${RELEVO} ${CINZA}`} />
                   <button onClick={() => tecla('0')}
-                    className={`h-[54px] rounded-[3px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>0</button>
+                    className={`h-[54px] rounded-[8px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>0</button>
                   <button onClick={() => setTexto(`${texto}.`)}
-                    className={`h-[54px] rounded-[3px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>.</button>
+                    className={`h-[54px] rounded-[8px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>.</button>
                   <button onClick={() => setTexto('')}
-                    className={`h-[54px] rounded-[3px] text-white text-[19px] font-bold ${RELEVO}
-                      bg-gradient-to-b from-[#B42318] to-[#912018]`}>C</button>
+                    className={`h-[54px] rounded-[8px] text-white text-[19px] font-bold ${RELEVO}
+                      bg-gradient-to-b from-[#DC2626] to-[#B91C1C]`}>C</button>
                   <button onClick={() => tecla('⌫')}
-                    className={`h-[54px] rounded-[3px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>⌫</button>
+                    className={`h-[54px] rounded-[8px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>⌫</button>
                 </div>
               </div>
             )}
@@ -275,16 +275,16 @@ export default function DialogoHost() {
           ${atual.tipo === 'AVISO' ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {atual.tipo !== 'AVISO' && (
             <button onClick={() => fechar(atual.tipo === 'CONFIRMAR' ? false : null)}
-              className={`h-[66px] rounded-[3px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>
+              className={`h-[66px] rounded-[8px] text-white text-[19px] font-bold ${RELEVO} ${CINZA}`}>
               Cancelar
             </button>
           )}
           <button
             onClick={() => fechar(atual.tipo === 'PEDIR' ? (texto.trim() || null)
               : atual.tipo === 'CONFIRMAR' ? true : undefined)}
-            className={`h-[66px] rounded-[3px] text-white text-[19px] font-bold ${RELEVO}
-              ${perigo ? 'bg-gradient-to-b from-[#B42318] to-[#912018]'
-                : 'bg-gradient-to-b from-[#17375E] to-[#17375E]'}`}>
+            className={`h-[66px] rounded-[8px] text-white text-[19px] font-bold ${RELEVO}
+              ${perigo ? 'bg-gradient-to-b from-[#DC2626] to-[#B91C1C]'
+                : 'bg-gradient-to-b from-[#1E2A44] to-[#1E2A44]'}`}>
             {atual.tipo === 'AVISO' ? 'OK' : 'Confirmar'}
           </button>
         </div>

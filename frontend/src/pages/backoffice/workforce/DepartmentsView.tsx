@@ -75,18 +75,18 @@ const DepartmentsView: React.FC = () => {
           </>
         }
       >
-        <div className="p-4 bg-[#F3F4F6] h-full overflow-y-auto">
-          <form onSubmit={handleSubmit} className="text-[11px] grid grid-cols-1 gap-4">
-            <div className="border border-[#D7DBDF] bg-white p-2">
-              <h3 className="font-bold text-[#6B7280] border-b border-[#D7DBDF] mb-2 pb-1">Detalhes</h3>
+        <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto">
+          <form onSubmit={handleSubmit} className="text-[12.5px] grid grid-cols-1 gap-4">
+            <div className="border border-[#E6E8EC] bg-white p-2">
+              <h3 className="font-bold text-[#6B7280] border-b border-[#E6E8EC] mb-2 pb-1">Detalhes</h3>
               <div className="grid grid-cols-1 gap-y-2 max-w-md">
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Nome *</label>
-                  <input required name="name" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="flex-1 border border-[#D7DBDF] p-1 focus:outline-none" />
+                  <input required name="name" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} className="flex-1 border border-[#E6E8EC] p-1 focus:outline-none" />
                 </div>
                 <div className="flex items-center">
                   <label className="w-32 font-bold">Descrição</label>
-                  <input name="description" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} className="flex-1 border border-[#D7DBDF] p-1 focus:outline-none" />
+                  <input name="description" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} className="flex-1 border border-[#E6E8EC] p-1 focus:outline-none" />
                 </div>
               </div>
             </div>
@@ -104,7 +104,7 @@ const DepartmentsView: React.FC = () => {
       header: 'Ações', 
       accessor: (r: any) => (
         <div className="flex space-x-2">
-          <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(r); }} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button>
+          <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(r); }} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>
         </div>
       ), 
       width: '10%' 

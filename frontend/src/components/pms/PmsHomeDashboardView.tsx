@@ -34,58 +34,58 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
   const go = (section: string) => onNavigate?.(section);
 
   return (
-    <div className="flex flex-col h-full bg-[#F3F4F6] overflow-auto p-4 gap-4 text-[12px]">
-      <div className="bg-white border border-[#D7DBDF]">
-        <div className="px-3 py-2 bg-[#F3F4F6] border-b border-[#D7DBDF] font-bold text-[#1A1D21]">
+    <div className="flex flex-col h-full bg-[#F7F8FA] overflow-auto p-4 gap-4 text-[13px]">
+      <div className="bg-white border border-[#E6E8EC]">
+        <div className="px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] font-bold text-[#111827]">
           Primeiros Passos
         </div>
         <div className="p-3 space-y-1">
           {STEPS.map((s) => (
             <button key={s.section} onClick={() => go(s.section)}
-              className="w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-[#F3F4F6] disabled:opacity-60"
+              className="w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-[#F7F8FA] disabled:opacity-60"
               disabled={!onNavigate}>
               <Circle size={15} className="text-[#6B7280] flex-shrink-0" />
-              <span className="text-[#1A1D21]">{s.label}</span>
+              <span className="text-[#111827]">{s.label}</span>
             </button>
           ))}
           {!onNavigate && (
-            <div className="text-[10px] text-[#6B7280] px-2 pt-1">A navegação direta a partir daqui ainda não está ligada ao menu.</div>
+            <div className="text-[11.5px] text-[#6B7280] px-2 pt-1">A navegação direta a partir daqui ainda não está ligada ao menu.</div>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white border border-[#D7DBDF]">
-          <div className="px-3 py-2 bg-[#F3F4F6] border-b border-[#D7DBDF] font-bold text-[#1A1D21] flex items-center gap-2">
+        <div className="bg-white border border-[#E6E8EC]">
+          <div className="px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] font-bold text-[#111827] flex items-center gap-2">
             <Glyph icon="🔍" size={14} /> Check-ins hoje ({arrivalRows.length})
           </div>
           <div className="max-h-[280px] overflow-auto">
             {arrivalRows.length === 0 && <div className="text-center text-[#6B7280] py-6">Sem chegadas hoje.</div>}
             {arrivalRows.map((r: any) => (
-              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#EBEEF0]">
+              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#F1F2F4]">
                 <div>
-                  <div className="font-semibold text-[#1A1D21]">{r.guest_name}</div>
-                  <div className="text-[10px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
+                  <div className="font-semibold text-[#111827]">{r.guest_name}</div>
+                  <div className="text-[11.5px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
                 </div>
-                <span className="text-[10px] text-[#1A1D21]">{r.status_display}</span>
+                <span className="text-[11.5px] text-[#111827]">{r.status_display}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white border border-[#D7DBDF]">
-          <div className="px-3 py-2 bg-[#F3F4F6] border-b border-[#D7DBDF] font-bold text-[#1A1D21] flex items-center gap-2">
+        <div className="bg-white border border-[#E6E8EC]">
+          <div className="px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] font-bold text-[#111827] flex items-center gap-2">
             <Glyph icon="🚫" size={14} /> Check-outs hoje ({departureRows.length})
           </div>
           <div className="max-h-[280px] overflow-auto">
             {departureRows.length === 0 && <div className="text-center text-[#6B7280] py-6">Sem saídas hoje.</div>}
             {departureRows.map((r: any) => (
-              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#EBEEF0]">
+              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#F1F2F4]">
                 <div>
-                  <div className="font-semibold text-[#1A1D21]">{r.guest_name}</div>
-                  <div className="text-[10px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
+                  <div className="font-semibold text-[#111827]">{r.guest_name}</div>
+                  <div className="text-[11.5px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
                 </div>
-                <span className="text-[10px] text-[#1A1D21]">{r.status_display}</span>
+                <span className="text-[11.5px] text-[#111827]">{r.status_display}</span>
               </div>
             ))}
           </div>

@@ -62,10 +62,10 @@ export default function PmsCheckOutView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-[420px] flex-shrink-0 border-r border-[#EBEEF0] flex flex-col">
-          <div className="p-2 border-b border-[#EBEEF0]">
+        <div className="w-[420px] flex-shrink-0 border-r border-[#F1F2F4] flex flex-col">
+          <div className="p-2 border-b border-[#F1F2F4]">
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Pesquisar por hóspede, quarto ou confirmação…"
-              className="w-full border border-[#D7DBDF] p-1.5 text-[12px]" />
+              className="w-full border border-[#E6E8EC] p-1.5 text-[13px]" />
           </div>
           <div className="flex-1 overflow-hidden">
             <ClassicGrid rowKey="id" selectedRowId={selId ?? undefined} data={rows} onRowClick={(r: any) => setSelId(r.id)} columns={[
@@ -79,23 +79,23 @@ export default function PmsCheckOutView() {
 
         <div className="flex-1 overflow-auto p-4">
           {!selId ? (
-            <div className="text-center text-gray-400 py-10 text-[12px]">Escolha uma reserva em check-in à esquerda.</div>
+            <div className="text-center text-gray-400 py-10 text-[13px]">Escolha uma reserva em check-in à esquerda.</div>
           ) : !folio ? (
-            <div className="text-center text-gray-400 py-10 text-[12px]">Esta reserva não tem conta aberta — pode seguir para o check-out.</div>
+            <div className="text-center text-gray-400 py-10 text-[13px]">Esta reserva não tem conta aberta — pode seguir para o check-out.</div>
           ) : (
             <>
               <div className="mb-3">
                 <div className="font-bold text-[15px]">{selRow?.guest_name}</div>
-                <div className="text-[11px] text-[#6B7280]">
+                <div className="text-[12.5px] text-[#6B7280]">
                   Quarto {selRow?.room_number || '—'} · {selRow?.confirmation} · {selRow?.check_in} → {selRow?.check_out}
                 </div>
               </div>
-              <div className="flex items-center justify-between border border-[#D7DBDF] px-3 py-2 mb-3">
-                <span className="text-[12px]">{folio.label} · {folio.status_display}</span>
-                <span className={`font-bold text-[16px] ${balancePending ? 'text-[#B42318]' : 'text-[#1A1D21]'}`}>Saldo: {folio.balance}</span>
+              <div className="flex items-center justify-between border border-[#E6E8EC] px-3 py-2 mb-3">
+                <span className="text-[13px]">{folio.label} · {folio.status_display}</span>
+                <span className={`font-bold text-[16px] ${balancePending ? 'text-[#DC2626]' : 'text-[#111827]'}`}>Saldo: {folio.balance}</span>
               </div>
               {balancePending && (
-                <div className="text-[11px] text-[#912018] bg-[#FDECEA] border border-[#B42318] px-2 py-1.5 mb-3">
+                <div className="text-[12.5px] text-[#B91C1C] bg-[#FEF2F2] border border-[#DC2626] px-2 py-1.5 mb-3">
                   Conta por liquidar — registe o pagamento antes de fazer o check-out.
                 </div>
               )}
@@ -113,9 +113,9 @@ export default function PmsCheckOutView() {
       </div>
 
       <Toolbar actions={[
-        { label: 'Atualizar', icon: '⟳', color: '#17375E', onClick: invalidate },
-        { label: 'Registar Pagamento', icon: '💳', color: '#17375E', onClick: settle, disabled: !balancePending || busy },
-        { label: 'Check-Out', icon: '✔', color: '#17375E', onClick: doCheckOut, disabled: !selId || balancePending || busy },
+        { label: 'Atualizar', icon: '⟳', color: '#1E2A44', onClick: invalidate },
+        { label: 'Registar Pagamento', icon: '💳', color: '#1E2A44', onClick: settle, disabled: !balancePending || busy },
+        { label: 'Check-Out', icon: '✔', color: '#1E2A44', onClick: doCheckOut, disabled: !selId || balancePending || busy },
       ]} />
     </div>
   );

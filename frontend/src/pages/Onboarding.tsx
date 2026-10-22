@@ -132,9 +132,9 @@ const Onboarding: React.FC = () => {
   }, [refetch, refetchPre]);
 
   return (
-    <div className="min-h-screen bg-[#17375E] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#1E2A44] flex items-center justify-center p-4">
       <div className="bg-white max-w-lg w-full rounded shadow-2xl overflow-hidden">
-        <div className="bg-[#17375E] text-white p-6 flex items-center gap-3">
+        <div className="bg-[#1E2A44] text-white p-6 flex items-center gap-3">
           <ShieldCheck size={28} className="text-[#6B7280]" />
           <div>
             <h1 className="text-lg font-bold">System Mwana Lodge</h1>
@@ -148,36 +148,36 @@ const Onboarding: React.FC = () => {
             instalação. Ative-a de uma das formas abaixo.
           </p>
 
-          <div className="bg-[#F3F4F6] border border-[#EBEEF0] rounded p-4 text-sm space-y-3">
+          <div className="bg-[#F7F8FA] border border-[#F1F2F4] rounded p-4 text-sm space-y-3">
             <div className="flex items-start gap-2">
               <Upload size={16} className="text-[#6B7280] mt-0.5 shrink-0" />
-              <div className="font-bold text-[#1A1D21]">Carregar o ficheiro (recomendado)</div>
+              <div className="font-bold text-[#111827]">Carregar o ficheiro (recomendado)</div>
             </div>
-            <p className="text-[12px] text-gray-600">
+            <p className="text-[13px] text-gray-600">
               O técnico já lhe entregou o <code className="bg-gray-200 px-1 rounded">license.key</code> (email,
               WhatsApp, pen). Escolha-o aqui, no SEU computador — nunca precisa de abrir a pasta
               do servidor.
             </p>
             <input ref={fileInputRef} type="file" accept=".key,text/plain"
               onChange={(e) => setFicheiro(e.target.files?.[0] || null)}
-              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#2E75B6] file:text-white file:font-bold hover:file:bg-[#17375E] file:cursor-pointer" />
+              className="w-full text-[13px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#3B82F6] file:text-white file:font-bold hover:file:bg-[#1E2A44] file:cursor-pointer" />
             {enviarMsg && (
-              <div className={`text-[12px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-[#1A1D21] bg-[#F3F4F6] border-[#EBEEF0]' : 'text-[#912018] bg-[#FDECEA] border-[#B42318]'}`}>
+              <div className={`text-[13px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
                 {enviarMsg.text}
               </div>
             )}
             <button onClick={handleEnviarFicheiro} disabled={enviando || !ficheiro}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-[#2E75B6] text-white rounded font-bold hover:bg-[#17375E] disabled:opacity-50">
+              className="w-full flex items-center justify-center gap-2 py-2 bg-[#3B82F6] text-white rounded font-bold hover:bg-[#1E2A44] disabled:opacity-50">
               {enviando ? 'A enviar…' : 'Submeter'}
             </button>
           </div>
 
-          <form onSubmit={handleAtivar} className="bg-[#F3F4F6] border border-[#EBEEF0] rounded p-4 text-sm space-y-3">
+          <form onSubmit={handleAtivar} className="bg-[#F7F8FA] border border-[#F1F2F4] rounded p-4 text-sm space-y-3">
             <div className="flex items-start gap-2">
               <Wifi size={16} className="text-[#6B7280] mt-0.5 shrink-0" />
-              <div className="font-bold text-[#1A1D21]">Ativação automática (só código + senha, sem ficheiro)</div>
+              <div className="font-bold text-[#111827]">Ativação automática (só código + senha, sem ficheiro)</div>
             </div>
-            <p className="text-[12px] text-gray-600">
+            <p className="text-[13px] text-gray-600">
               Os mesmos dois dados que já tem para correr o setup.exe (PCC → Gestão de Clientes
               → Acessos) — sem copiar nenhum ficheiro à mão.
             </p>
@@ -192,12 +192,12 @@ const Onboarding: React.FC = () => {
                 className="w-full h-9 px-2 bg-white border border-gray-300 rounded outline-none" />
             </label>
             {ativarMsg && (
-              <div className={`text-[12px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-[#1A1D21] bg-[#F3F4F6] border-[#EBEEF0]' : 'text-[#912018] bg-[#FDECEA] border-[#B42318]'}`}>
+              <div className={`text-[13px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
                 {ativarMsg.text}
               </div>
             )}
             <button type="submit" disabled={ativando || !clientCode || !installPassword}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-[#2E75B6] text-white rounded font-bold hover:bg-[#17375E] disabled:opacity-50">
+              className="w-full flex items-center justify-center gap-2 py-2 bg-[#3B82F6] text-white rounded font-bold hover:bg-[#1E2A44] disabled:opacity-50">
               {ativando ? 'A ativar…' : 'Ativar via Internet'}
             </button>
           </form>
@@ -220,24 +220,24 @@ const Onboarding: React.FC = () => {
 
           {pre && (
             <div className={`border rounded p-4 text-sm space-y-2 ${
-              pre.diagnosis === 'OK' ? 'bg-[#F3F4F6] border-[#EBEEF0]' : 'bg-[#FDECEA] border-[#B42318]'}`}>
+              pre.diagnosis === 'OK' ? 'bg-[#F7F8FA] border-[#F1F2F4]' : 'bg-[#FEF2F2] border-[#DC2626]'}`}>
               <div className="flex items-start gap-2">
                 {pre.diagnosis === 'OK'
                   ? <CheckCircle2 size={16} className="text-[#6B7280] mt-0.5 shrink-0" />
-                  : <AlertTriangle size={16} className="text-[#912018] mt-0.5 shrink-0" />}
+                  : <AlertTriangle size={16} className="text-[#B91C1C] mt-0.5 shrink-0" />}
                 <div className="flex-1">
-                  <div className={`font-bold ${pre.diagnosis === 'OK' ? 'text-[#1A1D21]' : 'text-[#912018]'}`}>
+                  <div className={`font-bold ${pre.diagnosis === 'OK' ? 'text-[#111827]' : 'text-[#B91C1C]'}`}>
                     Diagnóstico: {DIAGNOSIS_LABEL[pre.diagnosis] || pre.diagnosis}
                   </div>
                   <p className="text-gray-700 mt-1">{pre.detail}</p>
-                  <div className="mt-2 text-[11px] text-gray-500 font-mono bg-white/60 border border-gray-200 rounded p-2 space-y-0.5">
+                  <div className="mt-2 text-[12.5px] text-gray-500 font-mono bg-white/60 border border-gray-200 rounded p-2 space-y-0.5">
                     <div>caminho: {pre.checked_path}</div>
                     <div>existe: {String(pre.exists)}
                       {pre.size_bytes != null && ` · ${pre.size_bytes} bytes`}
                       {pre.modified_at && ` · modificado ${pre.modified_at}`}</div>
                     {pre.client_code && <div>cliente: {pre.client_code} · licença: {pre.license_number} · válida até: {pre.valid_until}</div>}
                   </div>
-                  <p className="text-[11px] text-gray-400 mt-2">
+                  <p className="text-[12.5px] text-gray-400 mt-2">
                     Copie este quadro e envie ao suporte — não é preciso correr nenhum script.
                   </p>
                 </div>
@@ -248,7 +248,7 @@ const Onboarding: React.FC = () => {
           <button
             onClick={() => refetch()}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#17375E] text-white rounded font-bold hover:bg-[#17375E] transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#1E2A44] text-white rounded font-bold hover:bg-[#1E2A44] transition-colors disabled:opacity-50"
           >
             <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
             {isLoading ? 'A verificar…' : 'Verificar agora'}

@@ -26,19 +26,19 @@ export default function DashboardMDMView() {
   ).map(([k, v]) => ({ name: ITEM_TYPE_LABEL[k] || k, artigos: v as number }));
 
   const StatCard = ({ title, value, subtitle }: any) => (
-    <div className="bg-[#F3F4F6] border-2 border-white border-b-[#D7DBDF] border-r-[#D7DBDF] p-4 flex flex-col justify-between">
+    <div className="bg-[#F7F8FA] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4 flex flex-col justify-between">
       <div className="mb-2">
         <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
         <div className="text-2xl font-bold text-[#6B7280]">{value}</div>
       </div>
-      <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>
+      <div className="text-[11.5px] text-gray-600 font-medium">{subtitle}</div>
     </div>
   );
 
   return (
     <ClassicWindow title="Dashboard — Master Data">
-      <div className="bg-[#F3F4F6] min-h-full font-sans p-4 overflow-y-auto">
-        <div className="flex justify-between items-center mb-4 border-b border-[#D7DBDF] pb-2">
+      <div className="bg-[#F7F8FA] min-h-full font-sans p-4 overflow-y-auto">
+        <div className="flex justify-between items-center mb-4 border-b border-[#E6E8EC] pb-2">
           <div>
             <h1 className="text-lg font-bold text-black">Resumo Operacional (Master Data)</h1>
             <p className="text-xs text-gray-600 mt-1">Fonte única de cadastros — dados em tempo real.</p>
@@ -52,16 +52,16 @@ export default function DashboardMDMView() {
           <StatCard title="Tipos de Artigo" value={byType.length} subtitle="Matéria-prima, produzidos…" />
         </div>
 
-        <div className="bg-[#F3F4F6] border-2 border-white border-b-[#D7DBDF] border-r-[#D7DBDF] p-4">
+        <div className="bg-[#F7F8FA] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4">
           <h3 className="text-xs font-bold text-black mb-4">Distribuição de Artigos por Tipo</h3>
-          <div className="h-56 w-full bg-white border border-[#D7DBDF]">
+          <div className="h-56 w-full bg-white border border-[#E6E8EC]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={byType} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EBEEF0" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F2F4" />
                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'black' }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'black' }} />
-                <RechartsTooltip contentStyle={{ borderRadius: 0, border: '1px solid black', backgroundColor: '#EBEEF0', fontSize: 10 }} />
-                <Bar dataKey="artigos" fill="#2E75B6" />
+                <RechartsTooltip contentStyle={{ borderRadius: 0, border: '1px solid black', backgroundColor: '#F1F2F4', fontSize: 10 }} />
+                <Bar dataKey="artigos" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
           </div>

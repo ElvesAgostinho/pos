@@ -66,96 +66,96 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-w-[97vw] bg-[#F3F4F6] border border-[#D7DBDF] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(85vh, 700px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#17375E' }}>
+      <div className="w-[900px] max-w-[97vw] bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(85vh, 700px)' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
           {selId ? `Bloco — ${form.code}` : copyFrom ? 'Copiar Reserva de Grupo' : 'Nova Reserva de Grupo'}
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
             <button onClick={onClose} title="Fechar"
-              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B42318] text-white hover:brightness-110">
+              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
               <X size={12} strokeWidth={3} />
             </button>
           </div>
         </div>
 
-        <div className="flex border-b border-[#D7DBDF] bg-[#F3F4F6] flex-shrink-0">
+        <div className="flex border-b border-[#E6E8EC] bg-[#F7F8FA] flex-shrink-0">
           {TABS.map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-3 py-1.5 text-[11px] font-bold border-r border-[#D7DBDF] ${tab === t ? 'bg-white text-[#1A1D21]' : 'text-gray-600 hover:bg-white/60'}`}>
+              className={`px-3 py-1.5 text-[12.5px] font-bold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827]' : 'text-gray-600 hover:bg-white/60'}`}>
               {t}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 overflow-auto p-3 text-[11px]">
+        <div className="flex-1 overflow-auto p-3 text-[12.5px]">
           {tab === 'Detalhes do Bloco' && (
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#D7DBDF] p-1" /></label>
-              <label className="flex flex-col">Descrição<input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
-              <label className="flex flex-col">De<input type="date" value={form.valid_from} onChange={(e) => setForm({ ...form, valid_from: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
-              <label className="flex flex-col">Até<input type="date" value={form.valid_to} onChange={(e) => setForm({ ...form, valid_to: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
+              <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1" /></label>
+              <label className="flex flex-col">Descrição<input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
+              <label className="flex flex-col">De<input type="date" value={form.valid_from} onChange={(e) => setForm({ ...form, valid_from: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
+              <label className="flex flex-col">Até<input type="date" value={form.valid_to} onChange={(e) => setForm({ ...form, valid_to: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
               <label className="flex flex-col">Entidade Principal
-                <select value={form.main_entity || ''} onChange={(e) => setForm({ ...form, main_entity: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
+                <select value={form.main_entity || ''} onChange={(e) => setForm({ ...form, main_entity: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
                   <option value="">(nenhuma)</option>{guestList.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               </label>
-              <label className="flex flex-col">Grupo<input value={form.group_name || ''} onChange={(e) => setForm({ ...form, group_name: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
-              <label className="flex flex-col">Contacto<input value={form.contact_name || ''} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
-              <label className="flex flex-col">Gestor do bloco<input value={form.manager || ''} onChange={(e) => setForm({ ...form, manager: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
+              <label className="flex flex-col">Grupo<input value={form.group_name || ''} onChange={(e) => setForm({ ...form, group_name: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
+              <label className="flex flex-col">Contacto<input value={form.contact_name || ''} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
+              <label className="flex flex-col">Gestor do bloco<input value={form.manager || ''} onChange={(e) => setForm({ ...form, manager: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
               <div className="flex gap-4 items-center col-span-2">
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={form.is_guaranteed} onChange={(e) => setForm({ ...form, is_guaranteed: e.target.checked })} /> Garantido</label>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={form.is_elastic} onChange={(e) => setForm({ ...form, is_elastic: e.target.checked })} /> Elastic block</label>
-                <label className="flex items-center gap-1.5">Cor<input type="color" value={form.color || '#17375E'} onChange={(e) => setForm({ ...form, color: e.target.value })} className="border border-[#D7DBDF] h-7 w-14" /></label>
+                <label className="flex items-center gap-1.5">Cor<input type="color" value={form.color || '#1E2A44'} onChange={(e) => setForm({ ...form, color: e.target.value })} className="border border-[#E6E8EC] h-7 w-14" /></label>
               </div>
             </div>
           )}
 
           {tab === 'Defaults da Reserva' && (
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              <label className="flex flex-col">Prefixo<input value={form.default_prefix || ''} onChange={(e) => setForm({ ...form, default_prefix: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
+              <label className="flex flex-col">Prefixo<input value={form.default_prefix || ''} onChange={(e) => setForm({ ...form, default_prefix: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
               <label className="flex flex-col">Tipo de Reserva
-                <select value={form.default_reservation_type} onChange={(e) => setForm({ ...form, default_reservation_type: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
+                <select value={form.default_reservation_type} onChange={(e) => setForm({ ...form, default_reservation_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
                   <option>Normal</option><option>Day Use</option>
                 </select>
               </label>
-              <label className="flex flex-col">Voucher<input value={form.default_voucher || ''} onChange={(e) => setForm({ ...form, default_voucher: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
+              <label className="flex flex-col">Voucher<input value={form.default_voucher || ''} onChange={(e) => setForm({ ...form, default_voucher: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
               <label className="flex flex-col">Rate Code
-                <select value={form.default_rate_plan || ''} onChange={(e) => setForm({ ...form, default_rate_plan: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
+                <select value={form.default_rate_plan || ''} onChange={(e) => setForm({ ...form, default_rate_plan: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
                   <option value="">(nenhum)</option>{rpList.map((rp: any) => <option key={rp.id} value={rp.id}>{rp.code}</option>)}
                 </select>
               </label>
               <label className="flex flex-col">Segmento
-                <select value={form.default_segment || ''} onChange={(e) => setForm({ ...form, default_segment: e.target.value, default_subsegment: '' })} className="border border-[#D7DBDF] p-1 bg-white">
+                <select value={form.default_segment || ''} onChange={(e) => setForm({ ...form, default_segment: e.target.value, default_subsegment: '' })} className="border border-[#E6E8EC] p-1 bg-white">
                   <option value="">(nenhum)</option>{segList.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </label>
               <label className="flex flex-col">Sub-Segmento
-                <select value={form.default_subsegment || ''} onChange={(e) => setForm({ ...form, default_subsegment: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
+                <select value={form.default_subsegment || ''} onChange={(e) => setForm({ ...form, default_subsegment: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
                   <option value="">(nenhum)</option>{subList.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </label>
               <label className="flex flex-col">Canal de Dist.
-                <select value={form.default_channel || ''} onChange={(e) => setForm({ ...form, default_channel: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
+                <select value={form.default_channel || ''} onChange={(e) => setForm({ ...form, default_channel: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
                   <option value="">(nenhum)</option>{chList.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </label>
-              <label className="flex flex-col">Chegada até<input type="date" value={form.arrival_until || ''} onChange={(e) => setForm({ ...form, arrival_until: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
-              <label className="flex flex-col">Saída até<input type="date" value={form.departure_until || ''} onChange={(e) => setForm({ ...form, departure_until: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
-              <label className="flex flex-col col-span-2">Informação do bloco<textarea value={form.block_info || ''} onChange={(e) => setForm({ ...form, block_info: e.target.value })} rows={2} className="border border-[#D7DBDF] p-1" /></label>
-              <label className="flex flex-col col-span-2">Informação da reserva<textarea value={form.reservation_info || ''} onChange={(e) => setForm({ ...form, reservation_info: e.target.value })} rows={2} className="border border-[#D7DBDF] p-1" /></label>
+              <label className="flex flex-col">Chegada até<input type="date" value={form.arrival_until || ''} onChange={(e) => setForm({ ...form, arrival_until: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
+              <label className="flex flex-col">Saída até<input type="date" value={form.departure_until || ''} onChange={(e) => setForm({ ...form, departure_until: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
+              <label className="flex flex-col col-span-2">Informação do bloco<textarea value={form.block_info || ''} onChange={(e) => setForm({ ...form, block_info: e.target.value })} rows={2} className="border border-[#E6E8EC] p-1" /></label>
+              <label className="flex flex-col col-span-2">Informação da reserva<textarea value={form.reservation_info || ''} onChange={(e) => setForm({ ...form, reservation_info: e.target.value })} rows={2} className="border border-[#E6E8EC] p-1" /></label>
             </div>
           )}
 
           {tab === 'Contrato' && (
             <div className="space-y-2">
               <label className="flex flex-col">Método de release
-                <select value={form.release_method} onChange={(e) => setForm({ ...form, release_method: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white w-64">
+                <select value={form.release_method} onChange={(e) => setForm({ ...form, release_method: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white w-64">
                   <option value="DAYS">Dias antes da chegada</option>
                   <option value="DATE">Data fixa</option>
                 </select>
               </label>
-              <label className="flex flex-col">Dias de release<input type="number" value={form.release_days} onChange={(e) => setForm({ ...form, release_days: Number(e.target.value) })} className="border border-[#D7DBDF] p-1 w-32" /></label>
-              <label className="flex flex-col">Valor do contrato<input type="number" value={form.contract_value} onChange={(e) => setForm({ ...form, contract_value: e.target.value })} className="border border-[#D7DBDF] p-1 w-40" /></label>
+              <label className="flex flex-col">Dias de release<input type="number" value={form.release_days} onChange={(e) => setForm({ ...form, release_days: Number(e.target.value) })} className="border border-[#E6E8EC] p-1 w-32" /></label>
+              <label className="flex flex-col">Valor do contrato<input type="number" value={form.contract_value} onChange={(e) => setForm({ ...form, contract_value: e.target.value })} className="border border-[#E6E8EC] p-1 w-40" /></label>
             </div>
           )}
 
@@ -164,9 +164,9 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
           )}
         </div>
 
-        <div className="flex justify-end gap-2 px-3 py-2 bg-[#F3F4F6] border-t border-[#D7DBDF] flex-shrink-0">
-          <button onClick={onClose} className="px-3 py-1 text-[12px] border border-[#D7DBDF] bg-white hover:bg-[#F3F4F6]">Cancelar</button>
-          <button onClick={save} className="px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#17375E' }}>Gravar</button>
+        <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
+          <button onClick={onClose} className="px-3 py-1 text-[13px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">Cancelar</button>
+          <button onClick={save} className="px-4 py-1.5 text-[13px] font-bold text-white" style={{ background: '#1E2A44' }}>Gravar</button>
         </div>
       </div>
     </div>
@@ -192,13 +192,13 @@ function BlockGrid({ blockId, roomTypes }: { blockId: number; roomTypes: any[] }
   return (
     <div>
       <div className="flex gap-2 mb-2">
-        <select value={row.room_type} onChange={(e) => setRow({ ...row, room_type: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
+        <select value={row.room_type} onChange={(e) => setRow({ ...row, room_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
           <option value="">Categoria…</option>{roomTypes.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
         </select>
-        <input type="date" value={row.date} onChange={(e) => setRow({ ...row, date: e.target.value })} className="border border-[#D7DBDF] p-1" />
-        <input type="number" min={0} value={row.rooms_blocked} onChange={(e) => setRow({ ...row, rooms_blocked: Number(e.target.value) })} className="border border-[#D7DBDF] p-1 w-20" placeholder="Qtd" />
-        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[12px] text-[#1A1D21] border border-[#D7DBDF] hover:bg-[#F3F4F6] rounded-[6px]">
-          <span className="text-[#1A1D21]"><Glyph icon="＋" size={14} /></span> Adicionar
+        <input type="date" value={row.date} onChange={(e) => setRow({ ...row, date: e.target.value })} className="border border-[#E6E8EC] p-1" />
+        <input type="number" min={0} value={row.rooms_blocked} onChange={(e) => setRow({ ...row, rooms_blocked: Number(e.target.value) })} className="border border-[#E6E8EC] p-1 w-20" placeholder="Qtd" />
+        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[13px] text-[#111827] border border-[#E6E8EC] hover:bg-[#F7F8FA] rounded-[8px]">
+          <span className="text-[#111827]"><Glyph icon="＋" size={14} /></span> Adicionar
         </button>
       </div>
       <ClassicGrid rowKey="id" data={data?.room_types || []} columns={[

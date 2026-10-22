@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
-    <label className="flex items-start gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#1A1D21] pt-1">{label}</span>
+    <label className="flex items-start gap-3 text-[13px]">
+      <span className="w-[120px] flex-shrink-0 text-[#111827] pt-1">{label}</span>
       {children}
     </label>
   );
@@ -30,7 +30,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
   const isNew = !row?.id;
   const [d, setD] = useState<any>({
     is_active: true, is_system: false, is_auto_reservation: false, sort_order: 0,
-    bg_color: '#17375E', text_color: '#FFFFFF', equivalent: '', ...row,
+    bg_color: '#1E2A44', text_color: '#FFFFFF', equivalent: '', ...row,
   });
 
   const save = useMutation({
@@ -53,8 +53,8 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
-        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Novo estado' : `A editar ${d.name}`}</span>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo estado' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -65,7 +65,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
             <Row label="Código:">
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 disabled={d.is_system && !isNew}
-                className={`${inp} w-[290px] disabled:bg-[#F3F4F6] disabled:text-[#6B7280]`} style={inputStyle} />
+                className={`${inp} w-[290px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle} />
             </Row>
             <Row label="Descrição:">
               <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
@@ -85,7 +85,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
                   <option value="CHECKIN">Check-in</option>
                   <option value="CHECKOUT">Check-out</option>
                 </select>
-                <div className={`text-[11px] mt-1 max-w-[290px] ${bloqueia ? 'text-[#B42318]' : 'text-[#1A1D21]'}`}>
+                <div className={`text-[12.5px] mt-1 max-w-[290px] ${bloqueia ? 'text-[#DC2626]' : 'text-[#111827]'}`}>
                   {bloqueia
                     ? 'Este estado BLOQUEIA o espaço — a sala sai do mercado.'
                     : 'Este estado NÃO bloqueia o espaço — a sala continua a poder ser vendida.'}
@@ -99,8 +99,8 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
             <Row label="Cor de Fundo:">
               <div className="flex items-center gap-2">
-                <input type="color" value={d.bg_color || '#17375E'}
-                  onChange={(e) => set('bg_color', e.target.value)} className="w-10 h-8 border border-[#D7DBDF]" />
+                <input type="color" value={d.bg_color || '#1E2A44'}
+                  onChange={(e) => set('bg_color', e.target.value)} className="w-10 h-8 border border-[#E6E8EC]" />
                 <input value={d.bg_color || ''} onChange={(e) => set('bg_color', e.target.value)}
                   className={`${inp} w-[130px] font-mono`} style={inputStyle} />
               </div>
@@ -108,7 +108,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
             <Row label="Cor do texto:">
               <div className="flex items-center gap-2">
                 <input type="color" value={d.text_color || '#FFFFFF'}
-                  onChange={(e) => set('text_color', e.target.value)} className="w-10 h-8 border border-[#D7DBDF]" />
+                  onChange={(e) => set('text_color', e.target.value)} className="w-10 h-8 border border-[#E6E8EC]" />
                 <input value={d.text_color || ''} onChange={(e) => set('text_color', e.target.value)}
                   className={`${inp} w-[130px] font-mono`} style={inputStyle} />
               </div>
@@ -125,16 +125,16 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
           <Box title="Opções">
           <div className="space-y-3 pt-1.5">
-            <label className="flex items-center gap-2 text-[12px]">
+            <label className="flex items-center gap-2 text-[13px]">
               <input type="checkbox" checked={!!d.is_system} onChange={(e) => set('is_system', e.target.checked)} className="w-4 h-4" />
               Sistema
-              <span className="text-[11px] text-[#6B7280]">— o motor precisa dele; não se apaga</span>
+              <span className="text-[12.5px] text-[#6B7280]">— o motor precisa dele; não se apaga</span>
             </label>
-            <label className="flex items-center gap-2 text-[12px]">
+            <label className="flex items-center gap-2 text-[13px]">
               <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
               Ativo
             </label>
-            <label className="flex items-center gap-2 text-[12px]">
+            <label className="flex items-center gap-2 text-[13px]">
               <input type="checkbox" checked={!!d.is_auto_reservation}
                 onChange={(e) => set('is_auto_reservation', e.target.checked)} className="w-4 h-4" />
               Para Reservas Automáticas (Pendente, Cancelamento)
@@ -154,8 +154,8 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>
   );

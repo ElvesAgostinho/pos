@@ -225,13 +225,13 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
         </button>
         {modMenu && (
-          <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#F3F4F6] border border-[#17375E] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
-            <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: ws.color }}>{erpName} — Módulos</div>
+          <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
+            <div className="px-3 py-2 text-[12.5px] font-bold text-white" style={{ background: ws.color }}>{erpName} — Módulos</div>
             {licensed.map((m) => (
-              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] hover:bg-[#F3F4F6] text-left border-b border-[#EBEEF0] last:border-b-0">
+              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] hover:bg-[#F7F8FA] text-left border-b border-[#F1F2F4] last:border-b-0">
                 <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ background: `radial-gradient(circle at 30% 30%, ${m.glow}, ${m.color})`, boxShadow: `0 0 6px ${m.glow}` }} />
                 <span className="font-bold" style={{ color: m.color }}>{m.name}</span>
-                {m.key === wsKey && <span className="ml-auto text-[11px] text-gray-500">● ativo</span>}
+                {m.key === wsKey && <span className="ml-auto text-[12.5px] text-gray-500">● ativo</span>}
               </button>
             ))}
           </div>
@@ -247,11 +247,11 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             </button>
             {topMenu === m && (
               <div className="absolute left-0 top-full min-w-[260px] py-1 shadow-2xl z-[120]"
-                style={{ background: '#17375E', border: '1px solid #17375E' }} onClick={(e) => e.stopPropagation()}>
+                style={{ background: '#1E2A44', border: '1px solid #1E2A44' }} onClick={(e) => e.stopPropagation()}>
                 {MENUS[m].map((it, i) => (
                   <button key={i} onClick={() => it.act ? (it.act(), setTopMenu(null)) : open(it.screen, it.label)}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#2E75B6]">
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#17375E]" />{it.label}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3B82F6]">
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#1E2A44]" />{it.label}
                   </button>
                 ))}
               </div>
@@ -260,7 +260,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
         ))}
 
         <div className="ml-auto flex items-center gap-3 text-[13px]">
-          <span className="text-[#B42318] font-semibold">
+          <span className="text-[#DC2626] font-semibold">
             {clock.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
           </span>
           <span className="opacity-30">|</span>
@@ -270,12 +270,12 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
               {user?.username || 'operador'}
             </button>
             {userMenu && (
-              <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#F3F4F6] border border-[#17375E] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
-                <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: accentGradient() }}>
+              <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
+                <div className="px-3 py-2 text-[12.5px] font-bold text-white" style={{ background: accentGradient() }}>
                   {user?.username || 'operador'}
                 </div>
                 <button onClick={() => { setUserMenu(false); logout(); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] text-left hover:bg-[#F3F4F6] text-[#B42318] font-semibold">
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[13px] text-left hover:bg-[#F7F8FA] text-[#DC2626] font-semibold">
                   <LogOut size={14} /> Terminar sessão
                 </button>
               </div>
@@ -326,10 +326,10 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
         <div className="absolute top-5 right-5 w-[220px] flex flex-col gap-2.5">
           <div className="bg-black/35 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-white text-center" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.25)' }}>
             <div className="text-[30px] font-black leading-none" style={{ textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>{clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</div>
-            <div className="text-[11px] text-white/70 mt-1">{clock.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
+            <div className="text-[12.5px] text-white/70 mt-1">{clock.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
           </div>
-          <div className="bg-black/35 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-white text-[12px] space-y-2" style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
-            <div className="font-bold text-[11px] uppercase text-white/60 mb-1">{ws.name} · Estado</div>
+          <div className="bg-black/35 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-white text-[13px] space-y-2" style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
+            <div className="font-bold text-[12.5px] uppercase text-white/60 mb-1">{ws.name} · Estado</div>
             {[['Licença', ShieldCheck, 'ativa'], ['Servidor', Server, 'online'], ['VPN', Wifi, 'ligada']].map(([k, Icon, v]: any) => (
               <div key={k as string} className="flex items-center justify-between">
                 <span className="text-white/60 flex items-center gap-1.5"><Icon size={13} strokeWidth={2} className="text-white/50" />{k}</span>
@@ -341,42 +341,42 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
       {/* ===== BARRA DE TAREFAS ===== */}
       <div className="h-[40px] flex items-center px-1.5 gap-1 flex-shrink-0 relative z-[100]"
-        style={{ background: `linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.22)), linear-gradient(to bottom, ${ws.colorDark}, #17375E)`, borderTop: `2px solid ${ws.accent}`, boxShadow: `0 -3px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)` }}>
+        style={{ background: `linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.22)), linear-gradient(to bottom, ${ws.colorDark}, #1E2A44)`, borderTop: `2px solid ${ws.accent}`, boxShadow: `0 -3px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)` }}>
         <button onClick={(e) => { e.stopPropagation(); setStart((s) => !s); }} className="flex items-center gap-1.5 px-3.5 h-[30px] rounded-full font-bold text-white text-[13px] transition-colors"
           style={{ background: start ? `${ws.accent}55` : `${ws.glow}26`, border: `1px solid ${ws.accent}66` }}>
           <span className="text-[15px]">⊞</span> Iniciar
         </button>
         <div className="w-px h-6 bg-white/20 mx-1" />
-        <span className="text-white/70 text-[12px] px-2">{ws.name}</span>
+        <span className="text-white/70 text-[13px] px-2">{ws.name}</span>
         <div className="flex-1" />
-        <div className="px-3 text-white text-[12px] font-semibold flex items-center gap-1.5" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-          <span className="w-2 h-2 rounded-full bg-[#DCE9F5]" /> {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+        <div className="px-3 text-white text-[13px] font-semibold flex items-center gap-1.5" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+          <span className="w-2 h-2 rounded-full bg-[#DBEAFE]" /> {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
 
       {/* ===== MENU INICIAR (todas as apps do módulo) ===== */}
       {start && (
-        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-[#F3F4F6] border border-[#17375E] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="px-4 py-3.5 text-white" style={{ background: `linear-gradient(to bottom, ${ws.accent}, ${ws.color})` }}>
             <div className="font-black text-[15px]">{erpName}</div>
-            <div className="text-[11px] text-white/80">{user?.username} · {ws.name}</div>
+            <div className="text-[12.5px] text-white/80">{user?.username} · {ws.name}</div>
           </div>
           <div className="p-2.5">
-            <div className="text-[10px] uppercase text-gray-500 px-1 py-1 font-semibold">Aplicações — {ws.name}</div>
+            <div className="text-[11.5px] uppercase text-gray-500 px-1 py-1 font-semibold">Aplicações — {ws.name}</div>
             <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-auto p-0.5">
               {ws.icons.map((ic, i) => (
-                <button key={i} onClick={() => openIcon(ic)} className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-[11px] hover:bg-[#F3F4F6] text-center rounded-xl transition-colors">
+                <button key={i} onClick={() => openIcon(ic)} className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-[12.5px] hover:bg-[#F7F8FA] text-center rounded-xl transition-colors">
                   <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: `linear-gradient(155deg, ${ws.accent}, ${ws.color})` }}>
                     <ClassicIcon name={ic.icon} size={18} />
                   </span>
-                  <span className="leading-tight text-[#1A1D21]">{ic.label}</span>
+                  <span className="leading-tight text-[#111827]">{ic.label}</span>
                 </button>
               ))}
             </div>
           </div>
-          <div className="border-t border-[#EBEEF0] flex">
-            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2.5 text-[12px] hover:bg-[#F3F4F6] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
-            <button onClick={logout} className="px-4 py-2.5 text-[12px] hover:bg-[#B42318] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
+          <div className="border-t border-[#F1F2F4] flex">
+            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2.5 text-[13px] hover:bg-[#F7F8FA] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
+            <button onClick={logout} className="px-4 py-2.5 text-[13px] hover:bg-[#DC2626] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
           </div>
         </div>
       )}

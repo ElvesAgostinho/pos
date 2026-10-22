@@ -5,7 +5,7 @@ import { apiClient } from '../../api/client';
     Mantido simples de propósito (MVP): uma grelha mensal a sério só faria
     sentido com um modelo de salas/venue, que ainda não existe. */
 
-const STATUS_COLOR: Record<string, string> = { INQUIRY: '#2E75B6', CONFIRMED: '#17375E', CANCELLED: '#B42318', COMPLETED: '#2E75B6' };
+const STATUS_COLOR: Record<string, string> = { INQUIRY: '#3B82F6', CONFIRMED: '#1E2A44', CANCELLED: '#DC2626', COMPLETED: '#3B82F6' };
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 export default function PmsEventsCalendarView() {
@@ -22,23 +22,23 @@ export default function PmsEventsCalendarView() {
 
   return (
     <div className="h-full overflow-auto bg-white p-3">
-      {Object.keys(groups).length === 0 && <div className="text-gray-400 text-[12px] p-6 text-center">Sem eventos registados.</div>}
+      {Object.keys(groups).length === 0 && <div className="text-gray-400 text-[13px] p-6 text-center">Sem eventos registados.</div>}
       {Object.entries(groups).map(([key, evs]) => {
         const [y, m] = key.split('-');
         const label = key === 'sem-data' ? 'Sem data' : `${MESES[Number(m) - 1]} ${y}`;
         return (
           <div key={key} className="mb-4">
-            <div className="text-[13px] font-bold text-[#1A1D21] bg-[#F3F4F6] border border-[#D7DBDF] px-3 py-1.5">{label} <span className="text-gray-500 font-normal">({evs.length})</span></div>
-            <div className="border border-t-0 border-[#D7DBDF]">
+            <div className="text-[13px] font-bold text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-1.5">{label} <span className="text-gray-500 font-normal">({evs.length})</span></div>
+            <div className="border border-t-0 border-[#E6E8EC]">
               {evs.map((ev) => (
-                <div key={ev.id} className="flex items-center gap-3 px-3 py-2 border-b border-[#EBEEF0] text-[12px] hover:bg-[#F3F4F6]">
+                <div key={ev.id} className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] text-[13px] hover:bg-[#F7F8FA]">
                   <span className="w-16 font-mono text-gray-500">{ev.event_date?.slice(8, 10)}/{ev.event_date?.slice(5, 7)}</span>
                   <span className="w-16 text-gray-400">{ev.start_time ? ev.start_time.slice(0, 5) : '—'}</span>
-                  <span className="flex-1 font-semibold text-[#1A1D21]">{ev.name}</span>
+                  <span className="flex-1 font-semibold text-[#111827]">{ev.name}</span>
                   <span className="w-40 text-gray-500">{ev.venue || '—'}</span>
                   <span className="w-32 text-gray-500">{ev.client_name || '—'}</span>
                   <span className="w-20 text-right">{Number(ev.estimated_revenue || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</span>
-                  <span className="text-white px-1.5 py-0.5 text-[10px] font-bold w-24 text-center" style={{ background: STATUS_COLOR[ev.status] }}>{ev.status_display}</span>
+                  <span className="text-white px-1.5 py-0.5 text-[11.5px] font-bold w-24 text-center" style={{ background: STATUS_COLOR[ev.status] }}>{ev.status_display}</span>
                 </div>
               ))}
             </div>

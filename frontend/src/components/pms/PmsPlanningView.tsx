@@ -57,18 +57,18 @@ export default function PmsPlanningView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <Toolbar actions={[
-        { label: '← 14 dias', icon: '◀', color: '#2E75B6', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
-        { label: '14 dias →', icon: '▶', color: '#2E75B6', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
-        { label: 'Hoje', icon: '🕐', color: '#2E75B6', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
-        { label: 'Atualizar', icon: '⟳', color: '#17375E', onClick: () => refetch() },
+        { label: '← 14 dias', icon: '◀', color: '#3B82F6', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
+        { label: '14 dias →', icon: '▶', color: '#3B82F6', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
+        { label: 'Hoje', icon: '🕐', color: '#3B82F6', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
+        { label: 'Atualizar', icon: '⟳', color: '#1E2A44', onClick: () => refetch() },
       ]} />
       <div className="flex-1 overflow-auto">
-        <table className="border-collapse text-[11px] w-full">
+        <table className="border-collapse text-[12.5px] w-full">
           <thead>
             <tr>
-              <th className="sticky left-0 bg-[#F3F4F6] border border-[#D7DBDF] px-2 py-1 text-left min-w-[130px] z-10">Quarto</th>
+              <th className="sticky left-0 bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 text-left min-w-[130px] z-10">Quarto</th>
               {days.map((d) => (
-                <th key={d.toISOString()} className="border border-[#D7DBDF] px-1 py-1 min-w-[60px] font-normal text-[#6B7280]">
+                <th key={d.toISOString()} className="border border-[#E6E8EC] px-1 py-1 min-w-[60px] font-normal text-[#6B7280]">
                   {d.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: '2-digit' })}
                 </th>
               ))}
@@ -88,21 +88,21 @@ export default function PmsPlanningView() {
                   while (j < DAYS_VISIBLE && fmtISO(days[j]) < res.check_out) { span++; j++; }
                   cells.push(
                     <td key={dayIdx} colSpan={span} onClick={() => setSelId(res.id)}
-                      className="border border-[#D7DBDF] px-1 py-1 text-white text-[10px] font-semibold cursor-pointer truncate hover:brightness-110"
-                      style={{ background: res.color_tag || STATUS_COLOR[res.status] || '#2E75B6' }}
+                      className="border border-[#E6E8EC] px-1 py-1 text-white text-[11.5px] font-semibold cursor-pointer truncate hover:brightness-110"
+                      style={{ background: res.color_tag || STATUS_COLOR[res.status] || '#3B82F6' }}
                       title={`${res.confirmation} · ${res.guest_name} · ${res.check_in} → ${res.check_out}`}>
                       {res.guest_name}
                     </td>,
                   );
                   dayIdx += span;
                 } else {
-                  cells.push(<td key={dayIdx} className="border border-[#D7DBDF] px-1 py-1" />);
+                  cells.push(<td key={dayIdx} className="border border-[#E6E8EC] px-1 py-1" />);
                   dayIdx++;
                 }
               }
               return (
                 <tr key={room.id}>
-                  <td className="sticky left-0 bg-white border border-[#D7DBDF] px-2 py-1 font-semibold z-10">
+                  <td className="sticky left-0 bg-white border border-[#E6E8EC] px-2 py-1 font-semibold z-10">
                     {room.number} <span className="text-[#6B7280] font-normal">({room.room_type_name})</span>
                   </td>
                   {cells}
@@ -115,7 +115,7 @@ export default function PmsPlanningView() {
           </tbody>
         </table>
         {unassigned.length > 0 && (
-          <div className="p-2 text-[11px] text-[#6B7280] border-t border-[#EBEEF0]">
+          <div className="p-2 text-[12.5px] text-[#6B7280] border-t border-[#F1F2F4]">
             {unassigned.length} reserva(s) sem quarto atribuído neste período (não aparecem no mapa) — atribua um quarto na ficha da reserva.
           </div>
         )}

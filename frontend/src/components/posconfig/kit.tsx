@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { TOKENS, accentGradient, RADIUS, SHADOW } from '../../config/theme';
+import { TOKENS, RADIUS, SHADOW } from '../../config/theme';
 import {
   Check as CheckIcon, X, Pencil, Copy, Minus, Plus, CirclePlus, Download, Printer,
   RefreshCw, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SquareCheck, Search,
@@ -176,8 +176,8 @@ export const SECTIONS = [
 /** Etiqueta + campo, alinhados como nos formulários clássicos. */
 export function Field({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
-    <label className="flex items-center gap-2 text-[12px]">
-      <span className={`text-[#1A1D21] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
+    <label className="flex items-center gap-2 text-[13px]">
+      <span className={`text-[#111827] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
@@ -187,7 +187,7 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
   { value: any; onChange: (v: string) => void; options: { value: any; label: string }[]; all?: boolean; allLabel?: string }) {
   return (
     <select value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-      className="border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white min-w-[170px] flex-1"
+      className="border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white min-w-[170px] flex-1"
       style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.10)' }}>
       {all && <option value="">{allLabel}</option>}
       {options.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
@@ -200,13 +200,13 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
     bolha colorida à volta, moldura só aparece ao passar o rato por cima. */
 export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode }) {
   return (
-    <div className="flex items-center gap-1 px-2 py-1.5 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.line }}>
+    <div className="flex items-center gap-1.5 px-3 py-2.5 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.lineSoft }}>
       {actions.map((a) => (
         <button key={a.label} onClick={a.onClick} disabled={a.disabled}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-[12px] text-[#1A1D21] disabled:opacity-35 disabled:cursor-default border border-transparent hover:border-[#D7DBDF] hover:bg-white transition-colors"
-          style={{ borderRadius: RADIUS.sm }}>
+          className="flex items-center gap-2 px-3.5 py-1.5 text-[13px] font-medium text-[#111827] disabled:opacity-35 disabled:cursor-default hover:bg-[#F3F4F6] active:bg-[#E6E8EC] transition-colors"
+          style={{ borderRadius: RADIUS.pill }}>
           <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
-            style={{ color: a.disabled ? '#2E75B6' : a.color }}><Glyph icon={a.icon} size={15} /></span>
+            style={{ color: a.disabled ? '#3B82F6' : a.color }}><Glyph icon={a.icon} size={15} /></span>
           {a.label}
         </button>
       ))}
@@ -219,33 +219,41 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
 export function Tab({ active, onClick, children }: any) {
   return (
     <button onClick={onClick}
-      className={`px-3 py-1.5 text-[13px] font-semibold border-b-[3px] ${active ? 'border-[#17375E] text-[#1A1D21] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#1A1D21]'}`}>
+      className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${active
+        ? 'bg-[#DBEAFE] text-[#1D4ED8]' : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]'}`}
+      style={{ borderRadius: RADIUS.pill }}>
       {children}
     </button>
   );
 }
 
-/** Caixa com título (o "group box" clássico dos PMS hoteleiros — Fidelio/
-    Micros) — rebordo em relevo (`groove`) mais grosso, fundo ligeiramente
-    recuado e sombra interior subtil, para parecer mesmo um PAINEL EMBUTIDO
-    na janela (não uma linha desenhada por cima). É um detalhe pequeno, mas
-    é o que faz a diferença entre "parece antigo" e "parece a sério". */
+/** CARTÃO — o bloco de que os ecrãs são feitos.
+ *
+ * Era um "group box" à maneira dos PMS antigos: rebordo em relevo, fundo
+ * recuado, sombra interior — uma caixa DESENHADA dentro da janela. Agora é uma
+ * superfície branca POUSADA sobre o fundo: canto generoso, uma linha quase
+ * invisível e uma sombra aberta. O que separa um cartão do seguinte é o espaço
+ * entre eles, não um contorno à volta de cada um.
+ *
+ * O título deixou de ser `legend` encavalitada na borda (um desenho que só
+ * existe porque o HTML o permite) e passa a ser uma linha de texto própria,
+ * acima do conteúdo, com espaço a seguir. */
 export function Box({ title, children, className = '' }: { title?: string; children: ReactNode; className?: string }) {
   return (
-    <fieldset className={`px-3.5 pb-3.5 pt-2 min-w-0 overflow-hidden ${className}`}
+    <section className={`p-4 min-w-0 overflow-hidden ${className}`}
       style={{
-        border: `1px solid ${TOKENS.line}`,
-        background: '#FFFFFF',
+        border: `1px solid ${TOKENS.lineSoft}`,
+        background: TOKENS.surface,
         borderRadius: RADIUS.md,
         boxShadow: SHADOW.soft,
       }}>
       {title && (
-        <legend className="px-2 text-[12px] font-bold uppercase tracking-tight" style={{ color: TOKENS.selectedText }}>
+        <h3 className="text-[13px] font-semibold mb-3" style={{ color: TOKENS.textOnLight }}>
           {title}
-        </legend>
+        </h3>
       )}
       {children}
-    </fieldset>
+    </section>
   );
 }
 
@@ -259,10 +267,12 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className={`w-[180px] flex flex-col items-center justify-center gap-1 text-white font-bold hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default transition-[filter] ${className}`}
-      style={{ background: accentGradient(), borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
-      <Glyph icon={icon} size={22} />
-      <span className="text-[13px]">{label}</span>
+      className={`flex items-center justify-center gap-2 px-6 py-2.5 text-white font-semibold
+        hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default
+        transition-[filter] ${className}`}
+      style={{ background: TOKENS.brand, borderRadius: RADIUS.pill, boxShadow: SHADOW.xs }}>
+      <Glyph icon={icon} size={16} />
+      <span className="text-[13.5px]">{label}</span>
     </button>
   );
 }
@@ -270,22 +280,27 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 /** Linha etiqueta→campo dentro das caixas. */
 export function Row({ label, children, w = 'w-[120px]' }: { label: string; children: ReactNode; w?: string }) {
   return (
-    <label className="flex items-center gap-2 text-[12px] py-[3px] min-w-0">
-      <span className={`text-[#1A1D21] ${w} flex-shrink-0`}>{label}</span>
+    <label className="flex items-center gap-3 text-[13px] py-[5px] min-w-0">
+      <span className={`text-[#6B7280] ${w} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
 }
 
-export const inputCls = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white flex-1 min-w-0 rounded-[6px]';
+export const inputCls = 'border border-[#E6E8EC] px-3 py-1.5 text-[13px] bg-white flex-1 min-w-0 '
+  + 'rounded-[8px] outline-none focus:border-[#2563EB] transition-colors';
 // Sombra interior discreta (substitui o "afundado" 3D de antes) — aplicada
 // inline (style={inputStyle}) para continuar a ganhar da regra global em
 // index.css em todos os formulários que já a usam.
-export const inputStyle = { boxShadow: 'inset 0 1px 2px rgba(6,42,49,0.10)' };
+// O campo deixou de ser "afundado". A sombra interior era o que o fazia parecer
+// entalhado na janela; num formulário moderno o campo é uma superfície branca
+// com um contorno leve, e o que o destaca é o ANEL de foco quando se escreve
+// nele — ver `focus:border` acima e SHADOW.ring.
+export const inputStyle = {};
 
 export function Check({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
-    <label className="flex items-center gap-2 text-[12px] py-[3px] cursor-pointer">
+    <label className="flex items-center gap-2 text-[13px] py-[3px] cursor-pointer">
       <input type="checkbox" checked={!!checked} onChange={(e) => onChange(e.target.checked)} className="w-4 h-4" />
       {label}
     </label>

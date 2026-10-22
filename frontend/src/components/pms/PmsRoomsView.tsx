@@ -5,10 +5,10 @@ import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 
 const STATUS_STYLE: Record<string, string> = {
-  VACANT_CLEAN: 'bg-[#F3F4F6] border-[#D7DBDF] text-[#1A1D21]',
-  VACANT_DIRTY: 'bg-[#F3F4F6] border-[#D7DBDF] text-[#1A1D21]',
-  OCCUPIED: 'bg-[#F3F4F6] border-[#B42318] text-[#912018]',
-  OOO: 'bg-[#F3F4F6] border-[#D7DBDF] text-gray-500',
+  VACANT_CLEAN: 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]',
+  VACANT_DIRTY: 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]',
+  OCCUPIED: 'bg-[#F7F8FA] border-[#DC2626] text-[#B91C1C]',
+  OOO: 'bg-[#F7F8FA] border-[#E6E8EC] text-gray-500',
 };
 
 const blank = { number: '', room_type: '' };
@@ -40,35 +40,35 @@ export default function PmsRoomsView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 p-3 grid grid-cols-6 gap-2 overflow-auto content-start">
         {rows.map((r: any) => (
-          <div key={r.id} className={`border p-2 text-[11px] rounded-[10px] ${STATUS_STYLE[r.status] || ''}`}>
+          <div key={r.id} className={`border p-2 text-[12.5px] rounded-[12px] ${STATUS_STYLE[r.status] || ''}`}>
             <div className="font-bold text-[13px]">{r.number}</div>
-            <div className="text-[10px] mb-1">{r.room_type_name}</div>
+            <div className="text-[11.5px] mb-1">{r.room_type_name}</div>
             {/* AÇÃO ÓBVIA primeiro: o seletor sozinho escondia a única forma de
                 libertar um quarto (ninguém procura um dropdown minúsculo para
                 dizer "já está limpo"). O seletor fica por baixo, para os casos
                 que estes botões não cobrem. */}
             {r.status === 'VACANT_DIRTY' && (
               <button onClick={() => setStatus(r.id, 'VACANT_CLEAN')}
-                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[6px] hover:brightness-110 transition-[filter]"
-                style={{ background: '#17375E' }}>
+                className="w-full mb-1 px-1 py-1 text-[11.5px] font-semibold text-white rounded-[8px] hover:brightness-110 transition-[filter]"
+                style={{ background: '#1E2A44' }}>
                 ✔ Marcar como limpo
               </button>
             )}
             {r.status === 'OOO' && (
               <button onClick={() => setStatus(r.id, 'VACANT_DIRTY')}
-                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[6px] hover:brightness-110 transition-[filter]"
-                style={{ background: '#2E75B6' }}>
+                className="w-full mb-1 px-1 py-1 text-[11.5px] font-semibold text-white rounded-[8px] hover:brightness-110 transition-[filter]"
+                style={{ background: '#3B82F6' }}>
                 ↩ Voltar ao serviço
               </button>
             )}
             {r.status === 'VACANT_CLEAN' && (
               <button onClick={() => setStatus(r.id, 'OOO')}
-                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold rounded-[6px] border border-[#D7DBDF] bg-white hover:bg-[#F3F4F6] transition-colors text-[#912018]">
+                className="w-full mb-1 px-1 py-1 text-[11.5px] font-semibold rounded-[8px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA] transition-colors text-[#B91C1C]">
                 ⊘ Pôr fora de serviço
               </button>
             )}
             <select value={r.status} onChange={(e) => setStatus(r.id, e.target.value)}
-              className="w-full text-[10px] border border-black/10 bg-white/70 rounded-[6px]">
+              className="w-full text-[11.5px] border border-black/10 bg-white/70 rounded-[8px]">
               <option value="VACANT_CLEAN">Livre / Limpo</option>
               <option value="VACANT_DIRTY">Livre / Por limpar</option>
               <option value="OCCUPIED">Ocupado</option>
@@ -78,23 +78,23 @@ export default function PmsRoomsView() {
         ))}
         {rows.length === 0 && <div className="col-span-6 text-center text-gray-400 py-6">Sem quartos criados.</div>}
       </div>
-      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', color: '#17375E', onClick: () => setShowNew(true) }]} />
+      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', color: '#1E2A44', onClick: () => setShowNew(true) }]} />
 
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-          <div className="w-[360px] bg-[#F3F4F6] border border-[#D7DBDF] shadow-xl rounded-[16px] overflow-hidden">
-            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #17375E, #17375E)' }}>Novo Quarto</div>
-            <div className="p-3 space-y-2 text-[11px]">
-              <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#D7DBDF] p-1" /></label>
+          <div className="w-[360px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
+            <div className="h-8 flex items-center px-3 text-white text-[13px] font-bold" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>Novo Quarto</div>
+            <div className="p-3 space-y-2 text-[12.5px]">
+              <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
               <label className="flex flex-col">Categoria
-                <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white">
+                <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
                   <option value="">Escolha…</option>{rtList.map((rt: any) => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
                 </select>
               </label>
             </div>
             <Toolbar actions={[
-              { label: 'Cancelar', icon: '✕', color: '#2E75B6', onClick: () => setShowNew(false) },
-              { label: 'Gravar', icon: '💾', color: '#17375E', onClick: create },
+              { label: 'Cancelar', icon: '✕', color: '#3B82F6', onClick: () => setShowNew(false) },
+              { label: 'Gravar', icon: '💾', color: '#1E2A44', onClick: create },
             ]} />
           </div>
         </div>

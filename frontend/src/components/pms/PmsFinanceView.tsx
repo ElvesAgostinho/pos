@@ -86,27 +86,27 @@ export default function PmsFinanceView() {
     } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#D7DBDF] p-1';
+  const inp = 'border border-[#E6E8EC] p-1';
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex gap-3 p-3 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[12px]">
-        <div className="bg-white border border-[#D7DBDF] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Total Receitas</div><div className="font-bold text-[#1A1D21]">{money(totalIncome)}</div></div>
-        <div className="bg-white border border-[#D7DBDF] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Total Despesas</div><div className="font-bold text-[#B42318]">{money(totalExpense)}</div></div>
-        <div className="bg-white border border-[#D7DBDF] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Saldo</div><div className="font-bold text-[#1A1D21]">{money(totalIncome - totalExpense)}</div></div>
+      <div className="flex gap-3 p-3 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[13px]">
+        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[11.5px] text-gray-500">Total Receitas</div><div className="font-bold text-[#111827]">{money(totalIncome)}</div></div>
+        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[11.5px] text-gray-500">Total Despesas</div><div className="font-bold text-[#DC2626]">{money(totalExpense)}</div></div>
+        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[11.5px] text-gray-500">Saldo</div><div className="font-bold text-[#111827]">{money(totalIncome - totalExpense)}</div></div>
       </div>
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-3/5 border-r border-[#D7DBDF]">
+        <div className="w-3/5 border-r border-[#E6E8EC]">
           <ClassicGrid rowKey="id" data={rows} columns={[
             { header: 'Nome / Origem', accessor: 'party_name', width: '30%' },
             { header: 'Categoria', accessor: (r: any) => categories.find((c) => c.id === r.cost_center)?.name || '—', width: '20%' },
             { header: 'Método', accessor: (r: any) => METHOD_LABEL[r.method] || r.method, width: '18%' },
             { header: 'Data', accessor: 'date', width: '14%' },
-            { header: 'Valor', accessor: (r: any) => <span className={r.kind === 'expense' ? 'text-[#B42318]' : 'text-[#1A1D21]'}>{r.kind === 'expense' ? '-' : '+'}{money(Number(r.amount))}</span>, width: '18%' },
+            { header: 'Valor', accessor: (r: any) => <span className={r.kind === 'expense' ? 'text-[#DC2626]' : 'text-[#111827]'}>{r.kind === 'expense' ? '-' : '+'}{money(Number(r.amount))}</span>, width: '18%' },
           ]} />
         </div>
-        <div className="w-2/5 p-3 space-y-2 text-[11px] overflow-auto">
-          <div className="font-bold text-[#1A1D21]">Nova Transação</div>
+        <div className="w-2/5 p-3 space-y-2 text-[12.5px] overflow-auto">
+          <div className="font-bold text-[#111827]">Nova Transação</div>
           <label className="flex flex-col">Tipo
             <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} className={inp}>
               <option value="income">Receita</option>
@@ -138,8 +138,8 @@ export default function PmsFinanceView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Limpar', icon: '✕', color: '#2E75B6', onClick: novo },
-        { label: 'Gravar Transação', icon: '💾', color: '#17375E', onClick: save },
+        { label: 'Limpar', icon: '✕', color: '#3B82F6', onClick: novo },
+        { label: 'Gravar Transação', icon: '💾', color: '#1E2A44', onClick: save },
       ]} />
     </div>
   );

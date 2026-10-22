@@ -30,32 +30,32 @@ export default function PriceListsView() {
       footer={<div className="text-gray-600">Cada Outlet aponta para uma tabela → o POS aplica o preço da área. As promoções aplicam por cima.</div>}>
       <div className="flex h-full">
         {/* Tabelas */}
-        <div className="w-64 border-r border-[#D7DBDF] flex flex-col">
-          <div className="bg-[#F3F4F6] border-b border-[#D7DBDF] p-2 space-y-1 text-[11px]">
-            <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#D7DBDF] p-1 w-full" />
-            <input placeholder="Nome da tabela" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#D7DBDF] p-1 w-full" />
+        <div className="w-64 border-r border-[#E6E8EC] flex flex-col">
+          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-2 space-y-1 text-[12.5px]">
+            <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-full" />
+            <input placeholder="Nome da tabela" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1 w-full" />
             <ClassicButton icon={Plus} label="Nova Tabela" onClick={addList} />
           </div>
           <div className="flex-1 overflow-auto">
             {lists.map((l: any) => (
-              <div key={l.id} onClick={() => setSel(l.id)} className={`flex items-center justify-between px-3 py-2 text-[12px] cursor-pointer border-b border-[#EBEEF0] ${active?.id === l.id ? 'bg-[#F3F4F6]' : 'hover:bg-[#F3F4F6]'}`}>
-                <span><b>{l.name}</b><br /><span className="text-gray-500 text-[10px]">{l.code} · {l.item_count ?? (l.items?.length || 0)} artigos</span></span>
-                <button onClick={(e) => { e.stopPropagation(); del.mutate(l.id); }} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button>
+              <div key={l.id} onClick={() => setSel(l.id)} className={`flex items-center justify-between px-3 py-2 text-[13px] cursor-pointer border-b border-[#F1F2F4] ${active?.id === l.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#F7F8FA]'}`}>
+                <span><b>{l.name}</b><br /><span className="text-gray-500 text-[11.5px]">{l.code} · {l.item_count ?? (l.items?.length || 0)} artigos</span></span>
+                <button onClick={(e) => { e.stopPropagation(); del.mutate(l.id); }} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>
               </div>
             ))}
-            {lists.length === 0 && <div className="p-3 text-gray-400 text-[11px]">Sem tabelas. Crie a primeira.</div>}
+            {lists.length === 0 && <div className="p-3 text-gray-400 text-[12.5px]">Sem tabelas. Crie a primeira.</div>}
           </div>
         </div>
 
         {/* Artigos da tabela selecionada */}
         <div className="flex-1 flex flex-col">
-          <div className="bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px] flex flex-wrap items-end gap-2">
+          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px] flex flex-wrap items-end gap-2">
             <span className="font-bold text-[#6B7280]">{active ? `Preços · ${active.name}` : 'Selecione uma tabela'}</span>
             {active && <>
-              <select value={line.item} onChange={(e) => setLine({ ...line, item: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white ml-auto">
+              <select value={line.item} onChange={(e) => setLine({ ...line, item: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white ml-auto">
                 <option value="">— artigo —</option>{items.map((i: any) => <option key={i.id} value={i.id}>[{i.code}] {i.name}</option>)}
               </select>
-              <input placeholder="Preço" type="number" value={line.price} onChange={(e) => setLine({ ...line, price: e.target.value })} className="border border-[#D7DBDF] p-1 w-24" />
+              <input placeholder="Preço" type="number" value={line.price} onChange={(e) => setLine({ ...line, price: e.target.value })} className="border border-[#E6E8EC] p-1 w-24" />
               <ClassicButton icon={ListPlus} label="Definir Preço" onClick={addPrice} />
             </>}
           </div>
@@ -64,7 +64,7 @@ export default function PriceListsView() {
               { header: 'Código', accessor: 'item_code', width: '18%' },
               { header: 'Artigo', accessor: 'item_name', width: '52%' },
               { header: 'Preço', accessor: (r: any) => Number(r.price).toFixed(2), width: '20%' },
-              { header: '', accessor: (r: any) => <button onClick={() => active && removeItem.mutate({ id: active.id as number, item: r.item })} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button>, width: '10%' },
+              { header: '', accessor: (r: any) => <button onClick={() => active && removeItem.mutate({ id: active.id as number, item: r.item })} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>, width: '10%' },
             ]} />
           </div>
         </div>

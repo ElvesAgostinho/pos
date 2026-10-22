@@ -41,44 +41,44 @@ export default function ArticleLogs({ id, nome, onClose }: {
     URL.revokeObjectURL(url);
   };
 
-  const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px]';
+  const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px]';
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="bg-white w-[900px] max-w-[95vw] h-[640px] max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 bg-[#17375E] text-white">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#1E2A44] text-white">
           <span className="text-[14px] font-bold">Visualizar Logs{nome ? `: ${nome}` : ''}</span>
           <button onClick={onClose} className="text-white/80 hover:text-white"><Glyph icon="✕" size={16} /></button>
         </div>
 
-        <div className="p-3 border-b border-[#EBEEF0] flex items-end gap-3">
-          <label className="text-[11px] text-[#1A1D21] flex flex-col gap-0.5">De data:
+        <div className="p-3 border-b border-[#F1F2F4] flex items-end gap-3">
+          <label className="text-[12.5px] text-[#111827] flex flex-col gap-0.5">De data:
             <input type="date" value={de} onChange={(e) => { setDe(e.target.value); setPage(1); }} className={inp} />
           </label>
-          <label className="text-[11px] text-[#1A1D21] flex flex-col gap-0.5">Até à data:
+          <label className="text-[12.5px] text-[#111827] flex flex-col gap-0.5">Até à data:
             <input type="date" value={ate} onChange={(e) => { setAte(e.target.value); setPage(1); }} className={inp} />
           </label>
-          <span className="text-[11px] text-[#6B7280] ml-auto">{isFetching ? 'A atualizar…' : `${total} registo(s)`}</span>
+          <span className="text-[12.5px] text-[#6B7280] ml-auto">{isFetching ? 'A atualizar…' : `${total} registo(s)`}</span>
         </div>
 
         <div className="flex-1 overflow-auto">
-          <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0 bg-[#F3F4F6]">
+          <table className="w-full text-[13px] border-collapse">
+            <thead className="sticky top-0 bg-[#F7F8FA]">
               <tr>
                 {['Log Time', 'Utilizador', 'Campo', 'Antes', 'Depois'].map((h) => (
-                  <th key={h} className="text-left px-2 py-1 border border-[#EBEEF0] font-semibold">{h}</th>
+                  <th key={h} className="text-left px-2 py-1 border border-[#F1F2F4] font-semibold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {linhas.map((l: any) => (
-                <tr key={l.id} className="hover:bg-[#F3F4F6]">
-                  <td className="px-2 py-1 border border-[#EBEEF0] whitespace-nowrap">{new Date(l.changed_at).toLocaleString('pt-PT')}</td>
-                  <td className="px-2 py-1 border border-[#EBEEF0]">{l.changed_by}</td>
-                  <td className="px-2 py-1 border border-[#EBEEF0] font-mono">{l.field_name}</td>
-                  <td className="px-2 py-1 border border-[#EBEEF0] text-[#B42318]">{l.old_value || '(nenhum)'}</td>
-                  <td className="px-2 py-1 border border-[#EBEEF0] text-[#1A1D21]">{l.new_value || '(nenhum)'}</td>
+                <tr key={l.id} className="hover:bg-[#F7F8FA]">
+                  <td className="px-2 py-1 border border-[#F1F2F4] whitespace-nowrap">{new Date(l.changed_at).toLocaleString('pt-PT')}</td>
+                  <td className="px-2 py-1 border border-[#F1F2F4]">{l.changed_by}</td>
+                  <td className="px-2 py-1 border border-[#F1F2F4] font-mono">{l.field_name}</td>
+                  <td className="px-2 py-1 border border-[#F1F2F4] text-[#DC2626]">{l.old_value || '(nenhum)'}</td>
+                  <td className="px-2 py-1 border border-[#F1F2F4] text-[#111827]">{l.new_value || '(nenhum)'}</td>
                 </tr>
               ))}
               {!isFetching && linhas.length === 0 && (
@@ -88,21 +88,21 @@ export default function ArticleLogs({ id, nome, onClose }: {
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-3 py-2 border-t border-[#EBEEF0] bg-[#F3F4F6] text-[12px]">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-[#F1F2F4] bg-[#F7F8FA] text-[13px]">
           <span>Página {page} de {totalPaginas}</span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-2 py-1 border border-[#EBEEF0] disabled:opacity-30">‹</button>
-            <button onClick={() => setPage((p) => Math.min(totalPaginas, p + 1))} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#EBEEF0] disabled:opacity-30">›</button>
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-2 py-1 border border-[#F1F2F4] disabled:opacity-30">‹</button>
+            <button onClick={() => setPage((p) => Math.min(totalPaginas, p + 1))} disabled={page >= totalPaginas} className="px-2 py-1 border border-[#F1F2F4] disabled:opacity-30">›</button>
           </div>
         </div>
 
-        <div className="flex justify-between px-3 py-2 border-t border-[#EBEEF0]">
+        <div className="flex justify-between px-3 py-2 border-t border-[#F1F2F4]">
           <button onClick={exportar}
-            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#17375E' }}>
+            className="flex items-center gap-2 px-4 py-1.5 text-[13px] font-bold text-white" style={{ background: '#1E2A44' }}>
             <Glyph icon="⬇" size={13} /> Exportar para Excel
           </button>
           <button onClick={onClose}
-            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#B42318' }}>
+            className="flex items-center gap-2 px-4 py-1.5 text-[13px] font-bold text-white" style={{ background: '#DC2626' }}>
             <Glyph icon="✖" size={13} /> Fechar
           </button>
         </div>

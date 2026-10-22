@@ -6,7 +6,7 @@ import { Glyph } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
 import { MENUS } from './pmsMenus';
 import { useActiveModules } from '../../hooks/useActiveModules';
-import { RADIUS, SHADOW } from '../../config/theme';
+import { TOKENS, RADIUS, SHADOW } from '../../config/theme';
 import PmsPermissionsDialog from './PmsPermissionsDialog';
 import { useMyAccess } from '../../hooks/useActiveModules';
 import PmsAvailabilityView from './PmsAvailabilityView';
@@ -182,21 +182,23 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   const screenAllowed = (id: string) => accFull || accScreens.length === 0 || accScreens.includes(id);
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#F3F4F6', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+    <div className="h-full flex flex-col" style={{ background: '#F7F8FA', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* Barra de menus (topo escuro) — cabeçalho próprio do PMS */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#17375E', height: 56 }}>
+      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#1E2A44', height: 56 }}>
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
-            className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+            className={`flex items-center gap-2 px-2 py-1 leading-none rounded-[12px] transition-colors ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
             {logoUrl ? <img src={logoUrl} alt="" className="h-9 w-9 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={20} className="flex-shrink-0" />}
           </button>
           {menu === '__ml' && (
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden" style={{ background: '#17375E', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+              <div className="absolute left-0 top-full mt-2 z-[61] min-w-[240px] py-2 overflow-hidden"
+                style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.lineSoft}`,
+                         borderRadius: RADIUS.md, boxShadow: SHADOW.pop }}>
                 <button onClick={() => { setMenu(null); localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#2E75B6] transition-colors">
-                  <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
+                  <span className="w-5 flex items-center justify-center text-[#6B7280]"><Glyph icon="🖥" size={15} /></span>
                   Ambiente de Trabalho
                 </button>
               </div>
@@ -214,14 +216,20 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
               // A seta "▾" saiu: com os títulos todos na barra, não cabia ao lado
               // do texto e caía para uma segunda linha debaixo de cada menu.
               // Que um título de menu abre uma lista já se percebe por si.
-              className="px-3 py-1.5 text-[14px] font-semibold hover:bg-white/10 transition-colors whitespace-nowrap"
-              style={{ background: menu === m.title ? 'rgba(255,255,255,0.1)' : 'transparent', borderRadius: RADIUS.sm }}>
+              className={`px-4 py-2 text-[14px] font-medium transition-colors whitespace-nowrap ${
+                menu === m.title ? 'text-white' : 'text-white/80 hover:text-white hover:bg-white/10'}`}
+              style={{
+                background: menu === m.title ? TOKENS.brand : 'transparent',
+                borderRadius: RADIUS.pill,
+              }}>
               {m.title}
             </button>
             {menu === m.title && (
               <>
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[260px] py-1 overflow-hidden" style={{ background: '#17375E', borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+                <div className="absolute left-0 top-full mt-2 z-[61] min-w-[270px] py-2 overflow-hidden"
+                  style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.lineSoft}`,
+                           borderRadius: RADIUS.md, boxShadow: SHADOW.pop }}>
                   {m.items.map((it, i) => (
                     <button key={i}
                       onClick={() => {
@@ -233,9 +241,9 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                           setSection(it.section);
                         }
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#2E75B6] transition-colors">
-                      <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon={it.icon} size={16} /></span>
-                      {it.label}{it.soon && <span className="ml-auto text-[10px] opacity-50">(brevemente)</span>}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
+                      <span className="w-5 flex items-center justify-center text-[#6B7280]"><Glyph icon={it.icon} size={16} /></span>
+                      {it.label}{it.soon && <span className="ml-auto text-[11.5px] opacity-50">(brevemente)</span>}
                     </button>
                   ))}
                 </div>
@@ -250,11 +258,17 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
       </div>
 
       {/* Título da secção ativa */}
-      <div className="flex items-center gap-2 px-3.5 py-2.5 text-white text-[15px] font-bold flex-shrink-0" style={{ background: '#17375E' }}>
+      {/* CABEÇALHO DA SECÇÃO — branco, não uma segunda barra escura. Duas
+          barras escuras empilhadas (a dos menus e esta) tiram metade do ar ao
+          ecrã e são o que mais o fazia parecer uma janela de aplicação antiga.
+          Aqui o nome do ecrã é só um título, sobre o mesmo branco do conteúdo. */}
+      <div className="flex items-center gap-2.5 px-5 py-3.5 text-[19px] font-semibold flex-shrink-0"
+        style={{ background: TOKENS.surface, color: TOKENS.textOnLight,
+                 borderBottom: `1px solid ${TOKENS.lineSoft}` }}>
         <span className="inline-flex items-center opacity-90"><Glyph icon={cur.icon} size={17} /></span>
-        {cur.label}{hotelName && <span className="font-normal opacity-70"> — {hotelName}</span>}
+        {cur.label}{hotelName && <span className="font-normal text-[15px] text-[#6B7280]"> — {hotelName}</span>}
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
-          className="ml-auto w-7 h-7 flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
+          className="ml-auto w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.pill }}>
           <Users size={15} />
         </button>
       </div>
@@ -278,11 +292,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
 
       {/* Rodapé — um bar só (era dois empilhados: ação do ecrã + hora, e depois
           separador/versão/hotel — a mesma informação cabe toda numa linha). */}
-      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white text-[11px]" style={{ background: '#17375E' }}>
+      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white text-[12.5px]" style={{ background: '#1E2A44' }}>
         <span className="opacity-80">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
         {hotels.length > 1 && (
           <select value={hotelId || String(hotels[0]?.id)} onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
-            className="h-6 text-[11px] px-1.5 border" style={{ background: '#17375E', borderColor: '#1F4E79', borderRadius: RADIUS.sm }}>
+            className="h-6 text-[12.5px] px-1.5 border" style={{ background: '#1E2A44', borderColor: '#2563EB', borderRadius: RADIUS.sm }}>
             {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
         )}
@@ -290,7 +304,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         <span className="opacity-50">PMS v1.0</span>
         <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
           className="flex items-center gap-1.5 font-semibold hover:text-white opacity-90 hover:opacity-100 transition-opacity" title="Fechar (volta ao Ambiente de Trabalho)">
-          <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B42318] text-white">
+          <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white">
             <X size={10} strokeWidth={3} />
           </span>
           Fechar

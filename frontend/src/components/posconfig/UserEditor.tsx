@@ -6,8 +6,8 @@ import { Toolbar, inputStyle, Glyph } from './kit';
 import { SubFamilyPicker, ItemPicker } from './Pickers';
 import { useActiveModules } from '../../hooks/useActiveModules';
 
-const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
-const cell = 'w-full border border-[#EBEEF0] px-1.5 py-1 text-[12px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px] bg-white';
 
 type Tab = 'user' | 'imp' | 'complex' | 'rate' | 'personal' | 'pos' | 'ems' | 'fnb' | 'memo' | 'sign' | 'comm';
 // O terceiro elemento é o MÓDULO que a aba exige. Este editor é partilhado pelo
@@ -25,8 +25,8 @@ const TABS: [Tab, string, string?][] = [
 
 function R({ label, children, w = 'w-[110px]' }: any) {
   return (
-    <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className={`${w} flex-shrink-0 text-[#1A1D21]`}>{label}</span>
+    <label className="flex items-center gap-3 text-[13px] min-w-0">
+      <span className={`${w} flex-shrink-0 text-[#111827]`}>{label}</span>
       {children}
     </label>
   );
@@ -104,21 +104,21 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
-        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Novo' : `A editar ${d.first_name || ''} ${d.last_name || ''}`}</span>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo' : `A editar ${d.first_name || ''} ${d.last_name || ''}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-3">
         {/* Dados de Login + Atribuir Caixa */}
         <div className="grid grid-cols-[1fr_300px] gap-4 mb-3">
-          <fieldset className="px-3 pb-3 pt-1" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-            <legend className="px-1 text-[12px] font-semibold text-[#1A1D21]">Dados de Login</legend>
+          <fieldset className="px-3 pb-3 pt-1" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+            <legend className="px-1 text-[13px] font-semibold text-[#111827]">Dados de Login</legend>
             <div className="grid grid-cols-[1fr_240px] gap-4">
               <div className="space-y-2">
                 <R label="Código:">
                   <input value={d.code || ''} disabled={!isNew} onChange={(e) => set('code', e.target.value.toUpperCase())}
-                    className={`${inp} flex-1 disabled:bg-[#F3F4F6]`} style={inputStyle} />
+                    className={`${inp} flex-1 disabled:bg-[#F7F8FA]`} style={inputStyle} />
                 </R>
                 <R label="Grupo:">
                   <select value={d.group || ''} onChange={(e) => set('group', Number(e.target.value) || null)} className={`${inp} flex-1`} style={inputStyle}>
@@ -132,15 +132,15 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
               </div>
               <div className="space-y-2">
                 <button onClick={() => setPwModal('main')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#17375E] text-white text-[13px] font-bold">
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#1E2A44] text-white text-[13px] font-bold">
                   <Glyph icon="🔑" size={14} /> Password
                 </button>
-                <label className="flex items-center gap-2 text-[12px]">
+                <label className="flex items-center gap-2 text-[13px]">
                   <input type="checkbox" checked={!!d.must_change_password} onChange={(e) => set('must_change_password', e.target.checked)} className="w-4 h-4" />
                   Deve alterar a password no próximo login
                 </label>
                 {d.password_changed_at && (
-                  <div className="text-[11px] text-[#6B7280]">
+                  <div className="text-[12.5px] text-[#6B7280]">
                     Última alteração: {new Date(d.password_changed_at).toLocaleString('pt-PT')}
                   </div>
                 )}
@@ -148,24 +148,24 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
             </div>
           </fieldset>
 
-          <fieldset className="px-3 pb-3 pt-1" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-            <legend className="px-1 text-[12px] font-semibold text-[#1A1D21]">Atribuir Caixa</legend>
+          <fieldset className="px-3 pb-3 pt-1" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+            <legend className="px-1 text-[13px] font-semibold text-[#111827]">Atribuir Caixa</legend>
             {['Caixa', 'IFC'].map((c) => (
-              <label key={c} className="flex items-center gap-3 py-1.5 border-b border-[#EBEEF0] text-[12px]">
+              <label key={c} className="flex items-center gap-3 py-1.5 border-b border-[#F1F2F4] text-[13px]">
                 <input type="checkbox" checked={!!(d.cash_registers || {})[c]}
                   onChange={(e) => set('cash_registers', { ...(d.cash_registers || {}), [c]: e.target.checked })} className="w-4 h-4" />
                 {c}
               </label>
             ))}
-            <div className="text-[10px] text-[#6B7280] mt-2">Que caixas este utilizador pode abrir e fechar.</div>
+            <div className="text-[11.5px] text-[#6B7280] mt-2">Que caixas este utilizador pode abrir e fechar.</div>
           </fieldset>
         </div>
 
         {/* Separadores */}
-        <div className="flex border-b-2 border-[#17375E] overflow-x-auto">
+        <div className="flex border-b-2 border-[#1E2A44] overflow-x-auto">
           {TABS_VISIVEIS.map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#17375E] text-[#1A1D21] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#1A1D21]'}`}>
+              className={`px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
               {label}
             </button>
           ))}
@@ -178,7 +178,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                 <R label="Nr:"><input type="number" value={d.number ?? 0} onChange={(e) => set('number', Number(e.target.value))} className={`${inp} w-[160px]`} style={inputStyle} /></R>
                 <R label="Título:"><input value={d.title || ''} onChange={(e) => set('title', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></R>
                 <R label="Apelido:"><input value={d.last_name || ''} onChange={(e) => set('last_name', e.target.value)}
-                  className={`${inp} flex-1 ${!d.last_name ? 'border-[#B42318]' : ''}`} style={inputStyle} /></R>
+                  className={`${inp} flex-1 ${!d.last_name ? 'border-[#DC2626]' : ''}`} style={inputStyle} /></R>
                 <R label="Nome:"><input value={d.first_name || ''} onChange={(e) => set('first_name', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></R>
                 <R label="Língua:">
                   <select value={d.language} onChange={(e) => set('language', e.target.value)} className={`${inp} flex-1`} style={inputStyle}>
@@ -216,7 +216,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
             <div className="max-w-[700px] space-y-2">
               <R label="Data Access:"><input value={d.imp_data_access || ''} onChange={(e) => set('imp_data_access', e.target.value)} placeholder="(nenhum)" className={`${inp} flex-1`} style={inputStyle} /></R>
               <R label="Reporting:"><input value={d.imp_reporting || ''} onChange={(e) => set('imp_reporting', e.target.value)} placeholder="(nenhum)" className={`${inp} flex-1`} style={inputStyle} /></R>
-              <div className="text-[11px] text-[#6B7280] py-2">
+              <div className="text-[12.5px] text-[#6B7280] py-2">
                 Estas configurações podem levar até 5 minutos a fazer efeito e são válidas apenas no ambiente indicado.
               </div>
               <R label="Servidor SQL:"><input value={d.imp_sql_server || ''} onChange={(e) => set('imp_sql_server', e.target.value)} className={`${inp} flex-1`} style={inputStyle} /></R>
@@ -226,25 +226,25 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
 
           {tab === 'complex' && (
             <div className="max-w-[700px]">
-              <label className="flex items-center gap-3 text-[12px] mb-3">
-                <span className="w-[130px] text-[#1A1D21]">Todos os complexos:</span>
+              <label className="flex items-center gap-3 text-[13px] mb-3">
+                <span className="w-[130px] text-[#111827]">Todos os complexos:</span>
                 <input type="checkbox" checked={!!d.all_complexes} onChange={(e) => set('all_complexes', e.target.checked)} className="w-4 h-4" />
               </label>
-              <table className="w-full text-[12px] border-collapse">
-                <thead><tr className="bg-[#F3F4F6]">
-                  <th className="w-[40px] border border-[#EBEEF0]" />
-                  <th className="text-left font-normal px-2 py-1.5 border border-[#EBEEF0]">Código</th>
-                  <th className="text-left font-normal px-2 py-1.5 border border-[#EBEEF0]">Descrição</th>
+              <table className="w-full text-[13px] border-collapse">
+                <thead><tr className="bg-[#F7F8FA]">
+                  <th className="w-[40px] border border-[#F1F2F4]" />
+                  <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">Código</th>
+                  <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">Descrição</th>
                 </tr></thead>
                 <tbody>
                   <tr className={d.all_complexes ? 'opacity-40' : ''}>
-                    <td className="text-center border border-[#EBEEF0]">
+                    <td className="text-center border border-[#F1F2F4]">
                       <input type="checkbox" disabled={!!d.all_complexes}
                         checked={(d.complexes || []).includes('UNICO')}
                         onChange={(e) => set('complexes', e.target.checked ? ['UNICO'] : [])} className="w-4 h-4" />
                     </td>
-                    <td className="px-2 py-1.5 border border-[#EBEEF0]">UNICO</td>
-                    <td className="px-2 py-1.5 border border-[#EBEEF0]">Único</td>
+                    <td className="px-2 py-1.5 border border-[#F1F2F4]">UNICO</td>
+                    <td className="px-2 py-1.5 border border-[#F1F2F4]">Único</td>
                   </tr>
                 </tbody>
               </table>
@@ -252,23 +252,23 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
           )}
 
           {tab === 'rate' && (
-            <table className="w-full max-w-[700px] text-[12px] border-collapse">
-              <thead><tr className="bg-[#F3F4F6]">
-                <th className="w-[40px] border border-[#EBEEF0]" />
-                <th className="text-left font-normal px-2 py-1.5 border border-[#EBEEF0]">Código</th>
-                <th className="text-left font-normal px-2 py-1.5 border border-[#EBEEF0]">Nome</th>
+            <table className="w-full max-w-[700px] text-[13px] border-collapse">
+              <thead><tr className="bg-[#F7F8FA]">
+                <th className="w-[40px] border border-[#F1F2F4]" />
+                <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">Código</th>
+                <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">Nome</th>
               </tr></thead>
               <tbody>
                 {['S-A', 'S-B', 'S-C'].map((c, i) => (
                   <tr key={c}>
-                    <td className="text-center border border-[#EBEEF0]">
+                    <td className="text-center border border-[#F1F2F4]">
                       <input type="checkbox" checked={(d.rate_sections || []).includes(c)}
                         onChange={(e) => set('rate_sections', e.target.checked
                           ? [...(d.rate_sections || []), c]
                           : (d.rate_sections || []).filter((x: string) => x !== c))} className="w-4 h-4" />
                     </td>
-                    <td className="px-2 py-1.5 border border-[#EBEEF0]">{c}</td>
-                    <td className="px-2 py-1.5 border border-[#EBEEF0]">Secção {String.fromCharCode(65 + i)}</td>
+                    <td className="px-2 py-1.5 border border-[#F1F2F4]">{c}</td>
+                    <td className="px-2 py-1.5 border border-[#F1F2F4]">Secção {String.fromCharCode(65 + i)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -301,13 +301,13 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                     {groups.map((g: any) => <option key={g.id} value={g.id}>{g.name}</option>)}
                   </select>
                 </R>
-                <label className="flex items-center gap-2 text-[12px]">
+                <label className="flex items-center gap-2 text-[13px]">
                   <input type="checkbox" checked={!!d.all_sectors} onChange={(e) => set('all_sectors', e.target.checked)} className="w-4 h-4" />
                   Todos os setores
                 </label>
-                <div className={`border border-[#EBEEF0] max-h-[130px] overflow-auto ${d.all_sectors ? 'opacity-40 pointer-events-none' : ''}`}>
+                <div className={`border border-[#F1F2F4] max-h-[130px] overflow-auto ${d.all_sectors ? 'opacity-40 pointer-events-none' : ''}`}>
                   {sectors.map((s: any) => (
-                    <label key={s.id} className="flex items-center gap-2 px-2 py-1 text-[12px] border-b border-[#EBEEF0]">
+                    <label key={s.id} className="flex items-center gap-2 px-2 py-1 text-[13px] border-b border-[#F1F2F4]">
                       <input type="checkbox" checked={(d.sector_ids || []).includes(s.id)}
                         onChange={(e) => set('sector_ids', e.target.checked
                           ? [...(d.sector_ids || []), s.id]
@@ -318,22 +318,22 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-[12px]">
+                <label className="flex items-center gap-2 text-[13px]">
                   <input type="checkbox" checked={!!d.internal_consumption} onChange={(e) => set('internal_consumption', e.target.checked)} className="w-4 h-4" />
                   Consumo interno
                 </label>
                 <R label="Desconto:" w="w-[80px]">
                   <input value={d.discount_profile || ''} onChange={(e) => set('discount_profile', e.target.value)} placeholder="(nenhum)" className={`${inp} flex-1`} style={inputStyle} />
                 </R>
-                <label className="flex items-center gap-2 text-[12px]">
+                <label className="flex items-center gap-2 text-[13px]">
                   <input type="checkbox" checked={!!d.use_cost_price} onChange={(e) => set('use_cost_price', e.target.checked)} className="w-4 h-4" />
                   Utilizar preço de custo
                 </label>
                 <button onClick={() => setPwModal('pos')}
-                  className="w-[250px] flex items-center justify-center gap-2 py-2.5 bg-[#17375E] text-white text-[13px] font-bold">
+                  className="w-[250px] flex items-center justify-center gap-2 py-2.5 bg-[#1E2A44] text-white text-[13px] font-bold">
                   <Glyph icon="🔑" size={14} /> PIN do Terminal (POS)
                 </button>
-                <label className="flex items-center gap-2 text-[12px]">
+                <label className="flex items-center gap-2 text-[13px]">
                   <input type="checkbox" checked={!!d.pos_must_change_pin} onChange={(e) => set('pos_must_change_pin', e.target.checked)} className="w-4 h-4" />
                   Deve alterar o PIN no próximo login
                 </label>
@@ -343,7 +343,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
 
           {tab === 'ems' && (
             <div className="max-w-[700px] space-y-2">
-              <label className="flex items-center gap-2 text-[12px]">
+              <label className="flex items-center gap-2 text-[13px]">
                 <input type="checkbox" checked={!!d.is_event_manager} onChange={(e) => set('is_event_manager', e.target.checked)} className="w-4 h-4" />
                 Gestor de Eventos
               </label>
@@ -357,7 +357,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
           )}
 
           {tab === 'fnb' && (
-            <label className="flex items-center gap-2 text-[12px]">
+            <label className="flex items-center gap-2 text-[13px]">
               <input type="checkbox" checked={!!d.is_fnb_user} onChange={(e) => set('is_fnb_user', e.target.checked)} className="w-4 h-4" />
               Utilizador F&B
             </label>
@@ -365,53 +365,53 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
 
           {tab === 'memo' && (
             <textarea value={d.memo || ''} onChange={(e) => set('memo', e.target.value)} rows={14}
-              className="w-full border border-[#D7DBDF] p-2 text-[12px]" style={inputStyle} />
+              className="w-full border border-[#E6E8EC] p-2 text-[13px]" style={inputStyle} />
           )}
 
           {tab === 'sign' && (
             <textarea value={d.email_signature || ''} onChange={(e) => set('email_signature', e.target.value)} rows={14}
               placeholder="Assinatura que sai nos e-mails enviados por este utilizador."
-              className="w-full border border-[#D7DBDF] p-2 text-[12px]" style={inputStyle} />
+              className="w-full border border-[#E6E8EC] p-2 text-[13px]" style={inputStyle} />
           )}
 
           {tab === 'comm' && (
             <div>
-              <table className="w-full text-[12px] border-collapse">
-                <thead><tr className="bg-[#F3F4F6]">
+              <table className="w-full text-[13px] border-collapse">
+                <thead><tr className="bg-[#F7F8FA]">
                   {['Código', 'Descrição', 'Tipo', 'Valor', ''].map((h) => (
-                    <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#EBEEF0]">{h}</th>
+                    <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
                   {comms.map((c, i) => (
-                    <tr key={i} className="border-b border-[#EBEEF0]">
-                      <td className="px-2 py-1.5 border border-[#EBEEF0] font-mono">{c.code}</td>
-                      <td className="px-2 py-1.5 border border-[#EBEEF0]">{c.target}</td>
-                      <td className="p-0.5 border border-[#EBEEF0] w-[160px]">
+                    <tr key={i} className="border-b border-[#F1F2F4]">
+                      <td className="px-2 py-1.5 border border-[#F1F2F4] font-mono">{c.code}</td>
+                      <td className="px-2 py-1.5 border border-[#F1F2F4]">{c.target}</td>
+                      <td className="p-0.5 border border-[#F1F2F4] w-[160px]">
                         <select value={c.commission_type} onChange={(e) => setComm(i, 'commission_type', e.target.value)} className={cell}>
                           <option value="PERCENT">Percentagem</option>
                           <option value="VALUE">Valor fixo</option>
                         </select>
                       </td>
-                      <td className="p-0.5 border border-[#EBEEF0] w-[120px]">
+                      <td className="p-0.5 border border-[#F1F2F4] w-[120px]">
                         <input type="number" value={c.value} onChange={(e) => setComm(i, 'value', e.target.value)} className={`${cell} text-right`} />
                       </td>
-                      <td className="text-center border border-[#EBEEF0] w-[70px]">
-                        <button onClick={() => set('commissions', comms.filter((_, j) => j !== i))} className="text-[#912018] font-bold text-[11px]">Apagar</button>
+                      <td className="text-center border border-[#F1F2F4] w-[70px]">
+                        <button onClick={() => set('commissions', comms.filter((_, j) => j !== i))} className="text-[#B91C1C] font-bold text-[12.5px]">Apagar</button>
                       </td>
                     </tr>
                   ))}
                   {comms.length === 0 && <tr><td colSpan={5} className="text-center text-[#6B7280] py-8">Sem comissões.</td></tr>}
                 </tbody>
               </table>
-              <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#EBEEF0]">
-                <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[13px] hover:bg-[#F3F4F6] px-1 py-1">
-                  <span className="w-6 h-6 rounded-full bg-[#17375E] text-white flex items-center justify-center">＋</span> Adicionar - Sub-Famílias
+              <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#F1F2F4]">
+                <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[13px] hover:bg-[#F7F8FA] px-1 py-1">
+                  <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar - Sub-Famílias
                 </button>
-                <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[13px] hover:bg-[#F3F4F6] px-1 py-1">
-                  <span className="w-6 h-6 rounded-full bg-[#17375E] text-white flex items-center justify-center">＋</span> Adicionar - Artigos
+                <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[13px] hover:bg-[#F7F8FA] px-1 py-1">
+                  <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar - Artigos
                 </button>
-                <span className="ml-auto text-[11px] text-[#6B7280]">
+                <span className="ml-auto text-[12.5px] text-[#6B7280]">
                   É o que motiva a sala a vender a garrafa em vez do copo.
                 </span>
               </div>
@@ -423,8 +423,8 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       {/* Popup da password */}
       {pwModal && (
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={() => setPwModal(null)}>
-          <div className="bg-white border border-[#D7DBDF] w-[440px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#17375E' }}>
+          <div className="bg-white border border-[#E6E8EC] w-[440px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
               {pwModal === 'pos' ? 'PIN do Terminal' : 'Password'}
             </div>
             <div className="p-4 space-y-2">
@@ -432,13 +432,13 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                 onKeyDown={(e) => e.key === 'Enter' && applyPw()}
                 placeholder={pwModal === 'pos' ? 'PIN (4+ dígitos)' : 'Nova password'}
                 className={`${inp} w-full`} style={inputStyle} />
-              <div className="text-[11px] text-[#6B7280]">
+              <div className="text-[12.5px] text-[#6B7280]">
                 É guardada em <b>hash</b> — nem o dono a consegue ler. Só se pode substituir.
               </div>
             </div>
             <Toolbar actions={[
-              { icon: '✔', label: 'Definir', color: '#17375E', onClick: applyPw },
-              { icon: '✖', label: 'Cancelar', color: '#B42318', onClick: () => { setPw(''); setPwModal(null); } },
+              { icon: '✔', label: 'Definir', color: '#1E2A44', onClick: applyPw },
+              { icon: '✖', label: 'Cancelar', color: '#DC2626', onClick: () => { setPw(''); setPwModal(null); } },
             ]} />
           </div>
         </div>
@@ -455,8 +455,8 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>
   );

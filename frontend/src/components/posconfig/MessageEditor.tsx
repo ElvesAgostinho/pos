@@ -46,8 +46,8 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
-        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Nova mensagem' : `A editar ${d.code}`}</span>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Nova mensagem' : `A editar ${d.code}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -56,12 +56,12 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         <Box title="Identificação" className="mb-4">
         <div className="flex items-center gap-6 pt-1.5 text-[13px]">
           <label className="flex items-center gap-3">
-            <span className="w-[70px] text-[#1A1D21]">Código:<span className="text-[#B42318]">*</span></span>
+            <span className="w-[70px] text-[#111827]">Código:<span className="text-[#DC2626]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               placeholder="GELADO, TEMP, PONTO…" className={`${inputCls} w-[290px] flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3">
-            <span className="text-[#1A1D21]">Ordem:</span>
+            <span className="text-[#111827]">Ordem:</span>
             <input type="number" value={d.sort_order ?? 0} onChange={(e) => set('sort_order', Number(e.target.value))}
               className={`${inputCls} w-[110px] flex-none`} style={inputStyle} />
           </label>
@@ -77,7 +77,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
         <div className="flex items-center gap-6 pt-2 text-[13px]">
           <label className="flex items-center gap-3">
-            <span className="w-[70px] text-[#1A1D21]">Nome:</span>
+            <span className="w-[70px] text-[#111827]">Nome:</span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
               placeholder="GELO, FRUTA, Confecao…"
               className={`${inputCls} w-[290px] flex-none`} style={inputStyle} />
@@ -91,8 +91,8 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         </div>
         </Box>
 
-        <div className="mb-4" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-          <div className="px-3 py-1.5 bg-[#F3F4F6] text-[13px] font-bold text-[#1A1D21] border-b border-[#D7DBDF]">
+        <div className="mb-4" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#E6E8EC]">
             Artigos que fazem esta pergunta
             <span className="font-normal text-[#6B7280] ml-2">
               (nenhum escolhido = todos os artigos)
@@ -100,7 +100,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
           </div>
           <div className="p-2 max-h-[190px] overflow-auto grid grid-cols-3 gap-x-4 gap-y-1">
             {artigos.map((a: any) => (
-              <label key={a.id} className="flex items-center gap-2 text-[12px]">
+              <label key={a.id} className="flex items-center gap-2 text-[13px]">
                 <input type="checkbox" className="w-4 h-4"
                   checked={(d.items || []).includes(a.id)}
                   onChange={(e) => set('items', e.target.checked
@@ -109,48 +109,48 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
                 <span className="truncate">{a.name}</span>
               </label>
             ))}
-            {artigos.length === 0 && <span className="text-[#6B7280] text-[12px]">Sem artigos.</span>}
+            {artigos.length === 0 && <span className="text-[#6B7280] text-[13px]">Sem artigos.</span>}
           </div>
-          <div className="px-3 py-1.5 bg-[#F3F4F6] border-t border-[#EBEEF0] text-[11px] text-[#6B7280]">
+          <div className="px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12.5px] text-[#6B7280]">
             "Com gelo?" num prato de bacalhau ensina o empregado a carregar em qualquer
             coisa para se ver livre da pergunta — e a partir daí deixa de as ler todas.
           </div>
         </div>
 
         {/* Modelos (respostas) */}
-        <div style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-          <div className="px-3 py-1.5 bg-[#F3F4F6] text-[13px] font-bold text-[#1A1D21] border-b border-[#D7DBDF]">Modelos</div>
+        <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#E6E8EC]">Modelos</div>
           <div className="flex">
-            <table className="flex-1 text-[12px] border-collapse">
+            <table className="flex-1 text-[13px] border-collapse">
               <thead>
-                <tr className="bg-[#F3F4F6] text-[#1A1D21]">
+                <tr className="bg-[#F7F8FA] text-[#111827]">
                   {['Código', 'Texto (tecla e comanda)', 'Ordem', 'Ativo'].map((h) => (
-                    <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">{h}</th>
+                    <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
                   ))}
-                  <th className="w-[60px] border-b border-[#EBEEF0]" />
+                  <th className="w-[60px] border-b border-[#F1F2F4]" />
                 </tr>
               </thead>
               <tbody>
                 {opts.map((o, i) => (
-                  <tr key={i} className="border-b border-[#EBEEF0]">
+                  <tr key={i} className="border-b border-[#F1F2F4]">
                     <td className="px-1 py-0.5 w-[140px]">
                       <input value={o.code || ''} onChange={(e) => setOpt(i, 'code', e.target.value.toUpperCase())}
-                        placeholder="GELO1" className="w-full border border-[#EBEEF0] px-1.5 py-1 text-[12px]" />
+                        placeholder="GELO1" className="w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px]" />
                     </td>
                     <td className="px-1 py-0.5">
                       <input value={o.text || ''} onChange={(e) => setOpt(i, 'text', e.target.value)}
-                        placeholder="SEM GELO" className="w-full border border-[#EBEEF0] px-1.5 py-1 text-[12px]" />
+                        placeholder="SEM GELO" className="w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px]" />
                     </td>
                     <td className="px-1 py-0.5 w-[80px]">
                       <input type="number" value={o.sort_order ?? 0} onChange={(e) => setOpt(i, 'sort_order', Number(e.target.value))}
-                        className="w-full border border-[#EBEEF0] px-1.5 py-1 text-[12px]" />
+                        className="w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px]" />
                     </td>
                     <td className="px-2 py-0.5 text-center w-[70px]">
                       <input type="checkbox" checked={o.is_active !== false}
                         onChange={(e) => setOpt(i, 'is_active', e.target.checked)} className="w-4 h-4" />
                     </td>
                     <td className="px-2 text-center">
-                      <button onClick={() => delOpt(i)} className="text-[#912018] font-bold text-[11px]">Apagar</button>
+                      <button onClick={() => delOpt(i)} className="text-[#B91C1C] font-bold text-[12.5px]">Apagar</button>
                     </td>
                   </tr>
                 ))}
@@ -160,21 +160,21 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
               </tbody>
             </table>
 
-            <div className="w-[150px] flex-shrink-0 border-l border-[#EBEEF0] p-2 space-y-2">
-              <button onClick={addOpt} className="flex items-center gap-2 text-[13px] text-[#1A1D21] hover:bg-[#F3F4F6] w-full px-1 py-1">
-                <span className="w-6 h-6 rounded-full bg-[#17375E] text-white flex items-center justify-center text-[14px]">＋</span>
+            <div className="w-[150px] flex-shrink-0 border-l border-[#F1F2F4] p-2 space-y-2">
+              <button onClick={addOpt} className="flex items-center gap-2 text-[13px] text-[#111827] hover:bg-[#F7F8FA] w-full px-1 py-1">
+                <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[14px]">＋</span>
                 Adicionar
               </button>
               <button onClick={() => opts.length && delOpt(opts.length - 1)} disabled={!opts.length}
-                className="flex items-center gap-2 text-[13px] text-[#1A1D21] hover:bg-[#F3F4F6] w-full px-1 py-1 disabled:opacity-35">
-                <span className="w-6 h-6 rounded-full bg-[#B42318] text-white flex items-center justify-center text-[14px]">−</span>
+                className="flex items-center gap-2 text-[13px] text-[#111827] hover:bg-[#F7F8FA] w-full px-1 py-1 disabled:opacity-35">
+                <span className="w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[14px]">−</span>
                 Apagar
               </button>
             </div>
           </div>
         </div>
 
-        <div className="text-[11px] text-[#6B7280] mt-2">
+        <div className="text-[12.5px] text-[#6B7280] mt-2">
           O <b>Texto</b> é o que o operador vê na tecla E o que sai na comanda da cozinha —
           é o mesmo, de propósito: o que o empregado escolheu tem de ser exatamente o que
           a cozinha lê.
@@ -182,8 +182,8 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>
   );

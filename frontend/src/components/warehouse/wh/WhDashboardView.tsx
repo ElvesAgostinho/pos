@@ -6,10 +6,10 @@ const AOA = (n: number) => new Intl.NumberFormat('pt-AO', { maximumFractionDigit
 
 function Card({ icon, label, value, sub, tone }: any) {
   return (
-    <div className="bg-white border border-[#D7DBDF] p-3 flex flex-col gap-1">
-      <div className="flex items-center gap-2 text-gray-500 text-[10px] uppercase tracking-wide">{icon}{label}</div>
+    <div className="bg-white border border-[#E6E8EC] p-3 flex flex-col gap-1">
+      <div className="flex items-center gap-2 text-gray-500 text-[11.5px] uppercase tracking-wide">{icon}{label}</div>
       <div className={`text-2xl font-bold ${tone || 'text-[#6B7280]'}`}>{value}</div>
-      {sub && <div className="text-[11px] text-gray-500">{sub}</div>}
+      {sub && <div className="text-[12.5px] text-gray-500">{sub}</div>}
     </div>
   );
 }
@@ -20,16 +20,16 @@ export default function WhDashboardView() {
     <ClassicWindow title="Armazém — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Centro 09 · Armazém — saldo, alertas e operações</div>}>
       <div className="p-3">
-        {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
+        {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : (
           <div className="grid grid-cols-4 gap-2">
-            <Card icon={<Warehouse size={12} />} label="Valor em stock" value={AOA(d.stock_value)} tone="text-[#1A1D21]" />
+            <Card icon={<Warehouse size={12} />} label="Valor em stock" value={AOA(d.stock_value)} tone="text-[#111827]" />
             <Card icon={<Warehouse size={12} />} label="Armazéns / Localizações" value={`${d.warehouses} / ${d.locations}`} />
             <Card label="SKUs em stock" value={d.skus_in_stock} />
-            <Card icon={<AlertTriangle size={12} />} label="Alertas stock mínimo" value={d.low_stock_alerts} tone={d.low_stock_alerts ? 'text-[#912018]' : 'text-[#1A1D21]'} />
+            <Card icon={<AlertTriangle size={12} />} label="Alertas stock mínimo" value={d.low_stock_alerts} tone={d.low_stock_alerts ? 'text-[#B91C1C]' : 'text-[#111827]'} />
             <Card icon={<PackageX size={12} />} label="Movimentos hoje" value={d.movements_today} />
-            <Card icon={<ArrowLeftRight size={12} />} label="Transferências abertas" value={d.open_transfers} tone={d.open_transfers ? 'text-[#1A1D21]' : undefined} />
-            <Card icon={<ClipboardList size={12} />} label="Inventários abertos" value={d.open_counts} tone={d.open_counts ? 'text-[#1A1D21]' : undefined} />
-            <Card icon={<AlertTriangle size={12} />} label="Lotes a expirar (30d)" value={`${d.lots_expiring_30d}`} sub={d.lots_expired ? `${d.lots_expired} já expirados` : undefined} tone={d.lots_expiring_30d ? 'text-[#1A1D21]' : 'text-[#1A1D21]'} />
+            <Card icon={<ArrowLeftRight size={12} />} label="Transferências abertas" value={d.open_transfers} tone={d.open_transfers ? 'text-[#111827]' : undefined} />
+            <Card icon={<ClipboardList size={12} />} label="Inventários abertos" value={d.open_counts} tone={d.open_counts ? 'text-[#111827]' : undefined} />
+            <Card icon={<AlertTriangle size={12} />} label="Lotes a expirar (30d)" value={`${d.lots_expiring_30d}`} sub={d.lots_expired ? `${d.lots_expired} já expirados` : undefined} tone={d.lots_expiring_30d ? 'text-[#111827]' : 'text-[#111827]'} />
           </div>
         )}
       </div>

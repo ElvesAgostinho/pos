@@ -26,18 +26,18 @@ function Crud({ ent, title, icon, fields, cols, empty }: {
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">{data.length} registo(s)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F3F4F6] border-b border-[#D7DBDF] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
           {fields.map((f) => (
             <input key={f.key} placeholder={f.placeholder} value={d[f.key] ?? ''}
               onChange={(e) => setD({ ...d, [f.key]: f.up ? e.target.value.toUpperCase() : e.target.value })}
-              className="border border-[#D7DBDF] p-1" style={{ width: f.width }} />
+              className="border border-[#E6E8EC] p-1" style={{ width: f.width }} />
           ))}
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">
           <ClassicGrid rowKey="id" data={data} columns={[
             ...cols.map((c) => ({ header: c.header, accessor: (r: any) => r[c.key] ?? '—', width: c.width })),
-            { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button>, width: '8%' },
+            { header: '', accessor: (r: any) => <button onClick={() => del.mutate(r.id)} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>, width: '8%' },
           ]} />
         </div>
       </div>

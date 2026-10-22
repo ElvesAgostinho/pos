@@ -11,9 +11,9 @@ const when = (v: any) => (v ? new Date(v).toLocaleString('pt-PT', { day: '2-digi
 
 function Panel({ title, children, right }: any) {
   return (
-    <div className="bg-white border border-[#D7DBDF]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
-      <div className="px-3 py-1.5 border-b border-[#D7DBDF] flex items-center justify-between text-[12px] font-bold text-[#1A1D21]"
-        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F3F4F6)' }}>
+    <div className="bg-white border border-[#E6E8EC]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
+      <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[13px] font-bold text-[#111827]"
+        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }}>
         <span>{title}</span>{right}
       </div>
       <div className="p-3">{children}</div>
@@ -21,20 +21,20 @@ function Panel({ title, children, right }: any) {
   );
 }
 
-const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#D7DBDF] text-[#1A1D21] flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[12.5px] font-semibold border border-[#E6E8EC] text-[#111827] flex items-center gap-1.5';
 const btnStyle = {
-  background: 'linear-gradient(to bottom, #FFFFFF, #F3F4F6 48%, #EBEEF0 52%, #EBEEF0)',
+  background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4)',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
 };
 
 const STATUS: Record<string, { label: string; bg: string; icon: any }> = {
-  QUEUED: { label: 'Em fila', bg: '#2E75B6', icon: Clock },
-  SENDING: { label: 'A enviar', bg: '#2E75B6', icon: Send },
-  RETRY: { label: 'A reenviar', bg: '#2E75B6', icon: RefreshCw },
-  ACK: { label: 'Aceite pela AGT', bg: '#17375E', icon: CheckCircle2 },
-  REJECTED: { label: 'Rejeitado', bg: '#B42318', icon: XCircle },
-  FAILED: { label: 'Falhou', bg: '#912018', icon: AlertTriangle },
-  SENT: { label: 'Enviado', bg: '#2E75B6', icon: Send },
+  QUEUED: { label: 'Em fila', bg: '#3B82F6', icon: Clock },
+  SENDING: { label: 'A enviar', bg: '#3B82F6', icon: Send },
+  RETRY: { label: 'A reenviar', bg: '#3B82F6', icon: RefreshCw },
+  ACK: { label: 'Aceite pela AGT', bg: '#1E2A44', icon: CheckCircle2 },
+  REJECTED: { label: 'Rejeitado', bg: '#DC2626', icon: XCircle },
+  FAILED: { label: 'Falhou', bg: '#B91C1C', icon: AlertTriangle },
+  SENT: { label: 'Enviado', bg: '#3B82F6', icon: Send },
 };
 
 /**
@@ -86,31 +86,31 @@ export default function AgtTransmitView() {
   const f = data?.fiscal;
 
   const Kpi = ({ label, value, color }: any) => (
-    <div className="flex-1 bg-white border border-[#D7DBDF] px-3 py-2" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
-      <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
-      <div className="text-[22px] font-black leading-tight" style={{ color: color || '#17375E' }}>{value ?? '—'}</div>
+    <div className="flex-1 bg-white border border-[#E6E8EC] px-3 py-2" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
+      <div className="text-[11.5px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
+      <div className="text-[22px] font-black leading-tight" style={{ color: color || '#1E2A44' }}>{value ?? '—'}</div>
     </div>
   );
 
   return (
     <ClassicWindow title="Transmissão AGT — Faturação Eletrónica" icon={<Radio size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Store-and-forward: a venda nunca espera pela AGT · reenvio automático · chave de idempotência (nunca duplica)</div>}>
-      <div className="p-3 space-y-3 bg-[#F3F4F6] h-full overflow-auto">
+      <div className="p-3 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
 
         {/* Estado da ligação */}
         <Panel title="Ligação à AGT"
           right={<div className="flex gap-2">
             <button onClick={() => check.mutate()} className={btn} style={btnStyle}><RefreshCw size={12} />Testar ligação</button>
             <button onClick={() => run.mutate()} disabled={run.isPending} className={btn}
-              style={{ ...btnStyle, background: 'linear-gradient(to bottom, #17375E, #2E75B6)', color: '#FFFFFF', borderColor: '#17375E' }}>
+              style={{ ...btnStyle, background: 'linear-gradient(to bottom, #1E2A44, #3B82F6)', color: '#FFFFFF', borderColor: '#1E2A44' }}>
               <Send size={12} />{run.isPending ? 'A transmitir…' : 'Transmitir agora'}
             </button>
           </div>}>
           {c?.simulation ? (
-            <div className="flex items-start gap-2 p-2 bg-[#F3F4F6] border border-[#D7DBDF] text-[12px]">
-              <ShieldAlert size={20} className="text-[#1A1D21] flex-shrink-0" />
+            <div className="flex items-start gap-2 p-2 bg-[#F7F8FA] border border-[#E6E8EC] text-[13px]">
+              <ShieldAlert size={20} className="text-[#111827] flex-shrink-0" />
               <div>
-                <div className="font-bold text-[#1A1D21]">Modo simulação — ainda não está a comunicar com a AGT a sério</div>
+                <div className="font-bold text-[#111827]">Modo simulação — ainda não está a comunicar com a AGT a sério</div>
                 <div className="text-gray-700 mt-0.5">
                   Toda a infraestrutura está pronta (fila, transmissor, reenvio, idempotência, prova de envio).
                   Falta apenas o que <b>só a AGT pode dar ao contribuinte</b>: o <b>URL de submissão</b> e as <b>credenciais</b>.
@@ -120,38 +120,38 @@ export default function AgtTransmitView() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 text-[12px]">
-              <div className="flex items-center gap-2 px-3 py-2 bg-[#F3F4F6] border border-[#D7DBDF]">
-                <ShieldCheck size={20} className="text-[#1A1D21]" />
+            <div className="flex items-center gap-3 text-[13px]">
+              <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border border-[#E6E8EC]">
+                <ShieldCheck size={20} className="text-[#111827]" />
                 <div>
-                  <div className="font-bold text-[#1A1D21]">Ligada · {c?.environment === 'PROD' ? 'Produção' : 'Sandbox'}</div>
-                  <div className="text-[11px] text-gray-600">{c?.url_submit}</div>
+                  <div className="font-bold text-[#111827]">Ligada · {c?.environment === 'PROD' ? 'Produção' : 'Sandbox'}</div>
+                  <div className="text-[12.5px] text-gray-600">{c?.url_submit}</div>
                 </div>
               </div>
-              <div className="text-[11px] text-gray-600">
+              <div className="text-[12.5px] text-gray-600">
                 Estado: <b>{c?.health || '—'}</b> · verificado {when(c?.health_at)}<br />
                 Tentativas máx.: {c?.max_retries} · timeout {c?.timeout_seconds}s
-                {!c?.has_credentials && <div className="text-[#B42318] font-bold flex items-center gap-1"><AlertTriangle size={13} /> Sem credenciais configuradas</div>}
+                {!c?.has_credentials && <div className="text-[#DC2626] font-bold flex items-center gap-1"><AlertTriangle size={13} /> Sem credenciais configuradas</div>}
               </div>
             </div>
           )}
-          <div className="mt-2 text-[11px] text-gray-600">
+          <div className="mt-2 text-[12.5px] text-gray-600">
             Certificado AGT: <b>{f?.certified ? f.certificate_number : 'não certificado'}</b> · ambiente {f?.environment === 'PROD' ? 'Produção' : 'Testes'}
           </div>
         </Panel>
 
         {/* Fila */}
         <div className="flex gap-2">
-          <Kpi label="Por enviar" value={q?.pending} color={q?.pending ? '#2E75B6' : '#17375E'} />
-          <Kpi label="Aceites pela AGT" value={q?.acked} color="#17375E" />
-          <Kpi label="Rejeitados" value={q?.rejected} color={q?.rejected ? '#B42318' : '#17375E'} />
-          <Kpi label="Falhados" value={q?.failed} color={q?.failed ? '#B42318' : '#17375E'} />
+          <Kpi label="Por enviar" value={q?.pending} color={q?.pending ? '#3B82F6' : '#1E2A44'} />
+          <Kpi label="Aceites pela AGT" value={q?.acked} color="#1E2A44" />
+          <Kpi label="Rejeitados" value={q?.rejected} color={q?.rejected ? '#DC2626' : '#1E2A44'} />
+          <Kpi label="Falhados" value={q?.failed} color={q?.failed ? '#DC2626' : '#1E2A44'} />
           <Kpi label="Total" value={q?.total} />
           <Kpi label="Mais antigo por enviar" value={q?.oldest_pending_at ? when(q.oldest_pending_at) : '—'} />
         </div>
 
         {(q?.documents_not_queued ?? 0) > 0 && (
-          <div className="flex items-center gap-2 p-2 bg-[#F3F4F6] border border-[#B42318] text-[12px] text-[#B42318] font-bold">
+          <div className="flex items-center gap-2 p-2 bg-[#F7F8FA] border border-[#DC2626] text-[13px] text-[#DC2626] font-bold">
             <AlertTriangle size={14} />
             {q.documents_not_queued} documento(s) emitido(s) antes desta funcionalidade existir não estão em fila.
             Foram emitidos e assinados corretamente — só não passaram pelo transmissor.
@@ -160,26 +160,26 @@ export default function AgtTransmitView() {
 
         {/* Detalhe */}
         <Panel title="Documentos e estado da comunicação"
-          right={<span className="text-[11px] font-normal text-gray-500">{subs.length} submissão(ões) · atualiza sozinho</span>}>
+          right={<span className="text-[12.5px] font-normal text-gray-500">{subs.length} submissão(ões) · atualiza sozinho</span>}>
           <ClassicGrid rowKey="id" data={subs} onRowClick={(r: any) => setSel(r)} columns={[
             { header: 'Documento', accessor: 'invoice_no', width: '12%' },
             { header: 'Cliente', accessor: (r: any) => r.customer_name || '—', width: '18%' },
             { header: 'Total', accessor: (r: any) => money(r.gross_total), width: '10%' },
             { header: 'Estado', accessor: (r: any) => {
-              const s = STATUS[r.status] || { label: r.status, bg: '#2E75B6', icon: Clock };
+              const s = STATUS[r.status] || { label: r.status, bg: '#3B82F6', icon: Clock };
               const I = s.icon;
-              return <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: s.bg }}>
+              return <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11.5px] font-bold text-white" style={{ background: s.bg }}>
                 <I size={10} />{s.label}{r.simulated ? ' (simulado)' : ''}
               </span>;
             }, width: '16%' },
             { header: 'Tent.', accessor: 'attempts', width: '6%' },
-            { header: 'Protocolo AGT', accessor: (r: any) => <span className="font-mono text-[10px]">{r.agt_reference || '—'}</span>, width: '16%' },
+            { header: 'Protocolo AGT', accessor: (r: any) => <span className="font-mono text-[11.5px]">{r.agt_reference || '—'}</span>, width: '16%' },
             { header: 'Aceite em', accessor: (r: any) => when(r.acked_at), width: '12%' },
             { header: '', accessor: (r: any) => (
               r.status !== 'ACK' ? (
                 <button onClick={(e: any) => { e.stopPropagation(); retry.mutate(r.id); }}
-                  className="px-1.5 py-0.5 text-[10px] font-bold border border-[#17375E] text-white"
-                  style={{ background: 'linear-gradient(to bottom, #17375E, #2E75B6)' }}>Reenviar</button>
+                  className="px-1.5 py-0.5 text-[11.5px] font-bold border border-[#1E2A44] text-white"
+                  style={{ background: 'linear-gradient(to bottom, #1E2A44, #3B82F6)' }}>Reenviar</button>
               ) : null), width: '10%' },
           ]} />
         </Panel>
@@ -188,19 +188,19 @@ export default function AgtTransmitView() {
         {sel && (
           <Panel title={`Prova de comunicação — ${sel.invoice_no}`}
             right={<button onClick={() => setSel(null)} className="text-[14px] leading-none text-gray-500 hover:text-black">×</button>}>
-            <div className="grid grid-cols-2 gap-3 text-[11px]">
+            <div className="grid grid-cols-2 gap-3 text-[12.5px]">
               <div className="space-y-1">
                 <div><span className="text-gray-500">Chave de idempotência:</span> <span className="font-mono">{sel.idempotency_key}</span></div>
                 <div><span className="text-gray-500">Código HTTP:</span> <b>{sel.http_status ?? '—'}</b></div>
                 <div><span className="text-gray-500">Tentativas:</span> {sel.attempts}</div>
                 <div><span className="text-gray-500">Próximo reenvio:</span> {when(sel.next_attempt_at)}</div>
-                {sel.error_message && <div className="text-[#B42318] font-bold">{sel.error_message}</div>}
+                {sel.error_message && <div className="text-[#DC2626] font-bold">{sel.error_message}</div>}
                 <div className="text-gray-500 mt-2">Resposta da AGT:</div>
-                <pre className="bg-[#F3F4F6] border border-[#EBEEF0] p-2 overflow-auto max-h-40 whitespace-pre-wrap">{sel.response || '—'}</pre>
+                <pre className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 overflow-auto max-h-40 whitespace-pre-wrap">{sel.response || '—'}</pre>
               </div>
               <div>
                 <div className="text-gray-500 mb-1">Conteúdo enviado (o que a AGT recebeu):</div>
-                <pre className="bg-[#F3F4F6] border border-[#EBEEF0] p-2 overflow-auto max-h-56 font-mono text-[10px]">{sel.payload_preview || sel.payload || '—'}</pre>
+                <pre className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 overflow-auto max-h-56 font-mono text-[11.5px]">{sel.payload_preview || sel.payload || '—'}</pre>
               </div>
             </div>
           </Panel>

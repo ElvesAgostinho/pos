@@ -53,21 +53,21 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
     } catch (e) { notifyError(e); } finally { setSending(false); }
   };
 
-  const inp = 'border border-[#D7DBDF] p-1 bg-white';
+  const inp = 'border border-[#E6E8EC] p-1 bg-white';
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[560px] max-h-[85vh] bg-[#F3F4F6] border border-[#D7DBDF] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #17375E, #17375E)' }}>
+      <div className="w-[560px] max-h-[85vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>
           Atualização em Massa de Tarifas
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>
-        <div className="flex-1 overflow-auto p-3 space-y-3 text-[11px]">
+        <div className="flex-1 overflow-auto p-3 space-y-3 text-[12.5px]">
           <div>
-            <div className="font-bold text-[#1A1D21] mb-1">Tarifas a atualizar*</div>
-            <div className="border border-[#D7DBDF] bg-white max-h-[110px] overflow-auto">
+            <div className="font-bold text-[#111827] mb-1">Tarifas a atualizar*</div>
+            <div className="border border-[#E6E8EC] bg-white max-h-[110px] overflow-auto">
               {ratePlans.map((rp) => (
-                <label key={rp.id} className="flex items-center gap-2 px-2 py-1 hover:bg-[#F3F4F6] cursor-pointer">
+                <label key={rp.id} className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7F8FA] cursor-pointer">
                   <input type="checkbox" checked={selected.has(rp.id)} onChange={() => toggleSel(rp.id)} />
                   {rp.label}
                 </label>
@@ -76,7 +76,7 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
             </div>
           </div>
 
-          <div className="font-bold text-[#1A1D21]">Datas e dias da semana</div>
+          <div className="font-bold text-[#111827]">Datas e dias da semana</div>
           <div className="flex gap-2">
             <label className="flex-1 flex flex-col">De<input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={inp} /></label>
             <label className="flex-1 flex flex-col">Até<input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={inp} /></label>
@@ -84,15 +84,15 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
           <div className="flex flex-wrap gap-1">
             {WEEKDAYS.map(([label, d]) => (
               <button key={d} onClick={() => toggleWd(d)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${weekdays.has(d) ? 'bg-[#1F4E79] text-white border-[#1F4E79]' : 'bg-white text-[#6B7280] border-[#D7DBDF]'}`}>
+                className={`px-2.5 py-1 rounded-full text-[12.5px] font-semibold border ${weekdays.has(d) ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white text-[#6B7280] border-[#E6E8EC]'}`}>
                 {label}
               </button>
             ))}
-            <button onClick={() => setWeekdays(new Set([0, 1, 2, 3, 4, 5, 6]))} className="text-[#1F4E79] underline text-[11px] px-1">Todos</button>
-            <button onClick={() => setWeekdays(new Set())} className="text-[#6B7280] underline text-[11px] px-1">Nenhum</button>
+            <button onClick={() => setWeekdays(new Set([0, 1, 2, 3, 4, 5, 6]))} className="text-[#1D4ED8] underline text-[12.5px] px-1">Todos</button>
+            <button onClick={() => setWeekdays(new Set())} className="text-[#6B7280] underline text-[12.5px] px-1">Nenhum</button>
           </div>
 
-          <div className="font-bold text-[#1A1D21] pt-1">O que mudar</div>
+          <div className="font-bold text-[#111827] pt-1">O que mudar</div>
           <label className="flex items-center gap-2"><input type="checkbox" checked={updatePrice} onChange={(e) => setUpdatePrice(e.target.checked)} disabled={removeOverrides} />
             Preço base
             <input type="number" min="0" step="0.01" value={basePrice} onChange={(e) => setBasePrice(e.target.value)} disabled={!updatePrice || removeOverrides} className={`${inp} w-32 disabled:opacity-40`} placeholder="Kz" />
@@ -104,21 +104,21 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-2"><input type="checkbox" checked={updateSaleState} onChange={(e) => setUpdateSaleState(e.target.checked)} disabled={removeOverrides} />Estado de venda</label>
             <button onClick={() => setSaleState('AVAILABLE')} disabled={!updateSaleState || removeOverrides}
-              className={`px-2 py-1 text-[11px] border disabled:opacity-40 ${saleState === 'AVAILABLE' ? 'bg-[#1F4E79] text-white border-[#1F4E79]' : 'bg-white border-[#D7DBDF]'}`}>Disponível</button>
+              className={`px-2 py-1 text-[12.5px] border disabled:opacity-40 ${saleState === 'AVAILABLE' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white border-[#E6E8EC]'}`}>Disponível</button>
             <button onClick={() => setSaleState('UNAVAILABLE')} disabled={!updateSaleState || removeOverrides}
-              className={`px-2 py-1 text-[11px] border disabled:opacity-40 ${saleState === 'UNAVAILABLE' ? 'bg-[#B42318] text-white border-[#B42318]' : 'bg-white border-[#D7DBDF]'}`}>Fechado</button>
+              className={`px-2 py-1 text-[12.5px] border disabled:opacity-40 ${saleState === 'UNAVAILABLE' ? 'bg-[#DC2626] text-white border-[#DC2626]' : 'bg-white border-[#E6E8EC]'}`}>Fechado</button>
           </div>
 
-          <div className="border-t border-[#D7DBDF] pt-2">
-            <label className="flex items-center gap-2 text-[#912018] font-semibold">
+          <div className="border-t border-[#E6E8EC] pt-2">
+            <label className="flex items-center gap-2 text-[#B91C1C] font-semibold">
               <input type="checkbox" checked={removeOverrides} onChange={(e) => setRemoveOverrides(e.target.checked)} />
               Remover todas as exceções e repor os valores da tarifa base
             </label>
           </div>
         </div>
         <Toolbar actions={[
-          { label: 'Cancelar', icon: '✕', color: '#2E75B6', onClick: onClose },
-          { label: sending ? 'A enviar…' : 'Enviar', icon: '✔', color: '#17375E', onClick: send, disabled: sending },
+          { label: 'Cancelar', icon: '✕', color: '#3B82F6', onClick: onClose },
+          { label: sending ? 'A enviar…' : 'Enviar', icon: '✔', color: '#1E2A44', onClick: send, disabled: sending },
         ]} />
       </div>
     </div>

@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle } from './kit';
 
-const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
 
 function Row({ label, children, w = 'w-[150px]' }: { label: string; children: any; w?: string }) {
   return (
-    <label className="flex items-center gap-3 text-[12px] min-w-0">
-      <span className={`${w} flex-shrink-0 text-[#1A1D21]`}>{label}</span>
+    <label className="flex items-center gap-3 text-[13px] min-w-0">
+      <span className={`${w} flex-shrink-0 text-[#111827]`}>{label}</span>
       {children}
     </label>
   );
@@ -19,7 +19,7 @@ function Row({ label, children, w = 'w-[150px]' }: { label: string; children: an
 function CheckRow({ on, onToggle, label, children }: any) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 items-center">
-      <label className="flex items-center gap-2 text-[12px]">
+      <label className="flex items-center gap-2 text-[13px]">
         <input type="checkbox" checked={!!on} onChange={(e) => onToggle(e.target.checked)} className="w-4 h-4" />
         {label}
       </label>
@@ -88,8 +88,8 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
-        <span className="text-[13px] font-bold text-[#1A1D21]">{isNew ? 'Novo modo de pagamento' : `A editar ${d.name}`}</span>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo modo de pagamento' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -102,7 +102,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
                 <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                   className={`${inp} w-[190px]`} style={inputStyle} />
               </Row>
-              <span className="text-[12px] whitespace-nowrap">Código (Outro):</span>
+              <span className="text-[13px] whitespace-nowrap">Código (Outro):</span>
               <select value={d.other_code || ''} onChange={(e) => set('other_code', e.target.value)}
                 className={`${inp} w-[150px]`} style={inputStyle}>
                 <option value="">—</option>
@@ -165,20 +165,20 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
           {/* Estado, módulos e detalhes */}
           <div className="min-w-0">
             <div className="flex items-center gap-8 mb-2">
-              <label className="flex items-center gap-2 text-[12px]">
+              <label className="flex items-center gap-2 text-[13px]">
                 <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
                 Ativo
               </label>
             </div>
-            <div className="flex items-center gap-6 text-[12px] mb-3">
-              <span className="w-[80px] text-[#1A1D21]">Módulos:</span>
+            <div className="flex items-center gap-6 text-[13px] mb-3">
+              <span className="w-[80px] text-[#111827]">Módulos:</span>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_ems} onChange={(e) => set('for_ems', e.target.checked)} className="w-4 h-4" />Eventos</label>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_pos} onChange={(e) => set('for_pos', e.target.checked)} className="w-4 h-4" />POS</label>
               <label className="flex items-center gap-2"><input type="checkbox" checked={!!d.for_fnb} onChange={(e) => set('for_fnb', e.target.checked)} className="w-4 h-4" />F&B (contas a pagar)</label>
             </div>
 
-            <div style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-              <div className="px-3 py-1.5 bg-[#F3F4F6] text-[12px] font-bold text-[#1A1D21] border-b border-[#EBEEF0]">Detalhes</div>
+            <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+              <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#F1F2F4]">Detalhes</div>
               <div className="p-3 space-y-2">
                 <CheckRow on={d.tip_from_change} onToggle={(v: boolean) => set('tip_from_change', v)}
                   label="Converter troco para gratificação">{artigo('tip_item')}</CheckRow>
@@ -186,11 +186,11 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
                   label="Consumo interno">{artigo('internal_item')}</CheckRow>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="flex items-center gap-2 text-[12px]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.charge_to_room} onChange={(e) => set('charge_to_room', e.target.checked)} className="w-4 h-4" />
                     Lançar em Quarto
                   </label>
-                  <label className="flex items-center gap-2 text-[12px]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.opens_drawer} onChange={(e) => set('opens_drawer', e.target.checked)} className="w-4 h-4" />
                     Abrir Gaveta
                   </label>
@@ -202,17 +202,17 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
                     placeholder="TPA / terminal de cartões" className={`${inp} w-full`} style={inputStyle} />
                 </CheckRow>
 
-                <label className="flex items-center gap-2 text-[12px]">
+                <label className="flex items-center gap-2 text-[13px]">
                   <input type="checkbox" checked={!!d.cross_selling} onChange={(e) => set('cross_selling', e.target.checked)} className="w-4 h-4" />
                   Cross Selling Interface
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="flex items-center gap-2 text-[12px]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.current_account} onChange={(e) => set('current_account', e.target.checked)} className="w-4 h-4" />
                     Conta Corrente
                   </label>
-                  <label className={`flex items-center gap-2 text-[12px] ${d.current_account ? '' : 'opacity-45'}`}>
+                  <label className={`flex items-center gap-2 text-[13px] ${d.current_account ? '' : 'opacity-45'}`}>
                     <input type="checkbox" checked={!!d.close_only_zero_balance} disabled={!d.current_account}
                       onChange={(e) => set('close_only_zero_balance', e.target.checked)} className="w-4 h-4" />
                     Só permitir fechar com saldo zero
@@ -220,33 +220,33 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="flex items-center gap-2 text-[12px]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.direct_payment} onChange={(e) => set('direct_payment', e.target.checked)} className="w-4 h-4" />
                     Pagamento Direto
                   </label>
-                  <label className="flex items-center gap-2 text-[12px]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.ask_document_number} onChange={(e) => set('ask_document_number', e.target.checked)} className="w-4 h-4" />
                     Perguntar nº de documento
                   </label>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="flex items-center gap-2 text-[12px]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.prints_document} onChange={(e) => set('prints_document', e.target.checked)} className="w-4 h-4" />
                     Imprime documento
                   </label>
-                  <label className="flex items-center gap-2 text-[12px]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.bank_transfer} onChange={(e) => set('bank_transfer', e.target.checked)} className="w-4 h-4" />
                     Transf. Bancária
                   </label>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-1 border-t border-[#EBEEF0]">
-                  <label className="flex items-center gap-2 text-[12px]">
+                <div className="grid grid-cols-2 gap-3 pt-1 border-t border-[#F1F2F4]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.allows_change} onChange={(e) => set('allows_change', e.target.checked)} className="w-4 h-4" />
                     Dá troco
                   </label>
-                  <label className="flex items-center gap-2 text-[12px]">
+                  <label className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" checked={!!d.allows_refund} onChange={(e) => set('allows_refund', e.target.checked)} className="w-4 h-4" />
                     Permite estorno
                   </label>
@@ -254,8 +254,8 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
               </div>
 
               {/* Pickup */}
-              <div className="border-t border-[#EBEEF0] p-3 space-y-2">
-                <label className="flex items-center gap-2 text-[12px] font-semibold">
+              <div className="border-t border-[#F1F2F4] p-3 space-y-2">
+                <label className="flex items-center gap-2 text-[13px] font-semibold">
                   <input type="checkbox" checked={!!d.allow_pickup} onChange={(e) => set('allow_pickup', e.target.checked)} className="w-4 h-4" />
                   Permite Pickup
                 </label>
@@ -273,7 +273,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
             </div>
 
             {d.internal_consumption && (
-              <div className="text-[11px] text-[#1A1D21] bg-[#F3F4F6] border border-[#D7DBDF] px-2 py-1 mt-2">
+              <div className="text-[12.5px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 mt-2">
                 Só os utilizadores com <b>"Consumo interno"</b> na ficha o podem lançar — o servidor recusa aos outros.
               </div>
             )}
@@ -282,8 +282,8 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
-        { icon: '✖', label: 'Fechar', color: '#B42318', onClick: onClose },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>
   );

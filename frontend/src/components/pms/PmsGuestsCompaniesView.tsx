@@ -75,20 +75,20 @@ export default function PmsGuestsCompaniesView() {
     try { await apiClient.delete(`mdm/customers/${selId}/`); refetch(); novo(); } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#D7DBDF] p-1';
+  const inp = 'border border-[#E6E8EC] p-1';
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex border-b border-[#D7DBDF] bg-[#F3F4F6]">
+      <div className="flex border-b border-[#E6E8EC] bg-[#F7F8FA]">
         {(['guests', 'companies'] as const).map((t) => (
           <button key={t} onClick={() => trocarAba(t)}
-            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#D7DBDF] ${tab === t ? 'bg-white text-[#1A1D21] border-b-2 border-b-[#1F4E79]' : 'text-[#6B7280] hover:bg-white'}`}>
+            className={`px-4 py-2 text-[13px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
             {t === 'guests' ? 'Hóspedes' : 'Empresas'}
           </button>
         ))}
       </div>
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/2 border-r border-[#D7DBDF]">
+        <div className="w-1/2 border-r border-[#E6E8EC]">
           <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={
             tab === 'guests'
               ? [
@@ -103,7 +103,7 @@ export default function PmsGuestsCompaniesView() {
                 ]
           } />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
+        <div className="w-1/2 p-3 space-y-2 text-[12.5px] overflow-auto">
           <label className="flex flex-col">Nome<input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inp} /></label>
           {tab === 'companies' && (
             <label className="flex flex-col">NIF<input value={form.tax_id || ''} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} className={inp} /></label>
@@ -125,9 +125,9 @@ export default function PmsGuestsCompaniesView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', color: '#17375E', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#17375E', onClick: save },
-        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#B42318' },
+        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', color: '#1E2A44', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#1E2A44', onClick: save },
+        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#DC2626' },
       ]} />
     </div>
   );

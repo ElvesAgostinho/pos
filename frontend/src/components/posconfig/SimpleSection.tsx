@@ -100,8 +100,8 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
     const missing = fields.filter((f) => f.required && !editing[f.key]);
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="flex items-center justify-between px-3 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0]">
-          <span className="text-[13px] font-bold text-[#1A1D21]">
+        <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+          <span className="text-[13px] font-bold text-[#111827]">
             {editing.id ? `A editar ${editing.name || ''}` : `Novo ${title.toLowerCase()}`}
           </span>
           <button onClick={() => setEditing(null)} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
@@ -112,8 +112,8 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
             <div className="space-y-2.5 pt-1.5">
               {fields.map((f) => (
                 <label key={f.key} className={`flex gap-3 text-[13px] ${f.type === 'textarea' ? 'items-start' : 'items-center'}`}>
-                  <span className={`w-[160px] flex-shrink-0 text-[#1A1D21] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
-                    {f.label}{f.required && <span className="text-[#B42318]">*</span>}
+                  <span className={`w-[160px] flex-shrink-0 text-[#111827] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
+                    {f.label}{f.required && <span className="text-[#DC2626]">*</span>}
                   </span>
                   {f.type === 'textarea' ? (
                     <textarea value={editing[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} rows={5}
@@ -132,13 +132,13 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                     // do próprio servidor do hotel, como tudo o resto.
                     <div className={`flex items-center gap-2 ${f.width || 'w-[420px]'} flex-none min-w-0`}>
                       {editing[f.key] && (
-                        <img src={editing[f.key]} alt="" className="w-8 h-8 object-contain border border-[#EBEEF0] bg-white flex-shrink-0" />
+                        <img src={editing[f.key]} alt="" className="w-8 h-8 object-contain border border-[#F1F2F4] bg-white flex-shrink-0" />
                       )}
                       <label className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#1A1D21] bg-[#F3F4F6]`} style={inputStyle}>
+                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#111827] bg-[#F7F8FA]`} style={inputStyle}>
                           {editing[f.key] ? String(editing[f.key]).split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                         </span>
-                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#17375E] text-white hover:bg-[#17375E] flex-shrink-0">
+                        <span className="px-3 py-1 text-[13px] font-semibold bg-[#1E2A44] text-white hover:bg-[#1E2A44] flex-shrink-0">
                           Carregar…
                         </span>
                         <input type="file" accept="image/*" className="hidden"
@@ -157,7 +157,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                       </label>
                       {editing[f.key] && (
                         <button onClick={() => set(f.key, '')} title="Remover imagem"
-                          className="px-2 py-1 text-[#B42318] hover:bg-[#F3F4F6] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
+                          className="px-2 py-1 text-[#DC2626] hover:bg-[#F7F8FA] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
                       )}
                     </div>
                   ) : (
@@ -165,7 +165,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                       onChange={(e) => set(f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
                       className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
                   )}
-                  {f.help && <span className="text-[11px] text-[#6B7280]">{f.help}</span>}
+                  {f.help && <span className="text-[12.5px] text-[#6B7280]">{f.help}</span>}
                 </label>
               ))}
             </div>
@@ -174,12 +174,12 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
         <Toolbar actions={[
           {
-            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E',
+            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44',
             onClick: () => missing.length
               ? notifyGuide({ title: 'Faltam campos', message: `Preencha: ${missing.map((m) => m.label).join(', ')}.` })
               : save.mutate(editing),
           },
-          { icon: '✖', label: 'Fechar', color: '#B42318', onClick: () => setEditing(null) },
+          { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: () => setEditing(null) },
         ]} />
       </div>
     );
@@ -191,11 +191,11 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#EBEEF0] bg-[#F3F4F6] text-[13px]">
-        <span className="text-[#1A1D21]">Pesquisar:</span>
-        <div className="flex items-center border border-[#D7DBDF] bg-white" style={inputStyle}>
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#F7F8FA] text-[13px]">
+        <span className="text-[#111827]">Pesquisar:</span>
+        <div className="flex items-center border border-[#E6E8EC] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
-            className="px-2 py-1 text-[12px] outline-none w-[220px]" />
+            className="px-2 py-1 text-[13px] outline-none w-[220px]" />
           <span className="px-2 text-[#6B7280]"><Glyph icon="🔍" size={13} /></span>
         </div>
       </div>
@@ -203,16 +203,16 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
       {banner}
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[12px] border-collapse">
+        <table className="w-full text-[13px] border-collapse">
           {/* Cabeçalho estilo Explorer/Excel clássico: relevo em gradiente + divisórias
               verticais entre colunas — é o detalhe que faz uma grelha parecer folha de
               cálculo a sério, não uma lista HTML qualquer. */}
           <thead className="sticky top-0">
-            <tr className="text-[#1A1D21]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F3F4F6 55%, #EBEEF0 100%)' }}>
+            <tr className="text-[#111827]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)' }}>
               {columns.map((c, i) => (
                 <th key={c.key}
                   className={`text-left font-semibold px-3 py-1 border-b-2 ${i > 0 ? 'border-l' : ''}`}
-                  style={{ width: c.width, borderBottomColor: TOKENS.border, borderLeftColor: '#EBEEF0' }}>
+                  style={{ width: c.width, borderBottomColor: TOKENS.border, borderLeftColor: '#F1F2F4' }}>
                   {c.label}
                 </th>
               ))}
@@ -223,7 +223,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => !readOnly && setEditing({ ...r })}
                 className="cursor-pointer border-b"
                 style={{
-                  borderColor: '#F3F4F6',
+                  borderColor: '#F7F8FA',
                   background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#FFFFFF' : TOKENS.surface,
                   color: sel === r.id ? TOKENS.selectedText : undefined,
                 }}
@@ -252,10 +252,10 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
         </table>
       </div>
 
-      <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#D7DBDF] bg-[#F3F4F6] text-[12px]">
+      <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[13px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-          className="border border-[#D7DBDF] px-2 py-0.5 bg-white">
+          className="border border-[#E6E8EC] px-2 py-0.5 bg-white">
           {[25, 50, 100, 250].map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
         <div className="flex items-center gap-1">
@@ -263,23 +263,23 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-1.5 disabled:opacity-30">◀</button>
           <span>Página</span>
           <input value={page} onChange={(e) => setPage(Math.min(totalPages, Math.max(1, Number(e.target.value) || 1)))}
-            className="w-12 border border-[#D7DBDF] px-1 py-0.5 text-center bg-white" />
+            className="w-12 border border-[#E6E8EC] px-1 py-0.5 text-center bg-white" />
           <span>de {totalPages}</span>
           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-1.5 disabled:opacity-30">▶</button>
           <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-1.5 disabled:opacity-30">⏭</button>
         </div>
-        <span className="ml-auto text-[#1A1D21]">
+        <span className="ml-auto text-[#111827]">
           Nº registos a visualizar {filtered.length ? (page - 1) * pageSize + 1 : 0} - {Math.min(page * pageSize, filtered.length)} de {filtered.length}
         </span>
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#17375E', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
-        { icon: '✎', label: 'Editar', color: '#2E75B6', disabled: !sel || readOnly, onClick: () => setEditing({ ...selRow }) },
-        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#17375E', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
-        { icon: '−', label: 'Apagar', color: '#B42318', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },
-        { icon: '🖶', label: 'Imprimir', color: '#17375E', onClick: () => window.print() },
-        { icon: '⤓', label: 'Exportar para Excel', color: '#17375E', onClick: exportCsv },
+        { icon: '＋', label: 'Adicionar', color: '#1E2A44', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
+        { icon: '✎', label: 'Editar', color: '#3B82F6', disabled: !sel || readOnly, onClick: () => setEditing({ ...selRow }) },
+        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#1E2A44', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
+        { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },
+        { icon: '🖶', label: 'Imprimir', color: '#1E2A44', onClick: () => window.print() },
+        { icon: '⤓', label: 'Exportar para Excel', color: '#1E2A44', onClick: exportCsv },
       ]} />
     </div>
   );

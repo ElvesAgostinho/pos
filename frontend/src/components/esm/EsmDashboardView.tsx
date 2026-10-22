@@ -5,21 +5,21 @@ import { useEsmDashboard } from '../../hooks/useEsm';
 import { AlertTriangle, RefreshCw, Award } from 'lucide-react';
 
 const scoreColor = (score: number) =>
-  score >= 80 ? 'text-[#1A1D21]' : score >= 50 ? 'text-[#6B7280]' : 'text-[#912018]';
+  score >= 80 ? 'text-[#111827]' : score >= 50 ? 'text-[#6B7280]' : 'text-[#B91C1C]';
 
 const StatCard = ({ title, value, subtitle }: { title: string; value: React.ReactNode; subtitle?: string }) => (
-  <div className="bg-[#F3F4F6] border-2 border-white border-b-[#D7DBDF] border-r-[#D7DBDF] p-4 flex flex-col justify-between">
+  <div className="bg-[#F7F8FA] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4 flex flex-col justify-between">
     <div className="mb-2">
       <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
       <div className="text-2xl font-bold text-[#6B7280]">{value}</div>
     </div>
-    {subtitle && <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>}
+    {subtitle && <div className="text-[11.5px] text-gray-600 font-medium">{subtitle}</div>}
   </div>
 );
 
 const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="bg-[#F3F4F6] border-2 border-white border-b-[#D7DBDF] border-r-[#D7DBDF] p-4">
-    <h3 className="text-xs font-bold text-black mb-3 border-b border-[#D7DBDF] pb-1">{title}</h3>
+  <div className="bg-[#F7F8FA] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4">
+    <h3 className="text-xs font-bold text-black mb-3 border-b border-[#E6E8EC] pb-1">{title}</h3>
     {children}
   </div>
 );
@@ -29,8 +29,8 @@ export default function EsmDashboardView() {
 
   return (
     <ClassicWindow title="Dashboard ESM — Gestão de Fornecedores">
-      <div className="bg-[#F3F4F6] min-h-full font-sans p-4 overflow-y-auto">
-        <div className="flex justify-between items-center mb-4 border-b border-[#D7DBDF] pb-2">
+      <div className="bg-[#F7F8FA] min-h-full font-sans p-4 overflow-y-auto">
+        <div className="flex justify-between items-center mb-4 border-b border-[#E6E8EC] pb-2">
           <div>
             <h1 className="text-lg font-bold text-black">Enterprise Supplier Management</h1>
             <p className="text-xs text-gray-600 mt-1">Visão 360º da base de fornecedores e do seu desempenho.</p>
@@ -56,16 +56,16 @@ export default function EsmDashboardView() {
               {/* Top fornecedores por performance */}
               <Panel title="Top Fornecedores (Índice de Desempenho)">
                 {(data?.top_suppliers?.length ?? 0) === 0 ? (
-                  <div className="text-[11px] text-gray-500 py-4 text-center">Sem dados de desempenho ainda.</div>
+                  <div className="text-[12.5px] text-gray-500 py-4 text-center">Sem dados de desempenho ainda.</div>
                 ) : (
                   <div className="space-y-2">
                     {data!.top_suppliers.map((s) => (
-                      <div key={s.id} className="flex items-center justify-between bg-white border border-[#D7DBDF] px-2 py-1.5">
+                      <div key={s.id} className="flex items-center justify-between bg-white border border-[#E6E8EC] px-2 py-1.5">
                         <div className="flex items-center gap-2 min-w-0">
                           <Award size={14} className="text-[#6B7280] flex-shrink-0" />
                           <div className="min-w-0">
-                            <div className="text-[11px] font-bold text-gray-800 truncate">{s.commercial_name}</div>
-                            <div className="text-[10px] text-gray-500">[{s.code}] · Pontualidade {Number(s.punctuality).toFixed(0)}%</div>
+                            <div className="text-[12.5px] font-bold text-gray-800 truncate">{s.commercial_name}</div>
+                            <div className="text-[11.5px] text-gray-500">[{s.code}] · Pontualidade {Number(s.punctuality).toFixed(0)}%</div>
                           </div>
                         </div>
                         <div className={`text-lg font-bold ${scoreColor(s.overall_score)}`}>{s.overall_score}</div>
@@ -78,21 +78,21 @@ export default function EsmDashboardView() {
               {/* Documentos a expirar */}
               <Panel title={`Certificados / Documentos a Expirar (30 dias)`}>
                 {(data?.expired_documents ?? 0) > 0 && (
-                  <div className="flex items-center gap-1 text-[11px] text-[#912018] font-bold mb-2">
+                  <div className="flex items-center gap-1 text-[12.5px] text-[#B91C1C] font-bold mb-2">
                     <AlertTriangle size={13} /> {data!.expired_documents} documento(s) já expirado(s)!
                   </div>
                 )}
                 {(data?.expiring_documents?.length ?? 0) === 0 ? (
-                  <div className="text-[11px] text-gray-500 py-4 text-center">Nada a expirar nos próximos 30 dias.</div>
+                  <div className="text-[12.5px] text-gray-500 py-4 text-center">Nada a expirar nos próximos 30 dias.</div>
                 ) : (
                   <div className="space-y-1">
                     {data!.expiring_documents.map((d) => (
-                      <div key={d.id} className="flex items-center justify-between bg-white border border-[#D7DBDF] px-2 py-1 text-[11px]">
+                      <div key={d.id} className="flex items-center justify-between bg-white border border-[#E6E8EC] px-2 py-1 text-[12.5px]">
                         <div className="min-w-0">
                           <div className="font-bold text-gray-800 truncate">{d.title}</div>
-                          <div className="text-[10px] text-gray-500 truncate">{d.supplier_name} · {d.document_type}</div>
+                          <div className="text-[11.5px] text-gray-500 truncate">{d.supplier_name} · {d.document_type}</div>
                         </div>
-                        <span className="text-[#1A1D21] font-bold ml-2 flex-shrink-0">{d.expiration_date}</span>
+                        <span className="text-[#111827] font-bold ml-2 flex-shrink-0">{d.expiration_date}</span>
                       </div>
                     ))}
                   </div>
@@ -102,16 +102,16 @@ export default function EsmDashboardView() {
               {/* Contratos a terminar */}
               <Panel title="Contratos a Terminar (30 dias)">
                 {(data?.expiring_contracts?.length ?? 0) === 0 ? (
-                  <div className="text-[11px] text-gray-500 py-4 text-center">Nenhum contrato a terminar em breve.</div>
+                  <div className="text-[12.5px] text-gray-500 py-4 text-center">Nenhum contrato a terminar em breve.</div>
                 ) : (
                   <div className="space-y-1">
                     {data!.expiring_contracts.map((c) => (
-                      <div key={c.id} className="flex items-center justify-between bg-white border border-[#D7DBDF] px-2 py-1 text-[11px]">
+                      <div key={c.id} className="flex items-center justify-between bg-white border border-[#E6E8EC] px-2 py-1 text-[12.5px]">
                         <div className="min-w-0">
                           <div className="font-bold text-gray-800 truncate">{c.reference}</div>
-                          <div className="text-[10px] text-gray-500 truncate">{c.supplier_name}</div>
+                          <div className="text-[11.5px] text-gray-500 truncate">{c.supplier_name}</div>
                         </div>
-                        <span className="text-[#1A1D21] font-bold ml-2 flex-shrink-0">{c.end_date}</span>
+                        <span className="text-[#111827] font-bold ml-2 flex-shrink-0">{c.end_date}</span>
                       </div>
                     ))}
                   </div>

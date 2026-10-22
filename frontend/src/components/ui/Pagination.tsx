@@ -11,14 +11,14 @@ export default function Pagination({ page, pageSize, count, onPage }: {
   const from = count === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, count);
   return (
-    <div className="flex items-center justify-between text-[11px] text-gray-600 px-2 py-1.5 bg-[#F3F4F6] border-t border-[#EBEEF0]">
+    <div className="flex items-center justify-between text-[12.5px] text-gray-600 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4]">
       <span>{from}–{to} de {count}</span>
       <div className="flex items-center gap-1">
         <button disabled={page <= 1} onClick={() => onPage(page - 1)}
-          className="px-2 py-0.5 border border-[#D7DBDF] bg-white disabled:opacity-40 flex items-center gap-0.5"><ChevronLeft size={12} /> Anterior</button>
+          className="px-2 py-0.5 border border-[#E6E8EC] bg-white disabled:opacity-40 flex items-center gap-0.5"><ChevronLeft size={12} /> Anterior</button>
         <span className="px-2">Página {page} / {pages}</span>
         <button disabled={page >= pages} onClick={() => onPage(page + 1)}
-          className="px-2 py-0.5 border border-[#D7DBDF] bg-white disabled:opacity-40 flex items-center gap-0.5">Seguinte <ChevronRight size={12} /></button>
+          className="px-2 py-0.5 border border-[#E6E8EC] bg-white disabled:opacity-40 flex items-center gap-0.5">Seguinte <ChevronRight size={12} /></button>
       </div>
     </div>
   );

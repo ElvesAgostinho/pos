@@ -291,7 +291,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   return (
     <div ref={shellRef} className="h-screen w-screen flex flex-col overflow-hidden font-sans select-none" style={{ background: t.body }}>
       {/* ================= BARRA DE MENUS ================= */}
-      <div className="flex items-center h-[30px] px-1.5 gap-0.5 text-[12px] flex-shrink-0 border-b" style={{ background: t.bar, color: t.barText, borderColor: t.line }}>
+      <div className="flex items-center h-[30px] px-1.5 gap-0.5 text-[13px] flex-shrink-0 border-b" style={{ background: t.bar, color: t.barText, borderColor: t.line }}>
         <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }}
           title="Voltar ao Ambiente de Trabalho"
           className="flex items-center justify-center w-7 h-7 mr-1 flex-shrink-0 hover:bg-black/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
@@ -307,7 +307,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
                 {MENUS[m].map((it) => (
                   <button key={it.label} onClick={() => { it.act?.(); setMenu(null); }}
                     className="w-full text-left px-3 py-1.5 flex justify-between gap-6 hover:bg-black/10">
-                    <span>{it.label.split('\t')[0]}</span><span className="opacity-50 text-[11px]">{it.label.split('\t')[1] || ''}</span>
+                    <span>{it.label.split('\t')[0]}</span><span className="opacity-50 text-[12.5px]">{it.label.split('\t')[1] || ''}</span>
                   </button>
                 ))}
               </div>
@@ -317,7 +317,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
 
         {/* Ecrã ativo — a mesma informação que antes vivia numa barra de "janela"
             à parte, sem fingir controlos de minimizar/maximizar de um SO. */}
-        <span className="ml-2 text-[12px] font-medium truncate opacity-80">{ITEM_TITLES[activeView] || ''}</span>
+        <span className="ml-2 text-[13px] font-medium truncate opacity-80">{ITEM_TITLES[activeView] || ''}</span>
 
         <div className="flex-1" />
         {/* PROPRIEDADE ATIVA — só aparece em grupos com mais do que um hotel. */}
@@ -326,13 +326,13 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
             <Building2 size={13} className="opacity-70" />
             <select value={hotelId || String(hotels[0].id)} onChange={(e) => pickHotel(e.target.value)}
               title="Propriedade ativa — só vê os dados deste hotel"
-              className="h-6 text-[11px] font-bold px-1.5 border" style={{ background: t.tree, color: t.treeText, borderColor: t.line, borderRadius: RADIUS.sm }}>
+              className="h-6 text-[12.5px] font-bold px-1.5 border" style={{ background: t.tree, color: t.treeText, borderColor: t.line, borderRadius: RADIUS.sm }}>
               {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
           </div>
         )}
-        <span className="flex items-center gap-1.5 text-[11px] mr-1.5 opacity-80">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#2E75B6]" /> {user?.username || 'operador'}
+        <span className="flex items-center gap-1.5 text-[12.5px] mr-1.5 opacity-80">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" /> {user?.username || 'operador'}
         </span>
         <button onClick={() => setLocked(true)} title="Bloquear ecrã" className="flex items-center justify-center w-7 h-7 hover:bg-black/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
           <Lock size={13} />
@@ -340,7 +340,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         <button onClick={() => setDark((d) => !d)} title="Tema" className="flex items-center justify-center w-7 h-7 hover:bg-black/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
           {dark ? <Sun size={14} /> : <Moon size={14} />}
         </button>
-        <button onClick={logout} title="Terminar sessão" className="flex items-center justify-center w-7 h-7 hover:bg-[#B42318]/85 hover:text-white transition-colors" style={{ borderRadius: RADIUS.sm }}>
+        <button onClick={logout} title="Terminar sessão" className="flex items-center justify-center w-7 h-7 hover:bg-[#DC2626]/85 hover:text-white transition-colors" style={{ borderRadius: RADIUS.sm }}>
           <LogOut size={13} />
         </button>
       </div>
@@ -355,7 +355,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
                   className="flex flex-col items-center justify-center w-[54px] h-[46px] gap-0.5 hover:bg-black/[0.06] transition-colors"
                   style={{ color: t.barText, borderRadius: RADIUS.sm }}>
                   <Icon size={18} strokeWidth={1.6} />
-                  <span className="text-[10px] leading-none">{label}</span>
+                  <span className="text-[11.5px] leading-none">{label}</span>
                 </button>
               ))}
             </div>
@@ -369,9 +369,9 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         <>
           <div className="fixed inset-0 z-40" onClick={() => setExportOpen(false)} />
           <div className="absolute z-50 border overflow-hidden" style={{ top: 80, left: 360, background: t.tree, borderColor: t.line, color: t.treeText, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
-            <div className="px-3 py-1.5 text-[10px] uppercase opacity-60 border-b" style={{ borderColor: t.line }}>Exportar a grelha visível</div>
-            {[['pdf', 'PDF', '#B42318'], ['excel', 'Excel', '#17375E'], ['word', 'Word', '#17375E'], ['csv', 'CSV', '#17375E'], ['json', 'JSON', '#17375E']].map(([f, label, c]: any) => (
-              <button key={f} onClick={() => exportAs(f)} className="w-full flex items-center gap-2 px-4 py-2 text-[12px] hover:bg-black/10 text-left">
+            <div className="px-3 py-1.5 text-[11.5px] uppercase opacity-60 border-b" style={{ borderColor: t.line }}>Exportar a grelha visível</div>
+            {[['pdf', 'PDF', '#DC2626'], ['excel', 'Excel', '#1E2A44'], ['word', 'Word', '#1E2A44'], ['csv', 'CSV', '#1E2A44'], ['json', 'JSON', '#1E2A44']].map(([f, label, c]: any) => (
+              <button key={f} onClick={() => exportAs(f)} className="w-full flex items-center gap-2 px-4 py-2 text-[13px] hover:bg-black/10 text-left">
                 <Download size={14} style={{ color: c }} /> {label}
               </button>
             ))}
@@ -384,10 +384,10 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         {/* Árvore de navegação (Windows Explorer) */}
         <div className="w-[236px] flex-shrink-0 flex flex-col border-r overflow-hidden" style={{ background: t.tree, borderColor: t.line, color: t.treeText }}>
           <div className="p-2 border-b" style={{ borderColor: t.line }}>
-            <div className="flex items-center gap-1.5 px-2 py-1.5 border" style={{ borderColor: t.line, background: dark ? '#17375E' : '#FFFFFF', borderRadius: RADIUS.sm }}>
+            <div className="flex items-center gap-1.5 px-2 py-1.5 border" style={{ borderColor: t.line, background: dark ? '#1E2A44' : '#FFFFFF', borderRadius: RADIUS.sm }}>
               <Search size={12} className="opacity-50" />
               <input value={treeQuery} onChange={(e) => setTreeQuery(e.target.value)} placeholder="Pesquisar ecrãs…"
-                className="bg-transparent outline-none text-[12px] w-full" style={{ color: t.treeText }} />
+                className="bg-transparent outline-none text-[13px] w-full" style={{ color: t.treeText }} />
             </div>
           </div>
           <div className="flex-1 overflow-auto py-1 px-1.5">
@@ -403,24 +403,24 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
                   {newGroup && !treeQuery && (
                     <div className="flex items-center gap-2 px-1.5 pt-3 pb-1.5 select-none">
                       <span className="text-[9px] font-bold tracking-widest opacity-45">{grp}</span>
-                      <span className="flex-1 h-px" style={{ background: dark ? '#17375E' : '#EBEEF0' }} />
+                      <span className="flex-1 h-px" style={{ background: dark ? '#1E2A44' : '#F1F2F4' }} />
                     </div>
                   )}
                   <button onClick={() => setExpanded((e) => ({ ...e, [f.key]: !open }))}
-                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[12px] font-bold hover:bg-black/5 transition-colors"
+                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[13px] font-bold hover:bg-black/5 transition-colors"
                     style={{ background: f.key === activeFolder ? t.hover : 'transparent', borderRadius: RADIUS.sm }}>
                     {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                    {open ? <FolderOpen size={14} style={{ color: '#2E75B6' }} /> : <Folder size={14} style={{ color: '#2E75B6' }} />}
+                    {open ? <FolderOpen size={14} style={{ color: '#3B82F6' }} /> : <Folder size={14} style={{ color: '#3B82F6' }} />}
                     <span className="truncate">{f.title}</span>
-                    <span className="ml-auto text-[10px] font-normal opacity-40">{f.items.length}</span>
+                    <span className="ml-auto text-[11.5px] font-normal opacity-40">{f.items.length}</span>
                   </button>
                   {open && its.map((it) => {
                     const sel = it.id === activeView;
                     return (
                       <button key={it.id} onClick={() => onOpen(it.id)}
-                        className="w-full flex items-center gap-1.5 pl-8 pr-2 py-[5px] my-[1px] text-[12px] hover:bg-black/[0.06] text-left transition-colors"
+                        className="w-full flex items-center gap-1.5 pl-8 pr-2 py-[5px] my-[1px] text-[13px] hover:bg-black/[0.06] text-left transition-colors"
                         style={{ background: sel ? t.accent : 'transparent', color: sel ? '#FFFFFF' : t.treeText, borderRadius: RADIUS.sm }}>
-                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: sel ? '#FFFFFF' : '#2E75B6' }} />
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: sel ? '#FFFFFF' : '#3B82F6' }} />
                         <span className="truncate">{it.name}</span>
                       </button>
                     );
@@ -440,7 +440,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
       </div>
 
       {/* ================= BARRA DE ESTADO ================= */}
-      <div className="h-[28px] flex items-center px-3 gap-3 text-[11px] flex-shrink-0 overflow-hidden"
+      <div className="h-[28px] flex items-center px-3 gap-3 text-[12.5px] flex-shrink-0 overflow-hidden"
         style={{ background: t.status, color: '#FFFFFF' }}>
         <span className="flex items-center gap-1 opacity-90"><Monitor size={12} /> {user?.username || 'operador'}</span>
         <span className="flex items-center gap-1 opacity-90"><Building2 size={12} /> {companyName || 'System Mwana Lodge'}</span>
@@ -448,7 +448,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         <span className="flex items-center gap-1 font-bold" title="Propriedade ativa">{hotelName}</span>
         <span className="flex items-center gap-1 opacity-90"><Server size={12} /> {window.location.hostname}:8000</span>
         <span className="flex items-center gap-1 opacity-90" title="Base de dados"><Database size={12} /> {lic ? 'SQL' : '—'}</span>
-        <span className="flex items-center gap-1 text-[#6B7280]"><span className="w-1.5 h-1.5 rounded-full bg-[#2E75B6]" /> Ligado</span>
+        <span className="flex items-center gap-1 text-[#6B7280]"><span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" /> Ligado</span>
         <span className="flex items-center gap-1 opacity-90" title="VPN de suporte"><Wifi size={12} /> VPN</span>
         <span className="flex items-center gap-1 opacity-90"><ShieldCheck size={12} /> Licença ativa</span>
         <span className="flex items-center gap-1 opacity-90" title="Memória usada pela aplicação"><Cpu size={12} /> {mem}</span>
@@ -456,7 +456,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         <span className="font-semibold">{ITEM_TITLES[activeView] || ''}</span>
         <span className="opacity-70">v1.0</span>
         <span className="opacity-90">{clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-        <button onClick={logout} title="Terminar sessão" className="hover:text-[#B42318] transition-colors"><Power size={13} /></button>
+        <button onClick={logout} title="Terminar sessão" className="hover:text-[#DC2626] transition-colors"><Power size={13} /></button>
       </div>
       {locked && <LockScreen onUnlock={() => setLocked(false)} />}
     </div>
@@ -466,21 +466,21 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
 // Página inicial do módulo — mostra as PASTAS por tarefa e os seus ecrãs.
 function WelcomePanel({ tree, moduleName, onOpen, dark }:
   { tree: { key: string; title: string; items: { id: string; name: string }[] }[]; moduleName?: string; onOpen: (id: string) => void; dark: boolean }) {
-  const card = dark ? 'bg-[#17375E] border-[#17375E] text-[#6B7280]' : 'bg-white border-[#D7DBDF] text-[#1A1D21]';
+  const card = dark ? 'bg-[#1E2A44] border-[#1E2A44] text-[#6B7280]' : 'bg-white border-[#E6E8EC] text-[#111827]';
   return (
     <div className="h-full overflow-auto p-4">
-      <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#EBEEF0' : '#2E75B6' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>
+      <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#F1F2F4' : '#3B82F6' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {tree.map((f) => (
           <div key={f.key} className={`border overflow-hidden ${card}`} style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
-            <div className="px-3 py-2 border-b text-[12px] font-bold" style={{ borderColor: dark ? '#17375E' : '#EBEEF0', background: dark ? '#17375E' : 'linear-gradient(to bottom,#FFFFFF,#F3F4F6)' }}>
+            <div className="px-3 py-2 border-b text-[13px] font-bold" style={{ borderColor: dark ? '#1E2A44' : '#F1F2F4', background: dark ? '#1E2A44' : 'linear-gradient(to bottom,#FFFFFF,#F7F8FA)' }}>
               {f.title}
             </div>
             <div className="p-2">
               {f.items.map((it) => (
                 <button key={it.id} onClick={() => onOpen(it.id)}
-                  className="w-full flex items-center gap-2 py-1.5 px-1.5 text-[12px] text-left hover:bg-[#F3F4F6] transition-colors" style={{ borderRadius: RADIUS.sm }}>
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#2E75B6' }} />
+                  className="w-full flex items-center gap-2 py-1.5 px-1.5 text-[13px] text-left hover:bg-[#F7F8FA] transition-colors" style={{ borderRadius: RADIUS.sm }}>
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#3B82F6' }} />
                   {it.name}
                 </button>
               ))}
@@ -488,7 +488,7 @@ function WelcomePanel({ tree, moduleName, onOpen, dark }:
           </div>
         ))}
       </div>
-      <div className="mt-3 text-[11px] opacity-60" style={{ color: dark ? '#2E75B6' : '#17375E' }}>
+      <div className="mt-3 text-[12.5px] opacity-60" style={{ color: dark ? '#3B82F6' : '#1E2A44' }}>
         Atalhos: F5 atualizar · Ctrl+P imprimir · Ctrl+N novo · Esc fechar menus.
       </div>
     </div>

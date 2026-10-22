@@ -110,20 +110,20 @@ export default function DesktopWallpaperView({ onBack, onDesktop, storageKey, ti
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        <div className="bg-white border border-[#D7DBDF] p-3 max-w-2xl">
-          <p className="text-[11px] text-gray-600 mb-3">{hint
+        <div className="bg-white border border-[#E6E8EC] p-3 max-w-2xl">
+          <p className="text-[12.5px] text-gray-600 mb-3">{hint
             || 'Fundo do Ambiente de Trabalho (POS/PMS). A imagem é reduzida para 1920 de largura ao guardar — escolha a melhor que tiver, que o sistema trata do tamanho. Uma fachada ou imagem do hotel fica melhor que uma cor lisa.'}</p>
           <div className="flex gap-3">
-            <div className="w-52 h-32 bg-[#F3F4F6] border border-[#D7DBDF] flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-52 h-32 bg-[#F7F8FA] border border-[#E6E8EC] flex items-center justify-center overflow-hidden flex-shrink-0">
               {val ? <img src={val} alt="pré-visualização" className="max-w-full max-h-full object-contain" /> : <Monitor size={30} className="text-gray-300" />}
             </div>
-            <div className="flex-1 text-[11px] text-gray-600">
-              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F3F4F6] border border-[#D7DBDF] shadow-[inset_1px_1px_0_#FFFFFF] text-[11px] cursor-pointer hover:bg-[#F3F4F6]">
+            <div className="flex-1 text-[12.5px] text-gray-600">
+              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[12.5px] cursor-pointer hover:bg-[#F7F8FA]">
                 <Upload size={13} /> Escolher imagem…
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
               </label>
               {val && (
-                <button onClick={clear} className="ml-2 inline-flex items-center gap-1 text-[#912018] hover:underline text-[11px]">
+                <button onClick={clear} className="ml-2 inline-flex items-center gap-1 text-[#B91C1C] hover:underline text-[12.5px]">
                   <Trash2 size={12} />Remover
                 </button>
               )}
@@ -132,9 +132,9 @@ export default function DesktopWallpaperView({ onBack, onDesktop, storageKey, ti
         </div>
       </div>
 
-      <div className="min-h-[40px] bg-white border-t border-[#D7DBDF] flex items-center justify-between px-4 py-1.5 flex-shrink-0 gap-2">
+      <div className="min-h-[40px] bg-white border-t border-[#E6E8EC] flex items-center justify-between px-4 py-1.5 flex-shrink-0 gap-2">
         <ClassicButton icon={Save} label="Guardar e aplicar" onClick={salvar} />
-        <div className="text-gray-600 text-[11px]">Aplica-se só a este terminal.</div>
+        <div className="text-gray-600 text-[12.5px]">Aplica-se só a este terminal.</div>
       </div>
     </div>
   );

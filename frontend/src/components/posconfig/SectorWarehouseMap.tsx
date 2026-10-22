@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Glyph } from './kit';
 
-const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
 
 /**
  * MAPEAMENTO SETOR / ARMAZÉNS — de que armazém sai cada sub-família em cada setor.
@@ -74,7 +74,7 @@ export default function SectorWarehouseMap() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 bg-[#F3F4F6] border-b border-[#EBEEF0] text-[12px]">
+      <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[13px]">
         <span>Pesquisar:</span>
         <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[200px]`} style={inputStyle} />
         <span className="ml-2">Armazém:</span>
@@ -84,24 +84,24 @@ export default function SectorWarehouseMap() {
           {(d.warehouses || []).map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
         </select>
         <button onClick={aplicar} disabled={!armazem || sel.length === 0}
-          className="flex items-center gap-2 px-2 py-1 hover:bg-[#F3F4F6] disabled:opacity-35">
-          <span className="w-5 h-5 rounded-full bg-[#17375E] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
+          className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-35">
+          <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
           Aplicar à seleção ({sel.length})
         </button>
       </div>
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
-            <th className="w-[36px] border-b border-[#EBEEF0]" />
-            <th className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">Descrição</th>
+        <table className="w-full text-[13px] border-collapse">
+          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+            <th className="w-[36px] border-b border-[#F1F2F4]" />
+            <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Descrição</th>
             {(d.outlets || []).map((o: any) => (
-              <th key={o.id} className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0]">{o.name}</th>
+              <th key={o.id} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{o.name}</th>
             ))}
           </tr></thead>
           <tbody>
             {rows.map((r: any) => (
-              <tr key={r.id} className="border-b border-[#EBEEF0]">
+              <tr key={r.id} className="border-b border-[#F1F2F4]">
                 <td className="text-center">
                   <input type="checkbox" checked={sel.includes(r.id)} className="w-4 h-4"
                     onChange={(e) => setSel(e.target.checked ? [...sel, r.id] : sel.filter((x) => x !== r.id))} />
@@ -110,9 +110,9 @@ export default function SectorWarehouseMap() {
                 {(d.outlets || []).map((o: any) => {
                   const c = r.cells?.[o.id] || {};
                   return (
-                    <td key={o.id} className="p-0.5" style={{ background: c.warehouse ? undefined : '#FDECEA' }}>
+                    <td key={o.id} className="p-0.5" style={{ background: c.warehouse ? undefined : '#FEF2F2' }}>
                       <select value={c.warehouse || ''} onChange={(e) => setCell(r.id, o.id, e.target.value)}
-                        className="w-full border-0 bg-transparent text-[12px] outline-none py-1">
+                        className="w-full border-0 bg-transparent text-[13px] outline-none py-1">
                         <option value="">— sem armazém —</option>
                         {(d.warehouses || []).map((w: any) => (
                           <option key={w.id} value={w.id}>{w.name}</option>
@@ -133,7 +133,7 @@ export default function SectorWarehouseMap() {
       </div>
 
       {emFalta > 0 && (
-        <div className="px-3 py-1 text-[11px] text-[#B42318] bg-[#F3F4F6] border-t border-[#B42318]">
+        <div className="px-3 py-1 text-[12.5px] text-[#DC2626] bg-[#F7F8FA] border-t border-[#DC2626]">
           <b>{emFalta}</b> sub-família(s) sem armazém nalgum ponto de venda: aí, a venda desconta do
           armazém errado — e as contagens nunca vão bater certo.
         </div>
@@ -141,7 +141,7 @@ export default function SectorWarehouseMap() {
 
       <Toolbar actions={[
         { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${Object.keys(dirty).length ? ` (${Object.keys(dirty).length})` : ''}`,
-          color: '#17375E', onClick: () => save.mutate() },
+          color: '#1E2A44', onClick: () => save.mutate() },
       ]} />
     </div>
   );

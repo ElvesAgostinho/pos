@@ -58,18 +58,18 @@ export default function PmsDocumentScanView() {
     } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#D7DBDF] p-1';
+  const inp = 'border border-[#E6E8EC] p-1';
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex-1 overflow-auto p-3 space-y-3 text-[11px]">
+      <div className="flex-1 overflow-auto p-3 space-y-3 text-[12.5px]">
         <label className="flex flex-col max-w-[400px]">Procurar hóspede (nome, e-mail, nº documento)
           <input value={search} onChange={(e) => setSearch(e.target.value)} className={inp} placeholder="Escreva pelo menos 2 letras…" />
         </label>
         {results.length > 0 && !selected && (
-          <div className="border border-[#D7DBDF] max-w-[400px] max-h-[160px] overflow-auto bg-white">
+          <div className="border border-[#E6E8EC] max-w-[400px] max-h-[160px] overflow-auto bg-white">
             {results.map((c: any) => (
-              <button key={c.id} onClick={() => pick(c)} className="w-full text-left px-2 py-1.5 hover:bg-[#F3F4F6] border-b border-[#EBEEF0] last:border-b-0">
+              <button key={c.id} onClick={() => pick(c)} className="w-full text-left px-2 py-1.5 hover:bg-[#F7F8FA] border-b border-[#F1F2F4] last:border-b-0">
                 {c.name} {c.id_number && <span className="text-gray-500">· {c.id_number}</span>}
               </button>
             ))}
@@ -77,15 +77,15 @@ export default function PmsDocumentScanView() {
         )}
 
         {selected && (
-          <div className="border border-[#D7DBDF] p-3 max-w-[500px] space-y-3">
+          <div className="border border-[#E6E8EC] p-3 max-w-[500px] space-y-3">
             <div className="flex items-center justify-between">
-              <div className="font-bold text-[#1A1D21]">{selected.name}</div>
+              <div className="font-bold text-[#111827]">{selected.name}</div>
               <button onClick={() => { setSelected(null); setSearch(''); }} className="text-[#6B7280] underline">trocar hóspede</button>
             </div>
-            <div className="w-full h-40 bg-[#F3F4F6] border border-[#D7DBDF] flex items-center justify-center overflow-hidden">
+            <div className="w-full h-40 bg-[#F7F8FA] border border-[#E6E8EC] flex items-center justify-center overflow-hidden">
               {selected.photo_url ? <img src={selected.photo_url} alt="documento" className="max-w-full max-h-full object-contain" /> : <span className="text-gray-400">Sem foto de documento</span>}
             </div>
-            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F3F4F6] border border-[#D7DBDF] shadow-[inset_1px_1px_0_#FFFFFF] text-[11px] cursor-pointer hover:bg-[#F3F4F6]">
+            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[12.5px] cursor-pointer hover:bg-[#F7F8FA]">
               {uploading ? 'A carregar…' : 'Carregar foto do documento…'}
               <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => upload(e.target.files?.[0])} />
             </label>
@@ -98,7 +98,7 @@ export default function PmsDocumentScanView() {
         {!selected && <div className="text-gray-500">Sem leitor/scanner automático disponível nesta instalação — procure o hóspede e carregue a foto do documento manualmente.</div>}
       </div>
       <Toolbar actions={[
-        { label: 'Gravar Nº de Documento', icon: '💾', color: '#17375E', onClick: saveNumber, disabled: !selected },
+        { label: 'Gravar Nº de Documento', icon: '💾', color: '#1E2A44', onClick: saveNumber, disabled: !selected },
       ]} />
     </div>
   );

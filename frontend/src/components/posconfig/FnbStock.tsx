@@ -4,9 +4,9 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
-const inp = 'border border-[#D7DBDF] px-2 py-[3px] text-[12px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[13px] bg-white';
 const L = ({ w = 'w-[130px]', children }: any) => (
-  <span className={`text-[12px] text-[#1A1D21] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[13px] text-[#111827] ${w} flex-shrink-0`}>{children}</span>
 );
 
 function useList(ep: string, key: string, params?: any) {
@@ -85,17 +85,17 @@ export default function FnbStock() {
   if (agrupar) vista.forEach((r) => { (grupos[r.warehouse] ||= []).push(r); });
 
   const Linha = ({ r }: any) => (
-    <tr className={`border-b border-[#EBEEF0] ${r.below_min ? 'bg-[#F3F4F6]' : 'hover:bg-[#FFFFFF]'}`}>
+    <tr className={`border-b border-[#F1F2F4] ${r.below_min ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
       <td className="px-2 py-1 font-mono text-[#6B7280]">{r.code}</td>
       <td className="px-2 py-1 font-semibold">
         {r.name}
         {Number(r.quantity) < 0 && (
-          <span className="ml-2 text-[11px] text-[#B42318] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
+          <span className="ml-2 text-[12.5px] text-[#DC2626] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
         )}
       </td>
       {!agrupar && <td className="px-2 py-1">{r.warehouse}</td>}
       <td className="px-2 py-1 text-right font-bold"
-        style={{ color: Number(r.quantity) < 0 ? '#B42318' : undefined }}>{r.quantity}</td>
+        style={{ color: Number(r.quantity) < 0 ? '#DC2626' : undefined }}>{r.quantity}</td>
       <td className="px-2 py-1 text-right text-[#6B7280]">{money(r.average_cost)}</td>
       <td className="px-2 py-1 text-right font-bold">{money(r.value)}</td>
       <td className="px-2 py-1 text-right text-[#6B7280]">{r.min_stock}</td>
@@ -103,8 +103,8 @@ export default function FnbStock() {
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F3F4F6]">
-      <div className="flex gap-6 p-3 bg-white border-b border-[#EBEEF0]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+      <div className="flex gap-6 p-3 bg-white border-b border-[#F1F2F4]">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <L>Família:</L>
@@ -139,11 +139,11 @@ export default function FnbStock() {
               {armazens.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
           </div>
-          <label className="flex items-center gap-2 text-[12px] cursor-pointer">
+          <label className="flex items-center gap-2 text-[13px] cursor-pointer">
             <input type="checkbox" checked={agrupar} onChange={(e) => setAgrupar(e.target.checked)} className="w-4 h-4" />
             Agrupar por armazém
           </label>
-          <label className="flex items-center gap-2 text-[12px] cursor-pointer">
+          <label className="flex items-center gap-2 text-[13px] cursor-pointer">
             <input type="checkbox" checked={soComQtd} onChange={(e) => { setSoComQtd(e.target.checked); setPage(1); }} className="w-4 h-4" />
             Só com quantidades
           </label>
@@ -153,18 +153,18 @@ export default function FnbStock() {
       </div>
 
       <div className="flex-1 overflow-auto bg-white">
-        <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F3F4F6]">
+        <table className="w-full text-[13px] border-collapse">
+          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
             {['Código', 'Artigo', ...(agrupar ? [] : ['Armazém']), 'Stock Qtd.', 'Custo médio', 'Valor', 'Mínimo'].map((h) => (
-              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#EBEEF0] border-r border-r-[#EBEEF0]">{h}</th>
+              <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {agrupar
               ? Object.entries(grupos).map(([arm, lista]) => (
                 <>
-                  <tr key={arm} className="bg-[#F3F4F6]">
-                    <td colSpan={6} className="px-2 py-1 font-bold text-[#1A1D21]">
+                  <tr key={arm} className="bg-[#F7F8FA]">
+                    <td colSpan={6} className="px-2 py-1 font-bold text-[#111827]">
                       {arm} — {money(lista.reduce((s, r) => s + Number(r.value), 0))} Kz
                     </td>
                   </tr>
@@ -179,7 +179,7 @@ export default function FnbStock() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F3F4F6] border-t border-[#EBEEF0] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[13px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -196,12 +196,12 @@ export default function FnbStock() {
 
       <Toolbar actions={[
         {
-          label: recalcular.isPending ? 'A recalcular…' : 'Recalcular o stock', icon: '⟳', color: '#2E75B6',
+          label: recalcular.isPending ? 'A recalcular…' : 'Recalcular o stock', icon: '⟳', color: '#3B82F6',
           onClick: () => recalcular.mutate(),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#17375E', onClick: exportar },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#1E2A44', onClick: exportar },
       ]} right={
-        <span className="text-[11px] text-[#6B7280]">
+        <span className="text-[12.5px] text-[#6B7280]">
           O valor é a quantidade ao custo médio — é o dinheiro parado dentro do armazém.
         </span>
       } />

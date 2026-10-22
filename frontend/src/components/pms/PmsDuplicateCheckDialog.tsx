@@ -38,28 +38,28 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-h-[75vh] bg-[#F3F4F6] border border-[#D7DBDF] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#17375E' }}>
+      <div className="w-[900px] max-h-[75vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
           Controlo de duplicação
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#B42318] text-white hover:brightness-110">
+            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="p-2 bg-white border-b border-[#EBEEF0] flex items-end gap-3 text-[12px]">
+        <div className="p-2 bg-white border-b border-[#F1F2F4] flex items-end gap-3 text-[13px]">
           <label className="flex items-center gap-2 flex-1">
             <span className="w-[110px]">Pesquisa livre:</span>
-            <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus className="border border-[#D7DBDF] p-1 bg-white flex-1" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus className="border border-[#E6E8EC] p-1 bg-white flex-1" />
           </label>
           <button onClick={() => refetch()}
             className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] py-2"
-            style={{ background: '#17375E' }}>
+            style={{ background: '#1E2A44' }}>
             <RefreshCw size={18} /> Pesquisar
           </button>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A verificar…</div> : groups.length === 0 ? (
-            <div className="p-6 text-center text-gray-400 text-[12px]">Sem entidades duplicadas encontradas.</div>
+          {isFetching ? <div className="p-4 text-gray-400 text-[13px]">A verificar…</div> : groups.length === 0 ? (
+            <div className="p-6 text-center text-gray-400 text-[13px]">Sem entidades duplicadas encontradas.</div>
           ) : (
             <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined}
               onRowClick={(r: any) => setSelId(r.id)} onRowDoubleClick={() => abrirDetalhes()}
@@ -78,14 +78,14 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
             lista em tempo real — um segundo filtro seria a mesma coisa duas
             vezes (o ClassicGrid também tem o seu próprio filtro embutido,
             aqui desligado com filterable={false} para não ficar um 3º). */}
-        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F3F4F6] border-t border-[#D7DBDF] text-[12px]">
+        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[13px]">
           <button disabled={!selId} onClick={abrirDetalhes}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F3F4F6] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-30 disabled:hover:bg-transparent">
             <Users size={13} /> Detalhes
           </button>
           <div className="flex-1" />
           <button onClick={onClose} className="flex items-center gap-1.5 font-semibold hover:text-black">
-            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#B42318] text-white">
+            <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white">
               <X size={9} strokeWidth={3} />
             </span>
             Fechar

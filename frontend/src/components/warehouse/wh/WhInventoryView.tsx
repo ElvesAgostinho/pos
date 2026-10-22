@@ -34,15 +34,15 @@ export default function WhInventoryView() {
     update.mutate({ id: sel.id!, data: { lines } as any });
   };
 
-  const vTone = (v: any) => Number(v) === 0 ? 'text-gray-500' : Number(v) > 0 ? 'text-[#1A1D21] font-bold' : 'text-[#912018] font-bold';
+  const vTone = (v: any) => Number(v) === 0 ? 'text-gray-500' : Number(v) > 0 ? 'text-[#111827] font-bold' : 'text-[#B91C1C] font-bold';
 
   return (
     <ClassicWindow title="Inventários Físicos (Stocktake)" icon={<ClipboardList size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Inventários: {counts.length}</div>}>
       <div className="flex h-full">
-        <div className="w-1/2 border-r border-[#D7DBDF] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px]">
-            <select value={wh} onChange={(e) => setWh(e.target.value)} className="border border-[#D7DBDF] p-1 bg-white">
+        <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+            <select value={wh} onChange={(e) => setWh(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white">
               <option value="">Armazém…</option>{warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
             <ClassicButton icon={Plus} label="Novo Inventário" onClick={createCount} />
@@ -51,8 +51,8 @@ export default function WhInventoryView() {
             <ClassicGrid rowKey="id" data={counts} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '22%' },
               { header: 'Armazém', accessor: 'warehouse_name', width: '40%' },
-              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#1A1D21] font-bold' : 'text-[#1A1D21]'}>{r.status_display}</span>, width: '26%' },
-              { header: '', accessor: (r: any) => r.status !== 'CONFIRMED' ? <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button> : null, width: '12%' },
+              { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#111827] font-bold' : 'text-[#111827]'}>{r.status_display}</span>, width: '26%' },
+              { header: '', accessor: (r: any) => r.status !== 'CONFIRMED' ? <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button> : null, width: '12%' },
             ]} />
           </div>
         </div>
@@ -60,19 +60,19 @@ export default function WhInventoryView() {
         <div className="w-1/2 flex flex-col">
           {sel ? (
             <>
-              <div className="flex items-center justify-between p-2 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px]">
+              <div className="flex items-center justify-between p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
                 <span className="font-bold">{sel.number} · {sel.warehouse_name}</span>
                 {sel.status !== 'CONFIRMED'
                   ? <ClassicButton icon={CheckCircle} label="Confirmar (ajustar stock)" onClick={() => confirm.mutate(sel.id!)} />
-                  : <span className="text-[#1A1D21] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmado</span>}
+                  : <span className="text-[#111827] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmado</span>}
               </div>
               {sel.status !== 'CONFIRMED' && (
-                <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F3F4F6] border-b border-[#D7DBDF] text-[11px]">
-                  <input placeholder="Pesquisar artigo" value={itemSearch} onChange={(e) => setItemSearch(e.target.value)} className="border border-[#D7DBDF] p-1 w-28" />
-                  <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#D7DBDF] p-1 bg-white max-w-[150px]">
+                <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+                  <input placeholder="Pesquisar artigo" value={itemSearch} onChange={(e) => setItemSearch(e.target.value)} className="border border-[#E6E8EC] p-1 w-28" />
+                  <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white max-w-[150px]">
                     <option value="">Artigo…</option>{items.map((i: any) => <option key={i.id} value={i.id}>{i.name}</option>)}
                   </select>
-                  <input type="number" placeholder="Contado" value={ln.counted_qty} onChange={(e) => setLn({ ...ln, counted_qty: e.target.value })} className="border border-[#D7DBDF] p-1 w-20" />
+                  <input type="number" placeholder="Contado" value={ln.counted_qty} onChange={(e) => setLn({ ...ln, counted_qty: e.target.value })} className="border border-[#E6E8EC] p-1 w-20" />
                   <ClassicButton icon={Plus} label="Linha" onClick={addLine} />
                 </div>
               )}
@@ -82,11 +82,11 @@ export default function WhInventoryView() {
                   { header: 'Sistema', accessor: 'system_qty', width: '18%' },
                   { header: 'Contado', accessor: 'counted_qty', width: '18%' },
                   { header: 'Desvio', accessor: (r: any) => <span className={vTone(r.variance)}>{r.variance}</span>, width: '16%' },
-                  { header: '', accessor: (r: any) => sel.status !== 'CONFIRMED' ? <button onClick={() => removeLine(r._idx)} className="text-[#912018] hover:text-[#912018]"><Trash2 size={12} /></button> : null, width: '8%' },
+                  { header: '', accessor: (r: any) => sel.status !== 'CONFIRMED' ? <button onClick={() => removeLine(r._idx)} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button> : null, width: '8%' },
                 ]} />
               </div>
             </>
-          ) : <div className="flex-1 flex items-center justify-center text-gray-400 text-[12px]">Selecione ou crie um inventário.</div>}
+          ) : <div className="flex-1 flex items-center justify-center text-gray-400 text-[13px]">Selecione ou crie um inventário.</div>}
         </div>
       </div>
     </ClassicWindow>

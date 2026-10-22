@@ -20,18 +20,18 @@ import { KDS_STATIONS } from '../../api/posmgmt';
  */
 
 const ESTADOS: Record<string, { label: string; cor: string; fundo: string; borda: string }> = {
-  FIRED: { label: 'Em espera', cor: '#2E75B6', fundo: '#F3F4F6', borda: '#2E75B6' },
-  PREPARING: { label: 'A preparar', cor: '#2E75B6', fundo: '#F3F4F6', borda: '#2E75B6' },
-  READY: { label: 'Pronto', cor: '#17375E', fundo: '#F3F4F6', borda: '#17375E' },
-  CANCELLED: { label: 'ANULADO', cor: '#B42318', fundo: '#FFFFFF', borda: '#B42318' },
+  FIRED: { label: 'Em espera', cor: '#3B82F6', fundo: '#F7F8FA', borda: '#3B82F6' },
+  PREPARING: { label: 'A preparar', cor: '#3B82F6', fundo: '#F7F8FA', borda: '#3B82F6' },
+  READY: { label: 'Pronto', cor: '#1E2A44', fundo: '#F7F8FA', borda: '#1E2A44' },
+  CANCELLED: { label: 'ANULADO', cor: '#DC2626', fundo: '#FFFFFF', borda: '#DC2626' },
 };
 
 /** Que botão avança este estado (e como se chama para o cozinheiro). */
 const AVANCO: Record<string, { label: string; cor: string }> = {
-  FIRED: { label: 'Iniciar', cor: '#2E75B6' },
-  PREPARING: { label: 'Pronto', cor: '#17375E' },
-  READY: { label: 'Entregue', cor: '#17375E' },
-  CANCELLED: { label: 'Confirmar anulação', cor: '#B42318' },
+  FIRED: { label: 'Iniciar', cor: '#3B82F6' },
+  PREPARING: { label: 'Pronto', cor: '#1E2A44' },
+  READY: { label: 'Entregue', cor: '#1E2A44' },
+  CANCELLED: { label: 'Confirmar anulação', cor: '#DC2626' },
 };
 
 interface KDSProps { fixedStation?: string; title?: string }
@@ -93,15 +93,15 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
   const atrasados = (queue as any[]).filter((l) => l.kds_status !== 'CANCELLED' && mins(l.fired_at) >= 15).length;
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#17375E', color: '#F3F4F6' }}>
+    <div className="h-full flex flex-col" style={{ background: '#1E2A44', color: '#F7F8FA' }}>
       {/* Barra de topo */}
-      <div className="flex items-center gap-4 px-5 py-3 flex-shrink-0" style={{ background: '#17375E', borderBottom: '2px solid #17375E' }}>
+      <div className="flex items-center gap-4 px-5 py-3 flex-shrink-0" style={{ background: '#1E2A44', borderBottom: '2px solid #1E2A44' }}>
         <ChefHat size={26} className="text-[#6B7280]" />
         <div>
           <div className="text-[18px] font-black leading-tight">
             {mon?.header_text || title || 'Monitor de Cozinha'}
           </div>
-          <div className="text-[12px] text-slate-400">
+          <div className="text-[13px] text-slate-400">
             {KDS_STATIONS.find((s) => s.value === station)?.label || station}
             {mon && <> · {mon.name} · {porPedido ? 'por pedido' : 'por artigo'}</>}
           </div>
@@ -111,16 +111,16 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
         <div className="ml-auto flex items-center gap-3">
           {[['FIRED', contar('FIRED')], ['PREPARING', contar('PREPARING')], ['READY', contar('READY')]].map(([st, n]) => (
             <div key={String(st)} className="px-4 py-1.5 rounded-lg text-center min-w-[92px]"
-              style={{ background: '#17375E', border: `2px solid ${ESTADOS[String(st)].cor}` }}>
+              style={{ background: '#1E2A44', border: `2px solid ${ESTADOS[String(st)].cor}` }}>
               <div className="text-[22px] font-black leading-none" style={{ color: ESTADOS[String(st)].cor }}>{String(n)}</div>
-              <div className="text-[10px] uppercase tracking-wide text-slate-400 mt-0.5">{ESTADOS[String(st)].label}</div>
+              <div className="text-[11.5px] uppercase tracking-wide text-slate-400 mt-0.5">{ESTADOS[String(st)].label}</div>
             </div>
           ))}
           {atrasados > 0 && (
             <div className="px-4 py-1.5 rounded-lg text-center min-w-[92px] animate-pulse"
-              style={{ background: '#912018', border: '2px solid #B42318' }}>
+              style={{ background: '#B91C1C', border: '2px solid #DC2626' }}>
               <div className="text-[22px] font-black leading-none text-white">{atrasados}</div>
-              <div className="text-[10px] uppercase tracking-wide text-[#B42318] mt-0.5">Atrasados</div>
+              <div className="text-[11.5px] uppercase tracking-wide text-[#DC2626] mt-0.5">Atrasados</div>
             </div>
           )}
           <div className="text-[26px] font-black tabular-nums text-slate-300 pl-2">
@@ -135,7 +135,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
           {KDS_STATIONS.map((s) => (
             <button key={s.value} onClick={() => setStation(s.value)}
               className={`px-5 py-2 text-[13px] font-bold rounded-t-lg ${station === s.value
-                ? 'bg-[#17375E] text-white' : 'bg-[#17375E] text-slate-500 hover:text-slate-300'}`}>
+                ? 'bg-[#1E2A44] text-white' : 'bg-[#1E2A44] text-slate-500 hover:text-slate-300'}`}>
               {s.label}
             </button>
           ))}
@@ -157,16 +157,16 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
             <div key={p.key} className={`rounded-xl overflow-hidden flex flex-col ${atrasado ? 'animate-pulse' : ''}`}
               style={{
                 background: '#FFFFFF',
-                border: `3px solid ${anulado ? '#B42318' : atrasado ? '#B42318' : ESTADOS[estadoPedido].borda}`,
+                border: `3px solid ${anulado ? '#DC2626' : atrasado ? '#DC2626' : ESTADOS[estadoPedido].borda}`,
                 boxShadow: '0 8px 20px rgba(0,0,0,.35)',
               }}>
               {/* Cabeçalho do pedido */}
               <div className="flex items-center justify-between px-3 py-2"
-                style={{ background: anulado ? '#B42318' : ESTADOS[estadoPedido].borda, color: '#FFFFFF' }}>
+                style={{ background: anulado ? '#DC2626' : ESTADOS[estadoPedido].borda, color: '#FFFFFF' }}>
                 <div className="flex items-center gap-2 min-w-0">
                   <Utensils size={16} className="flex-shrink-0" />
                   <span className="text-[17px] font-black truncate">{p.destino}</span>
-                  {p.guests ? <span className="text-[12px] opacity-90">· {p.guests}p</span> : null}
+                  {p.guests ? <span className="text-[13px] opacity-90">· {p.guests}p</span> : null}
                 </div>
                 {opts.show_timer && (
                   <span className="flex items-center gap-1 text-[15px] font-black tabular-nums px-2 py-0.5 rounded"
@@ -177,7 +177,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
               </div>
 
               {anulado && (
-                <div className="bg-[#912018] text-white text-[13px] font-black px-3 py-1.5 flex items-center gap-2 uppercase tracking-wide">
+                <div className="bg-[#B91C1C] text-white text-[13px] font-black px-3 py-1.5 flex items-center gap-2 uppercase tracking-wide">
                   <AlertTriangle size={16} /> Anulado — não preparar
                 </div>
               )}
@@ -197,7 +197,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
                           {l.item_name}
                         </span>
                         {!porPedido && (
-                          <span className="ml-auto text-[10px] font-bold uppercase px-1.5 py-0.5 rounded flex-shrink-0"
+                          <span className="ml-auto text-[11.5px] font-bold uppercase px-1.5 py-0.5 rounded flex-shrink-0"
                             style={{ background: ESTADOS[l.kds_status]?.fundo, color: ESTADOS[l.kds_status]?.cor }}>
                             {ESTADOS[l.kds_status]?.label}
                           </span>
@@ -205,15 +205,15 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
                       </div>
 
                       {l.note && (
-                        <div className="mt-1 text-[14px] font-bold text-[#912018] bg-[#FDECEA] border-l-4 border-[#912018] px-2 py-1">
+                        <div className="mt-1 text-[14px] font-bold text-[#B91C1C] bg-[#FEF2F2] border-l-4 border-[#B91C1C] px-2 py-1">
                           » {l.note}
                         </div>
                       )}
                       {cancelada && l.void_reason && (
-                        <div className="mt-1 text-[13px] font-bold text-[#B42318]">Motivo: {l.void_reason}</div>
+                        <div className="mt-1 text-[13px] font-bold text-[#DC2626]">Motivo: {l.void_reason}</div>
                       )}
                       {opts.show_allergens && alerg.length > 0 && (
-                        <div className="mt-1.5 flex items-center gap-1.5 bg-[#B42318] text-white text-[12px] font-black px-2 py-1 rounded">
+                        <div className="mt-1.5 flex items-center gap-1.5 bg-[#DC2626] text-white text-[13px] font-black px-2 py-1 rounded">
                           <AlertTriangle size={14} className="flex-shrink-0" />
                           ALERGÉNIOS: {alerg.join(' · ')}
                         </div>
@@ -225,9 +225,9 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
 
               {/* Rodapé + ações */}
               <div className="px-3 pb-3">
-                <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2">
+                <div className="flex items-center justify-between text-[12.5px] text-slate-500 mb-2">
                   <span className="font-bold uppercase tracking-wide"
-                    style={{ color: anulado ? '#B42318' : ESTADOS[estadoPedido].cor }}>
+                    style={{ color: anulado ? '#DC2626' : ESTADOS[estadoPedido].cor }}>
                     {anulado ? 'Anulado' : ESTADOS[estadoPedido].label}
                   </span>
                   {p.operador && <span>{p.operador}</span>}
@@ -240,7 +240,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
                     style={{ background: av.cor }}>
                     {av.label}
                     {porPedido && p.linhas.length > 1 && !anulado && (
-                      <span className="text-[12px] font-bold opacity-80"> · {p.linhas.length} artigos</span>
+                      <span className="text-[13px] font-bold opacity-80"> · {p.linhas.length} artigos</span>
                     )}
                   </button>
 
@@ -272,8 +272,8 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
       </div>
 
       {/* Rodapé */}
-      <div className="flex items-center gap-3 px-5 py-2 text-[12px] flex-shrink-0"
-        style={{ background: '#17375E', borderTop: '2px solid #17375E', color: '#2E75B6' }}>
+      <div className="flex items-center gap-3 px-5 py-2 text-[13px] flex-shrink-0"
+        style={{ background: '#1E2A44', borderTop: '2px solid #1E2A44', color: '#3B82F6' }}>
         <span>{pedidos.length} pedido(s) · {(queue as any[]).length} artigo(s)</span>
         <span className="opacity-40">|</span>
         <span>Atualiza sozinho</span>

@@ -41,13 +41,13 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
   }, [baseData, filter]);
 
   return (
-    <div className="w-full bg-white border border-[#D7DBDF] overflow-auto h-full text-[11px] font-sans flex flex-col" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
+    <div className="w-full bg-white border border-[#F1F2F4] overflow-auto h-full text-[13px] font-sans flex flex-col" style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
       {showFilter && (
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F3F4F6] border-b border-[#EBEEF0] sticky top-0 z-20">
+        <div className="flex items-center gap-2 px-3.5 py-2.5 bg-white border-b border-[#F1F2F4] sticky top-0 z-20">
           <Search size={12} className="text-gray-400" />
           <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filtrar nesta lista…"
-            className="flex-1 bg-transparent outline-none text-[11px] py-0.5" />
-          {filter && <><span className="text-gray-400 text-[10px]">{rows.length}/{data.length}</span>
+            className="flex-1 bg-transparent outline-none text-[13px] py-0.5" />
+          {filter && <><span className="text-gray-400 text-[11.5px]">{rows.length}/{data.length}</span>
             <button onClick={() => setFilter('')} className="text-gray-400 hover:text-gray-700"><X size={12} /></button></>}
         </div>
       )}
@@ -57,9 +57,9 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className="text-left py-1.5 px-2.5 border-b font-bold uppercase tracking-tight text-[10.5px]"
+                className="text-left py-2.5 px-3.5 border-b font-medium text-[13px]"
                 style={{
-                  width: col.width, borderColor: TOKENS.line, color: TOKENS.selectedText,
+                  width: col.width, borderColor: TOKENS.lineSoft, color: TOKENS.textMuted,
                   background: TOKENS.toolbarBg,
                 }}
               >
@@ -76,14 +76,14 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
                 key={row[rowKey] || idx}
                 onClick={() => { setInnerSel(row[rowKey] ?? idx); onRowClick && onRowClick(row); }}
                 onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-                className="border-b border-[#EBEEF0] cursor-pointer transition-colors hover:bg-[#F3F4F6]"
+                className="border-b border-[#F1F2F4] cursor-pointer transition-colors hover:bg-[#F7F8FA]"
                 style={{
                   background: isSelected ? TOKENS.selectedBg : idx % 2 === 0 ? TOKENS.surface : '#FFFFFF',
                   color: isSelected ? TOKENS.selectedText : undefined,
                 }}
               >
                 {columns.map((col, cIdx) => (
-                  <td key={cIdx} className="py-1 px-2.5 border-r border-[#EBEEF0] truncate">
+                  <td key={cIdx} className="py-2.5 px-3.5 truncate">
                     {typeof col.accessor === 'function' ? col.accessor(row) : row[col.accessor]}
                   </td>
                 ))}

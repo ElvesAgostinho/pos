@@ -69,55 +69,55 @@ function montarHtml(p: any, imprimir: boolean) {
   <style>
     * { box-sizing: border-box; }
     @page { size: A4; margin: 0; }
-    body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; font-size: 11.5px; color: #1A1D21;
+    body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; font-size: 11.5px; color: #111827;
            margin: 0; padding: 18mm 16mm; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
     /* Cabeçalho */
     .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
-            border-bottom: 2px solid #17375E; padding-bottom: 10px; }
+            border-bottom: 2px solid #1E2A44; padding-bottom: 10px; }
     .logo { max-height: 56px; max-width: 200px; display: block; margin-bottom: 6px; }
-    .brand { font-size: 19px; font-weight: 700; color: #17375E; letter-spacing: .2px; }
+    .brand { font-size: 19px; font-weight: 700; color: #1E2A44; letter-spacing: .2px; }
     .company-line { color: #6B7280; font-size: 10.5px; line-height: 1.45; margin-top: 2px; }
     .party { text-align: right; min-width: 210px; }
-    .party-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: #2E75B6; }
+    .party-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: #3B82F6; }
     .party-name { font-weight: 700; font-size: 13px; margin-top: 1px; }
     .party-line { color: #6B7280; font-size: 10.5px; }
 
     /* Faixa do documento */
     .docbar { display: flex; justify-content: space-between; align-items: center; gap: 16px;
-              background: #FFFFFF; border: 1px solid #DCE9F5; border-radius: 6px;
+              background: #FFFFFF; border: 1px solid #DBEAFE; border-radius: 6px;
               padding: 9px 12px; margin-top: 14px; }
-    .doc-title { font-size: 15px; font-weight: 700; color: #17375E; }
+    .doc-title { font-size: 15px; font-weight: 700; color: #1E2A44; }
     .badge { display: inline-block; font-size: 9.5px; font-weight: 700; text-transform: uppercase;
              letter-spacing: .6px; padding: 2px 8px; border-radius: 999px; margin-left: 8px;
-             background: #17375E; color: #fff; }
-    .badge.copy { background: #B42318; }
+             background: #1E2A44; color: #fff; }
+    .badge.copy { background: #DC2626; }
     .meta { display: flex; gap: 18px; font-size: 10.5px; }
-    .meta div span { color: #2E75B6; display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .5px; }
+    .meta div span { color: #3B82F6; display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .5px; }
 
     /* Linhas */
     table { width: 100%; border-collapse: collapse; }
     .items { margin-top: 12px; }
-    .items th { background: #17375E; color: #fff; text-align: left; font-weight: 600;
+    .items th { background: #1E2A44; color: #fff; text-align: left; font-weight: 600;
                 padding: 6px 8px; font-size: 10.5px; }
-    .items td { padding: 6px 8px; border-bottom: 1px solid #EBEEF0; vertical-align: top; }
-    .items tbody tr:nth-child(even) td { background: #F7F8F9; }
+    .items td { padding: 6px 8px; border-bottom: 1px solid #F1F2F4; vertical-align: top; }
+    .items tbody tr:nth-child(even) td { background: #F3F4F6; }
     .num { text-align: right; white-space: nowrap; }
     .strong { font-weight: 700; }
-    .exempt { font-size: 9.5px; color: #B42318; margin-top: 2px; }
+    .exempt { font-size: 9.5px; color: #DC2626; margin-top: 2px; }
 
     /* IVA + totais */
     .rowbox { display: flex; gap: 20px; margin-top: 14px; align-items: flex-start;
               justify-content: space-between; }
-    .vat { width: auto; border: 1px solid #DCE9F5; border-radius: 6px; overflow: hidden; }
-    .vat th { background: #FFFFFF; color: #17375E; font-size: 9.5px; font-weight: 700;
-              text-transform: uppercase; letter-spacing: .4px; padding: 4px 8px; border-bottom: 1px solid #DCE9F5; }
-    .vat td { padding: 4px 8px; font-size: 10.5px; border-bottom: 1px solid #EBEEF0; }
+    .vat { width: auto; border: 1px solid #DBEAFE; border-radius: 6px; overflow: hidden; }
+    .vat th { background: #FFFFFF; color: #1E2A44; font-size: 9.5px; font-weight: 700;
+              text-transform: uppercase; letter-spacing: .4px; padding: 4px 8px; border-bottom: 1px solid #DBEAFE; }
+    .vat td { padding: 4px 8px; font-size: 10.5px; border-bottom: 1px solid #F1F2F4; }
     .totals { width: 258px; }
     .totals td { padding: 4px 10px; font-size: 11.5px; }
     .totals .lbl { color: #6B7280; }
     .totals .val { text-align: right; font-weight: 600; }
-    .totals .grand td { background: #17375E; color: #fff; font-size: 13.5px; font-weight: 700;
+    .totals .grand td { background: #1E2A44; color: #fff; font-size: 13.5px; font-weight: 700;
                         padding: 8px 10px; }
     .totals .grand td:last-child { text-align: right; }
 
@@ -125,23 +125,23 @@ function montarHtml(p: any, imprimir: boolean) {
 
     /* Rodapé legal */
     .legal { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px;
-             margin-top: 22px; border-top: 1px solid #DCE9F5; padding-top: 10px; }
+             margin-top: 22px; border-top: 1px solid #DBEAFE; padding-top: 10px; }
     .qr { text-align: center; }
     .qr img { width: 96px; height: 96px; display: block; }
-    .qr small { font-size: 8.5px; color: #2E75B6; }
+    .qr small { font-size: 8.5px; color: #3B82F6; }
     .mention { font-size: 9.5px; color: #6B7280; line-height: 1.5; flex: 1; }
 
     /* Bancos */
-    .banks { margin-top: 16px; border: 1px solid #DCE9F5; border-radius: 6px; overflow: hidden; }
+    .banks { margin-top: 16px; border: 1px solid #DBEAFE; border-radius: 6px; overflow: hidden; }
     .banks-title { background: #FFFFFF; padding: 5px 10px; font-size: 9.5px; font-weight: 700;
-                   text-transform: uppercase; letter-spacing: .5px; color: #17375E;
-                   border-bottom: 1px solid #DCE9F5; }
-    .banks-tbl th { background: #F7F8F9; text-align: left; font-size: 9.5px; color: #6B7280;
-                    padding: 4px 10px; border-bottom: 1px solid #EBEEF0; }
-    .banks-tbl td { padding: 4px 10px; font-size: 10.5px; border-bottom: 1px solid #F7F8F9; }
+                   text-transform: uppercase; letter-spacing: .5px; color: #1E2A44;
+                   border-bottom: 1px solid #DBEAFE; }
+    .banks-tbl th { background: #F3F4F6; text-align: left; font-size: 9.5px; color: #6B7280;
+                    padding: 4px 10px; border-bottom: 1px solid #F1F2F4; }
+    .banks-tbl td { padding: 4px 10px; font-size: 10.5px; border-bottom: 1px solid #F3F4F6; }
     .mono { font-family: "Courier New", monospace; }
 
-    .foot { margin-top: 18px; padding-top: 8px; border-top: 1px solid #EBEEF0;
+    .foot { margin-top: 18px; padding-top: 8px; border-top: 1px solid #F1F2F4;
             font-size: 9.5px; color: #6B7280; line-height: 1.55; text-align: center; }
     @media print { body { padding: 12mm 14mm; } .noprint { display: none; } }
   </style></head><body${imprimir ? ' onload="window.print()"' : ''}>

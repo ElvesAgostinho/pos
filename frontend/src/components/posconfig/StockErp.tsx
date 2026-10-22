@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle } from './kit';
 
-const inp = 'border border-[#D7DBDF] px-2 py-1 text-[12px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
-    <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[130px] flex-shrink-0 text-[#1A1D21]">{label}</span>
+    <label className="flex items-center gap-3 text-[13px]">
+      <span className="w-[130px] flex-shrink-0 text-[#111827]">{label}</span>
       {children}
     </label>
   );
@@ -73,20 +73,20 @@ export default function StockErp() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex border-b-2 border-[#17375E] px-3 bg-[#F3F4F6]">
-        <span className="px-4 py-2 text-[13px] font-semibold border-b-[3px] border-[#17375E] bg-white">
+      <div className="flex border-b-2 border-[#1E2A44] px-3 bg-[#F7F8FA]">
+        <span className="px-4 py-2 text-[13px] font-semibold border-b-[3px] border-[#1E2A44] bg-white">
           ERP Externo - Avançado
         </span>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        <label className="flex items-center gap-2 text-[12px] mb-3">
+        <label className="flex items-center gap-2 text-[13px] mb-3">
           <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
           Ativo
         </label>
 
         {off && (
-          <div className="text-[11px] text-[#1A1D21] bg-[#F3F4F6] border border-[#D7DBDF] px-3 py-2 mb-3 max-w-[900px]">
+          <div className="text-[12.5px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-2 mb-3 max-w-[900px]">
             Desligada: o <b>stock é gerido pelo motor interno</b> do sistema — que já desconta a
             mercadoria em cada venda e faz o custo médio. Ligue isto só se a verdade do stock
             estiver mesmo num ERP de fora; caso contrário fica com dois números para a mesma garrafa.
@@ -94,8 +94,8 @@ export default function StockErp() {
         )}
 
         <div className={`grid grid-cols-2 gap-6 items-start ${off ? 'opacity-55' : ''}`}>
-          <fieldset className="px-4 pb-4 pt-1" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }} disabled={off}>
-            <legend className="text-[12px] px-1">Ligações externas</legend>
+          <fieldset className="px-4 pb-4 pt-1" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }} disabled={off}>
+            <legend className="text-[13px] px-1">Ligações externas</legend>
             <div className="space-y-2">
               <Row label="URL:">
                 <input value={d.url || ''} onChange={(e) => set('url', e.target.value)}
@@ -121,8 +121,8 @@ export default function StockErp() {
             </div>
           </fieldset>
 
-          <fieldset className="px-4 pb-4 pt-1" style={{ border: '1px solid #D7DBDF', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }} disabled={off}>
-            <legend className="text-[12px] px-1">Tabelas</legend>
+          <fieldset className="px-4 pb-4 pt-1" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }} disabled={off}>
+            <legend className="text-[13px] px-1">Tabelas</legend>
             <div className="space-y-2">
               <Row label="Grupo:">
                 <select value={d.group || ''} onChange={(e) => set('group', Number(e.target.value) || null)}
@@ -147,14 +147,14 @@ export default function StockErp() {
               </Row>
 
               <div className="flex items-center gap-3 pt-1">
-                <label className="flex items-center gap-2 text-[12px] w-[130px]">
+                <label className="flex items-center gap-2 text-[13px] w-[130px]">
                   <input type="checkbox" checked={!!d.stock_control}
                     onChange={(e) => set('stock_control', e.target.checked)} className="w-4 h-4" />
                   Controlo de Stock
                 </label>
                 <select value={d.block_mode} disabled={!d.stock_control}
                   onChange={(e) => set('block_mode', e.target.value)}
-                  className={`${inp} flex-1 disabled:bg-[#F3F4F6] disabled:text-[#6B7280]`} style={inputStyle}>
+                  className={`${inp} flex-1 disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle}>
                   <option value="WARN">Avisar</option>
                   <option value="BLOCK">Bloqueio</option>
                   <option value="NONE">Não controlar</option>
@@ -168,7 +168,7 @@ export default function StockErp() {
               </Row>
 
               <button onClick={() => sync.mutate()} disabled={off}
-                className="w-full py-3 bg-[#17375E] text-white text-[13px] font-semibold hover:bg-[#17375E] disabled:opacity-40 mt-2">
+                className="w-full py-3 bg-[#1E2A44] text-white text-[13px] font-semibold hover:bg-[#1E2A44] disabled:opacity-40 mt-2">
                 {sync.isPending ? 'A atualizar…' : 'Stocks - Atualizar'}
               </button>
             </div>
@@ -176,18 +176,18 @@ export default function StockErp() {
         </div>
 
         {d.last_test_detail && (
-          <div className={`text-[11px] px-3 py-2 border mt-3 max-w-[900px] ${d.last_test_ok
-            ? 'bg-[#F3F4F6] border-[#D7DBDF] text-[#1A1D21]'
-            : 'bg-[#F3F4F6] border-[#B42318] text-[#B42318]'}`}>
+          <div className={`text-[12.5px] px-3 py-2 border mt-3 max-w-[900px] ${d.last_test_ok
+            ? 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]'
+            : 'bg-[#F7F8FA] border-[#DC2626] text-[#DC2626]'}`}>
             Último teste: {d.last_test_detail}
           </div>
         )}
       </div>
 
       <Toolbar actions={[
-        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#17375E',
+        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#1E2A44',
           disabled: !d.id, onClick: () => test.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#17375E', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
       ]} />
     </div>
   );
