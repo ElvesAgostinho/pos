@@ -17,8 +17,15 @@ export interface Workspace {
 // leve: um fundo claro com um sopro de cor a um canto, não um bloco saturado.
 // Era um gradiente azul-escuro de ponta a ponta — e um ecrã inteiro de cor
 // escura é a coisa que mais datava o sistema.
+// Duas fontes de luz em cantos opostos sobre um cinzento-azulado frio. O que
+// havia era uma só mancha a 10% de opacidade a desvanecer para cinzento-claro:
+// de longe lia-se como um ecrã por carregar. Isto continua claro — o pedido do
+// dono foi claro, não escuro — mas tem onde a luz bate e onde não bate, que é
+// o que o vidro por cima (HotelBackdrop) precisa para se ver.
 const wp = (c1: string, _c2: string) =>
-  `radial-gradient(120% 100% at 8% 0%, ${c1}1A 0%, ${c1}08 45%, #EEF1F5 100%), #EEF1F5`;
+  `radial-gradient(90% 70% at 6% -8%, ${c1}38 0%, ${c1}12 42%, transparent 72%),`
+  + ` radial-gradient(85% 75% at 102% 108%, ${c1}30 0%, ${c1}0E 46%, transparent 76%),`
+  + ` linear-gradient(160deg, #F7F9FC 0%, #E8EDF5 55%, #DFE6F0 100%)`;
 
 export const WORKSPACES: Workspace[] = [
   {

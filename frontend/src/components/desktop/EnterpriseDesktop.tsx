@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Settings, Power, LogOut, ShieldCheck, Server, Wifi, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
@@ -13,24 +13,77 @@ import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
 import { MENUS as PMS_MENU_GROUPS } from '../pms/pmsMenus';
 
-// Fundo ambiente do Ambiente de Trabalho — manchas de cor desfocadas (mesh gradient,
-// linguagem de dashboards modernos) nas cores do próprio módulo, com uma silhueta de
-// hotel em traço fino, subtil, só decorativa (não protagonista como antes: já não é
-// uma grelha de janelas pixeladas a competir com os ícones).
+// Fundo ambiente do Ambiente de Trabalho — luz colorida desfocada por trás de uma
+// camada de vidro.
+//
+// Havia aqui uma silhueta de hotel desenhada num SVG de 1000×600 com
+// `preserveAspectRatio="slice"`. Num ecrã largo (1920 de largura, 740 de altura
+// útil) o "slice" escolhe a maior escala para cobrir — 1,92× — e o prédio cresce
+// para 1920×1152, com mais de 400px a sair por cima. O que sobrava no ecrã era o
+// que o dono via: um RETÂNGULO cinzento gigante ao meio, sem forma reconhecível
+// nenhuma. Um desenho decorativo que só funciona numa proporção de ecrã não é um
+// desenho decorativo — é um defeito com boas intenções. Saiu.
+//
+// O que fica é o que se queria desde o princípio: manchas de cor grandes e
+// desfocadas, e por cima delas o VIDRO — um reflexo largo em diagonal e um grão
+// muito fino. É o grão que faz a diferença entre "um gradiente" e "uma
+// superfície": sem ele o olho vê uma impressão lisa, com ele vê material.
 function HotelBackdrop({ tint, accent, glow }: { tint: string; accent: string; glow: string }) {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute rounded-full" style={{ width: 620, height: 620, left: '-8%', top: '-18%', background: glow, opacity: 0.22, filter: 'blur(120px)' }} />
-      <div className="absolute rounded-full" style={{ width: 560, height: 560, right: '-10%', top: '10%', background: accent, opacity: 0.18, filter: 'blur(130px)' }} />
-      <div className="absolute rounded-full" style={{ width: 480, height: 480, left: '30%', bottom: '-22%', background: tint, opacity: 0.28, filter: 'blur(140px)' }} />
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMax slice" style={{ opacity: 0.16 }}>
-        <path d="M470 600 V330 h130 V190 h60 V180 h140 V190 h60 V300 h120 V600"
-          fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinejoin="round" />
-        <text x="700" y="160" fontSize="15" fill="#FFFFFF" textAnchor="middle" fontFamily="Georgia" letterSpacing="3">HOTEL</text>
+      {/* A LUZ, por trás de tudo. Manchas largas, bem desfocadas, em movimento
+          lento pelo ecrã — nunca centradas, para o fundo não ter um "meio". */}
+      <div className="absolute rounded-full" style={{ width: '52vw', height: '52vw', left: '-12%', top: '-26%', background: glow, opacity: 0.30, filter: 'blur(130px)' }} />
+      <div className="absolute rounded-full" style={{ width: '46vw', height: '46vw', right: '-12%', top: '4%', background: accent, opacity: 0.24, filter: 'blur(140px)' }} />
+      <div className="absolute rounded-full" style={{ width: '40vw', height: '40vw', left: '26%', bottom: '-24%', background: tint, opacity: 0.20, filter: 'blur(150px)' }} />
+      <div className="absolute rounded-full" style={{ width: '30vw', height: '30vw', right: '18%', bottom: '-14%', background: glow, opacity: 0.18, filter: 'blur(120px)' }} />
+
+      {/* O VIDRO: um reflexo largo a atravessar o ecrã na diagonal. É o que dá a
+          leitura de superfície — luz a bater numa chapa, não um gradiente. */}
+      <div className="absolute inset-0" style={{
+        background: 'linear-gradient(118deg, rgba(255,255,255,0.46) 0%, rgba(255,255,255,0.12) 26%,'
+          + ' rgba(255,255,255,0) 48%, rgba(255,255,255,0.10) 72%, rgba(255,255,255,0.30) 100%)',
+      }} />
+      {/* O brilho do canto superior, onde a luz entra. */}
+      <div className="absolute inset-0" style={{
+        background: 'radial-gradient(80% 60% at 12% -10%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 60%)',
+      }} />
+      {/* E o peso em baixo, para o ecrã assentar em vez de flutuar. */}
+      <div className="absolute inset-0" style={{
+        background: 'linear-gradient(to top, rgba(15,23,42,0.07) 0%, rgba(15,23,42,0) 32%)',
+      }} />
+
+      {/* O GRÃO. Ruído gerado em SVG (não é imagem, não pesa nada) a 3,5% —
+          invisível de propósito: nota-se a falta dele, não a presença. */}
+      <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.035, mixBlendMode: 'overlay' }}>
+        <filter id="grao-vidro">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#grao-vidro)" />
       </svg>
     </div>
   );
 }
+
+/**
+ * VIDRO FOSCO — a receita, num só sítio.
+ *
+ * Os painéis eram `bg-white` com borda cinzenta: cartões de papel pousados em
+ * cima do fundo, sem relação nenhuma com ele. Vidro é outra coisa — deixa passar
+ * a cor do que está por baixo (`backdrop-filter`), tem um fio de luz na aresta
+ * de cima (a borda clara) e projecta sombra larga e suave, não um contorno.
+ *
+ * Como objeto e não como classes: usam-no o relógio, o painel de estado e os
+ * ícones, e três cópias da mesma receita desalinham-se à primeira alteração.
+ */
+const VIDRO: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.58)',
+  backdropFilter: 'blur(20px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+  border: '1px solid rgba(255,255,255,0.75)',
+  boxShadow: '0 1px 1px rgba(255,255,255,0.65) inset, 0 8px 28px rgba(15,23,42,0.10),'
+    + ' 0 2px 6px rgba(15,23,42,0.05)',
+};
 
 export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string, module: string) => void }) {
   const nav = useNavigate();
@@ -325,13 +378,11 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
         {/* Painel direito — só consultas rápidas */}
         <div className="absolute top-5 right-5 w-[220px] flex flex-col gap-2.5">
-          <div className="bg-white border border-[#E6E8EC] rounded-2xl p-3.5 text-[#111827] text-center"
-            style={{ boxShadow: '0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.08)' }}>
+          <div className="rounded-2xl p-3.5 text-[#111827] text-center" style={VIDRO}>
             <div className="text-[30px] font-bold leading-none">{clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</div>
             <div className="text-[11px] text-[#6B7280] mt-1">{clock.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
           </div>
-          <div className="bg-white border border-[#E6E8EC] rounded-2xl p-3.5 text-[#111827] text-[12px] space-y-2"
-            style={{ boxShadow: '0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.08)' }}>
+          <div className="rounded-2xl p-3.5 text-[#111827] text-[12px] space-y-2" style={VIDRO}>
             <div className="font-semibold text-[11px] uppercase text-[#9CA3AF] mb-1">{ws.name} · Estado</div>
             {[['Licença', ShieldCheck, 'ativa'], ['Servidor', Server, 'online'], ['VPN', Wifi, 'ligada']].map(([k, Icon, v]: any) => (
               <div key={k as string} className="flex items-center justify-between">
@@ -400,11 +451,7 @@ function DesktopIcon({ ic, accent, sobreFoto, onOpen }: { ic: DeskIcon; accent: 
   return (
     <button onClick={onOpen} className="w-[96px] flex flex-col items-center gap-2 group focus:outline-none" title={ic.label}>
       <div className="relative w-[64px] h-[64px] rounded-[18px] flex items-center justify-center transition-all duration-150 group-active:scale-95 group-hover:-translate-y-0.5"
-        style={{
-          background: '#FFFFFF',
-          border: '1px solid #E6E8EC',
-          boxShadow: '0 1px 2px rgba(16,24,40,0.04), 0 4px 12px rgba(16,24,40,0.08)',
-        }}>
+        style={VIDRO}>
         <div className="absolute inset-0 rounded-[18px] opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ boxShadow: `0 0 0 2px ${accent}40, 0 8px 20px ${accent}26` }} />
         {ic.img
