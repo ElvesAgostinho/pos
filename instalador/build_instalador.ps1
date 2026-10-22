@@ -38,6 +38,20 @@ do {
   elseif ([string]::IsNullOrWhiteSpace($senha1)) { Write-Warning 'A senha não pode ficar vazia.' }
 } while ($senha1 -ne $senha2 -or [string]::IsNullOrWhiteSpace($senha1))
 
+# O CÓDIGO DO CLIENTE — o que o identifica no PCC (Gestão de Clientes). Junto
+# com a senha de instalação, é o que permite ao próprio instalador ir buscar a
+# licença no fim, sem ninguém copiar ficheiros à mão. Este build já é POR
+# CLIENTE (a senha de instalação é dele), por isso não se perde nada em o fixar
+# aqui — ganha-se uma instalação que acaba com o sistema a funcionar.
+Write-Host ""
+Write-Host "== Código do cliente (PCC > Gestão de Clientes) =="
+Write-Host "Com ele, o instalador ativa a licença sozinho no fim. Enter para saltar"
+Write-Host "(a licença terá depois de ser ativada no ecrã, como até agora)."
+$CodigoCliente = (Read-Host 'Código do cliente').Trim()
+if ([string]::IsNullOrWhiteSpace($CodigoCliente)) {
+  Write-Warning 'Sem código do cliente: o instalador não vai poder ativar a licença sozinho.'
+}
+
 # O ENDEREÇO DO PCC — o MESMO para todos os clientes (é a sua VPS). Sem isto,
 # "Sincronizar com o PCC" no cliente aponta sempre para o próprio servidor dele.
 # Só se pergunta da primeira vez; fica guardado (fora do git) para os próximos builds.
@@ -77,6 +91,21 @@ Copy-Item (Join-Path $Raiz 'frontend\dist') "$Pacote\app\webapp" -Recurse
 Copy-Item (Join-Path $PSScriptRoot 'configurar.py') $Pacote
 # o endereço do PCC viaja ao lado — configurar.py lê-o dali e escreve-o no .env
 if (Test-Path $PccUrlFile) { Copy-Item $PccUrlFile $Pacote }
+
+# A ATIVAÇÃO, selada dentro do pacote. O pacote vai CIFRADO (Encryption=yes no
+# setup.iss), por isso este ficheiro só existe em claro na máquina de quem abriu
+# o instalador com a senha certa — e o configurar.py apaga-o assim que o usa.
+# Nunca fica no git nem na pasta do projeto: escreve-se direto para o pacote.
+if (-not [string]::IsNullOrWhiteSpace($CodigoCliente)) {
+  $Ativacao = @(
+    '[licenca]',
+    "cliente=$CodigoCliente",
+    "senha_instalacao=$senha1",
+    "pcc_url=$PccUrl"
+  ) -join "`r`n"
+  Set-Content -Path "$Pacote\app\ativacao.ini" -Value $Ativacao -Encoding UTF8
+  Write-Host "   ativação selada no pacote (cliente $CodigoCliente)."
+}
 
 Write-Host "== 4/6 Python embutido + dependências =="
 $PyZip = Join-Path $env:TEMP "python-$PyVer-embed-amd64.zip"

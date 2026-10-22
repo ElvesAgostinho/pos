@@ -299,76 +299,28 @@ class RemoteActivationView(APIView):
     uma instalação já ativa, o caminho continua a ser "Sincronizar com o PCC"
     (LicenseSyncView) — essa exige prova de posse da licença atual; esta,
     como ainda não há nenhuma, autentica-se pela senha de instalação.
+
+    O TRABALHO está em `licensing/activation.py`, não aqui: o instalador faz a
+    mesma activação no fim da instalação, e nessa altura ainda não há servidor
+    web a quem fazer um pedido. Duas cópias da mesma lógica divergiriam — e a
+    que divergisse seria a do instalador, que é a que ninguém vê a correr.
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        import os
-        import json
-        import base64
-        import socket
-        import requests as http
-        from django.conf import settings
-        from licensing.engine.crypto import verify_license
-
-        caminho = os.path.join(settings.BASE_DIR, 'license.key')
-        if os.path.exists(caminho):
-            return Response({'detail': 'Já há uma licença instalada nesta máquina — use '
-                                       '"Sincronizar com o PCC" para renovar, não a ativação.'}, status=400)
-
-        codigo = (request.data.get('client_code') or '').strip()
-        senha = request.data.get('install_password') or ''
-        if not (codigo and senha):
-            return Response({'detail': 'Indique o código do cliente e a senha de instalação.'}, status=400)
-
-        pcc = os.environ.get('PCC_URL', getattr(settings, 'PCC_URL', ''))
-        if not pcc:
-            return Response({'detail': 'PCC_URL não configurado nesta instalação.'}, status=500)
+        from licensing.activation import ErroDeAtivacao, activar
         try:
-            hostname = socket.gethostname()
-        except Exception:
-            hostname = ''
-        from core.support import APP_VERSION
-        try:
-            r = http.post(f'{pcc.rstrip("/")}/api/clm/licenses/activate/',
-                          json={'client_code': codigo, 'install_password': senha, 'hostname': hostname,
-                               'app_version': APP_VERSION},
-                          timeout=20)
-        except Exception as e:
-            return Response({'detail': f'Sem ligação ao PCC ({pcc}): {e}'}, status=502)
-        if r.status_code != 200:
-            try:
-                return Response(r.json(), status=r.status_code)
-            except Exception:
-                return Response({'detail': f'PCC respondeu {r.status_code}.'}, status=502)
-
-        body = r.json()
-        raw = (body.get('license_key') or '').strip()
-        try:
-            data = json.loads(base64.b64decode(raw).decode('utf-8'))
-            sig = data.pop('signature', None)
-            if not (sig and verify_license(data, sig)):
-                return Response({'detail': 'O PCC devolveu uma licença com assinatura inválida — '
-                                           'nada foi ativado.'}, status=502)
-        except Exception:
-            return Response({'detail': 'Licença devolvida ilegível — nada foi ativado.'}, status=502)
-
-        with open(caminho, 'w') as f:
-            f.write(raw)
-
-        flags, erro = _aplicar_extras_pcc(body)
-        if erro:
-            return Response({'detail': f'Licença ativada, mas {erro}'}, status=502)
-
-        return Response({
-            'detail': 'Licença ativada com sucesso — o sistema já está pronto a usar.',
-            'license_number': data.get('license_number'),
-            'valid_until': data.get('valid_until'),
-            'modules': len(data.get('modules') or []),
-            'agt_applied': flags['agt_applied'],
-            'agt_connection_applied': flags['agt_connection_applied'],
-            'company_applied': flags['company_applied'],
-        })
+            resultado = activar(request.data.get('client_code'),
+                                request.data.get('install_password'))
+        except ErroDeAtivacao as e:
+            return Response({'detail': e.detalhe}, status=e.estado)
+        # A SENHA DO DONO NÃO VOLTA PARA O BROWSER. Ela vem do PCC para o
+        # instalador poder criar a conta sem ninguém a ler; devolvê-la numa
+        # resposta HTTP era pô-la no histórico do browser e na consola de rede
+        # de quem estiver a ver. Quem ativa pelo ecrã já tem conta.
+        resultado.pop('owner', None)
+        estado = 502 if resultado.get('aviso') else 200
+        return Response(resultado, status=estado)
 
 
 class UploadLicenseView(APIView):

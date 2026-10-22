@@ -41,13 +41,13 @@ class _Tee:
 
 def ler_escolha(caminho_ini):
     cfg = configparser.ConfigParser()
-    cfg.read(caminho_ini, encoding='utf-8')
+    cfg.read(caminho_ini, encoding='utf-8-sig')
     return cfg['bd'] if cfg.has_section('bd') else {'tipo': 'sqlite'}
 
 
 def ler_dono(caminho_ini):
     cfg = configparser.ConfigParser()
-    cfg.read(caminho_ini, encoding='utf-8')
+    cfg.read(caminho_ini, encoding='utf-8-sig')
     return cfg['dono'] if cfg.has_section('dono') else None
 
 
@@ -128,6 +128,75 @@ def correr(*args):
         sys.exit(r.returncode)
 
 
+def activar_licenca():
+    """ATIVA A LICENÇA — para o cliente não acabar a instalação com trabalho.
+
+    Até aqui a instalação terminava e o sistema ficava preso no ecrã da
+    licença à espera de um `license.key` que alguém tinha de ir copiar à mão
+    para dentro da pasta do servidor. Numa instalação a sério isso significa o
+    técnico ficar lá, ou o dono telefonar no dia seguinte a dizer que "não
+    entra".
+
+    As credenciais viajam em `app\\ativacao.ini`, escrito pelo build dentro do
+    pacote — e o pacote vai CIFRADO (Encryption=yes no setup.iss): o ficheiro só
+    existe em claro depois de alguém ter aberto o instalador com a senha certa.
+    Apaga-se a seguir, para a senha de instalação não ficar a viver no disco do
+    cliente.
+
+    Falhar aqui NÃO estraga a instalação: sem Internet, ou com o PCC em baixo, o
+    sistema fica instalado e activa-se depois pelo ecrã (Empresa → Licença →
+    "Puxar licença do PCC", ou carregando o ficheiro). O que não pode é falhar
+    em silêncio — por isso fica tudo no registo.
+    """
+    dono_pcc = None
+    ini = APP / 'ativacao.ini'
+    if not ini.exists():
+        print('Sem ativacao.ini — a licença terá de ser ativada pelo ecrã.')
+        globals()['DONO_DO_PCC'] = None
+        return
+    try:
+        cfg = configparser.ConfigParser()
+        cfg.read(ini, encoding='utf-8-sig')
+        sec = cfg['licenca'] if cfg.has_section('licenca') else {}
+        codigo = (sec.get('cliente') or '').strip()
+        senha = sec.get('senha_instalacao') or ''
+        pcc = (sec.get('pcc_url') or '').strip() or None
+        if not (codigo and senha):
+            print('ativacao.ini incompleto — a licença terá de ser ativada pelo ecrã.')
+            return
+
+        # Dentro do processo: aqui ainda não há servidor web a quem pedir.
+        sys.path.insert(0, str(APP))
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'erp_server.settings')
+        import django
+        django.setup()
+        from licensing.activation import ErroDeAtivacao, activar
+        try:
+            r = activar(codigo, senha, pcc_url=pcc)
+            print(f"Licença ativada: {r.get('license_number')} · válida até "
+                  f"{r.get('valid_until')} · {r.get('modules')} módulo(s).")
+            dono_pcc = r.get('owner') or None
+            if r.get('agt_applied'):
+                print('Certificação AGT aplicada pelo fornecedor.')
+            if r.get('company_applied'):
+                print('Dados da empresa preenchidos a partir do PCC.')
+            if r.get('aviso'):
+                print(f'AVISO: {r["aviso"]}')
+        except ErroDeAtivacao as e:
+            print(f'AVISO: a licença não foi ativada automaticamente — {e.detalhe}')
+            print('O sistema fica instalado; ative pelo ecrã (Empresa → Licença).')
+    except Exception as e:
+        print(f'AVISO: falhou a ativação automática ({e}). '
+              f'O sistema fica instalado; ative pelo ecrã.')
+    finally:
+        globals()['DONO_DO_PCC'] = dono_pcc
+        # A SENHA DE INSTALAÇÃO NÃO FICA NO DISCO DO CLIENTE. Serviu uma vez.
+        try:
+            ini.unlink()
+        except Exception:
+            pass
+
+
 def main():
     ini = sys.argv[sys.argv.index('--ini') + 1] if '--ini' in sys.argv else str(RAIZ / 'instalacao.ini')
     DADOS.mkdir(exist_ok=True)
@@ -163,16 +232,28 @@ def main():
     # 0 unidades de medida configuradas. Idempotente, como os outros seeds acima.
     correr('seed_uoms')
 
-    # A CONTA DO DONO — utilizador/password que o técnico introduziu no wizard
-    # (gerados no PCC). Numa atualização, o wizard volta a perguntar; se a
-    # password vier vazia por algum motivo, não se mexe na conta existente —
-    # criar_dono.py exige --password preenchida, por isso falha alto em vez de
-    # apagar silenciosamente o acesso do dono.
+    # A LICENÇA primeiro: pode trazer a conta do dono com ela, e nesse caso não
+    # se pede nada a ninguém.
+    activar_licenca()
+
+    # A CONTA DO DONO — do PCC se ela de lá vier, senão a que o técnico escreveu.
+    #
+    # Vir do PCC é melhor por uma razão que não é de comodidade: assim o técnico
+    # não precisa de SABER a senha com que o dono entra no sistema dele. Ela
+    # viaja cifrada no mesmo canal da licença, é usada uma vez para criar a
+    # conta, e o dono é obrigado a trocá-la no primeiro login — não fica senha
+    # de fábrica nenhuma viva na instalação.
+    dono_pcc = globals().get('DONO_DO_PCC')
     dono = ler_dono(ini)
-    if dono and dono.get('password'):
+    if dono_pcc and dono_pcc.get('password'):
+        correr('criar_dono', '--username', dono_pcc.get('username', 'dono'),
+               '--password', dono_pcc['password'],
+               *(['--trocar-no-primeiro-login'] if dono_pcc.get('must_change') else []))
+        print(f"Conta do dono criada a partir do PCC ({dono_pcc.get('username', 'dono')}).")
+    elif dono and dono.get('password'):
         correr('criar_dono', '--username', dono.get('utilizador', 'dono'),
                '--password', dono['password'])
-        print('Conta do dono pronta.')
+        print('Conta do dono pronta (do wizard).')
     else:
         print(f'AVISO: sem secção [dono] (ou password vazia) em {ini} — '
               'nenhuma conta de acesso foi criada.')

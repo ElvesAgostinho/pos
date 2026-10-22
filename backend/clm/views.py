@@ -251,7 +251,26 @@ class LicenseViewSet(viewsets.ModelViewSet):
         AuditLogCLM.objects.create(action='REMOTE_ACTIVATION_OK',
             details={'client': code, 'license': lic.license_number}, user_identity='remote-activation')
         hostname = (request.data.get('hostname') or '').strip()[:100]
-        return Response(_build_license_response(lic, request, hostname))
+        resp = _build_license_response(lic, request, hostname)
+
+        # A CONTA DO DONO — só aqui, e só na PRIMEIRA ativação.
+        #
+        # Não vai no `latest` (a sincronização): essa é uma renovação feita numa
+        # instalação que já está a trabalhar, onde o dono já tem a conta dele —
+        # mandar a senha outra vez não serviria para nada e seria um segredo a
+        # viajar sem motivo. Aqui serve: é o momento em que a conta nasce.
+        #
+        # Com isto, o técnico deixa de precisar de SABER a senha do dono para a
+        # escrever no wizard. Ela vai cifrada no mesmo canal da licença, é usada
+        # uma vez para criar a conta, e o dono é obrigado a trocá-la no primeiro
+        # login — por isso não há senha de fábrica a sobreviver na instalação.
+        if lic.owner_password_enc:
+            resp['owner'] = {
+                'username': lic.owner_username or 'dono',
+                'password': decrypt(lic.owner_password_enc),
+                'must_change': True,
+            }
+        return Response(resp)
 
     @action(detail=True, methods=['post'], url_path='regenerate-access')
     def regenerate_access(self, request, pk=None):

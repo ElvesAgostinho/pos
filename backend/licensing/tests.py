@@ -369,6 +369,185 @@ class PuxarAtualizacaoTests(CircuitoPcc):
         self.assertEqual(r.status_code, 400, r.content[:300])
 
 
+class AtivacaoAutomaticaTests(CircuitoPcc):
+    """A PRIMEIRA licença, sem ninguém copiar ficheiros.
+
+    Era aqui que a instalação acabava mal: o setup corria até ao fim, o cliente
+    abria o browser — e encontrava um ecrã bloqueado à espera de um
+    `license.key` que alguém tinha de ir pôr à mão dentro da pasta do servidor.
+    Na prática: ou o técnico ficava lá, ou o dono telefonava no dia seguinte a
+    dizer que não entrava.
+
+    Agora o próprio instalador vai buscá-la, autenticando-se com o código do
+    cliente e a senha de instalação — as duas coisas que o técnico já tem para
+    abrir o .exe. Estes testes correm o MESMO código que o instalador corre.
+    """
+
+    def setUp(self):
+        super().setUp()
+        # Esta é a primeira activação: ainda NÃO há licença instalada.
+        import os
+        if os.path.exists(self.caminho):
+            os.remove(self.caminho)
+        from clm.secrets import encrypt
+        self.licenca.install_password_enc = encrypt('Senha#Instalacao2026')
+        self.licenca.save(update_fields=['install_password_enc'])
+
+    def _ligar_activacao(self, rebenta=None):
+        """O mesmo fio do `_ligar_ao_pcc`, mas para a rota de ativação."""
+        from unittest import mock
+        cliente_http = self.client
+
+        class _Resp:
+            def __init__(self, r):
+                self.status_code = r.status_code
+                self._d = r.data if hasattr(r, 'data') else {}
+
+            def json(self):
+                return self._d
+
+        def _post(url, json=None, timeout=None, **kw):
+            if rebenta:
+                raise rebenta
+            return _Resp(cliente_http.post('/api/clm/licenses/activate/', json, format='json'))
+
+        return mock.patch('requests.post', side_effect=_post)
+
+    def test_a_instalacao_acaba_com_o_sistema_pronto(self):
+        from licensing.activation import activar
+        with self._ligar_activacao():
+            r = activar('MWANA', 'Senha#Instalacao2026', pcc_url='http://pcc-de-teste')
+
+        self.assertEqual(r['license_number'], 'LIC-0002')
+        self.assertTrue(r['modules'], 'Ativou sem módulos nenhuns.')
+        gravada = json.loads(base64.b64decode(self._no_disco()).decode('utf-8'))
+        self.assertEqual(gravada['client_code'], 'MWANA',
+                         'O ficheiro gravado não é a licença deste cliente.')
+        # E os dados da empresa vieram no mesmo canal: o dono não os reescreve.
+        self.assertTrue(r['company_applied'])
+
+    def test_a_conta_do_dono_vem_do_pcc_e_obriga_a_trocar(self):
+        """O técnico deixa de precisar de SABER a senha do dono.
+
+        Antes, ele lia-a no PCC e escrevia-a no wizard — ou seja, toda a gente
+        que instala conhece a senha com que o dono entra no sistema dele. Agora
+        ela viaja no mesmo canal da licença, é usada uma vez para criar a conta,
+        e o dono é obrigado a trocá-la no primeiro login: não sobrevive nenhuma
+        senha de fábrica.
+        """
+        from clm.secrets import encrypt
+        from licensing.activation import activar
+        self.licenca.owner_username = 'dono'
+        self.licenca.owner_password_enc = encrypt('Provisoria#2026')
+        self.licenca.save(update_fields=['owner_username', 'owner_password_enc'])
+
+        with self._ligar_activacao():
+            r = activar('MWANA', 'Senha#Instalacao2026', pcc_url='http://pcc-de-teste')
+
+        self.assertIsNotNone(r.get('owner'), 'A conta do dono não veio do PCC.')
+        self.assertEqual(r['owner']['username'], 'dono')
+        self.assertEqual(r['owner']['password'], 'Provisoria#2026')
+        self.assertTrue(r['owner']['must_change'],
+                        'Uma senha que viajou tem de ser trocada no primeiro login.')
+
+    def test_a_senha_do_dono_nunca_volta_para_o_browser(self):
+        """Ela existe para o INSTALADOR criar a conta sem ninguém a ler.
+
+        Devolvê-la numa resposta HTTP era pô-la no histórico do browser e na
+        consola de rede de quem estivesse a ver o ecrã. E quem ativa pelo ecrã
+        já entrou — já tem conta.
+        """
+        from clm.secrets import encrypt
+        from unittest import mock as _m
+        self.licenca.owner_password_enc = encrypt('Provisoria#2026')
+        self.licenca.save(update_fields=['owner_password_enc'])
+
+        with _m.patch.dict('os.environ', {'PCC_URL': 'http://pcc-de-teste'}), self._ligar_activacao():
+            r = self.client.post('/api/licensing/activate-remote/',
+                                 {'client_code': 'MWANA',
+                                  'install_password': 'Senha#Instalacao2026'},
+                                 format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.assertNotIn('owner', r.data)
+        self.assertNotIn('Provisoria#2026', str(r.data))
+
+    def test_a_renovacao_nao_transporta_a_senha_do_dono(self):
+        """Sincronizar é uma renovação numa instalação a trabalhar: o dono já
+        tem conta. Mandar a senha outra vez seria um segredo a viajar sem
+        motivo nenhum."""
+        from clm.secrets import encrypt
+        self.licenca.owner_password_enc = encrypt('Provisoria#2026')
+        self.licenca.save(update_fields=['owner_password_enc'])
+        with open(self.caminho, 'w') as f:
+            f.write(self.instalada)
+
+        with self._ligar_ao_pcc():
+            r = self.client.post('/api/licensing/sync/', {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.assertNotIn('Provisoria#2026', str(r.data))
+
+    def test_senha_de_instalacao_errada_nao_ativa_nada(self):
+        import os
+        from licensing.activation import ErroDeAtivacao, activar
+        with self._ligar_activacao():
+            with self.assertRaises(ErroDeAtivacao) as ctx:
+                activar('MWANA', 'senha-errada', pcc_url='http://pcc-de-teste')
+        self.assertIn('incorret', ctx.exception.detalhe.lower())
+        self.assertFalse(os.path.exists(self.caminho),
+                         'Gravou uma licença apesar de a senha estar errada.')
+
+    def test_sem_internet_a_instalacao_nao_se_perde(self):
+        """Falhar a ativação não pode estragar a instalação: o sistema fica
+        montado e ativa-se depois pelo ecrã."""
+        import os
+        from licensing.activation import ErroDeAtivacao, activar
+        with self._ligar_activacao(rebenta=OSError('sem rota para o host')):
+            with self.assertRaises(ErroDeAtivacao) as ctx:
+                activar('MWANA', 'Senha#Instalacao2026', pcc_url='http://pcc-de-teste')
+        self.assertIn('Sem ligação ao PCC', ctx.exception.detalhe)
+        self.assertFalse(os.path.exists(self.caminho))
+
+    def test_nao_se_ativa_por_cima_de_uma_licenca_que_ja_existe(self):
+        """Ativar é para a PRIMEIRA vez. Renovar é "Sincronizar com o PCC", que
+        exige prova de posse — e não a senha de instalação, que anda com o .exe."""
+        from licensing.activation import ErroDeAtivacao, activar
+        with open(self.caminho, 'w') as f:
+            f.write(self.instalada)
+        with self.assertRaises(ErroDeAtivacao) as ctx:
+            activar('MWANA', 'Senha#Instalacao2026', pcc_url='http://pcc-de-teste')
+        self.assertEqual(ctx.exception.estado, 400)
+        self.assertEqual(self._no_disco(), self.instalada)
+
+    def test_licenca_de_outro_cliente_e_recusada_tambem_na_ativacao(self):
+        """A mesma desconfiança da sincronização: o cliente verifica a
+        assinatura e o código, mesmo vindo do PCC."""
+        from unittest import mock
+        from licensing.activation import ErroDeAtivacao, activar
+
+        class _Trocada:
+            status_code = 200
+            @staticmethod
+            def json():
+                return {'license_key': _chave(client_code='OUTRO_HOTEL', numero='LIC-9999')}
+
+        with mock.patch('requests.post', return_value=_Trocada()):
+            with self.assertRaises(ErroDeAtivacao) as ctx:
+                activar('MWANA', 'Senha#Instalacao2026', pcc_url='http://pcc-de-teste')
+        self.assertIn('OUTRO_HOTEL', ctx.exception.detalhe)
+
+    def test_o_ecra_de_ativacao_usa_o_mesmo_caminho(self):
+        """O botão do ecrã e o instalador não podem divergir: é a mesma função."""
+        from unittest import mock as _m
+        # O ecrã não recebe o endereço: lê-o do ambiente, como numa instalação
+        # a sério (o instalador grava-o no .env).
+        with _m.patch.dict('os.environ', {'PCC_URL': 'http://pcc-de-teste'}), self._ligar_activacao():
+            r = self.client.post('/api/licensing/activate-remote/',
+                                 {'client_code': 'MWANA',
+                                  'install_password': 'Senha#Instalacao2026'},
+                                 format='json')
+        self.assertEqual(r.status_code, 200, r.content[:400])
+        self.assertEqual(r.data['license_number'], 'LIC-0002')
+
 class CatalogoDeModulosTests(APITestCase):
     """O catálogo tem de descrever o sistema que existe — não um de 2025.
 

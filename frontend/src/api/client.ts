@@ -37,9 +37,28 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+/**
+ * UMA RENOVAÇÃO DE CADA VEZ.
+ *
+ * Quando o token expira, vários pedidos falham ao mesmo tempo (a página tem
+ * sempre meia dúzia a correr). Sem este controlo, cada um deles pediria a sua
+ * própria renovação — e como o servidor roda o token e invalida o anterior,
+ * todas menos uma falhariam, e a sessão caía à mesma. Com isto, o primeiro
+ * renova e os outros esperam pelo resultado dele.
+ */
+let renovacaoEmCurso: Promise<boolean> | null = null;
+
+async function renovarUmaVez(): Promise<boolean> {
+  if (!renovacaoEmCurso) {
+    const { authApi } = await import('./auth');
+    renovacaoEmCurso = authApi.renovarSessao().finally(() => { renovacaoEmCurso = null; });
+  }
+  return renovacaoEmCurso;
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error.response?.status;
     const url: string = error.config?.url || '';
     // Um 401 SEM token anexado não é uma sessão inválida — é uma janela de
@@ -53,6 +72,27 @@ apiClient.interceptors.response.use(
     // exceto nos próprios endpoints de autenticação (evita loops).
     if (status === 401 && tokenEnviado && !url.includes('auth/')) {
       const inPos = window.location.pathname.includes('/pos');
+      /**
+       * PRIMEIRO TENTA RENOVAR. Um 401 não quer dizer "este utilizador já não
+       * pode entrar"; quer dizer "este token caducou". O token de acesso dura
+       * 12 horas e o de renovação sete dias — mas isto expulsava o utilizador
+       * no minuto a seguir às 12 horas e DEITAVA FORA o token de renovação, que
+       * ainda era válido por dias. Quem estava a trabalhar perdia o que tinha
+       * no ecrã e voltava ao login a meio do serviço.
+       *
+       * Só depois de a renovação falhar é que a sessão acabou mesmo.
+       * (O Terminal POS não entra aqui: a sessão dele é do operador, por PIN,
+       * e tem as suas próprias regras — não se lhe toca.)
+       */
+      if (!inPos && !error.config?._jaRenovou) {
+        const ok = await renovarUmaVez();
+        if (ok) {
+          error.config._jaRenovou = true;   // uma só vez por pedido, nunca em ciclo
+          error.config.headers = error.config.headers || {};
+          error.config.headers.Authorization = `Bearer ${localStorage.getItem('erp_access')}`;
+          return apiClient.request(error.config);
+        }
+      }
       if (inPos) {
         localStorage.removeItem('pos_operator_token');
         localStorage.removeItem('pos_access');

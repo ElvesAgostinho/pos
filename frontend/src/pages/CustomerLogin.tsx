@@ -28,7 +28,13 @@ const CustomerLogin: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [remember, setRemember] = useState(() => !!localStorage.getItem('ui_last_user'));
-  const [autoLogin, setAutoLogin] = useState(false);
+  // A caixa tem de se lembrar do que ficou escolhido — senão o dono liga-a, sai,
+  // volta, e encontra-a desligada sem nada ter acontecido.
+  const [autoLogin, setAutoLogin] = useState(() => tokenStore.entradaAutomaticaLigada());
+  // Enquanto se tenta entrar sozinho não se mostra o formulário: mostrar o
+  // ecrã de login e depois saltar dele é uma piscadela feia, e dá a impressão
+  // de que falhou alguma coisa.
+  const [aEntrarSozinho, setAEntrarSozinho] = useState(() => tokenStore.queremosEntrarSozinhos());
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [config, setConfig] = useState(false);
@@ -68,7 +74,33 @@ const CustomerLogin: React.FC = () => {
   const loginBg = marca?.login_bg_url || getAppearance('loginBg');
   const barColor = getAppearance('barColor') || TOKENS.accent;
 
-  useEffect(() => { tokenStore.clearBackoffice(); tokenStore.clearPos(); }, []);
+  /**
+   * ENTRAR AUTOMATICAMENTE — ou limpar e mostrar o formulário.
+   *
+   * Isto apagava SEMPRE a sessão ao abrir a página, o que tornava a entrada
+   * automática impossível por construção — a caixa no ecrã nunca passou de
+   * decoração. Agora: se o dono pediu para entrar sozinho e a sessão guardada
+   * ainda é renovável, entra-se. Se a renovação falhar (sessão expirada a
+   * sério), limpa-se e mostra-se o formulário — nunca se finge que se entrou.
+   *
+   * A sessão do TERMINAL POS limpa-se sempre: é outra identidade (o empregado
+   * de mesa), e entrar no backoffice não pode arrastar a conta dele.
+   */
+  useEffect(() => {
+    let vivo = true;
+    tokenStore.clearPos();
+    if (!tokenStore.queremosEntrarSozinhos()) {
+      tokenStore.clearBackoffice();
+      setAEntrarSozinho(false);
+      return;
+    }
+    authApi.renovarSessao().then((ok) => {
+      if (!vivo) return;
+      if (ok) navigate('/backoffice');
+      else { tokenStore.clearBackoffice(); setAEntrarSozinho(false); }
+    });
+    return () => { vivo = false; };
+  }, [navigate]);
   // Testa a ligação ao servidor (barra de estado).
   useEffect(() => {
     let alive = true;
@@ -116,6 +148,9 @@ const CustomerLogin: React.FC = () => {
     try {
       const resp = await authApi.backofficeLogin(username, password);
       if (remember) localStorage.setItem('ui_last_user', username); else localStorage.removeItem('ui_last_user');
+      // Só AQUI se liga a entrada automática: ela depende de haver uma sessão
+      // guardada, e só agora existe uma.
+      tokenStore.definirEntradaAutomatica(autoLogin);
       if ((resp as any)?.must_change_password) { setTrocar(true); return; }
       navigate('/backoffice');
     } catch (err: any) {
@@ -152,6 +187,19 @@ const CustomerLogin: React.FC = () => {
       {children}
     </div>
   );
+
+  if (aEntrarSozinho) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center text-white"
+        style={{ background: `linear-gradient(155deg, ${shade(barColor, -32)} 0%, #070D1A 100%)`,
+                 fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif" }}>
+        <div className="flex items-center gap-3 text-[15px]">
+          <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          A retomar a sua sessão…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden"
@@ -306,7 +354,8 @@ const CustomerLogin: React.FC = () => {
                     <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
                     Memorizar
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 cursor-pointer"
+                    title="Da próxima vez entra sozinho, sem pedir a palavra-passe. Terminar sessão desliga isto.">
                     <input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} />
                     Entrar automaticamente
                   </label>
