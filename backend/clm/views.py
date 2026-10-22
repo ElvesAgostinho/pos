@@ -55,7 +55,8 @@ class ClientViewSet(viewsets.ModelViewSet):
                     commercial_data=serializer.validated_data['commercial_data'],
                     modules=serializer.validated_data['modules'],
                     feature_flags=serializer.validated_data.get('feature_flags', {}),
-                    limits=serializer.validated_data.get('limits', {})
+                    limits=serializer.validated_data.get('limits', {}),
+                    owner_username=serializer.validated_data.get('owner_username') or None,
                 )
                 return Response(result, status=status.HTTP_201_CREATED)
             except Exception as e:

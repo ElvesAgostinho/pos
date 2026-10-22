@@ -31,6 +31,9 @@ const ClientsList: React.FC = () => {
   // ── Acessos (senha de instalação / senha do dono) da licença ativa do cliente ──
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessBusy, setAccessBusy] = useState<'' | 'install' | 'owner'>('');
+  // O NOME DE UTILIZADOR DO DONO — é com ele que o cliente faz o primeiro
+  // login. Vazio significa "fica o que já lá está" (ou 'dono', por omissão).
+  const [ownerUsername, setOwnerUsername] = useState('');
   const [accessResult, setAccessResult] = useState<{ kind: string; username?: string; password: string } | null>(null);
 
   // ── Código de reposição (repõe a password numa instalação JÁ A CORRER,
@@ -101,7 +104,12 @@ const ClientsList: React.FC = () => {
     setAccessBusy(kind);
     setAccessResult(null);
     try {
-      const r = await axios.post(`clm/licenses/${activeLicense.id}/regenerate-access/`, { kind });
+      const r = await axios.post(`clm/licenses/${activeLicense.id}/regenerate-access/`, {
+        kind,
+        // Só vai no caso 'owner' — a senha de instalação não tem utilizador.
+        ...(kind === 'owner' && ownerUsername.trim()
+          ? { owner_username: ownerUsername.trim() } : {}),
+      });
       setAccessResult(r.data);
       await fetchClients();
     } catch (err) {
@@ -310,7 +318,7 @@ const ClientsList: React.FC = () => {
 
           <button
             disabled={!selectedClient}
-            onClick={() => { setAccessResult(null); setResetResult(null); setShowAccessModal(true); }}
+            onClick={() => { setAccessResult(null); setResetResult(null); setOwnerUsername(''); setShowAccessModal(true); }}
             className={`flex items-center space-x-1 px-2 py-1 rounded ${!selectedClient ? 'opacity-50' : 'hover:bg-[#EEF4F5]'}`}
           >
             <div className="w-5 h-5 rounded-full border border-transparent flex justify-center items-center bg-[#7FA9B1] text-white">
@@ -461,8 +469,22 @@ const ClientsList: React.FC = () => {
                   <div className="bg-white border border-[#7FA9B1] p-3">
                     <div className="font-bold text-gray-700 mb-1">Senha do dono</div>
                     <div className="text-gray-500 text-[10px] mb-2">
-                      A conta ({activeLicense.owner_username || 'dono'}) com que o dono do cliente faz o primeiro login no sistema instalado.
+                      A conta com que o dono do cliente faz o primeiro login no sistema instalado.
+                      O instalador cria-a sozinho, e o dono é obrigado a trocar a senha nesse primeiro login.
                     </div>
+                    {/* O NOME DE UTILIZADOR. Só se mostrava, não se escrevia —
+                        por isso todos os clientes ficavam com "dono". */}
+                    <label className="block mb-2">
+                      <span className="text-[10px] text-gray-600">Nome de utilizador</span>
+                      <input
+                        value={ownerUsername}
+                        onChange={(e) => setOwnerUsername(e.target.value)}
+                        placeholder={activeLicense.owner_username || 'dono'}
+                        className="w-full border border-[#7FA9B1] px-2 py-1 text-[11px] bg-white mt-0.5" />
+                      <span className="text-[10px] text-gray-500">
+                        Deixe vazio para manter <b>{activeLicense.owner_username || 'dono'}</b>.
+                      </span>
+                    </label>
                     {activeLicense.has_owner_password && (
                       <div className="text-[10px] text-gray-500 mb-2">
                         ✓ Definida em {new Date(activeLicense.owner_password_set_at).toLocaleString('pt-PT')}

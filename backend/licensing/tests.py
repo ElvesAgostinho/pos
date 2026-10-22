@@ -450,6 +450,37 @@ class AtivacaoAutomaticaTests(CircuitoPcc):
         self.assertTrue(r['owner']['must_change'],
                         'Uma senha que viajou tem de ser trocada no primeiro login.')
 
+    def test_o_nome_do_dono_escolhido_no_pcc_e_o_que_chega(self):
+        """O nome estava fixo em 'dono' para toda a gente — e não havia onde o
+        escrever, nem no assistente nem nos Acessos. Um hotel que quisesse
+        entrar como "gerente" não tinha por onde."""
+        from clm.secrets import encrypt
+        from licensing.activation import activar
+        self.licenca.owner_username = 'gerente'
+        self.licenca.owner_password_enc = encrypt('Provisoria#2026')
+        self.licenca.save(update_fields=['owner_username', 'owner_password_enc'])
+
+        with self._ligar_activacao():
+            r = activar('MWANA', 'Senha#Instalacao2026', pcc_url='http://pcc-de-teste')
+        self.assertEqual(r['owner']['username'], 'gerente',
+                         'O nome escolhido no PCC não chegou à instalação.')
+
+    def test_o_pcc_deixa_escolher_o_nome_ao_gerar_a_senha(self):
+        """O ecrã "Acessos": gerar a senha do dono passa a poder mudar o nome."""
+        r = self.client.post(f'/api/clm/licenses/{self.licenca.id}/regenerate-access/',
+                             {'kind': 'owner', 'owner_username': 'recepcao'},
+                             format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.assertEqual(r.data['username'], 'recepcao')
+        self.licenca.refresh_from_db()
+        self.assertEqual(self.licenca.owner_username, 'recepcao')
+
+    def test_sem_escolha_continua_a_ser_dono(self):
+        r = self.client.post(f'/api/clm/licenses/{self.licenca.id}/regenerate-access/',
+                             {'kind': 'owner'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.assertEqual(r.data['username'], 'dono')
+
     def test_a_senha_do_dono_nunca_volta_para_o_browser(self):
         """Ela existe para o INSTALADOR criar a conta sem ninguém a ler.
 

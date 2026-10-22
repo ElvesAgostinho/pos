@@ -13,7 +13,8 @@ class ProvisioningWorkflow:
     def __init__(self, admin_user):
         self.admin_user = admin_user
 
-    def execute(self, client_data, commercial_data, modules, feature_flags, limits=None):
+    def execute(self, client_data, commercial_data, modules, feature_flags, limits=None,
+                owner_username=None):
         """
         Executes the full provisioning workflow for a new client.
         1. Creates Client and CommercialData.
@@ -66,7 +67,11 @@ class ProvisioningWorkflow:
         owner_password = gerar_senha()
         license_obj.install_password_enc = encrypt(install_password)
         license_obj.install_password_set_at = timezone.now()
-        license_obj.owner_username = 'dono'
+        # O NOME DE UTILIZADOR DO DONO. Estava fixo em 'dono' — e como o ecrã
+        # também não o perguntava, TODOS os clientes ficavam com o mesmo nome.
+        # Um hotel que quisesse entrar como "gerente", ou pelo nome da casa, não
+        # tinha por onde. Quem não escolher continua com 'dono'.
+        license_obj.owner_username = (owner_username or 'dono').strip() or 'dono'
         license_obj.owner_password_enc = encrypt(owner_password)
         license_obj.owner_password_set_at = timezone.now()
         license_obj.save()

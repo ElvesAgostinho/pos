@@ -30,6 +30,7 @@ const Wizard: React.FC = () => {
   const [formData, setFormData] = useState({
     commercial_name: '',
     nif: '',
+    owner_username: '',
     country: 'Angola',
     general_email: '',
     plan: 'Enterprise',
@@ -92,6 +93,7 @@ const Wizard: React.FC = () => {
         // Allow/deny explícito por funcionalidade (allowed = keys a true).
         feature_flags: Object.fromEntries(featureCatalog.map((f) => [f.key, selectedFeatures.includes(f.key)])),
         limits: { hotels: formData.max_hotels, pos: formData.max_pos },
+        owner_username: formData.owner_username || undefined,
       });
 
       setLicenseKey(res.data.license_key || 'Chave gerada no backend...');
@@ -195,6 +197,15 @@ const Wizard: React.FC = () => {
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">NIF</label>
                   <input type="text" className="w-full border border-[#7FA9B1] px-2 py-1 text-xs" placeholder="Ex: 500123456"
                     value={formData.nif} onChange={(e) => setFormData({ ...formData, nif: e.target.value })} />
+                </div>
+                {/* O NOME COM QUE O DONO ENTRA. Estava fixo em 'dono' para toda
+                    a gente — e não havia onde o escrever, nem aqui nem nos
+                    Acessos. O instalador cria esta conta sozinho no fim. */}
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-700 mb-1">Utilizador do dono</label>
+                  <input type="text" className="w-full border border-[#7FA9B1] px-2 py-1 text-xs" placeholder="dono"
+                    value={formData.owner_username} onChange={(e) => setFormData({ ...formData, owner_username: e.target.value })} />
+                  <span className="text-[10px] text-gray-500">Com que nome o cliente faz o primeiro login. Vazio = <b>dono</b>.</span>
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-gray-700 mb-1">País</label>
