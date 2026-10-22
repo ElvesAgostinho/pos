@@ -38,7 +38,8 @@ const CustomerLogin: React.FC = () => {
   // em localStorage — não chega sozinha ao logótipo real da empresa (Administração →
   // Empresa), que fica na base. Sem isto, o login mostrava sempre o "ML" de fábrica
   // em qualquer terminal onde não se tivesse carregado o MESMO ficheiro à mão.
-  const [marca, setMarca] = useState<{ name: string; logo_url: string } | null>(null);
+  type Marca = { name: string; company_name: string; logo_url: string; login_bg_url: string };
+  const [marca, setMarca] = useState<Marca | null>(null);
   useEffect(() => {
     apiClient.get('platform/branding/').then((r) => setMarca(r.data)).catch(() => {});
   }, []);
@@ -47,11 +48,24 @@ const CustomerLogin: React.FC = () => {
   // personalização por aparelho — essa é só um placeholder de fábrica até o
   // hotel estar configurado. Sem isto, o dropdown "Empresa" mostrava sempre
   // "System Mwana Lodge" (o nome do PRODUTO), nunca o nome do cliente.
+  // O QUE SE VÊ AQUI É O HOTEL, não uma personalização deste computador.
+  //
+  // O nome, o logótipo e a imagem de fundo vêm da ficha do hotel (Parâmetros do
+  // Sistema → Empresa), gravada no servidor. A "Aparência" em localStorage é
+  // anterior a isto e só se usa como último recurso: era por aparelho, o que no
+  // ecrã de ENTRADA nunca podia funcionar — entra-se por qualquer posto da casa
+  // e um computador acabado de ligar mostrava o nome de fábrica do produto em
+  // vez do nome do cliente.
   const company = marca?.name || getAppearance('companyName');
-  const erpName = getAppearance('erpName');
+  // Por baixo do nome do hotel, a empresa-mãe (a entidade legal). O "ML" que
+  // estava aqui era o nome curto do PRODUTO, igual em todas as instalações: não
+  // dizia nada a quem entra.
+  const subtitulo = marca?.company_name && marca.company_name !== marca.name
+    ? marca.company_name
+    : getAppearance('erpName');
   const welcome = getAppearance('welcome');
-  const logo = getAppearance('logo') || marca?.logo_url || '';
-  const loginBg = getAppearance('loginBg');
+  const logo = marca?.logo_url || getAppearance('logo') || '';
+  const loginBg = marca?.login_bg_url || getAppearance('loginBg');
   const barColor = getAppearance('barColor') || TOKENS.accent;
 
   useEffect(() => { tokenStore.clearBackoffice(); tokenStore.clearPos(); }, []);
@@ -175,7 +189,7 @@ const CustomerLogin: React.FC = () => {
 
         <div className="relative">
           <div className="text-[34px] lg:text-[40px] font-semibold leading-[1.1] tracking-tight">{company}</div>
-          <div className="text-[14px] text-white/55 mt-2">{erpName}</div>
+          <div className="text-[14px] text-white/55 mt-2">{subtitulo}</div>
           <p className="text-[15px] leading-relaxed text-white/75 mt-6 max-w-[380px]">{welcome}</p>
         </div>
 
@@ -209,7 +223,7 @@ const CustomerLogin: React.FC = () => {
               : <span className="w-10 h-10 flex items-center justify-center text-white" style={{ background: barColor, borderRadius: RADIUS.sm }}><Building2 size={20} /></span>}
             <div>
               <div className="text-[16px] font-semibold text-[#111827] leading-tight">{company}</div>
-              <div className="text-[12px] text-[#9CA3AF]">{erpName}</div>
+              <div className="text-[12px] text-[#9CA3AF]">{subtitulo}</div>
             </div>
           </div>
           <button onClick={() => setConfig(true)} title="Configurações de ligação"

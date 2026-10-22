@@ -109,6 +109,14 @@ class Hotel(models.Model):
     bg_color = models.CharField(max_length=20, default='#808080')
     text_color = models.CharField(max_length=20, default='white')
     logo_url = models.CharField(max_length=400, blank=True, null=True)
+    # A IMAGEM DO ECRÃ DE ENTRADA. Vive aqui, na ficha do hotel, e não no
+    # armazenamento do browser como o papel de parede do Ambiente de Trabalho.
+    # O login acontece ANTES de haver sessão e em qualquer posto da casa: uma
+    # imagem guardada por terminal obrigava a carregar o mesmo ficheiro máquina
+    # a máquina, e um computador novo entrava sempre sem fundo nenhum. Escolhe-se
+    # uma vez (Parâmetros do Sistema → Empresa → Aparência) e todos os postos a
+    # mostram.
+    login_bg_url = models.CharField(max_length=400, blank=True, null=True)
 
     # --- Contactos (principais e secundários) ---
     address2 = models.CharField(max_length=250, blank=True, null=True)

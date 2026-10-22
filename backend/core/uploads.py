@@ -59,20 +59,32 @@ class UploadView(APIView):
 
 
 class PublicBrandingView(APIView):
-    """GET /api/platform/branding/  — nome e logótipo do hotel para o ecrã de LOGIN e o
+    """GET /api/platform/branding/  — a identidade do hotel para o ecrã de LOGIN e o
     ambiente de trabalho, ANTES de haver sessão nenhuma.
 
-    Só nome e logótipo — nada mais do hotel sai daqui. O login/ambiente de trabalho
-    tinha o seu PRÓPRIO logótipo, guardado só no localStorage deste aparelho (teria de
-    se carregar o mesmo ficheiro em cada terminal, um por um); passa a ler o logótipo
-    REAL da empresa (Administração → Empresa), a mesma fonte que já assina os
-    documentos fiscais — um logótipo só, não dois a poderem desincronizar.
+    Nome, nome da empresa-mãe, logótipo e a imagem de fundo do login — nada mais do
+    hotel sai daqui. O login/ambiente de trabalho tinha o seu PRÓPRIO logótipo,
+    guardado só no localStorage deste aparelho (teria de se carregar o mesmo ficheiro
+    em cada terminal, um por um); passa a ler o logótipo REAL da empresa
+    (Administração → Empresa), a mesma fonte que já assina os documentos fiscais —
+    um logótipo só, não dois a poderem desincronizar. A imagem de fundo seguiu o
+    mesmo caminho, e pela mesma razão.
+
+    SEM SESSÃO, de propósito: é o ecrã de entrada que precisa disto. Por isso não se
+    devolve aqui mais nada do hotel — morada, NIF, contactos — que, num servidor
+    exposto, estaria a ser publicado a quem passasse.
     """
     permission_classes = [AllowAny]
 
     def get(self, request):
         from identity.models import Hotel
-        h = Hotel.objects.filter(is_master=True).first() or Hotel.objects.order_by('id').first()
+        h = (Hotel.objects.filter(is_master=True).select_related('company').first()
+             or Hotel.objects.select_related('company').order_by('id').first())
         if not h:
-            return Response({'name': '', 'logo_url': ''})
-        return Response({'name': h.name or '', 'logo_url': h.logo_url or ''})
+            return Response({'name': '', 'company_name': '', 'logo_url': '', 'login_bg_url': ''})
+        return Response({
+            'name': h.name or '',
+            'company_name': getattr(h.company, 'name', '') or '',
+            'logo_url': h.logo_url or '',
+            'login_bg_url': h.login_bg_url or '',
+        })

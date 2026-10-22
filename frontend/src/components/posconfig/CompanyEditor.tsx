@@ -243,6 +243,46 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 ? <img src={d.logo_url} alt="" className="max-h-full max-w-full object-contain" />
                 : <span className="text-[12px]" style={{ color: d.text_color || '#3B82F6' }}>Sem logótipo</span>}
             </div>
+
+            {/* FUNDO DO ECRÃ DE ENTRADA. Fica aqui, na ficha do hotel, e não no
+                armazenamento do terminal como o papel de parede do Ambiente de
+                Trabalho: entra-se no sistema por qualquer posto da casa, e uma
+                imagem guardada por terminal obrigava a carregar o mesmo ficheiro
+                máquina a máquina — um computador novo entrava sempre sem fundo.
+                Escolhe-se uma vez, aparece em todos. */}
+            <Row label="Fundo do Login:" w="w-[100px]">
+              <label className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
+                <span className={`${inp} flex-1 min-w-0 truncate text-[#111827] bg-[#EEF1F5]`} style={inputStyle}>
+                  {d.login_bg_url ? d.login_bg_url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
+                </span>
+                <span className="px-3 py-1 text-[12px] font-semibold bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] hover:bg-[#FFFFFF] flex-shrink-0">
+                  Carregar…
+                </span>
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    const fd = new FormData();
+                    fd.append('file', f);
+                    fd.append('folder', 'login');
+                    try {
+                      const r = await apiClient.post('platform/upload/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+                      set('login_bg_url', r.data.url);
+                      notifyGuide({ title: 'Fundo do login carregado', message: 'Carregue em Gravar. A imagem passa a aparecer no ecrã de entrada de TODOS os postos.' });
+                    } catch (err) { notifyError(err); }
+                    e.target.value = '';
+                  }} />
+              </label>
+              {d.login_bg_url && (
+                <button onClick={() => set('login_bg_url', '')} title="Remover fundo do login"
+                  className="px-2 py-1 text-[#DC2626] hover:bg-[#EEF1F5] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
+              )}
+            </Row>
+            <div className="border border-[#F1F2F4] h-[130px] flex items-center justify-center overflow-hidden bg-[#EEF1F5]">
+              {d.login_bg_url
+                ? <img src={d.login_bg_url} alt="" className="w-full h-full object-cover" />
+                : <span className="text-[12px] text-[#9CA3AF]">Sem imagem — o ecrã de entrada usa um fundo da cor da instalação</span>}
+            </div>
             <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_master} onChange={(e) => set('is_master', e.target.checked)} className="w-4 h-4" />
               Master (hotel principal desta instalação)
