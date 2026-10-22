@@ -225,7 +225,25 @@ export const SECTIONS = [
 ];
 
 /** Etiqueta + campo, alinhados como nos formulários clássicos. */
-export function Field({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
+export function Field({ label, children, wide, empilhado }: {
+  label: string; children: ReactNode; wide?: boolean; empilhado?: boolean;
+}) {
+  // EMPILHADO — etiqueta por cima do campo, cada um com a largura toda.
+  //
+  // Lado a lado é bom numa coluna larga; numa coluna estreita (um painel de
+  // filtros com cinco colunas, por exemplo) a etiqueta e o campo não cabem na
+  // mesma linha e a etiqueta parte ao meio: "Check-" numa linha, "In:" na
+  // outra. Empilhados, a largura da coluna deixa de ser um problema — e os
+  // campos ficam todos alinhados pela esquerda, que é mais fácil de percorrer
+  // com os olhos do que uma coluna de etiquetas de comprimentos diferentes.
+  if (empilhado) {
+    return (
+      <label className="flex flex-col gap-1 text-[12px] min-w-0">
+        <span className="text-[#6B7280] whitespace-nowrap overflow-hidden text-ellipsis">{label}</span>
+        {children}
+      </label>
+    );
+  }
   return (
     <label className="flex items-center gap-2 text-[12px] min-w-0">
       {/* `min-w` em vez de `w`: a caixa tem uma largura MÍNIMA (para as etiquetas
@@ -339,7 +357,11 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 /** Linha etiqueta→campo dentro das caixas. */
 export function Row({ label, children, w = 'w-[120px]' }: { label: string; children: ReactNode; w?: string }) {
   return (
-    <label className="flex items-center gap-3 text-[12px] py-[5px] min-w-0">
+    // `py-2` (era 5px): com cinco píxeis de folga, duas linhas seguidas ficam
+    // praticamente encostadas — as caixas dos campos tocam-se e o formulário
+    // lê-se como um bloco único em vez de uma lista de campos. O que separa
+    // campos num formulário é o ESPAÇO entre eles, não uma linha a dividi-los.
+    <label className="flex items-center gap-3 text-[12px] py-2 min-w-0">
       <span className={`text-[#6B7280] whitespace-nowrap ${w.replace('w-[', 'min-w-[')} flex-shrink-0`}>{label}</span>
       {children}
     </label>

@@ -106,8 +106,8 @@ function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#2563EB' }: an
 
 function Field({ label, children }: { label: string; children: any }) {
   return (
-    <label className="flex flex-col gap-0.5 text-[11px]">
-      <span className="text-[#111827] font-semibold whitespace-nowrap">{label}</span>
+    <label className="flex flex-col gap-1 text-[11px] min-w-0">
+      <span className="text-[#6B7280] whitespace-nowrap overflow-hidden text-ellipsis">{label}</span>
       {children}
     </label>
   );
@@ -387,38 +387,48 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
 
       {avancadaAberta && (
         <div className="flex gap-4 p-3 bg-[#EEF1F5] border-b border-[#F1F2F4]">
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Pesquisa</div>
+          <div className="flex flex-col gap-2.5 flex-1 min-w-[190px]">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Hóspede:"><input value={guestQuery} onChange={(e) => setGuestQuery(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Nº Reserva:"><input value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className={inputCls + ' w-full'} /></Field>
-            <label className="flex items-center gap-1.5">
-              <input type="checkbox" checked={createdOn} onChange={(e) => setCreatedOn(e.target.checked)} /> De (Criação):
-              <input type="date" disabled={!createdOn} value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className={inputCls} />
-            </label>
-            <label className="flex items-center gap-1.5">
-              <span className="invisible"><input type="checkbox" /></span> Até (Criação):
-              <input type="date" disabled={!createdOn} value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className={inputCls} />
-            </label>
+            <div className="flex flex-col gap-1 text-[12px] min-w-0">
+              <label className="flex items-center gap-1.5 text-[#6B7280] whitespace-nowrap">
+                <input type="checkbox" checked={createdOn} onChange={(e) => setCreatedOn(e.target.checked)} />
+                Data de criação:
+              </label>
+              <div className="flex gap-1.5 min-w-0">
+                <input type="date" disabled={!createdOn} value={createdFrom} onChange={(e) => setCreatedFrom(e.target.value)} className={inputCls + ' flex-1 min-w-0'} title="De" />
+                <input type="date" disabled={!createdOn} value={createdTo} onChange={(e) => setCreatedTo(e.target.value)} className={inputCls + ' flex-1 min-w-0'} title="Até" />
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
-            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Datas</div>
+          <div className="flex flex-col gap-2.5 flex-1 min-w-[200px]">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Datas</div>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'fixed'} onChange={() => setDateMode('fixed')} /> Fixo</label>
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'period'} onChange={() => setDateMode('period')} /> Período</label>
             </div>
-            <div className="flex items-center gap-1">
-              <input type="checkbox" checked={ciOn} onChange={(e) => setCiOn(e.target.checked)} />
-              <span className="w-[62px]">Check-In:</span>
-              <input type="date" disabled={!ciOn} value={ciFrom} onChange={(e) => setCiFrom(e.target.value)} className={inputCls} />
-              {dateMode === 'period' && <input type="date" disabled={!ciOn} value={ciTo} onChange={(e) => setCiTo(e.target.value)} className={inputCls} />}
+            <div className="flex flex-col gap-1 text-[12px] min-w-0">
+              <label className="flex items-center gap-1.5 text-[#6B7280] whitespace-nowrap">
+                <input type="checkbox" checked={ciOn} onChange={(e) => setCiOn(e.target.checked)} />
+                Check-In:
+              </label>
+              <div className="flex gap-1.5 min-w-0">
+                <input type="date" disabled={!ciOn} value={ciFrom} onChange={(e) => setCiFrom(e.target.value)} className={inputCls + ' flex-1 min-w-0'} />
+                {dateMode === 'period' && <input type="date" disabled={!ciOn} value={ciTo} onChange={(e) => setCiTo(e.target.value)} className={inputCls + ' flex-1 min-w-0'} />}
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <input type="checkbox" checked={coOn} onChange={(e) => setCoOn(e.target.checked)} />
-              <span className="w-[62px]">Check-Out:</span>
-              <input type="date" disabled={!coOn} value={coFrom} onChange={(e) => setCoFrom(e.target.value)} className={inputCls} />
-              {dateMode === 'period' && <input type="date" disabled={!coOn} value={coTo} onChange={(e) => setCoTo(e.target.value)} className={inputCls} />}
+            <div className="flex flex-col gap-1 text-[12px] min-w-0">
+              <label className="flex items-center gap-1.5 text-[#6B7280] whitespace-nowrap">
+                <input type="checkbox" checked={coOn} onChange={(e) => setCoOn(e.target.checked)} />
+                Check-Out:
+              </label>
+              <div className="flex gap-1.5 min-w-0">
+                <input type="date" disabled={!coOn} value={coFrom} onChange={(e) => setCoFrom(e.target.value)} className={inputCls + ' flex-1 min-w-0'} />
+                {dateMode === 'period' && <input type="date" disabled={!coOn} value={coTo} onChange={(e) => setCoTo(e.target.value)} className={inputCls + ' flex-1 min-w-0'} />}
+              </div>
             </div>
             <Field label="TipoReserva:">
               <select value={source} onChange={(e) => setSource(e.target.value)} className={selCls}>
@@ -426,15 +436,15 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
                 {Object.entries(SOURCE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </Field>
-            <label className="flex items-center gap-1.5">
+            <label className="flex items-start gap-2 text-[12px] leading-snug">
               <input type="checkbox" checked={ciOn && dateMode === 'fixed' && ciFrom === new Date().toISOString().slice(0, 10)}
                 onChange={(e) => { if (e.target.checked) { setDateMode('fixed'); setCiOn(true); setCiFrom(new Date().toISOString().slice(0, 10)); } else setCiOn(false); }} />
               Check-In Hoje
             </label>
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Quarto / Tarifa</div>
+          <div className="flex flex-col gap-2.5 flex-1 min-w-[190px]">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Quarto / Tarifa</div>
             <Field label="Categoria:">
               <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -459,8 +469,8 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             </Field>
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
-            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Comercial</div>
+          <div className="flex flex-col gap-2.5 flex-1 min-w-[190px]">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Comercial</div>
             <Field label="Segmento:">
               <select value={segment} onChange={(e) => { setSegment(e.target.value); setSubSegment(''); }} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -479,12 +489,12 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
                 {chList.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </Field>
-            <label className="flex items-center gap-1.5"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
+            <label className="flex items-start gap-2 text-[12px] leading-snug"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
             <Field label="Voucher:"><input value={voucher} onChange={(e) => setVoucher(e.target.value)} className={inputCls + ' w-full'} /></Field>
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
-            <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Visualização</div>
+          <div className="flex flex-col gap-2.5 flex-1 min-w-[200px]">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Visualização</div>
             <Field label="Estado:">
               <select value={status} onChange={(e) => setStatus(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -508,7 +518,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
                 </button>
               )}
             </div>
-            <label className="flex items-center gap-1.5"><input type="checkbox" checked={ocultarAposPesquisa} onChange={(e) => setOcultarAposPesquisa(e.target.checked)} /> Ocultar filtros após pesquisa</label>
+            <label className="flex items-start gap-2 text-[12px] leading-snug"><input type="checkbox" checked={ocultarAposPesquisa} onChange={(e) => setOcultarAposPesquisa(e.target.checked)} /> Ocultar filtros após pesquisa</label>
           </div>
 
           <button onClick={pesquisar}
