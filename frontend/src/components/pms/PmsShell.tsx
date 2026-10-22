@@ -245,7 +245,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                         }
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
-                      <span className="w-5 flex items-center justify-center text-[#6B7280]"><Glyph icon={it.icon} size={16} /></span>
+                      <Glyph icon={it.icon} size={15} chip />
                       {it.label}{it.soon && <span className="ml-auto text-[11.5px] opacity-50">(brevemente)</span>}
                     </button>
                   ))}
@@ -268,7 +268,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
       <div className="flex items-center gap-2.5 px-5 py-3.5 text-[19px] font-semibold flex-shrink-0"
         style={{ background: TOKENS.surface, color: TOKENS.textOnLight,
                  borderBottom: `1px solid ${TOKENS.lineSoft}` }}>
-        <span className="inline-flex items-center opacity-90"><Glyph icon={cur.icon} size={17} /></span>
+        <Glyph icon={cur.icon} size={17} chip />
         {cur.label}{hotelName && <span className="font-normal text-[15px] text-[#6B7280]"> — {hotelName}</span>}
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
           className="ml-auto w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.pill }}>

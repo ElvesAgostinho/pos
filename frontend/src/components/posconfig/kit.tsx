@@ -7,6 +7,9 @@ import {
   Users, User, Mail, PartyPopper, FolderArchive, TrendingUp, Monitor, Moon, Coins, Receipt,
   Wrench, Settings, Heart, IdCard, Phone, Star, Info, Link as LinkIcon, BedSingle as Bed,
   Handshake, CreditCard, GitBranch, Lock, Eye, TriangleAlert, Menu, Key, Unlock, Scissors,
+  FileText, Files, Image as ImageIcon, ShoppingCart, ShieldCheck, UserRound, Dot,
+  LayoutDashboard, Calendar, ClipboardList, Wallet, Globe, Bell, Truck, Boxes,
+  FileSpreadsheet, Percent, Tag, MapPin, Utensils, Sparkles, SlidersHorizontal,
 } from 'lucide-react';
 
 /**
@@ -67,13 +70,61 @@ export const ICON_MAP: Record<string, any> = {
   '👁': Eye,
   '☰': Menu,
   '🔑': Key,
+  // ── Os que faltavam e saíam como EMOJI CRU ──────────────────────────────
+  // Um emoji sem mapa é desenhado pelo sistema operativo: muda de forma entre
+  // Windows, Android e iPhone, vem colorido por cima de um fundo escuro e
+  // ignora o tamanho e a cor do botão. Bastava um para o conjunto deixar de
+  // parecer desenhado. Estes nove eram os que ainda escapavam.
+  '●': Dot,
+  '📄': FileText, '📑': Files,
+  '🖼': ImageIcon,
+  '🛒': ShoppingCart,
+  '🛡': ShieldCheck,
+  '🧑': UserRound,
+  'app': LayoutDashboard, 'gear': SlidersHorizontal, 'terminal': Monitor,
+  // ── Vocabulário de hotelaria, para quem precisar ────────────────────────
+  '📅': Calendar, '📝': ClipboardList, '👛': Wallet, '🌐': Globe,
+  '🔔': Bell, '🚚': Truck, '📚': Boxes, '📗': FileSpreadsheet,
+  '%': Percent, '🏷': Tag, '📍': MapPin, '🍽': Utensils, '✨': Sparkles,
 };
 
-/** Renderiza o ícone certo para um glifo conhecido; sem mapa, mostra o texto
-    original (nunca esconde um ícone só porque ainda não entrou no mapa). */
-export function Glyph({ icon, size = 15 }: { icon: string; size?: number }) {
+/**
+ * Renderiza o ícone certo para um glifo conhecido; sem mapa, mostra o texto
+ * original (nunca esconde um ícone só porque ainda não entrou no mapa).
+ *
+ * TRAÇO: 1.8 em vez de 2.3. O traço grosso era o que fazia os ícones parecerem
+ * carimbados em cima do texto — num conjunto denso, o ícone deve acompanhar a
+ * letra, não gritar mais alto do que ela.
+ *
+ * RELEVO (`chip`): o ícone dentro de um quadrado arredondado com um degradê
+ * muito curto, uma luz no rebordo de cima e uma sombra aberta em baixo. É a
+ * maneira de dar profundidade a um ícone sem recorrer a ilustrações 3D
+ * desenhadas — essas são bonitas numa página de produto e erradas aqui: pesam,
+ * não acompanham a cor do tema e, num ecrã com quarenta linhas, viram ruído.
+ * Assim o relevo vem da LUZ, que é como se faz volume num símbolo.
+ */
+export function Glyph({ icon, size = 15, chip, tom }: {
+  icon: string; size?: number; chip?: boolean; tom?: string;
+}) {
   const Cmp = ICON_MAP[icon];
-  return Cmp ? <Cmp size={size} strokeWidth={2.3} /> : <>{icon}</>;
+  const desenho = Cmp ? <Cmp size={size} strokeWidth={1.8} /> : <>{icon}</>;
+  if (!chip) return desenho;
+
+  const cor = tom || TOKENS.brand;
+  const lado = Math.round(size * 2);
+  return (
+    <span
+      className="inline-flex items-center justify-center flex-shrink-0"
+      style={{
+        width: lado, height: lado, borderRadius: Math.round(lado * 0.32),
+        color: cor,
+        background: `linear-gradient(160deg, #FFFFFF 0%, ${cor}14 55%, ${cor}22 100%)`,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 ${cor}1F, `
+                 + `0 1px 2px rgba(16,24,40,0.06), 0 2px 6px rgba(16,24,40,0.05)`,
+      }}>
+      {desenho}
+    </span>
+  );
 }
 
 export const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
