@@ -1,11 +1,11 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import type { JSX } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 import App from './App.tsx'
 
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import CustomerLogin from './pages/CustomerLogin.tsx'
 import PosStation from './pages/pos/PosTerminal';
 import KdsScreen from './pages/pos/KdsScreen';
@@ -100,6 +100,29 @@ const RequirePosOperator = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
+
+/**
+ * MARCA DO TERMINAL — põe `pos-terminal` no <body> enquanto se está num ecrã do
+ * Terminal POS.
+ *
+ * Existe por uma razão concreta: o `index.css` tinha regras globais sobre
+ * `input`/`select` (campo "afundado" com sombra interior, contorno cinzento-azul)
+ * cuja especificidade é MAIOR que a de uma classe Tailwind — ou seja, estavam a
+ * ganhar às cores que os próprios ecrãs do Terminal definem. Ao limpar essas
+ * regras para o backoffice, o Terminal mudaria de aspecto sem ninguém pedir, e a
+ * regra do dono é não lhe tocar. Com esta marca, o legado fica confinado ao
+ * Terminal e o resto do sistema segue o visual novo.
+ */
+function MarcaDoTerminal() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const noTerminal = pathname.startsWith('/pos');
+    document.body.classList.toggle('pos-terminal', noTerminal);
+    return () => document.body.classList.remove('pos-terminal');
+  }, [pathname]);
+  return null;
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
@@ -115,6 +138,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/backoffice/*" element={<RequireLicense><RequireAuth><App /></RequireAuth></RequireLicense>} />
 
             {/* Frontoffice Launcher (Nível 3) */}
+            <MarcaDoTerminal />
             {/* /pos é a porta do terminal: quem já tem sessão de operador entra
                 direto; quem não tem, faz login. É este o link dos atalhos. */}
             <Route path="/pos" element={

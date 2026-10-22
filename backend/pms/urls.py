@@ -21,6 +21,7 @@ from .booking_engine import (
 from .channel_manager import ChannelViewSet, ChannelSyncLogViewSet, ChannelRoomMapViewSet
 from .chatbot import ChatbotSettingsViewSet, ChatbotSimulateView
 from .events_api import EventViewSet, EventForecastView
+from .saft import PmsSaftView
 
 router = DefaultRouter()
 router.register(r'room-types', RoomTypeViewSet)
@@ -65,4 +66,6 @@ urlpatterns = [
     path('events/forecast/', EventForecastView.as_view()),
     # Chatbot — simulador (autenticado, dados reais, nunca envia WhatsApp a sério).
     path('chatbot/simulate/', ChatbotSimulateView.as_view()),
+    # SAF-T do alojamento — mesmo motor do SAF-T do POS, outra origem.
+    path('saft/', PmsSaftView.as_view()),
 ] + router.urls

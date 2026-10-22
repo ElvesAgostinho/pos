@@ -86,7 +86,10 @@ const SECTIONS: Record<string, { label: string; icon: string; Comp: any }> = {
   reports_pms: { label: 'Performance & Ocupação', icon: '📊', Comp: PmsReportsView },
   online: { label: 'Informação Online', icon: '📈', Comp: PosOnline },
   dayclose_pos: { label: 'Fecho do dia POS', icon: '🌙', Comp: PosDayClose },
-  saft_pos: { label: 'SAFT-AO', icon: '🧾', Comp: PosSaft },
+  // SAF-T: no PMS abre na origem ALOJAMENTO (era o que faltava — só havia o do
+  // POS). O mesmo ecrã deixa trocar para o POS, porque um hotel com restaurante
+  // entrega os dois ficheiros, separados.
+  saft_pos: { label: 'SAFT-AO (AGT)', icon: '🧾', Comp: () => <PosSaft modulo="pms" /> },
   diag_pos: { label: 'Diagnóstico', icon: '⚙', Comp: PosDiagnostics },
   hotel_status: { label: 'Estado Hotel', icon: '🏛', Comp: PmsHotelStatusView },
   planning: { label: 'Planning', icon: '🕐', Comp: PmsPlanningView },

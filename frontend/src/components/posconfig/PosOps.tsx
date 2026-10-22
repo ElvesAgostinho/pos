@@ -218,28 +218,48 @@ export function PosDayClose() {
 }
 
 // ─────────────────────────────────────────────────────────── SAF-T do POS
-export function PosSaft() {
+/**
+ * SAF-T — o ficheiro que se entrega à AGT.
+ *
+ * Serve as DUAS origens. Um hotel com alojamento e restaurante emite facturas
+ * por dois caminhos e tem de poder exportar as duas: só havia o SAF-T do POS, e
+ * as facturas das estadias — num hotel, a maior parte da receita — não tinham
+ * por onde sair. Em vez de um segundo ecrã igual, o mesmo muda de origem: o
+ * motor do ficheiro (`fiscal/saft.py`) já nasceu com um filtro por módulo.
+ *
+ * As origens ficam em ficheiros SEPARADOS de propósito, não num só: um
+ * restaurante que só comunica o POS não pode mandar no mesmo ficheiro as
+ * facturas do alojamento.
+ */
+const SAFT_ORIGENS = {
+  pos: { etiqueta: 'POS', nome: 'POS', endpoint: 'pos/ops/saft/', prefixo: 'SAFT_POS' },
+  pms: { etiqueta: 'Alojamento (PMS)', nome: 'alojamento', endpoint: 'pms/saft/', prefixo: 'SAFT_PMS' },
+} as const;
+
+export function PosSaft({ modulo = 'pos' }: { modulo?: keyof typeof SAFT_ORIGENS }) {
   const [ano, setAno] = useState(new Date().getFullYear());
   const [mes, setMes] = useState<string>(String(new Date().getMonth() + 1));
+  const [origem, setOrigem] = useState<keyof typeof SAFT_ORIGENS>(modulo);
+  const org = SAFT_ORIGENS[origem];
 
   const { data: d } = useQuery({
-    queryKey: ['posops', 'saft'],
-    queryFn: async () => (await apiClient.get('pos/ops/saft/')).data,
+    queryKey: ['posops', 'saft', origem],
+    queryFn: async () => (await apiClient.get(org.endpoint)).data,
   });
 
   const criar = useMutation({
     mutationFn: async () => {
-      const r = await apiClient.post('pos/ops/saft/', { year: ano, month: mes || undefined },
+      const r = await apiClient.post(org.endpoint, { year: ano, month: mes || undefined },
         { responseType: 'blob' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([r.data], { type: 'application/xml' }));
-      a.download = `SAFT_POS_${ano}${mes ? String(mes).padStart(2, '0') : ''}.xml`;
+      a.download = `${org.prefixo}_${ano}${mes ? String(mes).padStart(2, '0') : ''}.xml`;
       a.click();
       return r;
     },
     onSuccess: () => notifyGuide({
       title: 'Ficheiro criado',
-      message: 'O SAF-T do POS foi descarregado. É o que se entrega à AGT.',
+      message: `O SAF-T do ${org.nome} foi descarregado. É o que se entrega à AGT.`,
     }),
     onError: notifyError,
   });
@@ -265,8 +285,13 @@ export function PosSaft() {
           <b>{d?.tax_id || '—'}</b>
         </div>
         <div className="flex gap-6 items-center">
-          <span className="w-[110px] text-[#6B7280] font-semibold">Aplicação</span>
-          <span className={`${inp} w-[240px] bg-[#F7F8FA]`} style={inputStyle}>POS</span>
+          <span className="w-[110px] text-[#6B7280] font-semibold">Origem</span>
+          <select value={origem} onChange={(e) => setOrigem(e.target.value as keyof typeof SAFT_ORIGENS)}
+            className={`${inp} w-[240px]`} style={inputStyle}>
+            {Object.entries(SAFT_ORIGENS).map(([k, v]) => (
+              <option key={k} value={k}>{v.etiqueta}</option>
+            ))}
+          </select>
         </div>
         <div className="flex gap-6 items-center">
           <span className="w-[110px] text-[#6B7280] font-semibold">Tipo</span>
@@ -294,7 +319,7 @@ export function PosSaft() {
         </div>
 
         <div className="text-[13px] text-[#6B7280] pt-3 border-t border-[#F1F2F4]">
-          Documentos do POS na base: <b>{d?.documents ?? 0}</b>
+          Documentos do {org.nome} na base: <b>{d?.documents ?? 0}</b>
           {d?.first && <> · de {d.first} a {d.last}</>}
         </div>
 
@@ -304,7 +329,7 @@ export function PosSaft() {
         </button>
         {!d?.documents && (
           <div className="text-[12.5px] text-[#111827]">
-            Sem documentos do POS no período — um SAF-T vazio não se entrega.
+            Sem documentos do {org.nome} no período — um SAF-T vazio não se entrega.
           </div>
         )}
       </div>

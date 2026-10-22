@@ -1919,3 +1919,113 @@ class RelatoriosDoPmsTests(PmsBase):
             d = self._correr(code, {'from': str(self.hoje), 'to': str(self.hoje)})
             self.assertIn('columns', d, f'{code} não devolveu colunas')
             self.assertIn('rows', d)
+
+
+class SaftDoAlojamentoTests(PmsBase):
+    """O SAF-T das facturas do PMS.
+
+    Só existia o do POS. Um hotel emite facturas por dois caminhos — o terminal
+    e as contas das estadias — e só conseguia exportar metade; as facturas do
+    alojamento, que num hotel são a maior parte da receita, não tinham por onde
+    sair. Numa inspecção, é o ficheiro que falta.
+    """
+
+    def _fiscal(self):
+        cfg = FiscalConfig.get()
+        cfg.company_name, cfg.company_nif, cfg.environment = 'Hotel Teste Lda', '5000000000', 'TEST'
+        cfg.save()
+        TaxRate.objects.create(code='IVA14', name='IVA 14%', percentage=Decimal('14'),
+                               is_default=True, is_active=True)
+        tipo = FiscalDocType.objects.create(code='FR', name='Factura-Recibo', signable=True)
+        FiscalSeries.objects.create(code='T', doc_type=tipo, year=self.hoje.year,
+                                    certified=True, is_active=True, environment='TEST')
+
+    def _facturar(self):
+        res_id = self._reserva_em_checkin()
+        folio = Reservation.objects.get(id=res_id).folio
+        self.client.post(f'/api/pms/folios/{folio.id}/settle/', {}, format='json')
+        r = self.client.post(f'/api/pms/folios/{folio.id}/generate-invoice/', {}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content)
+        return r.data['invoice_number']
+
+    def test_resumo_diz_o_que_vai_sair(self):
+        self._fiscal()
+        vazio = self.client.get('/api/pms/saft/')
+        self.assertEqual(vazio.status_code, 200, vazio.content)
+        self.assertEqual(vazio.data['documents'], 0)
+        self.assertEqual(vazio.data['application'], 'PMS')
+
+        self._facturar()
+        cheio = self.client.get('/api/pms/saft/')
+        self.assertEqual(cheio.data['documents'], 1)
+        self.assertEqual(cheio.data['company'], 'Hotel Teste Lda')
+        self.assertEqual(cheio.data['tax_id'], '5000000000')
+        self.assertIsNotNone(cheio.data['first'])
+
+    def test_sem_documentos_nao_se_entrega_um_ficheiro_vazio(self):
+        """Um SAF-T sem documentos é XML válido e substância nenhuma: entregue à
+        AGT, declara que o hotel não facturou nada naquele mês."""
+        self._fiscal()
+        r = self.client.post('/api/pms/saft/', {'year': self.hoje.year, 'month': 1}, format='json')
+        self.assertEqual(r.status_code, 400, r.content)
+        self.assertIn('vazio não se entrega', r.data['detail'])
+
+    def test_o_ficheiro_sai_com_a_factura_do_alojamento(self):
+        self._fiscal()
+        numero = self._facturar()
+
+        r = self.client.post('/api/pms/saft/',
+                             {'year': self.hoje.year, 'month': self.hoje.month}, format='json')
+        self.assertEqual(r.status_code, 200, getattr(r, 'data', r.content))
+        self.assertEqual(r['Content-Type'], 'application/xml')
+        self.assertIn('SAFT_PMS_', r['Content-Disposition'])
+
+        xml = r.content.decode('utf-8')
+        import xml.etree.ElementTree as ET
+        ET.fromstring(xml)                      # tem de ser XML bem formado
+        self.assertIn('5000000000', xml, 'o NIF da empresa não saiu no ficheiro')
+        self.assertIn(numero, xml, 'a factura do alojamento não saiu no ficheiro')
+
+    def test_o_ficheiro_do_alojamento_nao_leva_as_facturas_do_pos(self):
+        """As duas origens são ficheiros separados de propósito: um restaurante
+        que só comunica o POS não pode mandar no mesmo ficheiro as facturas do
+        alojamento, e vice-versa."""
+        from fiscal.models import FiscalDocument
+        self._fiscal()
+        numero_pms = self._facturar()
+
+        # Uma factura do POS, do mesmo dia, no mesmo arquivo fiscal.
+        doc = FiscalDocument.objects.get(invoice_no=numero_pms)
+        doc.pk, doc.id = None, None
+        doc.invoice_no = 'FR A/999'
+        doc.source_module, doc.source_ref = 'pos', '1'
+        doc.save()
+
+        r = self.client.post('/api/pms/saft/',
+                             {'year': self.hoje.year, 'month': self.hoje.month}, format='json')
+        xml = r.content.decode('utf-8')
+        self.assertIn(numero_pms, xml)
+        self.assertNotIn('FR A/999', xml, 'o SAF-T do alojamento levou uma factura do POS')
+
+    def test_a_exportacao_fica_registada_no_mesmo_livro_do_pos(self):
+        """É o histórico do que saiu para a AGT — e a marca "válido" é escrita
+        pelo validador, nunca à mão."""
+        from fiscal.models import SaftExport
+        self._fiscal()
+        self._facturar()
+        self.client.post('/api/pms/saft/',
+                         {'year': self.hoje.year, 'month': self.hoje.month}, format='json')
+
+        registo = SaftExport.objects.order_by('-id').first()
+        self.assertIsNotNone(registo, 'a exportação não ficou registada')
+        self.assertTrue(registo.filename.startswith('SAFT_PMS_'))
+        self.assertTrue(registo.is_valid)
+        self.assertEqual(len(registo.sha256), 64)
+        self.assertGreater(registo.size_bytes, 0)
+
+    def test_ano_inteiro_sem_mes(self):
+        self._fiscal()
+        self._facturar()
+        r = self.client.post('/api/pms/saft/', {'year': self.hoje.year}, format='json')
+        self.assertEqual(r.status_code, 200, getattr(r, 'data', r.content))
+        self.assertIn(f'SAFT_PMS_{self.hoje.year}.xml', r['Content-Disposition'])

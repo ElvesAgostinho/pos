@@ -1,98 +1,138 @@
 @import "tailwindcss";
 
 /* PALETA OFICIAL — os mesmos nomes de frontend/src/config/theme.ts (TOKENS),
-   aqui como cores Tailwind de verdade (bg-brand-bar, text-brand-gold, etc.).
-   Antes este bloco tinha as cores de fábrica do scaffold (nunca usadas em
-   lado nenhum — #0284c7 não aparece em nenhum ecrã do sistema); agora é a
-   paleta a sério, disponível como classe Tailwind onde um valor JS (theme.ts)
-   não pode entrar (ex.: focus:border-brand-gold). A cor institucional
-   (TOKENS.accent) fica de fora de propósito — essa muda por instalação
-   (Aparência → Cor da barra), não pode ser uma cor fixa no CSS. */
+   aqui como cores Tailwind de verdade (bg-brand-bar, text-brand-gold, etc.),
+   disponíveis como classe onde um valor JS não pode entrar.
+
+   Este bloco tinha ficado para trás em todas as mudanças de paleta — ainda
+   guardava um creme (#f2ecdc) como fundo de selecção, um laranja como cor de
+   marca e um verde nas caixas de selecção, de uma identidade de há várias
+   versões. Era daqui que vinham as cores soltas que não batiam certo com o
+   resto do sistema. A cor institucional (TOKENS.accent) fica de fora de
+   propósito: essa muda por instalação (Aparência → Cor da barra). */
 @theme {
-  --color-brand-bar: #18181B;
-  --color-brand-bar-soft: #242428;
-  --color-brand-gold: #D97706;
-  --color-brand-gold-dark: #8a6a24;
-  --color-brand-border: #6B7280;
-  --color-brand-line: #c0c0c0;
-  --color-brand-selected-bg: #f2ecdc;
-  --color-brand-selected-text: #18181B;
-  --color-brand-success: #1f7a34;
-  --color-brand-danger: #c0392b;
+  --color-brand-bar: #1E2A44;
+  --color-brand-bar-soft: #16203A;
+  --color-brand-gold: #2563EB;        /* nome antigo; é o azul das acções */
+  --color-brand-gold-dark: #1D4ED8;
+  --color-brand-border: #E6E8EC;
+  --color-brand-line: #F1F2F4;
+  --color-brand-selected-bg: #DBEAFE;
+  --color-brand-selected-text: #111827;
+  --color-brand-success: #16A34A;
+  --color-brand-danger: #DC2626;
 }
 
 body {
   margin: 0;
-  /* Tipo de letra clássico empresarial (Windows/Primavera), não SaaS. */
-  font-family: "Segoe UI", Tahoma, Verdana, Geneva, sans-serif;
-  background-color: #dfe3e8;
-  color: #222;
+  /* Tipo de letra do sistema, na ordem em que cada plataforma tem a melhor:
+     Segoe UI Variable é a de Windows 11, Inter a dos produtos modernos, e as
+     restantes são os recursos de macOS/Linux. Fica propositadamente fora
+     "Tahoma"/"Verdana", que eram as da versão anterior e carregam sozinhas o
+     ar de software de há vinte anos. */
+  font-family: "Segoe UI Variable Text", "Segoe UI", Inter, -apple-system,
+               BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  background-color: #F7F8FA;
+  color: #111827;
   /* SEM "antialiased": essa regra (copiada de resets pensados para macOS) desliga
      o ClearType/subpixel do Windows e trocava-o por um cinzento mais fino — a letra
-     ficava "fusca" precisamente no sistema operativo onde este ERP mais corre. Sem a
-     regra, o Windows usa o alisamento nativo dele; o Mac continua a alisar sozinho. */
+     ficava "fusca" precisamente no sistema operativo onde este ERP mais corre. */
   text-rendering: optimizeLegibility;
 }
 
-/* ============================================================
-   POLISH EMPRESARIAL — aparência "pesada"/robusta (estilo Windows)
-   Aplica-se a TODOS os ecrãs via os controlos nativos e classes clássicas.
-   ============================================================ */
+/* ============================================================================
+   CAMPOS DE FORMULÁRIO
+   Eram "afundados": sombra interior escura e um contorno cinzento-azul, o 3D
+   do Windows clássico. Agora são superfícies brancas com um contorno leve — e
+   o que os destaca é o ANEL quando recebem foco, não um relevo permanente.
 
-/* Campos AFUNDADOS (inset/beveled) — o clássico "3D sunken" do Windows.
-   Não mexe no fundo (fica para as classes; preserva os inputs escuros do POS). */
+   Nota de especificidade: estas regras usam selectores de elemento, que ganham
+   a qualquer classe Tailwind. Era por isso que o contorno antigo aparecia em
+   ecrãs que definiam o seu próprio — incluindo os do Terminal POS. Aqui só se
+   define o que é mesmo transversal; o resto fica para as classes de cada ecrã.
+   ========================================================================== */
 input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
-select, textarea {
-  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.20), inset -1px -1px 0 rgba(255,255,255,0.6);
-  border-color: #7d8a9c;
-}
-select { background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(0,0,0,0.03)); }
-
-/* Molduras/painéis com relevo clássico (borda dupla clara/escura). */
-.erp-bevel { border: 1px solid #9aa6b6; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #b9c2ce, 0 1px 2px rgba(0,0,0,0.12); }
-
-/* ---- Polish empresarial: scrollbars sólidas, foco e seleção ---- */
-* { scrollbar-width: thin; scrollbar-color: #b0b8c4 #eef1f5; }
-::-webkit-scrollbar { width: 12px; height: 12px; }
-::-webkit-scrollbar-track { background: #eef1f5; }
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #c2cad6, #a7b0be);
-  border: 2px solid #eef1f5; border-radius: 6px;
-}
-::-webkit-scrollbar-thumb:hover { background: #8c96a6; }
-::-webkit-scrollbar-corner { background: #eef1f5; }
-
-/* Foco visível e consistente nos campos (aspeto enterprise) */
-input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 2px rgba(30,63,102,0.35); }
-::selection { background: #D97706; color: #fff; }
-
-/* Impressão: esconde a moldura/menus, imprime só o conteúdo */
-@media print {
-  body { background: #fff; }
+select,
+textarea {
+  border-color: #E6E8EC;
 }
 
-/* ---------------------------------------------------------------------------
-   CAIXAS DE SELEÇÃO — verdes em TODO o sistema.
-   Onde há um visto, há uma caixa: e a caixa liga/desliga alguma coisa a sério.
-   Uma caixa desativada (só de leitura) fica verde mas apagada: o valor existe,
-   mas não é o cliente que o decide (ex.: "Licenciado" vem da licença assinada).
---------------------------------------------------------------------------- */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Caixas de selecção e botões de opção na cor das acções — a mesma do resto do
+   sistema. Eram verdes, único sítio onde essa cor aparecia. */
 input[type='checkbox'],
 input[type='radio'] {
-  accent-color: #1f7a34;
+  accent-color: #2563EB;
   cursor: pointer;
 }
 input[type='checkbox']:disabled,
 input[type='radio']:disabled {
   cursor: not-allowed;
-  opacity: 0.65;
+  opacity: 0.55;
 }
+
+::selection { background: #DBEAFE; color: #111827; }
+
+/* ============================================================================
+   BARRAS DE DESLOCAMENTO — finas e discretas.
+   Tinham 12px, moldura e gradiente; num ecrã com várias grelhas, cada uma
+   trazia a sua faixa cinzenta e o conteúdo ficava emoldurado por barras.
+   ========================================================================== */
+* { scrollbar-width: thin; scrollbar-color: #D7DBDF transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D7DBDF; border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: #B9BEC6; background-clip: content-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* Impressão: fundo branco, sem moldura nem menus. */
+@media print {
+  body { background: #fff; }
+}
+
+/* ============================================================================
+   TERMINAL POS — o legado fica aqui dentro, e só aqui.
+
+   O Terminal tem identidade própria (tátil, escura, alvos grandes) e a regra do
+   dono é não lhe tocar. Como as regras acima usam selectores de elemento, que
+   ganham às classes, seriam aplicadas também lá — e mudariam o aspecto dele sem
+   ninguém pedir. `body.pos-terminal` (posto por `MarcaDoTerminal`, em main.tsx,
+   enquanto a rota começa por /pos) devolve-lhe exactamente o que tinha.
+   ========================================================================== */
+body.pos-terminal input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
+body.pos-terminal select,
+body.pos-terminal textarea {
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.20), inset -1px -1px 0 rgba(255,255,255,0.6);
+  border-color: #7d8a9c;
+}
+body.pos-terminal select { background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(0,0,0,0.03)); }
+body.pos-terminal input:focus,
+body.pos-terminal select:focus,
+body.pos-terminal textarea:focus { outline: none; border-color: #7d8a9c; box-shadow: 0 0 0 2px rgba(30,63,102,0.35); }
+body.pos-terminal input[type='checkbox'],
+body.pos-terminal input[type='radio'] { accent-color: #1f7a34; }
+body.pos-terminal ::selection { background: #D97706; color: #fff; }
+body.pos-terminal { background-color: #dfe3e8; }
+body.pos-terminal * { scrollbar-color: #b0b8c4 #eef1f5; }
+body.pos-terminal ::-webkit-scrollbar { width: 12px; height: 12px; }
+body.pos-terminal ::-webkit-scrollbar-track { background: #eef1f5; }
+body.pos-terminal ::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #c2cad6, #a7b0be);
+  border: 2px solid #eef1f5; border-radius: 6px; background-clip: border-box;
+}
+body.pos-terminal ::-webkit-scrollbar-thumb:hover { background: #8c96a6; }
+body.pos-terminal ::-webkit-scrollbar-corner { background: #eef1f5; }
+
+/* Molduras com relevo clássico — usado por ecrãs antigos que ainda a pedem. */
+.erp-bevel { border: 1px solid #E6E8EC; border-radius: 12px; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 2px 6px rgba(16,24,40,0.05); }
 
 /* ZONA ARRASTÁVEL DO POS — sem barra de scroll.
    No terminal tátil a barra não serve: tem 15px e o dedo tapa-a inteira. O conteúdo
-   puxa-se com o dedo (ver ZonaArrastavel.tsx). A regra global de barras acima é para o
-   backoffice, que se usa com rato. */
+   puxa-se com o dedo (ver ZonaArrastavel.tsx). */
 .pos-arrasta { scrollbar-width: none !important; -ms-overflow-style: none !important; }
-.pos-arrasta::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
-/* a regra global `*` acima punha `scrollbar-width: auto` em tudo — mais forte do que a
-   propriedade em linha do componente. Daí a barra continuar a aparecer no terminal. */
+.pos-arrasta::-webkit-scrollbar { display: none !important; }

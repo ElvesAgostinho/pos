@@ -9,7 +9,7 @@ import { Toolbar } from '../posconfig/kit';
     tudo editável de seguida, um só "Gravar" no fim. Sobre pms/rooms/, já
     existente (POST para novos, PATCH para os que mudaram) — sem endpoint
     novo nenhum. */
-export default function PmsRoomsBulkEditView() {
+export default function PmsRoomsBulkEditView({ onNavigate }: { onNavigate?: (s: string) => void }) {
   const qc = useQueryClient();
   const { data: roomTypes } = useQuery({ queryKey: ['pms', 'room-types'], queryFn: async () => (await apiClient.get('pms/room-types/')).data });
   const rtList: any[] = Array.isArray(roomTypes) ? roomTypes : roomTypes?.results || [];
@@ -69,10 +69,45 @@ export default function PmsRoomsBulkEditView() {
             ))}
           </tbody>
         </table>
-        {rows.length === 0 && <div className="text-center text-gray-400 py-6">Sem quartos — clique em "Adicionar Linha".</div>}
+        {/* O ecrã dizia "clique em Adicionar Linha" com esse botão DESLIGADO:
+            mandava fazer o que ele próprio impedia, e nunca explicava que falta
+            uma categoria. Um quarto tem de pertencer a uma categoria (é ela que
+            tem o preço e a capacidade) — por isso, sem categorias, o que falta
+            não é um quarto: é o passo anterior. */}
+        {rows.length === 0 && (
+          <div className="text-center py-10 px-6">
+            {rtList.length === 0 ? (
+              <>
+                <div className="text-[14px] font-semibold text-[#111827]">
+                  Ainda não há categorias de quarto
+                </div>
+                <div className="text-[13px] text-[#6B7280] mt-1.5 max-w-md mx-auto leading-relaxed">
+                  Um quarto pertence sempre a uma categoria — é ela que tem o preço e a
+                  capacidade. Crie primeiro as suas categorias (Standard, Suite…) e depois
+                  volte aqui para dar entrada dos quartos.
+                </div>
+                {onNavigate && (
+                  <button onClick={() => onNavigate('room_types')}
+                    className="mt-4 px-5 py-2 text-[13px] font-semibold text-white rounded-[999px] hover:brightness-110"
+                    style={{ background: '#2563EB' }}>
+                    Criar categorias de quarto
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="text-[13px] text-[#6B7280]">
+                Sem quartos — clique em <b>Adicionar Linha</b> para dar entrada do primeiro.
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <Toolbar actions={[
-        { label: 'Adicionar Linha', icon: '＋', color: '#1E2A44', onClick: addRow, disabled: rtList.length === 0 },
+        { label: 'Adicionar Linha', icon: '＋', color: '#1E2A44', onClick: addRow,
+          disabled: rtList.length === 0,
+          title: rtList.length === 0
+            ? 'Crie primeiro uma categoria de quarto — um quarto tem de pertencer a uma.'
+            : 'Acrescenta uma linha para um quarto novo' },
         { label: saving ? 'A gravar…' : 'Gravar Tudo', icon: '💾', color: '#1E2A44', onClick: save, disabled: saving },
       ]} />
     </div>

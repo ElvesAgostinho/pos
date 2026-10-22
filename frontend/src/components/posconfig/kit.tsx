@@ -202,7 +202,7 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
   return (
     <div className="flex items-center gap-1.5 px-3 py-2.5 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.lineSoft }}>
       {actions.map((a) => (
-        <button key={a.label} onClick={a.onClick} disabled={a.disabled}
+        <button key={a.label} onClick={a.onClick} disabled={a.disabled} title={a.title}
           className="flex items-center gap-2 px-3.5 py-1.5 text-[13px] font-medium text-[#111827] disabled:opacity-35 disabled:cursor-default hover:bg-[#F3F4F6] active:bg-[#E6E8EC] transition-colors"
           style={{ borderRadius: RADIUS.pill }}>
           <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
