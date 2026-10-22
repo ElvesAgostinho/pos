@@ -21,6 +21,28 @@ CORE_MODULES = [
     {"code": "identity", "name": "Identidade & Organização", "category": "Sistema"},
     {"code": "licensing", "name": "Licenciamento", "category": "Sistema"},
     {"code": "eae", "name": "Motor de Autorização (RBAC/ABAC)", "category": "Segurança"},
+    {"code": "auth_engine", "name": "Autenticação & Sessões", "category": "Segurança"},
+    # FISCAL e CONTABILIDADE estavam instalados e a funcionar, mas não constavam
+    # de lista nenhuma: nem núcleo, nem opcional. Num sistema que se vende POR
+    # MÓDULO, um módulo que o licenciamento não conhece é um buraco — não se
+    # vende, não se desliga, e o PCC nem sabe que existe. Ficam declarados aqui,
+    # como NÚCLEO, que é exactamente o que já são na prática: o `fiscal` é
+    # acrescentado à força aos módulos ativos (ver licensing/views.py) e a
+    # contabilidade nunca foi sujeita a licença. Declarar não muda nada em quem
+    # já tem o sistema — torna visível o que estava implícito.
+    #
+    # Não são opcionais de propósito: em Angola, faturar e lançar na
+    # contabilidade não são extras comerciais.
+    {"code": "fiscal", "name": "Faturação & AGT", "category": "Sistema"},
+    {"code": "accounting", "name": "Contabilidade (PGC-AO)", "category": "Financeiro"},
+    # O lado do FORNECEDOR. Está instalado também no cliente porque outras apps
+    # importam os seus modelos (workforce → clm.TerminalLicense); as rotas é que
+    # só se publicam no Platform Control Center.
+    # `interno`: declarado (para nada ficar invisível ao licenciamento) mas NÃO
+    # oferecido — não é algo que se venda a um hotel, é a consola com que o
+    # fornecedor lhe vende o resto.
+    {"code": "clm", "name": "Gestão de Licenças (fornecedor)", "category": "Sistema",
+     "interno": True},
 ]
 
 # Módulos opcionais — ativáveis/desativáveis por licença na consola PCC.
@@ -57,13 +79,14 @@ OPTIONAL_MODULES = [
      "requires": [], "description": "Tesouraria, recebimentos, pagamentos, centros de custo e faturação (AR)."},
     {"code": "commercial", "name": "Commercial Center (Pricing & Promoções)", "category": "Comercial",
      "requires": ["inventory", "pos"], "description": "Promoções, Happy Hour e Combos que alimentam o POS."},
+    # À VENDA desde 2026-10-22. Esteve marcado `sellable: False` ("ainda em
+    # desenvolvimento") e isso deixou de ser verdade: o ciclo completo está
+    # fechado e testado de ponta a ponta — reserva, check-in, folio, consumo do
+    # POS lançado no quarto, fatura do check-out assinada, auditoria da noite.
+    # Enquanto a marca cá esteve, um cliente NOVO não o conseguia comprar pelo
+    # assistente do PCC, por muito que o quisesse.
     {"code": "pms", "name": "PMS · Property Management System", "category": "Operação",
-     "requires": [], "description": "Reservas, quartos, blocos, check-in/out e folio do hóspede.",
-     # AINDA EM DESENVOLVIMENTO — não oferecer no Wizard de provisionamento do
-     # PCC enquanto não estiver pronto para clientes pagantes. Continua ativo
-     # para instalações/licenças que já o tenham (não se retira nada a quem já
-     # o usa) — só deixa de aparecer como opção para clientes NOVOS.
-     "sellable": False},
+     "requires": [], "description": "Reservas, quartos, blocos, check-in/out e folio do hóspede."},
 ]
 
 # Lista de app_labels opcionais — consumida por erp_server.settings para o gating.
@@ -113,8 +136,12 @@ def sellable_modules():
     cliente NOVO — os que já estão prontos para vender. Core está sempre
     incluído (não é opção, é a base). Um módulo ainda em desenvolvimento
     (sellable=False) fica de fora daqui mas continua a funcionar para quem já
-    o tem — isto só afeta o que aparece para provisionar clientes novos."""
-    return [{**m, "is_core": True} for m in CORE_MODULES] + \
+    o tem — isto só afeta o que aparece para provisionar clientes novos.
+
+    Um módulo marcado `interno` nunca aparece: está declarado para nada
+    ficar invisível ao licenciamento, mas não é algo que se venda a um
+    hotel (a consola do fornecedor, por exemplo)."""
+    return [{**m, "is_core": True} for m in CORE_MODULES if not m.get("interno")] + \
            [{**m, "is_core": False} for m in OPTIONAL_MODULES if m.get("sellable", True)]
 
 
