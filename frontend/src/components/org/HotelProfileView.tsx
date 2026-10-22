@@ -66,7 +66,7 @@ export default function HotelProfileView() {
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
-      className={`px-4 py-1.5 text-[12px] font-bold border border-b-0 ${tab === id ? 'bg-white text-[#111827] border-[#E6E8EC]' : 'bg-[#F7F8FA] text-gray-600 border-[#E6E8EC]'}`}>
+      className={`px-4 py-1.5 text-[12px] font-bold border border-b-0 ${tab === id ? 'bg-white text-[#111827] border-[#E6E8EC]' : 'bg-[#EEF1F5] text-gray-600 border-[#E6E8EC]'}`}>
       {label}
     </button>
   );
@@ -74,18 +74,18 @@ export default function HotelProfileView() {
   return (
     <ClassicWindow title="Ficha do Hotel — Dados da Propriedade" icon={<Building2 size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Estes dados saem nas faturas, nas reservas e no SAF-T — é a identidade do hotel em todo o sistema</div>}>
-      <div className="h-full flex flex-col bg-[#F7F8FA] overflow-auto">
+      <div className="h-full flex flex-col bg-[#EEF1F5] overflow-auto">
 
         {/* Completude — o que falta e porquê */}
         {c && (
-          <div className={`m-3 mb-0 p-2.5 border flex items-start gap-2 text-[12px] ${c.missing.length ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#E6E8EC]'}`}>
+          <div className={`m-3 mb-0 p-2.5 border flex items-start gap-2 text-[12px] ${c.missing.length ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#E6E8EC]'}`}>
             {c.missing.length ? <AlertTriangle size={18} className="text-[#111827] flex-shrink-0 mt-0.5" />
               : <CheckCircle2 size={18} className="text-[#111827] flex-shrink-0 mt-0.5" />}
             <div className="flex-1">
               <div className="font-bold flex items-center gap-2">
                 Ficha {c.percent}% completa
-                <span className="inline-block w-40 h-2 bg-[#F7F8FA] border border-[#E6E8EC]">
-                  <span className="block h-full" style={{ width: `${c.percent}%`, background: c.missing.length ? '#3B82F6' : '#1E2A44' }} />
+                <span className="inline-block w-40 h-2 bg-[#EEF1F5] border border-[#E6E8EC]">
+                  <span className="block h-full" style={{ width: `${c.percent}%`, background: c.missing.length ? '#3B82F6' : '#2563EB' }} />
                 </span>
               </div>
               {c.missing.length > 0 && (
@@ -106,7 +106,7 @@ export default function HotelProfileView() {
           <Tab id="cert" label="Certificação AGT" />
         </div>
 
-        <div className="mx-3 mb-3 bg-[#F7F8FA] border border-[#E6E8EC] p-3 flex-1 overflow-auto">
+        <div className="mx-3 mb-3 bg-[#EEF1F5] border border-[#E6E8EC] p-3 flex-1 overflow-auto">
           {tab === 'hotel' && (
             <>
               <FormSection title="Identificação da propriedade">
@@ -178,7 +178,7 @@ export default function HotelProfileView() {
                 hint="é por aqui que o cliente lhe paga — sem isto, ele recebe a fatura e não sabe para onde transferir">
                 <table className="w-full text-[12px] border-collapse">
                   <thead>
-                    <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }} className="text-[#111827]">
+                    <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF, #EEF1F5)' }} className="text-[#111827]">
                       {['Banco', 'IBAN', 'Nº de conta', 'SWIFT', 'Moeda', 'Sai na fatura', ''].map((x) => (
                         <th key={x} className="text-left font-bold px-2 py-1 border-b border-[#E6E8EC]">{x}</th>
                       ))}
@@ -232,7 +232,7 @@ export default function HotelProfileView() {
           {tab === 'cert' && (
             <FormSection title="Certificação AGT" cols={1}
               hint="pertence ao software — instalada pelo fornecedor">
-              <div className={`p-3 border flex items-center gap-3 ${cert?.certified ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#E6E8EC]'}`}>
+              <div className={`p-3 border flex items-center gap-3 ${cert?.certified ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#E6E8EC]'}`}>
                 {cert?.certified ? <ShieldCheck size={26} className="text-[#111827]" /> : <ShieldAlert size={26} className="text-[#111827]" />}
                 <div className="text-[12px]">
                   <div className={`font-bold ${cert?.certified ? 'text-[#111827]' : 'text-[#111827]'}`}>

@@ -26,7 +26,7 @@ function Crud({ ent, title, icon, fields, cols, empty }: {
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">{data.length} registo(s)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           {fields.map((f) => (
             <input key={f.key} placeholder={f.placeholder} value={d[f.key] ?? ''}
               onChange={(e) => setD({ ...d, [f.key]: f.up ? e.target.value.toUpperCase() : e.target.value })}

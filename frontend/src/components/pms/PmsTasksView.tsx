@@ -13,7 +13,7 @@ import { aviso, confirmar } from '../../ui/dialogo';
 
 const PRIORITY = [{ value: 'LOW', label: 'Baixa' }, { value: 'NORMAL', label: 'Normal' }, { value: 'HIGH', label: 'Alta' }];
 const STATUS = [{ value: 'PENDING', label: 'Pendente' }, { value: 'IN_PROGRESS', label: 'Em curso' }, { value: 'DONE', label: 'Concluída' }];
-const STATUS_COLOR: Record<string, string> = { PENDING: '#DC2626', IN_PROGRESS: '#3B82F6', DONE: '#1E2A44' };
+const STATUS_COLOR: Record<string, string> = { PENDING: '#DC2626', IN_PROGRESS: '#3B82F6', DONE: '#2563EB' };
 // O TIPO decide o que acontece ao quarto ao concluir: só "Limpeza" liberta um
 // quarto que esteja "Por limpar" (ver mark_done em pms/views.py).
 const TASK_TYPES = [{ value: 'CLEANING', label: 'Limpeza' }, { value: 'MAINTENANCE', label: 'Manutenção' }, { value: 'OTHER', label: 'Outra' }];
@@ -128,9 +128,9 @@ export default function PmsTasksView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Nova', icon: '＋', color: '#1E2A44', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#1E2A44', onClick: save },
-        { label: 'Marcar Concluída', icon: '✔', color: '#1E2A44', onClick: markDone, disabled: !selId || form.status === 'DONE' },
+        { label: 'Nova', icon: '＋', color: '#111827', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#111827', onClick: save },
+        { label: 'Marcar Concluída', icon: '✔', color: '#111827', onClick: markDone, disabled: !selId || form.status === 'DONE' },
         { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#DC2626' },
       ]} />
     </div>

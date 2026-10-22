@@ -20,7 +20,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
   const qc = useQueryClient();
   const [tables, setTables] = useState<any[]>([]);
   const [sel, setSel] = useState<number | null>(null);     // índice selecionado
-  const [bg, setBg] = useState(sector.map_bg_color || '#F7F8FA');
+  const [bg, setBg] = useState(sector.map_bg_color || '#EEF1F5');
   const [txt, setTxt] = useState(sector.map_text_color || '#FFFFFF');
   const [showNums, setShowNums] = useState(true);
   const [clip, setClip] = useState<any>(null);
@@ -56,7 +56,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
     setTables([...tables, {
       table_number: `M${n}`, shape, pos_x: 40, pos_y: 40,
       width: shape === 'ROUND' ? 100 : 90, height: shape === 'ROUND' ? 100 : 110,
-      color: '#1E2A44', text_color: '#FFFFFF', seats: 4,
+      color: '#111827', text_color: '#FFFFFF', seats: 4,
       online_reservation: false, min_seats: 0, max_seats: 0, preferred_seats: 0,
     }]);
     setSel(tables.length);
@@ -114,15 +114,15 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
   const Btn = ({ onClick, children, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-3 py-1.5 bg-[#1E2A44] text-white text-[12px] hover:bg-[#1E2A44] disabled:opacity-35">
+      className="flex items-center gap-2 px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-35">
       {children}
     </button>
   );
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-6" onClick={onClose}>
-      <div className="bg-[#F7F8FA] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-white text-[15px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="bg-[#EEF1F5] w-full max-w-[1400px] h-full max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-3 py-2 text-[#111827] text-[15px] font-bold" style={{ background: '#FFFFFF' }}>
           <span>{mode === 'online' ? 'Mesas - Online' : 'Mesas'} — {sector.name}</span>
           <button onClick={onClose} className="text-white"><Glyph icon="✕" size={16} /></button>
         </div>
@@ -134,7 +134,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
             <Btn onClick={copySel} disabled={sel === null}><Glyph icon="⧉" size={13} /> Copiar</Btn>
             <Btn onClick={delSel} disabled={sel === null}><span className="text-[#DC2626]">●</span> Apagar</Btn>
             <Btn onClick={paste} disabled={!clip}><Glyph icon="📋" size={13} /> Colar</Btn>
-            <span className="w-px h-6 bg-[#F7F8FA] mx-1" />
+            <span className="w-px h-6 bg-[#EEF1F5] mx-1" />
             <Btn onClick={() => align('top')} disabled={sel === null}>⇥ Alinhar topo</Btn>
             <Btn onClick={() => align('left')} disabled={sel === null}>⇤ Alinhar esquerda</Btn>
             <Btn onClick={() => distribute('V')}>↕ Vertical</Btn>
@@ -146,19 +146,19 @@ export default function TableMapDesigner({ sector, mode, onClose }:
           {/* Formas / propriedades */}
           {mode === 'design' && (
             <div className="w-[250px] flex-shrink-0 border-r border-[#E6E8EC] bg-white overflow-auto">
-              <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4]">Formas</div>
+              <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4]">Formas</div>
               <div className="flex gap-2 p-3 border-b border-[#F1F2F4]">
                 {[['SQUARE', 'rounded-none w-12 h-12'], ['RECT', 'rounded-none w-12 h-9'], ['ROUND', 'rounded-full w-12 h-12']].map(([shape, cls]) => (
                   <button key={shape} onClick={() => addTable(shape)} title="Arraste para a sala"
-                    className={`${cls} border border-[#1E2A44]`} style={{ background: '#1E2A44' }} />
+                    className={`${cls} border border-[#E6E8EC]`} style={{ background: '#2563EB' }} />
                 ))}
               </div>
 
               <div className="p-3 space-y-2 text-[12px]">
                 <button onClick={() => sel !== null && upd(sel, { table_number: prompt('Número da mesa:', S?.table_number) || S.table_number })}
-                  disabled={sel === null} className="w-full py-1.5 bg-[#1E2A44] text-white disabled:opacity-35">Alterar número</button>
+                  disabled={sel === null} className="w-full py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] disabled:opacity-35">Alterar número</button>
                 <button onClick={() => sel !== null && upd(sel, { name: prompt('Texto da mesa:', S?.name || '') || '' })}
-                  disabled={sel === null} className="w-full py-1.5 bg-[#1E2A44] text-white disabled:opacity-35">Alterar texto</button>
+                  disabled={sel === null} className="w-full py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] disabled:opacity-35">Alterar texto</button>
 
                 <label className="flex items-center gap-2"><input type="checkbox" checked={showNums} onChange={(e) => setShowNums(e.target.checked)} className="w-4 h-4" />Visualizar números</label>
 
@@ -202,7 +202,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                   left: t.pos_x, top: t.pos_y, width: t.width, height: t.height,
                   background: t.color,
                   borderRadius: t.shape === 'ROUND' ? '50%' : 0,
-                  outline: sel === i ? '3px solid #1E2A44' : 'none',
+                  outline: sel === i ? '3px solid #2563EB' : 'none',
                   color: txt,
                 }}>
                 {mode === 'design' && (
@@ -220,11 +220,11 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
           {/* Lugares / Reservas online */}
           <div className="w-[420px] flex-shrink-0 border-l border-[#E6E8EC] bg-white flex flex-col">
-            <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4]">Lugares</div>
+            <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4]">Lugares</div>
             <div className="flex-1 overflow-auto">
               <table className="w-full text-[12px] border-collapse">
                 <thead className="sticky top-0">
-                  <tr className="bg-[#F7F8FA]">
+                  <tr className="bg-[#EEF1F5]">
                     <th className="px-2 py-1 border-b border-[#F1F2F4] w-[36px]" />
                     <th className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">Código</th>
                     <th className="text-center font-normal px-1 py-1 border-b border-[#F1F2F4]">Reservas Online</th>
@@ -236,7 +236,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                 <tbody>
                   {tables.map((t, i) => (
                     <tr key={i} onClick={() => setSel(i)}
-                      className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                      className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                       <td className="text-center"><span className="inline-block w-3 h-3 rounded-[8px]" style={{ background: t.color }} /></td>
                       <td className="px-2 py-1 font-bold">{t.table_number}</td>
                       <td className="text-center">
@@ -265,7 +265,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
         </div>
 
         <Toolbar actions={[
-          { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+          { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
           { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
         ]} />
       </div>

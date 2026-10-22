@@ -79,7 +79,7 @@ export default function PmsGuestsCompaniesView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex border-b border-[#E6E8EC] bg-[#F7F8FA]">
+      <div className="flex border-b border-[#E6E8EC] bg-[#EEF1F5]">
         {(['guests', 'companies'] as const).map((t) => (
           <button key={t} onClick={() => trocarAba(t)}
             className={`px-4 py-2 text-[12px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
@@ -125,8 +125,8 @@ export default function PmsGuestsCompaniesView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', color: '#1E2A44', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#1E2A44', onClick: save },
+        { label: tab === 'guests' ? 'Novo Hóspede' : 'Nova Empresa', icon: '＋', color: '#111827', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#111827', onClick: save },
         { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#DC2626' },
       ]} />
     </div>

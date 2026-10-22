@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
+import Divisor from '../ui/Divisor';
 
 const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 type Tab = 'tables' | 'documents' | 'shortcuts' | 'payments' | 'privacy';
@@ -23,6 +24,10 @@ const TABS: [Tab, string][] = [
  * À direita: as permissões NUMERADAS do sistema (20258 = permitir alterar preço).
  */
 export default function UserGroupEditor({ row, onClose }: { row: any; onClose: () => void }) {
+  // Altura do formulário de cima. Fica em estado (e não fixa) porque é o
+  // utilizador que a escolhe, puxando o divisor.
+  const [alturaForm, setAlturaForm] = useState(250);
+
   const qc = useQueryClient();
   const isNew = !row?.id;
   const [tab, setTab] = useState<Tab>('tables');
@@ -83,7 +88,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -91,7 +96,14 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
       <div className="flex-1 flex overflow-hidden">
         {/* Esquerda: identificação + funções do terminal */}
         <div className="flex-1 flex flex-col overflow-hidden border-r border-[#F1F2F4]">
-          <div className="p-3">
+          {/* O formulário tem altura PRÓPRIA e desliza por dentro; a lista de
+              permissões fica com o resto. Antes o formulário ocupava o que
+              precisasse e a lista ficava com o que sobrasse — às vezes uma
+              linha, e marcar dezenas de permissões uma de cada vez não é
+              trabalho que alguém queira fazer. A altura é puxada pelo divisor
+              logo abaixo, porque a altura certa depende do monitor e do que se
+              está a fazer: não é decisão para ficar escrita no código. */}
+          <div className="p-3 overflow-auto flex-shrink-0" style={{ height: alturaForm }}>
           <Box title="Identificação">
           <div className="space-y-2 pt-1.5">
             <div className="flex items-center gap-6">
@@ -130,10 +142,12 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
           </Box>
           </div>
 
-          <div className="flex border-b-2 border-[#1E2A44] px-2 overflow-x-auto">
+          <Divisor onMove={(d) => setAlturaForm((h) => Math.max(90, Math.min(h + d, 640)))} />
+
+          <div className="flex border-b border-[#E6E8EC] px-2 overflow-x-auto flex-shrink-0">
             {TABS.map(([k, label]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+                className={`px-3 py-1.5 text-[12px] font-medium whitespace-nowrap border-b-2 -mb-px ${tab === k ? 'border-[#2563EB] text-[#1D4ED8]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
                 {label}
               </button>
             ))}
@@ -142,7 +156,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
           <div className="flex-1 overflow-auto">
             {tab === 'privacy' ? (
               <table className="w-full text-[12px] border-collapse">
-                <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+                <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
                   {['Permission', 'Leitura', 'Escrita', 'Info'].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
                   ))}
@@ -181,7 +195,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
 
         {/* Direita: permissões numeradas */}
         <div className="w-[420px] flex-shrink-0 flex flex-col">
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">Permissões</div>
+          <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">Permissões</div>
           <div className="flex-1 overflow-auto">
             {roots.map((r) => {
               const kids = rights.filter((k) => k.parent === r.id);
@@ -202,7 +216,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
             })}
           </div>
           <button onClick={() => set('right_ids', chosen.length === rights.length ? [] : rights.map((r) => r.id))}
-            className="py-2 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px] hover:bg-[#F7F8FA]">
+            className="py-2 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[12px] hover:bg-[#EEF1F5]">
             {chosen.length === rights.length ? 'Desmarcar Tudo' : 'Selecionar Tudo'}
           </button>
           <div className="px-3 py-1.5 text-[11px] text-[#6B7280] border-t border-[#F1F2F4]">
@@ -212,7 +226,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

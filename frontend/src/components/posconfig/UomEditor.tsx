@@ -55,7 +55,7 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Nova unidade' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -91,7 +91,7 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
 
         <div className="max-w-[820px] mt-4" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="w-full text-[12px] border-collapse">
-            <thead><tr className="bg-[#F7F8FA]">
+            <thead><tr className="bg-[#EEF1F5]">
               <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Código</th>
               <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Descrição</th>
               <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] w-[160px]">Fator de conversão</th>
@@ -99,7 +99,7 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
             <tbody>
               {cs.map((c, i) => (
                 <tr key={i} onClick={() => setSel(i)}
-                  className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#F7F8FA]' : ''}`}>
+                  className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#EEF1F5]' : ''}`}>
                   <td className="p-0.5" colSpan={2}>
                     <select value={c.to_uom || ''} onChange={(e) => setC(i, 'to_uom', Number(e.target.value) || null)}
                       className={cell}>
@@ -122,12 +122,12 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
               )}
             </tbody>
           </table>
-          <div className="flex items-center justify-end gap-4 px-3 py-2 bg-[#F7F8FA] border-t border-[#F1F2F4]">
-            <button onClick={addC} className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+          <div className="flex items-center justify-end gap-4 px-3 py-2 bg-[#EEF1F5] border-t border-[#F1F2F4]">
+            <button onClick={addC} className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1">
+              <span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={delC} disabled={sel === null}
-              className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
+              className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1 disabled:opacity-35">
               <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[11px]">−</span> Remover
             </button>
           </div>
@@ -135,7 +135,7 @@ export default function UomEditor({ row, onClose }: { row: any; onClose: () => v
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

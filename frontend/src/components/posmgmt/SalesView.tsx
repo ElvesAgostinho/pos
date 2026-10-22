@@ -57,11 +57,11 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
       <div className="flex h-full">
         {/* Produtos disponíveis no POS (deste outlet) */}
         <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
-          <div className="px-3 py-1.5 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px] font-bold text-gray-700">Produtos POS {paid ? '(ticket pago)' : ''}</div>
+          <div className="px-3 py-1.5 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px] font-bold text-gray-700">Produtos POS {paid ? '(ticket pago)' : ''}</div>
           <div className="flex-1 overflow-y-auto p-2 grid grid-cols-2 gap-2 content-start">
             {products.filter((p: any) => p.is_available).map((p: any) => (
               <button key={p.id} disabled={paid} onClick={() => addLine.mutate({ id: ticketId, line: { item: p.item, quantity: 1 } })}
-                className={`border p-2 text-left text-[11px] ${paid ? 'opacity-50' : 'bg-white hover:bg-[#F7F8FA] border-[#E6E8EC] active:bg-[#F7F8FA]'}`}>
+                className={`border p-2 text-left text-[11px] ${paid ? 'opacity-50' : 'bg-white hover:bg-[#EEF1F5] border-[#E6E8EC] active:bg-[#EEF1F5]'}`}>
                 <div className="font-bold text-gray-800 truncate">{p.item_name}</div>
                 <div className="text-[#6B7280] font-bold">{fmt(p.effective_price)}</div>
               </button>
@@ -85,7 +85,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
               ]}
             />
           </div>
-          <div className="border-t border-[#E6E8EC] bg-[#F7F8FA] p-2 text-[11px]">
+          <div className="border-t border-[#E6E8EC] bg-[#EEF1F5] p-2 text-[11px]">
             <div className="flex justify-between px-1"><span>Subtotal</span><span>{fmt(ticket?.subtotal)}</span></div>
             <div className="flex justify-between px-1"><span>IVA</span><span>{fmt(ticket?.tax_total)}</span></div>
             <div className="flex justify-between px-1 font-bold text-[#6B7280] text-[12px]"><span>TOTAL</span><span>{fmt(ticket?.grand_total)}</span></div>
@@ -95,8 +95,8 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
           <div className="border-t border-[#E6E8EC] bg-white p-2">
             <div className="flex items-center gap-1 mb-1">
               <FileText size={12} className="text-gray-500" />
-              <button disabled={!hasLines} onClick={() => doIssue('PROFORMA')} className="px-2 py-1 text-[11px] border border-[#E6E8EC] bg-[#F7F8FA] hover:bg-[#F7F8FA] disabled:opacity-50">Pré-conta</button>
-              <button disabled={!hasLines} onClick={() => doIssue('INVOICE')} className="px-2 py-1 text-[11px] border border-[#E6E8EC] bg-[#F7F8FA] hover:bg-[#F7F8FA] disabled:opacity-50">Fatura</button>
+              <button disabled={!hasLines} onClick={() => doIssue('PROFORMA')} className="px-2 py-1 text-[11px] border border-[#E6E8EC] bg-[#EEF1F5] hover:bg-[#EEF1F5] disabled:opacity-50">Pré-conta</button>
+              <button disabled={!hasLines} onClick={() => doIssue('INVOICE')} className="px-2 py-1 text-[11px] border border-[#E6E8EC] bg-[#EEF1F5] hover:bg-[#EEF1F5] disabled:opacity-50">Fatura</button>
             </div>
             {documents.map((d: any) => (
               <div key={d.id} className="flex justify-between text-[10px] px-1">
@@ -121,7 +121,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
               </div>
             </div>
           ) : (
-            <div className="border-t border-[#E6E8EC] bg-[#F7F8FA] p-2 text-center text-[#111827] font-bold text-[12px] flex items-center justify-center gap-1"><Check size={13} strokeWidth={3} /> Ticket pago</div>
+            <div className="border-t border-[#E6E8EC] bg-[#EEF1F5] p-2 text-center text-[#111827] font-bold text-[12px] flex items-center justify-center gap-1"><Check size={13} strokeWidth={3} /> Ticket pago</div>
           )}
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function SalesView() {
     <ClassicWindow title="Vendas (POS)" icon={<Receipt size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Nº tickets: {tickets.length}</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <select value={form.outlet} onChange={(e) => setForm({ ...form, outlet: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">— outlet —</option>
             {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}

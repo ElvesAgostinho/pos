@@ -67,7 +67,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
         </>
       }
     >
-      <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto text-[11px] space-y-4">
+      <div className="p-4 bg-[#EEF1F5] h-full overflow-y-auto text-[11px] space-y-4">
         <div className="border border-[#E6E8EC] bg-white p-2">
           <h3 className="font-bold text-[#6B7280] border-b border-[#E6E8EC] mb-2 pb-1">Cabeçalho</h3>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">
@@ -89,7 +89,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
         </div>
 
         {isNew ? (
-          <div className="border border-[#E6E8EC] bg-[#F7F8FA] p-3 text-gray-700">Crie a ordem para adicionar linhas.</div>
+          <div className="border border-[#E6E8EC] bg-[#EEF1F5] p-3 text-gray-700">Crie a ordem para adicionar linhas.</div>
         ) : (
           <div className="border border-[#E6E8EC] bg-white p-2">
             <h3 className="font-bold text-[#6B7280] border-b border-[#E6E8EC] mb-2 pb-1">Linhas</h3>

@@ -22,11 +22,11 @@ export default function ManagementDashboard() {
   return (
     <ClassicWindow title="Dashboard de Gestão (Reporting)" icon={<TrendingUp size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Atualiza automaticamente · {d?.date} · visão consolidada de vendas, margem, stock, financeiro e ocupação</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         <div>
           <div className="text-[11px] font-bold text-[#6B7280] mb-2 uppercase">Vendas & Margem (hoje)</div>
           <div className="flex flex-wrap gap-2">
-            <Card icon={TrendingUp} label="Vendas do dia" value={money(pos.sales)} color="#1E2A44" sub={`${pos.count || 0} vendas · ticket médio ${money(pos.avg_ticket)}`} />
+            <Card icon={TrendingUp} label="Vendas do dia" value={money(pos.sales)} color="#2563EB" sub={`${pos.count || 0} vendas · ticket médio ${money(pos.avg_ticket)}`} />
             <Card icon={Percent} label="Margem (preço − custo)" value={money(pos.margin)} color="#3B82F6" sub={`${marginPct}% · custo ${money(pos.cost)}`} />
           </div>
         </div>
@@ -40,9 +40,9 @@ export default function ManagementDashboard() {
         <div>
           <div className="text-[11px] font-bold text-[#6B7280] mb-2 uppercase">Financeiro</div>
           <div className="flex flex-wrap gap-2">
-            <Card icon={ArrowUpCircle} label="Contas a Receber" value={money(fin.receivable)} color="#1E2A44" />
+            <Card icon={ArrowUpCircle} label="Contas a Receber" value={money(fin.receivable)} color="#2563EB" />
             <Card icon={ArrowDownCircle} label="Contas a Pagar" value={money(fin.payable)} color="#DC2626" />
-            <Card icon={Landmark} label="Tesouraria (saldo)" value={money(fin.treasury)} color="#1E2A44" />
+            <Card icon={Landmark} label="Tesouraria (saldo)" value={money(fin.treasury)} color="#2563EB" />
           </div>
         </div>
         <div>

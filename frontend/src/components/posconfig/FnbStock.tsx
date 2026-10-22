@@ -85,7 +85,7 @@ export default function FnbStock() {
   if (agrupar) vista.forEach((r) => { (grupos[r.warehouse] ||= []).push(r); });
 
   const Linha = ({ r }: any) => (
-    <tr className={`border-b border-[#F1F2F4] ${r.below_min ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+    <tr className={`border-b border-[#F1F2F4] ${r.below_min ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
       <td className="px-2 py-1 font-mono text-[#6B7280]">{r.code}</td>
       <td className="px-2 py-1 font-semibold">
         {r.name}
@@ -103,7 +103,7 @@ export default function FnbStock() {
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
       <div className="flex gap-6 p-3 bg-white border-b border-[#F1F2F4]">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export default function FnbStock() {
 
       <div className="flex-1 overflow-auto bg-white">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             {['Código', 'Artigo', ...(agrupar ? [] : ['Armazém']), 'Stock Qtd.', 'Custo médio', 'Valor', 'Mínimo'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
             ))}
@@ -163,7 +163,7 @@ export default function FnbStock() {
             {agrupar
               ? Object.entries(grupos).map(([arm, lista]) => (
                 <>
-                  <tr key={arm} className="bg-[#F7F8FA]">
+                  <tr key={arm} className="bg-[#EEF1F5]">
                     <td colSpan={6} className="px-2 py-1 font-bold text-[#111827]">
                       {arm} — {money(lista.reduce((s, r) => s + Number(r.value), 0))} Kz
                     </td>
@@ -179,7 +179,7 @@ export default function FnbStock() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -199,7 +199,7 @@ export default function FnbStock() {
           label: recalcular.isPending ? 'A recalcular…' : 'Recalcular o stock', icon: '⟳', color: '#3B82F6',
           onClick: () => recalcular.mutate(),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#1E2A44', onClick: exportar },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#111827', onClick: exportar },
       ]} right={
         <span className="text-[11px] text-[#6B7280]">
           O valor é a quantidade ao custo médio — é o dinheiro parado dentro do armazém.

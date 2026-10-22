@@ -74,9 +74,9 @@ function montarHtml(p: any, imprimir: boolean) {
 
     /* Cabeçalho */
     .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
-            border-bottom: 2px solid #1E2A44; padding-bottom: 10px; }
+            border-bottom: 2px solid #2563EB; padding-bottom: 10px; }
     .logo { max-height: 56px; max-width: 200px; display: block; margin-bottom: 6px; }
-    .brand { font-size: 19px; font-weight: 700; color: #1E2A44; letter-spacing: .2px; }
+    .brand { font-size: 19px; font-weight: 700; color: #2563EB; letter-spacing: .2px; }
     .company-line { color: #6B7280; font-size: 10.5px; line-height: 1.45; margin-top: 2px; }
     .party { text-align: right; min-width: 210px; }
     .party-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: .6px; color: #3B82F6; }
@@ -87,10 +87,10 @@ function montarHtml(p: any, imprimir: boolean) {
     .docbar { display: flex; justify-content: space-between; align-items: center; gap: 16px;
               background: #FFFFFF; border: 1px solid #DBEAFE; border-radius: 6px;
               padding: 9px 12px; margin-top: 14px; }
-    .doc-title { font-size: 15px; font-weight: 700; color: #1E2A44; }
+    .doc-title { font-size: 15px; font-weight: 700; color: #2563EB; }
     .badge { display: inline-block; font-size: 9.5px; font-weight: 700; text-transform: uppercase;
              letter-spacing: .6px; padding: 2px 8px; border-radius: 999px; margin-left: 8px;
-             background: #1E2A44; color: #fff; }
+             background: #2563EB; color: #fff; }
     .badge.copy { background: #DC2626; }
     .meta { display: flex; gap: 18px; font-size: 10.5px; }
     .meta div span { color: #3B82F6; display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .5px; }
@@ -98,7 +98,7 @@ function montarHtml(p: any, imprimir: boolean) {
     /* Linhas */
     table { width: 100%; border-collapse: collapse; }
     .items { margin-top: 12px; }
-    .items th { background: #1E2A44; color: #fff; text-align: left; font-weight: 600;
+    .items th { background: #2563EB; color: #fff; text-align: left; font-weight: 600;
                 padding: 6px 8px; font-size: 10.5px; }
     .items td { padding: 6px 8px; border-bottom: 1px solid #F1F2F4; vertical-align: top; }
     .items tbody tr:nth-child(even) td { background: #F3F4F6; }
@@ -110,14 +110,14 @@ function montarHtml(p: any, imprimir: boolean) {
     .rowbox { display: flex; gap: 20px; margin-top: 14px; align-items: flex-start;
               justify-content: space-between; }
     .vat { width: auto; border: 1px solid #DBEAFE; border-radius: 6px; overflow: hidden; }
-    .vat th { background: #FFFFFF; color: #1E2A44; font-size: 9.5px; font-weight: 700;
+    .vat th { background: #FFFFFF; color: #2563EB; font-size: 9.5px; font-weight: 700;
               text-transform: uppercase; letter-spacing: .4px; padding: 4px 8px; border-bottom: 1px solid #DBEAFE; }
     .vat td { padding: 4px 8px; font-size: 10.5px; border-bottom: 1px solid #F1F2F4; }
     .totals { width: 258px; }
     .totals td { padding: 4px 10px; font-size: 11.5px; }
     .totals .lbl { color: #6B7280; }
     .totals .val { text-align: right; font-weight: 600; }
-    .totals .grand td { background: #1E2A44; color: #fff; font-size: 13.5px; font-weight: 700;
+    .totals .grand td { background: #2563EB; color: #fff; font-size: 13.5px; font-weight: 700;
                         padding: 8px 10px; }
     .totals .grand td:last-child { text-align: right; }
 
@@ -134,7 +134,7 @@ function montarHtml(p: any, imprimir: boolean) {
     /* Bancos */
     .banks { margin-top: 16px; border: 1px solid #DBEAFE; border-radius: 6px; overflow: hidden; }
     .banks-title { background: #FFFFFF; padding: 5px 10px; font-size: 9.5px; font-weight: 700;
-                   text-transform: uppercase; letter-spacing: .5px; color: #1E2A44;
+                   text-transform: uppercase; letter-spacing: .5px; color: #2563EB;
                    border-bottom: 1px solid #DBEAFE; }
     .banks-tbl th { background: #F3F4F6; text-align: left; font-size: 9.5px; color: #6B7280;
                     padding: 4px 10px; border-bottom: 1px solid #F1F2F4; }

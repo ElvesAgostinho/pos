@@ -27,7 +27,7 @@ const LEGEND: { key: string; label: string; color: string }[] = [
   { key: 'booked', label: 'Reservado', color: '#FEF2F2' },
   { key: 'fds', label: 'FdS', color: '#3B82F6' },
   { key: 'option', label: 'Opção', color: '#3B82F6' },
-  { key: 'waitlist', label: 'Lista Espera', color: '#1E2A44' },
+  { key: 'waitlist', label: 'Lista Espera', color: '#111827' },
   { key: 'dayuse', label: 'Day Use', color: '#3B82F6' },
   { key: 'overbook', label: 'Overbook', color: '#DC2626' },
   { key: 'allotment', label: 'Allotment', color: '#3B82F6' },
@@ -40,7 +40,7 @@ const plusDays = (iso: string, n: number) => {
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short' });
 
 function PanelHead({ children }: { children: any }) {
-  return <div className="px-2 py-1 font-bold text-[11px] border-b border-[#E6E8EC] bg-[#F7F8FA]">{children}</div>;
+  return <div className="px-2 py-1 font-bold text-[11px] border-b border-[#E6E8EC] bg-[#EEF1F5]">{children}</div>;
 }
 
 export default function PmsAvailabilityView() {
@@ -105,7 +105,7 @@ export default function PmsAvailabilityView() {
       accessor: (row: any) => {
         const cell = row.days?.[i];
         if (!cell) return '';
-        const color = cell.overbook > 0 ? '#DC2626' : cell.free === 0 ? '#DC2626' : '#1E2A44';
+        const color = cell.overbook > 0 ? '#DC2626' : cell.free === 0 ? '#DC2626' : '#2563EB';
         return <span style={{ color, fontWeight: row.isTotal ? 700 : 500 }}>{cell.free}/{cell.total}</span>;
       },
     })),
@@ -116,7 +116,7 @@ export default function PmsAvailabilityView() {
       {/* Categorias dos Hotéis */}
       {catOpen ? (
         <div className="w-[240px] border-r border-[#E6E8EC] bg-white flex flex-col flex-shrink-0">
-          <div className="px-2 py-1.5 font-bold text-[11px] border-b border-[#E6E8EC] bg-[#F7F8FA] flex items-center justify-between">
+          <div className="px-2 py-1.5 font-bold text-[11px] border-b border-[#E6E8EC] bg-[#EEF1F5] flex items-center justify-between">
             Categorias dos Hotéis
             <button onClick={() => setCatOpen(false)} title="Encolher" className="text-[#6B7280] hover:text-[#111827]">
               <ChevronsLeft size={13} />
@@ -130,12 +130,12 @@ export default function PmsAvailabilityView() {
           {treeOpen && (
             <>
               <button onClick={() => setRoomType('')}
-                className={`text-left pl-8 pr-3 py-1.5 text-[12px] ${!roomType ? 'bg-[#1E2A44] text-white' : 'hover:bg-[#F7F8FA]'}`}>
+                className={`text-left pl-8 pr-3 py-1.5 text-[12px] ${!roomType ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'hover:bg-[#EEF1F5]'}`}>
                 (Todas as categorias)
               </button>
               {list.map((rt: any) => (
                 <button key={rt.id} onClick={() => setRoomType(String(rt.id))}
-                  className={`text-left pl-8 pr-3 py-1.5 text-[12px] flex items-center gap-1.5 ${roomType === String(rt.id) ? 'bg-[#1E2A44] text-white' : 'text-[#111827] hover:bg-[#F7F8FA]'}`}>
+                  className={`text-left pl-8 pr-3 py-1.5 text-[12px] flex items-center gap-1.5 ${roomType === String(rt.id) ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'text-[#111827] hover:bg-[#EEF1F5]'}`}>
                   <Bed size={12} /> {rt.name}
                 </button>
               ))}
@@ -144,13 +144,13 @@ export default function PmsAvailabilityView() {
         </div>
       ) : (
         <button onClick={() => setCatOpen(true)} title="Mostrar Categorias dos Hotéis"
-          className="w-[18px] border-r border-[#E6E8EC] bg-[#F7F8FA] flex-shrink-0 flex items-start justify-center pt-2 hover:bg-[#F7F8FA]">
+          className="w-[18px] border-r border-[#E6E8EC] bg-[#EEF1F5] flex-shrink-0 flex items-start justify-center pt-2 hover:bg-[#EEF1F5]">
           <ChevronsRight size={13} className="text-[#6B7280]" />
         </button>
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex gap-3 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px] items-stretch">
+        <div className="flex gap-3 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px] items-stretch">
           {/* Modo */}
           <div className="border border-[#E6E8EC] bg-white flex-shrink-0">
             <PanelHead>Modo</PanelHead>
@@ -188,11 +188,11 @@ export default function PmsAvailabilityView() {
                   </label>
                   <div className="flex gap-1 mt-0.5">
                     <button onClick={() => mover(-nDias)}
-                      className="flex-1 flex items-center justify-center gap-1 text-white font-bold py-1.5" style={{ background: '#1E2A44' }}>
+                      className="flex-1 flex items-center justify-center gap-1 text-[#111827] font-bold py-1.5" style={{ background: '#FFFFFF' }}>
                       <ChevronLeft size={13} /> Anterior
                     </button>
                     <button onClick={() => mover(nDias)}
-                      className="flex-1 flex items-center justify-center gap-1 text-white font-bold py-1.5" style={{ background: '#1E2A44' }}>
+                      className="flex-1 flex items-center justify-center gap-1 text-[#111827] font-bold py-1.5" style={{ background: '#FFFFFF' }}>
                       Próx. <ChevronRight size={13} />
                     </button>
                   </div>
@@ -204,11 +204,11 @@ export default function PmsAvailabilityView() {
                     <span className="w-[68px]">Allotment:</span>
                     <span className="relative flex-1">
                       <input readOnly value={allotment ? allotment.code : '(Todos)'}
-                        className="border border-[#E6E8EC] p-1 pr-6 bg-[#F7F8FA] w-full" />
+                        className="border border-[#E6E8EC] p-1 pr-6 bg-[#EEF1F5] w-full" />
                       <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
                     </span>
                     <button onClick={() => setShowBlockPicker(true)} title="Procurar bloco"
-                      className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#1E2A44] text-white"><Plus size={13} /></button>
+                      className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]"><Plus size={13} /></button>
                   </label>
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input type="checkbox" checked={includeAllotment} onChange={(e) => setIncludeAllotment(e.target.checked)} />
@@ -225,7 +225,7 @@ export default function PmsAvailabilityView() {
 
             <button onClick={() => refetch()}
               className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px] m-2"
-              style={{ background: '#1E2A44' }}>
+              style={{ background: '#2563EB' }}>
               <RefreshCw size={20} /> Pesquisar
             </button>
           </div>
@@ -239,20 +239,20 @@ export default function PmsAvailabilityView() {
           ) : (
             <ResponsiveContainer width="100%" height={420}>
               <BarChart data={chartData} barCategoryGap="8%" barGap={0}>
-                <XAxis dataKey="dia" tick={{ fontSize: 11 }} axisLine={{ stroke: '#1E2A44' }} />
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={{ stroke: '#1E2A44' }} />
+                <XAxis dataKey="dia" tick={{ fontSize: 11 }} axisLine={{ stroke: '#2563EB' }} />
+                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={{ stroke: '#2563EB' }} />
                 <Tooltip />
-                <Bar dataKey="Livres" stackId="a" fill="#3B82F6" stroke="#1E2A44" strokeWidth={1}>
-                  <LabelList dataKey="Livres" position="insideTop" style={{ fontWeight: 700, fontSize: 15, fill: '#1E2A44' }}
+                <Bar dataKey="Livres" stackId="a" fill="#3B82F6" stroke="#2563EB" strokeWidth={1}>
+                  <LabelList dataKey="Livres" position="insideTop" style={{ fontWeight: 700, fontSize: 15, fill: '#2563EB' }}
                     formatter={(v: any) => (v ? String(v) : '')} />
                 </Bar>
                 <Bar dataKey="Reservado" stackId="a" fill="#FEF2F2" stroke="#DC2626" strokeWidth={1}>
-                  <LabelList dataKey="Reservado" position="top" style={{ fontWeight: 700, fontSize: 12, fill: '#1E2A44' }}
+                  <LabelList dataKey="Reservado" position="top" style={{ fontWeight: 700, fontSize: 12, fill: '#2563EB' }}
                     formatter={(v: any) => (v ? String(v) : '')} />
                 </Bar>
                 <Bar dataKey="Opção" stackId="a" fill="#3B82F6" stroke="#3B82F6" strokeWidth={1} />
-                <Bar dataKey="Lista Espera" stackId="a" fill="#1E2A44" stroke="#1E2A44" strokeWidth={1} />
-                <Bar dataKey="Allotment" stackId="a" fill="#3B82F6" stroke="#1E2A44" strokeWidth={1} />
+                <Bar dataKey="Lista Espera" stackId="a" fill="#2563EB" stroke="#2563EB" strokeWidth={1} />
+                <Bar dataKey="Allotment" stackId="a" fill="#3B82F6" stroke="#2563EB" strokeWidth={1} />
                 <Bar dataKey="Overbook" stackId="a" fill="#DC2626" stroke="#DC2626" strokeWidth={1} />
               </BarChart>
             </ResponsiveContainer>
@@ -271,7 +271,7 @@ export default function PmsAvailabilityView() {
           )}
         </div>
 
-        <div className="flex items-center justify-between px-2 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[11px] text-gray-600">
+        <div className="flex items-center justify-between px-2 py-1.5 border-t border-[#E6E8EC] bg-[#EEF1F5] text-[11px] text-gray-600">
           <button onClick={() => setShowNewRes(true)} className="flex items-center gap-2 text-[#111827] hover:text-black">
             <span className="w-7 h-7 rounded-full flex items-center justify-center text-white" style={{ background: '#3B82F6' }}>
               <BedDouble size={14} />

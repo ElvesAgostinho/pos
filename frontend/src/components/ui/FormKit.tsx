@@ -16,7 +16,7 @@ export function FormSection({ title, hint, children, cols = 2 }:
   return (
     <div className="bg-white border border-[#E6E8EC] mb-3" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.10)' }}>
       <div className="px-3 py-1.5 border-b border-[#E6E8EC] text-[12px] font-bold text-[#111827]"
-        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }}>
+        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #EEF1F5)' }}>
         {title}
         {hint && <span className="ml-2 font-normal text-[11px] text-gray-500">{hint}</span>}
       </div>
@@ -27,7 +27,7 @@ export function FormSection({ title, hint, children, cols = 2 }:
   );
 }
 
-const inputCls = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white w-full outline-none focus:border-[#1E2A44]';
+const inputCls = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white w-full outline-none focus:border-[#E6E8EC]';
 const inputStyle = { boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.12)' };
 
 interface FieldProps {
@@ -62,7 +62,7 @@ export function Field({ label, value, onChange, required, help, type = 'text', o
       ) : (
         <input type={type} value={value ?? ''} onChange={(e) => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
           disabled={disabled} className={inputCls}
-          style={{ ...inputStyle, borderColor: missing ? '#DC2626' : undefined, background: disabled ? '#F7F8FA' : '#FFFFFF' }} />
+          style={{ ...inputStyle, borderColor: missing ? '#DC2626' : undefined, background: disabled ? '#EEF1F5' : '#FFFFFF' }} />
       )}
       {/* Só se diz o que falta QUANDO falta — nunca uma parede de avisos. */}
       {missing && help && <span className="text-[10px] text-[#DC2626]">{help}</span>}
@@ -72,13 +72,13 @@ export function Field({ label, value, onChange, required, help, type = 'text', o
 }
 
 export const btnPrimary = {
-  className: 'px-4 py-1.5 text-[12px] font-bold text-white border border-[#1E2A44]',
-  style: { background: 'linear-gradient(to bottom, #1E2A44, #3B82F6)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
+  className: 'px-4 py-1.5 text-[12px] font-bold text-white border border-[#E6E8EC]',
+  style: { background: 'linear-gradient(to bottom, #2563EB, #3B82F6)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
 };
 export const btnNormal = {
   className: 'px-3 py-1.5 text-[12px] font-semibold border border-[#E6E8EC] text-[#111827]',
   style: {
-    background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4)',
+    background: 'linear-gradient(to bottom, #FFFFFF, #EEF1F5 48%, #F1F2F4 52%, #F1F2F4)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
   },
 };

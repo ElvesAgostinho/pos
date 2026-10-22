@@ -74,7 +74,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo documento' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -102,7 +102,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
           </Row>
           <Row label="Número:">
             <input value={d.current_number ?? 0} readOnly
-              className={`${inp} w-[170px] bg-[#F7F8FA] text-[#6B7280]`} style={inputStyle} />
+              className={`${inp} w-[170px] bg-[#EEF1F5] text-[#6B7280]`} style={inputStyle} />
           </Row>
           <Row label="Descrição:">
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
@@ -131,11 +131,11 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
 
         {/* Separadores */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex border-b-2 border-[#1E2A44] px-2">
+          <div className="flex border-b-2 border-[#E6E8EC] px-2">
             {TABS.map(([k, l]) => (
               <button key={k} onClick={() => setTab(k)}
                 className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k
-                  ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+                  ? 'border-[#E6E8EC] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
                 {l}
               </button>
             ))}
@@ -208,7 +208,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
             {tab === 'print' && (
               <div className="border border-[#E6E8EC]">
                 <table className="w-full text-[12px] border-collapse">
-                  <thead><tr className="bg-[#F7F8FA]">
+                  <thead><tr className="bg-[#EEF1F5]">
                     {['Tipo', 'Código', 'Descrição', 'Modelo', 'Ordem', 'Ativo'].map((h) => (
                       <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
                     ))}
@@ -216,7 +216,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                   <tbody>
                     {pms.map((m, i) => (
                       <tr key={i} onClick={() => setSel(i)}
-                        className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#F7F8FA]' : ''}`}>
+                        className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#EEF1F5]' : ''}`}>
                         <td className="p-0.5"><input value={m.kind} onChange={(e) => setPm(i, 'kind', e.target.value)} className={cell} /></td>
                         <td className="p-0.5 w-[70px]"><input value={m.code} onChange={(e) => setPm(i, 'code', e.target.value)} className={cell} /></td>
                         <td className="p-0.5"><input value={m.description || ''} onChange={(e) => setPm(i, 'description', e.target.value)} className={cell} /></td>
@@ -230,16 +230,16 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
                     )}
                   </tbody>
                 </table>
-                <div className="flex items-center gap-4 px-3 py-2 bg-[#F7F8FA] border-t border-[#F1F2F4]">
+                <div className="flex items-center gap-4 px-3 py-2 bg-[#EEF1F5] border-t border-[#F1F2F4]">
                   <button onClick={() => set('print_models', [...pms, {
                     kind: 'Normal', code: String(pms.length + 1), description: 'Normal',
                     model_path: '', sort_order: pms.length + 1, is_active: true,
-                  }])} className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1">
-                    <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+                  }])} className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1">
+                    <span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center text-[11px]">＋</span> Adicionar
                   </button>
                   <button onClick={() => { if (sel !== null) { set('print_models', pms.filter((_, j) => j !== sel)); setSel(null); } }}
                     disabled={sel === null}
-                    className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
+                    className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1 disabled:opacity-35">
                     <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[11px]">−</span> Apagar
                   </button>
                 </div>
@@ -276,7 +276,7 @@ export default function StockDocEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

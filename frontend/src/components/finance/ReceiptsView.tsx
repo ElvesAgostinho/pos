@@ -26,7 +26,7 @@ export default function ReceiptsView() {
     <ClassicWindow title="Recebimentos (Financeiro)" icon={<ArrowDownCircle size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{receipts.length} recebimento(s) · confirmar credita a conta de tesouraria</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <select value={draft.account} onChange={(e) => setDraft({ ...draft, account: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">— conta —</option>{accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>

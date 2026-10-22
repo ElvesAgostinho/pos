@@ -56,7 +56,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo imposto' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -106,7 +106,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
         <div className="flex mt-4 max-w-[860px]" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <div className="flex-1">
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#F7F8FA]">
+              <thead><tr className="bg-[#EEF1F5]">
                 <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Válido de</th>
                 <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Válido até</th>
                 <th className="text-right font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Valor</th>
@@ -114,7 +114,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
               <tbody>
                 {vs.map((v, i) => (
                   <tr key={i} onClick={() => setSel(i)}
-                    className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                    className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                     <td className="p-0.5"><input type="date" value={(v.valid_from || '').slice(0, 10)}
                       onChange={(e) => setV(i, 'valid_from', e.target.value)} className={cell} /></td>
                     <td className="p-0.5"><input type="date" value={(v.valid_to || '').slice(0, 10)}
@@ -132,19 +132,19 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
             </table>
           </div>
 
-          <div className="w-[160px] bg-[#F7F8FA] border-l border-[#F1F2F4] py-2">
-            <button onClick={addV} className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA]">
-              <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+          <div className="w-[160px] bg-[#EEF1F5] border-l border-[#F1F2F4] py-2">
+            <button onClick={addV} className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#EEF1F5]">
+              <span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={delV} disabled={sel === null}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA] disabled:opacity-35">
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#EEF1F5] disabled:opacity-35">
               <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[11px]">−</span> Apagar
             </button>
           </div>
         </div>
 
         {overlap && (
-          <div className="max-w-[860px] mt-2 px-3 py-2 bg-[#F7F8FA] border border-[#E6E8EC] text-[11px] text-[#111827]">
+          <div className="max-w-[860px] mt-2 px-3 py-2 bg-[#EEF1F5] border border-[#E6E8EC] text-[11px] text-[#111827]">
             <b>Atenção:</b> há períodos sobrepostos — duas taxas válidas no mesmo dia.
             O sistema usa a mais recente, mas isto costuma ser um erro de datas.
           </div>
@@ -157,7 +157,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

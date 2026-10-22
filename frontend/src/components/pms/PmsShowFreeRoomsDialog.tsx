@@ -46,8 +46,8 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[1000px] max-h-[75vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="w-[1000px] max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
           Mostrar quartos livres
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -90,7 +90,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
           </label>
           <button onClick={() => refetch()}
             className="w-[130px] flex-shrink-0 flex items-center justify-center gap-2 text-white font-bold text-[12px] py-2"
-            style={{ background: '#1E2A44' }}>
+            style={{ background: '#2563EB' }}>
             <RefreshCw size={16} /> Pesquisar
           </button>
         </div>
@@ -116,7 +116,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
               ]} />
           )}
         </div>
-        <div className="flex justify-between items-center px-3 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC]">
+        <div className="flex justify-between items-center px-3 py-1.5 bg-[#EEF1F5] border-t border-[#E6E8EC]">
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
             className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
             <Hand size={13} /> Selecionar

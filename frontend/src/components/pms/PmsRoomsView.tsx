@@ -5,10 +5,10 @@ import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 
 const STATUS_STYLE: Record<string, string> = {
-  VACANT_CLEAN: 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]',
-  VACANT_DIRTY: 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]',
-  OCCUPIED: 'bg-[#F7F8FA] border-[#DC2626] text-[#B91C1C]',
-  OOO: 'bg-[#F7F8FA] border-[#E6E8EC] text-gray-500',
+  VACANT_CLEAN: 'bg-[#EEF1F5] border-[#E6E8EC] text-[#111827]',
+  VACANT_DIRTY: 'bg-[#EEF1F5] border-[#E6E8EC] text-[#111827]',
+  OCCUPIED: 'bg-[#EEF1F5] border-[#DC2626] text-[#B91C1C]',
+  OOO: 'bg-[#EEF1F5] border-[#E6E8EC] text-gray-500',
 };
 
 const blank = { number: '', room_type: '' };
@@ -50,7 +50,7 @@ export default function PmsRoomsView() {
             {r.status === 'VACANT_DIRTY' && (
               <button onClick={() => setStatus(r.id, 'VACANT_CLEAN')}
                 className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[8px] hover:brightness-110 transition-[filter]"
-                style={{ background: '#1E2A44' }}>
+                style={{ background: '#2563EB' }}>
                 ✔ Marcar como limpo
               </button>
             )}
@@ -63,7 +63,7 @@ export default function PmsRoomsView() {
             )}
             {r.status === 'VACANT_CLEAN' && (
               <button onClick={() => setStatus(r.id, 'OOO')}
-                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold rounded-[8px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA] transition-colors text-[#B91C1C]">
+                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold rounded-[8px] border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5] transition-colors text-[#B91C1C]">
                 ⊘ Pôr fora de serviço
               </button>
             )}
@@ -78,12 +78,12 @@ export default function PmsRoomsView() {
         ))}
         {rows.length === 0 && <div className="col-span-6 text-center text-gray-400 py-6">Sem quartos criados.</div>}
       </div>
-      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', color: '#1E2A44', onClick: () => setShowNew(true) }]} />
+      <Toolbar actions={[{ label: 'Novo Quarto', icon: '＋', color: '#111827', onClick: () => setShowNew(true) }]} />
 
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-          <div className="w-[360px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
-            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>Novo Quarto</div>
+          <div className="w-[360px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
+            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #2563EB, #2563EB)' }}>Novo Quarto</div>
             <div className="p-3 space-y-2 text-[11px]">
               <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
               <label className="flex flex-col">Categoria
@@ -94,7 +94,7 @@ export default function PmsRoomsView() {
             </div>
             <Toolbar actions={[
               { label: 'Cancelar', icon: '✕', color: '#3B82F6', onClick: () => setShowNew(false) },
-              { label: 'Gravar', icon: '💾', color: '#1E2A44', onClick: create },
+              { label: 'Gravar', icon: '💾', color: '#111827', onClick: create },
             ]} />
           </div>
         </div>

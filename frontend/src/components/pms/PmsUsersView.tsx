@@ -43,7 +43,7 @@ export default function PmsUsersView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12px] text-[#6B7280]">
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[12px] text-[#6B7280]">
         <ShieldCheck size={14} />
         A criação de utilizadores, senha e acesso a hotéis é feita em Segurança → Utilizadores. Aqui só se ajusta o acesso aos ecrãs do PMS.
       </div>

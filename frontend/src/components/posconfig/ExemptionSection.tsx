@@ -38,8 +38,8 @@ export default function ExemptionSection() {
 
   const banner = (
     <div className={`flex items-center gap-3 px-3 py-2 text-[12px] border-b ${unlocked
-      ? 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]'
-      : 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]'}`}>
+      ? 'bg-[#EEF1F5] border-[#E6E8EC] text-[#111827]'
+      : 'bg-[#EEF1F5] border-[#E6E8EC] text-[#111827]'}`}>
       <Glyph icon={unlocked ? '🔓' : '🔒'} size={15} />
       {unlocked ? (
         <span>Edição <b>desbloqueada</b>. Cada alteração fica na auditoria com o seu nome.</span>
@@ -50,7 +50,7 @@ export default function ExemptionSection() {
             todas as faturas que a usam e o que a AGT lê no SAF-T.
           </span>
           <button onClick={() => setAsk(true)}
-            className="ml-auto px-3 py-1 bg-[#1E2A44] text-white text-[12px] hover:bg-[#1E2A44]">
+            className="ml-auto px-3 py-1 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC]">
             Desbloquear edição
           </button>
         </>
@@ -80,9 +80,9 @@ export default function ExemptionSection() {
 
       {ask && (
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={fechar}>
-          <div className="bg-[#F7F8FA] border border-[#E6E8EC] w-[560px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[#EEF1F5] border border-[#E6E8EC] w-[560px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold"
-              style={{ background: '#1E2A44' }}>
+              style={{ background: '#2563EB' }}>
               <span>Password</span>
               <button onClick={fechar} className="w-5 h-5 bg-[#DC2626] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
             </div>
@@ -102,7 +102,7 @@ export default function ExemptionSection() {
               </div>
             </div>
             <Toolbar actions={[
-              { icon: '✔', label: check.isPending ? 'A confirmar…' : 'OK', color: '#1E2A44',
+              { icon: '✔', label: check.isPending ? 'A confirmar…' : 'OK', color: '#111827',
                 disabled: !pw, onClick: () => check.mutate() },
               { icon: '✖', label: 'Cancelar', color: '#DC2626', onClick: fechar },
             ]} />

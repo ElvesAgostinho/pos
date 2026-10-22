@@ -29,9 +29,9 @@ const PermissionsMatrixView: React.FC = () => {
     <ClassicWindow title="Matriz de Permissões (ABAC & RBAC)" icon={<Shield size={14} className="text-gray-300" />}>
       <div className="flex flex-col h-full bg-white">
         {/* Toolbar */}
-        <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-1 flex items-center space-x-2 shrink-0">
-           <button className="px-3 py-1 bg-white border border-[#E6E8EC] hover:bg-[#F7F8FA] text-black">Gravar Matriz</button>
-           <button className="px-3 py-1 bg-white border border-[#E6E8EC] hover:bg-[#F7F8FA] text-black">Recarregar</button>
+        <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] p-1 flex items-center space-x-2 shrink-0">
+           <button className="px-3 py-1 bg-white border border-[#E6E8EC] hover:bg-[#EEF1F5] text-black">Gravar Matriz</button>
+           <button className="px-3 py-1 bg-white border border-[#E6E8EC] hover:bg-[#EEF1F5] text-black">Recarregar</button>
            <span className="text-gray-500 ml-4">Selecione as permissões de cruzamento (Módulo vs Perfil)</span>
         </div>
 
@@ -41,9 +41,9 @@ const PermissionsMatrixView: React.FC = () => {
             <div className="p-4 text-gray-500 text-center">Nenhum recurso catalogado. Para inicializar, corra o script de Backfill ou crie recursos na API.</div>
           ) : (
             <table className="w-full text-left border-collapse whitespace-nowrap table-fixed">
-              <thead className="sticky top-0 z-10 bg-[#F7F8FA] border-b border-[#E6E8EC] shadow-sm">
+              <thead className="sticky top-0 z-10 bg-[#EEF1F5] border-b border-[#E6E8EC] shadow-sm">
                 <tr>
-                  <th className="font-normal px-2 py-1 border-r border-[#E6E8EC] w-[250px] bg-[#F7F8FA]">Recurso / Módulo</th>
+                  <th className="font-normal px-2 py-1 border-r border-[#E6E8EC] w-[250px] bg-[#EEF1F5]">Recurso / Módulo</th>
                   {profiles?.map(profile => (
                     <th key={profile.id} className="font-normal px-2 py-1 border-r border-[#E6E8EC] w-[120px] text-center">
                       {profile.name}
@@ -53,7 +53,7 @@ const PermissionsMatrixView: React.FC = () => {
               </thead>
               <tbody>
                 {resources?.map(resource => (
-                  <tr key={resource.id} className="border-b border-[#F1F2F4] hover:bg-[#F7F8FA]">
+                  <tr key={resource.id} className="border-b border-[#F1F2F4] hover:bg-[#EEF1F5]">
                     <td className="px-2 py-1 border-r border-[#F1F2F4] bg-[#FFFFFF]" title={resource.urn}>
                       <span className="font-bold ml-0">{resource.name}</span>
                     </td>

@@ -57,7 +57,7 @@ export function WfcFlowsView() {
   return (
     <ClassicWindow title="Workflow — Fluxos" icon={<GitBranch size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Fluxos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Nome do fluxo" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Evento gatilho" value={f.trigger_event} onChange={(e) => setF({ ...f, trigger_event: e.target.value })} className="border border-[#E6E8EC] p-1 w-40" />
           <input placeholder="Descrição" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className="border border-[#E6E8EC] p-1" />
@@ -86,7 +86,7 @@ export function WfcTasksView() {
   return (
     <ClassicWindow title="Workflow — Tarefas" icon={<ListTodo size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Tarefas: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Título" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Responsável" value={f.assignee} onChange={(e) => setF({ ...f, assignee: e.target.value })} className="border border-[#E6E8EC] p-1 w-28" />
           <select value={f.priority} onChange={(e) => setF({ ...f, priority: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">{Object.entries(PR).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
@@ -143,7 +143,7 @@ export function ProcReturnsView() {
     <ClassicWindow title="Compras — Devoluções a Fornecedor" icon={<Undo2 size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Devoluções: {rows.length}</div>}>
       <div className="flex h-full">
         <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
             <select value={hdr.supplier} onChange={(e) => setHdr({ ...hdr, supplier: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white max-w-[130px]"><option value="">Fornecedor…</option>{suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.commercial_name}</option>)}</select>
             <select value={hdr.warehouse} onChange={(e) => setHdr({ ...hdr, warehouse: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white"><option value="">Armazém…</option>{warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}</select>
             <ClassicButton icon={Plus} label="Nova" onClick={createRet} />
@@ -158,11 +158,11 @@ export function ProcReturnsView() {
         </div>
         <div className="w-1/2 flex flex-col">
           {sel ? <>
-            <div className="flex items-center justify-between p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+            <div className="flex items-center justify-between p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
               <span className="font-bold">{sel.number} · {sel.supplier_name}</span>
               {sel.status !== 'CONFIRMED' ? <ClassicButton icon={CheckCircle} label="Confirmar (saída stock)" onClick={() => doConfirm(sel.id)} /> : <span className="text-[#111827] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
             </div>
-            {sel.status !== 'CONFIRMED' && <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+            {sel.status !== 'CONFIRMED' && <div className="flex flex-wrap items-end gap-2 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
               <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white max-w-[160px]"><option value="">Artigo…</option>{items.map((i: any) => <option key={i.id} value={i.id}>{i.name}</option>)}</select>
               <input type="number" placeholder="Qtd" value={ln.quantity} onChange={(e) => setLn({ ...ln, quantity: e.target.value })} className="border border-[#E6E8EC] p-1 w-16" />
               <ClassicButton icon={Plus} label="Linha" onClick={addLine} />
@@ -225,7 +225,7 @@ export function ComLoyaltyView() {
     <ClassicWindow title="Comercial — Fidelização (Loyalty)" icon={<Award size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Programas: {rows.length}</div>}>
       <div className="flex h-full">
         <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
             <input placeholder="Programa" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
             <input type="number" placeholder="Pts/Kz" value={f.points_per_currency} onChange={(e) => setF({ ...f, points_per_currency: e.target.value })} className="border border-[#E6E8EC] p-1 w-16" title="Pontos por Kz gasto" />
             <input type="number" placeholder="Kz/pt" value={f.redeem_value} onChange={(e) => setF({ ...f, redeem_value: e.target.value })} className="border border-[#E6E8EC] p-1 w-16" title="Valor de resgate por ponto" />
@@ -241,7 +241,7 @@ export function ComLoyaltyView() {
         </div>
         <div className="w-1/2 flex flex-col">
           {sel ? <>
-            <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+            <div className="flex flex-wrap items-end gap-2 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
               <input placeholder="Escalão (Ouro…)" value={t.name} onChange={(e) => setT({ ...t, name: e.target.value })} className="border border-[#E6E8EC] p-1 w-24" />
               <input type="number" placeholder="Min. pts" value={t.min_points} onChange={(e) => setT({ ...t, min_points: e.target.value })} className="border border-[#E6E8EC] p-1 w-20" />
               <input type="number" placeholder="Desc.%" value={t.discount_percent} onChange={(e) => setT({ ...t, discount_percent: e.target.value })} className="border border-[#E6E8EC] p-1 w-16" />
@@ -275,7 +275,7 @@ export function FinReconciliationView() {
   return (
     <ClassicWindow title="Finanças — Reconciliação Bancária" icon={<Banknote size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Reconciliações: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <select value={f.account} onChange={(e) => setF({ ...f, account: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white"><option value="">Conta…</option>{accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name} ({a.code})</option>)}</select>
           {acc && <span className="text-gray-600">Sistema: <b>{AOA(acc.balance)}</b></span>}
           <input type="date" value={f.statement_date} onChange={(e) => setF({ ...f, statement_date: e.target.value })} className="border border-[#E6E8EC] p-1" />
@@ -304,7 +304,7 @@ export function AdmGroupsView() {
   return (
     <ClassicWindow title="Administração — Grupos Empresariais" icon={<Building size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Grupos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Nome do grupo" value={name} onChange={(e) => setName(e.target.value)} className="border border-[#E6E8EC] p-1" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
@@ -327,10 +327,10 @@ export function AdmModuleStatusView() {
   return (
     <ClassicWindow title="Administração — Estado dos Módulos" icon={<ShieldCheck size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Módulos e funcionalidades licenciadas</div>}>
       <div className="p-3 grid grid-cols-2 gap-3">
-        <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Módulos ativos ({modules.length})</div>
+        <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Módulos ativos ({modules.length})</div>
           <div className="p-2 text-[12px]">{modules.length ? modules.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F1F2F4] flex items-center gap-1"><Check size={12} strokeWidth={3} className="text-[#111827]" /> {typeof m === 'string' ? m : (m.name || m.code || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem informação.</div>}</div>
         </div>
-        <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Funcionalidades ({features.length})</div>
+        <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Funcionalidades ({features.length})</div>
           <div className="p-2 text-[12px]">{features.length ? features.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F1F2F4]">• {typeof m === 'string' ? m : (m.name || m.key || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem restrições / sem informação.</div>}</div>
         </div>
       </div>

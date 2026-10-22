@@ -45,7 +45,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -80,7 +80,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
         <div className="flex">
           {([['lang', 'Línguas'], ['cur', 'Moedas']] as const).map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-8 py-2 text-[12px] font-semibold ${tab === k ? 'bg-[#1E2A44] text-white' : 'bg-[#F7F8FA] text-[#111827] hover:bg-[#F7F8FA]'}`}>
+              className={`px-8 py-2 text-[12px] font-semibold ${tab === k ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'bg-[#EEF1F5] text-[#111827] hover:bg-[#EEF1F5]'}`}>
               {label}
             </button>
           ))}
@@ -89,7 +89,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
         <div className="flex" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <table className="flex-1 text-[12px] border-collapse">
             <thead>
-              <tr className="bg-[#F7F8FA] text-[#111827]">
+              <tr className="bg-[#EEF1F5] text-[#111827]">
                 {(tab === 'lang'
                   ? ['Código de Cultura', 'Descrição', 'Ordem', 'Legacy Code', 'Por omissão']
                   : ['Código', 'Descrição', 'Símbolo', 'Taxa', 'Por omissão']
@@ -130,11 +130,11 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
           </table>
 
           <div className="w-[150px] flex-shrink-0 border-l border-[#F1F2F4] p-2 space-y-1">
-            <button onClick={add} className="flex items-center gap-2 text-[12px] w-full px-1 py-1 hover:bg-[#F7F8FA]">
-              <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar
+            <button onClick={add} className="flex items-center gap-2 text-[12px] w-full px-1 py-1 hover:bg-[#EEF1F5]">
+              <span className="w-6 h-6 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center">＋</span> Adicionar
             </button>
             <button onClick={() => list.length && del(list.length - 1)} disabled={!list.length}
-              className="flex items-center gap-2 text-[12px] w-full px-1 py-1 hover:bg-[#F7F8FA] disabled:opacity-35">
+              className="flex items-center gap-2 text-[12px] w-full px-1 py-1 hover:bg-[#EEF1F5] disabled:opacity-35">
               <span className="w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center">−</span> Apagar
             </button>
           </div>
@@ -148,7 +148,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

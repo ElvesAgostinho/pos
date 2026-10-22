@@ -35,9 +35,9 @@ export default function AccountsReceivableView() {
     <ClassicWindow title="Contas a Receber — Clientes (conta corrente)" icon={<HandCoins size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Faturas em dívida: <b>{money(totalDue)}</b> · liquidadas por recebimentos que entram na tesouraria</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-1 bg-[#F7F8FA] border-b border-[#E6E8EC] px-2 pt-1 text-[11px]">
-          <button onClick={() => setTab('invoices')} className={`px-3 py-1.5 border border-b-0 font-bold ${tab === 'invoices' ? 'bg-white text-[#6B7280]' : 'bg-[#F7F8FA] text-gray-600'}`}>Faturas a receber</button>
-          <button onClick={() => setTab('customers')} className={`px-3 py-1.5 border border-b-0 font-bold flex items-center gap-1 ${tab === 'customers' ? 'bg-white text-[#6B7280]' : 'bg-[#F7F8FA] text-gray-600'}`}><Users size={12} />Conta corrente</button>
+        <div className="flex items-center gap-1 bg-[#EEF1F5] border-b border-[#E6E8EC] px-2 pt-1 text-[11px]">
+          <button onClick={() => setTab('invoices')} className={`px-3 py-1.5 border border-b-0 font-bold ${tab === 'invoices' ? 'bg-white text-[#6B7280]' : 'bg-[#EEF1F5] text-gray-600'}`}>Faturas a receber</button>
+          <button onClick={() => setTab('customers')} className={`px-3 py-1.5 border border-b-0 font-bold flex items-center gap-1 ${tab === 'customers' ? 'bg-white text-[#6B7280]' : 'bg-[#EEF1F5] text-gray-600'}`}><Users size={12} />Conta corrente</button>
         </div>
         <div className="flex-1 overflow-hidden">
           {tab === 'invoices' ? (

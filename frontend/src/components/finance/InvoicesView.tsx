@@ -34,7 +34,7 @@ export default function InvoicesView() {
     <ClassicWindow title="Faturação (Financeiro / AR)" icon={<FileText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{invoices.length} fatura(s) · emitir fixa a numeração; marcar paga liquida</div>}>
       <div className="flex flex-col h-full">
-        <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px] space-y-1">
+        <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px] space-y-1">
           <div className="flex flex-wrap items-end gap-2">
             <input placeholder="Cliente" value={customer} onChange={(e) => setCustomer(e.target.value)} className="border border-[#E6E8EC] p-1" />
             <input placeholder="NIF" value={taxId} onChange={(e) => setTaxId(e.target.value)} className="border border-[#E6E8EC] p-1 w-28" />

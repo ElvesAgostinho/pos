@@ -21,8 +21,8 @@ export default function PmsPriceViewDialog({ reservation: r, onClose }: { reserv
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[720px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
+      <div className="w-[720px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
           Visualizar Preço
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -32,7 +32,7 @@ export default function PmsPriceViewDialog({ reservation: r, onClose }: { reserv
         <div className="p-3 text-[12px]">
           <div className="font-semibold mb-2">{r.confirmation} {r.guest_name}</div>
           <table className="w-full border-collapse mb-3">
-            <thead style={{ background: '#F7F8FA' }}>
+            <thead style={{ background: '#EEF1F5' }}>
               <tr><th className="text-left px-2 py-1.5 border-b border-[#E6E8EC]">Data</th><th className="text-right px-2 py-1.5 border-b border-[#E6E8EC]">Alojamento</th><th className="text-right px-2 py-1.5 border-b border-[#E6E8EC]">Total</th></tr>
             </thead>
             <tbody>
@@ -48,7 +48,7 @@ export default function PmsPriceViewDialog({ reservation: r, onClose }: { reserv
             <span>Saldo: {folio ? money(folio.balance) : money(total)}</span>
           </div>
         </div>
-        <div className="flex items-center justify-between px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC] flex-shrink-0">
           <button disabled className="flex items-center gap-1.5 text-[12px] text-gray-400 cursor-not-allowed"><RefreshCw size={13} /> Recálculo de Preços</button>
           <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={9} strokeWidth={3} /></span>

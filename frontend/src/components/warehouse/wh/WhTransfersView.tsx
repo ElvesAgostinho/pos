@@ -40,7 +40,7 @@ export default function WhTransfersView() {
       <div className="flex h-full">
         {/* Documentos */}
         <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
             <select value={hdr.source} onChange={(e) => setHdr({ ...hdr, source: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
               <option value="">Origem…</option>{warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
@@ -64,14 +64,14 @@ export default function WhTransfersView() {
         <div className="w-1/2 flex flex-col">
           {sel ? (
             <>
-              <div className="flex items-center justify-between p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+              <div className="flex items-center justify-between p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
                 <span className="font-bold">{sel.number} · {sel.source_name} → {sel.destination_name}</span>
                 {sel.status !== 'CONFIRMED'
                   ? <ClassicButton icon={CheckCircle} label="Confirmar" onClick={() => confirm.mutate(sel.id!)} />
                   : <span className="text-[#111827] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
               </div>
               {sel.status !== 'CONFIRMED' && (
-                <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+                <div className="flex flex-wrap items-end gap-2 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
                   <input placeholder="Pesquisar artigo" value={itemSearch} onChange={(e) => setItemSearch(e.target.value)} className="border border-[#E6E8EC] p-1 w-28" />
                   <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white max-w-[150px]">
                     <option value="">Artigo…</option>{items.map((i: any) => <option key={i.id} value={i.id}>{i.name}</option>)}

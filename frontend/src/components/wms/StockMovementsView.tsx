@@ -69,7 +69,7 @@ export default function StockMovementsView() {
           </>
         }
       >
-        <div className="p-4 flex flex-col h-full bg-[#F7F8FA]">
+        <div className="p-4 flex flex-col h-full bg-[#EEF1F5]">
           {/* Header */}
           <div className="bg-white border border-[#E6E8EC] p-3 mb-3 flex space-x-4">
             <div>
@@ -107,12 +107,12 @@ export default function StockMovementsView() {
 
           {/* Lines */}
           <div className="flex-1 flex flex-col bg-white border border-[#E6E8EC]">
-            <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-1 flex">
+            <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] p-1 flex">
                <ClassicButton icon={Plus} label="Adicionar Linha" onClick={() => setLines([...lines, { quantity: 1, conversion_factor: 1 }])} />
             </div>
             <div className="flex-1 overflow-auto">
               <table className="w-full text-[11px] border-collapse">
-                <thead className="bg-[#F7F8FA] border-b border-[#E6E8EC]">
+                <thead className="bg-[#EEF1F5] border-b border-[#E6E8EC]">
                   <tr>
                     <th className="p-1 border-r border-[#F1F2F4] text-left">Artigo</th>
                     <th className="p-1 border-r border-[#F1F2F4] text-left">Armazém/Local Origem</th>

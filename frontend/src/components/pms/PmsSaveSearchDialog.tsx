@@ -10,8 +10,8 @@ export default function PmsSaveSearchDialog({ initial, onCancel, onConfirm }: {
   const [nome, setNome] = useState(initial);
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[380px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="w-[380px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[12px] font-bold" style={{ background: '#FFFFFF' }}>
           Nova pesquisa
           <button onClick={onCancel} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -26,10 +26,10 @@ export default function PmsSaveSearchDialog({ initial, onCancel, onConfirm }: {
               className="border border-[#E6E8EC] p-1.5 bg-white" />
           </label>
         </div>
-        <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC]">
-          <button onClick={onCancel} className="px-3 py-1 text-[12px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">Cancelar</button>
+        <div className="flex justify-end gap-2 px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC]">
+          <button onClick={onCancel} className="px-3 py-1 text-[12px] border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5]">Cancelar</button>
           <button onClick={() => nome.trim() && onConfirm(nome.trim())} disabled={!nome.trim()}
-            className="px-3 py-1 text-[12px] font-semibold text-white disabled:opacity-50" style={{ background: '#1E2A44' }}>
+            className="px-3 py-1 text-[12px] font-semibold text-[#111827] disabled:opacity-50" style={{ background: '#FFFFFF' }}>
             OK
           </button>
         </div>

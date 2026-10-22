@@ -126,8 +126,8 @@ export default function PosReports() {
         <html><head><title>${d.title}</title><style>
           body{font-family:'Segoe UI',sans-serif;font-size:12px;padding:24px}
           h1{font-size:18px;margin:0 0 4px} .meta{color:#3B82F6;font-size:11px;margin-bottom:14px}
-          table{width:100%;border-collapse:collapse} th{background:#F7F8FA;text-align:left;padding:5px;border:1px solid #F1F2F4}
-          td{padding:4px 5px;border:1px solid #F1F2F4} tfoot td{font-weight:bold;background:#F7F8FA}
+          table{width:100%;border-collapse:collapse} th{background:#EEF1F5;text-align:left;padding:5px;border:1px solid #F1F2F4}
+          td{padding:4px 5px;border:1px solid #F1F2F4} tfoot td{font-weight:bold;background:#EEF1F5}
           .r{text-align:right}
         </style></head><body>
         <h1>${d.title}</h1>
@@ -207,24 +207,24 @@ export default function PosReports() {
         </div>
 
         {/* ── barra do visualizador — como o sistema de referência ── */}
-        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-[#F1F2F4] bg-[#F7F8FA] flex-shrink-0 text-[12px]">
+        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-[#F1F2F4] bg-[#EEF1F5] flex-shrink-0 text-[12px]">
           <button title="Primeira página" disabled={pagina <= 1} onClick={() => setPagina(1)}
-            className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7F8FA]">|◀</button>
+            className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#EEF1F5]">|◀</button>
           <button title="Página anterior" disabled={pagina <= 1} onClick={() => setPagina((p) => Math.max(1, p - 1))}
-            className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7F8FA]">◀</button>
+            className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#EEF1F5]">◀</button>
           <input value={pagina} onChange={(e) => setPagina(Math.min(totalPaginas, Math.max(1, Number(e.target.value) || 1)))}
             className="w-[42px] text-center border border-[#E6E8EC] py-1" style={inputStyle} />
           <span className="text-[#6B7280] px-1">of {totalPaginas}</span>
           <button title="Página seguinte" disabled={pagina >= totalPaginas} onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-            className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7F8FA]">▶</button>
+            className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#EEF1F5]">▶</button>
           <button title="Última página" disabled={pagina >= totalPaginas} onClick={() => setPagina(totalPaginas)}
-            className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7F8FA]">▶|</button>
+            className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#EEF1F5]">▶|</button>
 
           <span className="w-px h-5 bg-[#DBEAFE] mx-2" />
           <button title="Atualizar" onClick={() => correr.mutate()}
-            className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">↻</button>
+            className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5]">↻</button>
           <button title="Voltar aos parâmetros" onClick={voltar}
-            className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">←</button>
+            className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5]">←</button>
 
           <span className="w-px h-5 bg-[#DBEAFE] mx-2" />
           <select value={zoom} onChange={(e) => setZoom(Number(e.target.value))}
@@ -234,9 +234,9 @@ export default function PosReports() {
 
           <span className="w-px h-5 bg-[#DBEAFE] mx-2" />
           <button title="Guardar (CSV)" onClick={exportar}
-            className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA] inline-flex"><Glyph icon="💾" size={14} /></button>
+            className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5] inline-flex"><Glyph icon="💾" size={14} /></button>
           <button title="Imprimir" onClick={imprimir}
-            className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA] inline-flex"><Glyph icon="🖨" size={14} /></button>
+            className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5] inline-flex"><Glyph icon="🖨" size={14} /></button>
 
           <span className="w-px h-5 bg-[#DBEAFE] mx-2" />
           <input value={procurar} onChange={(e) => setProcurar(e.target.value)}
@@ -323,7 +323,7 @@ export default function PosReports() {
                 ))}
               </div>
               <button onClick={() => correr.mutate()} disabled={!podeExibir || correr.isPending}
-                className="flex-shrink-0 px-6 py-2.5 bg-[#F7F8FA] border border-[#E6E8EC] hover:enabled:bg-[#F7F8FA] text-[12px] font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                className="flex-shrink-0 px-6 py-2.5 bg-[#EEF1F5] border border-[#E6E8EC] hover:enabled:bg-[#EEF1F5] text-[12px] font-medium disabled:opacity-50 disabled:cursor-not-allowed">
                 {correr.isPending ? 'A gerar…' : 'Exibir Relatório'}
               </button>
             </div>
@@ -372,9 +372,9 @@ export default function PosReports() {
               <button key={r.code} onClick={() => abrirRelatorio(r, pasta)}
                 className="flex items-start gap-3 text-left hover:bg-[#FFFFFF] p-2">
                 <span className="w-7 h-8 flex-shrink-0 bg-white border border-[#E6E8EC] relative">
-                  <span className="absolute inset-x-1 top-1.5 h-px bg-[#F7F8FA]" />
-                  <span className="absolute inset-x-1 top-3 h-px bg-[#F7F8FA]" />
-                  <span className="absolute inset-x-1 top-[18px] h-px bg-[#F7F8FA]" />
+                  <span className="absolute inset-x-1 top-1.5 h-px bg-[#EEF1F5]" />
+                  <span className="absolute inset-x-1 top-3 h-px bg-[#EEF1F5]" />
+                  <span className="absolute inset-x-1 top-[18px] h-px bg-[#EEF1F5]" />
                 </span>
                 <span className="text-[12px] text-[#111827] leading-5">{r.name}</span>
               </button>

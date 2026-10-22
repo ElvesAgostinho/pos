@@ -44,8 +44,8 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[1100px] max-h-[80vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
+      <div className="w-[1100px] max-h-[80vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
           Atribuição rápida de quartos
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -81,7 +81,7 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
             )}
           </div>
         </div>
-        <div className="flex items-stretch gap-3 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[11px] flex-shrink-0">
+        <div className="flex items-stretch gap-3 px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC] text-[11px] flex-shrink-0">
           <label className="flex flex-col gap-0.5 flex-1">Reservation info:
             <textarea readOnly rows={2} className="border border-[#E6E8EC] p-1 bg-white resize-none"
               value={selRes ? `${selRes.confirmation} · ${selRes.guest_name} · ${selRes.room_type_name} · ${selRes.check_in} → ${selRes.check_out}` : ''} />

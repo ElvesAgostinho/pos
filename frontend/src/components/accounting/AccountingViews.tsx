@@ -55,7 +55,7 @@ export function AccChartView() {
   return (
     <ClassicWindow title="Plano de Contas (PGC-AO)" icon={<BookOpen size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Contas: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Código" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#E6E8EC] p-1 w-20" />
           <input placeholder="Nome da conta" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={f.account_class} onChange={(e) => setF({ ...f, account_class: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">{Object.entries(CLASSES).map(([k, v]) => <option key={k} value={k}>{k} · {v}</option>)}</select>
@@ -147,7 +147,7 @@ export function AccEntriesView() {
                 <input placeholder="Descrição" value={hdr.description} onChange={(e) => setHdr({ ...hdr, description: e.target.value })} className="border border-[#E6E8EC] p-1 flex-1" />
               </div>
               <table className="w-full border-collapse">
-                <thead><tr className="bg-[#F7F8FA] text-left"><th className="p-1 border border-[#F1F2F4]">Conta</th><th className="p-1 border border-[#F1F2F4] w-24">Débito</th><th className="p-1 border border-[#F1F2F4] w-24">Crédito</th><th className="w-6"></th></tr></thead>
+                <thead><tr className="bg-[#EEF1F5] text-left"><th className="p-1 border border-[#F1F2F4]">Conta</th><th className="p-1 border border-[#F1F2F4] w-24">Débito</th><th className="p-1 border border-[#F1F2F4] w-24">Crédito</th><th className="w-6"></th></tr></thead>
                 <tbody>
                   {lines.map((l, i) => (
                     <tr key={i}>
@@ -188,7 +188,7 @@ export function AccJournalsView() {
     <ClassicWindow title="Diários & Exercícios" icon={<ScrollText size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Diários: {j.rows.length} · Exercícios: {p.rows.length}</div>}>
       <div className="flex h-full">
         <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
             <input placeholder="Cód." value={nj.code} onChange={(e) => setNj({ ...nj, code: e.target.value })} className="border border-[#E6E8EC] p-1 w-14" />
             <input placeholder="Nome do diário" value={nj.name} onChange={(e) => setNj({ ...nj, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
             <select value={nj.journal_type} onChange={(e) => setNj({ ...nj, journal_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">{Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
@@ -199,7 +199,7 @@ export function AccJournalsView() {
           ]} /></div>
         </div>
         <div className="w-1/2 flex flex-col">
-          <div className="p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px] font-bold">Exercícios contabilísticos</div>
+          <div className="p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px] font-bold">Exercícios contabilísticos</div>
           <div className="flex-1 overflow-hidden"><ClassicGrid rowKey="id" data={p.rows} columns={[
             { header: 'Exercício', accessor: 'name', width: '28%' }, { header: 'Início', accessor: 'start_date', width: '24%' }, { header: 'Fim', accessor: 'end_date', width: '24%' },
             { header: 'Estado', accessor: (r: any) => <button onClick={() => toggleClose(r.id)} className={`flex items-center gap-1 ${r.is_closed ? 'text-[#B91C1C]' : 'text-[#111827]'}`}>{r.is_closed ? <><Lock size={11} />Fechado</> : <><Unlock size={11} />Aberto</>}</button>, width: '24%' },
@@ -219,7 +219,7 @@ export function AccLedgerView() {
   return (
     <ClassicWindow title="Razão (movimentos por conta)" icon={<ScrollText size={14} className="text-gray-300" />} footer={<div className="text-gray-600">{data ? `Saldo final: ${AOA(data.final_balance)}` : 'Selecione uma conta'}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <select value={code} onChange={(e) => setCode(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white"><option value="">Conta…</option>{accounts.map((a: any) => <option key={a.id} value={a.code}>{a.code} · {a.name}</option>)}</select>
           {data && <span className="text-gray-600">{data.account.name} ({data.account.normal_side === 'D' ? 'devedora' : 'credora'})</span>}
         </div>
@@ -262,7 +262,7 @@ export function AccIntegrationView() {
   const p = data?.pending ?? { pos: [], purchase: [], treasury: [] };
   const Section = ({ title, source, rows }: any) => (
     <div className="bg-white border border-[#E6E8EC]">
-      <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold flex items-center justify-between">
+      <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold flex items-center justify-between">
         <span>{title} — {rows.length} pendente(s)</span>
         {rows.length > 0 && <ClassicButton icon={Zap} label="Contabilizar" onClick={() => run.mutate([source])} />}
       </div>
@@ -280,7 +280,7 @@ export function AccIntegrationView() {
     <ClassicWindow title="Integração Contabilística (Auto-Posting)" icon={<Zap size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{data ? `${data.total} documento(s) por contabilizar` : '—'}</div>}>
       <div className="p-3 space-y-3">
-        <div className="bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-2 text-[11px] text-gray-700 flex items-center justify-between">
+        <div className="bg-[#EEF1F5] border border-[#E6E8EC] px-3 py-2 text-[11px] text-gray-700 flex items-center justify-between">
           <span>Gera lançamentos automaticamente: <b>Venda POS</b> → Dr Caixa / Cr Vendas+IVA · <b>Compras</b> → Dr Existências / Cr Fornecedores · <b>Tesouraria</b> → Recebimentos/Pagamentos.</span>
           <div className="flex gap-1">
             <ClassicButton icon={RefreshCw} label="Atualizar" onClick={() => qc.invalidateQueries({ queryKey: ['acc', 'autoPost'] })} />
@@ -295,7 +295,7 @@ export function AccIntegrationView() {
 
         {/* Apuramento de resultados (fecho de exercício) */}
         <div className="bg-white border border-[#E6E8EC]">
-          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Apuramento de Resultados (fecho de exercício)</div>
+          <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Apuramento de Resultados (fecho de exercício)</div>
           <div className="p-3 flex items-center justify-between text-[11px]">
             <span className="text-gray-600">Transfere Proveitos (classe 6) e Custos (classe 7) para a conta de Resultado Líquido (88).</span>
             <ClassicButton icon={CheckCircle} label="Apurar resultados" onClick={async () => {
@@ -316,7 +316,7 @@ export function AccStatementsView() {
   const { data: is_ } = useQuery({ queryKey: ['acc', 'incomeStatement'], queryFn: () => accApi.incomeStatement() });
   const { data: bs } = useQuery({ queryKey: ['acc', 'balanceSheet'], queryFn: () => accApi.balanceSheet() });
   const Line = ({ label, value, bold }: any) => <div className={`flex justify-between py-0.5 border-b border-[#F1F2F4] text-[11px] ${bold ? 'font-bold' : ''}`}><span>{label}</span><span>{AOA(value)}</span></div>;
-  const Panel = ({ title, children }: any) => <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">{title}</div><div className="p-2">{children}</div></div>;
+  const Panel = ({ title, children }: any) => <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">{title}</div><div className="p-2">{children}</div></div>;
   return (
     <ClassicWindow title="Demonstrações Financeiras" icon={<FileBarChart size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Demonstração de Resultados + Balanço (PGC-AO)</div>}>
       <div className="p-3 grid grid-cols-2 gap-3">

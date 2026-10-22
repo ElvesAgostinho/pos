@@ -74,7 +74,7 @@ export default function SectorWarehouseMap() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12px]">
+      <div className="flex items-center gap-3 px-3 py-2 bg-[#EEF1F5] border-b border-[#F1F2F4] text-[12px]">
         <span>Pesquisar:</span>
         <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[200px]`} style={inputStyle} />
         <span className="ml-2">Armazém:</span>
@@ -84,15 +84,15 @@ export default function SectorWarehouseMap() {
           {(d.warehouses || []).map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
         </select>
         <button onClick={aplicar} disabled={!armazem || sel.length === 0}
-          className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-35">
-          <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
+          className="flex items-center gap-2 px-2 py-1 hover:bg-[#EEF1F5] disabled:opacity-35">
+          <span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
           Aplicar à seleção ({sel.length})
         </button>
       </div>
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             <th className="w-[36px] border-b border-[#F1F2F4]" />
             <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Descrição</th>
             {(d.outlets || []).map((o: any) => (
@@ -133,7 +133,7 @@ export default function SectorWarehouseMap() {
       </div>
 
       {emFalta > 0 && (
-        <div className="px-3 py-1 text-[11px] text-[#DC2626] bg-[#F7F8FA] border-t border-[#DC2626]">
+        <div className="px-3 py-1 text-[11px] text-[#DC2626] bg-[#EEF1F5] border-t border-[#DC2626]">
           <b>{emFalta}</b> sub-família(s) sem armazém nalgum ponto de venda: aí, a venda desconta do
           armazém errado — e as contagens nunca vão bater certo.
         </div>
@@ -141,7 +141,7 @@ export default function SectorWarehouseMap() {
 
       <Toolbar actions={[
         { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${Object.keys(dirty).length ? ` (${Object.keys(dirty).length})` : ''}`,
-          color: '#1E2A44', onClick: () => save.mutate() },
+          color: '#111827', onClick: () => save.mutate() },
       ]} />
     </div>
   );

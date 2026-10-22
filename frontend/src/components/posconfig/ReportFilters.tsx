@@ -57,7 +57,7 @@ export default function ReportFilters({
   return (
     <div className="border border-[#E6E8EC] bg-white">
       <button onClick={() => setAberto(!aberto)}
-        className="w-full flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-left">
+        className="w-full flex items-center gap-2 px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-left">
         <span className="text-[12px] font-bold text-[#111827] flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtro avançado</span>
         {ativos > 0 && (
           <span className="px-2 py-0.5 bg-[#3B82F6] text-white text-[11px] font-semibold">
@@ -88,7 +88,7 @@ export default function ReportFilters({
                       value={values[x.key] ?? ''}
                       disabled={x.type === 'date' && !!preset}
                       onChange={(e) => setValues?.({ ...values, [x.key]: e.target.value })}
-                      className={`${inp} w-[160px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`}
+                      className={`${inp} w-[160px] disabled:bg-[#EEF1F5] disabled:text-[#6B7280]`}
                       style={inputStyle} />
                   )}
                 </div>
@@ -123,8 +123,8 @@ export default function ReportFilters({
               <button key={c.value}
                 onClick={() => set('compare', adv.compare === c.value ? '' : c.value)}
                 className={`px-3 py-1 text-[12px] border ${adv.compare === c.value
-                  ? 'bg-[#1E2A44] text-white border-[#1E2A44] font-semibold'
-                  : 'bg-white border-[#E6E8EC] hover:bg-[#F7F8FA]'}`}>
+                  ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] border-[#E6E8EC] font-semibold'
+                  : 'bg-white border-[#E6E8EC] hover:bg-[#EEF1F5]'}`}>
                 {c.label}
               </button>
             ))}
@@ -164,7 +164,7 @@ export default function ReportFilters({
                 onClick={() => set('weekdays', dias.includes(i)
                   ? dias.filter((x) => x !== i) : [...dias, i])}
                 className={`w-[46px] py-1 text-[12px] border ${dias.includes(i)
-                  ? 'bg-[#1E2A44] text-white border-[#1E2A44] font-semibold'
+                  ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] border-[#E6E8EC] font-semibold'
                   : 'bg-white border-[#E6E8EC] hover:bg-[#FFFFFF]'}`}>
                 {d}
               </button>

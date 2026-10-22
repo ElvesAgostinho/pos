@@ -81,7 +81,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo monitor' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -134,7 +134,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               ))}
             </div>
             {bts.length === 0 && (
-              <div className="text-[11px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 mt-1">
+              <div className="text-[11px] text-[#111827] bg-[#EEF1F5] border border-[#E6E8EC] px-2 py-1 mt-1">
                 Sem botões, o cozinheiro não consegue avançar nenhum pedido.
               </div>
             )}
@@ -175,11 +175,11 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
           </Row>
 
           <div className="mt-3" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-            <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#E6E8EC]">
+            <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#E6E8EC]">
               Impressoras — as ativas substituem as de origem do pedido
             </div>
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#F7F8FA]">
+              <thead><tr className="bg-[#EEF1F5]">
                 <th className="w-[60px] font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Ativo</th>
                 <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Código</th>
                 <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Descrição</th>
@@ -188,7 +188,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               <tbody>
                 {(printers as any[]).map((p) => (
                   <tr key={p.id} onClick={() => toggleP(p.id)}
-                    className={`border-b border-[#F1F2F4] cursor-pointer ${pids.includes(p.id) ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                    className={`border-b border-[#F1F2F4] cursor-pointer ${pids.includes(p.id) ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                     <td className="text-center py-1.5">
                       <GridCheck checked={pids.includes(p.id)} onChange={() => toggleP(p.id)} />
                     </td>
@@ -209,7 +209,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

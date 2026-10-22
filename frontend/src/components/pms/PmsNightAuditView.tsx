@@ -36,7 +36,7 @@ export default function PmsNightAuditView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex-1 overflow-auto p-4" style={{ background: '#F7F8FA' }}>
+      <div className="flex-1 overflow-auto p-4" style={{ background: '#EEF1F5' }}>
         <div className="border border-[#E6E8EC] p-4 max-w-[480px] mb-6 bg-white">
           <div className="font-bold text-[12px] text-[#111827] mb-3 flex items-center gap-1.5">
             <Glyph icon="🌙" size={16} /> Auditoria da Noite
@@ -52,7 +52,7 @@ export default function PmsNightAuditView() {
               className="border border-[#E6E8EC] p-1.5 text-[12px]" />
           </label>
           <button onClick={run} disabled={running}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1E2A44] text-white text-[12px] font-semibold disabled:opacity-50">
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-semibold disabled:opacity-50">
             <Glyph icon="🌙" size={14} /> {running ? 'A executar…' : 'Executar Auditoria'}
           </button>
           {lastResult && (
@@ -74,7 +74,7 @@ export default function PmsNightAuditView() {
           ]} />
         </div>
       </div>
-      <Toolbar actions={[{ label: 'Atualizar Histórico', icon: '⟳', color: '#1E2A44', onClick: () => refetch() }]} />
+      <Toolbar actions={[{ label: 'Atualizar Histórico', icon: '⟳', color: '#111827', onClick: () => refetch() }]} />
     </div>
   );
 }

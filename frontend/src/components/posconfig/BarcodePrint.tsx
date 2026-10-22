@@ -53,7 +53,7 @@ export default function BarcodePrint() {
       .n{font-size:11px;font-weight:bold;height:26px;overflow:hidden}
       .p{font-size:15px;font-weight:bold;margin-top:2px}
       .bc{font-family:'Libre Barcode 39',monospace;font-size:26px;letter-spacing:1px}
-      .c{font-size:9px;color:#1E2A44}
+      .c{font-size:9px;color:#2563EB}
     </style></head><body>
     ${chosen.flatMap((r: any) => Array.from({ length: sel[r.id] || 1 }).map(() => `
       <div class="lbl">
@@ -104,7 +104,7 @@ export default function BarcodePrint() {
       </div>
 
       {/* Barra de seleção */}
-      <div className="flex items-center gap-5 px-4 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12px]">
+      <div className="flex items-center gap-5 px-4 py-2 bg-[#EEF1F5] border-b border-[#F1F2F4] text-[12px]">
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={rows.length > 0 && Object.keys(sel).length === rows.length} onChange={selectAll} className="w-4 h-4" />
           Selecionar Tudo
@@ -128,7 +128,7 @@ export default function BarcodePrint() {
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0">
-            <tr className="bg-[#F7F8FA] text-[#111827]">
+            <tr className="bg-[#EEF1F5] text-[#111827]">
               <th className="w-[40px] border border-[#F1F2F4]" />
               {['Código de Barras', 'Código', 'Descrição', 'Preço', 'Unidade Venda', 'Quantidade'].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">{h}</th>
@@ -149,7 +149,7 @@ export default function BarcodePrint() {
                 <td className="px-1 py-0.5 border border-[#F1F2F4] w-[90px]">
                   <input type="number" min={1} value={sel[r.id] || ''} disabled={!sel[r.id]}
                     onChange={(e) => setSel((s) => ({ ...s, [r.id]: Number(e.target.value) || 1 }))}
-                    className="w-full border border-[#F1F2F4] px-1 py-0.5 text-[12px] text-right disabled:bg-[#F7F8FA]" />
+                    className="w-full border border-[#F1F2F4] px-1 py-0.5 text-[12px] text-right disabled:bg-[#EEF1F5]" />
                 </td>
               </tr>
             ))}
@@ -163,8 +163,8 @@ export default function BarcodePrint() {
       </div>
 
       <Toolbar actions={[
-        { icon: '🖶', label: 'Imprimir', color: '#1E2A44', disabled: !Object.keys(sel).length, onClick: print },
-        { icon: '⤓', label: 'Exportar', color: '#1E2A44', disabled: !Object.keys(sel).length, onClick: exportCsv },
+        { icon: '🖶', label: 'Imprimir', color: '#111827', disabled: !Object.keys(sel).length, onClick: print },
+        { icon: '⤓', label: 'Exportar', color: '#111827', disabled: !Object.keys(sel).length, onClick: exportCsv },
       ]} />
     </div>
   );

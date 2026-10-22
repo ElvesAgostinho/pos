@@ -47,7 +47,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="bg-white w-[900px] max-w-[95vw] h-[640px] max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 bg-[#1E2A44] text-white">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]">
           <span className="text-[14px] font-bold">Visualizar Logs{nome ? `: ${nome}` : ''}</span>
           <button onClick={onClose} className="text-white/80 hover:text-white"><Glyph icon="✕" size={16} /></button>
         </div>
@@ -64,7 +64,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
 
         <div className="flex-1 overflow-auto">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0 bg-[#F7F8FA]">
+            <thead className="sticky top-0 bg-[#EEF1F5]">
               <tr>
                 {['Log Time', 'Utilizador', 'Campo', 'Antes', 'Depois'].map((h) => (
                   <th key={h} className="text-left px-2 py-1 border border-[#F1F2F4] font-semibold">{h}</th>
@@ -73,7 +73,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
             </thead>
             <tbody>
               {linhas.map((l: any) => (
-                <tr key={l.id} className="hover:bg-[#F7F8FA]">
+                <tr key={l.id} className="hover:bg-[#EEF1F5]">
                   <td className="px-2 py-1 border border-[#F1F2F4] whitespace-nowrap">{new Date(l.changed_at).toLocaleString('pt-PT')}</td>
                   <td className="px-2 py-1 border border-[#F1F2F4]">{l.changed_by}</td>
                   <td className="px-2 py-1 border border-[#F1F2F4] font-mono">{l.field_name}</td>
@@ -88,7 +88,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-3 py-2 border-t border-[#F1F2F4] bg-[#F7F8FA] text-[12px]">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-[#F1F2F4] bg-[#EEF1F5] text-[12px]">
           <span>Página {page} de {totalPaginas}</span>
           <div className="flex items-center gap-1">
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-2 py-1 border border-[#F1F2F4] disabled:opacity-30">‹</button>
@@ -98,7 +98,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
 
         <div className="flex justify-between px-3 py-2 border-t border-[#F1F2F4]">
           <button onClick={exportar}
-            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#1E2A44' }}>
+            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-[#111827]" style={{ background: '#FFFFFF' }}>
             <Glyph icon="⬇" size={13} /> Exportar para Excel
           </button>
           <button onClick={onClose}

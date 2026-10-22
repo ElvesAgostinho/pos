@@ -32,8 +32,8 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1E2A44]">
-      <div className="w-80 bg-[#1E2A44] border border-[#1E2A44] rounded-[16px] p-8 flex flex-col items-center shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#2563EB]">
+      <div className="w-80 bg-[#2563EB] border border-[#E6E8EC] rounded-[16px] p-8 flex flex-col items-center shadow-2xl">
         <Lock size={48} className="text-[#6B7280] mb-6" />
         <h2 className="text-white text-lg font-bold mb-1">Sessão Bloqueada</h2>
         <p className="text-[#6B7280] text-xs mb-4 flex items-center gap-1">
@@ -47,12 +47,12 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
             value={password}
             onChange={(e) => { setPassword(e.target.value); if (error) setError(''); }}
             placeholder="A sua password"
-            className={`w-full h-11 px-3 mb-3 bg-[#1E2A44] text-white text-sm rounded-[8px] border ${error ? 'border-[#DC2626]' : 'border-[#1E2A44]'} focus:outline-none focus:border-[#E6E8EC]`}
+            className={`w-full h-11 px-3 mb-3 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-sm rounded-[8px] border ${error ? 'border-[#DC2626]' : 'border-[#E6E8EC]'} focus:outline-none focus:border-[#E6E8EC]`}
           />
           <button
             type="submit"
             disabled={loading || !password}
-            className="w-full h-11 bg-[#1E2A44] text-white text-sm font-medium rounded-[8px] hover:bg-[#1E2A44] border border-[#1E2A44] flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full h-11 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-sm font-medium rounded-[8px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] border border-[#E6E8EC] flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <Unlock size={16} /> {loading ? 'A verificar…' : 'Desbloquear'}
           </button>

@@ -58,9 +58,9 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
         className={`${inp} w-[110px]`} style={inputStyle} />
       <div className="flex flex-col border border-l-0 border-[#E6E8EC]">
         <button onClick={() => set(Math.min(max, v + 1))}
-          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#F7F8FA] hover:bg-[#F7F8FA]">▲</button>
+          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#EEF1F5] hover:bg-[#EEF1F5]">▲</button>
         <button onClick={() => set(Math.max(min, v - 1))}
-          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#F7F8FA] hover:bg-[#F7F8FA] border-t border-[#E6E8EC]">▼</button>
+          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#EEF1F5] hover:bg-[#EEF1F5] border-t border-[#E6E8EC]">▼</button>
       </div>
     </div>
   );
@@ -68,7 +68,7 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
   const Cor = ({ v, set }: { v: string; set: (c: string) => void }) => (
     <div className="flex items-center gap-2">
       <input value={v} onChange={(e) => set(e.target.value)} className={`${inp} w-[130px] font-mono`} style={inputStyle} />
-      <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(v) ? v : '#1E2A44'}
+      <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(v) ? v : '#2563EB'}
         onChange={(e) => set(e.target.value.toUpperCase())}
         className="w-[38px] h-[26px] border border-[#E6E8EC] p-0 bg-white cursor-pointer" />
     </div>
@@ -76,10 +76,10 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[75]" onClick={onClose}>
-      <div className="bg-[#F7F8FA] border border-[#E6E8EC] w-[720px] max-w-[95vw] shadow-2xl flex flex-col"
+      <div className="bg-[#EEF1F5] border border-[#E6E8EC] w-[720px] max-w-[95vw] shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}>
 
-        <div className="h-[40px] bg-[#1E2A44] flex items-center justify-end px-2">
+        <div className="h-[40px] bg-[#2563EB] flex items-center justify-end px-2">
           <button onClick={onClose}
             className="w-[26px] h-[22px] bg-[#DC2626] text-white font-bold leading-none flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
         </div>
@@ -131,12 +131,12 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
             tipo, label: label.trim() || (tipo === 'PAGE' ? 'NOVA PÁGINA' : 'NOVA SUBPÁGINA'),
             price_level: preco, color: cor, text_color: texto, cols, rows,
           })}
-            className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] px-3 py-1.5">
-            <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
+            className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#EEF1F5] px-3 py-1.5">
+            <span className="w-6 h-6 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
             OK
           </button>
           <button onClick={onClose}
-            className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] px-3 py-1.5">
+            className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#EEF1F5] px-3 py-1.5">
             <span className="w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center"><Glyph icon="✕" size={13} /></span>
             Fechar
           </button>

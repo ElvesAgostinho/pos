@@ -227,7 +227,7 @@ export const SECTIONS = [
 /** Etiqueta + campo, alinhados como nos formulários clássicos. */
 export function Field({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
-    <label className="flex items-center gap-2 text-[12px]">
+    <label className="flex items-center gap-2 text-[12px] min-w-0">
       {/* `min-w` em vez de `w`: a caixa tem uma largura MÍNIMA (para as etiquetas
           curtas alinharem umas com as outras) mas cresce quando o texto é mais
           comprido, em vez de o deixar transbordar por cima do campo ao lado —
@@ -241,9 +241,13 @@ export function Field({ label, children, wide }: { label: string; children: Reac
 export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
   { value: any; onChange: (v: string) => void; options: { value: any; label: string }[]; all?: boolean; allLabel?: string }) {
   return (
+    // `min-w-0` em vez de `min-w-[170px]`: com uma largura MÍNIMA fixa, o campo
+    // recusava-se a encolher dentro de uma coluna estreita, transbordava da
+    // célula e passava por baixo da etiqueta do campo seguinte — era isto que
+    // juntava as palavras nos painéis de filtros. Agora acompanha a coluna.
     <select value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-      className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white min-w-[170px] flex-1"
-      style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.10)' }}>
+      className="border border-[#E6E8EC] rounded-[8px] px-2.5 py-1.5 text-[12px] bg-white
+        min-w-0 w-full flex-1 outline-none focus:border-[#2563EB] transition-colors">
       {all && <option value="">{allLabel}</option>}
       {options.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
     </select>

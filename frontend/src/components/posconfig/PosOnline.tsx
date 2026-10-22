@@ -22,20 +22,20 @@ export default function PosOnline() {
   const Card = ({ label, value, sub, color }: any) => (
     <div className="bg-white px-4 py-3 flex-1" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
       <div className="text-[11px] text-[#6B7280] uppercase tracking-wide">{label}</div>
-      <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#1E2A44' }}>{value}</div>
+      <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#2563EB' }}>{value}</div>
       {sub && <div className="text-[11px] text-[#6B7280]">{sub}</div>}
     </div>
   );
   const panelStyle = { boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft };
   const panelHeader = 'px-3 py-1.5 text-[12px] font-bold border-b';
-  const panelHeaderStyle = { background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 100%)', borderColor: TOKENS.line, color: TOKENS.textOnLight };
+  const panelHeaderStyle = { background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 100%)', borderColor: TOKENS.line, color: TOKENS.textOnLight };
 
   const mesas = d.tables || {};
   const ocupadas = mesas.OCCUPIED || 0;
   const livres = mesas.FREE || 0;
 
   return (
-    <div className="flex-1 overflow-auto bg-[#F7F8FA] p-4">
+    <div className="flex-1 overflow-auto bg-[#EEF1F5] p-4">
       <div className="flex items-center mb-3">
         <span className="text-[16px] font-bold text-[#111827]">Informação Online</span>
         <span className="ml-3 text-[11px] text-[#6B7280]">
@@ -45,13 +45,13 @@ export default function PosOnline() {
 
       <div className="flex gap-3 mb-3">
         <Card label="Vendas de hoje" value={`${money(d.today.total)} Kz`}
-          sub={`${d.today.tickets} conta(s) fechadas`} color="#1E2A44" />
+          sub={`${d.today.tickets} conta(s) fechadas`} color="#2563EB" />
         <Card label="Ticket médio" value={`${money(d.today.avg)} Kz`} />
         <Card label="Contas abertas" value={d.open_tickets.length}
-          sub="por cobrar" color={d.open_tickets.length ? '#DC2626' : '#1E2A44'} />
+          sub="por cobrar" color={d.open_tickets.length ? '#DC2626' : '#2563EB'} />
         <Card label="Mesas ocupadas" value={`${ocupadas}`} sub={`${livres} livre(s)`} />
         <Card label="Cozinha" value={d.kitchen_queue}
-          sub="comandas na fila" color={d.kitchen_queue > 5 ? '#DC2626' : '#1E2A44'} />
+          sub="comandas na fila" color={d.kitchen_queue > 5 ? '#DC2626' : '#2563EB'} />
         <Card label="Caixas abertas" value={d.open_cash} />
       </div>
 
@@ -61,7 +61,7 @@ export default function PosOnline() {
             Contas abertas — quem está a ser servido agora
           </div>
           <table className="w-full text-[12px]">
-            <thead><tr className="bg-[#F7F8FA]">
+            <thead><tr className="bg-[#EEF1F5]">
               {['Conta', 'Onde', 'Operador', 'Há', 'Total'].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{h}</th>
               ))}

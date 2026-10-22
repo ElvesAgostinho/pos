@@ -41,7 +41,7 @@ export default function StockLevelsView() {
     >
       <div className="flex flex-col h-full">
         {/* Filtros */}
-        <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-2 flex items-center space-x-4">
+        <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] p-2 flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <label className="text-gray-700">Pesquisa livre:</label>
             <div className="relative">

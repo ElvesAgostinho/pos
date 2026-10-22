@@ -24,7 +24,7 @@ export default function AgtCertificationView() {
       footer={<div className="text-gray-600">A certificação pertence ao software (fabricante) — instalada pelo fornecedor, não alterável no sistema do cliente</div>}>
       <div className="p-4 space-y-3 max-w-3xl">
         {/* Estado */}
-        <div className={`border p-3 flex items-center gap-3 ${certified ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#E6E8EC]'}`}>
+        <div className={`border p-3 flex items-center gap-3 ${certified ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#E6E8EC]'}`}>
           {certified ? <ShieldCheck size={28} className="text-[#111827]" /> : <ShieldAlert size={28} className="text-[#111827]" />}
           <div className="flex-1">
             <div className={`font-bold text-[12px] ${certified ? 'text-[#111827]' : 'text-[#111827]'}`}>{data?.status_label || '—'}</div>
@@ -38,7 +38,7 @@ export default function AgtCertificationView() {
         {/* Menção estampada na fatura */}
         <div className="bg-white border border-[#E6E8EC] p-3">
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#6B7280] mb-1"><Stamp size={13} /> Menção estampada na fatura</div>
-          <div className="font-mono text-[11px] bg-[#F7F8FA] border border-[#F1F2F4] p-2">{data?.mention_preview || '—'}</div>
+          <div className="font-mono text-[11px] bg-[#EEF1F5] border border-[#F1F2F4] p-2">{data?.mention_preview || '—'}</div>
           <div className="text-[10px] text-gray-500 mt-1">Sai automaticamente no rodapé de cada fatura, no QR Code e no SAF-T.</div>
         </div>
 
@@ -54,7 +54,7 @@ export default function AgtCertificationView() {
         </div>
 
         {/* Porque é que isto não se edita aqui */}
-        <div className="bg-[#F7F8FA] border border-[#E6E8EC] p-3 text-[11px] flex items-start gap-2">
+        <div className="bg-[#EEF1F5] border border-[#E6E8EC] p-3 text-[11px] flex items-start gap-2">
           <Lock size={16} className="text-[#111827] flex-shrink-0 mt-0.5" />
           <div>
             <div className="font-bold text-[#111827]">Porque é que não pode alterar isto</div>

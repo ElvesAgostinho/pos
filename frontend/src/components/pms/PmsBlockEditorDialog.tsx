@@ -66,8 +66,8 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-w-[97vw] bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(85vh, 700px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
+      <div className="w-[900px] max-w-[97vw] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(85vh, 700px)' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
           {selId ? `Bloco — ${form.code}` : copyFrom ? 'Copiar Reserva de Grupo' : 'Nova Reserva de Grupo'}
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
@@ -78,7 +78,7 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
           </div>
         </div>
 
-        <div className="flex border-b border-[#E6E8EC] bg-[#F7F8FA] flex-shrink-0">
+        <div className="flex border-b border-[#E6E8EC] bg-[#EEF1F5] flex-shrink-0">
           {TABS.map((t) => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-3 py-1.5 text-[11px] font-bold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827]' : 'text-gray-600 hover:bg-white/60'}`}>
@@ -105,7 +105,7 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
               <div className="flex gap-4 items-center col-span-2">
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={form.is_guaranteed} onChange={(e) => setForm({ ...form, is_guaranteed: e.target.checked })} /> Garantido</label>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={form.is_elastic} onChange={(e) => setForm({ ...form, is_elastic: e.target.checked })} /> Elastic block</label>
-                <label className="flex items-center gap-1.5">Cor<input type="color" value={form.color || '#1E2A44'} onChange={(e) => setForm({ ...form, color: e.target.value })} className="border border-[#E6E8EC] h-7 w-14" /></label>
+                <label className="flex items-center gap-1.5">Cor<input type="color" value={form.color || '#2563EB'} onChange={(e) => setForm({ ...form, color: e.target.value })} className="border border-[#E6E8EC] h-7 w-14" /></label>
               </div>
             </div>
           )}
@@ -164,9 +164,9 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
           )}
         </div>
 
-        <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
-          <button onClick={onClose} className="px-3 py-1 text-[12px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">Cancelar</button>
-          <button onClick={save} className="px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#1E2A44' }}>Gravar</button>
+        <div className="flex justify-end gap-2 px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC] flex-shrink-0">
+          <button onClick={onClose} className="px-3 py-1 text-[12px] border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5]">Cancelar</button>
+          <button onClick={save} className="px-4 py-1.5 text-[12px] font-bold text-[#111827]" style={{ background: '#FFFFFF' }}>Gravar</button>
         </div>
       </div>
     </div>
@@ -197,7 +197,7 @@ function BlockGrid({ blockId, roomTypes }: { blockId: number; roomTypes: any[] }
         </select>
         <input type="date" value={row.date} onChange={(e) => setRow({ ...row, date: e.target.value })} className="border border-[#E6E8EC] p-1" />
         <input type="number" min={0} value={row.rooms_blocked} onChange={(e) => setRow({ ...row, rooms_blocked: Number(e.target.value) })} className="border border-[#E6E8EC] p-1 w-20" placeholder="Qtd" />
-        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[12px] text-[#111827] border border-[#E6E8EC] hover:bg-[#F7F8FA] rounded-[8px]">
+        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[12px] text-[#111827] border border-[#E6E8EC] hover:bg-[#EEF1F5] rounded-[8px]">
           <span className="text-[#111827]"><Glyph icon="＋" size={14} /></span> Adicionar
         </button>
       </div>

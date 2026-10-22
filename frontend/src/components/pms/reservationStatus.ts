@@ -12,7 +12,7 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 
 export const STATUS_COLOR: Record<string, string> = {
-  OPTION: '#3B82F6', BOOKED: '#3B82F6', CHECKED_IN: '#1E2A44', CHECKED_OUT: '#F1F2F4',
+  OPTION: '#3B82F6', BOOKED: '#3B82F6', CHECKED_IN: '#2563EB', CHECKED_OUT: '#F1F2F4',
   CANCELLED: '#DC2626', NO_SHOW: '#DC2626', WAITLIST: '#D97706',
 };
 

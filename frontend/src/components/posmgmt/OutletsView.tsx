@@ -33,7 +33,7 @@ export default function OutletsView() {
     <ClassicWindow title="Outlets (Pontos de Venda)" icon={<Store size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Nº registos: {outlets.length}</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-28" />
           <input placeholder="Nome do outlet" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={draft.outlet_type} onChange={(e) => setDraft({ ...draft, outlet_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">

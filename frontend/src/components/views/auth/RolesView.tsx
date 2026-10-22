@@ -78,7 +78,7 @@ const RolesView: React.FC = () => {
           </>
         }
       >
-        <div className="p-4 bg-[#F7F8FA] h-full flex flex-col">
+        <div className="p-4 bg-[#EEF1F5] h-full flex flex-col">
           <div className="bg-white border border-[#E6E8EC] p-4 flex flex-col space-y-3">
             <div className="flex space-x-4">
               <div className="w-1/3">

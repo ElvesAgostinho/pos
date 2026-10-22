@@ -34,15 +34,15 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
   const go = (section: string) => onNavigate?.(section);
 
   return (
-    <div className="flex flex-col h-full bg-[#F7F8FA] overflow-auto p-4 gap-4 text-[12px]">
+    <div className="flex flex-col h-full bg-[#EEF1F5] overflow-auto p-4 gap-4 text-[12px]">
       <div className="bg-white border border-[#E6E8EC]">
-        <div className="px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] font-bold text-[#111827]">
+        <div className="px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] font-bold text-[#111827]">
           Primeiros Passos
         </div>
         <div className="p-3 space-y-1">
           {STEPS.map((s) => (
             <button key={s.section} onClick={() => go(s.section)}
-              className="w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-[#F7F8FA] disabled:opacity-60"
+              className="w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-[#EEF1F5] disabled:opacity-60"
               disabled={!onNavigate}>
               <Circle size={15} className="text-[#6B7280] flex-shrink-0" />
               <span className="text-[#111827]">{s.label}</span>
@@ -56,7 +56,7 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white border border-[#E6E8EC]">
-          <div className="px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] font-bold text-[#111827] flex items-center gap-2">
+          <div className="px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] font-bold text-[#111827] flex items-center gap-2">
             <Glyph icon="🔍" size={14} /> Check-ins hoje ({arrivalRows.length})
           </div>
           <div className="max-h-[280px] overflow-auto">
@@ -74,7 +74,7 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
         </div>
 
         <div className="bg-white border border-[#E6E8EC]">
-          <div className="px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] font-bold text-[#111827] flex items-center gap-2">
+          <div className="px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] font-bold text-[#111827] flex items-center gap-2">
             <Glyph icon="🚫" size={14} /> Check-outs hoje ({departureRows.length})
           </div>
           <div className="max-h-[280px] overflow-auto">

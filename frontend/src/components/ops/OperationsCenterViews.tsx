@@ -29,12 +29,12 @@ export function OperationsCenterView() {
   return (
     <ClassicWindow title="Centro de Operações — Painel do Proprietário" icon={<Radar size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Torre de controlo em tempo real · atualiza automaticamente · {d?.time} de {d?.date}</div>}>
-      <div className="p-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 bg-[#EEF1F5] h-full overflow-auto">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <Panel title="MESAS" icon={Table2} color="#1E2A44">
+          <Panel title="MESAS" icon={Table2} color="#2563EB">
             <div className="grid grid-cols-3 gap-2">
               <Stat label="Ocupadas" value={t.occupied ?? 0} tone="#DC2626" />
-              <Stat label="Livres" value={t.free ?? 0} tone="#1E2A44" />
+              <Stat label="Livres" value={t.free ?? 0} tone="#2563EB" />
               <Stat label="Reservadas" value={t.reserved ?? 0} tone="#3B82F6" />
             </div>
           </Panel>
@@ -43,14 +43,14 @@ export function OperationsCenterView() {
             <div className="grid grid-cols-2 gap-2">
               <Stat label="Pendentes" value={k.pending ?? 0} tone="#3B82F6" />
               <Stat label="Em preparação" value={k.preparing ?? 0} tone="#3B82F6" />
-              <Stat label="Prontos" value={k.ready ?? 0} tone="#1E2A44" />
+              <Stat label="Prontos" value={k.ready ?? 0} tone="#2563EB" />
               <Stat label="Atrasados" value={k.delayed ?? 0} tone="#DC2626" />
             </div>
           </Panel>
 
-          <Panel title="CAIXA / VENDAS" icon={Coins} color="#1E2A44">
+          <Panel title="CAIXA / VENDAS" icon={Coins} color="#2563EB">
             <div className="flex flex-col gap-2">
-              <Stat label="Vendas hoje" value={money(s.today)} tone="#1E2A44" />
+              <Stat label="Vendas hoje" value={money(s.today)} tone="#2563EB" />
               <div className="grid grid-cols-2 gap-2">
                 <Stat label="Nº faturas" value={s.tickets ?? 0} />
                 <Stat label="Ticket médio" value={money(s.avg_ticket)} />
@@ -63,19 +63,19 @@ export function OperationsCenterView() {
             <div className="grid grid-cols-2 gap-2">
               <Stat label="Ocupação" value={`${h.occupancy_pct ?? 0}%`} tone="#3B82F6" />
               <Stat label="Ocupados" value={`${h.occupied ?? 0}/${h.rooms_total ?? 0}`} />
-              <Stat label="Check-in hoje" value={h.arrivals ?? 0} tone="#1E2A44" />
+              <Stat label="Check-in hoje" value={h.arrivals ?? 0} tone="#2563EB" />
               <Stat label="Check-out hoje" value={h.departures ?? 0} tone="#DC2626" />
             </div>
           </Panel>
 
           <Panel title="STOCK" icon={Boxes} color="#3B82F6">
-            <Stat label="Produtos em rutura/baixo" value={st.low_count ?? 0} tone={st.low_count ? '#DC2626' : '#1E2A44'} />
+            <Stat label="Produtos em rutura/baixo" value={st.low_count ?? 0} tone={st.low_count ? '#DC2626' : '#2563EB'} />
           </Panel>
 
           <Panel title={`ALERTAS (${d?.alerts_count ?? 0})`} icon={AlertTriangle} color="#DC2626">
             <div className="space-y-1 max-h-40 overflow-auto">
               {alerts.map((a: any, i: number) => (
-                <div key={i} className={`text-[12px] flex items-start gap-1.5 px-1.5 py-1 rounded ${a.level === 'error' ? 'bg-[#FEF2F2] text-[#B91C1C]' : 'bg-[#F7F8FA] text-[#111827]'}`}>
+                <div key={i} className={`text-[12px] flex items-start gap-1.5 px-1.5 py-1 rounded ${a.level === 'error' ? 'bg-[#FEF2F2] text-[#B91C1C]' : 'bg-[#EEF1F5] text-[#111827]'}`}>
                   <span>{a.icon}</span><span>{a.msg}</span>
                 </div>
               ))}
@@ -93,18 +93,18 @@ export function LiveTablesMonitor() {
   const { data: tables = [] } = useQuery({ queryKey: ['live-tables'], queryFn: async () => (await apiClient.get('pos/tables/')).data, refetchInterval: 10000 });
   const { data: openTk = [] } = useQuery({ queryKey: ['live-open'], queryFn: async () => (await apiClient.get('pos/tickets/', { params: { status: 'OPEN' } })).data, refetchInterval: 10000 });
   const now = Date.now();
-  const COLOR: Record<string, string> = { FREE: '#1E2A44', OCCUPIED: '#DC2626', RESERVED: '#3B82F6', DIRTY: '#3B82F6', BLOCKED: '#3B82F6', MAINTENANCE: '#3B82F6' };
+  const COLOR: Record<string, string> = { FREE: '#16A34A', OCCUPIED: '#DC2626', RESERVED: '#2563EB', DIRTY: '#D97706', BLOCKED: '#6B7280', MAINTENANCE: '#7C3AED' };
   const ticketOf = (t: any) => openTk.find((k: any) => k.table === t.id || (k.dest_kind === 'TABLE' && String(k.dest_ref) === String(t.id)));
   return (
     <ClassicWindow title="Monitor de Mesas — Tempo Real" icon={<Table2 size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Planta em tempo real · valor consumido e tempo de permanência por mesa</div>}>
-      <div className="p-4 bg-[#1E2A44] h-full overflow-auto">
+      <div className="p-4 bg-[#2563EB] h-full overflow-auto">
         <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
           {tables.map((t: any) => {
             const tk = ticketOf(t);
             const mins = tk?.opened_at ? Math.floor((now - new Date(tk.opened_at).getTime()) / 60000) : 0;
             return (
-              <div key={t.id} className="rounded-lg p-2 text-white text-center shadow" style={{ background: COLOR[t.status] || '#1E2A44' }}>
+              <div key={t.id} className="rounded-lg p-2 text-white text-center shadow" style={{ background: COLOR[t.status] || '#2563EB' }}>
                 <div className="font-bold text-[15px]">{t.name || `Mesa ${t.table_number}`}</div>
                 {tk ? (
                   <>

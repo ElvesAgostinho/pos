@@ -43,7 +43,7 @@ export function MiniLineChart({ data, labelKey, valueKey, height = 120, formatVa
         <g>
           <line x1={x(hover)} y1={padT} x2={x(hover)} y2={padT + innerH} stroke={PETROL} strokeWidth={1} strokeDasharray="2,2" opacity={0.4} />
           <text x={x(hover)} y={height - 4} textAnchor="middle" fontSize="9" fill="#3B82F6">{data[hover][labelKey]}</text>
-          <text x={x(hover)} y={y(values[hover]) - 6} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1E2A44">
+          <text x={x(hover)} y={y(values[hover]) - 6} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#2563EB">
             {formatValue ? formatValue(values[hover]) : values[hover]}
           </text>
         </g>
@@ -66,8 +66,8 @@ export function MiniBarChart({ data, labelKey, valueKey, formatValue }: {
         return (
           <div key={i} className="flex items-center gap-2 text-[11px]" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
             <div className="w-[110px] truncate text-[#6B7280]" title={d[labelKey]}>{d[labelKey]}</div>
-            <div className="flex-1 bg-[#F7F8FA] h-4 relative">
-              <div className="h-4" style={{ width: `${pct}%`, background: hover === i ? '#1E2A44' : PETROL }} />
+            <div className="flex-1 bg-[#EEF1F5] h-4 relative">
+              <div className="h-4" style={{ width: `${pct}%`, background: hover === i ? '#2563EB' : PETROL }} />
             </div>
             <div className="w-[80px] text-right font-semibold text-[#111827]">{formatValue ? formatValue(v) : v}</div>
           </div>

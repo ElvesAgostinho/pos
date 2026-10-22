@@ -13,8 +13,12 @@ export interface Workspace {
   icons: DeskIcon[];
 }
 
-const wp = (c1: string, c2: string) =>
-  `radial-gradient(130% 110% at 12% 0%, ${c1} 0%, ${c2} 72%), linear-gradient(155deg, ${c1}, ${c2})`;
+// O fundo do Ambiente de Trabalho. Recebe as cores do módulo mas usa-as ao de
+// leve: um fundo claro com um sopro de cor a um canto, não um bloco saturado.
+// Era um gradiente azul-escuro de ponta a ponta — e um ecrã inteiro de cor
+// escura é a coisa que mais datava o sistema.
+const wp = (c1: string, _c2: string) =>
+  `radial-gradient(120% 100% at 8% 0%, ${c1}1A 0%, ${c1}08 45%, #EEF1F5 100%), #EEF1F5`;
 
 export const WORKSPACES: Workspace[] = [
   {
@@ -23,8 +27,8 @@ export const WORKSPACES: Workspace[] = [
     // ícone/nome, não por cor própria (cada um já tinha a sua antes — verde
     // aqui, azul-marinho no PMS — colapsaram para a mesma família).
     key: 'pos', name: 'POS',
-    color: '#1E2A44', colorDark: '#1E2A44', accent: '#2563EB', glow: '#3B82F6',
-    wallpaper: wp('#1E2A44', '#1E2A44'),
+    color: '#111827', colorDark: '#2563EB', accent: '#2563EB', glow: '#3B82F6',
+    wallpaper: wp('#2563EB', '#2563EB'),
     licenseModule: 'posfront',
     icons: [
       // O POS é UM ecrã. Clicar aqui entra logo nele (ocupa a janela toda, com o
@@ -35,8 +39,8 @@ export const WORKSPACES: Workspace[] = [
   },
   {
     key: 'pms', name: 'PMS',
-    color: '#1E2A44', colorDark: '#1E2A44', accent: '#2563EB', glow: '#3B82F6',
-    wallpaper: wp('#1E2A44', '#1E2A44'),
+    color: '#111827', colorDark: '#2563EB', accent: '#2563EB', glow: '#3B82F6',
+    wallpaper: wp('#2563EB', '#2563EB'),
     licenseModule: 'pms',
     icons: [
       // Um ecrã só (como o POS): abre logo no PmsShell, que tem o seu próprio

@@ -30,7 +30,7 @@ const POSApp: React.FC = () => {
 
   // If token exists, render the actual Frontoffice POS
   return (
-    <div className="h-screen w-screen bg-[#1E2A44] p-4 flex flex-col">
+    <div className="h-screen w-screen bg-[#2563EB] p-4 flex flex-col">
       <ClassicWindow 
         title={`Frente de Loja - ${terminalName}`} 
         icon={<ShoppingBag size={14} className="text-gray-300" />}
@@ -47,7 +47,7 @@ const POSApp: React.FC = () => {
                 localStorage.removeItem('pos_terminal_name');
                 setDeviceToken(null);
               }}
-              className="mt-12 px-4 py-2 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 bg-[#F7F8FA] font-bold active:border-t-gray-800 active:border-l-gray-800 active:border-b-white active:border-r-white"
+              className="mt-12 px-4 py-2 border-2 border-t-white border-l-white border-b-gray-800 border-r-gray-800 bg-[#EEF1F5] font-bold active:border-t-gray-800 active:border-l-gray-800 active:border-b-white active:border-r-white"
             >
               Desvincular Terminal (Teste)
             </button>

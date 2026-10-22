@@ -98,10 +98,10 @@ export default function FnbInventory() {
       s + (n(l.quantity) - n(l.theoretical_qty)) * n(l.theoretical_cost), 0);
 
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
-        <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
+        <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold">
           {edit.id ? `Inventário ${edit.number}` : 'Novo documento'}
-          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#1E2A44] text-[11px]">LANÇADO</span>}
+          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#2563EB] text-[11px]">LANÇADO</span>}
         </div>
 
         <div className="flex gap-3 p-3">
@@ -133,7 +133,7 @@ export default function FnbInventory() {
               <div className="flex items-center gap-2">
                 <L>Data lançamento:</L>
                 <input disabled value={edit.posted_at ? new Date(edit.posted_at).toLocaleString('pt-PT') : ''}
-                  className={`${inp} w-[170px] bg-[#F7F8FA]`} style={inputStyle} placeholder="(por lançar)" />
+                  className={`${inp} w-[170px] bg-[#EEF1F5]`} style={inputStyle} placeholder="(por lançar)" />
               </div>
               <div className="flex items-center gap-2 col-span-2">
                 <L>Responsável:</L>
@@ -205,7 +205,7 @@ export default function FnbInventory() {
             <input value={filtro} onChange={(e) => setFiltro(e.target.value)}
               className={`${inp} w-[240px]`} style={inputStyle} />
             <span className="ml-auto">
-              Diferença total: <b style={{ color: difQtd < 0 ? '#DC2626' : '#1E2A44' }}>
+              Diferença total: <b style={{ color: difQtd < 0 ? '#DC2626' : '#2563EB' }}>
                 {difQtd.toFixed(3)} un · {money(difVal)} Kz
               </b>
             </span>
@@ -213,15 +213,15 @@ export default function FnbInventory() {
           <div className="flex-1 overflow-auto">
             <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
-                <tr className="bg-[#F7F8FA]">
+                <tr className="bg-[#EEF1F5]">
                   <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#F1F2F4]">Código</th>
                   <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#F1F2F4]">Descrição</th>
                   <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#F1F2F4]">Unidade</th>
-                  <th colSpan={3} className="text-center font-bold px-2 py-1 border-b border-r border-[#F1F2F4] bg-[#F7F8FA]">Contagem física</th>
-                  <th colSpan={3} className="text-center font-bold px-2 py-1 border-b border-r border-[#F1F2F4] bg-[#F7F8FA]">Stock Teórico</th>
-                  <th colSpan={2} className="text-center font-bold px-2 py-1 border-b border-[#F1F2F4] bg-[#F7F8FA]">Diferença</th>
+                  <th colSpan={3} className="text-center font-bold px-2 py-1 border-b border-r border-[#F1F2F4] bg-[#EEF1F5]">Contagem física</th>
+                  <th colSpan={3} className="text-center font-bold px-2 py-1 border-b border-r border-[#F1F2F4] bg-[#EEF1F5]">Stock Teórico</th>
+                  <th colSpan={2} className="text-center font-bold px-2 py-1 border-b border-[#F1F2F4] bg-[#EEF1F5]">Diferença</th>
                 </tr>
-                <tr className="bg-[#F7F8FA]">
+                <tr className="bg-[#EEF1F5]">
                   {['Quantidade', 'Custo', 'Total Custo', 'Quantidade', 'Custo', 'Total Custo', 'Quantidade', 'Custo'].map((h, i) => (
                     <th key={i} className="text-right font-normal px-2 py-1 border-b border-r border-[#F1F2F4]">{h}</th>
                   ))}
@@ -249,11 +249,11 @@ export default function FnbInventory() {
                       <td className="px-2 py-1 text-right text-[#6B7280]">{money(tC)}</td>
                       <td className="px-2 py-1 text-right text-[#6B7280]">{money(tQ * tC)}</td>
                       <td className="px-2 py-1 text-right font-bold"
-                        style={{ color: dQ < 0 ? '#DC2626' : dQ > 0 ? '#1E2A44' : '#3B82F6' }}>
+                        style={{ color: dQ < 0 ? '#DC2626' : dQ > 0 ? '#2563EB' : '#3B82F6' }}>
                         {dQ.toFixed(3)}
                       </td>
                       <td className="px-2 py-1 text-right font-bold"
-                        style={{ color: dV < 0 ? '#DC2626' : dV > 0 ? '#1E2A44' : '#3B82F6' }}>
+                        style={{ color: dV < 0 ? '#DC2626' : dV > 0 ? '#2563EB' : '#3B82F6' }}>
                         {money(dV)}
                       </td>
                     </tr>
@@ -267,7 +267,7 @@ export default function FnbInventory() {
               </tbody>
             </table>
           </div>
-          <div className="px-3 py-2 text-[11px] text-[#111827] bg-[#F7F8FA] border-t border-[#E6E8EC]">
+          <div className="px-3 py-2 text-[11px] text-[#111827] bg-[#EEF1F5] border-t border-[#E6E8EC]">
             Ao <b>lançar</b>, o stock passa a ser o que se contou. A diferença fica como movimento
             de ajuste no histórico, com o nome do responsável — quebras não desaparecem em silêncio.
           </div>
@@ -310,7 +310,7 @@ export default function FnbInventory() {
 
   // ─────────────────────────────── LISTA
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
       <div className="flex gap-6 p-3 bg-white border-b border-[#F1F2F4]">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -347,19 +347,19 @@ export default function FnbInventory() {
 
       <div className="flex-1 overflow-auto bg-white">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             {['Número', 'Criado em', 'Armazém', 'Responsável', 'Data referência', 'Estado'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
             ))}
           </tr></thead>
           <tbody>
             {rows.map((r) => {
-              const estado = r.voided ? ['Anulado', '#F7F8FA', '#DC2626']
-                : r.posted ? ['Lançado', '#F7F8FA', '#1E2A44']
-                  : ['Em contagem', '#F7F8FA', '#1E2A44'];
+              const estado = r.voided ? ['Anulado', '#EEF1F5', '#DC2626']
+                : r.posted ? ['Lançado', '#EEF1F5', '#2563EB']
+                  : ['Em contagem', '#EEF1F5', '#2563EB'];
               return (
                 <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
-                  className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                  className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                   <td className="px-2 py-1 font-mono font-semibold">{r.number}</td>
                   <td className="px-2 py-1">{new Date(r.created_at).toLocaleString('pt-PT')}</td>
                   <td className="px-2 py-1">{r.warehouse_name}</td>

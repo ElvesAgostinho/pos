@@ -95,8 +95,8 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[520px] max-h-[75vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
+      <div className="w-[520px] max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
           Acesso PMS — {user?.username}
           <button onClick={onClose} title="Fechar" className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
@@ -116,7 +116,7 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
             </div>
           ) : (
             <table className="w-full text-[12px] border-collapse">
-              <thead style={{ background: '#F7F8FA' }}>
+              <thead style={{ background: '#EEF1F5' }}>
                 <tr><th className="w-10 border-b border-[#E6E8EC]"></th><th className="text-left px-3 py-1.5 border-b border-[#E6E8EC] font-semibold">Ecrã do PMS</th></tr>
               </thead>
               <tbody>
@@ -130,7 +130,7 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
             </table>
           )}
         </div>
-        <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC] flex-shrink-0">
           <button onClick={gravar} disabled={saving || !profile || profile.full_access !== false}
             className="flex items-center gap-2 text-[12px] font-semibold text-[#111827] disabled:opacity-50 hover:text-black">
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: '#3B82F6' }}><Check size={13} /></span>

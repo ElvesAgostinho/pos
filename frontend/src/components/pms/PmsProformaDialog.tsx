@@ -114,27 +114,27 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
 
   const montarHtml = () => `<html><head><meta charset="utf-8"><title>Pró-forma — ${esc(r.confirmation)}</title><style>
       *{box-sizing:border-box}
-      body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1E2A44;margin:0;padding:28px;font-size:12px}
+      body{font-family:'Segoe UI',Tahoma,sans-serif;color:#2563EB;margin:0;padding:28px;font-size:12px}
       .topo{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
-            border-bottom:2px solid #1E2A44;padding-bottom:14px}
+            border-bottom:2px solid #2563EB;padding-bottom:14px}
       .empresa{font-size:11px;line-height:1.5}
-      .empresa .nome{font-size:16px;font-weight:700;color:#1E2A44;margin-bottom:2px}
+      .empresa .nome{font-size:16px;font-weight:700;color:#2563EB;margin-bottom:2px}
       .logo{max-height:64px;max-width:190px;object-fit:contain}
       .titulo{text-align:right}
-      .titulo h1{margin:0;font-size:19px;letter-spacing:1px;color:#1E2A44}
+      .titulo h1{margin:0;font-size:19px;letter-spacing:1px;color:#2563EB}
       .titulo .sub{font-size:11px;color:#3B82F6;margin-top:2px}
       .caixas{display:flex;gap:14px;margin:16px 0}
       .caixa{flex:1;border:1px solid #E6E8EC;border-radius:8px;padding:10px}
       .caixa h4{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#3B82F6}
       .caixa .l{display:flex;justify-content:space-between;gap:10px;padding:1px 0}
       table{border-collapse:collapse;width:100%;margin-top:6px}
-      th{background:#F1F2F4;color:#1E2A44;text-align:left;font-size:10px;text-transform:uppercase;
+      th{background:#F1F2F4;color:#2563EB;text-align:left;font-size:10px;text-transform:uppercase;
          letter-spacing:.5px;padding:7px 8px;border-bottom:1px solid #E6E8EC}
       td{padding:7px 8px;border-bottom:1px solid #F1F2F4;vertical-align:top}
       .totais{margin-left:auto;width:290px;margin-top:12px}
       .totais .l{display:flex;justify-content:space-between;padding:4px 8px}
-      .totais .grande{border-top:2px solid #1E2A44;margin-top:4px;padding-top:8px;
-                      font-size:15px;font-weight:700;color:#1E2A44}
+      .totais .grande{border-top:2px solid #2563EB;margin-top:4px;padding-top:8px;
+                      font-size:15px;font-weight:700;color:#2563EB}
       .aviso{margin-top:22px;border:1px solid #DC2626;background:#FEF2F2;color:#B91C1C;
              border-radius:8px;padding:10px 12px;font-size:11px}
       .rodape{margin-top:14px;font-size:10px;color:#6B7280;text-align:center;
@@ -244,8 +244,8 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[560px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="w-[560px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
           Fatura Proforma para a reserva {r.confirmation}
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -254,7 +254,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
         </div>
         <div className="p-3 flex flex-col gap-2 text-[12px]">
           <label className="flex flex-col gap-0.5">Entidade:
-            <select disabled className="border border-[#E6E8EC] p-1.5 bg-[#F7F8FA] rounded-[8px]"><option>{r.guest_name}</option></select>
+            <select disabled className="border border-[#E6E8EC] p-1.5 bg-[#EEF1F5] rounded-[8px]"><option>{r.guest_name}</option></select>
           </label>
           <label className="flex flex-col gap-0.5">Formato:
             <select value={formato} onChange={(e) => setFormato(e.target.value)} className="border border-[#E6E8EC] p-1.5 bg-white rounded-[8px]">
@@ -277,7 +277,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
             A pró-forma não é documento fiscal — a factura AGT sai no check-out.
           </div>
         </div>
-        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC]">
+        <div className="flex items-center gap-3 px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC]">
           <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black"><Printer size={14} /> Imprimir</button>
           <button onClick={enviarEmail} disabled={enviando}
             className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black disabled:text-gray-400">

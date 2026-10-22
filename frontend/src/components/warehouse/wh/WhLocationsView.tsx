@@ -26,7 +26,7 @@ export default function WhLocationsView() {
     <ClassicWindow title="Localizações de Armazém" icon={<MapPin size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Localizações: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <select value={wh} onChange={(e) => setWh(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">Todos os armazéns</option>
             {warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}

@@ -82,7 +82,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">
           {isNew ? 'Nova série' : `A editar ${d.name || d.type_name || d.code}`}
         </span>
@@ -115,7 +115,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
           <Row label="Número:">
             <div>
               <input value={d.current_number ?? 0} readOnly
-                className={`${inp} w-[240px] bg-[#F7F8FA] text-[#6B7280]`} style={inputStyle} />
+                className={`${inp} w-[240px] bg-[#EEF1F5] text-[#6B7280]`} style={inputStyle} />
               <div className="text-[11px] text-[#111827] mt-1 max-w-[240px]">
                 Só de leitura: é o último nº emitido. Reescrevê-lo <b>partia a sequência</b>,
                 que é o que a AGT confere.
@@ -142,7 +142,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
             </label>
             <select value={d.recovery_series || ''} disabled={!d.recovery_series}
               onChange={(e) => set('recovery_series', Number(e.target.value) || null)}
-              className={`${inp} w-[240px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle}>
+              className={`${inp} w-[240px] disabled:bg-[#EEF1F5] disabled:text-[#6B7280]`} style={inputStyle}>
               <option value="">(nenhum)</option>
               {(series as any[]).filter((s) => s.id !== row?.id).map((s) => (
                 <option key={s.id} value={s.id}>{s.code} · {s.name || s.type_name}</option>
@@ -188,7 +188,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
             <Row label="Fat. Elect. - Referência:">
               <input value={d.einvoice_reference || ''} disabled={!d.einvoice}
                 onChange={(e) => set('einvoice_reference', e.target.value)}
-                placeholder="(nenhum)" className={`${inp} w-[240px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle} />
+                placeholder="(nenhum)" className={`${inp} w-[240px] disabled:bg-[#EEF1F5] disabled:text-[#6B7280]`} style={inputStyle} />
             </Row>
             <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
@@ -197,7 +197,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
           </div>
 
           {d.is_closed && (
-            <div className="text-[11px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1">
+            <div className="text-[11px] text-[#111827] bg-[#EEF1F5] border border-[#E6E8EC] px-2 py-1">
               Série <b>fechada</b>: o servidor recusa emitir nela. Abra uma nova série para continuar.
             </div>
           )}
@@ -205,10 +205,10 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
 
         {/* Separadores */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex border-b-2 border-[#1E2A44] px-2">
+          <div className="flex border-b-2 border-[#E6E8EC] px-2">
             {([['models', 'Modelo de Impressão'], ['copies', 'Texto das Vias']] as const).map(([k, l]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+                className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#E6E8EC] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
                 {l}
               </button>
             ))}
@@ -218,7 +218,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
             <>
               <div className="flex-1 overflow-auto">
                 <table className="w-full text-[12px] border-collapse">
-                  <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+                  <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
                     {['Tipo', 'Código', 'Descrição', 'Modelo', 'Vias', 'Max. Vias', 'Ordem', 'Modelo defeito', 'Ativo'].map((h) => (
                       <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] whitespace-nowrap">{h}</th>
                     ))}
@@ -226,7 +226,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
                   <tbody>
                     {pms.map((m, i) => (
                       <tr key={i} onClick={() => setSel(i)}
-                        className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                        className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                         <td className="p-0.5 w-[100px]">
                           <select value={m.kind} onChange={(e) => setPm(i, 'kind', e.target.value)} className={cell}>
                             <option value="RECEIPT">Talão</option>
@@ -256,16 +256,16 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center gap-4 px-3 py-2 bg-[#F7F8FA] border-t border-[#F1F2F4]">
-                <button onClick={addPm} className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1">
-                  <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+              <div className="flex items-center gap-4 px-3 py-2 bg-[#EEF1F5] border-t border-[#F1F2F4]">
+                <button onClick={addPm} className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1">
+                  <span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center text-[11px]">＋</span> Adicionar
                 </button>
                 <button onClick={copyPm} disabled={sel === null}
-                  className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
-                  <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">⧉</span> Copiar
+                  className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1 disabled:opacity-35">
+                  <span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center text-[11px]">⧉</span> Copiar
                 </button>
                 <button onClick={delPm} disabled={sel === null}
-                  className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
+                  className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1 disabled:opacity-35">
                   <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[11px]">−</span> Apagar
                 </button>
               </div>
@@ -293,7 +293,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

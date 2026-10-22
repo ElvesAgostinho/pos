@@ -61,7 +61,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="bg-white w-[1100px] max-w-[95vw] h-[720px] max-h-[92vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 bg-[#1E2A44] text-white">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]">
           <span className="text-[14px] font-bold">Componentes</span>
           <button onClick={onClose} className="text-white/80 hover:text-white"><Glyph icon="✕" size={16} /></button>
         </div>
@@ -102,14 +102,14 @@ export default function ComponentsPicker({ onClose, onPick }: {
               placeholder="Código, nome, código de barras…" className={inp} />
           </label>
           <button onClick={pesquisar}
-            className="h-[30px] px-4 text-[12px] font-bold text-white bg-[#1E2A44] hover:bg-[#1E2A44]">
+            className="h-[30px] px-4 text-[12px] font-bold text-[#111827] bg-[#FFFFFF] border-b border-[#E6E8EC] hover:bg-[#FFFFFF] border-b border-[#E6E8EC]">
             {isFetching ? 'A procurar…' : 'Pesquisar'}
           </button>
         </div>
 
         <div className="flex-1 overflow-auto">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0 bg-[#F7F8FA]">
+            <thead className="sticky top-0 bg-[#EEF1F5]">
               <tr>
                 <th className="w-[28px] border border-[#F1F2F4]"></th>
                 {['Código', 'Descrição', 'Grupo', 'Família', 'Sub Família', 'Preço', 'Ativo'].map((h) => (
@@ -120,7 +120,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
             <tbody>
               {linhas.map((it: any) => (
                 <tr key={it.id} onClick={() => setSel(it)} onDoubleClick={() => onPick(it)}
-                  className={`cursor-pointer ${sel?.id === it.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#F7F8FA]'}`}>
+                  className={`cursor-pointer ${sel?.id === it.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#EEF1F5]'}`}>
                   <td className="text-center border border-[#F1F2F4]">
                     <input type="radio" checked={sel?.id === it.id} onChange={() => setSel(it)} />
                   </td>
@@ -140,7 +140,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-3 py-2 border-t border-[#F1F2F4] bg-[#F7F8FA] text-[12px]">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-[#F1F2F4] bg-[#EEF1F5] text-[12px]">
           <span>
             {total > 0
               ? `${(page - 1) * pageSize + 1}-${Math.min(page * pageSize, total)} de ${total} · Página ${page} de ${totalPaginas}`
@@ -156,7 +156,7 @@ export default function ComponentsPicker({ onClose, onPick }: {
 
         <div className="flex justify-between px-3 py-2 border-t border-[#F1F2F4]">
           <button onClick={() => sel && onPick(sel)} disabled={!sel}
-            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-40" style={{ background: '#1E2A44' }}>
+            className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-[#111827] disabled:opacity-40" style={{ background: '#FFFFFF' }}>
             <Glyph icon="✔" size={14} /> OK
           </button>
           <button onClick={onClose}

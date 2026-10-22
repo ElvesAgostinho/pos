@@ -79,10 +79,10 @@ export default function SupportCenterView() {
     <ClassicWindow title="Support Center — Diagnóstico & Estado" icon={<LifeBuoy size={14} className="text-gray-300" />}
       footer={<div className="flex items-center justify-between w-full"><span className="text-gray-600">Assistência remota via VPN · gere um diagnóstico e envie ao suporte</span>
         <div className="flex gap-2">
-          <button onClick={() => refetch()} className="px-3 py-1 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] text-[11px] flex items-center gap-1"><RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />Atualizar</button>
-          <button onClick={download} className="px-3 py-1 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] text-[11px] font-bold flex items-center gap-1"><Download size={12} />Criar Diagnóstico</button>
+          <button onClick={() => refetch()} className="px-3 py-1 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] text-[11px] flex items-center gap-1"><RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />Atualizar</button>
+          <button onClick={download} className="px-3 py-1 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] text-[11px] font-bold flex items-center gap-1"><Download size={12} />Criar Diagnóstico</button>
         </div></div>}>
-      <div className="p-4 grid grid-cols-2 gap-3 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 grid grid-cols-2 gap-3 bg-[#EEF1F5] h-full overflow-auto">
         <Section title="Sistema" icon={Server}>
           <Row label="Aplicação" value={`${sys.app} v${sys.version}`} />
           <Row label="Modo" value={sys.run_mode} />
@@ -114,7 +114,7 @@ export default function SupportCenterView() {
           <Row label="Origem" value={lic.source || '—'} />
           <div className="px-3 py-2">
             <button onClick={sincronizar} disabled={sincronizando}
-              className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
+              className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
               <RotateCw size={12} className={sincronizando ? 'animate-spin' : ''} />Sincronizar com o PCC
             </button>
           </div>
@@ -148,7 +148,7 @@ export default function SupportCenterView() {
           <div className="px-3 py-2 flex items-end gap-2">
             <input value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="destinatario@exemplo.com"
               className="flex-1 border border-[#E6E8EC] px-2 py-1.5 text-[12px]" />
-            <button onClick={enviarTeste} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] text-[11px] font-bold flex items-center gap-1">
+            <button onClick={enviarTeste} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] text-[11px] font-bold flex items-center gap-1">
               <Send size={12} />Enviar mensagem de teste
             </button>
           </div>
@@ -180,7 +180,7 @@ export default function SupportCenterView() {
             <Row label="Endpoint" value={`POST /api/${sync.endpoint || 'licensing/sync/'}`} />
             <div className="px-3 py-2 flex items-center gap-2">
               <button onClick={sincronizar} disabled={sincronizando}
-                className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
+                className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] text-[11px] font-bold flex items-center gap-1 disabled:opacity-50">
                 <RotateCw size={12} className={sincronizando ? 'animate-spin' : ''} />Sincronizar agora
               </button>
               <span className="text-gray-500 text-[11px]">Traz a licença e a certificação AGT mais recentes do PCC (funciona sem internet: nada muda se a ligação falhar).</span>
@@ -195,10 +195,10 @@ export default function SupportCenterView() {
         <div className="col-span-2">
           <Section title="Posto de Trabalho (este navegador)" icon={Trash2}>
             <div className="px-3 py-2 flex items-center gap-2">
-              <button onClick={reporAparencia} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] text-[11px] font-bold flex items-center gap-1">
+              <button onClick={reporAparencia} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] text-[11px] font-bold flex items-center gap-1">
                 <RotateCw size={12} />Repor aparência
               </button>
-              <button onClick={limparArmazenamento} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] text-[11px] font-bold flex items-center gap-1">
+              <button onClick={limparArmazenamento} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] text-[11px] font-bold flex items-center gap-1">
                 <Trash2 size={12} />Limpar Armazenamento Local
               </button>
             </div>
@@ -216,8 +216,8 @@ export default function SupportCenterView() {
               </div>
               <div className="flex items-end gap-2">
                 <input value={supportUrl} onChange={(e) => setSupportUrl(e.target.value)} placeholder="https://suporte.seuerp.com/ingest (URL do teu servidor)" className="flex-1 border border-[#E6E8EC] px-2 py-1.5" />
-                <button onClick={() => act({ action: 'save_config', support_url: supportUrl, auto_send_logs: true })} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA]">Guardar</button>
-                <button onClick={() => act({ action: 'send_logs' })} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] flex items-center gap-1"><Send size={13} />Enviar diagnóstico</button>
+                <button onClick={() => act({ action: 'save_config', support_url: supportUrl, auto_send_logs: true })} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5]">Guardar</button>
+                <button onClick={() => act({ action: 'send_logs' })} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] flex items-center gap-1"><Send size={13} />Enviar diagnóstico</button>
               </div>
               <div className="flex items-center gap-2 pt-1 border-t border-[#F1F2F4]">
                 <ShieldCheck size={15} className={sup.remote_assist ? 'text-[#6B7280]' : 'text-gray-400'} />
@@ -225,9 +225,9 @@ export default function SupportCenterView() {
                 {sup.remote_assist && <span className="text-gray-500">até {new Date(sup.remote_assist_until).toLocaleString('pt-PT')}</span>}
                 <div className="flex-1" />
                 {!sup.remote_assist
-                  ? <button onClick={() => act({ action: 'remote_assist', hours: 2 })} className="px-3 py-1.5 bg-[#1E2A44] text-white rounded font-bold">Autorizar (2h)</button>
+                  ? <button onClick={() => act({ action: 'remote_assist', hours: 2 })} className="px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] rounded font-bold">Autorizar (2h)</button>
                   : <button onClick={() => act({ action: 'revoke' })} className="px-3 py-1.5 bg-[#DC2626] text-white rounded font-bold">Revogar</button>}
-                <button onClick={backup} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] flex items-center gap-1"><HardDriveDownload size={13} />Criar Backup</button>
+                <button onClick={backup} className="px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] flex items-center gap-1"><HardDriveDownload size={13} />Criar Backup</button>
               </div>
             </div>
           </Section>

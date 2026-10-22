@@ -44,7 +44,7 @@ export function UsersView() {
     <ClassicWindow title="Utilizadores & Acessos (Security)" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{users.length} utilizador(es) · perfil define o que cada um acede (RBAC)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Utilizador" value={d.username} onChange={(e) => setD({ ...d, username: e.target.value })} className="border border-[#E6E8EC] p-1 w-32" />
           <input placeholder="Email" value={d.email} onChange={(e) => setD({ ...d, email: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Palavra-passe" type="password" value={d.password} onChange={(e) => setD({ ...d, password: e.target.value })} className="border border-[#E6E8EC] p-1 w-32" />
@@ -68,7 +68,7 @@ export function UsersView() {
                     const on = (r.hotels || []).some((x: any) => x.id === h.id);
                     return (
                       <button key={h.id} onClick={() => toggleHotel(r, h.id)} title={on ? 'Retirar acesso' : 'Dar acesso'}
-                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#3B82F6] text-white border-[#1E2A44]' : 'bg-white text-gray-500 border-[#E6E8EC]'}`}>
+                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#3B82F6] text-white border-[#E6E8EC]' : 'bg-white text-gray-500 border-[#E6E8EC]'}`}>
                         {h.name}
                       </button>
                     );
@@ -117,7 +117,7 @@ export function LoginHistoryView() {
     <ClassicWindow title="Histórico de Login (Security)" icon={<History size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{events.length} evento(s) de autenticação</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex items-center gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <label className="font-bold text-gray-700">Evento:</label>
           <select value={t} onChange={(e) => setT(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">Todos</option><option value="LOGIN_SUCCESS">Sucesso</option>

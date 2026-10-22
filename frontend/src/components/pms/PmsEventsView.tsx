@@ -17,7 +17,7 @@ const STATUS = [
   { value: 'CANCELLED', label: 'Cancelado' },
   { value: 'COMPLETED', label: 'Concluído' },
 ];
-const STATUS_COLOR: Record<string, string> = { INQUIRY: '#3B82F6', CONFIRMED: '#1E2A44', CANCELLED: '#DC2626', COMPLETED: '#3B82F6' };
+const STATUS_COLOR: Record<string, string> = { INQUIRY: '#D97706', CONFIRMED: '#16A34A', CANCELLED: '#DC2626', COMPLETED: '#6B7280' };
 
 const blank = {
   name: '', event_date: '', start_time: '', end_time: '', venue: '', client: '',
@@ -69,7 +69,7 @@ export default function PmsEventsView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[12px]">
         <span className="font-semibold text-[#6B7280]">Pesquisar:</span>
         <input className={`${inp} flex-1 max-w-xs`} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nome, local, cliente…" />
         <span className="text-gray-500">{rows.length} evento(s)</span>
@@ -113,8 +113,8 @@ export default function PmsEventsView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Novo Evento', icon: '＋', color: '#1E2A44', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#1E2A44', onClick: save },
+        { label: 'Novo Evento', icon: '＋', color: '#111827', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#111827', onClick: save },
         { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#DC2626' },
       ]} />
     </div>

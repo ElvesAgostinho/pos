@@ -85,7 +85,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Nova moeda' : `A editar ${d.code}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -119,7 +119,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
               Imprimir nos documentos de POS
             </label>
             {d.is_local && (
-              <div className="text-[11px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1">
+              <div className="text-[11px] text-[#111827] bg-[#EEF1F5] border border-[#E6E8EC] px-2 py-1">
                 Só pode haver <b>uma</b> moeda local — ao gravar, as outras deixam de o ser.
                 É nela que a contabilidade fecha.
               </div>
@@ -178,14 +178,14 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
                 <span className="w-[130px]">Comissão Fixa</span>
                 <input type="number" step="any" value={d.commission_fixed ?? 0} disabled={d.commission_mode !== 'FIXED'}
                   onChange={(e) => set('commission_fixed', e.target.value)}
-                  className={`${inp} w-[210px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle} />
+                  className={`${inp} w-[210px] disabled:bg-[#EEF1F5] disabled:text-[#6B7280]`} style={inputStyle} />
               </label>
               <label className="flex items-center gap-3 text-[12px]">
                 <input type="radio" checked={d.commission_mode === 'PERCENT'} onChange={() => set('commission_mode', 'PERCENT')} className="w-4 h-4" />
                 <span className="w-[130px]">Comissão Perct.</span>
                 <input type="number" step="any" value={d.commission_percent ?? 0} disabled={d.commission_mode !== 'PERCENT'}
                   onChange={(e) => set('commission_percent', e.target.value)}
-                  className={`${inp} w-[210px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle} />
+                  className={`${inp} w-[210px] disabled:bg-[#EEF1F5] disabled:text-[#6B7280]`} style={inputStyle} />
               </label>
             </div>
 
@@ -199,8 +199,8 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
       {hist && <CurrencyHistory id={row.id} code={d.code} onClose={() => setHist(false)} />}
 
       <Toolbar actions={[
-        ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', color: '#1E2A44', onClick: () => setHist(true) }]),
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', color: '#111827', onClick: () => setHist(true) }]),
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>
@@ -219,16 +219,16 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
-      <div className="bg-[#F7F8FA] border border-[#E6E8EC] w-[1000px] max-w-[95vw] h-[65vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden"
+      <div className="bg-[#EEF1F5] border border-[#E6E8EC] w-[1000px] max-w-[95vw] h-[65vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+        <div className="flex items-center justify-between px-3 py-2 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
           <span>{code} - Histórico</span>
           <button onClick={onClose} className="w-5 h-5 bg-[#DC2626] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
         </div>
 
         <div className="flex-1 overflow-auto bg-white">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+            <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
               {['Data da alteração', 'Utilizador', 'Código ISO', 'Descrição', 'Taxa de Câmbio', 'Taxa de Compra', 'Taxa de Venda', 'Ativo'].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] whitespace-nowrap">{h}</th>
               ))}
@@ -254,7 +254,7 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
           </table>
         </div>
 
-        <div className="px-3 py-1.5 text-[11px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#F1F2F4]">
+        <div className="px-3 py-1.5 text-[11px] text-[#6B7280] bg-[#EEF1F5] border-t border-[#F1F2F4]">
           Só de leitura — é a prova de com que taxa cada fatura foi convertida.
         </div>
         <Toolbar actions={[{ icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose }]} />

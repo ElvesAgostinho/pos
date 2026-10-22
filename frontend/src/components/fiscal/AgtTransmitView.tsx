@@ -13,7 +13,7 @@ function Panel({ title, children, right }: any) {
   return (
     <div className="bg-white border border-[#E6E8EC]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
       <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[12px] font-bold text-[#111827]"
-        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }}>
+        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #EEF1F5)' }}>
         <span>{title}</span>{right}
       </div>
       <div className="p-3">{children}</div>
@@ -23,7 +23,7 @@ function Panel({ title, children, right }: any) {
 
 const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#E6E8EC] text-[#111827] flex items-center gap-1.5';
 const btnStyle = {
-  background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4)',
+  background: 'linear-gradient(to bottom, #FFFFFF, #EEF1F5 48%, #F1F2F4 52%, #F1F2F4)',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
 };
 
@@ -31,7 +31,7 @@ const STATUS: Record<string, { label: string; bg: string; icon: any }> = {
   QUEUED: { label: 'Em fila', bg: '#3B82F6', icon: Clock },
   SENDING: { label: 'A enviar', bg: '#3B82F6', icon: Send },
   RETRY: { label: 'A reenviar', bg: '#3B82F6', icon: RefreshCw },
-  ACK: { label: 'Aceite pela AGT', bg: '#1E2A44', icon: CheckCircle2 },
+  ACK: { label: 'Aceite pela AGT', bg: '#2563EB', icon: CheckCircle2 },
   REJECTED: { label: 'Rejeitado', bg: '#DC2626', icon: XCircle },
   FAILED: { label: 'Falhou', bg: '#B91C1C', icon: AlertTriangle },
   SENT: { label: 'Enviado', bg: '#3B82F6', icon: Send },
@@ -88,26 +88,26 @@ export default function AgtTransmitView() {
   const Kpi = ({ label, value, color }: any) => (
     <div className="flex-1 bg-white border border-[#E6E8EC] px-3 py-2" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
       <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
-      <div className="text-[22px] font-black leading-tight" style={{ color: color || '#1E2A44' }}>{value ?? '—'}</div>
+      <div className="text-[22px] font-black leading-tight" style={{ color: color || '#2563EB' }}>{value ?? '—'}</div>
     </div>
   );
 
   return (
     <ClassicWindow title="Transmissão AGT — Faturação Eletrónica" icon={<Radio size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Store-and-forward: a venda nunca espera pela AGT · reenvio automático · chave de idempotência (nunca duplica)</div>}>
-      <div className="p-3 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-3 space-y-3 bg-[#EEF1F5] h-full overflow-auto">
 
         {/* Estado da ligação */}
         <Panel title="Ligação à AGT"
           right={<div className="flex gap-2">
             <button onClick={() => check.mutate()} className={btn} style={btnStyle}><RefreshCw size={12} />Testar ligação</button>
             <button onClick={() => run.mutate()} disabled={run.isPending} className={btn}
-              style={{ ...btnStyle, background: 'linear-gradient(to bottom, #1E2A44, #3B82F6)', color: '#FFFFFF', borderColor: '#1E2A44' }}>
+              style={{ ...btnStyle, background: 'linear-gradient(to bottom, #2563EB, #3B82F6)', color: '#FFFFFF', borderColor: '#E6E8EC' }}>
               <Send size={12} />{run.isPending ? 'A transmitir…' : 'Transmitir agora'}
             </button>
           </div>}>
           {c?.simulation ? (
-            <div className="flex items-start gap-2 p-2 bg-[#F7F8FA] border border-[#E6E8EC] text-[12px]">
+            <div className="flex items-start gap-2 p-2 bg-[#EEF1F5] border border-[#E6E8EC] text-[12px]">
               <ShieldAlert size={20} className="text-[#111827] flex-shrink-0" />
               <div>
                 <div className="font-bold text-[#111827]">Modo simulação — ainda não está a comunicar com a AGT a sério</div>
@@ -121,7 +121,7 @@ export default function AgtTransmitView() {
             </div>
           ) : (
             <div className="flex items-center gap-3 text-[12px]">
-              <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border border-[#E6E8EC]">
+              <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF1F5] border border-[#E6E8EC]">
                 <ShieldCheck size={20} className="text-[#111827]" />
                 <div>
                   <div className="font-bold text-[#111827]">Ligada · {c?.environment === 'PROD' ? 'Produção' : 'Sandbox'}</div>
@@ -142,16 +142,16 @@ export default function AgtTransmitView() {
 
         {/* Fila */}
         <div className="flex gap-2">
-          <Kpi label="Por enviar" value={q?.pending} color={q?.pending ? '#3B82F6' : '#1E2A44'} />
-          <Kpi label="Aceites pela AGT" value={q?.acked} color="#1E2A44" />
-          <Kpi label="Rejeitados" value={q?.rejected} color={q?.rejected ? '#DC2626' : '#1E2A44'} />
-          <Kpi label="Falhados" value={q?.failed} color={q?.failed ? '#DC2626' : '#1E2A44'} />
+          <Kpi label="Por enviar" value={q?.pending} color={q?.pending ? '#3B82F6' : '#2563EB'} />
+          <Kpi label="Aceites pela AGT" value={q?.acked} color="#2563EB" />
+          <Kpi label="Rejeitados" value={q?.rejected} color={q?.rejected ? '#DC2626' : '#2563EB'} />
+          <Kpi label="Falhados" value={q?.failed} color={q?.failed ? '#DC2626' : '#2563EB'} />
           <Kpi label="Total" value={q?.total} />
           <Kpi label="Mais antigo por enviar" value={q?.oldest_pending_at ? when(q.oldest_pending_at) : '—'} />
         </div>
 
         {(q?.documents_not_queued ?? 0) > 0 && (
-          <div className="flex items-center gap-2 p-2 bg-[#F7F8FA] border border-[#DC2626] text-[12px] text-[#DC2626] font-bold">
+          <div className="flex items-center gap-2 p-2 bg-[#EEF1F5] border border-[#DC2626] text-[12px] text-[#DC2626] font-bold">
             <AlertTriangle size={14} />
             {q.documents_not_queued} documento(s) emitido(s) antes desta funcionalidade existir não estão em fila.
             Foram emitidos e assinados corretamente — só não passaram pelo transmissor.
@@ -178,8 +178,8 @@ export default function AgtTransmitView() {
             { header: '', accessor: (r: any) => (
               r.status !== 'ACK' ? (
                 <button onClick={(e: any) => { e.stopPropagation(); retry.mutate(r.id); }}
-                  className="px-1.5 py-0.5 text-[10px] font-bold border border-[#1E2A44] text-white"
-                  style={{ background: 'linear-gradient(to bottom, #1E2A44, #3B82F6)' }}>Reenviar</button>
+                  className="px-1.5 py-0.5 text-[10px] font-bold border border-[#E6E8EC] text-white"
+                  style={{ background: 'linear-gradient(to bottom, #2563EB, #3B82F6)' }}>Reenviar</button>
               ) : null), width: '10%' },
           ]} />
         </Panel>
@@ -196,11 +196,11 @@ export default function AgtTransmitView() {
                 <div><span className="text-gray-500">Próximo reenvio:</span> {when(sel.next_attempt_at)}</div>
                 {sel.error_message && <div className="text-[#DC2626] font-bold">{sel.error_message}</div>}
                 <div className="text-gray-500 mt-2">Resposta da AGT:</div>
-                <pre className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 overflow-auto max-h-40 whitespace-pre-wrap">{sel.response || '—'}</pre>
+                <pre className="bg-[#EEF1F5] border border-[#F1F2F4] p-2 overflow-auto max-h-40 whitespace-pre-wrap">{sel.response || '—'}</pre>
               </div>
               <div>
                 <div className="text-gray-500 mb-1">Conteúdo enviado (o que a AGT recebeu):</div>
-                <pre className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 overflow-auto max-h-56 font-mono text-[10px]">{sel.payload_preview || sel.payload || '—'}</pre>
+                <pre className="bg-[#EEF1F5] border border-[#F1F2F4] p-2 overflow-auto max-h-56 font-mono text-[10px]">{sel.payload_preview || sel.payload || '—'}</pre>
               </div>
             </div>
           </Panel>

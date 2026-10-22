@@ -6,8 +6,8 @@ import { Wallet, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso, confirmar } from '../../ui/dialogo';
 
-const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
-const ST_COLOR: Record<string, string> = { PENDING: '#3B82F6', PAID: '#1E2A44', FAILED: '#DC2626', REFUNDED: '#3B82F6' };
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
+const ST_COLOR: Record<string, string> = { PENDING: '#D97706', PAID: '#16A34A', FAILED: '#DC2626', REFUNDED: '#6B7280' };
 const METODOS: [string, string][] = [
   ['TRANSFER', 'Transferência bancária'], ['CASH', 'Numerário'],
   ['CARD', 'Cartão'], ['GATEWAY', 'Pagamento online'], ['OTHER', 'Outro'],
@@ -73,7 +73,7 @@ export default function PmsBookingDepositsView() {
           <button className={btn} onClick={() => refetch()}>
             <RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />Actualizar</button>
         </div>}>
-      <div className="p-4 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-3 bg-[#EEF1F5] h-full overflow-auto">
         <div className="bg-white border border-[#E6E8EC] rounded-[12px] p-3 flex flex-wrap items-center gap-3 text-[12px]">
           <label className="flex items-center gap-2">Mostrar
             <select className="border border-[#E6E8EC] rounded-[8px] px-2 py-1" value={filtro}
@@ -92,7 +92,7 @@ export default function PmsBookingDepositsView() {
         </div>
 
         <div className="bg-white border border-[#E6E8EC] rounded-[12px] overflow-hidden">
-          <div className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
+          <div className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
             <span>Reserva</span><span>Hóspede</span><span>Entrada</span><span>Valor</span>
             <span>Situação</span><span>Confirmar entrada</span>
           </div>

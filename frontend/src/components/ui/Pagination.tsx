@@ -11,7 +11,7 @@ export default function Pagination({ page, pageSize, count, onPage }: {
   const from = count === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, count);
   return (
-    <div className="flex items-center justify-between text-[11px] text-gray-600 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4]">
+    <div className="flex items-center justify-between text-[11px] text-gray-600 px-2 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4]">
       <span>{from}–{to} de {count}</span>
       <div className="flex items-center gap-1">
         <button disabled={page <= 1} onClick={() => onPage(page - 1)}

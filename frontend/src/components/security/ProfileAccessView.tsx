@@ -42,7 +42,7 @@ export default function ProfileAccessView() {
       <div className="flex h-full">
         {/* Perfis */}
         <div className="w-1/3 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex items-end gap-1 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+          <div className="flex items-end gap-1 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
             <input placeholder="Novo perfil (ex.: Rececionista)" value={newName} onChange={(e) => setNewName(e.target.value)} className="border border-[#E6E8EC] p-1 flex-1" />
             <ClassicButton icon={Plus} label="Criar" onClick={() => newName.trim() && createProfile.mutate(newName.trim())} />
           </div>
@@ -57,7 +57,7 @@ export default function ProfileAccessView() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {sel ? (
             <>
-              <div className="p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px] flex items-center justify-between">
+              <div className="p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px] flex items-center justify-between">
                 <span className="font-bold">{sel.name}</span>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={full} onChange={(e) => setFull(e.target.checked)} /> Acesso total (vê tudo)</label>
               </div>
@@ -68,7 +68,7 @@ export default function ProfileAccessView() {
                 {!full && (
                   <div className="grid grid-cols-2 gap-1">
                     {MODULES.map((m) => (
-                      <label key={m.key} className={`flex items-center gap-2 px-2 py-1.5 border text-[11px] cursor-pointer ${mods.includes(m.key) ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-white border-[#F1F2F4]'}`}>
+                      <label key={m.key} className={`flex items-center gap-2 px-2 py-1.5 border text-[11px] cursor-pointer ${mods.includes(m.key) ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-white border-[#F1F2F4]'}`}>
                         <input type="checkbox" checked={mods.includes(m.key)} onChange={() => toggleMod(m.key)} />
                         {m.title.replace(/^\d+\s·\s/, '')}
                       </label>

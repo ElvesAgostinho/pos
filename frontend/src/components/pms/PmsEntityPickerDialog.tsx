@@ -28,8 +28,8 @@ function RequiredFieldsDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[9300] flex items-center justify-center bg-black/40">
-      <div className="w-[440px] max-h-[70vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
+      <div className="w-[440px] max-h-[70vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
           Campos obrigatórios
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -68,8 +68,8 @@ function GuestInfoDialog({ guest, onClose }: { guest: any; onClose: () => void }
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[760px] max-h-[75vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
+      <div className="w-[760px] max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
           Guest Info — {guest.name}
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -93,12 +93,12 @@ function GuestInfoDialog({ guest, onClose }: { guest: any; onClose: () => void }
               { header: 'Check-in', accessor: 'check_in', width: '13%' },
               { header: 'Check-out', accessor: 'check_out', width: '13%' },
               { header: 'Estado', accessor: (r: any) => (
-                <span style={{ color: STATUS_COLOR[r.status] || '#1E2A44', fontWeight: 700 }}>{r.status_display}</span>
+                <span style={{ color: STATUS_COLOR[r.status] || '#2563EB', fontWeight: 700 }}>{r.status_display}</span>
               ), width: '15%' },
             ]} />
           )}
         </div>
-        <div className="flex justify-end px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
+        <div className="flex justify-end px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC] flex-shrink-0">
           <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
@@ -166,8 +166,8 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[1000px] max-h-[85vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="w-[1000px] max-h-[85vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
           Entidades
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
@@ -181,11 +181,11 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
         <div className="bg-white border-b border-[#F1F2F4] text-[12px]">
           <div className="flex border-b border-[#F1F2F4]">
             <button onClick={() => setTab('S')}
-              className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#1E2A44]' : 'bg-[#F7F8FA] text-[#6B7280]'}`}>
+              className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#E6E8EC]' : 'bg-[#EEF1F5] text-[#6B7280]'}`}>
               Pesquisa simples
             </button>
             <button onClick={() => setTab('A')}
-              className={`px-4 py-1.5 font-semibold ${tab === 'A' ? 'bg-white border-b-2 border-[#1E2A44]' : 'bg-[#F7F8FA] text-[#6B7280]'}`}>
+              className={`px-4 py-1.5 font-semibold ${tab === 'A' ? 'bg-white border-b-2 border-[#E6E8EC]' : 'bg-[#EEF1F5] text-[#6B7280]'}`}>
               Pesquisa Avançada
             </button>
           </div>
@@ -221,7 +221,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
             </div>
             <button onClick={pesquisar}
               className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px]"
-              style={{ background: '#1E2A44' }}>
+              style={{ background: '#2563EB' }}>
               <RefreshCw size={20} /> Pesquisar
             </button>
           </div>
@@ -245,26 +245,26 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
           )}
         </div>
 
-        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12px]">
-          <button onClick={() => setEditing({ is_blocked: false })} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA]">
+        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#EEF1F5] border-t border-[#E6E8EC] text-[12px]">
+          <button onClick={() => setEditing({ is_blocked: false })} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF1F5]">
             <Plus size={13} /> Adicionar
           </button>
           <button disabled={!sel} onClick={() => sel && setEditing({ ...sel })}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF1F5] disabled:opacity-30 disabled:hover:bg-transparent">
             <Pencil size={13} /> Editar
           </button>
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF1F5] disabled:opacity-30 disabled:hover:bg-transparent">
             <Hand size={13} /> Selecionar
           </button>
           <button disabled={!sel} onClick={() => sel && setShowGuestInfo(true)}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF1F5] disabled:opacity-30 disabled:hover:bg-transparent">
             <User size={13} /> Guest Info
           </button>
-          <button onClick={() => setShowRequired(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA]">
+          <button onClick={() => setShowRequired(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF1F5]">
             <Search size={13} /> Campos obrigatórios
           </button>
-          <button onClick={() => setShowDups(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA]">
+          <button onClick={() => setShowDups(true)} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF1F5]">
             <Copy size={13} /> Controlo de duplicação
           </button>
           <div className="flex-1" />

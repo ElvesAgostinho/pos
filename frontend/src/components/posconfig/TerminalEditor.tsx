@@ -63,14 +63,14 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
-      className={`px-5 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === id ? 'border-[#1E2A44] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+      className={`px-5 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === id ? 'border-[#E6E8EC] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
       {label}
     </button>
   );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -106,14 +106,14 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       </Box>
       </div>
 
-      <div className="flex border-b-2 border-[#1E2A44] bg-[#F7F8FA] px-2">
+      <div className="flex border-b-2 border-[#E6E8EC] bg-[#EEF1F5] px-2">
         <Tab id="geral" label="Geral" /><Tab id="printers" label="Impressoras" /><Tab id="hardware" label="Hardware" />
       </div>
 
       <div className="flex-1 overflow-auto p-3">
         {tab === 'geral' && (
           <>
-            <div className="flex items-center gap-3 mb-2 text-[12px] bg-[#F7F8FA] px-3 py-2 border border-[#F1F2F4]">
+            <div className="flex items-center gap-3 mb-2 text-[12px] bg-[#EEF1F5] px-3 py-2 border border-[#F1F2F4]">
               <span>Pesquisar:</span>
               <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[240px]`} style={inputStyle} />
               <span className="text-[11px] text-[#6B7280] ml-auto">
@@ -124,7 +124,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
               <tbody>
                 {shown.map((g: any) => (
                   <Fragment key={g.group}>
-                    <tr className="bg-[#F7F8FA]">
+                    <tr className="bg-[#EEF1F5]">
                       <td colSpan={2} className="px-2 py-1.5 border border-[#F1F2F4] font-bold">{g.group}</td>
                     </tr>
                     {g.params.map((p: any) => {
@@ -163,7 +163,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
         {tab === 'printers' && (
           <table className="w-full text-[12px] border-collapse">
-            <thead><tr className="bg-[#F7F8FA]">
+            <thead><tr className="bg-[#EEF1F5]">
               {['Ativo', 'Código', 'Descrição', 'Porta', 'Localização Impressora', 'Um artigo por talão', 'Monitores de cozinha'].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">{h}</th>
               ))}
@@ -180,11 +180,11 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                     <td className="px-2 py-1.5 border border-[#F1F2F4]">{p.name}</td>
                     <td className="p-0.5 border border-[#F1F2F4] w-[110px]">
                       <input value={tp?.port || ''} disabled={!tp} onChange={(e) => setP(p.id, 'port', e.target.value)}
-                        placeholder="COM1 / IP" className={`${cell} disabled:bg-[#F7F8FA]`} />
+                        placeholder="COM1 / IP" className={`${cell} disabled:bg-[#EEF1F5]`} />
                     </td>
                     <td className="p-0.5 border border-[#F1F2F4] w-[150px]">
                       <select value={tp?.location || 'TERMINAL'} disabled={!tp} onChange={(e) => setP(p.id, 'location', e.target.value)}
-                        className={`${cell} disabled:bg-[#F7F8FA]`}>
+                        className={`${cell} disabled:bg-[#EEF1F5]`}>
                         <option value="TERMINAL">Terminal</option><option value="SERVER">Servidor</option><option value="NETWORK">Rede</option>
                       </select>
                     </td>
@@ -194,7 +194,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                     </td>
                     <td className="p-0.5 border border-[#F1F2F4] w-[150px]">
                       <input value={tp?.kds_monitor || ''} disabled={!tp} onChange={(e) => setP(p.id, 'kds_monitor', e.target.value)}
-                        placeholder="(nenhum)" className={`${cell} disabled:bg-[#F7F8FA]`} />
+                        placeholder="(nenhum)" className={`${cell} disabled:bg-[#EEF1F5]`} />
                     </td>
                   </tr>
                 );
@@ -206,7 +206,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
         {tab === 'hardware' && (
           <div>
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#F7F8FA]">
+              <thead><tr className="bg-[#EEF1F5]">
                 {['Código', 'Descrição', 'Tipo', 'Porta', 'Ativo', ''].map((h) => (
                   <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">{h}</th>
                 ))}
@@ -231,15 +231,15 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                 {hw.length === 0 && <tr><td colSpan={6} className="text-center text-[#6B7280] py-8">Sem periféricos ligados a este terminal.</td></tr>}
               </tbody>
             </table>
-            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[12px] text-[#111827] px-1 py-1 hover:bg-[#F7F8FA]">
-              <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar
+            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[12px] text-[#111827] px-1 py-1 hover:bg-[#EEF1F5]">
+              <span className="w-6 h-6 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center">＋</span> Adicionar
             </button>
           </div>
         )}
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

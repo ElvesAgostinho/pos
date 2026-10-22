@@ -161,7 +161,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       {/* ── barra de filtros ── */}
       <div className="flex items-center gap-2 mb-2 text-[12px]">
         <button onClick={() => setPainel(!painel)}
-          className={`px-3 py-1 border ${conds.length ? 'border-[#E6E8EC] bg-[#F7F8FA] text-[#111827] font-semibold' : 'border-[#E6E8EC] bg-white'}`}>
+          className={`px-3 py-1 border ${conds.length ? 'border-[#E6E8EC] bg-[#EEF1F5] text-[#111827] font-semibold' : 'border-[#E6E8EC] bg-white'}`}>
           <span className="inline-flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtros avançados{conds.length ? ` (${conds.length})` : ''}</span>
         </button>
         <button onClick={() => setColsPainel(!colsPainel)}
@@ -255,12 +255,12 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       {/* ── grelha ── */}
       <table className="w-full text-[12px] border-collapse">
         <thead>
-          <tr className="bg-[#F7F8FA]">
+          <tr className="bg-[#EEF1F5]">
             {visiveis.map((c) => (
               <th key={c[0]}
                 onClick={() => setOrdem(ordem && ordem.col === c[0]
                   ? { col: c[0], asc: !ordem.asc } : { col: c[0], asc: true })}
-                className={`font-bold px-2 py-1.5 border border-[#F1F2F4] cursor-pointer select-none hover:bg-[#F7F8FA]
+                className={`font-bold px-2 py-1.5 border border-[#F1F2F4] cursor-pointer select-none hover:bg-[#EEF1F5]
                   ${isMoney(c) ? 'text-right' : 'text-left'}`}>
                 {c[1]}
                 {ordem && ordem.col === c[0] && (
@@ -268,7 +268,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
               </th>
             ))}
           </tr>
-          <tr className="bg-[#F7F8FA]">
+          <tr className="bg-[#EEF1F5]">
             {visiveis.map((c) => (
               <th key={c[0]} className="px-1 py-1 border border-[#F1F2F4]">
                 <input value={rapido[c[0]] ?? ''} placeholder="filtrar…"
@@ -296,7 +296,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
           )}
         </tbody>
         {Object.keys(totais).length > 0 && (
-          <tfoot><tr className="bg-[#F7F8FA] font-bold">
+          <tfoot><tr className="bg-[#EEF1F5] font-bold">
             {visiveis.map((c, i) => (
               <td key={c[0]} className={`px-2 py-1.5 border border-[#F1F2F4] ${isMoney(c) ? 'text-right' : ''}`}>
                 {i === 0

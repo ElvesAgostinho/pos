@@ -57,8 +57,8 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[560px] max-h-[85vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>
+      <div className="w-[560px] max-h-[85vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #2563EB, #2563EB)' }}>
           Atualização em Massa de Tarifas
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>
@@ -67,7 +67,7 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
             <div className="font-bold text-[#111827] mb-1">Tarifas a atualizar*</div>
             <div className="border border-[#E6E8EC] bg-white max-h-[110px] overflow-auto">
               {ratePlans.map((rp) => (
-                <label key={rp.id} className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7F8FA] cursor-pointer">
+                <label key={rp.id} className="flex items-center gap-2 px-2 py-1 hover:bg-[#EEF1F5] cursor-pointer">
                   <input type="checkbox" checked={selected.has(rp.id)} onChange={() => toggleSel(rp.id)} />
                   {rp.label}
                 </label>
@@ -118,7 +118,7 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
         </div>
         <Toolbar actions={[
           { label: 'Cancelar', icon: '✕', color: '#3B82F6', onClick: onClose },
-          { label: sending ? 'A enviar…' : 'Enviar', icon: '✔', color: '#1E2A44', onClick: send, disabled: sending },
+          { label: sending ? 'A enviar…' : 'Enviar', icon: '✔', color: '#111827', onClick: send, disabled: sending },
         ]} />
       </div>
     </div>

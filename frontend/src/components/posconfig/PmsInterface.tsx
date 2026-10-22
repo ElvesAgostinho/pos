@@ -25,11 +25,11 @@ export default function PmsInterface() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex border-b-2 border-[#1E2A44] px-3 bg-[#F7F8FA]">
+      <div className="flex border-b-2 border-[#E6E8EC] px-3 bg-[#EEF1F5]">
         {([['map', 'Mapeamentos'], ['multi', 'Ligações Multi Hotel'], ['ext', 'Ligações externas']] as const)
           .map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-4 py-2 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+              className={`px-4 py-2 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#E6E8EC] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
               {l}
             </button>
           ))}
@@ -103,11 +103,11 @@ function Mapeamentos({ qc }: { qc: any }) {
     <>
       <div className="flex-1 overflow-auto">
         {/* Mapeamento de parâmetros (setores) */}
-        <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
+        <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
           Mapeamento de Parâmetros
         </div>
         <table className="w-full text-[12px] border-collapse">
-          <thead><tr className="bg-[#F7F8FA]">
+          <thead><tr className="bg-[#EEF1F5]">
             {['Setor', 'Descrição', 'Departamento', 'Conta por defeito', 'Paymaster', 'Visível'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
             ))}
@@ -118,7 +118,7 @@ function Mapeamentos({ qc }: { qc: any }) {
                 <td className="px-2 py-1">{s.name}</td>
                 <td className="p-0.5"><input value={s.pms_department || ''} placeholder={s.name}
                   onChange={(e) => setSector(s.id, 'pms_department', e.target.value)} className={`${cell} border border-[#F1F2F4] bg-white`} /></td>
-                <td className="p-0.5"><input value={s.pms_department || ''} readOnly className={`${cell} bg-[#F7F8FA] text-[#6B7280]`} /></td>
+                <td className="p-0.5"><input value={s.pms_department || ''} readOnly className={`${cell} bg-[#EEF1F5] text-[#6B7280]`} /></td>
                 <td className="p-0.5"><input value={s.pms_default_account || ''} placeholder="REST_COM"
                   onChange={(e) => setSector(s.id, 'pms_default_account', e.target.value)} className={`${cell} border border-[#F1F2F4] bg-white`} /></td>
                 <td className="p-0.5"><input value={s.pms_paymaster || ''} placeholder="9000"
@@ -136,18 +136,18 @@ function Mapeamentos({ qc }: { qc: any }) {
         </table>
 
         {/* Mapeamento de sub-famílias */}
-        <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-y border-[#F1F2F4] mt-2">
+        <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-y border-[#F1F2F4] mt-2">
           Mapeamento de sub-famílias
         </div>
-        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12px]">
+        <div className="flex items-center gap-3 px-3 py-2 bg-[#EEF1F5] border-b border-[#F1F2F4] text-[12px]">
           <span>Pesquisar:</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[200px]`} style={inputStyle} />
           <span className="ml-2">Encargo:</span>
           <input value={encargo} onChange={(e) => setEncargo(e.target.value)} placeholder="(nenhum)"
             className={`${inp} w-[240px]`} style={inputStyle} />
           <button onClick={aplicar} disabled={!encargo || sel.length === 0}
-            className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-35">
-            <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
+            className="flex items-center gap-2 px-2 py-1 hover:bg-[#EEF1F5] disabled:opacity-35">
+            <span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center"><Glyph icon="✔" size={11} /></span>
             Aplicar à seleção ({sel.length})
           </button>
           <label className="flex items-center gap-2 ml-auto">
@@ -157,7 +157,7 @@ function Mapeamentos({ qc }: { qc: any }) {
         </div>
 
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             <th className="w-[36px] border-b border-[#F1F2F4]" />
             <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Descrição</th>
             {(d.outlets || []).map((o: any) => (
@@ -199,14 +199,14 @@ function Mapeamentos({ qc }: { qc: any }) {
         </table>
       </div>
 
-      <div className="px-3 py-1 text-[11px] text-[#111827] bg-[#F7F8FA] border-t border-[#E6E8EC]">
+      <div className="px-3 py-1 text-[11px] text-[#111827] bg-[#EEF1F5] border-t border-[#E6E8EC]">
         As células a <b>laranja</b> não têm encargo: nesse ponto de venda, o consumo do hóspede
         <b> não consegue entrar no folio</b>.
       </div>
 
       <Toolbar actions={[
         { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${Object.keys(dirty).length ? ` (${Object.keys(dirty).length})` : ''}`,
-          color: '#1E2A44', onClick: () => save.mutate() },
+          color: '#111827', onClick: () => save.mutate() },
       ]} />
     </>
   );
@@ -234,7 +234,7 @@ function MultiHotel() {
     <>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead><tr className="bg-[#F7F8FA]">
+          <thead><tr className="bg-[#EEF1F5]">
             {['Ativo', 'Por defeito', 'Id do Hotel', 'Descrição', 'Servidor', 'Base de dados', 'Utilizador', 'Password', 'Modo', 'Último teste'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
             ))}
@@ -242,7 +242,7 @@ function MultiHotel() {
           <tbody>
             {(links as any[]).map((l) => (
               <tr key={l.id} onClick={() => setSel(l.id)} onDoubleClick={() => setEdit(l)}
-                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === l.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === l.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="text-center"><GridCheck checked={l.is_active} /></td>
                 <td className="text-center"><GridCheck checked={l.is_default} /></td>
                 <td className="px-2 py-1.5">{l.hotel_id}</td>
@@ -269,7 +269,7 @@ function MultiHotel() {
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#1E2A44', onClick: () => setEdit({ is_active: true, hotel_id: '0', mode: 'SIMPLE' }) },
+        { icon: '＋', label: 'Adicionar', color: '#111827', onClick: () => setEdit({ is_active: true, hotel_id: '0', mode: 'SIMPLE' }) },
         { icon: '✎', label: 'Editar', color: '#3B82F6', disabled: !sel, onClick: () => setEdit((links as any[]).find((l) => l.id === sel)) },
         { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel, onClick: () => confirm('Apagar esta ligação?') && del.mutate(sel!) },
       ]} />
@@ -294,7 +294,7 @@ function Externas() {
     <>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead><tr className="bg-[#F7F8FA]">
+          <thead><tr className="bg-[#EEF1F5]">
             {['Ativo', 'Company Id', 'Descrição', 'Servidor', 'Base de dados', 'Utilizador', 'Password', 'Trusted', 'Status'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
             ))}
@@ -324,7 +324,7 @@ function Externas() {
           </tbody>
         </table>
       </div>
-      <div className="px-3 py-1 text-[11px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#F1F2F4]">
+      <div className="px-3 py-1 text-[11px] text-[#6B7280] bg-[#EEF1F5] border-t border-[#F1F2F4]">
         Um setor só precisa de ligação externa se as contas dos quartos viverem noutro servidor.
         Clique na linha para editar.
       </div>
@@ -381,7 +381,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="flex items-center justify-between px-3 py-2 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
         <span>
           {isHotel
             ? `Ligações Multi Hotel - ${isNew ? 'Adicionar' : `Editar ${d.description || ''}`}`
@@ -465,8 +465,8 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
         {!isNew && d.last_test_detail && (
           <div className={`text-[11px] px-2 py-1 border mt-2 ${d.last_test_ok
-            ? 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]'
-            : 'bg-[#F7F8FA] border-[#DC2626] text-[#DC2626]'}`}>
+            ? 'bg-[#EEF1F5] border-[#E6E8EC] text-[#111827]'
+            : 'bg-[#EEF1F5] border-[#DC2626] text-[#DC2626]'}`}>
             Último teste: {d.last_test_detail}
           </div>
         )}
@@ -477,9 +477,9 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
       </div>
 
       <Toolbar actions={[
-        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#1E2A44',
+        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#111827',
           disabled: isNew, onClick: () => test.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

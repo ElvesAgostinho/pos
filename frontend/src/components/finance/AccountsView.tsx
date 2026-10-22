@@ -21,7 +21,7 @@ export default function AccountsView() {
     <ClassicWindow title="Tesouraria — Contas (Financeiro)" icon={<Landmark size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{accounts.length} conta(s) · saldo = abertura + recebimentos confirmados − pagamentos confirmados</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-24" />
           <input placeholder="Nome" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={draft.account_type} onChange={(e) => setDraft({ ...draft, account_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">

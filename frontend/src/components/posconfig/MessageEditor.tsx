@@ -46,7 +46,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Nova mensagem' : `A editar ${d.code}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -92,7 +92,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
         </Box>
 
         <div className="mb-4" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#E6E8EC]">
+          <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#E6E8EC]">
             Artigos que fazem esta pergunta
             <span className="font-normal text-[#6B7280] ml-2">
               (nenhum escolhido = todos os artigos)
@@ -111,7 +111,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
             ))}
             {artigos.length === 0 && <span className="text-[#6B7280] text-[12px]">Sem artigos.</span>}
           </div>
-          <div className="px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[11px] text-[#6B7280]">
+          <div className="px-3 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[11px] text-[#6B7280]">
             "Com gelo?" num prato de bacalhau ensina o empregado a carregar em qualquer
             coisa para se ver livre da pergunta — e a partir daí deixa de as ler todas.
           </div>
@@ -119,11 +119,11 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
 
         {/* Modelos (respostas) */}
         <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#E6E8EC]">Modelos</div>
+          <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#E6E8EC]">Modelos</div>
           <div className="flex">
             <table className="flex-1 text-[12px] border-collapse">
               <thead>
-                <tr className="bg-[#F7F8FA] text-[#111827]">
+                <tr className="bg-[#EEF1F5] text-[#111827]">
                   {['Código', 'Texto (tecla e comanda)', 'Ordem', 'Ativo'].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
                   ))}
@@ -161,12 +161,12 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
             </table>
 
             <div className="w-[150px] flex-shrink-0 border-l border-[#F1F2F4] p-2 space-y-2">
-              <button onClick={addOpt} className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] w-full px-1 py-1">
-                <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[14px]">＋</span>
+              <button onClick={addOpt} className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#EEF1F5] w-full px-1 py-1">
+                <span className="w-6 h-6 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center text-[14px]">＋</span>
                 Adicionar
               </button>
               <button onClick={() => opts.length && delOpt(opts.length - 1)} disabled={!opts.length}
-                className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] w-full px-1 py-1 disabled:opacity-35">
+                className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#EEF1F5] w-full px-1 py-1 disabled:opacity-35">
                 <span className="w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[14px]">−</span>
                 Apagar
               </button>
@@ -182,7 +182,7 @@ export default function MessageEditor({ row, onClose }: { row: any; onClose: () 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

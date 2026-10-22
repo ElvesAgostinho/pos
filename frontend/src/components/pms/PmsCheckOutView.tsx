@@ -113,9 +113,9 @@ export default function PmsCheckOutView() {
       </div>
 
       <Toolbar actions={[
-        { label: 'Atualizar', icon: '⟳', color: '#1E2A44', onClick: invalidate },
-        { label: 'Registar Pagamento', icon: '💳', color: '#1E2A44', onClick: settle, disabled: !balancePending || busy },
-        { label: 'Check-Out', icon: '✔', color: '#1E2A44', onClick: doCheckOut, disabled: !selId || balancePending || busy },
+        { label: 'Atualizar', icon: '⟳', color: '#111827', onClick: invalidate },
+        { label: 'Registar Pagamento', icon: '💳', color: '#111827', onClick: settle, disabled: !balancePending || busy },
+        { label: 'Check-Out', icon: '✔', color: '#111827', onClick: doCheckOut, disabled: !selId || balancePending || busy },
       ]} />
     </div>
   );

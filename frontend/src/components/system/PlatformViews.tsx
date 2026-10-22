@@ -32,7 +32,7 @@ function IntegrationView({ kind, title, icon }: { kind: string; title: string; i
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Conectores: {rows.length} · reais ligam-se com credenciais</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Fornecedor/Marca" value={f.vendor} onChange={(e) => setF({ ...f, vendor: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Endpoint / host" value={f.endpoint} onChange={(e) => setF({ ...f, endpoint: e.target.value })} className="border border-[#E6E8EC] p-1 w-40" />
@@ -66,7 +66,7 @@ function ChannelsView({ channel, title, icon }: { channel: string; title: string
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Canais: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Fornecedor (SMTP/Twilio/FCM)" value={f.provider} onChange={(e) => setF({ ...f, provider: e.target.value })} className="border border-[#E6E8EC] p-1 w-44" />
           <input placeholder="Remetente" value={f.sender} onChange={(e) => setF({ ...f, sender: e.target.value })} className="border border-[#E6E8EC] p-1" />
@@ -97,7 +97,7 @@ export function NtfAlertsView() {
   return (
     <ClassicWindow title="Notificações — Alertas & Regras" icon={<BellRing size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Regras: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Evento (stock.low…)" value={f.event} onChange={(e) => setF({ ...f, event: e.target.value })} className="border border-[#E6E8EC] p-1 w-36" />
           <input placeholder="Nome da regra" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={f.channel} onChange={(e) => setF({ ...f, channel: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
@@ -131,7 +131,7 @@ function TemplatesBase({ title, icon, onlySignature }: { title: string; icon: an
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Modelos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Nome do modelo" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Tipo (FT, FR, VOUCHER…)" value={f.doc_type} onChange={(e) => setF({ ...f, doc_type: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-32" />
           <select value={f.page_format} onChange={(e) => setF({ ...f, page_format: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
@@ -168,7 +168,7 @@ export function SysSchedulerView() {
   return (
     <ClassicWindow title="Sistema — Agendador de Tarefas" icon={<Clock size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Tarefas: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Tipo (BACKUP…)" value={f.task_type} onChange={(e) => setF({ ...f, task_type: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-32" />
           <select value={f.frequency} onChange={(e) => setF({ ...f, frequency: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
@@ -252,7 +252,7 @@ export function SysBackupsView() {
   return (
     <ClassicWindow title="Sistema — Backups" icon={<HardDriveDownload size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Backup portável da base de dados (JSON)</div>}>
       <div className="p-4 space-y-3">
-        <div className="bg-[#F7F8FA] border border-[#E6E8EC] p-3 text-[12px] text-gray-700">
+        <div className="bg-[#EEF1F5] border border-[#E6E8EC] p-3 text-[12px] text-gray-700">
           O backup exporta todos os dados de negócio num ficheiro JSON portável (independente do motor de base de dados).
           Guarde-o em local seguro. Agende backups automáticos no <b>Agendador de Tarefas</b>.
         </div>

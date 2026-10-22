@@ -95,8 +95,8 @@ export default function PmsProductsServicesView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Novo', icon: '＋', color: '#1E2A44', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#1E2A44', onClick: save },
+        { label: 'Novo', icon: '＋', color: '#111827', onClick: novo },
+        { label: 'Gravar', icon: '💾', color: '#111827', onClick: save },
         { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#DC2626' },
       ]} />
     </div>

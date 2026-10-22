@@ -22,7 +22,7 @@ function useList(ep: string, key: string) {
 /** Cabeçalho de painel cinzento, como no original. */
 const Painel = ({ title, children, right }: any) => (
   <div className="bg-white" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-    <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#E6E8EC]">
+    <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#E6E8EC]">
       <span className="text-[12px] font-bold text-[#111827]">{title}</span>
       {right}
     </div>
@@ -124,7 +124,7 @@ export function EntitySearch() {
     );
     const req = new Set(regras.filter((r: any) => r.is_required).map((r: any) => r.field));
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
         <div className="flex-1 overflow-auto p-3">
           <Painel title={edit.id ? `Ficha de entidade — ${edit.name}` : 'Nova entidade'}>
             <div className="grid grid-cols-3 gap-x-8 gap-y-2 p-4">
@@ -172,7 +172,7 @@ export function EntitySearch() {
                 <span className={lbl}>Motivo bloqueio:</span>
                 <input value={edit.block_reason ?? ''} onChange={(e) => setEdit({ ...edit, block_reason: e.target.value })}
                   disabled={!edit.is_blocked}
-                  className={`${inp} w-[600px] disabled:bg-[#F7F8FA]`} style={inputStyle} />
+                  className={`${inp} w-[600px] disabled:bg-[#EEF1F5]`} style={inputStyle} />
               </div>
               <div className="col-span-3 flex items-start gap-2">
                 <span className={lbl}>Informações:</span>
@@ -188,7 +188,7 @@ export function EntitySearch() {
           </Painel>
         </div>
         <Toolbar actions={[
-          { label: 'Gravar', icon: '✔', color: '#1E2A44', onClick: () => gravar.mutate(edit) },
+          { label: 'Gravar', icon: '✔', color: '#111827', onClick: () => gravar.mutate(edit) },
           { label: 'Fechar', icon: '✖', color: '#3B82F6', onClick: () => setEdit(null) },
         ]} />
       </div>
@@ -206,7 +206,7 @@ export function EntitySearch() {
   );
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
       <div className="p-3 pb-0">
         <Painel title="Critérios Pesquisa">
           <div className="flex gap-0 px-3 pt-2">
@@ -214,7 +214,7 @@ export function EntitySearch() {
               <button key={k} onClick={() => setTab(k as any)}
                 className={`px-4 py-1.5 text-[12px] border-b-2 ${tab === k
                   ? 'border-[#E6E8EC] font-bold text-[#111827] bg-white'
-                  : 'border-transparent text-[#6B7280] hover:bg-[#F7F8FA]'}`}>
+                  : 'border-transparent text-[#6B7280] hover:bg-[#EEF1F5]'}`}>
                 {t}
               </button>
             ))}
@@ -289,7 +289,7 @@ export function EntitySearch() {
         <Painel title="Resultado da pesquisa">
           <div className="overflow-auto" style={{ maxHeight: '46vh' }}>
             <table className="w-full text-[12px] border-collapse">
-              <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+              <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
                 {['Apelido', 'Nome', 'Outros nomes', 'Nr. cliente', 'Tipo', 'Morada', 'Contacto',
                   'Cartão', ...camposPers.map((c: any) => c.name), 'Informações'].map((h) => (
                   <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
@@ -298,7 +298,7 @@ export function EntitySearch() {
               <tbody>
                 {vista.map((r) => (
                   <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
-                    className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                    className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                     <td className="px-2 py-1">{r.last_name || '—'}</td>
                     <td className="px-2 py-1 font-semibold">
                       {r.is_blocked && <span title={r.block_reason || 'Bloqueado'} className="text-[#DC2626] mr-1 inline-flex align-middle"><Glyph icon="⛔" size={13} /></span>}
@@ -327,7 +327,7 @@ export function EntitySearch() {
               </tbody>
             </table>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[12px]">
             <span>Nº registos a visualizar:</span>
             <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
               className={`${inp} w-[70px]`} style={inputStyle}>
@@ -353,7 +353,7 @@ export function EntitySearch() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setObrig(false)} />
           <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[440px]">
-            <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold flex justify-between">
+            <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold flex justify-between">
               Campos obrigatórios <button onClick={() => setObrig(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[50vh] overflow-auto">
@@ -378,7 +378,7 @@ export function EntitySearch() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setDups(false)} />
           <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[620px]">
-            <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold flex justify-between">
+            <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold flex justify-between">
               Controlo de duplicação <button onClick={() => setDups(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[55vh] overflow-auto text-[12px]">
@@ -387,7 +387,7 @@ export function EntitySearch() {
                   <Glyph icon="✔" size={15} /> Nenhuma entidade repetida.
                 </div>
               ) : (duplicados.groups.map((g: any, i: number) => (
-                <div key={i} className="mb-3 border border-[#DC2626] bg-[#F7F8FA] p-2">
+                <div key={i} className="mb-3 border border-[#DC2626] bg-[#EEF1F5] p-2">
                   <div className="font-bold text-[#DC2626]">{g.field}: {g.value}</div>
                   {g.entities.map((e: any) => (
                     <div key={e.id} className="pl-3">· [{e.code}] {e.name}</div>
@@ -403,7 +403,7 @@ export function EntitySearch() {
         { label: 'Adicionar', icon: '➕', onClick: () => setEdit({ is_blocked: false }) },
         { label: 'Editar', icon: '✏', disabled: !sel, onClick: () => setEdit({ ...rows.find((r) => r.id === sel) }) },
         { label: 'Campos obrigatórios', icon: '☑', color: '#3B82F6', onClick: () => setObrig(true) },
-        { label: 'Controlo de duplicação', icon: '⧉', color: '#1E2A44', onClick: () => setDups(true) },
+        { label: 'Controlo de duplicação', icon: '⧉', color: '#111827', onClick: () => setDups(true) },
       ]} />
     </div>
   );
@@ -488,7 +488,7 @@ export function EventRequests() {
       </div>
     );
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
         <div className="flex-1 overflow-auto p-3">
           <Painel title={edit.id ? `Pedido ${edit.number} — ${edit.title}` : 'Novo pedido de evento'}>
             <div className="grid grid-cols-3 gap-x-8 gap-y-2 p-4">
@@ -530,7 +530,7 @@ export function EventRequests() {
           </Painel>
         </div>
         <Toolbar actions={[
-          { label: 'Gravar', icon: '✔', color: '#1E2A44', onClick: () => gravar.mutate(edit) },
+          { label: 'Gravar', icon: '✔', color: '#111827', onClick: () => gravar.mutate(edit) },
           {
             label: 'Cancelar evento', icon: '🚫', disabled: !edit.id,
             onClick: () => {
@@ -548,8 +548,8 @@ export function EventRequests() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#F7F8FA] text-[12px]">
-        <button onClick={exportar} className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7F8FA]">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#EEF1F5] text-[12px]">
+        <button onClick={exportar} className="flex items-center gap-2 px-2 py-1 hover:bg-[#EEF1F5]">
           <span className="text-[#111827]"><Glyph icon="📊" size={15} /></span> Exportar para Excel
         </button>
         <span className="ml-2">Estado:</span>
@@ -563,7 +563,7 @@ export function EventRequests() {
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             {['Data do pedido', 'Nome', 'Espaço', 'Telefone', 'E-mail', 'Data', 'Pax',
               'Tipo de Evento', 'Notas', 'Estado'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
@@ -572,11 +572,11 @@ export function EventRequests() {
           <tbody>
             {vista.map((r) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
-                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="px-2 py-1">{dt(r.created_at)}</td>
                 <td className="px-2 py-1 font-semibold">{r.customer_name || r.contact_name || r.title}</td>
                 <td className="px-2 py-1">
-                  <span className="px-1.5 py-0.5" style={{ background: r.state_bg || '#F7F8FA', color: r.state_fg || '#1E2A44' }}>
+                  <span className="px-1.5 py-0.5" style={{ background: r.state_bg || '#EEF1F5', color: r.state_fg || '#2563EB' }}>
                     {r.space_name}{r.blocks_space && <Glyph icon="🔒" size={11} />}
                   </span>
                 </td>
@@ -588,7 +588,7 @@ export function EventRequests() {
                 <td className="px-2 py-1 text-[#6B7280] max-w-[220px] truncate">{r.notes || ''}</td>
                 <td className="px-2 py-1">
                   <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.answered
-                    ? 'bg-[#F7F8FA] text-[#111827]' : 'bg-[#F7F8FA] text-[#111827]'}`}>
+                    ? 'bg-[#EEF1F5] text-[#111827]' : 'bg-[#EEF1F5] text-[#111827]'}`}>
                     {r.answered ? 'Respondido' : 'Não Respondido'}
                   </span>
                 </td>
@@ -601,7 +601,7 @@ export function EventRequests() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>

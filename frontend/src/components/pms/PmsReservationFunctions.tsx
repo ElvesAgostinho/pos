@@ -8,7 +8,7 @@ import { aviso, confirmar, pedir } from '../../ui/dialogo';
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 const esc = (s: any) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
 const inp = 'border border-[#E6E8EC] rounded-[8px] px-2 py-1 text-[12px]';
-const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
 
 /** Moldura comum dos painéis das Funções da reserva. */
 export function Painel({ titulo, onClose, children, rodape }: any) {
@@ -17,11 +17,11 @@ export function Painel({ titulo, onClose, children, rodape }: any) {
       <div className="bg-white rounded-[12px] shadow-xl w-full max-w-2xl max-h-[86vh] flex flex-col overflow-hidden"
            onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-2.5 text-white"
-             style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>
+             style={{ background: 'linear-gradient(to bottom, #2563EB, #2563EB)' }}>
           <span className="font-bold text-[12px]">{titulo}</span>
           <button onClick={onClose} className="hover:bg-white/15 rounded px-1.5"><X size={16} /></button>
         </div>
-        <div className="p-4 overflow-auto bg-[#F7F8FA] flex-1 min-h-0 text-[12px]">{children}</div>
+        <div className="p-4 overflow-auto bg-[#EEF1F5] flex-1 min-h-0 text-[12px]">{children}</div>
         <div className="px-4 py-2 border-t border-[#F1F2F4] bg-white flex items-center justify-between">
           <div>{rodape}</div>
           <button className={btn} onClick={onClose}>Fechar</button>
@@ -69,7 +69,7 @@ export function EncargosFixos({ reserva, onClose }: any) {
     <Painel titulo={`Encargos fixos — ${reserva.confirmation}`} onClose={onClose}
       rodape={<span className="text-gray-600">Total estimado para a estadia: <b>{money(totalEstadia)} Kz</b></span>}>
       <div className="bg-white border border-[#E6E8EC] rounded-[8px] overflow-hidden mb-3">
-        <div className="grid grid-cols-[1fr_120px_110px_90px_36px] gap-2 px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
+        <div className="grid grid-cols-[1fr_120px_110px_90px_36px] gap-2 px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
           <span>Descrição</span><span>Tipo</span><span className="text-right">Valor</span><span>Frequência</span><span />
         </div>
         {linhas.map((l: any) => (
@@ -355,17 +355,17 @@ export function CartaoHospede({ reserva, onClose }: any) {
       @page { size: A4; margin: 0; }
       body { font-family: "Segoe UI", Arial, sans-serif; font-size: 12px; color: #111827; padding: 18mm 16mm; }
       .top { display:flex; justify-content:space-between; align-items:flex-start;
-             border-bottom:2px solid #1E2A44; padding-bottom:10px; }
+             border-bottom:2px solid #2563EB; padding-bottom:10px; }
       .logo { max-height:52px; max-width:190px; display:block; margin-bottom:6px; }
-      .brand { font-size:18px; font-weight:700; color:#1E2A44; }
+      .brand { font-size:18px; font-weight:700; color:#2563EB; }
       .sub { color:#6B7280; font-size:10.5px; }
-      h1 { font-size:15px; margin:16px 0 10px; color:#1E2A44; }
+      h1 { font-size:15px; margin:16px 0 10px; color:#2563EB; }
       table { width:100%; border-collapse:collapse; }
       td { padding:5px 8px; border-bottom:1px solid #F1F2F4; }
       td.l { color:#6B7280; width:170px; }
       td.v { font-weight:600; }
       .nota { margin-top:14px; font-size:10px; color:#6B7280; line-height:1.6;
-              background:#F7F8FA; border:1px solid #DBEAFE; border-radius:6px; padding:10px; }
+              background:#EEF1F5; border:1px solid #DBEAFE; border-radius:6px; padding:10px; }
       .assin { margin-top:34px; display:flex; justify-content:space-between; gap:40px; }
       .assin div { flex:1; border-top:1px solid #111827; text-align:center; font-size:10px;
                    color:#6B7280; padding-top:4px; }
@@ -508,7 +508,7 @@ export function TiposLimpeza({ reserva, onClose }: any) {
           <input className={inp} value={titulo} onChange={(e) => setTitulo(e.target.value)} /></label>
       </div>
       <div className="bg-white border border-[#E6E8EC] rounded-[8px] overflow-hidden">
-        <div className="px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
+        <div className="px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
           Tarefas deste quarto
         </div>
         {tarefas.map((t: any) => (

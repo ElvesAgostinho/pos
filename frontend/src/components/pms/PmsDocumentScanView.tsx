@@ -69,7 +69,7 @@ export default function PmsDocumentScanView() {
         {results.length > 0 && !selected && (
           <div className="border border-[#E6E8EC] max-w-[400px] max-h-[160px] overflow-auto bg-white">
             {results.map((c: any) => (
-              <button key={c.id} onClick={() => pick(c)} className="w-full text-left px-2 py-1.5 hover:bg-[#F7F8FA] border-b border-[#F1F2F4] last:border-b-0">
+              <button key={c.id} onClick={() => pick(c)} className="w-full text-left px-2 py-1.5 hover:bg-[#EEF1F5] border-b border-[#F1F2F4] last:border-b-0">
                 {c.name} {c.id_number && <span className="text-gray-500">· {c.id_number}</span>}
               </button>
             ))}
@@ -82,10 +82,10 @@ export default function PmsDocumentScanView() {
               <div className="font-bold text-[#111827]">{selected.name}</div>
               <button onClick={() => { setSelected(null); setSearch(''); }} className="text-[#6B7280] underline">trocar hóspede</button>
             </div>
-            <div className="w-full h-40 bg-[#F7F8FA] border border-[#E6E8EC] flex items-center justify-center overflow-hidden">
+            <div className="w-full h-40 bg-[#EEF1F5] border border-[#E6E8EC] flex items-center justify-center overflow-hidden">
               {selected.photo_url ? <img src={selected.photo_url} alt="documento" className="max-w-full max-h-full object-contain" /> : <span className="text-gray-400">Sem foto de documento</span>}
             </div>
-            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[11px] cursor-pointer hover:bg-[#F7F8FA]">
+            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#EEF1F5] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[11px] cursor-pointer hover:bg-[#EEF1F5]">
               {uploading ? 'A carregar…' : 'Carregar foto do documento…'}
               <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => upload(e.target.files?.[0])} />
             </label>
@@ -98,7 +98,7 @@ export default function PmsDocumentScanView() {
         {!selected && <div className="text-gray-500">Sem leitor/scanner automático disponível nesta instalação — procure o hóspede e carregue a foto do documento manualmente.</div>}
       </div>
       <Toolbar actions={[
-        { label: 'Gravar Nº de Documento', icon: '💾', color: '#1E2A44', onClick: saveNumber, disabled: !selected },
+        { label: 'Gravar Nº de Documento', icon: '💾', color: '#111827', onClick: saveNumber, disabled: !selected },
       ]} />
     </div>
   );

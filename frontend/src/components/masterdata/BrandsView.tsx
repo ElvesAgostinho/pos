@@ -20,7 +20,7 @@ export default function BrandsView() {
       footer={<div className="text-gray-600">Nº registos: {brands.length}</div>}
     >
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Marca" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Fabricante (opcional)" value={draft.manufacturer} onChange={(e) => setDraft({ ...draft, manufacturer: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />

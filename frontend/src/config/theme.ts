@@ -2,7 +2,7 @@
  * PALETA OFICIAL — fonte única de cor para todo o sistema (exceto o POS Front
  * Office, que tem identidade própria, tátil, e não deve mudar por causa disto).
  *
- * Antes disto, cada ecrã escrevia o seu próprio hex (#1E2A44 aqui, #2563EB ali,
+ * Antes disto, cada ecrã escrevia o seu próprio hex (#2563EB aqui, #2563EB ali,
  * #6B7280 acolá) — quase sempre a MESMA cor, escrita de memória, ligeiramente
  * diferente de ficheiro para ficheiro. Um sistema "a sério" (Primavera, SAP GUI,
  * Office clássico) repete SEMPRE as mesmas cores, sem variação — é isso que dá
@@ -34,16 +34,16 @@ export const TOKENS = {
   // ── A MOLDURA ─────────────────────────────────────────────────────────────
   // Ardósia azulada, não preto: é escura o suficiente para ancorar o ecrã e
   // suave o suficiente para não competir com o conteúdo.
-  bar: '#1E2A44',            // barra principal / navegação
-  barDeep: '#16203A',        // rodapé e fundo do gradiente
+  bar: '#2563EB',            // barra principal / navegação — a cor da marca
+  barDeep: '#1D4ED8',        // a mesma, carregada (rodapé, estados premidos)
   barSoft: '#2563EB',        // item seleccionado na navegação
   active: '#3B82F6',         // elementos activos, gráficos
 
   // ── SUPERFÍCIES ───────────────────────────────────────────────────────────
-  canvas: '#F7F8FA',         // fundo da página
+  canvas: '#EEF1F5',         // fundo da página — cinzento a sério, para os cartões brancos se verem
   surface: '#FFFFFF',        // cartões, painéis, grelhas
   toolbarBg: '#FFFFFF',
-  hover: '#F7F8FA',
+  hover: '#EEF1F5',
 
   // ── LINHAS ────────────────────────────────────────────────────────────────
   // Usadas com parcimónia: o que separa áreas é o ESPAÇO e uma sombra leve, não
@@ -86,7 +86,7 @@ export function shade(hex: string, pct: number): string {
 }
 
 // Gradiente de barra de título a partir da cor institucional (3 tons, sempre a
-// mesma receita) — para não se escrever "linear-gradient(...#1E2A44...)" fixo
+// mesma receita) — para não se escrever "linear-gradient(...#2563EB...)" fixo
 // em cada ecrã: assim a personalização (Aparência → Cor da barra) chega a todo
 // o lado que usar isto, não só ao ecrã onde alguém se lembrou de a aplicar.
 export function accentGradient(accent: string = TOKENS.accent): string {
@@ -153,14 +153,14 @@ export const TYPE = {
 export function classicTheme(dark: boolean) {
   return dark
     ? {
-        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#2563EB', tree: '#1E2A44',
-        treeText: '#F1F2F4', line: '#2563EB', body: '#1E2A44', status: '#16203A',
+        bar: TOKENS.bar, barText: TOKENS.textOnDark, ribbon: '#2563EB', tree: '#2563EB',
+        treeText: '#F1F2F4', line: '#2563EB', body: '#2563EB', status: '#16203A',
         hover: '#2563EB', accent: TOKENS.gold,
       }
     : {
-        bar: 'linear-gradient(to bottom, #F7F8FA 0%, #F1F2F4 55%, #F1F2F4 100%)',
+        bar: 'linear-gradient(to bottom, #EEF1F5 0%, #F1F2F4 55%, #F1F2F4 100%)',
         barText: TOKENS.textOnLight,
-        ribbon: 'linear-gradient(to bottom, #F7F8FA 0%, #F1F2F4 60%, #F1F2F4 100%)',
+        ribbon: 'linear-gradient(to bottom, #EEF1F5 0%, #F1F2F4 60%, #F1F2F4 100%)',
         tree: TOKENS.surface, treeText: TOKENS.textOnLight, line: TOKENS.border,
         body: '#F1F2F4', status: TOKENS.accent, hover: TOKENS.selectedBg,
         accent: TOKENS.accent,

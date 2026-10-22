@@ -20,17 +20,17 @@ import { KDS_STATIONS } from '../../api/posmgmt';
  */
 
 const ESTADOS: Record<string, { label: string; cor: string; fundo: string; borda: string }> = {
-  FIRED: { label: 'Em espera', cor: '#3B82F6', fundo: '#F7F8FA', borda: '#3B82F6' },
-  PREPARING: { label: 'A preparar', cor: '#3B82F6', fundo: '#F7F8FA', borda: '#3B82F6' },
-  READY: { label: 'Pronto', cor: '#1E2A44', fundo: '#F7F8FA', borda: '#1E2A44' },
+  FIRED: { label: 'Em espera', cor: '#3B82F6', fundo: '#EEF1F5', borda: '#3B82F6' },
+  PREPARING: { label: 'A preparar', cor: '#3B82F6', fundo: '#EEF1F5', borda: '#3B82F6' },
+  READY: { label: 'Pronto', cor: '#2563EB', fundo: '#EEF1F5', borda: '#2563EB' },
   CANCELLED: { label: 'ANULADO', cor: '#DC2626', fundo: '#FFFFFF', borda: '#DC2626' },
 };
 
 /** Que botão avança este estado (e como se chama para o cozinheiro). */
 const AVANCO: Record<string, { label: string; cor: string }> = {
   FIRED: { label: 'Iniciar', cor: '#3B82F6' },
-  PREPARING: { label: 'Pronto', cor: '#1E2A44' },
-  READY: { label: 'Entregue', cor: '#1E2A44' },
+  PREPARING: { label: 'Pronto', cor: '#2563EB' },
+  READY: { label: 'Entregue', cor: '#2563EB' },
   CANCELLED: { label: 'Confirmar anulação', cor: '#DC2626' },
 };
 
@@ -93,9 +93,9 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
   const atrasados = (queue as any[]).filter((l) => l.kds_status !== 'CANCELLED' && mins(l.fired_at) >= 15).length;
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#1E2A44', color: '#F7F8FA' }}>
+    <div className="h-full flex flex-col" style={{ background: '#2563EB', color: '#EEF1F5' }}>
       {/* Barra de topo */}
-      <div className="flex items-center gap-4 px-5 py-3 flex-shrink-0" style={{ background: '#1E2A44', borderBottom: '2px solid #1E2A44' }}>
+      <div className="flex items-center gap-4 px-5 py-3 flex-shrink-0" style={{ background: '#2563EB', borderBottom: '2px solid #2563EB' }}>
         <ChefHat size={26} className="text-[#6B7280]" />
         <div>
           <div className="text-[18px] font-black leading-tight">
@@ -111,7 +111,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
         <div className="ml-auto flex items-center gap-3">
           {[['FIRED', contar('FIRED')], ['PREPARING', contar('PREPARING')], ['READY', contar('READY')]].map(([st, n]) => (
             <div key={String(st)} className="px-4 py-1.5 rounded-lg text-center min-w-[92px]"
-              style={{ background: '#1E2A44', border: `2px solid ${ESTADOS[String(st)].cor}` }}>
+              style={{ background: '#2563EB', border: `2px solid ${ESTADOS[String(st)].cor}` }}>
               <div className="text-[22px] font-black leading-none" style={{ color: ESTADOS[String(st)].cor }}>{String(n)}</div>
               <div className="text-[10px] uppercase tracking-wide text-slate-400 mt-0.5">{ESTADOS[String(st)].label}</div>
             </div>
@@ -135,7 +135,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
           {KDS_STATIONS.map((s) => (
             <button key={s.value} onClick={() => setStation(s.value)}
               className={`px-5 py-2 text-[12px] font-bold rounded-t-lg ${station === s.value
-                ? 'bg-[#1E2A44] text-white' : 'bg-[#1E2A44] text-slate-500 hover:text-slate-300'}`}>
+                ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-slate-500 hover:text-slate-300'}`}>
               {s.label}
             </button>
           ))}
@@ -273,7 +273,7 @@ export default function KDSView({ fixedStation, title }: KDSProps = {}) {
 
       {/* Rodapé */}
       <div className="flex items-center gap-3 px-5 py-2 text-[12px] flex-shrink-0"
-        style={{ background: '#1E2A44', borderTop: '2px solid #1E2A44', color: '#3B82F6' }}>
+        style={{ background: '#2563EB', borderTop: '2px solid #2563EB', color: '#3B82F6' }}>
         <span>{pedidos.length} pedido(s) · {(queue as any[]).length} artigo(s)</span>
         <span className="opacity-40">|</span>
         <span>Atualiza sozinho</span>

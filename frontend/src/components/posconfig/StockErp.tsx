@@ -73,8 +73,8 @@ export default function StockErp() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex border-b-2 border-[#1E2A44] px-3 bg-[#F7F8FA]">
-        <span className="px-4 py-2 text-[12px] font-semibold border-b-[3px] border-[#1E2A44] bg-white">
+      <div className="flex border-b-2 border-[#E6E8EC] px-3 bg-[#EEF1F5]">
+        <span className="px-4 py-2 text-[12px] font-semibold border-b-[3px] border-[#E6E8EC] bg-white">
           ERP Externo - Avançado
         </span>
       </div>
@@ -86,7 +86,7 @@ export default function StockErp() {
         </label>
 
         {off && (
-          <div className="text-[11px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-2 mb-3 max-w-[900px]">
+          <div className="text-[11px] text-[#111827] bg-[#EEF1F5] border border-[#E6E8EC] px-3 py-2 mb-3 max-w-[900px]">
             Desligada: o <b>stock é gerido pelo motor interno</b> do sistema — que já desconta a
             mercadoria em cada venda e faz o custo médio. Ligue isto só se a verdade do stock
             estiver mesmo num ERP de fora; caso contrário fica com dois números para a mesma garrafa.
@@ -154,7 +154,7 @@ export default function StockErp() {
                 </label>
                 <select value={d.block_mode} disabled={!d.stock_control}
                   onChange={(e) => set('block_mode', e.target.value)}
-                  className={`${inp} flex-1 disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle}>
+                  className={`${inp} flex-1 disabled:bg-[#EEF1F5] disabled:text-[#6B7280]`} style={inputStyle}>
                   <option value="WARN">Avisar</option>
                   <option value="BLOCK">Bloqueio</option>
                   <option value="NONE">Não controlar</option>
@@ -168,7 +168,7 @@ export default function StockErp() {
               </Row>
 
               <button onClick={() => sync.mutate()} disabled={off}
-                className="w-full py-3 bg-[#1E2A44] text-white text-[12px] font-semibold hover:bg-[#1E2A44] disabled:opacity-40 mt-2">
+                className="w-full py-3 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-semibold hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-40 mt-2">
                 {sync.isPending ? 'A atualizar…' : 'Stocks - Atualizar'}
               </button>
             </div>
@@ -177,17 +177,17 @@ export default function StockErp() {
 
         {d.last_test_detail && (
           <div className={`text-[11px] px-3 py-2 border mt-3 max-w-[900px] ${d.last_test_ok
-            ? 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]'
-            : 'bg-[#F7F8FA] border-[#DC2626] text-[#DC2626]'}`}>
+            ? 'bg-[#EEF1F5] border-[#E6E8EC] text-[#111827]'
+            : 'bg-[#EEF1F5] border-[#DC2626] text-[#DC2626]'}`}>
             Último teste: {d.last_test_detail}
           </div>
         )}
       </div>
 
       <Toolbar actions={[
-        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#1E2A44',
+        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#111827',
           disabled: !d.id, onClick: () => test.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
       ]} />
     </div>
   );

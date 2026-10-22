@@ -23,7 +23,7 @@ export default function GiftCardsView() {
     <ClassicWindow title="Gift Cards / Vouchers (POS · Motor 6)" icon={<Gift size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{cards.length} cartão(ões) · o saldo é debitado no pagamento (redeem) do ticket</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-40" />
           <input placeholder="Saldo inicial" type="number" value={draft.initial_balance} onChange={(e) => setDraft({ ...draft, initial_balance: e.target.value })} className="border border-[#E6E8EC] p-1 w-28" />
           <ClassicButton icon={Plus} label="Emitir Gift Card" onClick={add} />

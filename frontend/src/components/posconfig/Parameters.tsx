@@ -77,7 +77,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#F7F8FA] text-[12px]">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#EEF1F5] text-[12px]">
         <span>Pesquisar:</span>
         <div className="flex items-center border border-[#E6E8EC] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="nome ou número (ex.: 8128)"
@@ -92,7 +92,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0 z-10">
-            <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)' }}>
+            <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 55%, #F1F2F4 100%)' }}>
               <th className="text-left font-semibold px-3 py-1.5 border-b-2" style={{ borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>Descrição</th>
               <th className="text-left font-semibold px-3 py-1.5 border-b-2 border-l w-[38%]" style={{ borderBottomColor: TOKENS.border, borderLeftColor: '#F1F2F4', color: TOKENS.selectedText }}>Valor</th>
             </tr>
@@ -100,7 +100,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
           <tbody>
             {shown.map((g: any) => (
               <Fragment key={g.group}>
-                <tr style={{ background: 'linear-gradient(to bottom, #F7F8FA 0%, #F7F8FA 100%)' }}>
+                <tr style={{ background: 'linear-gradient(to bottom, #EEF1F5 0%, #EEF1F5 100%)' }}>
                   <td colSpan={2} className="px-3 py-1.5 font-bold border-y" style={{ color: TOKENS.selectedText, borderColor: TOKENS.border }}>{g.group}</td>
                 </tr>
                 {g.params.map((p: any, i: number) => {
@@ -108,7 +108,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
                   const changed = dirty.has(p.number);
                   return (
                     <tr key={p.number} className="border-b"
-                      style={{ borderColor: '#F7F8FA', background: changed ? TOKENS.warningBg : i % 2 ? '#FFFFFF' : TOKENS.surface }}
+                      style={{ borderColor: '#EEF1F5', background: changed ? TOKENS.warningBg : i % 2 ? '#FFFFFF' : TOKENS.surface }}
                       onMouseEnter={(e) => { if (!changed) e.currentTarget.style.background = TOKENS.hover; }}
                       onMouseLeave={(e) => { if (!changed) e.currentTarget.style.background = i % 2 ? '#FFFFFF' : TOKENS.surface; }}>
                       <td className="px-3 py-1.5" title={p.help_text}>
@@ -142,7 +142,7 @@ export default function Parameters({ group }: { group?: string } = {}) {
 
       <Toolbar
         actions={[
-          { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${dirty.size ? ` (${dirty.size})` : ''}`, color: '#1E2A44', disabled: !dirty.size, onClick: () => save.mutate() },
+          { icon: '✔', label: save.isPending ? 'A gravar…' : `Gravar${dirty.size ? ` (${dirty.size})` : ''}`, color: '#111827', disabled: !dirty.size, onClick: () => save.mutate() },
         ]}
         right={<span className="text-[11px] text-[#6B7280] pr-2">
           Os parâmetros são lidos pelo sistema em tempo real — entram em vigor em segundos.

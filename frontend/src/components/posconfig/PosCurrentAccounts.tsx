@@ -74,7 +74,7 @@ export default function PosCurrentAccounts() {
     const porLiquidar = det.documents.filter((d: any) => !d.settled && !d.rectifying);
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-3 py-2 bg-[#F7F8FA] text-[#111827] text-[12px] font-bold border-b border-[#E6E8EC] flex items-center gap-3">
+        <div className="px-3 py-2 bg-[#EEF1F5] text-[#111827] text-[12px] font-bold border-b border-[#E6E8EC] flex items-center gap-3">
           <span>{det.entity.name} — [{det.entity.code}] NIF {det.entity.tax_id || '—'}</span>
           {det.entity.blocked && (
             <span className="px-2 py-0.5 bg-[#DC2626] text-white text-[11px]">
@@ -88,11 +88,11 @@ export default function PosCurrentAccounts() {
 
         <div className="flex-1 flex overflow-hidden">
           <div className="flex-1 overflow-auto border-r border-[#F1F2F4]">
-            <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4]">
+            <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4]">
               Documentos ({porLiquidar.length} por liquidar)
             </div>
             <table className="w-full text-[12px] border-collapse">
-              <thead><tr className="bg-[#F7F8FA]">
+              <thead><tr className="bg-[#EEF1F5]">
                 {['Documento', 'Data', 'Total', 'Estado', ''].map((h) => (
                   <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
                 ))}
@@ -105,7 +105,7 @@ export default function PosCurrentAccounts() {
                     <td className="px-2 py-1 text-right font-bold">{money(d.total)}</td>
                     <td className="px-2 py-1">
                       <span className={`px-2 py-0.5 text-[11px] font-semibold ${d.settled
-                        ? 'bg-[#F7F8FA] text-[#111827]' : 'bg-[#F7F8FA] text-[#DC2626]'}`}>
+                        ? 'bg-[#EEF1F5] text-[#111827]' : 'bg-[#EEF1F5] text-[#DC2626]'}`}>
                         {d.settled ? 'Liquidado' : 'Por receber'}
                       </span>
                     </td>
@@ -135,7 +135,7 @@ export default function PosCurrentAccounts() {
           </div>
 
           <div className="w-[42%] overflow-auto">
-            <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4]">
+            <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4]">
               Cash Advance — depósitos
             </div>
             <div className="p-3 flex items-end gap-2 border-b border-[#F1F2F4]">
@@ -151,7 +151,7 @@ export default function PosCurrentAccounts() {
                 const v = (document.getElementById('dep') as HTMLInputElement).value;
                 const m = (document.getElementById('depm') as HTMLInputElement).value;
                 acao.mutate({ id: conta, action: 'deposit', kind: 'IN', amount: v, reason: m });
-              }} className="px-3 py-1.5 bg-[#1E2A44] text-white text-[12px]">Depositar</button>
+              }} className="px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px]">Depositar</button>
               <button onClick={() => {
                 const v = (document.getElementById('dep') as HTMLInputElement).value;
                 acao.mutate({ id: conta, action: 'deposit', kind: 'OUT', amount: v, reason: 'Devolução' });
@@ -184,7 +184,7 @@ export default function PosCurrentAccounts() {
 
   // ---------- pesquisa ----------
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
       <div className="flex gap-3 p-3">
         <fieldset className="bg-white px-3 pb-3 w-[220px]" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <legend className="text-[12px] text-[#111827] px-1">Tipo de pesquisa</legend>
@@ -227,7 +227,7 @@ export default function PosCurrentAccounts() {
         </fieldset>
 
         <button onClick={pesquisar}
-          className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#1E2A44] text-white hover:bg-[#1E2A44]">
+          className="w-[180px] flex flex-col items-center justify-center gap-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] hover:bg-[#FFFFFF] border-b border-[#E6E8EC]">
           <Glyph icon="🔄" size={26} />
           <span className="text-[12px]">Pesquisar</span>
         </button>
@@ -235,7 +235,7 @@ export default function PosCurrentAccounts() {
 
       <div className="flex-1 overflow-auto bg-white border-t border-[#F1F2F4]">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             {['Principal', 'Morada', 'Contacto', 'Outra', 'Saldo (Conta Corrente)', 'Saldo (Cash Advance)'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
             ))}
@@ -243,7 +243,7 @@ export default function PosCurrentAccounts() {
           <tbody>
             {vista.map((r) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setConta(r.id)}
-                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="px-2 py-1.5 font-semibold">
                   {r.blocked && <span className="text-[#DC2626] mr-1 inline-flex align-middle" title="Bloqueada"><Glyph icon="⛔" size={13} /></span>}
                   {r.name}
@@ -252,11 +252,11 @@ export default function PosCurrentAccounts() {
                 <td className="px-2 py-1.5">{r.contact || '—'}</td>
                 <td className="px-2 py-1.5 text-[#6B7280]">{r.other || '—'}</td>
                 <td className="px-2 py-1.5 text-right font-bold"
-                  style={{ color: Number(r.cc_balance) > 0 ? '#DC2626' : '#1E2A44' }}>
+                  style={{ color: Number(r.cc_balance) > 0 ? '#DC2626' : '#2563EB' }}>
                   {money(r.cc_balance)}
                 </td>
                 <td className="px-2 py-1.5 text-right font-bold"
-                  style={{ color: Number(r.advance_balance) > 0 ? '#1E2A44' : '#1E2A44' }}>
+                  style={{ color: Number(r.advance_balance) > 0 ? '#2563EB' : '#2563EB' }}>
                   {money(r.advance_balance)}
                 </td>
               </tr>
@@ -268,7 +268,7 @@ export default function PosCurrentAccounts() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -286,7 +286,7 @@ export default function PosCurrentAccounts() {
 
       <Toolbar actions={[
         { label: 'Contas Correntes', icon: '▸', color: '#3B82F6', disabled: !sel, onClick: () => setConta(sel) },
-        { label: 'Cash Advance', icon: '▸', color: '#1E2A44', disabled: !sel, onClick: () => setConta(sel) },
+        { label: 'Cash Advance', icon: '▸', color: '#111827', disabled: !sel, onClick: () => setConta(sel) },
       ]} right={
         <span className="flex items-center gap-2">
           <span className="text-[11px] text-[#6B7280]">

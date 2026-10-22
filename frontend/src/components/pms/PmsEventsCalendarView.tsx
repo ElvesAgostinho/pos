@@ -5,7 +5,7 @@ import { apiClient } from '../../api/client';
     Mantido simples de propósito (MVP): uma grelha mensal a sério só faria
     sentido com um modelo de salas/venue, que ainda não existe. */
 
-const STATUS_COLOR: Record<string, string> = { INQUIRY: '#3B82F6', CONFIRMED: '#1E2A44', CANCELLED: '#DC2626', COMPLETED: '#3B82F6' };
+const STATUS_COLOR: Record<string, string> = { INQUIRY: '#D97706', CONFIRMED: '#16A34A', CANCELLED: '#DC2626', COMPLETED: '#6B7280' };
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 export default function PmsEventsCalendarView() {
@@ -28,10 +28,10 @@ export default function PmsEventsCalendarView() {
         const label = key === 'sem-data' ? 'Sem data' : `${MESES[Number(m) - 1]} ${y}`;
         return (
           <div key={key} className="mb-4">
-            <div className="text-[12px] font-bold text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-1.5">{label} <span className="text-gray-500 font-normal">({evs.length})</span></div>
+            <div className="text-[12px] font-bold text-[#111827] bg-[#EEF1F5] border border-[#E6E8EC] px-3 py-1.5">{label} <span className="text-gray-500 font-normal">({evs.length})</span></div>
             <div className="border border-t-0 border-[#E6E8EC]">
               {evs.map((ev) => (
-                <div key={ev.id} className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] text-[12px] hover:bg-[#F7F8FA]">
+                <div key={ev.id} className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] text-[12px] hover:bg-[#EEF1F5]">
                   <span className="w-16 font-mono text-gray-500">{ev.event_date?.slice(8, 10)}/{ev.event_date?.slice(5, 7)}</span>
                   <span className="w-16 text-gray-400">{ev.start_time ? ev.start_time.slice(0, 5) : '—'}</span>
                   <span className="flex-1 font-semibold text-[#111827]">{ev.name}</span>

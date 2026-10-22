@@ -101,7 +101,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
         </>
       }
     >
-      <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto">
+      <div className="p-4 bg-[#EEF1F5] h-full overflow-y-auto">
         <form onSubmit={handleSubmit} className="text-[11px] grid grid-cols-1 gap-4 max-w-2xl">
           
           <div className="border border-[#E6E8EC] bg-white p-2">
@@ -109,7 +109,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
             <div className="grid grid-cols-1 gap-y-2">
               <div className="flex items-center">
                 <label className="w-32 font-bold">Código</label>
-                <input readOnly name="code" value={formData.code} className="flex-1 border border-[#E6E8EC] p-1 bg-[#F7F8FA]" />
+                <input readOnly name="code" value={formData.code} className="flex-1 border border-[#E6E8EC] p-1 bg-[#EEF1F5]" />
               </div>
               <div className="flex items-center">
                 <label className="w-32 font-bold">Nome *</label>
@@ -155,7 +155,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
                 </div>
                 <div className="flex items-center mt-1">
                   <label className="w-32 font-bold">Perfil / Grupo</label>
-                  <select name="profile_id" value={formData.profile_id} onChange={handleChange} className="flex-1 border border-[#E6E8EC] p-1 focus:outline-none bg-[#F7F8FA]">
+                  <select name="profile_id" value={formData.profile_id} onChange={handleChange} className="flex-1 border border-[#E6E8EC] p-1 focus:outline-none bg-[#EEF1F5]">
                     <option value="">(Selecione)</option>
                     {profiles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
@@ -185,7 +185,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
                   <label className="font-bold block mb-1 border-b border-gray-200">Terminais Autorizados:</label>
                   <div className="max-h-24 overflow-y-auto border border-[#E6E8EC] p-1 bg-white">
                     {terminals.map(t => (
-                      <div key={t.id} className="flex items-center p-1 hover:bg-[#F7F8FA] cursor-pointer" onClick={() => toggleTerminal(t.id)}>
+                      <div key={t.id} className="flex items-center p-1 hover:bg-[#EEF1F5] cursor-pointer" onClick={() => toggleTerminal(t.id)}>
                         <input type="checkbox" checked={formData.allowed_workstations.includes(t.id)} readOnly className="mr-2" />
                         <span>{t.name} (IP: {t.ip_address || 'N/A'})</span>
                       </div>

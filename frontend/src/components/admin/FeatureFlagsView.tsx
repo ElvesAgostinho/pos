@@ -27,7 +27,7 @@ export default function FeatureFlagsView() {
   return (
     <ClassicWindow title="Funcionalidades (Licenciamento por Módulo)" icon={<SlidersHorizontal size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Ligue/desligue funcionalidades dentro dos módulos licenciados · os ecrãs desligados desaparecem do menu</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         {Object.entries(groups).map(([mod, feats]) => (
           <div key={mod} className="bg-white border border-[#E6E8EC]">
             <div className="px-3 py-1.5 bg-[#3B82F6] text-white text-[12px] font-bold">{MOD_NAME[mod] || mod}</div>
@@ -37,7 +37,7 @@ export default function FeatureFlagsView() {
                   <div className="font-semibold">{f.name}</div>
                   <div className="text-[10px] text-gray-500 font-mono">{f.key}</div>
                 </div>
-                <button onClick={() => toggle(f.key, !f.active)} className="flex items-center gap-1.5 font-bold" style={{ color: f.active ? '#1E2A44' : '#3B82F6' }}>
+                <button onClick={() => toggle(f.key, !f.active)} className="flex items-center gap-1.5 font-bold" style={{ color: f.active ? '#2563EB' : '#3B82F6' }}>
                   {f.active ? <ToggleRight size={26} /> : <ToggleLeft size={26} />}{f.active ? 'Ativa' : 'Desligada'}
                 </button>
               </div>

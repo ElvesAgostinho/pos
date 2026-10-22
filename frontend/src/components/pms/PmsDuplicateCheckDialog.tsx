@@ -38,8 +38,8 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-h-[75vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="w-[900px] max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
           Controlo de duplicação
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -53,7 +53,7 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
           </label>
           <button onClick={() => refetch()}
             className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px] py-2"
-            style={{ background: '#1E2A44' }}>
+            style={{ background: '#2563EB' }}>
             <RefreshCw size={18} /> Pesquisar
           </button>
         </div>
@@ -78,9 +78,9 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
             lista em tempo real — um segundo filtro seria a mesma coisa duas
             vezes (o ClassicGrid também tem o seu próprio filtro embutido,
             aqui desligado com filterable={false} para não ficar um 3º). */}
-        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12px]">
+        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#EEF1F5] border-t border-[#E6E8EC] text-[12px]">
           <button disabled={!selId} onClick={abrirDetalhes}
-            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-30 disabled:hover:bg-transparent">
+            className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#EEF1F5] disabled:opacity-30 disabled:hover:bg-transparent">
             <Users size={13} /> Detalhes
           </button>
           <div className="flex-1" />

@@ -18,7 +18,7 @@ interface ClassicWindowProps {
 export default function ClassicWindow({ title, icon, children, footer, width, onClose }: ClassicWindowProps) {
   return (
     <div
-      className="flex flex-col bg-[#F7F8FA] font-sans text-xs overflow-hidden flex-1 h-full relative"
+      className="flex flex-col bg-[#EEF1F5] font-sans text-xs overflow-hidden flex-1 h-full relative"
       style={width ? { maxWidth: width, borderRadius: RADIUS.lg, boxShadow: SHADOW.panel } : undefined}
     >
       {/* Barra de título */}

@@ -76,7 +76,7 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
                 key={row[rowKey] || idx}
                 onClick={() => { setInnerSel(row[rowKey] ?? idx); onRowClick && onRowClick(row); }}
                 onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-                className="border-b border-[#F1F2F4] cursor-pointer transition-colors hover:bg-[#F7F8FA]"
+                className="border-b border-[#F1F2F4] cursor-pointer transition-colors hover:bg-[#EEF1F5]"
                 style={{
                   background: isSelected ? TOKENS.selectedBg : idx % 2 === 0 ? TOKENS.surface : '#FFFFFF',
                   color: isSelected ? TOKENS.selectedText : undefined,

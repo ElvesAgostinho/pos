@@ -22,7 +22,7 @@ const LocationNode = ({
   const hasChildren = node.children && node.children.length > 0;
   
   const typeColors: Record<string, string> = {
-    'ZONE': 'bg-[#F7F8FA] border-[#E6E8EC]',
+    'ZONE': 'bg-[#EEF1F5] border-[#E6E8EC]',
     'AISLE': 'bg-white border-[#F1F2F4]',
     'RACK': 'bg-white border-[#F1F2F4]',
     'SHELF': 'bg-white border-[#F1F2F4]',
@@ -32,7 +32,7 @@ const LocationNode = ({
   return (
     <div className="select-none text-[11px] font-sans">
       <div 
-        className={`flex items-center p-1 border-b border-[#F1F2F4] hover:bg-[#F7F8FA] transition-colors`}
+        className={`flex items-center p-1 border-b border-[#F1F2F4] hover:bg-[#EEF1F5] transition-colors`}
         style={{ paddingLeft: `${level * 16 + 4}px` }}
       >
         <button 
@@ -166,7 +166,7 @@ export default function LocationsView() {
           </>
         }
       >
-        <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto">
+        <div className="p-4 bg-[#EEF1F5] h-full overflow-y-auto">
           <form id="location-form" onSubmit={handleSave} className="text-[11px] grid grid-cols-1 gap-4">
             
             <div className="border border-[#E6E8EC] bg-white p-2">
@@ -242,7 +242,7 @@ export default function LocationsView() {
     >
       <div className="flex flex-col h-full bg-white">
         {/* Selector Header */}
-        <div className="flex items-center p-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[11px]">
+        <div className="flex items-center p-2 border-b border-[#E6E8EC] bg-[#EEF1F5] text-[11px]">
           <span className="font-bold mr-2">Armazém:</span>
           <select 
             value={selectedWarehouseId || ''} 
@@ -268,7 +268,7 @@ export default function LocationsView() {
             </div>
           ) : locationsTree && locationsTree.length > 0 ? (
             <div className="border border-[#E6E8EC] bg-white">
-              <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-1 flex text-[10px] font-bold text-gray-800">
+              <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] p-1 flex text-[10px] font-bold text-gray-800">
                 <div className="w-16">Nível</div>
                 <div className="w-16">Código</div>
                 <div className="flex-1">Nome / Descrição</div>

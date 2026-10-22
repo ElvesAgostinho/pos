@@ -324,6 +324,7 @@ export const ICONES_3D: Record<string, (p: Props) => any> = {
   utilizadores: Icon3DUtilizadores, users: Icon3DUtilizadores, hospedes: Icon3DUtilizadores,
   stock: Icon3DCaixa, box: Icon3DCaixa, inventory: Icon3DCaixa, produtos: Icon3DCaixa,
   definicoes: Icon3DDefinicoes, settings: Icon3DDefinicoes, config: Icon3DDefinicoes,
+  gear: Icon3DDefinicoes, posc_config: Icon3DDefinicoes,
   terminal: Icon3DTerminal, pos: Icon3DTerminal, monitor: Icon3DTerminal,
   canais: Icon3DCanais, channels: Icon3DCanais, globe: Icon3DCanais, online: Icon3DCanais,
   chave: Icon3DChave, key: Icon3DChave, acessos: Icon3DChave,

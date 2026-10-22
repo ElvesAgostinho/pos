@@ -141,10 +141,10 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
       : artigos;
 
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
-        <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
+        <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold">
           {edit.id ? `Documento ${edit.number}` : 'Novo documento'}
-          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#1E2A44] text-[11px]">LANÇADO NO STOCK</span>}
+          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#2563EB] text-[11px]">LANÇADO NO STOCK</span>}
         </div>
 
         <div className="flex gap-3 p-3">
@@ -246,7 +246,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
           <div className="w-[42%] flex gap-3">
             {mode === 'PURCHASE' && (
               <div className="flex-1 bg-white" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-                <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#E6E8EC]">Entidade</div>
+                <div className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#E6E8EC]">Entidade</div>
                 <div className="p-2 space-y-1">
                   <select value={edit.entity ?? ''} onChange={(e) => setEdit({ ...edit, entity: e.target.value })}
                     className={`${inp} w-full`} style={inputStyle}>
@@ -279,7 +279,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
             )}
 
             <div className="w-[220px] bg-white" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-              <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#E6E8EC] text-right">Totais</div>
+              <div className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#E6E8EC] text-right">Totais</div>
               <div className="p-2 text-[12px] space-y-1">
                 {[['Subtotal', sub], ['Desconto Artigo', descArt], ['Desconto', descGlobal], ['Tax', iva]].map(([k, v]: any) => (
                   <div key={k} className="flex justify-between text-[#6B7280]">
@@ -296,7 +296,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
 
         {/* Artigos */}
         <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3 bg-white" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-          <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#E6E8EC]">Artigos</div>
+          <div className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#E6E8EC]">Artigos</div>
           <div className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[12px]">
             <span>Filtro:</span>
             <input value={filtro} onChange={(e) => setFiltro(e.target.value)}
@@ -306,7 +306,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
           </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full text-[12px] border-collapse">
-              <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+              <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
                 {['Código / Descrição', mode === 'INTERNAL' ? 'Armazém destino' : 'IVA',
                   mode === 'INVENTORY' ? 'Contagem' : 'Quantidade', 'Stock Qtd.', 'Valor',
                   ...(mode === 'PURCHASE' ? ['Desconto', 'Lote', 'Validade'] : []),
@@ -391,7 +391,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
             </table>
           </div>
           {mode === 'INVENTORY' && (
-            <div className="px-3 py-2 text-[11px] text-[#111827] bg-[#F7F8FA] border-t border-[#E6E8EC]">
+            <div className="px-3 py-2 text-[11px] text-[#111827] bg-[#EEF1F5] border-t border-[#E6E8EC]">
               A <b>Contagem</b> é o que existe MESMO na prateleira. Ao lançar, o sistema faz o
               acerto contra o que julgava ter — a diferença é o que desapareceu (ou apareceu).
             </div>
@@ -408,7 +408,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
             }),
           },
           {
-            label: 'Lançar no stock', icon: '▶', color: '#1E2A44', disabled: !edit.id || edit.posted,
+            label: 'Lançar no stock', icon: '▶', color: '#111827', disabled: !edit.id || edit.posted,
             onClick: () => lancar.mutate(edit.id),
           },
           { label: 'Fechar', icon: '✖', color: '#3B82F6', onClick: () => setEdit(null) },
@@ -426,7 +426,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
     : mode === 'INTERNAL' ? 'Documentos Internos' : 'Inventário';
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
       <div className="flex gap-6 p-3 bg-white border-b border-[#F1F2F4]">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -491,7 +491,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
 
       <div className="flex-1 overflow-auto bg-white">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             {(mode === 'PURCHASE'
               ? ['Documento', 'Doc. Original', 'Data Documento', 'Data de criação', 'Total', 'Entidade', 'Estado', 'Notas']
               : ['Número', 'Data', 'Utilizador', 'Armazém origem', 'Armazém destino', 'Estado', 'Notas']
@@ -501,12 +501,12 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
           </tr></thead>
           <tbody>
             {vista.map((r) => {
-              const estado = r.voided ? ['Anulado', '#F7F8FA', '#DC2626']
-                : r.posted ? ['Lançado', '#F7F8FA', '#1E2A44']
-                  : ['Por lançar', '#F7F8FA', '#1E2A44'];
+              const estado = r.voided ? ['Anulado', '#EEF1F5', '#DC2626']
+                : r.posted ? ['Lançado', '#EEF1F5', '#2563EB']
+                  : ['Por lançar', '#EEF1F5', '#2563EB'];
               return (
                 <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEdit({ ...r })}
-                  className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                  className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                   <td className="px-2 py-1 font-mono font-semibold">{r.number}</td>
                   {mode === 'PURCHASE' ? (
                     <>
@@ -542,7 +542,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -573,8 +573,8 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
               anular.mutate(sel!);
           },
         },
-        { label: 'Copiar', icon: '⧉', color: '#1E2A44', disabled: !sel, onClick: () => copiar.mutate(sel!) },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#1E2A44', onClick: exportar },
+        { label: 'Copiar', icon: '⧉', color: '#111827', disabled: !sel, onClick: () => copiar.mutate(sel!) },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#111827', onClick: exportar },
       ]} />
     </div>
   );

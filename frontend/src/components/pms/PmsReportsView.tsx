@@ -45,7 +45,7 @@ export default function PmsReportsView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex border-b border-[#E6E8EC] bg-[#F7F8FA]">
+      <div className="flex border-b border-[#E6E8EC] bg-[#EEF1F5]">
         {TABS.map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-[12px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
@@ -53,7 +53,7 @@ export default function PmsReportsView() {
           </button>
         ))}
       </div>
-      <div className="flex items-center gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
+      <div className="flex items-center gap-2 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px]">
         <span className="font-semibold text-[#111827]">Período:</span>
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={inp} />
         <span>a</span>
@@ -115,7 +115,7 @@ export default function PmsReportsView() {
               ))}
               {rev.rows.length === 0 && <tr><td colSpan={6} className="text-center text-gray-400 py-6">Sem reservas no período.</td></tr>}
             </tbody>
-            <tfoot><tr className="border-t-2 border-[#1E2A44] font-bold">
+            <tfoot><tr className="border-t-2 border-[#E6E8EC] font-bold">
               <td className="py-1" colSpan={3}>Total Geral</td>
               <td className="text-right">{money(rev.grand_total.room_charges)}</td><td className="text-right">{money(rev.grand_total.payments)}</td><td className="text-right">{money(rev.grand_total.revenue)}</td>
             </tr></tfoot>
@@ -134,7 +134,7 @@ export default function PmsReportsView() {
                 </tr>
               ))}
             </tbody>
-            <tfoot><tr className="border-t-2 border-[#1E2A44] font-bold"><td className="py-1" colSpan={4}>Total</td><td className="text-right">{money(occ.total_revenue)}</td></tr></tfoot>
+            <tfoot><tr className="border-t-2 border-[#E6E8EC] font-bold"><td className="py-1" colSpan={4}>Total</td><td className="text-right">{money(occ.total_revenue)}</td></tr></tfoot>
           </table>
         )}
 
@@ -147,7 +147,7 @@ export default function PmsReportsView() {
               ))}
               {pay.rows.length === 0 && <tr><td colSpan={4} className="text-center text-gray-400 py-6">Sem pagamentos no período.</td></tr>}
             </tbody>
-            <tfoot><tr className="border-t-2 border-[#1E2A44] font-bold"><td className="py-1" colSpan={3}>Total</td><td className="text-right">{money(pay.total)}</td></tr></tfoot>
+            <tfoot><tr className="border-t-2 border-[#E6E8EC] font-bold"><td className="py-1" colSpan={3}>Total</td><td className="text-right">{money(pay.total)}</td></tr></tfoot>
           </table>
         )}
 
@@ -160,7 +160,7 @@ export default function PmsReportsView() {
               ))}
               {chg.rows.length === 0 && <tr><td colSpan={3} className="text-center text-gray-400 py-6">Sem encargos extra no período.</td></tr>}
             </tbody>
-            <tfoot><tr className="border-t-2 border-[#1E2A44] font-bold"><td className="py-1" colSpan={2}>Total</td><td className="text-right">{money(chg.total)}</td></tr></tfoot>
+            <tfoot><tr className="border-t-2 border-[#E6E8EC] font-bold"><td className="py-1" colSpan={2}>Total</td><td className="text-right">{money(chg.total)}</td></tr></tfoot>
           </table>
         )}
 

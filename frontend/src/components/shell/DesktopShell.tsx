@@ -370,7 +370,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
           <div className="fixed inset-0 z-40" onClick={() => setExportOpen(false)} />
           <div className="absolute z-50 border overflow-hidden" style={{ top: 80, left: 360, background: t.tree, borderColor: t.line, color: t.treeText, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
             <div className="px-3 py-1.5 text-[10px] uppercase opacity-60 border-b" style={{ borderColor: t.line }}>Exportar a grelha visível</div>
-            {[['pdf', 'PDF', '#DC2626'], ['excel', 'Excel', '#1E2A44'], ['word', 'Word', '#1E2A44'], ['csv', 'CSV', '#1E2A44'], ['json', 'JSON', '#1E2A44']].map(([f, label, c]: any) => (
+            {[['pdf', 'PDF', '#DC2626'], ['excel', 'Excel', '#2563EB'], ['word', 'Word', '#2563EB'], ['csv', 'CSV', '#2563EB'], ['json', 'JSON', '#2563EB']].map(([f, label, c]: any) => (
               <button key={f} onClick={() => exportAs(f)} className="w-full flex items-center gap-2 px-4 py-2 text-[12px] hover:bg-black/10 text-left">
                 <Download size={14} style={{ color: c }} /> {label}
               </button>
@@ -384,7 +384,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         {/* Árvore de navegação (Windows Explorer) */}
         <div className="w-[236px] flex-shrink-0 flex flex-col border-r overflow-hidden" style={{ background: t.tree, borderColor: t.line, color: t.treeText }}>
           <div className="p-2 border-b" style={{ borderColor: t.line }}>
-            <div className="flex items-center gap-1.5 px-2 py-1.5 border" style={{ borderColor: t.line, background: dark ? '#1E2A44' : '#FFFFFF', borderRadius: RADIUS.sm }}>
+            <div className="flex items-center gap-1.5 px-2 py-1.5 border" style={{ borderColor: t.line, background: dark ? '#2563EB' : '#FFFFFF', borderRadius: RADIUS.sm }}>
               <Search size={12} className="opacity-50" />
               <input value={treeQuery} onChange={(e) => setTreeQuery(e.target.value)} placeholder="Pesquisar ecrãs…"
                 className="bg-transparent outline-none text-[12px] w-full" style={{ color: t.treeText }} />
@@ -403,7 +403,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
                   {newGroup && !treeQuery && (
                     <div className="flex items-center gap-2 px-1.5 pt-3 pb-1.5 select-none">
                       <span className="text-[9px] font-bold tracking-widest opacity-45">{grp}</span>
-                      <span className="flex-1 h-px" style={{ background: dark ? '#1E2A44' : '#F1F2F4' }} />
+                      <span className="flex-1 h-px" style={{ background: dark ? '#2563EB' : '#F1F2F4' }} />
                     </div>
                   )}
                   <button onClick={() => setExpanded((e) => ({ ...e, [f.key]: !open }))}
@@ -466,20 +466,20 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
 // Página inicial do módulo — mostra as PASTAS por tarefa e os seus ecrãs.
 function WelcomePanel({ tree, moduleName, onOpen, dark }:
   { tree: { key: string; title: string; items: { id: string; name: string }[] }[]; moduleName?: string; onOpen: (id: string) => void; dark: boolean }) {
-  const card = dark ? 'bg-[#1E2A44] border-[#1E2A44] text-[#6B7280]' : 'bg-white border-[#E6E8EC] text-[#111827]';
+  const card = dark ? 'bg-[#2563EB] border-[#E6E8EC] text-[#6B7280]' : 'bg-white border-[#E6E8EC] text-[#111827]';
   return (
     <div className="h-full overflow-auto p-4">
       <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#F1F2F4' : '#3B82F6' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {tree.map((f) => (
           <div key={f.key} className={`border overflow-hidden ${card}`} style={{ borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
-            <div className="px-3 py-2 border-b text-[12px] font-bold" style={{ borderColor: dark ? '#1E2A44' : '#F1F2F4', background: dark ? '#1E2A44' : 'linear-gradient(to bottom,#FFFFFF,#F7F8FA)' }}>
+            <div className="px-3 py-2 border-b text-[12px] font-bold" style={{ borderColor: dark ? '#2563EB' : '#F1F2F4', background: dark ? '#2563EB' : 'linear-gradient(to bottom,#FFFFFF,#EEF1F5)' }}>
               {f.title}
             </div>
             <div className="p-2">
               {f.items.map((it) => (
                 <button key={it.id} onClick={() => onOpen(it.id)}
-                  className="w-full flex items-center gap-2 py-1.5 px-1.5 text-[12px] text-left hover:bg-[#F7F8FA] transition-colors" style={{ borderRadius: RADIUS.sm }}>
+                  className="w-full flex items-center gap-2 py-1.5 px-1.5 text-[12px] text-left hover:bg-[#EEF1F5] transition-colors" style={{ borderRadius: RADIUS.sm }}>
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#3B82F6' }} />
                   {it.name}
                 </button>
@@ -488,7 +488,7 @@ function WelcomePanel({ tree, moduleName, onOpen, dark }:
           </div>
         ))}
       </div>
-      <div className="mt-3 text-[11px] opacity-60" style={{ color: dark ? '#3B82F6' : '#1E2A44' }}>
+      <div className="mt-3 text-[11px] opacity-60" style={{ color: dark ? '#3B82F6' : '#2563EB' }}>
         Atalhos: F5 atualizar · Ctrl+P imprimir · Ctrl+N novo · Esc fechar menus.
       </div>
     </div>

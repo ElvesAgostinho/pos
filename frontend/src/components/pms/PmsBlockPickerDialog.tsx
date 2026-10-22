@@ -15,8 +15,8 @@ export default function PmsBlockPickerDialog({ onClose, onSelect }: { onClose: (
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-h-[70vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="w-[900px] max-h-[70vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
           Search blocks
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
@@ -47,7 +47,7 @@ export default function PmsBlockPickerDialog({ onClose, onSelect }: { onClose: (
             { header: 'Bloco principal', accessor: () => '—', width: '14%' },
           ]} />
         </div>
-        <div className="flex justify-between items-center px-3 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC]">
+        <div className="flex justify-between items-center px-3 py-1.5 bg-[#EEF1F5] border-t border-[#E6E8EC]">
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
             className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
             <Hand size={13} /> Selecionar

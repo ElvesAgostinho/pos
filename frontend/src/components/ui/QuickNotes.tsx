@@ -34,7 +34,7 @@ export default function QuickNotes({ onClose }: QuickNotesProps) {
         </button>
       </div>
       
-      <div className="p-2 flex flex-col h-64 bg-[#F7F8FA]">
+      <div className="p-2 flex flex-col h-64 bg-[#EEF1F5]">
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
@@ -45,10 +45,10 @@ export default function QuickNotes({ onClose }: QuickNotesProps) {
         />
       </div>
 
-      <div className="bg-[#F7F8FA] border-t border-[#E6E8EC] p-1.5 flex justify-end">
+      <div className="bg-[#EEF1F5] border-t border-[#E6E8EC] p-1.5 flex justify-end">
         <button 
           onClick={handleSave}
-          className="flex items-center text-[10px] bg-[#F7F8FA] hover:bg-[#DBEAFE] border border-[#E6E8EC] px-2 py-1 text-black font-medium"
+          className="flex items-center text-[10px] bg-[#EEF1F5] hover:bg-[#DBEAFE] border border-[#E6E8EC] px-2 py-1 text-black font-medium"
         >
           <Save size={10} className="mr-1" />
           Guardar Nota

@@ -23,23 +23,23 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
 
   const CORES: Record<string, [string, string, string, string]> = {
     // fundo, borda, texto, etiqueta
-    CRITICO: ['#F7F8FA', '#DC2626', '#B91C1C', 'CRÍTICO'],
-    AVISO: ['#F7F8FA', '#E6E8EC', '#1E2A44', 'AVISO'],
-    INFO: ['#F7F8FA', '#E6E8EC', '#1E2A44', 'INFORMAÇÃO'],
+    CRITICO: ['#EEF1F5', '#DC2626', '#B91C1C', 'CRÍTICO'],
+    AVISO: ['#EEF1F5', '#E6E8EC', '#2563EB', 'AVISO'],
+    INFO: ['#EEF1F5', '#E6E8EC', '#2563EB', 'INFORMAÇÃO'],
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
       {/* Cabeçalho — o resumo que se lê em três segundos */}
-      <div className="flex items-stretch gap-px bg-[#F7F8FA] border-b border-[#E6E8EC]">
+      <div className="flex items-stretch gap-px bg-[#EEF1F5] border-b border-[#E6E8EC]">
         {[
           ['Críticos', d.critical, '#B91C1C', 'dinheiro a sair, ou a lei a ser quebrada'],
-          ['Avisos', d.warning, '#1E2A44', 'vai custar dinheiro se ninguém mexer'],
-          ['Verificações', d.checked, '#1E2A44', 'regras corridas neste momento'],
+          ['Avisos', d.warning, '#2563EB', 'vai custar dinheiro se ninguém mexer'],
+          ['Verificações', d.checked, '#2563EB', 'regras corridas neste momento'],
         ].map(([label, valor, cor, sub]: any) => (
           <div key={label} className="flex-1 bg-white px-4 py-3">
             <div className="text-[11px] text-[#6B7280] uppercase tracking-wide">{label}</div>
-            <div className="text-[28px] font-bold leading-tight" style={{ color: valor ? cor : '#1E2A44' }}>
+            <div className="text-[28px] font-bold leading-tight" style={{ color: valor ? cor : '#2563EB' }}>
               {valor}
             </div>
             <div className="text-[11px] text-[#6B7280]">{sub}</div>
@@ -55,7 +55,7 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
       <div className="flex-1 overflow-auto p-4">
         {d.alerts.length === 0 ? (
           <div className="border border-[#E6E8EC] bg-white p-10 text-center">
-            <div className="w-12 h-12 mx-auto rounded-full bg-[#1E2A44] text-white flex items-center justify-center font-bold">
+            <div className="w-12 h-12 mx-auto rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center font-bold">
               <Glyph icon="✔" size={22} />
             </div>
             <div className="text-[16px] font-bold text-[#111827] mt-3">Nada a assinalar</div>
@@ -107,7 +107,7 @@ export default function PosAlerts({ onOpen }: { onOpen?: (s: string) => void }) 
 
                     {a.screen && onOpen && (
                       <button onClick={() => onOpen(a.screen)}
-                        className="mt-1 px-4 py-1.5 bg-[#1E2A44] text-white text-[12px] hover:bg-[#1E2A44]">
+                        className="mt-1 px-4 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC]">
                         Ir tratar disto
                       </button>
                     )}

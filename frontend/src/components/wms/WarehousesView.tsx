@@ -72,7 +72,7 @@ export default function WarehousesView() {
           </>
         }
       >
-        <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto">
+        <div className="p-4 bg-[#EEF1F5] h-full overflow-y-auto">
           <form id="warehouse-form" onSubmit={handleSave} className="text-[11px] grid grid-cols-1 gap-4">
             
             <div className="border border-[#E6E8EC] bg-white p-2">

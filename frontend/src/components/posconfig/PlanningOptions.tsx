@@ -50,13 +50,13 @@ export default function PlanningOptions() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
+      <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
         Arraste para ordenar
       </div>
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             <th className="w-[40px] border-b border-[#F1F2F4]" />
             <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Espaço</th>
             <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] w-[180px]">Cor de Fundo</th>
@@ -104,7 +104,7 @@ export default function PlanningOptions() {
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
       ]} />
     </div>
   );

@@ -87,7 +87,7 @@ export default function FnbPayables() {
   if (aberta) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-3 py-2 bg-[#F7F8FA] text-[#111827] text-[12px] font-bold border-b border-[#E6E8EC] flex">
+        <div className="px-3 py-2 bg-[#EEF1F5] text-[#111827] text-[12px] font-bold border-b border-[#E6E8EC] flex">
           <span>{aberta.name} — NIF {aberta.other || '—'}</span>
           <span className="ml-auto">
             Saldo: <b className="text-[16px] text-[#DC2626]">{money(aberta.balance)} Kz</b>
@@ -95,7 +95,7 @@ export default function FnbPayables() {
         </div>
         <div className="flex-1 overflow-auto">
           <table className="w-full text-[12px] border-collapse">
-            <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+            <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
               {['Documento', 'Data', 'Vencimento', 'Ref. fornecedor', 'Total', 'Stock', ''].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
               ))}
@@ -114,7 +114,7 @@ export default function FnbPayables() {
                     <td className="px-2 py-1 text-right font-bold">{money(d.total)}</td>
                     <td className="px-2 py-1">
                       <span className={`px-2 py-0.5 text-[11px] ${d.posted
-                        ? 'bg-[#F7F8FA] text-[#111827]' : 'bg-[#F7F8FA] text-[#111827]'}`}>
+                        ? 'bg-[#EEF1F5] text-[#111827]' : 'bg-[#EEF1F5] text-[#111827]'}`}>
                         {d.posted ? 'Lançado' : 'Por lançar'}
                       </span>
                     </td>
@@ -138,7 +138,7 @@ export default function FnbPayables() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
       <div className="p-3">
         <fieldset className="bg-white px-3 pb-3" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <legend className="text-[12px] px-1">Critérios de pesquisa</legend>
@@ -160,7 +160,7 @@ export default function FnbPayables() {
 
       <div className="flex-1 overflow-auto bg-white border-t border-[#F1F2F4]">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             {['Principal', 'Morada', 'Contacto', 'Outra', 'Documentos', 'Saldo'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
             ))}
@@ -168,7 +168,7 @@ export default function FnbPayables() {
           <tbody>
             {vista.map((r) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setAberta(r)}
-                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="px-2 py-1.5 font-semibold">{r.name}</td>
                 <td className="px-2 py-1.5">{r.address || '—'}</td>
                 <td className="px-2 py-1.5">{r.contact || '—'}</td>
@@ -184,7 +184,7 @@ export default function FnbPayables() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>

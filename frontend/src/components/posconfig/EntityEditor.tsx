@@ -55,14 +55,14 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
   if (!eid) return <div className="text-[12px] text-[#6B7280] p-3">Grave primeiro a ficha — as listas ligam-se à entidade criada.</div>;
   return (
     <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-      <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold flex justify-between">
+      <div className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold flex justify-between">
         <span>{titulo}</span>
         <span className="flex gap-2">
           <button onClick={add} className="flex items-center gap-1 text-[#111827]"><Glyph icon="⊕" size={13} /> Adicionar</button>
         </span>
       </div>
       <table className="w-full text-[12px]">
-        <thead><tr className="bg-[#F7F8FA]">
+        <thead><tr className="bg-[#EEF1F5]">
           {cols.map(([k, l]) => <th key={k} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{l}</th>)}
           <th className="w-[60px] border-b border-[#F1F2F4]" />
         </tr></thead>
@@ -211,9 +211,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
         body { font-family: "Segoe UI", Arial, sans-serif; font-size: 11.5px; color: #111827;
                padding: 16mm 15mm; }
         .top { display:flex; justify-content:space-between; align-items:flex-start;
-               border-bottom:2px solid #1E2A44; padding-bottom:10px; margin-bottom:4px; }
+               border-bottom:2px solid #2563EB; padding-bottom:10px; margin-bottom:4px; }
         .logo { max-height:50px; max-width:180px; display:block; margin-bottom:5px; }
-        .brand { font-size:17px; font-weight:700; color:#1E2A44; }
+        .brand { font-size:17px; font-weight:700; color:#2563EB; }
         .sub { color:#6B7280; font-size:10px; }
         .who { text-align:right; }
         .who .nome { font-size:15px; font-weight:700; }
@@ -297,9 +297,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
   return (
     <div className="fixed inset-0 bg-black/45 z-[9500] flex items-center justify-center" onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()}
-        className="w-[1200px] max-w-[96vw] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl flex flex-col"
+        className="w-[1200px] max-w-[96vw] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl flex flex-col"
         style={{ height: 'min(86vh, 760px)', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold bg-[#1E2A44]">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold bg-[#FFFFFF] border-b border-[#E6E8EC]">
           <span>{eid ? `Entidade — ${d.name || d.code}` : 'Nova entidade'}</span>
           <button onClick={onClose} className="w-6 h-6 bg-[#DC2626] text-white text-[12px] flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
         </div>
@@ -310,7 +310,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
             {NAV.map(([k, ico, l]) => (
               <button key={k} onClick={() => setSec(k)}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 text-[12px] text-left border-b border-[#F1F2F4]
-                  ${sec === k ? 'bg-[#F7F8FA] font-bold text-[#111827]' : 'hover:bg-[#F7F8FA]'}`}>
+                  ${sec === k ? 'bg-[#EEF1F5] font-bold text-[#111827]' : 'hover:bg-[#EEF1F5]'}`}>
                 <span className="w-6 flex items-center justify-center"><Glyph icon={ico} size={15} /></span>{l}
               </button>
             ))}
@@ -481,13 +481,13 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <div className="flex gap-1 mb-2">
                 {(['passadas', 'futuras', 'journey', 'pos'] as const).map((t) => (
                   <button key={t} onClick={() => setHistTab(t)}
-                    className={`px-3 py-1.5 text-[12px] font-bold border border-[#E6E8EC] ${histTab === t ? 'bg-[#1E2A44] text-white' : 'bg-white'}`}>
+                    className={`px-3 py-1.5 text-[12px] font-bold border border-[#E6E8EC] ${histTab === t ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'bg-white'}`}>
                     {{ passadas: 'Reservas passadas', futuras: 'Reservas futuras', journey: 'Guest Journey', pos: 'Faturação - POS' }[t]}
                   </button>))}
               </div>
               {histTab === 'journey' && <RecGrid eid={eid} kind="JOURNEY" titulo="Guest Journey"
                 cols={[['data', 'Data'], ['descricao', 'Descrição'], ['visivel', 'Visível p/ hóspede (s/n)']]} />}
-              {histTab === 'pos' && (<table className="w-full text-[12px] border border-[#F1F2F4]"><thead><tr className="bg-[#F7F8FA]">
+              {histTab === 'pos' && (<table className="w-full text-[12px] border border-[#F1F2F4]"><thead><tr className="bg-[#EEF1F5]">
                 {['Número', 'Data', 'Tipo', 'Total', 'Anulado', ''].map((h, i) => <th key={i} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{h}</th>)}</tr></thead>
                 <tbody>{(hist?.invoices || []).map((f: any, i: number) => (
                   <tr key={i} className="border-b border-[#F1F2F4]"><td className="px-2 py-1">{f.number}</td><td className="px-2 py-1">{f.date}</td><td className="px-2 py-1">{f.type}</td><td className="px-2 py-1 text-right">{f.total}</td><td className="px-2 py-1">{f.voided ? 'Sim' : ''}</td>
@@ -500,7 +500,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                 </tbody></table>)}
               {(histTab === 'passadas' || histTab === 'futuras') && (<>
               <div className="text-[12px] font-bold">Reservas (PMS)</div>
-              <table className="w-full text-[12px] border border-[#F1F2F4]"><thead><tr className="bg-[#F7F8FA]">
+              <table className="w-full text-[12px] border border-[#F1F2F4]"><thead><tr className="bg-[#EEF1F5]">
                 {['Nº', 'Estado', 'Check-In', 'Check-Out', 'Quarto'].map((h) => <th key={h} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{h}</th>)}</tr></thead>
                 <tbody>{(hist?.reservations || [])
                   .filter((r: any) => histTab === 'futuras'
@@ -565,7 +565,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                   const url = URL.createObjectURL(r.data); const a = document.createElement('a');
                   a.href = url; a.download = `entidade_${d.code}.json`; a.click(); URL.revokeObjectURL(url);
                 }} disabled={!eid}
-                  className="h-9 px-4 text-[12px] font-bold bg-[#1E2A44] text-white disabled:opacity-40">Portabilidade de Dados</button>
+                  className="h-9 px-4 text-[12px] font-bold bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] disabled:opacity-40">Portabilidade de Dados</button>
                 <button onClick={async () => {
                   if (!await confirmar('ATENÇÃO! Remoção IRREVERSÍVEL (RGPD): os dados pessoais apagam-se e o nome vira um código anónimo. Os documentos fiscais mantêm-se, como a AGT exige. Continuar?')) return;
                   const r = await apiClient.post(`pos/marketing/entities/${eid}/anonymize/`, {});
@@ -578,7 +578,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
         </div>
 
         {/* rodapé clássico */}
-        <div className="h-12 flex items-center gap-5 px-4 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12px]">
+        <div className="h-12 flex items-center gap-5 px-4 bg-[#EEF1F5] border-t border-[#E6E8EC] text-[12px]">
           {/* "Guest Info" e "Sincronizar" eram <span> inertes — pareciam botões e
               não faziam nada. O primeiro passa a mostrar a ficha composta (a
               mesma que vai para o papel); o segundo saiu: não há destino nenhum
@@ -589,7 +589,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
           <button onClick={imprimirFicha} className="hover:underline flex items-center gap-1">
             <Glyph icon="🖨" size={14} /> Imprimir</button>
           <div className="flex-1" />
-          <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
+          <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
           <button onClick={onClose} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center"><Glyph icon="✕" size={12} /></span> Fechar</button>
         </div>
       </div>
@@ -618,18 +618,18 @@ function InfoSeccoes({ eid }: { eid: number }) {
   if (!eid) return <div className="text-[12px] text-[#6B7280] p-2">Grave a ficha para escrever informação por secção.</div>;
   return (
     <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-      <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold">Informação para secção</div>
+      <div className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold">Informação para secção</div>
       <div className="flex" style={{ minHeight: 120 }}>
         <div className="w-[220px] border-r border-[#F1F2F4] bg-white">
           {SECS.map((s) => (
             <button key={s} onClick={() => { setAtiva(s); setTexto(((rows as any[]).find((r) => r.data?.seccao === s)?.data?.texto) || ''); }}
-              className={`w-full text-left px-2 py-1.5 text-[12px] border-b border-[#F1F2F4] ${ativa === s ? 'bg-[#F7F8FA] font-bold' : ''}`}>{s}</button>
+              className={`w-full text-left px-2 py-1.5 text-[12px] border-b border-[#F1F2F4] ${ativa === s ? 'bg-[#EEF1F5] font-bold' : ''}`}>{s}</button>
           ))}
         </div>
         <div className="flex-1 p-2 flex flex-col gap-1">
           <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={5}
             className="flex-1 border border-[#E6E8EC] text-[12px] p-1" />
-          <button onClick={gravar} className="self-end h-7 px-4 text-[12px] font-bold bg-[#F7F8FA] border border-[#E6E8EC]">Gravar secção</button>
+          <button onClick={gravar} className="self-end h-7 px-4 text-[12px] font-bold bg-[#EEF1F5] border border-[#E6E8EC]">Gravar secção</button>
         </div>
       </div>
     </div>
@@ -659,11 +659,11 @@ function Comissoes({ eid, d: _d, T }: any) {
       <T k="commission_code" l="Cód. Comissão:" /> <T k="commission_pct" l="Percent. comissão:" tipo="number" />
     </div>
     <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-      <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold flex justify-between">
+      <div className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold flex justify-between">
         <span>Outras Comissões</span>
         <button onClick={() => eid ? setAdd({ ativo: true }) : aviso('Grave primeiro a ficha.')} className="text-[#111827]">⊕ Adicionar</button>
       </div>
-      <table className="w-full text-[12px]"><thead><tr className="bg-[#F7F8FA]">
+      <table className="w-full text-[12px]"><thead><tr className="bg-[#EEF1F5]">
         {['Cód. Comissão', 'De data', 'Até à data', 'Ativo', ''].map((h, i) => <th key={i} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{h}</th>)}</tr></thead>
         <tbody>{(rows as any[]).map((r) => (
           <tr key={r.id} className="border-b border-[#F1F2F4]">
@@ -675,8 +675,8 @@ function Comissoes({ eid, d: _d, T }: any) {
     </div>
     {add && (
       <div className="fixed inset-0 bg-black/40 z-[400] flex items-center justify-center" onClick={() => setAdd(null)}>
-        <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl rounded-[16px] overflow-hidden">
-          <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold bg-[#1E2A44]">
+        <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden">
+          <div className="h-8 flex items-center justify-between px-3 text-[#111827] text-[12px] font-bold bg-[#FFFFFF] border-b border-[#E6E8EC]">
             <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#DC2626] flex items-center justify-center"><Glyph icon="✕" size={11} /></button></div>
           <div className="p-4 space-y-2">
             <Row l="Cód. Comissão:" w={110}><input value={add.codigo || ''} onChange={(e) => setAdd({ ...add, codigo: e.target.value })} className={inp} /></Row>
@@ -684,8 +684,8 @@ function Comissoes({ eid, d: _d, T }: any) {
             <Row l="Até à data:" w={110}><input type="date" value={add.ate || ''} onChange={(e) => setAdd({ ...add, ate: e.target.value })} className={inp} /></Row>
             <label className="flex items-center gap-1.5 text-[12px] pl-[118px]"><input type="checkbox" checked={!!add.ativo} onChange={(e) => setAdd({ ...add, ativo: e.target.checked })} className="w-4 h-4" />Ativo</label>
           </div>
-          <div className="h-11 flex items-center justify-between px-4 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12px]">
-            <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
+          <div className="h-11 flex items-center justify-between px-4 bg-[#EEF1F5] border-t border-[#E6E8EC] text-[12px]">
+            <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
             <button onClick={() => setAdd(null)} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center"><Glyph icon="✕" size={12} /></span> Fechar</button>
           </div>
         </div>

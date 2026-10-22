@@ -100,7 +100,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
     const missing = fields.filter((f) => f.required && !editing[f.key]);
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+        <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
           <span className="text-[12px] font-bold text-[#111827]">
             {editing.id ? `A editar ${editing.name || ''}` : `Novo ${title.toLowerCase()}`}
           </span>
@@ -135,10 +135,10 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                         <img src={editing[f.key]} alt="" className="w-8 h-8 object-contain border border-[#F1F2F4] bg-white flex-shrink-0" />
                       )}
                       <label className="flex-1 min-w-0 flex items-center gap-2 cursor-pointer">
-                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#111827] bg-[#F7F8FA]`} style={inputStyle}>
+                        <span className={`${inputCls} flex-1 min-w-0 truncate text-[#111827] bg-[#EEF1F5]`} style={inputStyle}>
                           {editing[f.key] ? String(editing[f.key]).split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                         </span>
-                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#1E2A44] text-white hover:bg-[#1E2A44] flex-shrink-0">
+                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] flex-shrink-0">
                           Carregar…
                         </span>
                         <input type="file" accept="image/*" className="hidden"
@@ -157,7 +157,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                       </label>
                       {editing[f.key] && (
                         <button onClick={() => set(f.key, '')} title="Remover imagem"
-                          className="px-2 py-1 text-[#DC2626] hover:bg-[#F7F8FA] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
+                          className="px-2 py-1 text-[#DC2626] hover:bg-[#EEF1F5] flex-shrink-0 inline-flex"><Glyph icon="✕" size={13} /></button>
                       )}
                     </div>
                   ) : (
@@ -174,7 +174,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
         <Toolbar actions={[
           {
-            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44',
+            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827',
             onClick: () => missing.length
               ? notifyGuide({ title: 'Faltam campos', message: `Preencha: ${missing.map((m) => m.label).join(', ')}.` })
               : save.mutate(editing),
@@ -191,7 +191,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#F7F8FA] text-[12px]">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#EEF1F5] text-[12px]">
         <span className="text-[#111827]">Pesquisar:</span>
         <div className="flex items-center border border-[#E6E8EC] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
@@ -208,7 +208,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
               verticais entre colunas — é o detalhe que faz uma grelha parecer folha de
               cálculo a sério, não uma lista HTML qualquer. */}
           <thead className="sticky top-0">
-            <tr className="text-[#111827]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)' }}>
+            <tr className="text-[#111827]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 55%, #F1F2F4 100%)' }}>
               {columns.map((c, i) => (
                 <th key={c.key}
                   className={`text-left font-semibold px-3 py-1 border-b-2 ${i > 0 ? 'border-l' : ''}`}
@@ -223,7 +223,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => !readOnly && setEditing({ ...r })}
                 className="cursor-pointer border-b"
                 style={{
-                  borderColor: '#F7F8FA',
+                  borderColor: '#EEF1F5',
                   background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#FFFFFF' : TOKENS.surface,
                   color: sel === r.id ? TOKENS.selectedText : undefined,
                 }}
@@ -252,7 +252,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
         </table>
       </div>
 
-      <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[12px]">
+      <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#EEF1F5] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className="border border-[#E6E8EC] px-2 py-0.5 bg-white">
@@ -274,12 +274,12 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#1E2A44', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
+        { icon: '＋', label: 'Adicionar', color: '#111827', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
         { icon: '✎', label: 'Editar', color: '#3B82F6', disabled: !sel || readOnly, onClick: () => setEditing({ ...selRow }) },
-        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#1E2A44', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
+        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#111827', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
         { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },
-        { icon: '🖶', label: 'Imprimir', color: '#1E2A44', onClick: () => window.print() },
-        { icon: '⤓', label: 'Exportar para Excel', color: '#1E2A44', onClick: exportCsv },
+        { icon: '🖶', label: 'Imprimir', color: '#111827', onClick: () => window.print() },
+        { icon: '⤓', label: 'Exportar para Excel', color: '#111827', onClick: exportCsv },
       ]} />
     </div>
   );

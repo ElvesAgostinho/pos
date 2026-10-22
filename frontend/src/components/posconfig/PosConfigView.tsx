@@ -235,7 +235,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   };
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#F7F8FA', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+    <div className="h-full flex flex-col" style={{ background: '#EEF1F5', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* ---------- BARRA DE MENUS (mesma barra do Ambiente de Trabalho — dourada,
           com o logótipo, letra preta) ---------- */}
       <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: accentGradient(), height: 56 }}>
@@ -276,7 +276,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[250px] py-1 overflow-hidden"
                   style={{ background: TOKENS.bar, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
                   {m.items.map((it: any, i: number) => it.sep ? (
-                    <div key={i} className="my-1 border-t border-[#1E2A44]" />
+                    <div key={i} className="my-1 border-t border-[#E6E8EC]" />
                   ) : (
                     <button key={i}
                       onClick={() => {
@@ -351,12 +351,12 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         <div className="w-[236px] flex-shrink-0 border-r border-[#E6E8EC] bg-white overflow-auto">
           {favs.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[12px] font-semibold text-[#111827] bg-[#F7F8FA] border-b border-[#E6E8EC] flex items-center gap-1.5">
+              <div className="px-3 py-2 text-[12px] font-semibold text-[#111827] bg-[#EEF1F5] border-b border-[#E6E8EC] flex items-center gap-1.5">
                 <Glyph icon="♥" size={13} /> Favoritos
               </div>
               {favs.map((f) => (
                 <div key={f.key}
-                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[12px] border-b border-[#F1F2F4] cursor-pointer ${section === f.key ? 'bg-[#F7F8FA] text-[#111827] font-bold' : 'text-[#111827] hover:bg-[#FFFFFF]'}`}>
+                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[12px] border-b border-[#F1F2F4] cursor-pointer ${section === f.key ? 'bg-[#EEF1F5] text-[#111827] font-bold' : 'text-[#111827] hover:bg-[#FFFFFF]'}`}>
                   <span className="flex-1" onClick={() => { setSection(f.key); setEditing(null); }}>{f.label}</span>
                   <button title="Tirar dos favoritos"
                     onClick={() => {
@@ -378,7 +378,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             <div key={grp.key}>
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
                 className="w-full flex items-center justify-between px-3 py-1.5 text-[12px] font-bold uppercase tracking-tight border-b-2 hover:brightness-[0.98]"
-                style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)', borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>
+                style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 55%, #F1F2F4 100%)', borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>
                 <span>{grp.title}</span>
                 <span className="text-[16px] leading-none text-[#6B7280]">{open[grp.key] ? '−' : '+'}</span>
               </button>
@@ -390,10 +390,13 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                     <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
                       className="w-full flex items-center gap-2 pl-3 pr-3 py-1.5 text-[12px] text-left border-b border-l-[3px]"
                       style={{
-                        borderBottomColor: '#F7F8FA',
+                        borderBottomColor: '#EEF1F5',
                         borderLeftColor: ativo ? TOKENS.accent : 'transparent',
                         background: ativo ? TOKENS.selectedBg : 'transparent',
-                        color: ativo ? TOKENS.selectedText : '#1E2A44',
+                        // Item inactivo em CINZENTO-ESCURO, não na cor da marca: uma
+                        // árvore inteira a azul faz tudo parecer um link e tira o
+                        // destaque ao que está mesmo seleccionado.
+                        color: ativo ? TOKENS.selectedText : '#374151',
                         fontWeight: ativo ? 700 : 400,
                       }}
                       onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = TOKENS.hover; }}
@@ -1355,7 +1358,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               <div className="flex-1 overflow-auto bg-white">
                 <table className="w-full text-[12px] border-collapse">
                   <thead className="sticky top-0">
-                    <tr className="text-[#111827]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)' }}>
+                    <tr className="text-[#111827]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 55%, #F1F2F4 100%)' }}>
                       {['Código', 'Descrição', 'Sub Família', 'Preço', 'Iva', 'Isenções', 'Stock', 'Impressoras', 'Unidades (Compra/Stock/Venda)', 'Ativo'].map((h, i) => (
                         <th key={h}
                           className={`text-left font-semibold px-3 py-1 border-b-2 whitespace-nowrap ${i > 0 ? 'border-l' : ''}`}
@@ -1368,7 +1371,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                       <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEditing(r.id)}
                         className="cursor-pointer border-b"
                         style={{
-                          borderColor: '#F7F8FA',
+                          borderColor: '#EEF1F5',
                           background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#FFFFFF' : TOKENS.surface,
                           color: sel === r.id ? TOKENS.selectedText : undefined,
                         }}
@@ -1405,7 +1408,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               </div>
 
               {/* PAGINAÇÃO */}
-              <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[12px]">
+              <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#EEF1F5] text-[12px]">
                 <span>Nº registos a visualizar:</span>
                 <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
                   className="border border-[#E6E8EC] px-2 py-0.5 bg-white">
@@ -1429,13 +1432,13 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               {/* BARRA DE FERRAMENTAS */}
               <Toolbar
                 actions={[
-                  { icon: '＋', label: 'Adicionar', color: '#1E2A44', onClick: () => setEditing('new') },
+                  { icon: '＋', label: 'Adicionar', color: '#111827', onClick: () => setEditing('new') },
                   { icon: '✎', label: 'Editar', color: '#3B82F6', disabled: !sel, onClick: () => setEditing(sel!) },
                   { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel, onClick: () => confirm(`Apagar "${selRow?.name}"? Fica registado na auditoria.`) && del.mutate(sel!) },
-                  { icon: '⧉', label: 'Copiar', color: '#1E2A44', disabled: !sel, onClick: () => copy.mutate(sel!) },
-                  { icon: '🖶', label: 'Imprimir', color: '#1E2A44', onClick: () => window.print() },
-                  { icon: '⤓', label: 'Exportar para Excel', color: '#1E2A44', onClick: exportExcel },
-                  { icon: '⤒', label: 'Importar', color: '#1E2A44', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
+                  { icon: '⧉', label: 'Copiar', color: '#111827', disabled: !sel, onClick: () => copy.mutate(sel!) },
+                  { icon: '🖶', label: 'Imprimir', color: '#111827', onClick: () => window.print() },
+                  { icon: '⤓', label: 'Exportar para Excel', color: '#111827', onClick: exportExcel },
+                  { icon: '⤒', label: 'Importar', color: '#111827', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
                 ]}
               />
             </>
@@ -1446,7 +1449,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
       {/* Rodapé — nº de certificação AGT, sempre em tempo real (fiscal.FiscalConfig,
           a mesma fonte que assina as faturas). Nunca um texto fixo no código: enquanto
           não há certificação real diz isso mesmo, sem fingir um número. */}
-      <div className="h-6 flex items-center px-3 text-[10px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
+      <div className="h-6 flex items-center px-3 text-[10px] text-[#6B7280] bg-[#EEF1F5] border-t border-[#E6E8EC] flex-shrink-0">
         <span>System Mwana Lodge</span>
         <span className="mx-2 opacity-40">|</span>
         <span>

@@ -25,10 +25,10 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
   const singleModule = !!scopeKey;
 
   return (
-    <div className="w-60 bg-[#F7F8FA] border-r border-[#E6E8EC] flex flex-col text-[11px] font-sans select-none overflow-y-auto">
+    <div className="w-60 bg-[#EEF1F5] border-r border-[#E6E8EC] flex flex-col text-[11px] font-sans select-none overflow-y-auto">
       {/* Voltar ao ambiente de trabalho do módulo */}
       <button onClick={() => onSelectView && onSelectView(`home:${scopeKey || 'admin'}`)}
-        className="flex items-center gap-2 px-2 py-1.5 m-1.5 mb-1 bg-[#3B82F6] text-white hover:bg-[#1E2A44] transition-colors"
+        className="flex items-center gap-2 px-2 py-1.5 m-1.5 mb-1 bg-[#3B82F6] text-[#111827] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] transition-colors"
         style={{ borderRadius: RADIUS.sm }}>
         <LayoutGrid size={13} /> <span className="font-bold">Ambiente de trabalho</span>
       </button>
@@ -41,7 +41,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
         return (
           <div key={mod.key} className="mb-0.5">
             <div
-              className={`flex items-center px-2 py-1.5 cursor-pointer transition-colors ${hasActive ? 'bg-[#F7F8FA]' : 'hover:bg-[#F7F8FA]'}`}
+              className={`flex items-center px-2 py-1.5 cursor-pointer transition-colors ${hasActive ? 'bg-[#EEF1F5]' : 'hover:bg-[#EEF1F5]'}`}
               style={{ borderRadius: RADIUS.sm }}
               onClick={() => { setOpen((o) => ({ ...o, [mod.key]: true })); onSelectView && onSelectView(`home:${mod.key}`); }}
             >
@@ -58,7 +58,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
                     <div
                       key={item.id}
                       onClick={() => onSelectView && onSelectView(item.id)}
-                      className={`flex items-center pl-7 pr-2 py-1 my-[1px] cursor-pointer transition-colors ${isActive ? 'bg-[#DBEAFE]' : 'hover:bg-[#F7F8FA]'}`}
+                      className={`flex items-center pl-7 pr-2 py-1 my-[1px] cursor-pointer transition-colors ${isActive ? 'bg-[#DBEAFE]' : 'hover:bg-[#EEF1F5]'}`}
                       style={{ borderRadius: RADIUS.sm }}
                     >
                       <div className="w-1 h-1 rounded-full bg-gray-500 mr-2" />

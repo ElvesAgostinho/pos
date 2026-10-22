@@ -109,16 +109,16 @@ const CustomerLogin: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  const winBtn ='h-8 px-4 text-[12px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] hover:bg-[#F7F8FA] active:shadow-[inset_1px_1px_0_#3B82F6] active:translate-y-px';
+  const winBtn ='h-8 px-4 text-[12px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] hover:bg-[#EEF1F5] active:shadow-[inset_1px_1px_0_#3B82F6] active:translate-y-px';
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4"
-      style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif", background: loginBg ? undefined : 'linear-gradient(135deg,#3B82F6 0%,#1E2A44 100%)' }}>
+      style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif", background: loginBg ? undefined : 'linear-gradient(135deg,#3B82F6 0%,#2563EB 100%)' }}>
       {loginBg && <img src={loginBg} alt="" className="fixed inset-0 w-full h-full object-cover -z-10" />}
       {loginBg && <div className="fixed inset-0 bg-black/30 -z-10" />}
 
       {/* Janela de login */}
-      <div className="w-[760px] max-w-full bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden">
+      <div className="w-[760px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden">
         {/* Barra de título */}
         <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: `linear-gradient(180deg, ${barColor} 0%, ${shade(barColor, -18)} 100%)` }}>
           <span className="flex items-center gap-2"><Building2 size={14} /> {erpName} — Início de Sessão</span>
@@ -164,7 +164,7 @@ const CustomerLogin: React.FC = () => {
                 {error && <div className="ml-[158px] text-[12px] text-[#B91C1C] bg-[#FEF2F2] border border-[#DC2626] px-2 py-1">{error}</div>}
                 <div className="flex justify-end gap-2 pt-1">
                   <button type="submit" disabled={loading || novaPw.length < 6}
-                    className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#F7F8FA' }}>
+                    className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#EEF1F5' }}>
                     {loading ? 'A gravar…' : 'Gravar e entrar'}
                   </button>
                 </div>
@@ -210,7 +210,7 @@ const CustomerLogin: React.FC = () => {
 
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => { setUsername(''); setPassword(''); setError(''); }} className={winBtn}>Cancelar</button>
-                <button type="submit" disabled={loading || !username} className={`${winBtn} font-bold flex items-center gap-1.5 disabled:opacity-50`} style={{ background: '#F7F8FA' }}>
+                <button type="submit" disabled={loading || !username} className={`${winBtn} font-bold flex items-center gap-1.5 disabled:opacity-50`} style={{ background: '#EEF1F5' }}>
                   <LogIn size={14} />{loading ? 'A entrar…' : 'Entrar'}
                 </button>
               </div>
@@ -221,7 +221,7 @@ const CustomerLogin: React.FC = () => {
         </div>
 
         {/* Barra de estado (rodapé) */}
-        <div className="h-7 flex items-center gap-4 px-3 text-[11px] text-gray-700 border-t border-[#E6E8EC] bg-[#F7F8FA]">
+        <div className="h-7 flex items-center gap-4 px-3 text-[11px] text-gray-700 border-t border-[#E6E8EC] bg-[#EEF1F5]">
           <span>Servidor: <b>localhost:8000</b></span>
           <span className="opacity-40">|</span>
           <span>Base: <b>ERP_2026</b></span>
@@ -238,7 +238,7 @@ const CustomerLogin: React.FC = () => {
       {/* Diálogo Configurações */}
       {config && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfig(false)}>
-          <div className="w-[420px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+          <div className="w-[420px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
             <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: barColor }}>
               <span className="flex items-center gap-2"><Settings size={14} />Configurações de Ligação</span>
               <button onClick={() => setConfig(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
@@ -260,7 +260,7 @@ const CustomerLogin: React.FC = () => {
       {/* Diálogo "Esqueci-me da password" */}
       {showReset && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowReset(false)}>
-          <div className="w-[420px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+          <div className="w-[420px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
             <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: barColor }}>
               <span className="flex items-center gap-2"><KeyRound size={14} />Repor password</span>
               <button onClick={() => setShowReset(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
@@ -285,14 +285,14 @@ const CustomerLogin: React.FC = () => {
                   className="w-full h-9 px-2 bg-white border border-[#E6E8EC] outline-none" />
               </label>
               {resetMsg && (
-                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
+                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-[#111827] bg-[#EEF1F5] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
                   {resetMsg.text}
                 </div>
               )}
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => setShowReset(false)} className={winBtn}>Fechar</button>
                 <button type="submit" disabled={resetLoading || !resetCode || !resetPw}
-                  className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#F7F8FA' }}>
+                  className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#EEF1F5' }}>
                   {resetLoading ? 'A repor…' : 'Repor password'}
                 </button>
               </div>

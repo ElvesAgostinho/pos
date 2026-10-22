@@ -58,8 +58,8 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-h-[75vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
+      <div className="w-[900px] max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
           Mudanças de Quartos
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -76,7 +76,7 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
         </label>
         <div className="flex-1 overflow-auto bg-white">
           <table className="w-full text-[11px] border-collapse">
-            <thead className="sticky top-0" style={{ background: '#F7F8FA' }}>
+            <thead className="sticky top-0" style={{ background: '#EEF1F5' }}>
               <tr>
                 <th className="w-8 border-b border-[#E6E8EC]"></th>
                 <th className="text-left px-2 py-1.5 border-b border-[#E6E8EC]">Hóspede</th>
@@ -109,7 +109,7 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC]">
+        <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-t border-[#E6E8EC]">
           <button onClick={aplicar} disabled={applying || ![...checked].some((id) => target[id])}
             className="flex items-center gap-2 text-[12px] font-semibold text-[#111827] disabled:opacity-40 disabled:cursor-default hover:text-black">
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0"

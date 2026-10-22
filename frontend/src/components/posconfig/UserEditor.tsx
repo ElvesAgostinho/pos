@@ -104,7 +104,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo' : `A editar ${d.first_name || ''} ${d.last_name || ''}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -118,7 +118,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
               <div className="space-y-2">
                 <R label="Código:">
                   <input value={d.code || ''} disabled={!isNew} onChange={(e) => set('code', e.target.value.toUpperCase())}
-                    className={`${inp} flex-1 disabled:bg-[#F7F8FA]`} style={inputStyle} />
+                    className={`${inp} flex-1 disabled:bg-[#EEF1F5]`} style={inputStyle} />
                 </R>
                 <R label="Grupo:">
                   <select value={d.group || ''} onChange={(e) => set('group', Number(e.target.value) || null)} className={`${inp} flex-1`} style={inputStyle}>
@@ -132,7 +132,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
               </div>
               <div className="space-y-2">
                 <button onClick={() => setPwModal('main')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#1E2A44] text-white text-[12px] font-bold">
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold">
                   <Glyph icon="🔑" size={14} /> Password
                 </button>
                 <label className="flex items-center gap-2 text-[12px]">
@@ -162,10 +162,10 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
         </div>
 
         {/* Separadores */}
-        <div className="flex border-b-2 border-[#1E2A44] overflow-x-auto">
+        <div className="flex border-b-2 border-[#E6E8EC] overflow-x-auto">
           {TABS_VISIVEIS.map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+              className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#E6E8EC] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
               {label}
             </button>
           ))}
@@ -231,7 +231,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                 <input type="checkbox" checked={!!d.all_complexes} onChange={(e) => set('all_complexes', e.target.checked)} className="w-4 h-4" />
               </label>
               <table className="w-full text-[12px] border-collapse">
-                <thead><tr className="bg-[#F7F8FA]">
+                <thead><tr className="bg-[#EEF1F5]">
                   <th className="w-[40px] border border-[#F1F2F4]" />
                   <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">Código</th>
                   <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">Descrição</th>
@@ -253,7 +253,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
 
           {tab === 'rate' && (
             <table className="w-full max-w-[700px] text-[12px] border-collapse">
-              <thead><tr className="bg-[#F7F8FA]">
+              <thead><tr className="bg-[#EEF1F5]">
                 <th className="w-[40px] border border-[#F1F2F4]" />
                 <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">Código</th>
                 <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">Nome</th>
@@ -330,7 +330,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                   Utilizar preço de custo
                 </label>
                 <button onClick={() => setPwModal('pos')}
-                  className="w-[250px] flex items-center justify-center gap-2 py-2.5 bg-[#1E2A44] text-white text-[12px] font-bold">
+                  className="w-[250px] flex items-center justify-center gap-2 py-2.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold">
                   <Glyph icon="🔑" size={14} /> PIN do Terminal (POS)
                 </button>
                 <label className="flex items-center gap-2 text-[12px]">
@@ -377,7 +377,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
           {tab === 'comm' && (
             <div>
               <table className="w-full text-[12px] border-collapse">
-                <thead><tr className="bg-[#F7F8FA]">
+                <thead><tr className="bg-[#EEF1F5]">
                   {['Código', 'Descrição', 'Tipo', 'Valor', ''].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">{h}</th>
                   ))}
@@ -405,11 +405,11 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
                 </tbody>
               </table>
               <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#F1F2F4]">
-                <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1">
-                  <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar - Sub-Famílias
+                <button onClick={() => setPicker('sub')} className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1">
+                  <span className="w-6 h-6 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center">＋</span> Adicionar - Sub-Famílias
                 </button>
-                <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1">
-                  <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar - Artigos
+                <button onClick={() => setPicker('item')} className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1">
+                  <span className="w-6 h-6 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center">＋</span> Adicionar - Artigos
                 </button>
                 <span className="ml-auto text-[11px] text-[#6B7280]">
                   É o que motiva a sala a vender a garrafa em vez do copo.
@@ -424,7 +424,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       {pwModal && (
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={() => setPwModal(null)}>
           <div className="bg-white border border-[#E6E8EC] w-[440px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+            <div className="px-3 py-2 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
               {pwModal === 'pos' ? 'PIN do Terminal' : 'Password'}
             </div>
             <div className="p-4 space-y-2">
@@ -437,7 +437,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
               </div>
             </div>
             <Toolbar actions={[
-              { icon: '✔', label: 'Definir', color: '#1E2A44', onClick: applyPw },
+              { icon: '✔', label: 'Definir', color: '#111827', onClick: applyPw },
               { icon: '✖', label: 'Cancelar', color: '#DC2626', onClick: () => { setPw(''); setPwModal(null); } },
             ]} />
           </div>
@@ -455,7 +455,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

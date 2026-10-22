@@ -57,7 +57,7 @@ export function PosDayClose() {
   const Painel = ({ titulo, aberto, onToggle, children }: any) => (
     <div className="border-b border-[#F1F2F4]">
       <button onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4] text-left">
+        className="w-full flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4] text-left">
         <span>{titulo}</span><span>{aberto ? '▲' : '▼'}</span>
       </button>
       {aberto && children}
@@ -66,7 +66,7 @@ export function PosDayClose() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="px-4 py-3 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="px-4 py-3 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <div className="flex items-start gap-6">
           <div className="text-[#111827]"><Glyph icon="🌙" size={34} /></div>
           <div>
@@ -86,7 +86,7 @@ export function PosDayClose() {
             {temTerminaisAbertos && <div className="text-[12px] font-bold text-[#DC2626]">Terminais Abertos</div>}
             {temMesasAbertas && <div className="text-[12px] font-bold text-[#DC2626]">Mesas Abertas</div>}
             {d.blocker && (
-              <div className="text-[11px] text-[#DC2626] mt-1 max-w-[280px] bg-[#F7F8FA] border border-[#DC2626] px-2 py-1">
+              <div className="text-[11px] text-[#DC2626] mt-1 max-w-[280px] bg-[#EEF1F5] border border-[#DC2626] px-2 py-1">
                 {d.blocker}
               </div>
             )}
@@ -102,7 +102,7 @@ export function PosDayClose() {
               {d.terminals.map((t: any) => (
                 <div key={t.id} className="border-b border-[#F1F2F4]">
                   <div className="px-3 py-2 text-[14px] font-bold text-center"
-                    style={{ background: t.open ? '#DC2626' : '#E6E8EC', color: '#1E2A44' }}>
+                    style={{ background: t.open ? '#DC2626' : '#E6E8EC', color: '#111827' }}>
                     {t.code} — {t.name} ({t.open ? 'Aberto' : 'Fechado'})
                   </div>
                   <div className="flex justify-between px-3 py-1.5 text-[12px]">
@@ -125,7 +125,7 @@ export function PosDayClose() {
             <>
               {(d.sectors || []).map((s: any, i: number) => (
                 <div key={i} className="border-b border-[#F1F2F4]">
-                  <div className="px-3 py-2 text-[14px] font-bold text-center" style={{ background: '#DC2626', color: '#1E2A44' }}>
+                  <div className="px-3 py-2 text-[14px] font-bold text-center" style={{ background: '#DC2626', color: '#111827' }}>
                     Setor {s.sector}
                   </div>
                   <div className="flex justify-between px-3 py-1.5 text-[12px]">
@@ -140,7 +140,7 @@ export function PosDayClose() {
             </>
           </Painel>
 
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-y border-[#F1F2F4] mt-2">
+          <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-y border-[#F1F2F4] mt-2">
             Caixas abertas ({d.open_cash_sessions.length})
           </div>
           {d.open_cash_sessions.map((s: any) => (
@@ -153,7 +153,7 @@ export function PosDayClose() {
 
         {/* Contas abertas — o que impede o fecho */}
         <div className="flex-1 overflow-auto">
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4]">
+          <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4]">
             Contas por cobrar ({d.open_tickets.length})
           </div>
           {d.open_tickets.length === 0 ? (
@@ -162,11 +162,11 @@ export function PosDayClose() {
             </div>
           ) : (
             <>
-              <div className="px-3 py-2 text-[11px] text-[#111827] bg-[#F7F8FA] border-b border-[#E6E8EC]">
+              <div className="px-3 py-2 text-[11px] text-[#111827] bg-[#EEF1F5] border-b border-[#E6E8EC]">
                 Fechar o dia com contas abertas é dar comida sem receber. Cobre-as ou anule-as primeiro.
               </div>
               <table className="w-full text-[12px] border-collapse">
-                <thead><tr className="bg-[#F7F8FA]">
+                <thead><tr className="bg-[#EEF1F5]">
                   {['Conta', 'Onde', 'Operador', 'Total'].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
                   ))}
@@ -189,7 +189,7 @@ export function PosDayClose() {
 
       {/* Rodapé — igual ao original: Atualizar · Permissões · Fechar Terminais
           à esquerda; a ação principal (Fechar o Dia) à direita. */}
-      <div className="flex items-center justify-between px-3 py-2 bg-[#F7F8FA] border-t border-[#F1F2F4] gap-2">
+      <div className="flex items-center justify-between px-3 py-2 bg-[#EEF1F5] border-t border-[#F1F2F4] gap-2">
         <div className="flex items-center gap-2">
           <button onClick={() => qc.invalidateQueries({ queryKey: ['posops', 'day-close'] })}
             className="px-3 py-1.5 border border-[#E6E8EC] bg-white text-[12px] font-semibold flex items-center gap-1.5">
@@ -200,7 +200,7 @@ export function PosDayClose() {
             if (await confirmar('Fechar todos os terminais (caixas abertas) agora?\n\nIsto NÃO fecha o dia de vendas — só desliga os postos.'))
               fecharTerminais.mutate();
           }} disabled={fecharTerminais.isPending}
-            className="px-3 py-1.5 bg-[#1E2A44] text-white text-[12px] font-semibold disabled:opacity-50">
+            className="px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-semibold disabled:opacity-50">
             {fecharTerminais.isPending ? 'A fechar…' : 'Fechar Terminais'}
           </button>
         </div>
@@ -209,7 +209,7 @@ export function PosDayClose() {
             porquê — e o motivo aqui é sempre o mesmo: há contas por cobrar. */}
         <button onClick={() => fechar.mutate()} disabled={!d.can_close || fechar.isPending}
           title={d.blocker || 'Fecha as caixas e o dia de vendas do POS'}
-          className="px-6 py-2 bg-[#1E2A44] text-white text-[14px] font-bold disabled:bg-[#DBEAFE] disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+          className="px-6 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[14px] font-bold disabled:bg-[#DBEAFE] disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
           {fechar.isPending ? 'A fechar…' : d.can_close ? <><Glyph icon="▶" size={13} /> Fechar o Dia</> : <><Glyph icon="🔒" size={13} /> Fechar o Dia</>}
         </button>
       </div>
@@ -421,8 +421,8 @@ export function PosDiagnostics() {
         style={{
           color: ok === false ? TOKENS.dangerSoft : TOKENS.selectedText,
           background: ok === false
-            ? 'linear-gradient(to bottom, #F7F8FA 0%, #FEF2F2 100%)'
-            : 'linear-gradient(to bottom, #F7F8FA 0%, #F7F8FA 100%)',
+            ? 'linear-gradient(to bottom, #EEF1F5 0%, #FEF2F2 100%)'
+            : 'linear-gradient(to bottom, #EEF1F5 0%, #EEF1F5 100%)',
           borderBottom: `1px solid ${ok === false ? '#FEF2F2' : '#F1F2F4'}`,
         }}>
         {title}
@@ -437,7 +437,7 @@ export function PosDiagnostics() {
   );
 
   return (
-    <div className="flex-1 overflow-auto bg-[#F7F8FA] p-4">
+    <div className="flex-1 overflow-auto bg-[#EEF1F5] p-4">
       <div className="text-[16px] font-bold text-[#111827] mb-3">
         Diagnóstico do POS
         <span className="ml-3 text-[11px] font-normal text-[#6B7280]">
@@ -470,13 +470,13 @@ export function PosDiagnostics() {
           <L k="Na fila" v={d.print.queued} />
           <L k="Falhadas" v={d.print.failed} />
           {d.print.warning && (
-            <div className="text-[11px] text-[#DC2626] bg-[#F7F8FA] border border-[#DC2626] px-2 py-1 mt-1">
+            <div className="text-[11px] text-[#DC2626] bg-[#EEF1F5] border border-[#DC2626] px-2 py-1 mt-1">
               {d.print.warning}
             </div>
           )}
           {d.print.failed > 0 && (
             <button onClick={() => reenviar.mutate()}
-              className="mt-2 px-3 py-1.5 bg-[#1E2A44] text-white text-[12px]">
+              className="mt-2 px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px]">
               Reenviar {d.print.failed} comanda(s) falhada(s)
             </button>
           )}
@@ -491,7 +491,7 @@ export function PosDiagnostics() {
         <Card title="Licença">
           <div className="flex flex-wrap gap-1">
             {d.license.modules.map((m: string) => (
-              <span key={m} className="px-2 py-0.5 bg-[#F7F8FA] text-[#111827] text-[11px] font-semibold">{m}</span>
+              <span key={m} className="px-2 py-0.5 bg-[#EEF1F5] text-[#111827] text-[11px] font-semibold">{m}</span>
             ))}
           </div>
         </Card>
@@ -540,7 +540,7 @@ export function PosDiagnostics() {
           <L k="Endpoint" v={`POST /api/${d.sync?.endpoint || 'licensing/sync/'}`} />
           <div className="pt-2">
             <button onClick={() => sincronizar.mutate()} disabled={sincronizar.isPending}
-              className="px-3 py-1.5 bg-[#1E2A44] text-white text-[12px] font-semibold disabled:opacity-50">
+              className="px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-semibold disabled:opacity-50">
               {sincronizar.isPending ? 'A sincronizar…' : '⟳ Sincronizar agora'}
             </button>
           </div>
@@ -567,12 +567,12 @@ export function PosDiagnostics() {
                         atualizar.mutate();
                       }
                     }} disabled={atualizar.isPending}
-                      className="px-4 py-2 bg-[#1E2A44] text-white text-[12px] font-bold disabled:opacity-50">
+                      className="px-4 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold disabled:opacity-50">
                       {atualizar.isPending ? 'A iniciar…' : '⟳ Atualizar agora'}
                     </button>
                   ) : (
                     <a href={d.update.download_url} target="_blank" rel="noopener noreferrer"
-                      className="px-4 py-2 bg-[#1E2A44] text-white text-[12px] font-bold">
+                      className="px-4 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold">
                       ⬇ Descarregar (instalador completo — corre-se à mão)
                     </a>
                   )}

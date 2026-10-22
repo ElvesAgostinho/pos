@@ -33,12 +33,12 @@ export default function EdcInboxView(_props: Props) {
     <ClassicWindow title="Inbox Documental — Pendentes & Recentes" icon={<Inbox size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{tasks.length} pendente(s) · {recent.length} documento(s) recente(s) · arquivo completo no Reporting Center</div>}>
       <div className="flex flex-col h-full">
-        <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] text-gray-700">
+        <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] text-gray-700">
           Aqui aparece o que precisa da sua atenção: <b>tarefas/aprovações pendentes</b> e os <b>documentos mais recentes</b> de todas as áreas.
         </div>
         {/* Tarefas pendentes */}
         <div className="border-b border-[#E6E8EC]">
-          <div className="bg-[#F7F8FA] px-3 py-1.5 text-[11px] font-bold flex items-center gap-1"><CheckCircle size={12} /> Tarefas / Aprovações pendentes</div>
+          <div className="bg-[#EEF1F5] px-3 py-1.5 text-[11px] font-bold flex items-center gap-1"><CheckCircle size={12} /> Tarefas / Aprovações pendentes</div>
           <div className="max-h-52 overflow-auto">
             <ClassicGrid rowKey="id" data={tasks} columns={[
               { header: 'Tarefa', accessor: 'title', width: '34%' },
@@ -52,7 +52,7 @@ export default function EdcInboxView(_props: Props) {
         </div>
         {/* Documentos recentes */}
         <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="bg-[#F7F8FA] px-3 py-1.5 text-[11px] font-bold flex items-center gap-1"><FileText size={12} /> Documentos recentes</div>
+          <div className="bg-[#EEF1F5] px-3 py-1.5 text-[11px] font-bold flex items-center gap-1"><FileText size={12} /> Documentos recentes</div>
           <div className="flex-1 overflow-auto">
             <ClassicGrid rowKey="ref" data={recent.map((r: any, i: number) => ({ ...r, _k: i }))} columns={[
               { header: 'Área', accessor: (r: any) => AREA[r.category] || r.category, width: '15%' },

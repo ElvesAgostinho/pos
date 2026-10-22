@@ -11,8 +11,8 @@
    resto do sistema. A cor institucional (TOKENS.accent) fica de fora de
    propósito: essa muda por instalação (Aparência → Cor da barra). */
 @theme {
-  --color-brand-bar: #1E2A44;
-  --color-brand-bar-soft: #16203A;
+  --color-brand-bar: #2563EB;
+  --color-brand-bar-soft: #1D4ED8;
   --color-brand-gold: #2563EB;        /* nome antigo; é o azul das acções */
   --color-brand-gold-dark: #1D4ED8;
   --color-brand-border: #E6E8EC;
@@ -32,7 +32,7 @@ body {
      ar de software de há vinte anos. */
   font-family: "Segoe UI Variable Text", "Segoe UI", Inter, -apple-system,
                BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  background-color: #F7F8FA;
+  background-color: #EEF1F5;
   color: #111827;
   /* SEM "antialiased": essa regra (copiada de resets pensados para macOS) desliga
      o ClearType/subpixel do Windows e trocava-o por um cinzento mais fino — a letra

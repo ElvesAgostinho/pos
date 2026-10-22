@@ -31,7 +31,7 @@ function Section({ title, children }: { title: string; children: any }) {
     </div>
   );
 }
-const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] active:translate-y-px flex items-center gap-1.5';
 
 // ======================================================================
 // 1 · Dashboard Fiscal
@@ -42,10 +42,10 @@ export function FiscalDashboardView() {
   return (
     <ClassicWindow title="Dashboard Fiscal — Angola AGT" icon={<Landmark size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Ambiente {d?.environment} · certificado n.º {d?.certificate_number}/AGT · motor de assinatura {m?.keys_engine_ok ? 'operacional' : 'indisponível'}</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         <Section title="Emissão">
           <div className="flex flex-wrap gap-2">
-            <Kpi label="Emitidos hoje" value={d?.issued_today ?? 0} tone="#1E2A44" />
+            <Kpi label="Emitidos hoje" value={d?.issued_today ?? 0} tone="#2563EB" />
             <Kpi label="Total emitidos" value={d?.issued_total ?? 0} />
             <Kpi label="Anulados" value={d?.voided ?? 0} tone="#DC2626" />
             <Kpi label="Séries ativas" value={d?.active_series ?? 0} />
@@ -55,7 +55,7 @@ export function FiscalDashboardView() {
         <Section title="Comunicação AGT (fila)">
           <div className="flex flex-wrap gap-2">
             <Kpi label="Pendentes" value={d?.queue_pending ?? 0} tone="#3B82F6" />
-            <Kpi label="Enviados / aceites" value={d?.queue_sent ?? 0} tone="#1E2A44" />
+            <Kpi label="Enviados / aceites" value={d?.queue_sent ?? 0} tone="#2563EB" />
             <Kpi label="Rejeitados" value={d?.queue_rejected ?? 0} tone="#DC2626" />
             <Kpi label="Ligação AGT" value={m?.agt_connection?.configured ? (m?.agt_connection?.health || '—') : 'Por configurar'} />
           </div>
@@ -64,20 +64,20 @@ export function FiscalDashboardView() {
           <div className="flex flex-wrap gap-2">
             <Kpi label="Rascunhos" value={d?.commercial?.drafts ?? 0} tone="#3B82F6" />
             <Kpi label="Em curso (enviado/aceite)" value={d?.commercial?.open ?? 0} tone="#3B82F6" />
-            <Kpi label="Convertidos em fatura" value={d?.commercial?.converted ?? 0} tone="#1E2A44" />
+            <Kpi label="Convertidos em fatura" value={d?.commercial?.converted ?? 0} tone="#2563EB" />
           </div>
         </Section>
         <Section title="Ciclo de vida fiscal">
           <div className="flex flex-wrap gap-2">
-            <Kpi label="Pagos" value={d?.lifecycle?.paid ?? 0} tone="#1E2A44" />
-            <Kpi label="Arquivados" value={d?.lifecycle?.archived ?? 0} tone="#1E2A44" />
+            <Kpi label="Pagos" value={d?.lifecycle?.paid ?? 0} tone="#2563EB" />
+            <Kpi label="Arquivados" value={d?.lifecycle?.archived ?? 0} tone="#2563EB" />
           </div>
         </Section>
         <Section title="Certificados & Chaves">
           <div className="flex flex-wrap gap-2">
             <Kpi label="Certificados ativos" value={m?.certificates?.active ?? 0} />
             <Kpi label="Expirados" value={m?.certificates?.expired ?? 0} tone="#DC2626" />
-            <Kpi label="Motor de chaves RSA" value={m?.keys_engine_ok ? 'OK' : 'FALHA'} tone={m?.keys_engine_ok ? '#1E2A44' : '#DC2626'} />
+            <Kpi label="Motor de chaves RSA" value={m?.keys_engine_ok ? 'OK' : 'FALHA'} tone={m?.keys_engine_ok ? '#2563EB' : '#DC2626'} />
           </div>
         </Section>
       </div>
@@ -101,7 +101,7 @@ export function FiscalSeriesView() {
   return (
     <ClassicWindow title="Séries Fiscais & Tipos de Documento" icon={<FileText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Numeração sequencial contínua por série · cadeia de hash verificável (auditoria)</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         <Section title="Nova série">
           <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-2 text-[12px]">
             <label className="flex flex-col">Código<input className="border border-[#E6E8EC] px-2 py-1 w-20" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} /></label>
@@ -117,7 +117,7 @@ export function FiscalSeriesView() {
         </Section>
         <Section title="Séries">
           <div className="bg-white border border-[#E6E8EC] text-[12px]">
-            <div className="grid grid-cols-7 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1">
+            <div className="grid grid-cols-7 font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1">
               <span>Documento</span><span>Série</span><span>Exercício</span><span>Nº atual</span><span>Certificada</span><span>Ambiente</span><span></span>
             </div>
             {(series || []).map((s: any) => (
@@ -137,7 +137,7 @@ export function FiscalSeriesView() {
         </Section>
         <Section title="Tipos de documento (Rules Engine)">
           <div className="bg-white border border-[#E6E8EC] text-[12px]">
-            <div className="grid grid-cols-5 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Código</span><span>Nome</span><span>SAF-T</span><span>Assina</span><span>Retificativo</span></div>
+            <div className="grid grid-cols-5 font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1"><span>Código</span><span>Nome</span><span>SAF-T</span><span>Assina</span><span>Retificativo</span></div>
             {(types || []).map((t: any) => (
               <div key={t.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#F1F2F4]"><span className="font-bold">{t.code}</span><span>{t.name}</span><span>{t.saft_type}</span><span><GridToggle value={!!t.signable} title="Documento assinável (regra fiscal)" /></span><span><GridToggle value={!!t.is_rectifying} title="Documento retificativo (regra fiscal)" /></span></div>
             ))}
@@ -174,7 +174,7 @@ function ProductPicker({ onPick }: { onPick: (item: any) => void }) {
         <div className="absolute z-30 left-0 right-0 bg-white border border-[#E6E8EC] shadow-lg max-h-56 overflow-auto text-[12px]" onMouseLeave={() => setOpen(false)}>
           {list.slice(0, 20).map((it: any) => (
             <button key={it.id} onClick={() => { onPick(it); setOpen(false); setQ(''); }}
-              className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[#F7F8FA] text-left border-b border-[#F1F2F4]">
+              className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[#EEF1F5] text-left border-b border-[#F1F2F4]">
               <span><b>{it.code}</b> · {it.name}</span>
               <span className="text-gray-600">{money(it.sale_price)} · IVA {it.tax_percentage ?? 14}%</span>
             </button>
@@ -211,7 +211,7 @@ export function FiscalDocumentsView() {
   return (
     <ClassicWindow title="Faturação Eletrónica — Emissão de Documentos" icon={<FileText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Cada documento é validado, numerado sequencialmente, assinado (RSA) e encadeado por hash · imutável</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         <Section title="Emitir documento">
           <div className="bg-white border border-[#E6E8EC] p-3 space-y-2 text-[12px]">
             <div className="flex flex-wrap gap-2 items-end">
@@ -228,7 +228,7 @@ export function FiscalDocumentsView() {
               unit_price: Number(it.sale_price) || 0, tax_percentage: Number(it.tax_percentage ?? 14),
             }])} />
             <div className="border border-[#F1F2F4]">
-              <div className="grid grid-cols-[1fr_80px_110px_80px_40px] font-bold bg-[#F7F8FA] px-2 py-1"><span>Descrição</span><span>Qtd</span><span>Preço</span><span>IVA %</span><span></span></div>
+              <div className="grid grid-cols-[1fr_80px_110px_80px_40px] font-bold bg-[#EEF1F5] px-2 py-1"><span>Descrição</span><span>Qtd</span><span>Preço</span><span>IVA %</span><span></span></div>
               {lines.map((l, i) => (
                 <div key={i} className="grid grid-cols-[1fr_80px_110px_80px_40px] px-2 py-1 gap-1 items-center">
                   <input className="border border-[#E6E8EC] px-2 py-1" value={l.description} onChange={e => setLine(i, 'description', e.target.value)} />
@@ -242,7 +242,7 @@ export function FiscalDocumentsView() {
             </div>
             {err && <div className="text-[#B91C1C] font-bold">{err}</div>}
             <button className={btn} disabled={!hdr.series || issue.isPending} onClick={() => issue.mutate()}><Send size={13} /> Emitir & assinar</button>
-            {issue.data && <div className="text-[#111827] bg-[#F7F8FA] border border-[#F1F2F4] px-2 py-1">Emitido <b>{issue.data.invoice_no}</b> · total {money(issue.data.gross_total)} · {issue.data.print_mention}</div>}
+            {issue.data && <div className="text-[#111827] bg-[#EEF1F5] border border-[#F1F2F4] px-2 py-1">Emitido <b>{issue.data.invoice_no}</b> · total {money(issue.data.gross_total)} · {issue.data.print_mention}</div>}
           </div>
         </Section>
         <Section title="Documentos emitidos">
@@ -252,7 +252,7 @@ export function FiscalDocumentsView() {
             {q && <button type="button" className="text-[12px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
           </form>
           <div className="bg-white border border-[#E6E8EC] text-[12px]">
-            <div className="grid grid-cols-[1fr_90px_1fr_100px_80px_170px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Documento</span><span>Data</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span className="text-right">Ações</span></div>
+            <div className="grid grid-cols-[1fr_90px_1fr_100px_80px_170px] font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1"><span>Documento</span><span>Data</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span className="text-right">Ações</span></div>
             {rows.map((r: any) => (
               <div key={r.id} className="grid grid-cols-[1fr_90px_1fr_100px_80px_170px] px-2 py-1 border-b border-[#F1F2F4] items-center">
                 <span className="font-bold">{r.invoice_no}</span><span>{r.doc_date}</span><span>{r.customer_name}</span>
@@ -306,7 +306,7 @@ export function CommercialDocumentsView() {
   return (
     <ClassicWindow title="Documentos Comerciais — Orçamento · Proforma · Encomenda" icon={<FileText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Documentos não-fiscais, editáveis em rascunho · convertem-se em Fatura (entram então no motor de assinatura/SAF-T)</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         <Section title="Novo documento">
           <div className="bg-white border border-[#E6E8EC] p-3 space-y-2 text-[12px]">
             <div className="flex flex-wrap gap-2 items-end">
@@ -318,7 +318,7 @@ export function CommercialDocumentsView() {
               <label className="flex flex-col">NIF<input className="border border-[#E6E8EC] px-2 py-1 w-40" value={hdr.customer_tax_id} onChange={e => setHdr({ ...hdr, customer_tax_id: e.target.value })} /></label>
             </div>
             <div className="border border-[#F1F2F4]">
-              <div className="grid grid-cols-[1fr_80px_110px_90px_40px] font-bold bg-[#F7F8FA] px-2 py-1"><span>Descrição</span><span>Qtd</span><span>Preço</span><span>IVA</span><span></span></div>
+              <div className="grid grid-cols-[1fr_80px_110px_90px_40px] font-bold bg-[#EEF1F5] px-2 py-1"><span>Descrição</span><span>Qtd</span><span>Preço</span><span>IVA</span><span></span></div>
               {lines.map((l, i) => (
                 <div key={i} className="grid grid-cols-[1fr_80px_110px_90px_40px] px-2 py-1 gap-1 items-center">
                   <input className="border border-[#E6E8EC] px-2 py-1" value={l.description} onChange={e => setLine(i, 'description', e.target.value)} />
@@ -333,12 +333,12 @@ export function CommercialDocumentsView() {
               <div className="px-2 py-1"><button className="text-[#6B7280] flex items-center gap-1" onClick={() => setLines(ls => [...ls, { description: '', quantity: 1, unit_price: 0, tax_code: 'IVA14' }])}><Plus size={13} /> linha</button></div>
             </div>
             <button className={btn} disabled={create.isPending} onClick={() => create.mutate()}><Plus size={13} /> Criar rascunho</button>
-            {msg && <div className="text-[#111827] bg-[#F7F8FA] border border-[#F1F2F4] px-2 py-1">{msg}</div>}
+            {msg && <div className="text-[#111827] bg-[#EEF1F5] border border-[#F1F2F4] px-2 py-1">{msg}</div>}
           </div>
         </Section>
         <Section title="Documentos">
           <div className="bg-white border border-[#E6E8EC] text-[12px]">
-            <div className="grid grid-cols-[110px_90px_1fr_100px_100px_1fr] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Nº</span><span>Tipo</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span>Ações</span></div>
+            <div className="grid grid-cols-[110px_90px_1fr_100px_100px_1fr] font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1"><span>Nº</span><span>Tipo</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span>Ações</span></div>
             {rows.map((r: any) => (
               <div key={r.id} className="grid grid-cols-[110px_90px_1fr_100px_100px_1fr] px-2 py-1 border-b border-[#F1F2F4] items-center">
                 <span className="font-bold">{r.number}</span><span>{KIND[r.kind]}</span><span>{r.customer_name || '—'}</span>
@@ -376,7 +376,7 @@ export function TaxEngineView() {
   return (
     <ClassicWindow title="Tax / IVA Engine" icon={<Landmark size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Taxas e isenções parametrizáveis · aplicadas automaticamente na emissão (POS, Financeiro, manual)</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         <Section title="Nova taxa">
           <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-2 text-[12px]">
             <label className="flex flex-col">Código<input className="border border-[#E6E8EC] px-2 py-1 w-24" value={r.code} onChange={e => setR({ ...r, code: e.target.value })} /></label>
@@ -389,7 +389,7 @@ export function TaxEngineView() {
         </Section>
         <Section title="Taxas de IVA">
           <div className="bg-white border border-[#E6E8EC] text-[12px]">
-            <div className="grid grid-cols-5 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Código</span><span>Nome</span><span className="text-right">%</span><span>Padrão</span><span>Isenta</span></div>
+            <div className="grid grid-cols-5 font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1"><span>Código</span><span>Nome</span><span className="text-right">%</span><span>Padrão</span><span>Isenta</span></div>
             {(rates || []).map((x: any) => (
               <div key={x.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#F1F2F4]"><span className="font-bold">{x.code}</span><span>{x.name}</span><span className="text-right">{Number(x.percentage)}%</span><span><GridToggle value={!!x.is_default} title="Taxa por defeito" /></span><span><GridToggle value={!!x.is_exempt} title="Isenta de IVA" /></span></div>
             ))}
@@ -430,14 +430,14 @@ export function FiscalArchiveView() {
   return (
     <ClassicWindow title="Fiscal Archive — Arquivo Legal de Documentos" icon={<Boxes size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Arquivo imutável · imprimir (PDF), exportar XML por documento e SAF-T por período · nunca eliminar</div>}>
-      <div className="p-4 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-3 bg-[#EEF1F5] h-full overflow-auto">
         <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); setPage(1); setQ(search); }}>
           <input className="border border-[#E6E8EC] px-2 py-1 text-[12px] w-72" placeholder="Pesquisar nº, cliente ou NIF…" value={search} onChange={e => setSearch(e.target.value)} />
           <button className={btn} type="submit">Pesquisar</button>
           {q && <button type="button" className="text-[12px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
         </form>
         <div className="bg-white border border-[#E6E8EC] text-[12px]">
-          <div className="grid grid-cols-[1fr_86px_1fr_100px_90px_180px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Documento</span><span>Data</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span>Ações</span></div>
+          <div className="grid grid-cols-[1fr_86px_1fr_100px_90px_180px] font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1"><span>Documento</span><span>Data</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span>Ações</span></div>
           {rows.map((r: any) => (
             <div key={r.id} className="grid grid-cols-[1fr_86px_1fr_100px_90px_180px] px-2 py-1 border-b border-[#F1F2F4] items-center">
               <span className="font-bold">{r.invoice_no}</span><span>{r.doc_date}</span><span className="truncate">{r.customer_name}</span>
@@ -474,7 +474,7 @@ export function SaftCenterView() {
   return (
     <ClassicWindow title="SAF-T Center (Angola)" icon={<Boxes size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Ficheiro normalizado SAF-T(AO) · Header · MasterFiles · SourceDocuments (SalesInvoices/WorkingDocuments)</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         <Section title="Gerar SAF-T(AO)">
           <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-3 text-[12px]">
             <label className="flex flex-col">Início<input type="date" className="border border-[#E6E8EC] px-2 py-1" value={start} onChange={e => setStart(e.target.value)} /></label>
@@ -510,7 +510,7 @@ export function FiscalConnectivityView() {
   return (
     <ClassicWindow title="Fiscal Connectivity Center — AGT" icon={<Radio size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Endpoints e credenciais parametrizáveis · segredos guardados encriptados · integração real na certificação AGT</div>}>
-      <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         <Section title="Test Center (auto-diagnóstico)">
           <div className="bg-white border border-[#E6E8EC] p-3 space-y-2">
             <div className="flex flex-wrap gap-2">
@@ -553,7 +553,7 @@ export function FiscalConnectivityView() {
         </Section>
         <Section title="Certificados & Chaves">
           <div className="bg-white border border-[#E6E8EC] text-[12px]">
-            <div className="grid grid-cols-5 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Alias</span><span>Algoritmo</span><span>Validade</span><span>Estado</span><span>Chave privada</span></div>
+            <div className="grid grid-cols-5 font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1"><span>Alias</span><span>Algoritmo</span><span>Validade</span><span>Estado</span><span>Chave privada</span></div>
             {(certs || []).length === 0 && <div className="px-2 py-2 text-gray-500 flex items-center gap-2"><KeyRound size={13} /> Motor usa o par RSA do sistema (licensing/engine). Importe certificados AGT quando disponíveis.</div>}
             {(certs || []).map((ct: any) => (
               <div key={ct.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#F1F2F4]"><span className="font-bold">{ct.alias}</span><span>{ct.algorithm}</span><span>{ct.valid_until || '—'}</span><span>{ct.status}</span><span>{ct.has_private_key ? '•••• (encriptada)' : '—'}</span></div>
@@ -574,9 +574,9 @@ export function FiscalAuditView() {
   return (
     <ClassicWindow title="Auditoria Fiscal" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Registo imutável de todas as operações fiscais (quem, quando, IP, documento)</div>}>
-      <div className="p-4 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 bg-[#EEF1F5] h-full overflow-auto">
         <div className="bg-white border border-[#E6E8EC] text-[12px]">
-          <div className="grid grid-cols-5 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Evento</span><span>Documento</span><span>Utilizador</span><span>IP</span><span>Quando</span></div>
+          <div className="grid grid-cols-5 font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1"><span>Evento</span><span>Documento</span><span>Utilizador</span><span>IP</span><span>Quando</span></div>
           {rows.map((r: any) => (
             <div key={r.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#F1F2F4]"><span className="font-bold">{r.event}</span><span>{r.document_ref || '—'}</span><span>{r.user || '—'}</span><span>{r.ip_address || '—'}</span><span>{new Date(r.created_at).toLocaleString('pt-PT')}</span></div>
           ))}

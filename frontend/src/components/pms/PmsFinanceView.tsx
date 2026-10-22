@@ -90,7 +90,7 @@ export default function PmsFinanceView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex gap-3 p-3 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12px]">
+      <div className="flex gap-3 p-3 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[12px]">
         <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Total Receitas</div><div className="font-bold text-[#111827]">{money(totalIncome)}</div></div>
         <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Total Despesas</div><div className="font-bold text-[#DC2626]">{money(totalExpense)}</div></div>
         <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Saldo</div><div className="font-bold text-[#111827]">{money(totalIncome - totalExpense)}</div></div>
@@ -139,7 +139,7 @@ export default function PmsFinanceView() {
       </div>
       <Toolbar actions={[
         { label: 'Limpar', icon: '✕', color: '#3B82F6', onClick: novo },
-        { label: 'Gravar Transação', icon: '💾', color: '#1E2A44', onClick: save },
+        { label: 'Gravar Transação', icon: '💾', color: '#111827', onClick: save },
       ]} />
     </div>
   );

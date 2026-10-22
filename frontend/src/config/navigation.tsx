@@ -103,7 +103,7 @@ const PosTerminalLauncher = () => (
   <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-8">
     <div className="text-lg font-bold text-[#111827]">Terminal POS (FrontOffice)</div>
     <p className="text-sm text-gray-600 max-w-md">O terminal de venda tátil abre em ecrã cheio, com sessão própria do operador. Clique para abrir.</p>
-    <a href="/pos" className="px-6 py-3 bg-[#1E2A44] text-white rounded-lg font-bold hover:bg-[#1E2A44]">Abrir Terminal POS →</a>
+    <a href="/pos" className="px-6 py-3 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] rounded-lg font-bold hover:bg-[#FFFFFF] border-b border-[#E6E8EC]">Abrir Terminal POS →</a>
   </div>
 );
 

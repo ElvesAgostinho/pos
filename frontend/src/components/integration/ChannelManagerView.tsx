@@ -6,14 +6,14 @@ import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb,
 import ChannelRoomMapDialog from './ChannelRoomMapDialog';
 import { notifyError } from '../../utils/friendlyError';
 
-const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] active:translate-y-px flex items-center gap-1.5';
 const PROVIDERS: [string, string][] = [['BOOKING', 'Booking.com'], ['EXPEDIA', 'Expedia'], ['AIRBNB', 'Airbnb'], ['AGODA', 'Agoda'], ['HOTELS', 'Hotels.com'], ['TRIVAGO', 'Trivago'], ['GOOGLE', 'Google Hotels'], ['OTHER', 'Outro']];
-const PROV_COLOR: Record<string, string> = { BOOKING: '#1E2A44', EXPEDIA: '#1E2A44', AIRBNB: '#DC2626', AGODA: '#1E2A44', HOTELS: '#DC2626', TRIVAGO: '#DC2626', GOOGLE: '#3B82F6', OTHER: '#3B82F6' };
+const PROV_COLOR: Record<string, string> = { BOOKING: '#2563EB', EXPEDIA: '#2563EB', AIRBNB: '#DC2626', AGODA: '#2563EB', HOTELS: '#DC2626', TRIVAGO: '#DC2626', GOOGLE: '#3B82F6', OTHER: '#3B82F6' };
 // Tem de bater certo com Channel.STATUS no backend (models.py): Desligado/
 // Credenciais pendentes/Ligado. Havia aqui 'ERROR'/'DISABLED', que nunca são
 // o `status` do canal (são estados do LOG de sincronização) — 'PENDING' e
 // 'DISCONNECTED', que são os valores reais, ficavam sem cor nenhuma.
-const ST_COLOR: Record<string, string> = { CONNECTED: '#1E2A44', PENDING: '#3B82F6', DISCONNECTED: '#3B82F6' };
+const ST_COLOR: Record<string, string> = { CONNECTED: '#16A34A', PENDING: '#D97706', DISCONNECTED: '#6B7280' };
 
 export default function ChannelManagerView() {
   const qc = useQueryClient();
@@ -30,13 +30,13 @@ export default function ChannelManagerView() {
     <ClassicWindow title="Channel Manager — Sincronização com OTAs" icon={<Network size={14} className="text-gray-300" />}
       footer={<div className="flex items-center justify-between w-full"><span className="text-gray-600">Booking.com · Expedia · Airbnb · Agoda · Hotels.com — disponibilidade/tarifas e reservas · anti-overbooking automático</span>
         <button onClick={() => syncAll.mutate()} className={btn}><RefreshCw size={12} className={syncAll.isPending ? 'animate-spin' : ''} />Sincronizar todos</button></div>}>
-      <div className="p-4 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-3 bg-[#EEF1F5] h-full overflow-auto">
         {/* ONDE OBTER AS CREDENCIAIS de cada plataforma */}
         <div className="bg-white border border-[#E6E8EC] p-3 text-[12px]">
           <div className="font-bold text-[#6B7280] mb-2">Onde obter as credenciais de cada plataforma</div>
           <table className="w-full border-collapse text-[11px]">
             <thead>
-              <tr className="bg-[#F7F8FA]">
+              <tr className="bg-[#EEF1F5]">
                 <th className="border border-[#F1F2F4] px-2 py-1 text-left">Plataforma</th>
                 <th className="border border-[#F1F2F4] px-2 py-1 text-left">Onde pedir / encontrar</th>
                 <th className="border border-[#F1F2F4] px-2 py-1 text-left">Property ID</th>
@@ -60,7 +60,7 @@ export default function ChannelManagerView() {
               ))}
             </tbody>
           </table>
-          <div className="mt-2 p-2 bg-[#F7F8FA] border border-[#F1F2F4] text-[11px] text-[#6B7280]">
+          <div className="mt-2 p-2 bg-[#EEF1F5] border border-[#F1F2F4] text-[11px] text-[#6B7280]">
             <div className="flex items-start gap-1.5"><Lightbulb size={14} className="flex-shrink-0 mt-px" /> <span><b>Como funciona:</b> preenche em baixo o canal, o <b>Property ID</b> e a <b>Chave API</b> → o sistema envia disponibilidade e tarifas, e recebe as reservas automaticamente (com <b>anti-overbooking</b>). As reservas entram no <b>PMS → Reservas</b>.</span></div>
             <div className="flex items-start gap-1.5 mt-1"><TriangleAlert size={14} className="flex-shrink-0 mt-px" /> <span>As OTAs só dão as credenciais a software <b>homologado</b> por elas — este é o passo comercial a fazer com cada plataforma.</span></div>
           </div>
@@ -110,7 +110,7 @@ export default function ChannelManagerView() {
         <div>
           <div className="text-[11px] font-bold text-[#6B7280] mb-1 uppercase flex items-center gap-1"><Link2 size={13} />Registo de sincronização</div>
           <div className="bg-white border border-[#E6E8EC] text-[12px]">
-            <div className="grid grid-cols-[140px_100px_90px_1fr_130px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Canal</span><span>Direção</span><span>Evento</span><span>Resumo</span><span>Quando</span></div>
+            <div className="grid grid-cols-[140px_100px_90px_1fr_130px] font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1"><span>Canal</span><span>Direção</span><span>Evento</span><span>Resumo</span><span>Quando</span></div>
             {logs.map((l: any) => (
               <div key={l.id} className="grid grid-cols-[140px_100px_90px_1fr_130px] px-2 py-1 border-b border-[#F1F2F4] items-center">
                 <span className="font-bold">{l.channel_name}</span>

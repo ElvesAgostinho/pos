@@ -13,7 +13,7 @@ import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => (v == null ? '—' : Number(v).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 const CAT_ICON: Record<string, any> = { FATURACAO: FileText, POS: Receipt, PMS: BedDouble, COMPRAS: ShoppingCart, STOCK: Boxes, TESOURARIA: Coins, CONTABILIDADE: BookText };
-const CAT_COLOR: Record<string, string> = { FATURACAO: '#DC2626', POS: '#1E2A44', PMS: '#3B82F6', COMPRAS: '#3B82F6', STOCK: '#3B82F6', TESOURARIA: '#1E2A44', CONTABILIDADE: '#1E2A44' };
+const CAT_COLOR: Record<string, string> = { FATURACAO: '#DC2626', POS: '#2563EB', PMS: '#3B82F6', COMPRAS: '#3B82F6', STOCK: '#3B82F6', TESOURARIA: '#2563EB', CONTABILIDADE: '#2563EB' };
 
 // Colunas de exportação (todas as áreas, formato comum).
 const EXPORT_COLS = [
@@ -56,10 +56,10 @@ export default function DocumentCenterView() {
   const expTitle = `Document Center — ${cat || 'Todas as áreas'}`;
   const EXPORTS = [
     { label: 'PDF', icon: FileType2, color: '#DC2626', run: () => exportPDF(filtered, EXPORT_COLS, expName, expTitle) },
-    { label: 'Excel', icon: FileSpreadsheet, color: '#1E2A44', run: () => exportExcel(filtered, EXPORT_COLS, expName, expTitle) },
-    { label: 'Word', icon: FileText, color: '#1E2A44', run: () => exportWord(filtered, EXPORT_COLS, expName, expTitle) },
-    { label: 'CSV', icon: FileDown, color: '#1E2A44', run: () => exportCSV(filtered, EXPORT_COLS, expName) },
-    { label: 'JSON', icon: FileJson, color: '#1E2A44', run: () => exportJSON(filtered, EXPORT_COLS, expName) },
+    { label: 'Excel', icon: FileSpreadsheet, color: '#111827', run: () => exportExcel(filtered, EXPORT_COLS, expName, expTitle) },
+    { label: 'Word', icon: FileText, color: '#111827', run: () => exportWord(filtered, EXPORT_COLS, expName, expTitle) },
+    { label: 'CSV', icon: FileDown, color: '#111827', run: () => exportCSV(filtered, EXPORT_COLS, expName) },
+    { label: 'JSON', icon: FileJson, color: '#111827', run: () => exportJSON(filtered, EXPORT_COLS, expName) },
   ];
 
   // O repositório tem DUAS metades: os DOCUMENTOS (o que foi emitido) e o TRILHO
@@ -67,9 +67,9 @@ export default function DocumentCenterView() {
   if (view === 'trail') {
     return (
       <div className="h-full flex flex-col">
-        <div className="flex gap-1 px-3 pt-2 bg-[#F7F8FA] border-b border-[#E6E8EC]">
+        <div className="flex gap-1 px-3 pt-2 bg-[#EEF1F5] border-b border-[#E6E8EC]">
           <button onClick={() => setView('docs')}
-            className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#F7F8FA] text-gray-600 border-[#E6E8EC]">Documentos</button>
+            className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#EEF1F5] text-gray-600 border-[#E6E8EC]">Documentos</button>
           <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#111827] border-[#E6E8EC]">
             Trilho de Auditoria (tudo o que aconteceu)
           </button>
@@ -82,17 +82,17 @@ export default function DocumentCenterView() {
   return (
     <ClassicWindow title="Document Center — Repositório Documental" icon={<FolderArchive size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Todos os documentos de todos os módulos · pesquisa global (nº, cliente, mesa, quarto, valor) · {data?.count ?? 0} resultado(s)</div>}>
-      <div className="flex flex-col h-full bg-[#F7F8FA]">
-        <div className="flex gap-1 px-3 pt-2 bg-[#F7F8FA] border-b border-[#E6E8EC]">
+      <div className="flex flex-col h-full bg-[#EEF1F5]">
+        <div className="flex gap-1 px-3 pt-2 bg-[#EEF1F5] border-b border-[#E6E8EC]">
           <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#111827] border-[#E6E8EC]">Documentos</button>
           <button onClick={() => setView('trail')}
-            className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#F7F8FA] text-gray-600 border-[#E6E8EC] hover:bg-[#F7F8FA]">
+            className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#EEF1F5] text-gray-600 border-[#E6E8EC] hover:bg-[#EEF1F5]">
             Trilho de Auditoria (tudo o que aconteceu)
           </button>
         </div>
         {/* Dashboard */}
-        <div className="flex flex-wrap gap-2 p-3 border-b border-[#E6E8EC] bg-[#F7F8FA]">
-          {[['Emitidos hoje', dash?.total_today, '#3B82F6'], ['Faturas', dash?.invoices, '#DC2626'], ['Vendas POS', dash?.pos_sales, '#1E2A44'], ['Check-ins', dash?.checkins, '#3B82F6'], ['Compras', dash?.purchases, '#3B82F6'], ['Mov. Stock', dash?.stock_moves, '#3B82F6'], ['Anulados', dash?.voided, '#3B82F6']].map(([l, v, c]: any) => (
+        <div className="flex flex-wrap gap-2 p-3 border-b border-[#E6E8EC] bg-[#EEF1F5]">
+          {[['Emitidos hoje', dash?.total_today, '#3B82F6'], ['Faturas', dash?.invoices, '#DC2626'], ['Vendas POS', dash?.pos_sales, '#2563EB'], ['Check-ins', dash?.checkins, '#3B82F6'], ['Compras', dash?.purchases, '#3B82F6'], ['Mov. Stock', dash?.stock_moves, '#3B82F6'], ['Anulados', dash?.voided, '#3B82F6']].map(([l, v, c]: any) => (
             <div key={l} className="bg-white border border-[#E6E8EC] px-3 py-1"><div className="text-[9px] uppercase text-gray-500">{l}</div><div className="text-lg font-bold" style={{ color: c }}>{v ?? 0}</div></div>
           ))}
         </div>
@@ -102,27 +102,27 @@ export default function DocumentCenterView() {
             <Search size={14} className="text-gray-500" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquisar: FT2026… · Mesa 12 · Quarto 405 · João Silva · Coca-Cola · valor…" className="flex-1 py-1.5 outline-none text-[12px]" />
           </div>
-          <button type="submit" className="px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA]">Pesquisar</button>
+          <button type="submit" className="px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5]">Pesquisar</button>
           {q && <button type="button" className="text-[12px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); }}>limpar</button>}
-          <button type="button" onClick={() => setShowAdv((s) => !s)} className={`px-3 py-1.5 text-[12px] border border-[#E6E8EC] flex items-center gap-1 ${advActive ? 'bg-[#F7F8FA] font-bold' : 'bg-gradient-to-b from-white to-[#F7F8FA]'}`}><SlidersHorizontal size={13} />Filtros{advActive ? ' •' : ''}</button>
+          <button type="button" onClick={() => setShowAdv((s) => !s)} className={`px-3 py-1.5 text-[12px] border border-[#E6E8EC] flex items-center gap-1 ${advActive ? 'bg-[#EEF1F5] font-bold' : 'bg-gradient-to-b from-white to-[#EEF1F5]'}`}><SlidersHorizontal size={13} />Filtros{advActive ? ' •' : ''}</button>
           {/* Exportação multi-formato */}
           <div className="ml-auto flex items-center gap-1.5">
             <span className="text-[11px] text-gray-500 mr-1">Exportar:</span>
             {EXPORTS.map((ex) => (
               <button key={ex.label} type="button" onClick={ex.run} title={`Exportar em ${ex.label}`} disabled={!rows.length}
-                className="flex flex-col items-center justify-center w-[54px] h-[46px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] disabled:opacity-40 rounded-[8px]">
+                className="flex flex-col items-center justify-center w-[54px] h-[46px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] disabled:opacity-40 rounded-[8px]">
                 <ex.icon size={20} style={{ color: ex.color }} strokeWidth={1.7} />
                 <span className="text-[10px] mt-0.5 text-gray-700">{ex.label}</span>
               </button>
             ))}
             <button type="button" onClick={() => setShowRS((s) => !s)} title="Windows Reporting Services"
-              className={`flex flex-col items-center justify-center w-[54px] h-[46px] border border-[#E6E8EC] rounded-[8px] ${reportServer ? 'bg-[#F7F8FA]' : 'bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA]'}`}>
+              className={`flex flex-col items-center justify-center w-[54px] h-[46px] border border-[#E6E8EC] rounded-[8px] ${reportServer ? 'bg-[#EEF1F5]' : 'bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5]'}`}>
               <Server size={20} className="text-[#6B7280]" strokeWidth={1.7} /><span className="text-[10px] mt-0.5 text-gray-700">Servidor</span>
             </button>
           </div>
         </form>
         {showAdv && (
-          <div className="flex flex-wrap items-end gap-3 px-3 py-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[11px]">
+          <div className="flex flex-wrap items-end gap-3 px-3 py-2 border-b border-[#E6E8EC] bg-[#EEF1F5] text-[11px]">
             <label className="flex flex-col text-gray-600">Data de<input type="date" value={adv.dateFrom} onChange={(e) => setAdv({ ...adv, dateFrom: e.target.value })} className="border border-[#E6E8EC] px-2 py-1" /></label>
             <label className="flex flex-col text-gray-600">Data até<input type="date" value={adv.dateTo} onChange={(e) => setAdv({ ...adv, dateTo: e.target.value })} className="border border-[#E6E8EC] px-2 py-1" /></label>
             <label className="flex flex-col text-gray-600">Valor mín.<input type="number" value={adv.valMin} onChange={(e) => setAdv({ ...adv, valMin: e.target.value })} className="border border-[#E6E8EC] px-2 py-1 w-24" /></label>
@@ -133,11 +133,11 @@ export default function DocumentCenterView() {
           </div>
         )}
         {showRS && (
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[11px]">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-[#E6E8EC] bg-[#EEF1F5] text-[11px]">
             <Server size={13} className="text-[#6B7280]" />
             <span className="text-gray-700">Windows Reporting Services:</span>
             <input value={reportServer} onChange={(e) => setReportServer(e.target.value)} placeholder="http://servidor/ReportServer" className="border border-[#E6E8EC] px-2 py-1 w-72" />
-            <button onClick={() => { localStorage.setItem('report_server_url', reportServer); aviso('Servidor de relatórios guardado.'); }} className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">Guardar</button>
+            <button onClick={() => { localStorage.setItem('report_server_url', reportServer); aviso('Servidor de relatórios guardado.'); }} className="px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5]">Guardar</button>
             {reportServer && <a href={reportServer} target="_blank" rel="noreferrer" className="text-[#6B7280] hover:underline">abrir servidor →</a>}
             <span className="text-gray-500 ml-1">Descarrega relatórios pesados para o servidor Windows, sem sobrecarregar o sistema.</span>
           </div>
@@ -145,11 +145,11 @@ export default function DocumentCenterView() {
         <div className="flex flex-1 overflow-hidden">
           {/* Pastas por área */}
           <div className="w-52 flex-shrink-0 bg-white border-r border-[#E6E8EC] overflow-auto py-1">
-            <button onClick={() => setCat('')} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left hover:bg-[#F7F8FA] ${cat === '' ? 'bg-[#F7F8FA] font-bold' : ''}`}><Folder size={14} className="text-[#111827]" />Todos os documentos</button>
+            <button onClick={() => setCat('')} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left hover:bg-[#EEF1F5] ${cat === '' ? 'bg-[#EEF1F5] font-bold' : ''}`}><Folder size={14} className="text-[#111827]" />Todos os documentos</button>
             {cats.map((c: any) => {
               const Icon = CAT_ICON[c.key] || Folder;
               return (
-                <button key={c.key} onClick={() => setCat(c.key)} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left hover:bg-[#F7F8FA] ${cat === c.key ? 'bg-[#F7F8FA] font-bold' : ''}`}>
+                <button key={c.key} onClick={() => setCat(c.key)} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left hover:bg-[#EEF1F5] ${cat === c.key ? 'bg-[#EEF1F5] font-bold' : ''}`}>
                   <Icon size={14} style={{ color: CAT_COLOR[c.key] }} />{c.name}
                 </button>
               );
@@ -157,7 +157,7 @@ export default function DocumentCenterView() {
           </div>
           {/* Resultados */}
           <div className="flex-1 overflow-auto">
-            <div className="grid grid-cols-[110px_1fr_1fr_110px_100px_90px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1 text-[12px] sticky top-0"><span>Documento</span><span>Tipo</span><span>Cliente / Ref.</span><span className="text-right">Valor</span><span>Data</span><span>Estado</span></div>
+            <div className="grid grid-cols-[110px_1fr_1fr_110px_100px_90px] font-bold bg-[#EEF1F5] border-b border-[#F1F2F4] px-2 py-1 text-[12px] sticky top-0"><span>Documento</span><span>Tipo</span><span>Cliente / Ref.</span><span className="text-right">Valor</span><span>Data</span><span>Estado</span></div>
             {filtered.map((r: any, i: number) => {
               const Icon = CAT_ICON[r.category] || FileText;
               return (
@@ -200,17 +200,17 @@ function DocDetail({ sel, onClose, onOpen }: { sel: { module: string; id: string
           </div>
           {det.items?.length ? (
             <div className="mb-3"><div className="text-[11px] font-bold text-[#6B7280] uppercase mb-1">Itens</div>
-              <div className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 space-y-0.5">{det.items.map((it: string, i: number) => <div key={i}>{it}</div>)}</div>
+              <div className="bg-[#EEF1F5] border border-[#F1F2F4] p-2 space-y-0.5">{det.items.map((it: string, i: number) => <div key={i}>{it}</div>)}</div>
             </div>
           ) : null}
           {sel.module === 'fiscal' && det.printable && (
-            <button onClick={() => printFiscalInvoice(Number(sel.id), false)} className="mb-3 px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] flex items-center gap-1.5"><Printer size={13} />Imprimir documento</button>
+            <button onClick={() => printFiscalInvoice(Number(sel.id), false)} className="mb-3 px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] flex items-center gap-1.5"><Printer size={13} />Imprimir documento</button>
           )}
           <div className="text-[11px] font-bold text-[#6B7280] uppercase mb-1 flex items-center gap-1"><Link2 size={13} />Documentos ligados ({links.length})</div>
           {links.length === 0 && <div className="text-gray-500">Sem ligações.</div>}
           {links.map((l: any, i: number) => (
             <button key={i} disabled={!l.module} onClick={() => l.module && onOpen({ module: l.module, id: l.id })}
-              className={`w-full flex items-center justify-between px-2 py-1.5 border border-[#F1F2F4] mb-1 text-left ${l.module ? 'hover:bg-[#F7F8FA] cursor-pointer' : 'opacity-70'}`}>
+              className={`w-full flex items-center justify-between px-2 py-1.5 border border-[#F1F2F4] mb-1 text-left ${l.module ? 'hover:bg-[#EEF1F5] cursor-pointer' : 'opacity-70'}`}>
               <span className="flex items-center gap-2"><span className="w-1.5 h-6 rounded" style={{ background: CAT_COLOR[l.category] || '#3B82F6' }} /><b>{l.label}</b> · {l.number}</span>
               <span>{l.amount != null ? money(l.amount) : ''}</span>
             </button>

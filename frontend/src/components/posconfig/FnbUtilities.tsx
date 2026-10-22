@@ -48,12 +48,12 @@ export default function FnbUtilities() {
       <div className="w-[300px] flex-shrink-0 border-r border-[#F1F2F4] p-3 space-y-2 bg-[#FFFFFF]">
         <button onClick={() => setOp('recalc')}
           className={`w-full py-4 text-[14px] font-semibold ${op === 'recalc'
-            ? 'bg-[#1E2A44] text-white' : 'bg-[#1E2A44] text-white/80 hover:bg-[#1E2A44]'}`}>
+            ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]/80 hover:bg-[#FFFFFF] border-b border-[#E6E8EC]'}`}>
           Recalcular
         </button>
         <button onClick={() => setOp('saft')}
           className={`w-full py-4 text-[14px] font-semibold ${op === 'saft'
-            ? 'bg-[#1E2A44] text-white' : 'bg-[#1E2A44] text-white/80 hover:bg-[#1E2A44]'}`}>
+            ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]/80 hover:bg-[#FFFFFF] border-b border-[#E6E8EC]'}`}>
           SAF-T — Comunicação de Inventário
         </button>
       </div>
@@ -104,18 +104,18 @@ export default function FnbUtilities() {
             </div>
 
             <div className="px-3 py-1.5 border-y border-[#F1F2F4] text-[12px] font-bold"
-              style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)', color: TOKENS.selectedText }}>
+              style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 55%, #F1F2F4 100%)', color: TOKENS.selectedText }}>
               Status
             </div>
             <div className="flex-1 overflow-auto">
               {resultado ? (
                 <>
-                  <div className="px-3 py-2 text-[12px] bg-[#F7F8FA] text-[#111827] border-b border-[#E6E8EC]">
+                  <div className="px-3 py-2 text-[12px] bg-[#EEF1F5] text-[#111827] border-b border-[#E6E8EC]">
                     {resultado.detail}
                   </div>
                   {resultado.changes?.length > 0 && (
                     <table className="w-full text-[12px] border-collapse">
-                      <thead><tr className="bg-[#F7F8FA]">
+                      <thead><tr className="bg-[#EEF1F5]">
                         {['Artigo', 'Armazém', 'Campo', 'Antes', 'Depois'].map((h) => (
                           <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
                         ))}

@@ -88,9 +88,9 @@ export default function PosDocSearch() {
       <html><head><title>${doc.invoice_no}</title><style>
         body{font-family:'Segoe UI',sans-serif;font-size:12px;padding:24px;max-width:700px}
         h1{font-size:16px;margin:0} .muted{color:#3B82F6} table{width:100%;border-collapse:collapse;margin-top:12px}
-        th{text-align:left;border-bottom:1px solid #1E2A44;padding:4px} td{padding:4px;border-bottom:1px solid #F7F8FA}
+        th{text-align:left;border-bottom:1px solid #2563EB;padding:4px} td{padding:4px;border-bottom:1px solid #EEF1F5}
         .r{text-align:right} .tot{font-size:15px;font-weight:bold}
-        .mention{margin-top:16px;font-size:10px;color:#1E2A44}
+        .mention{margin-top:16px;font-size:10px;color:#2563EB}
       </style></head><body>
       <h1>${doc.company}</h1><div class="muted">NIF: ${doc.company_tax_id}</div>
       <h2>${doc.type} ${doc.invoice_no}${doc.print_count > 0 ? ' — 2ª VIA' : ''}</h2>
@@ -113,11 +113,11 @@ export default function PosDocSearch() {
   // ─────────── pré-visualização do documento
   if (ver && doc) {
     return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-[720px] mx-auto bg-white border border-[#F1F2F4] p-8 shadow">
             {doc.voided && (
-              <div className="mb-3 px-3 py-2 bg-[#F7F8FA] border border-[#DC2626] text-[#DC2626] font-bold text-[12px]">
+              <div className="mb-3 px-3 py-2 bg-[#EEF1F5] border border-[#DC2626] text-[#DC2626] font-bold text-[12px]">
                 DOCUMENTO ANULADO
               </div>
             )}
@@ -146,7 +146,7 @@ export default function PosDocSearch() {
             </div>
 
             <table className="w-full text-[12px] mt-4">
-              <thead><tr className="border-b border-[#1E2A44]">
+              <thead><tr className="border-b border-[#E6E8EC]">
                 <th className="text-left py-1">Artigo</th>
                 <th className="text-right">Qtd</th>
                 <th className="text-right">Preço</th>
@@ -183,7 +183,7 @@ export default function PosDocSearch() {
 
         <Toolbar actions={[
           { label: 'Voltar', icon: '◀', color: '#3B82F6', onClick: () => setVer(null) },
-          { label: 'Imprimir', icon: '🖨', color: '#1E2A44', onClick: imprimir },
+          { label: 'Imprimir', icon: '🖨', color: '#111827', onClick: imprimir },
           {
             label: 'Anular (nota de crédito)', icon: '🚫', disabled: doc.voided,
             onClick: () => setAnular({ id: ver, number: doc.invoice_no }),
@@ -201,7 +201,7 @@ export default function PosDocSearch() {
 
   // ─────────── pesquisa
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
       <div className="flex gap-6 p-3 bg-white border-b border-[#F1F2F4]">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -268,7 +268,7 @@ export default function PosDocSearch() {
 
       <div className="flex-1 overflow-auto bg-white">
         <table className="w-full text-[12px] border-collapse">
-          <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+          <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
             {['Nome', 'Número', 'Data', 'Total', 'NIF', 'Entidade', 'Operador', 'Estado'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
             ))}
@@ -276,7 +276,7 @@ export default function PosDocSearch() {
           <tbody>
             {vista.map((r) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setVer(r.id)}
-                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#FFFFFF]'}`}>
+                className={`border-b border-[#F1F2F4] cursor-pointer ${sel === r.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
                 <td className="px-2 py-1">{r.name}</td>
                 <td className="px-2 py-1 font-mono font-semibold">{r.number}</td>
                 <td className="px-2 py-1">{r.date}</td>
@@ -287,8 +287,8 @@ export default function PosDocSearch() {
                 <td className="px-2 py-1 text-[#6B7280]">{r.operator}</td>
                 <td className="px-2 py-1">
                   <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.voided
-                    ? 'bg-[#F7F8FA] text-[#DC2626]'
-                    : r.settled ? 'bg-[#F7F8FA] text-[#111827]' : 'bg-[#F7F8FA] text-[#111827]'}`}>
+                    ? 'bg-[#EEF1F5] text-[#DC2626]'
+                    : r.settled ? 'bg-[#EEF1F5] text-[#111827]' : 'bg-[#EEF1F5] text-[#111827]'}`}>
                     {r.voided ? 'Anulado' : r.settled ? 'Liquidado' : 'Por receber'}
                   </span>
                 </td>
@@ -301,7 +301,7 @@ export default function PosDocSearch() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EEF1F5] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -317,12 +317,12 @@ export default function PosDocSearch() {
 
       <Toolbar actions={[
         { label: 'Pré-visualizar', icon: '🔍', color: '#3B82F6', disabled: !sel, onClick: () => setVer(sel) },
-        { label: 'Imprimir', icon: '🖨', color: '#1E2A44', disabled: !sel, onClick: () => setVer(sel) },
+        { label: 'Imprimir', icon: '🖨', color: '#111827', disabled: !sel, onClick: () => setVer(sel) },
         {
           label: 'Anular', icon: '🚫', disabled: !sel || selRow?.voided,
           onClick: () => setAnular({ id: sel, number: selRow.number }),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#1E2A44', onClick: exportar },
+        { label: 'Exportar para Excel', icon: '⬇', color: '#111827', onClick: exportar },
       ]} />
 
       {anular && <PopupAnular anular={anular} setAnular={setAnular} acao={acao} />}
@@ -336,11 +336,11 @@ function PopupAnular({ anular, setAnular, acao }: any) {
     <>
       <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setAnular(null)} />
       <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[460px]">
-        <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold flex justify-between">
+        <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold flex justify-between">
           Anular {anular.number} <button onClick={() => setAnular(null)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
         </div>
         <div className="p-4 space-y-3 text-[12px]">
-          <div className="text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1.5">
+          <div className="text-[#111827] bg-[#EEF1F5] border border-[#E6E8EC] px-2 py-1.5">
             O documento não é apagado: é emitida uma <b>nota de crédito</b>, assinada e
             encadeada. É o que a AGT exige.
           </div>

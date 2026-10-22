@@ -30,7 +30,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
   const isNew = !row?.id;
   const [d, setD] = useState<any>({
     is_active: true, is_system: false, is_auto_reservation: false, sort_order: 0,
-    bg_color: '#1E2A44', text_color: '#FFFFFF', equivalent: '', ...row,
+    bg_color: '#2563EB', text_color: '#FFFFFF', equivalent: '', ...row,
   });
 
   const save = useMutation({
@@ -53,7 +53,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo estado' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -65,7 +65,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
             <Row label="Código:">
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 disabled={d.is_system && !isNew}
-                className={`${inp} w-[290px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle} />
+                className={`${inp} w-[290px] disabled:bg-[#EEF1F5] disabled:text-[#6B7280]`} style={inputStyle} />
             </Row>
             <Row label="Descrição:">
               <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
@@ -99,7 +99,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
 
             <Row label="Cor de Fundo:">
               <div className="flex items-center gap-2">
-                <input type="color" value={d.bg_color || '#1E2A44'}
+                <input type="color" value={d.bg_color || '#2563EB'}
                   onChange={(e) => set('bg_color', e.target.value)} className="w-10 h-8 border border-[#E6E8EC]" />
                 <input value={d.bg_color || ''} onChange={(e) => set('bg_color', e.target.value)}
                   className={`${inp} w-[130px] font-mono`} style={inputStyle} />
@@ -154,7 +154,7 @@ export default function EventStateEditor({ row, onClose }: { row: any; onClose: 
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

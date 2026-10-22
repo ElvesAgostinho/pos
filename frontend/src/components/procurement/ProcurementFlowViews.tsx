@@ -33,7 +33,7 @@ export function RequisitionsView() {
     <ClassicWindow title="Requisições de Compra (com aprovação)" icon={<ClipboardList size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{reqs.length} requisição(ões) · Rascunho → Submeter → Aprovar → gerar RFQ</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Requisitante" value={d.requester} onChange={(e) => setD({ ...d, requester: e.target.value })} className="border border-[#E6E8EC] p-1 w-32" />
           <select value={d.item} onChange={(e) => setD({ ...d, item: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">— artigo —</option>{items.map((i: any) => <option key={i.id} value={i.id}>[{i.code}] {i.name}</option>)}
@@ -82,9 +82,9 @@ export function RfqComparisonView() {
       footer={<div className="text-gray-600">Preços vêm do catálogo do fornecedor · escolha a melhor proposta e gere a OC</div>}>
       <div className="flex h-full">
         <div className="w-56 border-r border-[#E6E8EC] overflow-auto">
-          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-2 py-1.5 font-bold text-[11px] text-[#6B7280]">RFQs</div>
+          <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-2 py-1.5 font-bold text-[11px] text-[#6B7280]">RFQs</div>
           {rfqs.map((r: any) => (
-            <div key={r.id} onClick={() => setSel(r.id)} className={`px-3 py-2 text-[12px] cursor-pointer border-b border-[#F1F2F4] ${rfq?.id === r.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#F7F8FA]'}`}>
+            <div key={r.id} onClick={() => setSel(r.id)} className={`px-3 py-2 text-[12px] cursor-pointer border-b border-[#F1F2F4] ${rfq?.id === r.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#EEF1F5]'}`}>
               <b>{r.number}</b><br /><span className="text-gray-500 text-[10px]">{r.status_display} · {r.quote_count || 0} cotações</span>
             </div>
           ))}
@@ -92,7 +92,7 @@ export function RfqComparisonView() {
         </div>
 
         <div className="flex-1 flex flex-col">
-          <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+          <div className="flex items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
             <span className="font-bold text-[#6B7280]">{rfq ? `Comparação · ${rfq.number}` : 'Selecione uma RFQ'}</span>
             {rfq && <>
               <select value={sup} onChange={(e) => setSup(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white ml-auto">
@@ -104,7 +104,7 @@ export function RfqComparisonView() {
           <div className="flex-1 overflow-auto p-2">
             {comp?.rows?.length ? (
               <table className="w-full text-[11px] border-collapse">
-                <thead><tr className="bg-[#F7F8FA] text-[#6B7280]"><th className="text-left p-1 border border-[#E6E8EC]">Artigo</th><th className="p-1 border border-[#E6E8EC]">Qtd</th>
+                <thead><tr className="bg-[#EEF1F5] text-[#6B7280]"><th className="text-left p-1 border border-[#E6E8EC]">Artigo</th><th className="p-1 border border-[#E6E8EC]">Qtd</th>
                   {(comp.quote_totals || []).map((q: any) => <th key={q.quote} className="p-1 border border-[#E6E8EC]">{q.supplier}</th>)}
                   <th className="p-1 border border-[#E6E8EC]">Melhor</th></tr></thead>
                 <tbody>
@@ -115,12 +115,12 @@ export function RfqComparisonView() {
                       {(comp.quote_totals || []).map((q: any) => {
                         const off = row.offers.find((o: any) => o.supplier === q.supplier);
                         const isBest = off && row.best_supplier === q.supplier;
-                        return <td key={q.quote} className={`p-1 border border-[#F1F2F4] text-right ${isBest ? 'bg-[#F7F8FA] font-bold text-[#111827]' : ''}`}>{off ? money(off.unit_price) : '—'}</td>;
+                        return <td key={q.quote} className={`p-1 border border-[#F1F2F4] text-right ${isBest ? 'bg-[#EEF1F5] font-bold text-[#111827]' : ''}`}>{off ? money(off.unit_price) : '—'}</td>;
                       })}
                       <td className="p-1 border border-[#F1F2F4] text-center font-bold">{row.best_supplier || '—'}</td>
                     </tr>
                   ))}
-                  <tr className="bg-[#F7F8FA] font-bold"><td className="p-1 border border-[#E6E8EC]" colSpan={2}>Total</td>
+                  <tr className="bg-[#EEF1F5] font-bold"><td className="p-1 border border-[#E6E8EC]" colSpan={2}>Total</td>
                     {(comp.quote_totals || []).map((q: any) => <td key={q.quote} className="p-1 border border-[#E6E8EC] text-right">{money(q.total)}</td>)}
                     <td className="p-1 border border-[#E6E8EC]" /></tr>
                 </tbody>
@@ -131,7 +131,7 @@ export function RfqComparisonView() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {comp.quote_totals.map((q: any) => (
                   <button key={q.quote} onClick={() => convert.mutate(q.quote, { onSuccess: (po: any) => aviso('Ordem de Compra gerada: ' + po.po_number + ' · total ' + money(po.total_amount)) })}
-                    className="px-3 py-1.5 bg-[#3B82F6] text-white rounded text-[11px] font-bold hover:bg-[#1E2A44]">Gerar OC de {q.supplier} ({money(q.total)})</button>
+                    className="px-3 py-1.5 bg-[#3B82F6] text-[#111827] rounded text-[11px] font-bold hover:bg-[#FFFFFF] border-b border-[#E6E8EC]">Gerar OC de {q.supplier} ({money(q.total)})</button>
                 ))}
               </div>
             ) : null}

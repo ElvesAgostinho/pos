@@ -12,7 +12,7 @@ const ROOM_STATUS_STYLE: Record<string, string> = {
   VACANT_CLEAN: 'bg-[#F0FDF4] border-[#16A34A] text-[#15803D]',
   VACANT_DIRTY: 'bg-[#FFFBEB] border-[#FDE68A] text-[#D97706]',
   OCCUPIED: 'bg-[#FEF2F2] border-[#DC2626] text-[#B91C1C]',
-  OOO: 'bg-[#F7F8FA] border-[#E6E8EC] text-gray-500',
+  OOO: 'bg-[#EEF1F5] border-[#E6E8EC] text-gray-500',
 };
 
 function StatCard({ label, value, sub, icon }: { label: string; value: any; sub?: string; icon: string }) {
@@ -60,7 +60,7 @@ export default function PmsHotelStatusView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex-1 overflow-auto p-3" style={{ background: '#F7F8FA' }}>
+      <div className="flex-1 overflow-auto p-3" style={{ background: '#EEF1F5' }}>
         <div className="grid grid-cols-4 gap-3 mb-4">
           <StatCard label="Chegadas Hoje" value={data?.arrivals_count ?? '—'} icon="🏛" />
           <StatCard label="Saídas Hoje" value={data?.departures_count ?? '—'} icon="🕐" />
@@ -70,7 +70,7 @@ export default function PmsHotelStatusView() {
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="border border-[#E6E8EC] bg-white">
-            <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border-b border-[#E6E8EC]">
+            <div className="px-2 py-1 font-bold text-[11px] bg-[#EEF1F5] border-b border-[#E6E8EC]">
               Chegadas de Hoje ({data?.arrivals_count ?? 0})
             </div>
             <div style={{ height: 210 }}>
@@ -84,7 +84,7 @@ export default function PmsHotelStatusView() {
             </div>
           </div>
           <div className="border border-[#E6E8EC] bg-white">
-            <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border-b border-[#E6E8EC]">
+            <div className="px-2 py-1 font-bold text-[11px] bg-[#EEF1F5] border-b border-[#E6E8EC]">
               Saídas de Hoje ({data?.departures_count ?? 0})
             </div>
             <div style={{ height: 210 }}>
@@ -114,7 +114,7 @@ export default function PmsHotelStatusView() {
           {rooms.length === 0 && !isLoading && <div className="col-span-8 text-center text-gray-400 py-6">Sem quartos criados.</div>}
         </div>
       </div>
-      <Toolbar actions={[{ label: 'Atualizar', icon: '⟳', color: '#1E2A44', onClick: refresh }]} />
+      <Toolbar actions={[{ label: 'Atualizar', icon: '⟳', color: '#111827', onClick: refresh }]} />
 
       {selId && selRes && (
         <PmsReservationDetailDialog reservation={selRes} hotelName={hotelName}

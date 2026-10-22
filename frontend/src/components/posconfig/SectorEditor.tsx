@@ -78,7 +78,7 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo setor' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -132,7 +132,7 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
         <div className="flex-1 overflow-auto">
           {groups.map((g) => (
             <div key={g}>
-              <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-y border-[#F1F2F4]">{g}</div>
+              <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-y border-[#F1F2F4]">{g}</div>
               <table className="w-full text-[12px] border-collapse">
                 <tbody>
                   {SECTOR_PARAMS.filter((p) => p.g === g).map((p) => {
@@ -177,7 +177,7 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
       <Toolbar actions={[
         { icon: '▦', label: 'Mesas', color: '#3B82F6', disabled: isNew, onClick: () => setMap('design') },
         { icon: '▦', label: 'Mesas - Online', color: '#3B82F6', disabled: isNew, onClick: () => setMap('online') },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

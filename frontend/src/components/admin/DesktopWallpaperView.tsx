@@ -114,11 +114,11 @@ export default function DesktopWallpaperView({ onBack, onDesktop, storageKey, ti
           <p className="text-[11px] text-gray-600 mb-3">{hint
             || 'Fundo do Ambiente de Trabalho (POS/PMS). A imagem é reduzida para 1920 de largura ao guardar — escolha a melhor que tiver, que o sistema trata do tamanho. Uma fachada ou imagem do hotel fica melhor que uma cor lisa.'}</p>
           <div className="flex gap-3">
-            <div className="w-52 h-32 bg-[#F7F8FA] border border-[#E6E8EC] flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-52 h-32 bg-[#EEF1F5] border border-[#E6E8EC] flex items-center justify-center overflow-hidden flex-shrink-0">
               {val ? <img src={val} alt="pré-visualização" className="max-w-full max-h-full object-contain" /> : <Monitor size={30} className="text-gray-300" />}
             </div>
             <div className="flex-1 text-[11px] text-gray-600">
-              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[11px] cursor-pointer hover:bg-[#F7F8FA]">
+              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#EEF1F5] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[11px] cursor-pointer hover:bg-[#EEF1F5]">
                 <Upload size={13} /> Escolher imagem…
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
               </label>

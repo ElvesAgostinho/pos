@@ -8,7 +8,7 @@ const scoreColor = (score: number) =>
   score >= 80 ? 'text-[#111827]' : score >= 50 ? 'text-[#6B7280]' : 'text-[#B91C1C]';
 
 const StatCard = ({ title, value, subtitle }: { title: string; value: React.ReactNode; subtitle?: string }) => (
-  <div className="bg-[#F7F8FA] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4 flex flex-col justify-between">
+  <div className="bg-[#EEF1F5] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4 flex flex-col justify-between">
     <div className="mb-2">
       <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
       <div className="text-2xl font-bold text-[#6B7280]">{value}</div>
@@ -18,7 +18,7 @@ const StatCard = ({ title, value, subtitle }: { title: string; value: React.Reac
 );
 
 const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="bg-[#F7F8FA] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4">
+  <div className="bg-[#EEF1F5] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4">
     <h3 className="text-xs font-bold text-black mb-3 border-b border-[#E6E8EC] pb-1">{title}</h3>
     {children}
   </div>
@@ -29,7 +29,7 @@ export default function EsmDashboardView() {
 
   return (
     <ClassicWindow title="Dashboard ESM — Gestão de Fornecedores">
-      <div className="bg-[#F7F8FA] min-h-full font-sans p-4 overflow-y-auto">
+      <div className="bg-[#EEF1F5] min-h-full font-sans p-4 overflow-y-auto">
         <div className="flex justify-between items-center mb-4 border-b border-[#E6E8EC] pb-2">
           <div>
             <h1 className="text-lg font-bold text-black">Enterprise Supplier Management</h1>

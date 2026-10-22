@@ -68,7 +68,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo package' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -109,12 +109,12 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
 
         {/* Artigos */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
+          <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
             Artigos
           </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full text-[12px] border-collapse">
-              <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+              <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
                 {['Artigo', 'Quantidade', 'Valor', 'Total'].map((h) => (
                   <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
                 ))}
@@ -122,7 +122,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
               <tbody>
                 {lines.map((l, i) => (
                   <tr key={i} onClick={() => setSel(i)}
-                    className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#F7F8FA]' : ''}`}>
+                    className={`border-b border-[#F1F2F4] cursor-pointer ${sel === i ? 'bg-[#EEF1F5]' : ''}`}>
                     <td className="px-2 py-1"><b className="font-mono">{l.item_code}</b> · {l.item_name}</td>
                     <td className="p-0.5 w-[110px]">
                       <input type="number" step="any" value={l.quantity}
@@ -146,13 +146,13 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
             </table>
           </div>
 
-          <div className="flex items-center gap-4 px-3 py-2 bg-[#F7F8FA] border-t border-[#F1F2F4]">
-            <button onClick={() => setPicker(true)} className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1">
-              <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
+          <div className="flex items-center gap-4 px-3 py-2 bg-[#EEF1F5] border-t border-[#F1F2F4]">
+            <button onClick={() => setPicker(true)} className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1">
+              <span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={() => { if (sel !== null) { set('lines', lines.filter((_, j) => j !== sel)); setSel(null); } }}
               disabled={sel === null}
-              className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
+              className="flex items-center gap-2 text-[12px] hover:bg-[#EEF1F5] px-1 py-1 disabled:opacity-35">
               <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[11px]">−</span> Apagar
             </button>
             <span className="ml-auto text-[16px] font-black text-[#111827]">Total: {money(total)}</span>
@@ -166,7 +166,7 @@ export default function PackageEditor({ row, onClose }: { row: any; onClose: () 
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

@@ -88,7 +88,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo modo de pagamento' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -178,7 +178,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
             </div>
 
             <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-              <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">Detalhes</div>
+              <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">Detalhes</div>
               <div className="p-3 space-y-2">
                 <CheckRow on={d.tip_from_change} onToggle={(v: boolean) => set('tip_from_change', v)}
                   label="Converter troco para gratificação">{artigo('tip_item')}</CheckRow>
@@ -273,7 +273,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
             </div>
 
             {d.internal_consumption && (
-              <div className="text-[11px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 mt-2">
+              <div className="text-[11px] text-[#111827] bg-[#EEF1F5] border border-[#E6E8EC] px-2 py-1 mt-2">
                 Só os utilizadores com <b>"Consumo interno"</b> na ficha o podem lançar — o servidor recusa aos outros.
               </div>
             )}
@@ -282,7 +282,7 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

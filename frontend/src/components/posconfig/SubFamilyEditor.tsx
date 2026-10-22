@@ -57,7 +57,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Nova sub-família' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -112,7 +112,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
             <div className="flex">
               {([['pms', 'Interface com PMS (Mapeamento de sub-famílias)'], ['wh', 'Mapeamentos Setor/Armazéns']] as const).map(([k, label]) => (
                 <button key={k} onClick={() => setTab(k)}
-                  className={`px-4 py-2 text-[12px] font-semibold border border-b-0 ${tab === k ? 'bg-white text-[#111827] border-[#E6E8EC]' : 'bg-[#F7F8FA] text-[#111827] border-[#F1F2F4]'}`}>
+                  className={`px-4 py-2 text-[12px] font-semibold border border-b-0 ${tab === k ? 'bg-white text-[#111827] border-[#E6E8EC]' : 'bg-[#EEF1F5] text-[#111827] border-[#F1F2F4]'}`}>
                   {label}
                 </button>
               ))}
@@ -142,7 +142,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
                   </>
                 )}
                 <button onClick={applyToAll} className="flex items-center gap-1.5 text-[12px] text-[#111827] font-semibold">
-                  <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
+                  <span className="w-6 h-6 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
                   Aplicar à selecção
                 </button>
               </div>
@@ -150,7 +150,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
               {/* Grelha: uma coluna por outlet */}
               <table className="w-full text-[12px] border-collapse">
                 <thead>
-                  <tr className="bg-[#F7F8FA]">
+                  <tr className="bg-[#EEF1F5]">
                     <th className="text-left px-2 py-2 border border-[#F1F2F4] w-[280px]">Descrição</th>
                     {rows.map((r: any) => (
                       <th key={r.outlet} className="text-left px-2 py-1 border border-[#F1F2F4]">
@@ -166,7 +166,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
                   <tr>
                     <td className="px-2 py-1.5 border border-[#F1F2F4]">{d.code} - {d.name}</td>
                     {rows.map((r: any) => (
-                      <td key={r.outlet} className={`px-1 py-1 border border-[#F1F2F4] ${tab === 'pms' && r.pms_charge_code ? 'bg-[#F7F8FA]' : ''}`}>
+                      <td key={r.outlet} className={`px-1 py-1 border border-[#F1F2F4] ${tab === 'pms' && r.pms_charge_code ? 'bg-[#EEF1F5]' : ''}`}>
                         {tab === 'wh' ? (
                           <select value={r.warehouse || ''}
                             onChange={(e) => setMap.mutate({ outlet: r.outlet, warehouse: e.target.value || null, pms_charge_code: r.pms_charge_code, pms_charge_tax: r.pms_charge_tax })}
@@ -202,7 +202,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

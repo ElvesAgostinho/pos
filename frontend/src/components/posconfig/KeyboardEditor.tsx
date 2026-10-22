@@ -98,7 +98,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
     setKeys([...keys, ...items.map((it, i) => ({
       tmp_id: uid(), parent: level, kind: 'ITEM', label: it.name, item: it.id,
       item_name: it.name, item_code: it.code, item_price: it.prices?.[0]?.price ?? it.sale_price,
-      color: '#1E2A44', text_color: '#FFFFFF', sort_order: base + i, span: 1,
+      color: '#111827', text_color: '#FFFFFF', sort_order: base + i, span: 1,
     }))]);
     setPicker(false);
   };
@@ -140,7 +140,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
 
   const Side = ({ onClick, color, children, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}
-      className="w-full flex items-center gap-2 px-2 py-1.5 bg-[#1E2A44] text-white text-[12px] hover:bg-[#1E2A44] disabled:opacity-35">
+      className="w-full flex items-center gap-2 px-2 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-35">
       <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px]" style={{ background: color }}>●</span>
       {children}
     </button>
@@ -163,7 +163,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo teclado' : `A editar ${kb.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -194,10 +194,10 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
             <Side onClick={() => setPicker(true)} color="#3B82F6" disabled={!level}>Adicionar Artigos</Side>
             <Side onClick={removeKey} color="#DC2626" disabled={!sel}>Remover Tecla</Side>
             <Side onClick={rename} color="#3B82F6" disabled={!sel}>Renomear tecla</Side>
-            <Side onClick={sortKeys} color="#1E2A44" disabled={!level}>Ordenar Teclas</Side>
+            <Side onClick={sortKeys} color="#2563EB" disabled={!level}>Ordenar Teclas</Side>
             <div className="flex gap-1">
-              <button onClick={() => move(-1)} disabled={!sel} className="flex-1 py-1.5 bg-[#1E2A44] text-white disabled:opacity-35">◀ Recuar</button>
-              <button onClick={() => move(1)} disabled={!sel} className="flex-1 py-1.5 bg-[#1E2A44] text-white disabled:opacity-35">Avançar ▶</button>
+              <button onClick={() => move(-1)} disabled={!sel} className="flex-1 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] disabled:opacity-35">◀ Recuar</button>
+              <button onClick={() => move(1)} disabled={!sel} className="flex-1 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] disabled:opacity-35">Avançar ▶</button>
             </div>
           </div>
 
@@ -206,16 +206,16 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
               <input type="number" min={1} max={6} value={kb.price_level ?? 1} onChange={(e) => setKb({ ...kb, price_level: Number(e.target.value) })} className={`${inp} w-[70px]`} /></label>
             <label className="flex items-center gap-2"><span className="w-[80px]">Cor de Fundo:</span>
               <input type="color" value={S?.color || '#3B82F6'} disabled={!sel} onChange={(e) => upd(sel!, { color: e.target.value })} className="w-9 h-7 border border-[#E6E8EC] disabled:opacity-40" />
-              <input value={S?.color || ''} disabled={!sel} onChange={(e) => upd(sel!, { color: e.target.value })} className={`${inp} flex-1 min-w-0 disabled:bg-[#F7F8FA]`} /></label>
+              <input value={S?.color || ''} disabled={!sel} onChange={(e) => upd(sel!, { color: e.target.value })} className={`${inp} flex-1 min-w-0 disabled:bg-[#EEF1F5]`} /></label>
             <label className="flex items-center gap-2"><span className="w-[80px]">Cor do texto:</span>
               <input type="color" value={S?.text_color || '#FFFFFF'} disabled={!sel} onChange={(e) => upd(sel!, { text_color: e.target.value })} className="w-9 h-7 border border-[#E6E8EC] disabled:opacity-40" />
-              <input value={S?.text_color || ''} disabled={!sel} onChange={(e) => upd(sel!, { text_color: e.target.value })} className={`${inp} flex-1 min-w-0 disabled:bg-[#F7F8FA]`} /></label>
+              <input value={S?.text_color || ''} disabled={!sel} onChange={(e) => upd(sel!, { text_color: e.target.value })} className={`${inp} flex-1 min-w-0 disabled:bg-[#EEF1F5]`} /></label>
             <label className="flex items-center gap-2"><span className="w-[80px]">Horizontal:</span>
               <input type="number" min={1} max={8} value={kb.cols ?? 4} onChange={(e) => setKb({ ...kb, cols: Number(e.target.value) })} className={`${inp} w-[70px]`} /></label>
             <label className="flex items-center gap-2"><span className="w-[80px]">Vertical:</span>
               <input type="number" min={1} max={8} value={kb.rows ?? 4} onChange={(e) => setKb({ ...kb, rows: Number(e.target.value) })} className={`${inp} w-[70px]`} /></label>
             <label className="flex items-center gap-2"><span className="w-[80px]">Largura:</span>
-              <input type="number" min={1} max={4} value={S?.span || 1} disabled={!sel} onChange={(e) => upd(sel!, { span: Number(e.target.value) })} className={`${inp} w-[70px] disabled:bg-[#F7F8FA]`} />
+              <input type="number" min={1} max={4} value={S?.span || 1} disabled={!sel} onChange={(e) => upd(sel!, { span: Number(e.target.value) })} className={`${inp} w-[70px] disabled:bg-[#EEF1F5]`} />
               <span className="text-[10px] text-[#6B7280]">colunas</span></label>
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
       {/* A FICHA da página/subpágina — pergunta tudo antes de criar. */}
       {novaPagina && (
         <PageDialog podeSubpagina={!!level}
-          corDefeito="#1E2A44" textoDefeito="#FFFFFF"
+          corDefeito="#2563EB" textoDefeito="#FFFFFF"
           colsDefeito={kb.cols || 4} rowsDefeito={kb.rows || 4}
           precoDefeito={kb.price_level || 1}
           onOk={criarDaFicha} onClose={() => setNovaPagina(false)} />
@@ -289,7 +289,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
       )}
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

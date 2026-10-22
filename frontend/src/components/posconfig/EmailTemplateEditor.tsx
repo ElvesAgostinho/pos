@@ -82,7 +82,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo modelo' : `A editar ${d.code}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -167,7 +167,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
                 <input value={d.bcc || ''} onChange={(e) => set('bcc', e.target.value)} className={`${inp} flex-1`} style={inputStyle} />
               </Row>
               {d.is_sub_template && (
-                <div className="text-[11px] text-[#6B7280] bg-[#F7F8FA] border border-[#F1F2F4] px-2 py-1">
+                <div className="text-[11px] text-[#6B7280] bg-[#EEF1F5] border border-[#F1F2F4] px-2 py-1">
                   Sub-modelo: não se envia sozinho — é incluído por outros modelos.
                 </div>
               )}
@@ -178,13 +178,13 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
 
         <div className="max-w-[1100px] mt-2">
           {/* Línguas */}
-          <div className="flex border-b-2 border-[#1E2A44] mt-3">
+          <div className="flex border-b-2 border-[#E6E8EC] mt-3">
             {culturas.map((c) => {
               const tem = (d.texts || []).some((t: any) => t.culture === c && (t.subject || t.body));
               return (
                 <button key={c} onClick={() => setCultura(c)}
                   className={`px-6 py-1.5 text-[12px] font-semibold border-b-[3px] ${atual === c
-                    ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+                    ? 'border-[#E6E8EC] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
                   {c}
                   {!tem && <span className="ml-1 text-[#DC2626]" title="Sem texto nesta língua">●</span>}
                 </button>
@@ -207,7 +207,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
 
             {/* Variáveis */}
             <div className="w-[300px] border border-[#E6E8EC] flex flex-col">
-              <div className="px-2 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4]">
+              <div className="px-2 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4]">
                 Variáveis — clique para inserir
               </div>
               <div className="h-[240px] overflow-auto">
@@ -215,7 +215,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
                   <tbody>
                     {(variaveis as any[]).slice(0, 200).map((v) => (
                       <tr key={v.id} onClick={() => inserir(v.field)}
-                        className="border-b border-[#F1F2F4] cursor-pointer hover:bg-[#F7F8FA]">
+                        className="border-b border-[#F1F2F4] cursor-pointer hover:bg-[#EEF1F5]">
                         <td className="px-2 py-1 font-mono text-[#111827]">@Model[0].{v.field}</td>
                         <td className="px-2 py-1 text-[#6B7280]">{v.name}</td>
                       </tr>
@@ -233,7 +233,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
 
           {previa && (
             <div className={`border mt-3 ${previa.unknown?.length
-              ? 'border-[#DC2626] bg-[#F7F8FA]' : 'border-[#E6E8EC] bg-[#F7F8FA]'}`}>
+              ? 'border-[#DC2626] bg-[#EEF1F5]' : 'border-[#E6E8EC] bg-[#EEF1F5]'}`}>
               <div className="px-3 py-1.5 text-[12px] font-bold border-b border-black/10">
                 Pré-visualização ({atual}) — {previa.detail}
               </div>
@@ -249,7 +249,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
       <Toolbar actions={[
         { icon: '🔍', label: prever.isPending ? 'A gerar…' : 'Pré-visualizar', color: '#3B82F6',
           disabled: isNew, onClick: () => prever.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

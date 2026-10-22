@@ -61,11 +61,11 @@ export default function ItemsView() {
     return (
       <ClassicWindow title={editingId ? `Editar Artigo — ${form.code || ''}` : 'Novo Artigo'} icon={<Package size={14} className="text-gray-300" />}
         footer={<><ClassicButton icon={Save} label="Gravar Artigo" onClick={save} /><ClassicButton label="Cancelar" onClick={() => setMode('list')} /><div className="text-[#B91C1C] text-[11px]">{err}</div></>}>
-        <div className="flex flex-col h-full bg-[#F7F8FA] text-[11px]">
+        <div className="flex flex-col h-full bg-[#EEF1F5] text-[11px]">
           {/* Separadores */}
           <div className="flex gap-0.5 px-2 pt-2 border-b border-[#E6E8EC]">
             {TABS.map((tt) => (
-              <button key={tt} onClick={() => setTab(tt)} className={`px-4 py-1.5 border border-b-0 rounded-t ${tab === tt ? 'bg-white border-[#E6E8EC] font-bold text-[#6B7280]' : 'bg-[#F7F8FA] border-[#E6E8EC] text-gray-600'}`}>{tt}</button>
+              <button key={tt} onClick={() => setTab(tt)} className={`px-4 py-1.5 border border-b-0 rounded-t ${tab === tt ? 'bg-white border-[#E6E8EC] font-bold text-[#6B7280]' : 'bg-[#EEF1F5] border-[#E6E8EC] text-gray-600'}`}>{tt}</button>
             ))}
           </div>
           <div className="flex-1 overflow-auto p-4">
@@ -122,7 +122,7 @@ export default function ItemsView() {
     <ClassicWindow title="Artigos (Master Data)" icon={<Package size={14} className="text-gray-300" />}
       footer={<><ClassicButton icon={Plus} label="Novo Artigo" onClick={openNew} /><div className="text-gray-600">Nº registos: {items.length}{isLoading ? ' (a carregar…)' : ''}</div></>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex items-center gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <div className="flex items-center border border-[#E6E8EC] bg-white px-1">
             <Search size={12} className="text-gray-500" />
             <input placeholder="Pesquisar código, designação ou código de barras…" value={search} onChange={(e) => setSearch(e.target.value)} className="p-1 focus:outline-none w-72" />

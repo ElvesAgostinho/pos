@@ -23,10 +23,10 @@ export default function TaxesView() {
       footer={<div className="text-gray-600">Nº registos: {taxes.length}</div>}
     >
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Código (ex: IVA14)" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-28" />
           <input placeholder="Nome / Descrição" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
-          <input placeholder="Taxa %" type="number" step="0.01" value={draft.percentage} onChange={(e) => setDraft({ ...draft, percentage: e.target.value })} className="border border-[#E6E8EC] p-1 w-24 bg-[#F7F8FA]" />
+          <input placeholder="Taxa %" type="number" step="0.01" value={draft.percentage} onChange={(e) => setDraft({ ...draft, percentage: e.target.value })} className="border border-[#E6E8EC] p-1 w-24 bg-[#EEF1F5]" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
         <div className="flex-1 overflow-hidden">

@@ -18,7 +18,7 @@ export default function AuditView() {
     <ClassicWindow title="Auditoria de Operação (POS)" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{logs.length} registos · atualiza automaticamente</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex items-center gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <label className="font-bold text-gray-700">Evento:</label>
           <select value={event} onChange={(e) => setEvent(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white">
             {AUDIT_EVENTS.map((e) => <option key={e.value} value={e.value}>{e.label}</option>)}

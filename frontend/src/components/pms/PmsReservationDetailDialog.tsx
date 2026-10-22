@@ -28,7 +28,7 @@ const TABS = ['Detalhe selecionado', 'Grupo', 'Funções', 'Documentos', 'Outras
 function TabBtn({ active, onClick, children }: any) {
   return (
     <button onClick={onClick}
-      className={`px-3 py-1.5 text-[12px] font-semibold border-b-2 ${active ? 'border-[#1E2A44] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+      className={`px-3 py-1.5 text-[12px] font-semibold border-b-2 ${active ? 'border-[#E6E8EC] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
       {children}
     </button>
   );
@@ -38,7 +38,7 @@ function TabBtn({ active, onClick, children }: any) {
 function Act({ icon: Icon, label, onClick, disabled }: any) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-1.5 px-2 py-1.5 text-[12px] text-[#111827] whitespace-nowrap flex-shrink-0 hover:bg-[#F7F8FA] disabled:opacity-35 disabled:cursor-default disabled:hover:bg-transparent">
+      className="flex items-center gap-1.5 px-2 py-1.5 text-[12px] text-[#111827] whitespace-nowrap flex-shrink-0 hover:bg-[#EEF1F5] disabled:opacity-35 disabled:cursor-default disabled:hover:bg-transparent">
       <Icon size={13} /> {label}
     </button>
   );
@@ -129,8 +129,8 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[1150px] max-w-[97vw] bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#1E2A44' }}>
+      <div className="w-[1150px] max-w-[97vw] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
           Reserva {res.confirmation} - {hotelName}
           <div className="flex items-center gap-2">
             <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
@@ -144,7 +144,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
         {/* mini-grelha desta reserva */}
         <div className="bg-white border-b border-[#F1F2F4] overflow-auto">
           <table className="w-full text-[11px] border-collapse">
-            <thead style={{ background: '#F7F8FA' }}>
+            <thead style={{ background: '#EEF1F5' }}>
               <tr>
                 {['ID', 'Hóspede', 'Quarto', 'Categoria', 'Pax', 'Estado', 'Check-In', 'Check-Out', 'Conta'].map((h) => (
                   <th key={h} className="text-left px-2 py-1.5 border-b border-[#E6E8EC] font-semibold">{h}</th>
@@ -171,7 +171,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
           </table>
         </div>
 
-        <div className="flex bg-[#F7F8FA] border-b border-[#E6E8EC] flex-shrink-0 overflow-x-auto">
+        <div className="flex bg-[#EEF1F5] border-b border-[#E6E8EC] flex-shrink-0 overflow-x-auto">
           {TABS.map((t) => <TabBtn key={t} active={tab === t} onClick={() => setTab(t)}>{t}</TabBtn>)}
         </div>
 
@@ -215,7 +215,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                   <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={6}
                     className="border border-[#E6E8EC] p-2 text-[12px]" />
                   <button onClick={gravarNotas} disabled={savingNotes}
-                    className="self-start flex items-center gap-1.5 px-3 py-1 bg-[#1E2A44] text-white text-[12px] font-semibold disabled:opacity-50">
+                    className="self-start flex items-center gap-1.5 px-3 py-1 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-semibold disabled:opacity-50">
                     <Save size={13} /> {savingNotes ? 'A gravar…' : 'Gravar notas'}
                   </button>
                 </label>
@@ -229,13 +229,13 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                 <div className="font-bold mb-2">{block?.code} · {block?.description}</div>
                 {block && <div className="text-[11px] text-gray-500 mb-3">{block.valid_from} → {block.valid_to}</div>}
                 <table className="w-full text-[11px] border-collapse">
-                  <thead style={{ background: '#F7F8FA' }}><tr>
+                  <thead style={{ background: '#EEF1F5' }}><tr>
                     {['Confirmação', 'Hóspede', 'Categoria', 'Quarto', 'Check-In', 'Check-Out', 'Estado'].map((h) => (
                       <th key={h} className="text-left px-2 py-1.5 border-b border-[#E6E8EC]">{h}</th>))}
                   </tr></thead>
                   <tbody>
                     {siblingRows.map((s: any) => (
-                      <tr key={s.id} className={s.id === res.id ? 'bg-[#F7F8FA]' : ''}>
+                      <tr key={s.id} className={s.id === res.id ? 'bg-[#EEF1F5]' : ''}>
                         <td className="px-2 py-1">{s.confirmation}</td><td className="px-2 py-1">{s.guest_name}</td>
                         <td className="px-2 py-1">{s.room_type_name}</td><td className="px-2 py-1">{s.room_number || '—'}</td>
                         <td className="px-2 py-1">{s.check_in}</td><td className="px-2 py-1">{s.check_out}</td>
@@ -257,7 +257,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                 { title: 'Outros', items: [['Recriar conta', 'recriar'], ['Tipos de limpeza', 'limpeza']] },
               ].map((g) => (
                 <div key={g.title} className="w-[220px]">
-                  <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border border-[#E6E8EC] border-b-0">{g.title}</div>
+                  <div className="px-2 py-1 font-bold text-[11px] bg-[#EEF1F5] border border-[#E6E8EC] border-b-0">{g.title}</div>
                   <div className="border border-[#E6E8EC]">
                     {g.items.map(([label, action]: any) => (
                       <button key={label}
@@ -268,7 +268,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                           else if (action === 'recriar') recriarConta();
                           else setFuncao(action);
                         }}
-                        className="w-full text-left px-3 py-2 text-[12px] border-b last:border-b-0 border-[#F1F2F4] hover:bg-[#F7F8FA]">
+                        className="w-full text-left px-3 py-2 text-[12px] border-b last:border-b-0 border-[#F1F2F4] hover:bg-[#EEF1F5]">
                         {label}
                       </button>
                     ))}
@@ -286,7 +286,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
               <div className="p-6 text-center text-gray-400 text-[12px]">{res.guest_name} não tem outras reservas.</div>
             ) : (
               <table className="w-full text-[11px] border-collapse">
-                <thead style={{ background: '#F7F8FA' }}><tr>
+                <thead style={{ background: '#EEF1F5' }}><tr>
                   {['Hotel', 'Confirmação', 'Check-In', 'Check-Out', 'Pax', 'Quarto', 'Estado'].map((h) => (
                     <th key={h} className="text-left px-2 py-1.5 border-b border-[#E6E8EC]">{h}</th>))}
                 </tr></thead>
@@ -307,7 +307,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
           {tab === 'Outros' && (
             <div className="p-4 flex gap-4 flex-wrap items-start">
               <div className="w-[420px] border border-[#E6E8EC]">
-                <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border-b border-[#E6E8EC]">Limite de crédito — {res.guest_name}</div>
+                <div className="px-2 py-1 font-bold text-[11px] bg-[#EEF1F5] border-b border-[#E6E8EC]">Limite de crédito — {res.guest_name}</div>
                 {!guest ? <div className="p-3 text-gray-400 text-[11px]">A carregar…</div> : (
                   <div className="p-3 flex items-center gap-2 text-[12px]">
                     <input type="number" defaultValue={guest.credit_limit} onBlur={(e) => gravarCredito('credit_limit', e.target.value)}
@@ -321,7 +321,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                 )}
               </div>
               <div className="w-[320px] border border-[#E6E8EC]">
-                <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border-b border-[#E6E8EC]">Código QR</div>
+                <div className="px-2 py-1 font-bold text-[11px] bg-[#EEF1F5] border-b border-[#E6E8EC]">Código QR</div>
                 <div className="p-4 flex flex-col items-center gap-2">
                   <QRCodeSVG value={`RES:${res.confirmation}`} size={160} />
                   <div className="text-[10px] text-gray-500">RES:{res.confirmation}</div>
@@ -331,7 +331,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
           )}
         </div>
 
-        <div className="flex items-center gap-0.5 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0 overflow-x-auto">
+        <div className="flex items-center gap-0.5 px-2 py-1.5 bg-[#EEF1F5] border-t border-[#E6E8EC] flex-shrink-0 overflow-x-auto">
           <Act icon={Pencil} label="Editar" onClick={() => setShowEditar(true)} />
           <Act icon={RefreshCw} label="Atualizar" onClick={() => refetch()} />
           <Divider />
@@ -515,7 +515,7 @@ function AbaCamposPersonalizados({ reservaId }: { reservaId: number }) {
       </div>
       <div className="mt-3 flex items-center gap-2">
         <button disabled={gravando || !valores} onClick={gravar}
-          className="px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] disabled:opacity-40">
+          className="px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] disabled:opacity-40">
           {gravando ? 'A gravar…' : 'Gravar campos'}
         </button>
         {valores && <span className="text-[11px] text-[#DC2626]">Há alterações por gravar.</span>}

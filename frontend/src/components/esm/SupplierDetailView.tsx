@@ -100,7 +100,7 @@ export default function SupplierDetailView({ supplierId, onBack }: Props) {
     >
       <div className="flex flex-col h-full">
         {/* Barra de Tabs */}
-        <div className="flex bg-[#F7F8FA] border-b border-[#E6E8EC] px-2 pt-1 flex-shrink-0">
+        <div className="flex bg-[#EEF1F5] border-b border-[#E6E8EC] px-2 pt-1 flex-shrink-0">
           {TABS.map((t) => {
             const disabled = isNew && t.id !== 'geral';
             const active = tab === t.id;
@@ -110,7 +110,7 @@ export default function SupplierDetailView({ supplierId, onBack }: Props) {
                 disabled={disabled}
                 onClick={() => setTab(t.id)}
                 className={`px-3 py-1 text-[11px] border border-b-0 mr-1 ${
-                  active ? 'bg-white border-[#E6E8EC] font-bold text-[#6B7280]' : 'bg-[#F7F8FA] border-[#E6E8EC] text-gray-600'
+                  active ? 'bg-white border-[#E6E8EC] font-bold text-[#6B7280]' : 'bg-[#EEF1F5] border-[#E6E8EC] text-gray-600'
                 } ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#FFFFFF]'}`}
               >
                 {t.label}
@@ -119,7 +119,7 @@ export default function SupplierDetailView({ supplierId, onBack }: Props) {
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto bg-[#F7F8FA] p-4 text-[11px]">
+        <div className="flex-1 overflow-y-auto bg-[#EEF1F5] p-4 text-[11px]">
           {tab === 'geral' && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               <Section title="Identificação">

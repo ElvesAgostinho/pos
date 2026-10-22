@@ -44,7 +44,7 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo horário' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -75,7 +75,7 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
         </div>
         <table className="text-[12px] border-collapse">
           <thead>
-            <tr className="bg-[#F7F8FA]">
+            <tr className="bg-[#EEF1F5]">
               <th className="text-left px-2 py-1.5 border border-[#F1F2F4] font-normal">Faixa horária</th>
               {DAYS.map((x) => <th key={x} className="px-3 py-1.5 border border-[#F1F2F4] font-normal">{x}</th>)}
             </tr>
@@ -104,7 +104,7 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

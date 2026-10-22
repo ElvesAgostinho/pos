@@ -18,11 +18,11 @@ const DEFAULTS: Record<string, string> = {
   // Azul petróleo bem escuro — cor institucional única do sistema (era
   // dourado #D97706; passou por um azul-petróleo mais claro #2563EB antes
   // deste tom, pedido do dono por ser "mais carregado, quase preto").
-  ui_bar_color: '#1E2A44',
+  ui_bar_color: '#2563EB',
 };
 
 // Cores da barra que já foram o valor por omissão do código em versões
-// anteriores (azul-marinho #1E2A44, azul-aço #3B82F6, o dourado #D97706 da
+// anteriores (azul-marinho #2563EB, azul-aço #3B82F6, o dourado #D97706 da
 // paleta preto+branco+dourado, e o primeiro azul-petróleo #2563EB, mais
 // claro do que o pedido) — um terminal que nunca mexeu em Aparência mas
 // visitou o ecrã de Personalização podia acabar com uma destas gravada no
@@ -32,7 +32,7 @@ const DEFAULTS: Record<string, string> = {
 // primeira vez que se lê. ESTES SÃO VALORES HISTÓRICOS DE DADOS (o que uma
 // versão antiga gravava) — NUNCA se rebrandam para a paleta atual, senão o
 // próprio mecanismo de limpeza deixa de reconhecer o lixo antigo.
-const STALE_BAR_COLORS = ['#1E2A44', '#3B82F6', '#D97706', '#2563EB'];
+const STALE_BAR_COLORS = ['#2563EB', '#3B82F6', '#D97706', '#2563EB'];
 
 export function getAppearance(key: keyof typeof APPEARANCE_KEYS): string {
   const k = APPEARANCE_KEYS[key];

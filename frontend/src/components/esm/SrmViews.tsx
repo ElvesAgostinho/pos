@@ -36,7 +36,7 @@ export function SrmContractsView() {
     <ClassicWindow title="Contratos de Fornecedores" icon={<ScrollText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Contratos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <SupplierSelect value={f.supplier} onChange={(v) => setF({ ...f, supplier: v })} />
           <input placeholder="Referência" value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} className="border border-[#E6E8EC] p-1 w-28" />
           <input type="date" value={f.start_date} onChange={(e) => setF({ ...f, start_date: e.target.value })} className="border border-[#E6E8EC] p-1" />
@@ -80,7 +80,7 @@ function DocumentsBase({ title, icon, onlyType }: { title: string; icon: any; on
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">{rows.length} documento(s)</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <SupplierSelect value={f.supplier} onChange={(v) => setF({ ...f, supplier: v })} />
           {!onlyType && (
             <select value={f.document_type} onChange={(e) => setF({ ...f, document_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
@@ -125,7 +125,7 @@ export function SrmSlaView() {
     <ClassicWindow title="SLA & Controlo de Qualidade" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Requisitos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <SupplierSelect value={f.supplier} onChange={(v) => setF({ ...f, supplier: v })} />
           <label className="flex items-center gap-1"><input type="checkbox" checked={f.requires_haccp} onChange={(e) => setF({ ...f, requires_haccp: e.target.checked })} />HACCP</label>
           <label className="flex items-center gap-1"><input type="checkbox" checked={f.requires_cold_chain} onChange={(e) => setF({ ...f, requires_cold_chain: e.target.checked })} />Cadeia de frio</label>

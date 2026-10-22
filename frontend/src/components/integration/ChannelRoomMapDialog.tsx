@@ -6,7 +6,7 @@ import { notifyError } from '../../utils/friendlyError';
 import { aviso } from '../../ui/dialogo';
 
 const inp = 'border border-[#E6E8EC] rounded-[8px] px-2 py-1 text-[12px]';
-const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5 disabled:opacity-40';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#EEF1F5] hover:to-[#EEF1F5] active:translate-y-px flex items-center gap-1.5 disabled:opacity-40';
 
 /**
  * MAPEAMENTO DE CATEGORIAS — a nossa categoria ↔ o código do quarto na OTA.
@@ -76,14 +76,14 @@ export default function ChannelRoomMapDialog({ channel, onClose }: { channel: an
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-[12px] shadow-xl w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden"
            onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-b from-[#1E2A44] to-[#1E2A44] text-white">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-b from-[#2563EB] to-[#2563EB] text-white">
           <span className="font-bold text-[12px] flex items-center gap-2">
             <Link2 size={14} />Mapeamento de categorias — {channel.provider_display} · {channel.name}
           </span>
           <button onClick={onClose} className="hover:bg-white/15 rounded px-1.5"><X size={16} /></button>
         </div>
 
-        <div className="p-4 space-y-3 overflow-auto bg-[#F7F8FA] flex-1 min-h-0">
+        <div className="p-4 space-y-3 overflow-auto bg-[#EEF1F5] flex-1 min-h-0">
           <div className="bg-white border border-[#E6E8EC] rounded-[12px] p-3 text-[12px] text-gray-700">
             A OTA não conhece as nossas categorias — conhece o código de quarto dela. Ligue aqui cada
             categoria ao código correspondente no painel da <b>{channel.provider_display}</b>. Sem pelo menos
@@ -92,7 +92,7 @@ export default function ChannelRoomMapDialog({ channel, onClose }: { channel: an
 
           {/* Linhas já mapeadas */}
           <div className="bg-white border border-[#E6E8EC] rounded-[12px] overflow-hidden">
-            <div className="grid grid-cols-[1.2fr_1fr_1fr_1.2fr_90px_40px] gap-2 px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
+            <div className="grid grid-cols-[1.2fr_1fr_1fr_1.2fr_90px_40px] gap-2 px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
               <span>Categoria</span><span>ID do quarto na OTA</span><span>ID da tarifa (opcional)</span>
               <span>Tarifa a enviar</span><span>Limite</span><span />
             </div>

@@ -31,7 +31,7 @@ export default function PromotionsView() {
     <ClassicWindow title="Promoções & Happy Hour (Commercial → alimenta o POS)" icon={<Tag size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{promos.length} promoção(ões) · o POS aplica automaticamente a de maior desconto ao adicionar o artigo</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Nome" value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={d.scope} onChange={(e) => setD({ ...d, scope: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="ALL">Todos os artigos</option><option value="CATEGORY">Categoria</option><option value="ITEM">Artigo</option>

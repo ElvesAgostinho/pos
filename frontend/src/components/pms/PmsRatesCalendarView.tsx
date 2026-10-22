@@ -53,13 +53,13 @@ export default function PmsRatesCalendarView() {
         { label: '← 14 dias', icon: '◀', color: '#3B82F6', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
         { label: '14 dias →', icon: '▶', color: '#3B82F6', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
         { label: 'Hoje', icon: '🕐', color: '#3B82F6', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
-        { label: 'Atualização em Massa', icon: '✎', color: '#1E2A44', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
+        { label: 'Atualização em Massa', icon: '✎', color: '#111827', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
       ]} />
       <div className="flex-1 overflow-auto">
         <table className="border-collapse text-[11px] w-full">
           <thead>
             <tr>
-              <th className="sticky left-0 bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 text-left min-w-[220px] z-10">Categoria / Tarifa</th>
+              <th className="sticky left-0 bg-[#EEF1F5] border border-[#E6E8EC] px-2 py-1 text-left min-w-[220px] z-10">Categoria / Tarifa</th>
               {days.map((d) => (
                 <th key={d.toISOString()} className="border border-[#E6E8EC] px-1 py-1 min-w-[64px] font-normal text-[#6B7280]">
                   {d.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: '2-digit' })}
@@ -71,7 +71,7 @@ export default function PmsRatesCalendarView() {
             {Object.entries(grouped).map(([roomTypeName, plans]) => (
               <Fragment key={roomTypeName}>
                 <tr>
-                  <td colSpan={DAYS_VISIBLE + 1} className="bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 font-bold text-[#111827]">{roomTypeName}</td>
+                  <td colSpan={DAYS_VISIBLE + 1} className="bg-[#EEF1F5] border border-[#E6E8EC] px-2 py-1 font-bold text-[#111827]">{roomTypeName}</td>
                 </tr>
                 {plans.map((rp: any) => (
                   <tr key={rp.id}>
@@ -88,7 +88,7 @@ export default function PmsRatesCalendarView() {
                       const closed = ov?.is_bookable === false;
                       const price = ov?.price_per_night ?? (inRange ? rp.price_per_night : null);
                       return (
-                        <td key={iso} className={`border border-[#E6E8EC] px-1 py-1 text-center ${closed ? 'bg-[#FEF2F2] text-[#B91C1C]' : ov ? 'bg-[#F7F8FA] font-semibold text-[#111827]' : ''}`}>
+                        <td key={iso} className={`border border-[#E6E8EC] px-1 py-1 text-center ${closed ? 'bg-[#FEF2F2] text-[#B91C1C]' : ov ? 'bg-[#EEF1F5] font-semibold text-[#111827]' : ''}`}>
                           {closed ? 'Fechado' : price != null ? money(Number(price)) : '—'}
                         </td>
                       );

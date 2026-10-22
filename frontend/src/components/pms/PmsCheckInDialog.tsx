@@ -44,8 +44,8 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[520px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#1E2A44' }}>
+      <div className="w-[520px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
+        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
           Check-In
           <button onClick={onClose} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
@@ -59,7 +59,7 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
               <div>{reservation.guest_name}</div>
             </div>
             <button onClick={() => setEditingGuest(true)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] hover:bg-[#F7F8FA] font-semibold">
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#EEF1F5] border border-[#E6E8EC] hover:bg-[#EEF1F5] font-semibold">
               <User size={13} /> Editar Hóspede
             </button>
           </div>
@@ -67,7 +67,7 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
             <span className="w-[70px]">Quarto:</span>
             <input readOnly value={room ? room.number : ''} className="border border-[#E6E8EC] p-1.5 bg-white flex-1" />
             <button onClick={() => setShowRoomPicker(true)} title="Mostrar quartos livres"
-              className="w-7 h-7 rounded-full flex items-center justify-center bg-[#1E2A44] text-white"><Plus size={14} /></button>
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]"><Plus size={14} /></button>
           </label>
           <label className="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" checked={allowDirty} onChange={(e) => setAllowDirty(e.target.checked)} /> Permitir mesmo se quarto estiver sujo
@@ -79,7 +79,7 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
               no modelo Room partilhado por todo o PMS, fora de alcance desta
               auditoria pontual. */}
         </div>
-        <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC]">
+        <div className="flex justify-end gap-2 px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC]">
           <button onClick={doCheckIn} disabled={saving}
             className="flex items-center gap-2 px-3 py-1.5 text-[12px] font-semibold text-[#111827] disabled:opacity-50">
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: '#3B82F6' }}>✓</span>

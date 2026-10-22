@@ -11,7 +11,7 @@ function Panel({ title, children, right }: any) {
   return (
     <div className="bg-white border border-[#E6E8EC]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
       <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[12px] font-bold text-[#111827]"
-        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }}>
+        style={{ background: 'linear-gradient(to bottom, #FFFFFF, #EEF1F5)' }}>
         <span>{title}</span>{right}
       </div>
       <div className="p-3">{children}</div>
@@ -21,7 +21,7 @@ function Panel({ title, children, right }: any) {
 
 const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#E6E8EC] text-[#111827]';
 const btnStyle = {
-  background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4)',
+  background: 'linear-gradient(to bottom, #FFFFFF, #EEF1F5 48%, #F1F2F4 52%, #F1F2F4)',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
 };
 
@@ -61,13 +61,13 @@ export default function SaftCenterView() {
   return (
     <ClassicWindow title="Centro SAF-T — Exportações Fiscais" icon={<FileCode2 size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Motor Fiscal: o PMS/Restauração/POS apenas emitem documentos — toda a lógica fiscal (SAF-T, séries, impostos, validação) vive aqui</div>}>
-      <div className="p-4 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
+      <div className="p-4 space-y-3 bg-[#EEF1F5] h-full overflow-auto">
 
         {/* Estado fiscal */}
         <Panel title="Configuração Fiscal">
           {f ? (
             <div className="flex items-center gap-4 text-[12px]">
-              <div className={`flex items-center gap-2 px-3 py-2 border ${f.certified ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#E6E8EC]'}`}>
+              <div className={`flex items-center gap-2 px-3 py-2 border ${f.certified ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#E6E8EC]'}`}>
                 {f.certified ? <ShieldCheck size={22} className="text-[#111827]" /> : <ShieldAlert size={22} className="text-[#111827]" />}
                 <div>
                   <div className={`font-bold ${f.certified ? 'text-[#111827]' : 'text-[#111827]'}`}>
@@ -98,12 +98,12 @@ export default function SaftCenterView() {
                   {busy === p.key ? 'A validar…' : 'Validar XML'}
                 </button>
                 <button onClick={() => exportar(p.key)} disabled={busy === p.key} className={`${btn} flex items-center gap-1`}
-                  style={{ ...btnStyle, background: 'linear-gradient(to bottom, #1E2A44, #3B82F6)', color: '#FFFFFF', borderColor: '#1E2A44' }}>
+                  style={{ ...btnStyle, background: 'linear-gradient(to bottom, #2563EB, #3B82F6)', color: '#FFFFFF', borderColor: '#E6E8EC' }}>
                   <Download size={12} /> Exportar
                 </button>
               </div>
               {check?.key === p.key && (
-                <div className={`mt-2 p-2 border text-[11px] ${check.valid ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#DC2626]'}`}>
+                <div className={`mt-2 p-2 border text-[11px] ${check.valid ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#DC2626]'}`}>
                   <div className="flex items-center gap-1.5 font-bold">
                     {check.valid ? <CheckCircle2 size={13} className="text-[#111827]" /> : <XCircle size={13} className="text-[#B91C1C]" />}
                     {check.valid ? 'XML válido' : 'XML com problemas'} · {check.elements} elementos · {(check.size_bytes / 1024).toFixed(1)} KB

@@ -26,7 +26,7 @@ export default function WhLotsView() {
     <ClassicWindow title="Lotes & Validades (FEFO)" icon={<CalendarX size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Lotes: {rows.length} · ordenados por validade (expira primeiro)</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#EEF1F5] border border-[#E6E8EC] p-2 text-[11px]">
           <select value={f.warehouse} onChange={(e) => setF({ ...f, warehouse: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">Armazém…</option>
             {warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}

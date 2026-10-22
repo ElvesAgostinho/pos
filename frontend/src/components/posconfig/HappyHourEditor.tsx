@@ -9,12 +9,12 @@ const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 /** As cores dos níveis de preço — as mesmas do original, para o olho reconhecer. */
 const NIVEIS = [
-  { v: 0, label: 'Preço por Omissão', bg: '#FFFFFF', fg: '#1E2A44' },
+  { v: 0, label: 'Preço por Omissão', bg: '#FFFFFF', fg: '#111827' },
   { v: 1, label: 'Preço 1', bg: '#E6E8EC', fg: '#FFFFFF' },
-  { v: 2, label: 'Preço 2', bg: '#3B82F6', fg: '#1E2A44' },
-  { v: 3, label: 'Preço 3', bg: '#E6E8EC', fg: '#1E2A44' },
-  { v: 4, label: 'Preço 4', bg: '#E6E8EC', fg: '#1E2A44' },
-  { v: 5, label: 'Preço 5', bg: '#F1F2F4', fg: '#1E2A44' },
+  { v: 2, label: 'Preço 2', bg: '#3B82F6', fg: '#111827' },
+  { v: 3, label: 'Preço 3', bg: '#E6E8EC', fg: '#111827' },
+  { v: 4, label: 'Preço 4', bg: '#E6E8EC', fg: '#111827' },
+  { v: 5, label: 'Preço 5', bg: '#F1F2F4', fg: '#111827' },
 ];
 
 /**
@@ -82,7 +82,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white" onMouseUp={() => setPainting(false)}>
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo Happy Hour' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
@@ -134,7 +134,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
         {/* Grelha hora × dia */}
         <div className="flex-1 overflow-auto">
           <table className="text-[12px] border-collapse select-none">
-            <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
+            <thead className="sticky top-0"><tr className="bg-[#EEF1F5]">
               <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4] w-[130px]">Hora</th>
               {DIAS.map((x) => <th key={x} className="font-normal px-4 py-1.5 border border-[#F1F2F4]">{x}</th>)}
             </tr></thead>
@@ -154,7 +154,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
                         style={{
                           minWidth: 74, height: 26,
                           background: v ? (c ? c.bg : '#E6E8EC') : '#FFFFFF',
-                          color: c ? c.fg : '#1E2A44',
+                          color: c ? c.fg : '#111827',
                         }}>
                         {v ? (d.kind === 'PRICE' ? '' : `-${v}%`) : ''}
                       </td>
@@ -168,13 +168,13 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
 
         {/* Paleta */}
         <div className="w-[220px] flex-shrink-0 border-l border-[#F1F2F4] bg-[#FFFFFF]">
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
+          <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
             {d.kind === 'PRICE' ? 'Preço' : 'Desconto'}
           </div>
           {d.kind === 'PRICE' ? (
             NIVEIS.map((n) => (
               <button key={n.v} onClick={() => setBrush(n.v)}
-                className={`w-full py-3 text-[12px] font-semibold border-b border-white ${brush === n.v ? 'ring-2 ring-inset ring-[#1E2A44]' : ''}`}
+                className={`w-full py-3 text-[12px] font-semibold border-b border-white ${brush === n.v ? 'ring-2 ring-inset ring-[#E6E8EC]' : ''}`}
                 style={{ background: n.bg, color: n.fg }}>
                 {n.label}
               </button>
@@ -201,7 +201,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

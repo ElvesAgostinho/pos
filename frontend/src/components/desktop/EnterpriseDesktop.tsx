@@ -5,7 +5,7 @@ import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
 import type { DeskIcon } from '../../config/workspace';
 import { getAppearance } from '../../config/appearance';
-import { accentGradient } from '../../config/theme';
+import { TOKENS } from '../../config/theme';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
@@ -215,7 +215,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       {/* A MESMA barra do POS: mesmo fundo, mesma altura, mesma tipografia. Ter duas
           barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
       <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-white"
-        style={{ background: accentGradient(), fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+        style={{ background: TOKENS.brand }}>
         {/* Logo = seletor de módulos. O logótipo próprio da instalação (Empresa →
             Imagem do Hotel) substitui o de fábrica automaticamente; sem ele, mostra-se
             o logótipo do sistema em vez de um "ML" escrito por cima da barra. */}
@@ -225,10 +225,10 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
         </button>
         {modMenu && (
-          <div className="absolute left-2 top-[50px] min-w-[240px] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
-            <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: ws.color }}>{erpName} — Módulos</div>
+          <div className="absolute left-2 top-[50px] min-w-[240px] bg-white border border-[#E6E8EC] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
+            <div className="px-3 py-2 text-[11px] font-semibold text-[#6B7280] border-b border-[#F1F2F4]">{erpName} — Módulos</div>
             {licensed.map((m) => (
-              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] hover:bg-[#F7F8FA] text-left border-b border-[#F1F2F4] last:border-b-0">
+              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] hover:bg-[#EEF1F5] text-left border-b border-[#F1F2F4] last:border-b-0">
                 <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ background: `radial-gradient(circle at 30% 30%, ${m.glow}, ${m.color})`, boxShadow: `0 0 6px ${m.glow}` }} />
                 <span className="font-bold" style={{ color: m.color }}>{m.name}</span>
                 {m.key === wsKey && <span className="ml-auto text-[11px] text-gray-500">● ativo</span>}
@@ -242,16 +242,17 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           <div key={m} className="relative">
             <button onClick={(e) => { e.stopPropagation(); setTopMenu((o) => (o === m ? null : m)); setModMenu(false); }}
               onMouseEnter={() => topMenu && setTopMenu(m)}
-              className={`px-4 py-2 text-[15px] font-semibold whitespace-nowrap ${topMenu === m ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+              className={`px-4 py-2 text-[15px] font-medium whitespace-nowrap rounded-[8px] transition-colors ${
+                topMenu === m ? 'bg-white/20 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}>
               {m}
             </button>
             {topMenu === m && (
               <div className="absolute left-0 top-full min-w-[260px] py-1 shadow-2xl z-[120]"
-                style={{ background: '#1E2A44', border: '1px solid #1E2A44' }} onClick={(e) => e.stopPropagation()}>
+                style={{ background: '#FFFFFF', border: '1px solid #E6E8EC' }} onClick={(e) => e.stopPropagation()}>
                 {MENUS[m].map((it, i) => (
                   <button key={i} onClick={() => it.act ? (it.act(), setTopMenu(null)) : open(it.screen, it.label)}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3B82F6]">
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#1E2A44]" />{it.label}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#2563EB]" />{it.label}
                   </button>
                 ))}
               </div>
@@ -270,12 +271,12 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
               {user?.username || 'operador'}
             </button>
             {userMenu && (
-              <div className="absolute right-0 top-[34px] min-w-[190px] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl z-[120]" onClick={(e) => e.stopPropagation()}>
-                <div className="px-3 py-2 text-[11px] font-bold text-white" style={{ background: accentGradient() }}>
+              <div className="absolute right-0 top-[34px] min-w-[190px] bg-white border border-[#E6E8EC] rounded-[12px] shadow-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
+                <div className="px-3 py-2 text-[11px] font-semibold text-[#6B7280] border-b border-[#F1F2F4]">
                   {user?.username || 'operador'}
                 </div>
                 <button onClick={() => { setUserMenu(false); logout(); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-left hover:bg-[#F7F8FA] text-[#DC2626] font-semibold">
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-left hover:bg-[#EEF1F5] text-[#DC2626] font-semibold">
                   <LogOut size={14} /> Terminar sessão
                 </button>
               </div>
@@ -324,15 +325,17 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
         {/* Painel direito — só consultas rápidas */}
         <div className="absolute top-5 right-5 w-[220px] flex flex-col gap-2.5">
-          <div className="bg-black/35 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-white text-center" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.25)' }}>
-            <div className="text-[30px] font-black leading-none" style={{ textShadow: '0 2px 6px rgba(0,0,0,0.7)' }}>{clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</div>
-            <div className="text-[11px] text-white/70 mt-1">{clock.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
+          <div className="bg-white border border-[#E6E8EC] rounded-2xl p-3.5 text-[#111827] text-center"
+            style={{ boxShadow: '0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.08)' }}>
+            <div className="text-[30px] font-bold leading-none">{clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</div>
+            <div className="text-[11px] text-[#6B7280] mt-1">{clock.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
           </div>
-          <div className="bg-black/35 backdrop-blur-md border border-white/15 rounded-2xl p-3.5 text-white text-[12px] space-y-2" style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
-            <div className="font-bold text-[11px] uppercase text-white/60 mb-1">{ws.name} · Estado</div>
+          <div className="bg-white border border-[#E6E8EC] rounded-2xl p-3.5 text-[#111827] text-[12px] space-y-2"
+            style={{ boxShadow: '0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.08)' }}>
+            <div className="font-semibold text-[11px] uppercase text-[#9CA3AF] mb-1">{ws.name} · Estado</div>
             {[['Licença', ShieldCheck, 'ativa'], ['Servidor', Server, 'online'], ['VPN', Wifi, 'ligada']].map(([k, Icon, v]: any) => (
               <div key={k as string} className="flex items-center justify-between">
-                <span className="text-white/60 flex items-center gap-1.5"><Icon size={13} strokeWidth={2} className="text-white/50" />{k}</span>
+                <span className="text-[#6B7280] flex items-center gap-1.5"><Icon size={13} strokeWidth={1.8} className="text-[#9CA3AF]" />{k}</span>
                 <span className="text-[#6B7280] font-medium">{v}</span></div>
             ))}
           </div>
@@ -341,22 +344,22 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
       {/* ===== BARRA DE TAREFAS ===== */}
       <div className="h-[40px] flex items-center px-1.5 gap-1 flex-shrink-0 relative z-[100]"
-        style={{ background: `linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.22)), linear-gradient(to bottom, ${ws.colorDark}, #1E2A44)`, borderTop: `2px solid ${ws.accent}`, boxShadow: `0 -3px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)` }}>
-        <button onClick={(e) => { e.stopPropagation(); setStart((s) => !s); }} className="flex items-center gap-1.5 px-3.5 h-[30px] rounded-full font-bold text-white text-[12px] transition-colors"
+        style={{ background: TOKENS.brand }}>
+        <button onClick={(e) => { e.stopPropagation(); setStart((s) => !s); }} className="flex items-center gap-1.5 px-3.5 h-[30px] rounded-[8px] font-semibold text-white text-[12px] transition-colors"
           style={{ background: start ? `${ws.accent}55` : `${ws.glow}26`, border: `1px solid ${ws.accent}66` }}>
           <span className="text-[15px]">⊞</span> Iniciar
         </button>
         <div className="w-px h-6 bg-white/20 mx-1" />
-        <span className="text-white/70 text-[12px] px-2">{ws.name}</span>
+        <span className="text-white/80 text-[12px] px-2">{ws.name}</span>
         <div className="flex-1" />
-        <div className="px-3 text-white text-[12px] font-semibold flex items-center gap-1.5" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+        <div className="px-3 text-white/90 text-[12px] font-medium flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-[#DBEAFE]" /> {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
 
       {/* ===== MENU INICIAR (todas as apps do módulo) ===== */}
       {start && (
-        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-white border border-[#E6E8EC] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="px-4 py-3.5 text-white" style={{ background: `linear-gradient(to bottom, ${ws.accent}, ${ws.color})` }}>
             <div className="font-black text-[15px]">{erpName}</div>
             <div className="text-[11px] text-white/80">{user?.username} · {ws.name}</div>
@@ -365,7 +368,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             <div className="text-[10px] uppercase text-gray-500 px-1 py-1 font-semibold">Aplicações — {ws.name}</div>
             <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-auto p-0.5">
               {ws.icons.map((ic, i) => (
-                <button key={i} onClick={() => openIcon(ic)} className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-[11px] hover:bg-[#F7F8FA] text-center rounded-xl transition-colors">
+                <button key={i} onClick={() => openIcon(ic)} className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-[11px] hover:bg-[#EEF1F5] text-center rounded-xl transition-colors">
                   <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: `linear-gradient(155deg, ${ws.accent}, ${ws.color})` }}>
                     <ClassicIcon name={ic.icon} size={18} />
                   </span>
@@ -375,7 +378,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
             </div>
           </div>
           <div className="border-t border-[#F1F2F4] flex">
-            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2.5 text-[12px] hover:bg-[#F7F8FA] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
+            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2.5 text-[12px] hover:bg-[#EEF1F5] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
             <button onClick={logout} className="px-4 py-2.5 text-[12px] hover:bg-[#DC2626] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
           </div>
         </div>
@@ -386,23 +389,22 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
 
 // Ícone do Ambiente de Trabalho — tile plano moderno (fundo translúcido + vidro fosco),
 // sem o bisel/gloss 3D de antes.
-function DesktopIcon({ ic, accent, glow, onOpen }: { ic: DeskIcon; accent: string; glow: string; onOpen: () => void }) {
+function DesktopIcon({ ic, accent, onOpen }: { ic: DeskIcon; accent: string; glow?: string; onOpen: () => void }) {
   return (
     <button onClick={onOpen} className="w-[96px] flex flex-col items-center gap-2 group focus:outline-none" title={ic.label}>
       <div className="relative w-[64px] h-[64px] rounded-[18px] flex items-center justify-center transition-all duration-150 group-active:scale-95 group-hover:-translate-y-0.5"
         style={{
-          background: `linear-gradient(155deg, ${accent}3d, ${accent}1a)`,
-          backdropFilter: 'blur(6px)',
-          border: `1px solid ${accent}66`,
-          boxShadow: `0 6px 16px rgba(0,0,0,0.35)`,
+          background: '#FFFFFF',
+          border: '1px solid #E6E8EC',
+          boxShadow: '0 1px 2px rgba(16,24,40,0.04), 0 4px 12px rgba(16,24,40,0.08)',
         }}>
         <div className="absolute inset-0 rounded-[18px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ boxShadow: `0 0 0 1px ${glow}aa, 0 6px 20px ${glow}55` }} />
+          style={{ boxShadow: `0 0 0 2px ${accent}40, 0 8px 20px ${accent}26` }} />
         {ic.img
           ? <img src={`/icons/${ic.img}`} alt="" className="w-9 h-9 relative object-contain" />
-          : <span className="relative text-white"><ClassicIcon name={ic.icon} size={28} /></span>}
+          : <span className="relative"><ClassicIcon name={ic.icon} size={28} cor={accent} /></span>}
       </div>
-      <span className="text-white text-[10px] text-center leading-tight px-0.5 font-medium" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}>{ic.label}</span>
+      <span className="text-[#374151] text-[11px] text-center leading-tight px-0.5 font-medium">{ic.label}</span>
     </button>
   );
 }

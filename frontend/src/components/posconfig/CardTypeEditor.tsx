@@ -62,7 +62,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-b border-[#F1F2F4]">
         <span className="text-[12px] font-bold text-[#111827]">
           {isNew ? 'Novo tipo de cartão' : `A editar ${d.name}`}
         </span>
@@ -103,7 +103,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
 
           {/* Detalhes da pista */}
           <fieldset className="border border-[#E6E8EC] mt-3">
-            <legend className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] w-full">
+            <legend className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] w-full">
               Detalhes da Pista
             </legend>
             <div className="flex items-center gap-6 p-3">
@@ -124,7 +124,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
 
           {/* Posição */}
           <fieldset className="border border-[#E6E8EC]">
-            <legend className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] w-full">
+            <legend className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] w-full">
               Posição
             </legend>
             <div className="flex items-center gap-6 p-3">
@@ -146,7 +146,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
 
           {/* Testar a leitura */}
           <fieldset className="border border-[#E6E8EC] mt-3">
-            <legend className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] w-full">
+            <legend className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] w-full">
               Testar a leitura
             </legend>
             <div className="p-3 space-y-2">
@@ -158,7 +158,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
                 <input value={raw} onChange={(e) => setRaw(e.target.value)}
                   className={`${inp} flex-1 font-mono`} style={inputStyle} />
                 <button onClick={() => testar.mutate()} disabled={isNew}
-                  className="px-4 py-1.5 bg-[#1E2A44] text-white text-[12px] font-semibold disabled:opacity-40">
+                  className="px-4 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-semibold disabled:opacity-40">
                   {testar.isPending ? 'A ler…' : 'Ler'}
                 </button>
               </div>
@@ -167,8 +167,8 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
               )}
               {resultado && (
                 <div className={`text-[12px] px-3 py-2 border ${resultado.ok
-                  ? 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]'
-                  : 'bg-[#F7F8FA] border-[#DC2626] text-[#DC2626]'}`}>
+                  ? 'bg-[#EEF1F5] border-[#E6E8EC] text-[#111827]'
+                  : 'bg-[#EEF1F5] border-[#DC2626] text-[#DC2626]'}`}>
                   {resultado.ok
                     ? <>Número lido: <b className="font-mono text-[14px]">{resultado.number}</b></>
                     : resultado.detail}
@@ -180,7 +180,7 @@ export default function CardTypeEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#1E2A44', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>
