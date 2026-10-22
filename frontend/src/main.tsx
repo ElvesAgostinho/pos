@@ -128,6 +128,10 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <AuthorizationProvider state={initialAuthState}>
         <BrowserRouter>
+          {/* Fica AQUI, e não dentro de <Routes>: o react-router exige que os
+              filhos de <Routes> sejam todos <Route>, e qualquer outro rebenta a
+              árvore inteira — a aplicação ficava em branco, em todo o lado. */}
+          <MarcaDoTerminal />
           <Routes>
             {/* First Boot */}
             <Route path="/onboarding" element={<SkipOnboardingIfLicensed><Onboarding /></SkipOnboardingIfLicensed>} />
@@ -138,7 +142,6 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/backoffice/*" element={<RequireLicense><RequireAuth><App /></RequireAuth></RequireLicense>} />
 
             {/* Frontoffice Launcher (Nível 3) */}
-            <MarcaDoTerminal />
             {/* /pos é a porta do terminal: quem já tem sessão de operador entra
                 direto; quem não tem, faz login. É este o link dos atalhos. */}
             <Route path="/pos" element={
