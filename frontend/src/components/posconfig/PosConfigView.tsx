@@ -245,17 +245,17 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-black/15' : 'hover:bg-black/10'}`}>
             {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
-            <span className="text-[12px] text-white">▾</span>
           </button>
 
           {menu === '__ml' && (
             <>
               <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[230px] py-1 overflow-hidden"
-                style={{ background: TOKENS.bar, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+              <div className="absolute left-0 top-full mt-2 z-[61] min-w-[240px] py-2 overflow-hidden"
+                style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.lineSoft}`,
+                         borderRadius: RADIUS.md, boxShadow: SHADOW.pop }}>
                 <button onClick={() => { setMenu(null); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3B82F6] transition-colors">
-                  <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon="🖥" size={15} /></span>Ambiente de Trabalho
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
+                  <Glyph icon="🖥" size={15} chip />Ambiente de Trabalho
                 </button>
               </div>
             </>
@@ -265,18 +265,23 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           <div key={m.title} className="relative">
             <button onClick={() => setMenu(menu === m.title ? null : m.title)}
               onMouseEnter={() => menu && setMenu(m.title)}
-              className="px-3 py-1.5 text-[14px] font-semibold hover:bg-white/10 transition-colors"
-              style={{ background: menu === m.title ? 'rgba(255,255,255,0.1)' : 'transparent', borderRadius: RADIUS.sm }}>
-              {m.title} ▾
+              className={`px-4 py-2 text-[14px] font-medium transition-colors whitespace-nowrap ${
+                menu === m.title ? 'text-white' : 'text-white/85 hover:text-white hover:bg-white/10'}`}
+              style={{
+                background: menu === m.title ? 'rgba(255,255,255,0.2)' : 'transparent',
+                borderRadius: RADIUS.sm,
+              }}>
+              {m.title}
             </button>
             {menu === m.title && (
               <>
                 {/* clicar fora fecha */}
                 <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full mt-1.5 z-[61] min-w-[250px] py-1 overflow-hidden"
-                  style={{ background: TOKENS.bar, borderRadius: RADIUS.md, boxShadow: SHADOW.panel }}>
+                <div className="absolute left-0 top-full mt-2 z-[61] min-w-[260px] py-2 overflow-hidden"
+                  style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.lineSoft}`,
+                           borderRadius: RADIUS.md, boxShadow: SHADOW.pop }}>
                   {m.items.map((it: any, i: number) => it.sep ? (
-                    <div key={i} className="my-1 border-t border-[#E6E8EC]" />
+                    <div key={i} className="my-1.5 border-t border-[#F1F2F4]" />
                   ) : (
                     <button key={i}
                       onClick={() => {
@@ -301,8 +306,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                         else if (it.view && onOpen) onOpen(it.view);
                         else if (it.url) window.open(it.url, '_blank');
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-left text-[14px] text-white hover:bg-[#3B82F6] transition-colors">
-                      <span className="w-5 flex items-center justify-center opacity-80"><Glyph icon={it.icon} size={16} /></span>
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
+                      <Glyph icon={it.icon} size={15} chip />
                       {it.label}
                     </button>
                   ))}
@@ -320,23 +325,26 @@ export default function PosConfigView({ onDesktop, onOpen }: {
 
       {/* Título da janela — preto. O dourado e o logótipo ficam só na barra de
           cima do Ambiente de Trabalho. */}
-      <div className="flex items-center justify-between gap-2 px-3 py-2 text-white text-[15px] font-bold flex-shrink-0"
-        style={{ background: TOKENS.barSoft }}>
-        <div className="flex items-center gap-2">
-          <span className="text-[#111827] inline-flex items-center">
-            <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} />
-          </span>{' '}
+      {/* CABEÇALHO DA SECÇÃO — igual ao do PMS: branco, o nome do ecrã como
+          título, e uma linha fina a separar. Eram duas barras de cor empilhadas
+          (a dos menus e esta), o que tira ar ao ecrã e não deixa perceber qual
+          é a principal. E o ícone estava escuro sobre o azul, mal se lia. */}
+      <div className="flex items-center justify-between gap-2.5 px-5 py-3.5 text-[19px] font-semibold flex-shrink-0"
+        style={{ background: TOKENS.surface, color: TOKENS.textOnLight,
+                 borderBottom: `1px solid ${TOKENS.lineSoft}` }}>
+        <div className="flex items-center gap-2.5">
+          <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} chip />{' '}
           {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
         </div>
         <div className="flex items-center gap-0.5 text-[12px] font-normal">
           <button onClick={() => setLocked(true)} title="Bloquear ecrã"
-            className="w-7 h-7 flex items-center justify-center hover:bg-white/15 transition-colors" style={{ borderRadius: RADIUS.sm }}>
-            <Lock size={13} />
+            className="w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.sm }}>
+            <Lock size={14} />
           </button>
           <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
             title="Voltar ao Ambiente de Trabalho"
-            className="w-7 h-7 flex items-center justify-center hover:bg-[#DC2626] transition-colors" style={{ borderRadius: RADIUS.sm }}>
-            <Glyph icon="✕" size={13} />
+            className="w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-[#DC2626] transition-colors" style={{ borderRadius: RADIUS.sm }}>
+            <Glyph icon="✕" size={14} />
           </button>
         </div>
       </div>
