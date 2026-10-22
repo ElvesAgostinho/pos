@@ -80,7 +80,7 @@ export default function SupplierListView() {
     >
       <div className="flex flex-col h-full">
         {/* Barra de filtros */}
-        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px] flex-shrink-0">
+        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px] flex-shrink-0">
           <div className="flex items-center border border-[#E6E8EC] bg-white px-1">
             <Search size={12} className="text-gray-500" />
             <input

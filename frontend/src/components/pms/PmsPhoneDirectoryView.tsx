@@ -56,7 +56,7 @@ export default function PmsPhoneDirectoryView() {
             { header: 'Ativo', accessor: (r: any) => (r.is_active ? 'Sim' : 'Não'), width: '12%' },
           ]} />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[12.5px] overflow-auto">
+        <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
           <div className="font-bold text-[#111827]">{selId ? 'Editar Contacto' : 'Novo Contacto'}</div>
           <label className="flex flex-col">Nome<input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inp} /></label>
           <label className="flex flex-col">Departamento<input value={form.department || ''} onChange={(e) => setForm({ ...form, department: e.target.value })} className={inp} /></label>

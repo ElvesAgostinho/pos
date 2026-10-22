@@ -4,8 +4,8 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
-const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[12px] bg-white';
 
 const HW_TYPES = [
   { value: 'DRAWER', label: 'Gaveta' }, { value: 'SCALE', label: 'Balança' },
@@ -63,7 +63,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
-      className={`px-5 py-1.5 text-[13px] font-semibold border-b-[3px] ${tab === id ? 'border-[#1E2A44] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+      className={`px-5 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === id ? 'border-[#1E2A44] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
       {label}
     </button>
   );
@@ -71,7 +71,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo terminal' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -79,11 +79,11 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       <div className="px-4 py-3 border-b border-[#F1F2F4]">
       <Box title="Identificação">
       <div className="grid grid-cols-2 gap-x-10 gap-y-2 pt-1.5">
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[90px] text-[#111827]">Código:<span className="text-[#DC2626]">*</span></span>
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[220px]`} style={inputStyle} />
         </label>
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[70px] text-[#111827]">Tipo:</span>
           <select value={d.terminal_type} onChange={(e) => set('terminal_type', e.target.value)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="NORMAL">Normal</option>
@@ -91,11 +91,11 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
             <option value="MOBILE">Portátil</option>
           </select>
         </label>
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[90px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inp} w-[300px]`} style={inputStyle} />
         </label>
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[70px] text-[#111827]">Outlet:</span>
           <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="">—</option>
@@ -113,14 +113,14 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       <div className="flex-1 overflow-auto p-3">
         {tab === 'geral' && (
           <>
-            <div className="flex items-center gap-3 mb-2 text-[13px] bg-[#F7F8FA] px-3 py-2 border border-[#F1F2F4]">
+            <div className="flex items-center gap-3 mb-2 text-[12px] bg-[#F7F8FA] px-3 py-2 border border-[#F1F2F4]">
               <span>Pesquisar:</span>
               <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[240px]`} style={inputStyle} />
-              <span className="text-[12.5px] text-[#6B7280] ml-auto">
+              <span className="text-[11px] text-[#6B7280] ml-auto">
                 O número (ex.: 8610) é a referência do parâmetro — é por ele que o suporte fala consigo.
               </span>
             </div>
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <tbody>
                 {shown.map((g: any) => (
                   <Fragment key={g.group}>
@@ -133,7 +133,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                         <tr key={p.number} className="border-b border-[#F1F2F4] hover:bg-[#FFFFFF]">
                           <td className="px-2 py-1.5 border border-[#F1F2F4]" title={p.help_text}>
                             <span className="text-[#6B7280]">({p.number})</span> {p.name}
-                            {p.help_text && <div className="text-[11.5px] text-[#6B7280] mt-0.5">{p.help_text}</div>}
+                            {p.help_text && <div className="text-[10px] text-[#6B7280] mt-0.5">{p.help_text}</div>}
                           </td>
                           <td className="px-2 py-1 border border-[#F1F2F4] w-[45%]">
                             {p.kind === 'BOOL' ? (
@@ -162,7 +162,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
         )}
 
         {tab === 'printers' && (
-          <table className="w-full text-[13px] border-collapse">
+          <table className="w-full text-[12px] border-collapse">
             <thead><tr className="bg-[#F7F8FA]">
               {['Ativo', 'Código', 'Descrição', 'Porta', 'Localização Impressora', 'Um artigo por talão', 'Monitores de cozinha'].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">{h}</th>
@@ -205,7 +205,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
 
         {tab === 'hardware' && (
           <div>
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead><tr className="bg-[#F7F8FA]">
                 {['Código', 'Descrição', 'Tipo', 'Porta', 'Ativo', ''].map((h) => (
                   <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">{h}</th>
@@ -224,14 +224,14 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
                     <td className="p-0.5 border border-[#F1F2F4] w-[120px]"><input value={h.port || ''} onChange={(e) => setHw(i, 'port', e.target.value)} placeholder="COM1" className={cell} /></td>
                     <td className="text-center border border-[#F1F2F4]"><input type="checkbox" checked={!!h.is_active} onChange={(e) => setHw(i, 'is_active', e.target.checked)} className="w-4 h-4" /></td>
                     <td className="text-center border border-[#F1F2F4]">
-                      <button onClick={() => set('hardware', hw.filter((_, j) => j !== i))} className="text-[#B91C1C] font-bold text-[12.5px]">Apagar</button>
+                      <button onClick={() => set('hardware', hw.filter((_, j) => j !== i))} className="text-[#B91C1C] font-bold text-[11px]">Apagar</button>
                     </td>
                   </tr>
                 ))}
                 {hw.length === 0 && <tr><td colSpan={6} className="text-center text-[#6B7280] py-8">Sem periféricos ligados a este terminal.</td></tr>}
               </tbody>
             </table>
-            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[13px] text-[#111827] px-1 py-1 hover:bg-[#F7F8FA]">
+            <button onClick={addHw} className="flex items-center gap-2 mt-2 text-[12px] text-[#111827] px-1 py-1 hover:bg-[#F7F8FA]">
               <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
           </div>

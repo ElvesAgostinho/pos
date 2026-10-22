@@ -44,7 +44,7 @@ export function UsersView() {
     <ClassicWindow title="Utilizadores & Acessos (Security)" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{users.length} utilizador(es) · perfil define o que cada um acede (RBAC)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Utilizador" value={d.username} onChange={(e) => setD({ ...d, username: e.target.value })} className="border border-[#E6E8EC] p-1 w-32" />
           <input placeholder="Email" value={d.email} onChange={(e) => setD({ ...d, email: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Palavra-passe" type="password" value={d.password} onChange={(e) => setD({ ...d, password: e.target.value })} className="border border-[#E6E8EC] p-1 w-32" />
@@ -58,7 +58,7 @@ export function UsersView() {
             { header: 'Utilizador', accessor: 'username', width: '18%' },
             { header: 'Email', accessor: (r: any) => r.email || '—', width: '20%' },
             { header: 'Perfil (RBAC)', accessor: (r: any) => (
-              <select value={r.profiles?.[0]?.id || ''} onChange={(e) => setProfile(r, e.target.value)} className="border border-[#E6E8EC] p-0.5 bg-white text-[12.5px]">
+              <select value={r.profiles?.[0]?.id || ''} onChange={(e) => setProfile(r, e.target.value)} className="border border-[#E6E8EC] p-0.5 bg-white text-[11px]">
                 <option value="">— sem perfil —</option>{profiles.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>), width: '22%' },
             { header: 'Hotéis (o que pode ver)', accessor: (r: any) => (
@@ -68,12 +68,12 @@ export function UsersView() {
                     const on = (r.hotels || []).some((x: any) => x.id === h.id);
                     return (
                       <button key={h.id} onClick={() => toggleHotel(r, h.id)} title={on ? 'Retirar acesso' : 'Dar acesso'}
-                        className={`px-1.5 py-0.5 text-[11.5px] font-bold border ${on ? 'bg-[#3B82F6] text-white border-[#1E2A44]' : 'bg-white text-gray-500 border-[#E6E8EC]'}`}>
+                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#3B82F6] text-white border-[#1E2A44]' : 'bg-white text-gray-500 border-[#E6E8EC]'}`}>
                         {h.name}
                       </button>
                     );
                   })}
-                  {(r.hotels || []).length === 0 && <span className="text-[11.5px] text-gray-400 italic">sem restrição</span>}
+                  {(r.hotels || []).length === 0 && <span className="text-[10px] text-gray-400 italic">sem restrição</span>}
                 </div>
               )), width: '22%' },
             { header: 'Estado', accessor: (r: any) => <span className={r.is_active ? 'text-[#111827] font-bold' : 'text-[#B91C1C]'}>{r.is_active ? 'Ativo' : 'Inativo'}</span>, width: '8%' },
@@ -103,7 +103,7 @@ export function SessionsView() {
         { header: 'Estado', accessor: (r: any) => <span className={r.status === 'Active' ? 'text-[#111827] font-bold' : 'text-gray-500'}>{r.status}</span>, width: '14%' },
         { header: 'Início', accessor: (r: any) => new Date(r.login_time).toLocaleString('pt-PT'), width: '22%' },
         { header: 'Últ. atividade', accessor: (r: any) => new Date(r.last_activity).toLocaleTimeString('pt-PT'), width: '12%' },
-        { header: '', accessor: (r: any) => r.status === 'Active' ? <button onClick={() => revoke.mutate(r.id)} className="text-[#B91C1C] hover:text-[#B91C1C] text-[12.5px] font-bold">Terminar</button> : null, width: '10%' },
+        { header: '', accessor: (r: any) => r.status === 'Active' ? <button onClick={() => revoke.mutate(r.id)} className="text-[#B91C1C] hover:text-[#B91C1C] text-[11px] font-bold">Terminar</button> : null, width: '10%' },
       ]} />
     </ClassicWindow>
   );
@@ -117,7 +117,7 @@ export function LoginHistoryView() {
     <ClassicWindow title="Histórico de Login (Security)" icon={<History size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{events.length} evento(s) de autenticação</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <label className="font-bold text-gray-700">Evento:</label>
           <select value={t} onChange={(e) => setT(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">Todos</option><option value="LOGIN_SUCCESS">Sucesso</option>

@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph, SearchButton } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
 /**
  * PICKERS — as janelas de escolha múltipla ("Adicionar - Artigos",
@@ -49,9 +49,9 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
         <Head title="Adicionar - Sub Família" onClose={onClose} />
 
         <div className="flex items-center gap-3 px-3 py-2 bg-white border-b border-[#F1F2F4]">
-          <span className="text-[13px] text-[#111827]">Pesquisar:</span>
+          <span className="text-[12px] text-[#111827]">Pesquisar:</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus className={`${inp} w-[240px]`} style={inputStyle} />
-          <label className="flex items-center gap-2 text-[13px] ml-3">
+          <label className="flex items-center gap-2 text-[12px] ml-3">
             <input type="checkbox" checked={allOn}
               onChange={(e) => setSel(e.target.checked ? rows.map((r) => r.id) : [])} className="w-4 h-4" />
             Selecionar Tudo
@@ -59,7 +59,7 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
         </div>
 
         <div className="flex-1 overflow-auto bg-white">
-          <table className="w-full text-[13px] border-collapse">
+          <table className="w-full text-[12px] border-collapse">
             <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
               <th className="w-[42px] border-b border-[#F1F2F4]" />
               <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Descrição</th>
@@ -80,7 +80,7 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
           </table>
         </div>
 
-        <div className="px-3 py-1 text-[12.5px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#F1F2F4]">
+        <div className="px-3 py-1 text-[11px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#F1F2F4]">
           {sel.length} selecionada(s) de {rows.length}
         </div>
         <Toolbar actions={[
@@ -138,7 +138,7 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
   const over = sel.length > max;
 
   const toggle = (id: number) => setSel((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
-  const sl = 'border border-[#E6E8EC] px-1 py-1 text-[13px] bg-white w-full';
+  const sl = 'border border-[#E6E8EC] px-1 py-1 text-[12px] bg-white w-full';
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
@@ -147,7 +147,7 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
 
         {/* Filtros */}
         <div className="flex gap-4 p-3 bg-white border-b border-[#F1F2F4]">
-          <div className="flex-1 grid grid-cols-[70px_1fr_70px_1fr] gap-x-3 gap-y-2 items-center text-[13px]">
+          <div className="flex-1 grid grid-cols-[70px_1fr_70px_1fr] gap-x-3 gap-y-2 items-center text-[12px]">
             <span>Grupo:</span>
             <select value={f.group} onChange={(e) => setF({ ...f, group: e.target.value, family: '', subfamily: '' })} className={sl} style={inputStyle}>
               <option value="">(Todos)</option>
@@ -186,13 +186,13 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
           <SearchButton onClick={() => { setApplied({ ...f }); setPage(1); }} className="w-[150px]" />
         </div>
 
-        <div className={`px-3 py-1.5 text-[13px] font-bold ${over ? 'text-[#DC2626]' : 'text-[#111827]'}`}>
+        <div className={`px-3 py-1.5 text-[12px] font-bold ${over ? 'text-[#DC2626]' : 'text-[#111827]'}`}>
           (Selecionado: {sel.length}) (Máximo: {max}){over && ' — reduza a seleção'}
         </div>
 
         {/* Grelha */}
         <div className="flex-1 overflow-auto bg-white border-y border-[#F1F2F4]">
-          <table className="w-full text-[13px] border-collapse">
+          <table className="w-full text-[12px] border-collapse">
             <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
               <th className="w-[42px] border-b border-[#F1F2F4]" />
               {['Código', 'Descrição', 'Grupo', 'Família', 'Sub Família', 'Preço', 'Iva', 'Impressoras', 'Ativo'].map((h) => (
@@ -214,7 +214,7 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
                   <td className="px-2 py-1.5">{i.subfamily_name}</td>
                   <td className="px-2 py-1.5 whitespace-nowrap">(1: {Number(i.sale_price || 0).toFixed(2)})</td>
                   <td className="px-2 py-1.5 text-[#111827] whitespace-nowrap italic">{Number(i.tax_percentage || 0).toFixed(2)}</td>
-                  <td className="px-2 py-1.5 text-[12.5px] text-[#6B7280]">{i.printers_label}</td>
+                  <td className="px-2 py-1.5 text-[11px] text-[#6B7280]">{i.printers_label}</td>
                   <td className="text-center">
                     <GridCheck checked={i.is_active} onChange={(v) => setActive.mutate({ id: i.id, v })}
                       title="Artigo ativo — desligar tira-o da venda no POS" />
@@ -227,7 +227,7 @@ export function ItemPicker({ exclude = [], onPick, onClose, title = 'Adicionar -
         </div>
 
         {/* Paginação */}
-        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] text-[13px]">
+        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] text-[12px]">
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={allOn}
               onChange={(e) => setSel(e.target.checked ? rows.map((r) => r.id) : [])} className="w-4 h-4" />

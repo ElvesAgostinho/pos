@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Glyph } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
 /**
  * MAPEAMENTO SETOR / ARMAZÉNS — de que armazém sai cada sub-família em cada setor.
@@ -74,7 +74,7 @@ export default function SectorWarehouseMap() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[13px]">
+      <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12px]">
         <span>Pesquisar:</span>
         <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[200px]`} style={inputStyle} />
         <span className="ml-2">Armazém:</span>
@@ -91,7 +91,7 @@ export default function SectorWarehouseMap() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
             <th className="w-[36px] border-b border-[#F1F2F4]" />
             <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Descrição</th>
@@ -112,7 +112,7 @@ export default function SectorWarehouseMap() {
                   return (
                     <td key={o.id} className="p-0.5" style={{ background: c.warehouse ? undefined : '#FEF2F2' }}>
                       <select value={c.warehouse || ''} onChange={(e) => setCell(r.id, o.id, e.target.value)}
-                        className="w-full border-0 bg-transparent text-[13px] outline-none py-1">
+                        className="w-full border-0 bg-transparent text-[12px] outline-none py-1">
                         <option value="">— sem armazém —</option>
                         {(d.warehouses || []).map((w: any) => (
                           <option key={w.id} value={w.id}>{w.name}</option>
@@ -133,7 +133,7 @@ export default function SectorWarehouseMap() {
       </div>
 
       {emFalta > 0 && (
-        <div className="px-3 py-1 text-[12.5px] text-[#DC2626] bg-[#F7F8FA] border-t border-[#DC2626]">
+        <div className="px-3 py-1 text-[11px] text-[#DC2626] bg-[#F7F8FA] border-t border-[#DC2626]">
           <b>{emFalta}</b> sub-família(s) sem armazém nalgum ponto de venda: aí, a venda desconta do
           armazém errado — e as contagens nunca vão bater certo.
         </div>

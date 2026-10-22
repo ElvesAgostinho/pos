@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, Glyph } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
 /**
  * PLANTA DA SALA — desenha-se as mesas onde elas estão de verdade.
@@ -114,7 +114,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
   const Btn = ({ onClick, children, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-3 py-1.5 bg-[#1E2A44] text-white text-[13px] hover:bg-[#1E2A44] disabled:opacity-35">
+      className="flex items-center gap-2 px-3 py-1.5 bg-[#1E2A44] text-white text-[12px] hover:bg-[#1E2A44] disabled:opacity-35">
       {children}
     </button>
   );
@@ -146,7 +146,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
           {/* Formas / propriedades */}
           {mode === 'design' && (
             <div className="w-[250px] flex-shrink-0 border-r border-[#E6E8EC] bg-white overflow-auto">
-              <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold border-b border-[#F1F2F4]">Formas</div>
+              <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4]">Formas</div>
               <div className="flex gap-2 p-3 border-b border-[#F1F2F4]">
                 {[['SQUARE', 'rounded-none w-12 h-12'], ['RECT', 'rounded-none w-12 h-9'], ['ROUND', 'rounded-full w-12 h-12']].map(([shape, cls]) => (
                   <button key={shape} onClick={() => addTable(shape)} title="Arraste para a sala"
@@ -154,7 +154,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                 ))}
               </div>
 
-              <div className="p-3 space-y-2 text-[13px]">
+              <div className="p-3 space-y-2 text-[12px]">
                 <button onClick={() => sel !== null && upd(sel, { table_number: prompt('Número da mesa:', S?.table_number) || S.table_number })}
                   disabled={sel === null} className="w-full py-1.5 bg-[#1E2A44] text-white disabled:opacity-35">Alterar número</button>
                 <button onClick={() => sel !== null && upd(sel, { name: prompt('Texto da mesa:', S?.name || '') || '' })}
@@ -212,7 +212,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
               </div>
             ))}
             {tables.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-[#6B7280] text-[13px]">
+              <div className="absolute inset-0 flex items-center justify-center text-[#6B7280] text-[12px]">
                 Sala vazia — escolha uma forma à esquerda para acrescentar mesas.
               </div>
             )}
@@ -220,9 +220,9 @@ export default function TableMapDesigner({ sector, mode, onClose }:
 
           {/* Lugares / Reservas online */}
           <div className="w-[420px] flex-shrink-0 border-l border-[#E6E8EC] bg-white flex flex-col">
-            <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold border-b border-[#F1F2F4]">Lugares</div>
+            <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold border-b border-[#F1F2F4]">Lugares</div>
             <div className="flex-1 overflow-auto">
-              <table className="w-full text-[13px] border-collapse">
+              <table className="w-full text-[12px] border-collapse">
                 <thead className="sticky top-0">
                   <tr className="bg-[#F7F8FA]">
                     <th className="px-2 py-1 border-b border-[#F1F2F4] w-[36px]" />
@@ -245,7 +245,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                       {['min_seats', 'max_seats', 'preferred_seats'].map((k) => (
                         <td key={k} className="p-0.5">
                           <input type="number" value={t[k] ?? 0} onChange={(e) => upd(i, { [k]: Number(e.target.value) })}
-                            className="w-full border border-[#F1F2F4] px-1 py-0.5 text-[13px] text-center" />
+                            className="w-full border border-[#F1F2F4] px-1 py-0.5 text-[12px] text-center" />
                         </td>
                       ))}
                     </tr>
@@ -253,7 +253,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
                 </tbody>
               </table>
             </div>
-            <div className="border-t border-[#F1F2F4] p-3 grid grid-cols-2 gap-x-6 gap-y-1 text-[13px]">
+            <div className="border-t border-[#F1F2F4] p-3 grid grid-cols-2 gap-x-6 gap-y-1 text-[12px]">
               <div className="flex justify-between font-bold"><span>Total:</span><span>{total}</span></div>
               <div className="flex justify-between font-bold"><span>Reservas Online:</span><span>{online}</span></div>
               <div className="flex justify-between"><span>Lugares (mín.):</span><span>{tables.reduce((a, t) => a + (t.min_seats || 0), 0)}</span></div>

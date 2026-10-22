@@ -81,13 +81,13 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
         <div className="flex border-b border-[#E6E8EC] bg-[#F7F8FA] flex-shrink-0">
           {TABS.map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-3 py-1.5 text-[12.5px] font-bold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827]' : 'text-gray-600 hover:bg-white/60'}`}>
+              className={`px-3 py-1.5 text-[11px] font-bold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827]' : 'text-gray-600 hover:bg-white/60'}`}>
               {t}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 overflow-auto p-3 text-[12.5px]">
+        <div className="flex-1 overflow-auto p-3 text-[11px]">
           {tab === 'Detalhes do Bloco' && (
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1" /></label>
@@ -165,8 +165,8 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
         </div>
 
         <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
-          <button onClick={onClose} className="px-3 py-1 text-[13px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">Cancelar</button>
-          <button onClick={save} className="px-4 py-1.5 text-[13px] font-bold text-white" style={{ background: '#1E2A44' }}>Gravar</button>
+          <button onClick={onClose} className="px-3 py-1 text-[12px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">Cancelar</button>
+          <button onClick={save} className="px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#1E2A44' }}>Gravar</button>
         </div>
       </div>
     </div>
@@ -197,7 +197,7 @@ function BlockGrid({ blockId, roomTypes }: { blockId: number; roomTypes: any[] }
         </select>
         <input type="date" value={row.date} onChange={(e) => setRow({ ...row, date: e.target.value })} className="border border-[#E6E8EC] p-1" />
         <input type="number" min={0} value={row.rooms_blocked} onChange={(e) => setRow({ ...row, rooms_blocked: Number(e.target.value) })} className="border border-[#E6E8EC] p-1 w-20" placeholder="Qtd" />
-        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[13px] text-[#111827] border border-[#E6E8EC] hover:bg-[#F7F8FA] rounded-[8px]">
+        <button onClick={addRow} className="flex items-center gap-1 px-2 py-1 text-[12px] text-[#111827] border border-[#E6E8EC] hover:bg-[#F7F8FA] rounded-[8px]">
           <span className="text-[#111827]"><Glyph icon="＋" size={14} /></span> Adicionar
         </button>
       </div>

@@ -12,7 +12,7 @@ import { aviso, confirmar, pedir } from '../../ui/dialogo';
  * crianças…) gravam nos REGISTOS da entidade; o Histórico lê as reservas e a
  * faturação POS; a Proteção de Dados exporta (portabilidade) e remove (RGPD).
  */
-const inp = 'h-7 px-2 text-[13px] border border-[#E6E8EC] bg-white flex-1 min-w-0';
+const inp = 'h-7 px-2 text-[12px] border border-[#E6E8EC] bg-white flex-1 min-w-0';
 const NAV = [
   ['perfil', '👤', 'Perfil'], ['ident', '🪪', 'Dados de identificação'],
   ['contactos', '☎', 'Contactos/Redes Sociais'], ['cartoes', '⭐', 'Cartões de membro'],
@@ -24,7 +24,7 @@ const NAV = [
 ] as const;
 
 function Row({ l, children, w = 110 }: any) {
-  return <label className="flex items-center gap-2 text-[13px]">
+  return <label className="flex items-center gap-2 text-[12px]">
     <span className="text-[#111827] flex-shrink-0 text-right" style={{ width: w }}>{l}</span>{children}</label>;
 }
 
@@ -52,16 +52,16 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
     await apiClient.post(`pos/marketing/entities/${eid}/records/${r.id}/delete/`, {});
     inval();
   };
-  if (!eid) return <div className="text-[13px] text-[#6B7280] p-3">Grave primeiro a ficha — as listas ligam-se à entidade criada.</div>;
+  if (!eid) return <div className="text-[12px] text-[#6B7280] p-3">Grave primeiro a ficha — as listas ligam-se à entidade criada.</div>;
   return (
     <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-      <div className="px-2 py-1 bg-[#F7F8FA] text-[13px] font-bold flex justify-between">
+      <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold flex justify-between">
         <span>{titulo}</span>
         <span className="flex gap-2">
           <button onClick={add} className="flex items-center gap-1 text-[#111827]"><Glyph icon="⊕" size={13} /> Adicionar</button>
         </span>
       </div>
-      <table className="w-full text-[13px]">
+      <table className="w-full text-[12px]">
         <thead><tr className="bg-[#F7F8FA]">
           {cols.map(([k, l]) => <th key={k} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{l}</th>)}
           <th className="w-[60px] border-b border-[#F1F2F4]" />
@@ -289,7 +289,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
     <Row l={l} w={w}><select value={d[k] ?? ''} onChange={(e) => set(k, e.target.value || null)} className={inp} style={inputStyle}>
       <option value="">- Outro -</option>{(opts as any[]).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></Row>);
   const C = ({ k, l }: any) => (
-    <label className="flex items-center gap-1.5 text-[13px]"><input type="checkbox" checked={!!d[k]} onChange={(e) => set(k, e.target.checked)} className="w-4 h-4" />{l}</label>);
+    <label className="flex items-center gap-1.5 text-[12px]"><input type="checkbox" checked={!!d[k]} onChange={(e) => set(k, e.target.checked)} className="w-4 h-4" />{l}</label>);
   // P/Cx agora são COLUNAS REAIS da ficha (mdm.Customer) — nada em JSON.
   const P = T;
   const Cx = C;
@@ -301,7 +301,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
         style={{ height: 'min(86vh, 760px)', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold bg-[#1E2A44]">
           <span>{eid ? `Entidade — ${d.name || d.code}` : 'Nova entidade'}</span>
-          <button onClick={onClose} className="w-6 h-6 bg-[#DC2626] text-white text-[13px] flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
+          <button onClick={onClose} className="w-6 h-6 bg-[#DC2626] text-white text-[12px] flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
@@ -309,7 +309,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
           <div className="w-[215px] flex-shrink-0 border-r border-[#E6E8EC] bg-white overflow-auto">
             {NAV.map(([k, ico, l]) => (
               <button key={k} onClick={() => setSec(k)}
-                className={`w-full flex items-center gap-2 px-3 py-2.5 text-[13px] text-left border-b border-[#F1F2F4]
+                className={`w-full flex items-center gap-2 px-3 py-2.5 text-[12px] text-left border-b border-[#F1F2F4]
                   ${sec === k ? 'bg-[#F7F8FA] font-bold text-[#111827]' : 'hover:bg-[#F7F8FA]'}`}>
                 <span className="w-6 flex items-center justify-center"><Glyph icon={ico} size={15} /></span>{l}
               </button>
@@ -327,13 +327,13 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <T k="last_name" l="Apelido:" /> <P k="mailing_language" l="Língua mailing:" />
               <T k="name" l="Nome:" /> <P k="stat_aggregator" l="Agregador Estatístico:" />
               <T k="other_names" l="Outros nomes:" /> <P k="planning_color" l="Cor para planning:" />
-              <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[13px] font-bold">Morada principal</div>
+              <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[12px] font-bold">Morada principal</div>
               <T k="address" l="Morada 1:" /> <T k="address2" l="Morada 2:" />
               <P k="address3" l="Morada 3:" /> <T k="postal_code" l="Cód. Postal:" />
               <T k="city" l="Cidade:" /> <T k="country" l="País:" />
               <P k="phone_prefix" l="Prefixo telefónico:" /> <P k="region" l="Região:" />
               <P k="district" l="Distrito:" />
-              <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[13px] font-bold">Morada de Faturação</div>
+              <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[12px] font-bold">Morada de Faturação</div>
               <T k="billing_address" l="Morada 1:" /> <P k="billing_address2" l="Morada 2:" />
               <P k="billing_postal" l="Cód. Postal:" /> <P k="billing_city" l="Cidade:" />
               <P k="billing_country" l="País:" />
@@ -347,13 +347,13 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <T k="iata" l="IATA:" /> <T k="doc_issue_place" l="Local emissão:" />
               <T k="tax_id" l="Nr. contrib.:" /> <T k="doc_issued_by" l="Emitido por:" />
               <T k="account_number" l="Nº de conta:" /> <T k="position" l="Cargo:" />
-              <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[13px] font-bold">Outra informação</div>
+              <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[12px] font-bold">Outra informação</div>
               <T k="other_number" l="Número:" /> <T k="internal_status" l="Status interno:" />
               <T k="portal_password" l="Password:" tipo="password" /> <T k="plate" l="Matrícula:" />
               <T k="brand" l="Marca:" />
-              <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[13px] font-bold">Foto / Assinatura</div>
+              <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[12px] font-bold">Foto / Assinatura</div>
               <T k="photo_url" l="Foto (URL):" /> <T k="signature_url" l="Assinatura (URL):" />
-              <div className="col-span-2 text-[12.5px] text-[#DC2626]">Por favor evitar imagens com tamanho superior a 200 KB.</div>
+              <div className="col-span-2 text-[11px] text-[#DC2626]">Por favor evitar imagens com tamanho superior a 200 KB.</div>
             </div></Box>)}
 
             {sec === 'contactos' && (<>
@@ -377,13 +377,13 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
               <RecGrid eid={eid} kind="CARD" titulo="Cartões de membro (todos)"
                 cols={[['nome', 'Nome'], ['numero', 'Número'], ['valido_de', 'Válido de'], ['valido_ate', 'Válido até'],
                        ['notas', 'Notas'], ['origem', 'Origem'], ['ordem', 'Ordem'], ['ativo', 'Ativo (s/n)']]} />
-              <div className="text-[12.5px] text-[#6B7280] mt-1">O saldo/pontos vivem no motor de cartões (ledger); o principal é o que o POS usa.</div>
+              <div className="text-[11px] text-[#6B7280] mt-1">O saldo/pontos vivem no motor de cartões (ledger); o principal é o que o POS usa.</div>
             </>)}
 
             {sec === 'info' && (<>
               <Row l="Informação geral:" w={120}>
                 <textarea value={d.notes ?? ''} onChange={(e) => set('notes', e.target.value)} rows={3}
-                  className="flex-1 border border-[#E6E8EC] text-[13px] p-1" style={inputStyle} />
+                  className="flex-1 border border-[#E6E8EC] text-[12px] p-1" style={inputStyle} />
               </Row>
               {/* Informação para secção — a LISTA clicável do HOST, com texto por secção */}
               <InfoSeccoes eid={eid} />
@@ -401,27 +401,27 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                      ['profissao', 'Profissão'], ['nascimento', 'Data de nasc.'], ['cidade', 'Cidade'], ['pais', 'País']]} />}
 
             {sec === 'reserva' && (<Box title="Reserva"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
-              <div className="col-span-2 text-[13px] font-bold">Preferências do hóspede</div>
+              <div className="col-span-2 text-[12px] font-bold">Preferências do hóspede</div>
               <T k="pref_complex" l="Complexo:" /> <T k="pref_price_list" l="Lista Preços:" />
               <T k="pref_category" l="Categoria:" /> <T k="pref_package" l="Package:" />
               <T k="pref_meals" l="Refeições:" /> <T k="pref_pos_price" l="Preço POS:" tipo="number" />
               <T k="pref_rest_table" l="Mesa Rest.:" /> <T k="pref_meal_type" l="Tipo de Refeição:" />
-              <div className="col-span-2 text-[13px] font-bold border-t border-[#F1F2F4] pt-1">Informação da reserva</div>
+              <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Informação da reserva</div>
               <C k="suggest_on_reservation" l="Sugerir por omissão na reserva" /> <T k="pref_room" l="Quarto:" />
-              <Row l="Texto da sugestão:" w={120}><textarea value={d.suggestion_text ?? ''} onChange={(e) => set('suggestion_text', e.target.value)} rows={2} className="flex-1 border border-[#E6E8EC] text-[13px] p-1" style={inputStyle} /></Row>
+              <Row l="Texto da sugestão:" w={120}><textarea value={d.suggestion_text ?? ''} onChange={(e) => set('suggestion_text', e.target.value)} rows={2} className="flex-1 border border-[#E6E8EC] text-[12px] p-1" style={inputStyle} /></Row>
               <div className="space-y-1.5"><T k="pref_discount" l="Desconto:" /><T k="pref_discount_rule" l="Regra de Desc.:" /></div>
-              <div className="col-span-2 text-[13px] font-bold border-t border-[#F1F2F4] pt-1">Aviso / Bloqueio</div>
+              <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Aviso / Bloqueio</div>
               <C k="has_warnings" l="Hóspede com avisos" /> <C k="only_cash" l="Apenas cash" />
-              <Row l="Texto do aviso:" w={120}><textarea value={d.warning_text ?? ''} onChange={(e) => set('warning_text', e.target.value)} rows={2} className="flex-1 border border-[#E6E8EC] text-[13px] p-1" style={inputStyle} /></Row>
+              <Row l="Texto do aviso:" w={120}><textarea value={d.warning_text ?? ''} onChange={(e) => set('warning_text', e.target.value)} rows={2} className="flex-1 border border-[#E6E8EC] text-[12px] p-1" style={inputStyle} /></Row>
               <div className="space-y-1.5">
                 <C k="is_blocked" l="Bloquear reserva e contas" />
                 <Row l="Modo:" w={60}><select value={d.block_mode ?? ''} onChange={(e) => set('block_mode', e.target.value || null)} className={inp} style={inputStyle}><option value="">—</option><option value="AVISO">Aviso</option><option value="BLOQUEIO">Bloqueio</option></select></Row>
                 <T k="block_from" l="Bloquear de:" tipo="date" /> <T k="block_to" l="Até:" tipo="date" />
               </div>
-              <div className="col-span-2 text-[13px] font-bold border-t border-[#F1F2F4] pt-1">Interfaces externos</div>
+              <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Interfaces externos</div>
               <T k="pay_tv" l="Pay-TV:" /> <T k="video" l="Video:" />
               <T k="minibar" l="Minibar:" />
-              <div className="text-[12.5px] text-[#6B7280]">Se "(nenhum)", usam-se os valores por defeito da interface.</div>
+              <div className="text-[11px] text-[#6B7280]">Se "(nenhum)", usam-se os valores por defeito da interface.</div>
             </div></Box>)}
 
             {sec === 'acordos' && (<>
@@ -433,19 +433,19 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
 
             {sec === 'salesmk' && (<Box title="Sales &amp; Marketing"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
               <div className="col-span-2 flex gap-5"><C k="include_mailings" l="Incluir nos mailings" /></div>
-              <div className="col-span-2 text-[13px] font-bold">Tipos de mailings</div>
+              <div className="col-span-2 text-[12px] font-bold">Tipos de mailings</div>
               <div className="col-span-2 flex gap-5"><C k="mailing_general" l="Mailing Geral" /><C k="mailing_events" l="Mailing de Eventos" /><C k="mailing_birthday" l="Mailing de Aniversário" /></div>
               <div className="col-span-2"><RecGrid eid={eid} kind="SELCODE" titulo="Códigos de seleção"
                 cols={[['codigo', 'Código'], ['descricao', 'Descrição']]} /></div>
               {interesses.length > 0 && (
                 <div className="col-span-2 border-t border-[#F1F2F4] pt-1">
-                  <div className="text-[13px] font-bold mb-1">Interesses (filtra a Newsletter — parâmetro 8201)</div>
+                  <div className="text-[12px] font-bold mb-1">Interesses (filtra a Newsletter — parâmetro 8201)</div>
                   <div className="flex flex-wrap gap-3">
                     {interesses.map((i: any) => {
                       const ids: number[] = d.newsletter_interests || [];
                       const marcado = ids.includes(i.id);
                       return (
-                        <label key={i.id} className="flex items-center gap-1.5 text-[13px] cursor-pointer">
+                        <label key={i.id} className="flex items-center gap-1.5 text-[12px] cursor-pointer">
                           <input type="checkbox" checked={marcado} className="w-4 h-4"
                             onChange={() => set('newsletter_interests',
                               marcado ? ids.filter((x) => x !== i.id) : [...ids, i.id])} />
@@ -456,7 +456,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                   </div>
                 </div>
               )}
-              <div className="col-span-2 text-[13px] font-bold border-t border-[#F1F2F4] pt-1">Códigos de Sales & Marketing</div>
+              <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Códigos de Sales & Marketing</div>
               <S k="segment" l="Segmento:" opts={segs} /> <T k="vip_code" l="Código VIP:" />
               <S k="sub_segment" l="Sub-Segmento:" opts={subsegs} /> <S k="channel" l="Canal de Dist.:" opts={canais} />
               <T k="vip_discount_percent" l="Desc. VIP (%):" />
@@ -466,28 +466,28 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
             {sec === 'comissoes' && <Comissoes eid={eid} d={d} T={T} />}
 
             {sec === 'pagperm' && (<Box title="Pagamentos / Permissões"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
-              <div className="col-span-2 text-[13px] font-bold">Contas correntes</div>
+              <div className="col-span-2 text-[12px] font-bold">Contas correntes</div>
               <C k="allow_cc_checkout" l="Permitir check-out para contas correntes" /> <T k="financial_number" l="Nº financeiro:" />
               <T k="cc_by" l="C. correntes por:" /> <T k="credit_days" l="Cond. crédito (dias):" tipo="number" />
-              <div className="col-span-2 text-[13px] font-bold border-t border-[#F1F2F4] pt-1">Limite de Crédito (Em aberto)</div>
+              <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Limite de Crédito (Em aberto)</div>
               <T k="credit_limit" l="Limite crédito:" /> <T k="credit_limit_mode" l="Restrições:" />
               <C k="credit_limit_pos_enabled" l="Limite crédito (POS)" /> <T k="credit_limit_pos" l="Valor (POS):" />
-              <div className="col-span-2 text-[13px] font-bold border-t border-[#F1F2F4] pt-1">Fatura Electrónica / Imposto Retido</div>
+              <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Fatura Electrónica / Imposto Retido</div>
               <T k="einvoice_mode" l="Fatura Electrónica:" /> <T k="withholding_tax" l="Imposto Retido:" />
-              <div className="col-span-2 text-[12.5px] text-[#6B7280]">O limite é IMPOSTO pelo motor ao cobrar em conta corrente; bloqueada = crédito recusado.</div>
+              <div className="col-span-2 text-[11px] text-[#6B7280]">O limite é IMPOSTO pelo motor ao cobrar em conta corrente; bloqueada = crédito recusado.</div>
             </div></Box>)}
 
             {sec === 'historico' && (<>
               <div className="flex gap-1 mb-2">
                 {(['passadas', 'futuras', 'journey', 'pos'] as const).map((t) => (
                   <button key={t} onClick={() => setHistTab(t)}
-                    className={`px-3 py-1.5 text-[13px] font-bold border border-[#E6E8EC] ${histTab === t ? 'bg-[#1E2A44] text-white' : 'bg-white'}`}>
+                    className={`px-3 py-1.5 text-[12px] font-bold border border-[#E6E8EC] ${histTab === t ? 'bg-[#1E2A44] text-white' : 'bg-white'}`}>
                     {{ passadas: 'Reservas passadas', futuras: 'Reservas futuras', journey: 'Guest Journey', pos: 'Faturação - POS' }[t]}
                   </button>))}
               </div>
               {histTab === 'journey' && <RecGrid eid={eid} kind="JOURNEY" titulo="Guest Journey"
                 cols={[['data', 'Data'], ['descricao', 'Descrição'], ['visivel', 'Visível p/ hóspede (s/n)']]} />}
-              {histTab === 'pos' && (<table className="w-full text-[13px] border border-[#F1F2F4]"><thead><tr className="bg-[#F7F8FA]">
+              {histTab === 'pos' && (<table className="w-full text-[12px] border border-[#F1F2F4]"><thead><tr className="bg-[#F7F8FA]">
                 {['Número', 'Data', 'Tipo', 'Total', 'Anulado', ''].map((h, i) => <th key={i} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{h}</th>)}</tr></thead>
                 <tbody>{(hist?.invoices || []).map((f: any, i: number) => (
                   <tr key={i} className="border-b border-[#F1F2F4]"><td className="px-2 py-1">{f.number}</td><td className="px-2 py-1">{f.date}</td><td className="px-2 py-1">{f.type}</td><td className="px-2 py-1 text-right">{f.total}</td><td className="px-2 py-1">{f.voided ? 'Sim' : ''}</td>
@@ -499,8 +499,8 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                   {!(hist?.invoices || []).length && <tr><td colSpan={6} className="text-center text-[#6B7280] py-3">Não foram encontrados dados.</td></tr>}
                 </tbody></table>)}
               {(histTab === 'passadas' || histTab === 'futuras') && (<>
-              <div className="text-[13px] font-bold">Reservas (PMS)</div>
-              <table className="w-full text-[13px] border border-[#F1F2F4]"><thead><tr className="bg-[#F7F8FA]">
+              <div className="text-[12px] font-bold">Reservas (PMS)</div>
+              <table className="w-full text-[12px] border border-[#F1F2F4]"><thead><tr className="bg-[#F7F8FA]">
                 {['Nº', 'Estado', 'Check-In', 'Check-Out', 'Quarto'].map((h) => <th key={h} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{h}</th>)}</tr></thead>
                 <tbody>{(hist?.reservations || [])
                   .filter((r: any) => histTab === 'futuras'
@@ -516,7 +516,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
             {sec === 'personalizados' && (
               <Box title="Campos personalizados">
                 {camposPers.length === 0 ? (
-                  <div className="text-[13px] text-gray-600 pt-2">
+                  <div className="text-[12px] text-gray-600 pt-2">
                     Este hotel ainda não definiu nenhum campo próprio para as fichas de entidade.
                     Defina-os em <b>Configuração POS → Campos personalizados</b>, com a localização
                     <b> Entidade</b> — aparecem aqui logo a seguir.
@@ -546,7 +546,7 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                     ))}
                   </div>
                 )}
-                <div className="text-[12.5px] text-gray-500 pt-2">
+                <div className="text-[11px] text-gray-500 pt-2">
                   Os campos marcados com <b>"Mostrar na pesquisa"</b> aparecem também como coluna na
                   Pesquisa de Entidades. Deixar em branco apaga o valor.
                 </div>
@@ -565,20 +565,20 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                   const url = URL.createObjectURL(r.data); const a = document.createElement('a');
                   a.href = url; a.download = `entidade_${d.code}.json`; a.click(); URL.revokeObjectURL(url);
                 }} disabled={!eid}
-                  className="h-9 px-4 text-[13px] font-bold bg-[#1E2A44] text-white disabled:opacity-40">Portabilidade de Dados</button>
+                  className="h-9 px-4 text-[12px] font-bold bg-[#1E2A44] text-white disabled:opacity-40">Portabilidade de Dados</button>
                 <button onClick={async () => {
                   if (!await confirmar('ATENÇÃO! Remoção IRREVERSÍVEL (RGPD): os dados pessoais apagam-se e o nome vira um código anónimo. Os documentos fiscais mantêm-se, como a AGT exige. Continuar?')) return;
                   const r = await apiClient.post(`pos/marketing/entities/${eid}/anonymize/`, {});
                   aviso(r.data.detail); onSaved(); onClose();
                 }} disabled={!eid}
-                  className="h-9 px-4 text-[13px] font-bold bg-[#B91C1C] text-white disabled:opacity-40">Iniciar Processo de Remoção</button>
+                  className="h-9 px-4 text-[12px] font-bold bg-[#B91C1C] text-white disabled:opacity-40">Iniciar Processo de Remoção</button>
               </div>
             </>)}
           </div>
         </div>
 
         {/* rodapé clássico */}
-        <div className="h-12 flex items-center gap-5 px-4 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[13px]">
+        <div className="h-12 flex items-center gap-5 px-4 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12px]">
           {/* "Guest Info" e "Sincronizar" eram <span> inertes — pareciam botões e
               não faziam nada. O primeiro passa a mostrar a ficha composta (a
               mesma que vai para o papel); o segundo saiu: não há destino nenhum
@@ -615,21 +615,21 @@ function InfoSeccoes({ eid }: { eid: number }) {
     await apiClient.post(`pos/marketing/entities/${eid}/records/`, { kind: 'INFO', data: { seccao: ativa, texto } });
     qc.invalidateQueries({ queryKey: ['ent-rec', eid, 'INFO'] });
   };
-  if (!eid) return <div className="text-[13px] text-[#6B7280] p-2">Grave a ficha para escrever informação por secção.</div>;
+  if (!eid) return <div className="text-[12px] text-[#6B7280] p-2">Grave a ficha para escrever informação por secção.</div>;
   return (
     <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-      <div className="px-2 py-1 bg-[#F7F8FA] text-[13px] font-bold">Informação para secção</div>
+      <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold">Informação para secção</div>
       <div className="flex" style={{ minHeight: 120 }}>
         <div className="w-[220px] border-r border-[#F1F2F4] bg-white">
           {SECS.map((s) => (
             <button key={s} onClick={() => { setAtiva(s); setTexto(((rows as any[]).find((r) => r.data?.seccao === s)?.data?.texto) || ''); }}
-              className={`w-full text-left px-2 py-1.5 text-[13px] border-b border-[#F1F2F4] ${ativa === s ? 'bg-[#F7F8FA] font-bold' : ''}`}>{s}</button>
+              className={`w-full text-left px-2 py-1.5 text-[12px] border-b border-[#F1F2F4] ${ativa === s ? 'bg-[#F7F8FA] font-bold' : ''}`}>{s}</button>
           ))}
         </div>
         <div className="flex-1 p-2 flex flex-col gap-1">
           <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={5}
-            className="flex-1 border border-[#E6E8EC] text-[13px] p-1" />
-          <button onClick={gravar} className="self-end h-7 px-4 text-[13px] font-bold bg-[#F7F8FA] border border-[#E6E8EC]">Gravar secção</button>
+            className="flex-1 border border-[#E6E8EC] text-[12px] p-1" />
+          <button onClick={gravar} className="self-end h-7 px-4 text-[12px] font-bold bg-[#F7F8FA] border border-[#E6E8EC]">Gravar secção</button>
         </div>
       </div>
     </div>
@@ -659,11 +659,11 @@ function Comissoes({ eid, d: _d, T }: any) {
       <T k="commission_code" l="Cód. Comissão:" /> <T k="commission_pct" l="Percent. comissão:" tipo="number" />
     </div>
     <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-      <div className="px-2 py-1 bg-[#F7F8FA] text-[13px] font-bold flex justify-between">
+      <div className="px-2 py-1 bg-[#F7F8FA] text-[12px] font-bold flex justify-between">
         <span>Outras Comissões</span>
         <button onClick={() => eid ? setAdd({ ativo: true }) : aviso('Grave primeiro a ficha.')} className="text-[#111827]">⊕ Adicionar</button>
       </div>
-      <table className="w-full text-[13px]"><thead><tr className="bg-[#F7F8FA]">
+      <table className="w-full text-[12px]"><thead><tr className="bg-[#F7F8FA]">
         {['Cód. Comissão', 'De data', 'Até à data', 'Ativo', ''].map((h, i) => <th key={i} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{h}</th>)}</tr></thead>
         <tbody>{(rows as any[]).map((r) => (
           <tr key={r.id} className="border-b border-[#F1F2F4]">
@@ -676,15 +676,15 @@ function Comissoes({ eid, d: _d, T }: any) {
     {add && (
       <div className="fixed inset-0 bg-black/40 z-[400] flex items-center justify-center" onClick={() => setAdd(null)}>
         <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#F7F8FA] border border-[#1E2A44] shadow-2xl rounded-[16px] overflow-hidden">
-          <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold bg-[#1E2A44]">
+          <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold bg-[#1E2A44]">
             <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#DC2626] flex items-center justify-center"><Glyph icon="✕" size={11} /></button></div>
           <div className="p-4 space-y-2">
             <Row l="Cód. Comissão:" w={110}><input value={add.codigo || ''} onChange={(e) => setAdd({ ...add, codigo: e.target.value })} className={inp} /></Row>
             <Row l="De data:" w={110}><input type="date" value={add.de || ''} onChange={(e) => setAdd({ ...add, de: e.target.value })} className={inp} /></Row>
             <Row l="Até à data:" w={110}><input type="date" value={add.ate || ''} onChange={(e) => setAdd({ ...add, ate: e.target.value })} className={inp} /></Row>
-            <label className="flex items-center gap-1.5 text-[13px] pl-[118px]"><input type="checkbox" checked={!!add.ativo} onChange={(e) => setAdd({ ...add, ativo: e.target.checked })} className="w-4 h-4" />Ativo</label>
+            <label className="flex items-center gap-1.5 text-[12px] pl-[118px]"><input type="checkbox" checked={!!add.ativo} onChange={(e) => setAdd({ ...add, ativo: e.target.checked })} className="w-4 h-4" />Ativo</label>
           </div>
-          <div className="h-11 flex items-center justify-between px-4 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[13px]">
+          <div className="h-11 flex items-center justify-between px-4 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12px]">
             <button onClick={gravar} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={12} /></span> Gravar</button>
             <button onClick={() => setAdd(null)} className="flex items-center gap-1.5 font-bold"><span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center"><Glyph icon="✕" size={12} /></span> Fechar</button>
           </div>

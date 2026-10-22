@@ -23,7 +23,7 @@ const ACTION: Record<string, { label: string; bg: string; icon: any }> = {
 function Panel({ title, children, right }: any) {
   return (
     <div className="bg-white border border-[#E6E8EC]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.10)' }}>
-      <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[13px] font-bold text-[#111827]"
+      <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[12px] font-bold text-[#111827]"
         style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }}>
         <span>{title}</span>{right}
       </div>
@@ -63,7 +63,7 @@ export default function AuditTrailView() {
     <button onClick={onClick}
       className={`flex-1 bg-white border px-3 py-2 text-left ${active ? 'border-[#1E2A44] ring-1 ring-[#1E2A44]' : 'border-[#E6E8EC]'}`}
       style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
-      <div className="text-[11.5px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
+      <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
       <div className="text-[20px] font-black leading-tight" style={{ color: color || '#1E2A44' }}>{value ?? 0}</div>
     </button>
   );
@@ -81,14 +81,14 @@ export default function AuditTrailView() {
             <Search size={16} className="text-[#111827]" />
             <input value={q} onChange={(e) => setQ(e.target.value)}
               placeholder="Pesquisar em TUDO — fatura, hóspede, quarto, comanda anulada, quem eliminou o quê, motivo…"
-              className="flex-1 border border-[#E6E8EC] px-3 py-1.5 text-[13px] outline-none focus:border-[#1E2A44]"
+              className="flex-1 border border-[#E6E8EC] px-3 py-1.5 text-[12px] outline-none focus:border-[#1E2A44]"
               style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.12)' }} />
             {(q || filter.action || filter.destructive) && (
               <button onClick={() => { setQ(''); setFilter({}); }}
-                className="text-[12.5px] font-bold text-[#DC2626] hover:underline">Limpar</button>
+                className="text-[11px] font-bold text-[#DC2626] hover:underline">Limpar</button>
             )}
           </div>
-          <div className="text-[11.5px] text-gray-500 mt-1">
+          <div className="text-[10px] text-gray-500 mt-1">
             Procura no histórico completo do sistema: o que foi criado, alterado, eliminado, anulado (e porquê), consultado e exportado.
           </div>
         </div>
@@ -118,19 +118,19 @@ export default function AuditTrailView() {
           <div className="p-3 flex flex-wrap gap-2">
             {(ov?.by_module || []).map((m: any) => (
               <button key={`${m.module}-${m.area}`} onClick={() => setFilter({ module: m.module })}
-                className={`px-2.5 py-1.5 border text-[12.5px] text-left ${filter.module === m.module ? 'bg-[#F7F8FA] border-[#1E2A44]' : 'bg-[#FFFFFF] border-[#E6E8EC] hover:bg-[#F7F8FA]'}`}>
+                className={`px-2.5 py-1.5 border text-[11px] text-left ${filter.module === m.module ? 'bg-[#F7F8FA] border-[#1E2A44]' : 'bg-[#FFFFFF] border-[#E6E8EC] hover:bg-[#F7F8FA]'}`}>
                 <div className="font-bold text-[#111827]">{m.module}</div>
                 <div className="text-gray-500">{m.area || '—'} · <b>{m.n}</b> acontecimentos</div>
               </button>
             ))}
-            {!(ov?.by_module || []).length && <span className="text-gray-400 text-[13px]">Sem atividade nos últimos 7 dias.</span>}
+            {!(ov?.by_module || []).length && <span className="text-gray-400 text-[12px]">Sem atividade nos últimos 7 dias.</span>}
           </div>
         </Panel>
 
         {/* Trilho */}
         <Panel title="Trilho de acontecimentos"
-          right={<span className="text-[12.5px] font-normal text-gray-500">{events.length} registo(s) · clique para ver o que mudou</span>}>
-          <table className="w-full text-[13px] border-collapse">
+          right={<span className="text-[11px] font-normal text-gray-500">{events.length} registo(s) · clique para ver o que mudou</span>}>
+          <table className="w-full text-[12px] border-collapse">
             <thead>
               <tr className="text-[#111827] bg-[#F7F8FA]">
                 {['Quando', 'Ação', 'Módulo', 'Área', 'Registo', 'Quem', 'Motivo', 'Valor'].map((h) => (
@@ -146,9 +146,9 @@ export default function AuditTrailView() {
                 return (
                   <tr key={e.id} onClick={() => setSel(e)}
                     className={`border-b border-[#F1F2F4] cursor-pointer hover:bg-[#F7F8FA] ${bad ? 'bg-[#FFFFFF]' : ''}`}>
-                    <td className="px-2 py-1 font-mono text-[12.5px] whitespace-nowrap">{when(e.at)}</td>
+                    <td className="px-2 py-1 font-mono text-[11px] whitespace-nowrap">{when(e.at)}</td>
                     <td className="px-2 py-1">
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11.5px] font-bold text-white" style={{ background: a.bg }}>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: a.bg }}>
                         <I size={10} />{a.label}
                       </span>
                     </td>
@@ -174,7 +174,7 @@ export default function AuditTrailView() {
         {sel && (
           <Panel title={`${ACTION[sel.action]?.label || sel.action} · ${sel.label}`}
             right={<button onClick={() => setSel(null)} className="text-[16px] leading-none text-gray-500 hover:text-black">×</button>}>
-            <div className="p-3 text-[12.5px]">
+            <div className="p-3 text-[11px]">
               <div className="grid grid-cols-4 gap-2 mb-2">
                 <div><span className="text-gray-500">Quando:</span> <b>{when(sel.at)}</b></div>
                 <div><span className="text-gray-500">Quem:</span> <b>{sel.user || '—'}</b></div>

@@ -21,13 +21,13 @@ export default function PosOnline() {
 
   const Card = ({ label, value, sub, color }: any) => (
     <div className="bg-white px-4 py-3 flex-1" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
-      <div className="text-[12.5px] text-[#6B7280] uppercase tracking-wide">{label}</div>
+      <div className="text-[11px] text-[#6B7280] uppercase tracking-wide">{label}</div>
       <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#1E2A44' }}>{value}</div>
-      {sub && <div className="text-[12.5px] text-[#6B7280]">{sub}</div>}
+      {sub && <div className="text-[11px] text-[#6B7280]">{sub}</div>}
     </div>
   );
   const panelStyle = { boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft };
-  const panelHeader = 'px-3 py-1.5 text-[13px] font-bold border-b';
+  const panelHeader = 'px-3 py-1.5 text-[12px] font-bold border-b';
   const panelHeaderStyle = { background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 100%)', borderColor: TOKENS.line, color: TOKENS.textOnLight };
 
   const mesas = d.tables || {};
@@ -38,7 +38,7 @@ export default function PosOnline() {
     <div className="flex-1 overflow-auto bg-[#F7F8FA] p-4">
       <div className="flex items-center mb-3">
         <span className="text-[16px] font-bold text-[#111827]">Informação Online</span>
-        <span className="ml-3 text-[12.5px] text-[#6B7280]">
+        <span className="ml-3 text-[11px] text-[#6B7280]">
           em tempo real · {new Date(d.now).toLocaleTimeString('pt-PT')}
         </span>
       </div>
@@ -60,7 +60,7 @@ export default function PosOnline() {
           <div className={panelHeader} style={panelHeaderStyle}>
             Contas abertas — quem está a ser servido agora
           </div>
-          <table className="w-full text-[13px]">
+          <table className="w-full text-[12px]">
             <thead><tr className="bg-[#F7F8FA]">
               {['Conta', 'Onde', 'Operador', 'Há', 'Total'].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1 border-b border-[#F1F2F4]">{h}</th>
@@ -92,7 +92,7 @@ export default function PosOnline() {
             <div className={panelHeader} style={panelHeaderStyle}>
               Mais vendidos hoje
             </div>
-            <table className="w-full text-[13px]">
+            <table className="w-full text-[12px]">
               <tbody>
                 {d.top_items.map((x: any) => (
                   <tr key={x.name} className="border-b border-[#F1F2F4]">
@@ -112,7 +112,7 @@ export default function PosOnline() {
             <div className={panelHeader} style={panelHeaderStyle}>
               Vendas por ponto de venda
             </div>
-            <table className="w-full text-[13px]">
+            <table className="w-full text-[12px]">
               <tbody>
                 {d.by_outlet.map((x: any) => (
                   <tr key={x.outlet} className="border-b border-[#F1F2F4]">

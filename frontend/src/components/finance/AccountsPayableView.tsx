@@ -34,7 +34,7 @@ export default function AccountsPayableView() {
     <ClassicWindow title="Contas a Pagar — Fornecedores (conta corrente)" icon={<Receipt size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{invoices.length} fatura(s) · em dívida: <b>{money(totalOpen)}</b> · nascem automaticamente da receção de mercadorias (GRN)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <label className="font-bold text-gray-700">Estado:</label>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">Todas</option><option value="OPEN">Em aberto</option><option value="PARTIAL">Parcial</option><option value="PAID">Pagas</option>

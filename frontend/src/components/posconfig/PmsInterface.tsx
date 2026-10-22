@@ -4,8 +4,8 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
-const cell = 'w-full border-0 px-1.5 py-1 text-[13px] bg-transparent outline-none';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border-0 px-1.5 py-1 text-[12px] bg-transparent outline-none';
 
 type Tab = 'map' | 'multi' | 'ext';
 
@@ -29,7 +29,7 @@ export default function PmsInterface() {
         {([['map', 'Mapeamentos'], ['multi', 'Ligações Multi Hotel'], ['ext', 'Ligações externas']] as const)
           .map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-4 py-2 text-[13px] font-semibold border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+              className={`px-4 py-2 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
               {l}
             </button>
           ))}
@@ -103,10 +103,10 @@ function Mapeamentos({ qc }: { qc: any }) {
     <>
       <div className="flex-1 overflow-auto">
         {/* Mapeamento de parâmetros (setores) */}
-        <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#F1F2F4]">
+        <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
           Mapeamento de Parâmetros
         </div>
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead><tr className="bg-[#F7F8FA]">
             {['Setor', 'Descrição', 'Departamento', 'Conta por defeito', 'Paymaster', 'Visível'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
@@ -136,10 +136,10 @@ function Mapeamentos({ qc }: { qc: any }) {
         </table>
 
         {/* Mapeamento de sub-famílias */}
-        <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-y border-[#F1F2F4] mt-2">
+        <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-y border-[#F1F2F4] mt-2">
           Mapeamento de sub-famílias
         </div>
-        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[13px]">
+        <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12px]">
           <span>Pesquisar:</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} className={`${inp} w-[200px]`} style={inputStyle} />
           <span className="ml-2">Encargo:</span>
@@ -156,7 +156,7 @@ function Mapeamentos({ qc }: { qc: any }) {
           </label>
         </div>
 
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
             <th className="w-[36px] border-b border-[#F1F2F4]" />
             <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Descrição</th>
@@ -185,7 +185,7 @@ function Mapeamentos({ qc }: { qc: any }) {
                           className={cell} />
                         <input value={c.tax || ''} placeholder="—" title="Taxa do encargo"
                           onChange={(e) => setCell(r.id, o.id, 'tax', e.target.value)}
-                          className="w-[54px] border-0 px-1 py-1 text-[13px] bg-transparent outline-none text-[#111827]" />
+                          className="w-[54px] border-0 px-1 py-1 text-[12px] bg-transparent outline-none text-[#111827]" />
                       </div>
                     </td>
                   );
@@ -199,7 +199,7 @@ function Mapeamentos({ qc }: { qc: any }) {
         </table>
       </div>
 
-      <div className="px-3 py-1 text-[12.5px] text-[#111827] bg-[#F7F8FA] border-t border-[#E6E8EC]">
+      <div className="px-3 py-1 text-[11px] text-[#111827] bg-[#F7F8FA] border-t border-[#E6E8EC]">
         As células a <b>laranja</b> não têm encargo: nesse ponto de venda, o consumo do hóspede
         <b> não consegue entrar no folio</b>.
       </div>
@@ -233,7 +233,7 @@ function MultiHotel() {
   return (
     <>
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead><tr className="bg-[#F7F8FA]">
             {['Ativo', 'Por defeito', 'Id do Hotel', 'Descrição', 'Servidor', 'Base de dados', 'Utilizador', 'Password', 'Modo', 'Último teste'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
@@ -293,7 +293,7 @@ function Externas() {
   return (
     <>
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead><tr className="bg-[#F7F8FA]">
             {['Ativo', 'Company Id', 'Descrição', 'Servidor', 'Base de dados', 'Utilizador', 'Password', 'Trusted', 'Status'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
@@ -324,7 +324,7 @@ function Externas() {
           </tbody>
         </table>
       </div>
-      <div className="px-3 py-1 text-[12.5px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#F1F2F4]">
+      <div className="px-3 py-1 text-[11px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#F1F2F4]">
         Um setor só precisa de ligação externa se as contas dos quartos viverem noutro servidor.
         Clique na linha para editar.
       </div>
@@ -373,7 +373,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
   const set = (k: string, v: any) => setD((o: any) => ({ ...o, [k]: v }));
   const Row = ({ label, children }: any) => (
-    <label className="flex items-center gap-3 text-[13px]">
+    <label className="flex items-center gap-3 text-[12px]">
       <span className="w-[120px] flex-shrink-0 text-[#111827]">{label}</span>
       {children}
     </label>
@@ -391,12 +391,12 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
       </div>
 
       <div className="flex-1 overflow-auto p-5 space-y-2 max-w-[720px]">
-        <label className="flex items-center gap-2 text-[13px]">
+        <label className="flex items-center gap-2 text-[12px]">
           <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
           Ativo
         </label>
         {isHotel && (
-          <label className="flex items-center gap-2 text-[13px]">
+          <label className="flex items-center gap-2 text-[12px]">
             <input type="checkbox" checked={!!d.is_default} onChange={(e) => set('is_default', e.target.checked)} className="w-4 h-4" />
             Por defeito <span className="text-[#6B7280]">(só uma pode sê-lo)</span>
           </label>
@@ -422,7 +422,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
             className={`${inp} flex-1`} style={inputStyle} />
         </Row>
 
-        <label className="flex items-center gap-2 text-[13px]">
+        <label className="flex items-center gap-2 text-[12px]">
           <input type="checkbox" checked={!!d.trusted} onChange={(e) => set('trusted', e.target.checked)} className="w-4 h-4" />
           Trusted <span className="text-[#6B7280]">(autenticação integrada — dispensa utilizador/password)</span>
         </label>
@@ -464,13 +464,13 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
         )}
 
         {!isNew && d.last_test_detail && (
-          <div className={`text-[12.5px] px-2 py-1 border mt-2 ${d.last_test_ok
+          <div className={`text-[11px] px-2 py-1 border mt-2 ${d.last_test_ok
             ? 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827]'
             : 'bg-[#F7F8FA] border-[#DC2626] text-[#DC2626]'}`}>
             Último teste: {d.last_test_detail}
           </div>
         )}
-        <div className="text-[12.5px] text-[#6B7280] pt-2 border-t border-[#F1F2F4] mt-2">
+        <div className="text-[11px] text-[#6B7280] pt-2 border-t border-[#F1F2F4] mt-2">
           A password é de um utilizador de <b>serviço</b> (base de dados), não de uma pessoa.
           Fica guardada e a API <b>nunca a devolve</b> — só se pode substituir.
         </div>

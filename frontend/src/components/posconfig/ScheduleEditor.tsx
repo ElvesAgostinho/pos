@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
 /**
@@ -45,23 +45,23 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo horário' : `A editar ${d.name}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo horário' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="p-4 border-b border-[#F1F2F4]">
         <Box title="Identificação">
         <div className="space-y-2 pt-1.5">
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[90px] text-[#111827]">Código:<span className="text-[#DC2626]">*</span></span>
           <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[290px]`} style={inputStyle} />
         </label>
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[90px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} placeholder="Happy Hour de Verão"
             className={`${inp} w-[420px]`} style={inputStyle} />
         </label>
-        <label className="flex items-center gap-2 text-[13px]">
+        <label className="flex items-center gap-2 text-[12px]">
           <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
           Ativo
         </label>
@@ -70,10 +70,10 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <div className="flex-1 overflow-auto p-3">
-        <div className="text-[13px] text-[#6B7280] mb-2">
+        <div className="text-[12px] text-[#6B7280] mb-2">
           Marque em que <b>dias</b> cada <b>faixa horária</b> está em vigor.
         </div>
-        <table className="text-[13px] border-collapse">
+        <table className="text-[12px] border-collapse">
           <thead>
             <tr className="bg-[#F7F8FA]">
               <th className="text-left px-2 py-1.5 border border-[#F1F2F4] font-normal">Faixa horária</th>

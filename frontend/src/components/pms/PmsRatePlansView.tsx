@@ -43,7 +43,7 @@ export default function PmsRatePlansView() {
             { header: 'Preço/noite', accessor: 'price_per_night', width: '18%' },
           ]} />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[12.5px]">
+        <div className="w-1/2 p-3 space-y-2 text-[11px]">
           <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1" /></label>
           <label className="flex flex-col">Nome<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
           <label className="flex flex-col">Categoria de Quarto
@@ -64,7 +64,7 @@ export default function PmsRatePlansView() {
             <label className="flex-1 flex flex-col">Válida de<input type="date" value={form.valid_from || ''} onChange={(e) => setForm({ ...form, valid_from: e.target.value || null })} className="border border-[#E6E8EC] p-1" /></label>
             <label className="flex-1 flex flex-col">Válida até<input type="date" value={form.valid_to || ''} onChange={(e) => setForm({ ...form, valid_to: e.target.value || null })} className="border border-[#E6E8EC] p-1" /></label>
           </div>
-          <div className="text-[11.5px] text-gray-500">Deixe em branco para a tarifa valer sempre. Preços por dia específico (ex.: só sextas e sábados) fazem-se no Calendário de Tarifas → Atualização em Massa.</div>
+          <div className="text-[10px] text-gray-500">Deixe em branco para a tarifa valer sempre. Preços por dia específico (ex.: só sextas e sábados) fazem-se no Calendário de Tarifas → Atualização em Massa.</div>
         </div>
       </div>
       <Toolbar actions={[

@@ -7,9 +7,9 @@ const AOA = (n: number) => new Intl.NumberFormat('pt-AO', { maximumFractionDigit
 function Card({ icon, label, value, sub, tone }: any) {
   return (
     <div className="bg-white border border-[#E6E8EC] p-3 flex flex-col gap-1">
-      <div className="flex items-center gap-2 text-gray-500 text-[11.5px] uppercase tracking-wide">{icon}{label}</div>
+      <div className="flex items-center gap-2 text-gray-500 text-[10px] uppercase tracking-wide">{icon}{label}</div>
       <div className={`text-2xl font-bold ${tone || 'text-[#6B7280]'}`}>{value}</div>
-      {sub && <div className="text-[12.5px] text-gray-500">{sub}</div>}
+      {sub && <div className="text-[11px] text-gray-500">{sub}</div>}
     </div>
   );
 }
@@ -20,7 +20,7 @@ export default function WhDashboardView() {
     <ClassicWindow title="Armazém — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Centro 09 · Armazém — saldo, alertas e operações</div>}>
       <div className="p-3">
-        {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : (
+        {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
           <div className="grid grid-cols-4 gap-2">
             <Card icon={<Warehouse size={12} />} label="Valor em stock" value={AOA(d.stock_value)} tone="text-[#111827]" />
             <Card icon={<Warehouse size={12} />} label="Armazéns / Localizações" value={`${d.warehouses} / ${d.locations}`} />

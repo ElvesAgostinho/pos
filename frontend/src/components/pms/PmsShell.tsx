@@ -187,10 +187,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   return (
     <div className="h-full flex flex-col" style={{ background: '#F7F8FA', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* Barra de menus (topo escuro) — cabeçalho próprio do PMS */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: '#1E2A44', height: 56 }}>
+      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-[#111827]"
+        style={{ background: '#FFFFFF', height: 56, borderBottom: '1px solid #E6E8EC' }}>
         <div className="relative pr-4 mr-2">
           <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
-            className={`flex items-center gap-2 px-2 py-1 leading-none rounded-[12px] transition-colors ${menu === '__ml' ? 'bg-white/15' : 'hover:bg-white/10'}`}>
+            className={`flex items-center gap-2 px-2 py-1 leading-none rounded-[12px] transition-colors ${menu === '__ml' ? 'bg-[#DBEAFE]' : 'hover:bg-[#F3F4F6]'}`}>
             {logoUrl ? <img src={logoUrl} alt="" className="h-9 w-9 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={20} className="flex-shrink-0" />}
           </button>
           {menu === '__ml' && (
@@ -220,10 +221,10 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
               // do texto e caía para uma segunda linha debaixo de cada menu.
               // Que um título de menu abre uma lista já se percebe por si.
               className={`px-4 py-2 text-[14px] font-medium transition-colors whitespace-nowrap ${
-                menu === m.title ? 'text-white' : 'text-white/80 hover:text-white hover:bg-white/10'}`}
+                menu === m.title ? 'text-white' : 'text-[#374151] hover:text-[#111827] hover:bg-[#F3F4F6]'}`}
               style={{
                 background: menu === m.title ? TOKENS.brand : 'transparent',
-                borderRadius: RADIUS.pill,
+                borderRadius: RADIUS.sm,
               }}>
               {m.title}
             </button>
@@ -246,7 +247,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
                       <Glyph icon={it.icon} size={15} chip />
-                      {it.label}{it.soon && <span className="ml-auto text-[11.5px] opacity-50">(brevemente)</span>}
+                      {it.label}{it.soon && <span className="ml-auto text-[10px] opacity-50">(brevemente)</span>}
                     </button>
                   ))}
                 </div>
@@ -255,7 +256,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           </div>
         ))}
 
-        <div className="ml-auto flex items-center gap-4 text-[13px]">
+        <div className="ml-auto flex items-center gap-4 text-[12px]">
           <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
         </div>
       </div>
@@ -295,18 +296,19 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
 
       {/* Rodapé — um bar só (era dois empilhados: ação do ecrã + hora, e depois
           separador/versão/hotel — a mesma informação cabe toda numa linha). */}
-      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white text-[12.5px]" style={{ background: '#1E2A44' }}>
-        <span className="opacity-80">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-[#6B7280] text-[11px]"
+        style={{ background: '#FFFFFF', borderTop: '1px solid #E6E8EC' }}>
+        <span>Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
         {hotels.length > 1 && (
           <select value={hotelId || String(hotels[0]?.id)} onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
-            className="h-6 text-[12.5px] px-1.5 border" style={{ background: '#1E2A44', borderColor: '#2563EB', borderRadius: RADIUS.sm }}>
+            className="h-6 text-[11px] px-1.5 border text-[#111827]" style={{ background: '#FFFFFF', borderColor: '#E6E8EC', borderRadius: RADIUS.sm }}>
             {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
         )}
         <div className="flex-1" />
         <span className="opacity-50">PMS v1.0</span>
         <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-          className="flex items-center gap-1.5 font-semibold hover:text-white opacity-90 hover:opacity-100 transition-opacity" title="Fechar (volta ao Ambiente de Trabalho)">
+          className="flex items-center gap-1.5 font-semibold text-[#111827] hover:text-[#DC2626] transition-colors" title="Fechar (volta ao Ambiente de Trabalho)">
           <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white">
             <X size={10} strokeWidth={3} />
           </span>

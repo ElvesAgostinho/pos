@@ -4,8 +4,8 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
-const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[12px] bg-white';
 
 /**
  * IMPOSTO — a taxa que sai na fatura. É a MESMA que o motor fiscal usa (não há
@@ -57,44 +57,44 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo imposto' : `A editar ${d.name}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo imposto' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
         <Box title="Identificação" className="max-w-[860px]">
         <div className="space-y-2 pt-1.5">
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[160px] text-[#111827]">Código:<span className="text-[#DC2626]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[160px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
               className={`${inp} flex-1`} style={inputStyle} />
           </label>
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[160px] text-[#111827]">Conta de Contabilidade:</span>
             <input value={d.accounting_account || ''} onChange={(e) => set('accounting_account', e.target.value)}
               placeholder="34.3.1 (IVA liquidado)" className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[160px] text-[#111827]">Classe IVA:</span>
             <input value={d.tax_class || ''} onChange={(e) => set('tax_class', e.target.value)}
               placeholder="NOR · RED · ISE (SAF-T)" className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
 
           <div className="flex items-center gap-6 pt-1">
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_default} onChange={(e) => set('is_default', e.target.checked)} className="w-4 h-4" />
               Taxa por defeito
             </label>
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_exempt} onChange={(e) => set('is_exempt', e.target.checked)} className="w-4 h-4" />
               Isenta (exige motivo de isenção na linha)
             </label>
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
               Ativo
             </label>
@@ -105,7 +105,7 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
         {/* Versões com validade */}
         <div className="flex mt-4 max-w-[860px]" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
           <div className="flex-1">
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead><tr className="bg-[#F7F8FA]">
                 <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Válido de</th>
                 <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Válido até</th>
@@ -133,24 +133,24 @@ export default function TaxEditor({ row, onClose }: { row: any; onClose: () => v
           </div>
 
           <div className="w-[160px] bg-[#F7F8FA] border-l border-[#F1F2F4] py-2">
-            <button onClick={addV} className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] hover:bg-[#F7F8FA]">
-              <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[12.5px]">＋</span> Adicionar
+            <button onClick={addV} className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA]">
+              <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
             </button>
             <button onClick={delV} disabled={sel === null}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] hover:bg-[#F7F8FA] disabled:opacity-35">
-              <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[12.5px]">−</span> Apagar
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[12px] hover:bg-[#F7F8FA] disabled:opacity-35">
+              <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[11px]">−</span> Apagar
             </button>
           </div>
         </div>
 
         {overlap && (
-          <div className="max-w-[860px] mt-2 px-3 py-2 bg-[#F7F8FA] border border-[#E6E8EC] text-[12.5px] text-[#111827]">
+          <div className="max-w-[860px] mt-2 px-3 py-2 bg-[#F7F8FA] border border-[#E6E8EC] text-[11px] text-[#111827]">
             <b>Atenção:</b> há períodos sobrepostos — duas taxas válidas no mesmo dia.
             O sistema usa a mais recente, mas isto costuma ser um erro de datas.
           </div>
         )}
 
-        <div className="max-w-[860px] mt-2 text-[12.5px] text-[#6B7280]">
+        <div className="max-w-[860px] mt-2 text-[11px] text-[#6B7280]">
           Em vigor hoje: <b>{d.current_rate ?? d.percentage}%</b>. Datar a taxa é o que
           permite que uma fatura de Março continue a ser recalculada com a taxa de Março.
         </div>

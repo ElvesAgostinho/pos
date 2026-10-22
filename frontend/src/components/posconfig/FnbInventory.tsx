@@ -4,9 +4,9 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, SearchButton } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
-  <span className={`text-[13px] text-[#111827] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#111827] ${w} flex-shrink-0`}>{children}</span>
 );
 const hoje = () => new Date().toISOString().slice(0, 10);
 
@@ -99,14 +99,14 @@ export default function FnbInventory() {
 
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
-        <div className="px-3 py-2 bg-[#1E2A44] text-white text-[13px] font-bold">
+        <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold">
           {edit.id ? `Inventário ${edit.number}` : 'Novo documento'}
-          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#1E2A44] text-[12.5px]">LANÇADO</span>}
+          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#1E2A44] text-[11px]">LANÇADO</span>}
         </div>
 
         <div className="flex gap-3 p-3">
           <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-            <legend className="text-[13px] px-1 font-bold">Geral</legend>
+            <legend className="text-[12px] px-1 font-bold">Geral</legend>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="flex items-center gap-2">
                 <L>Armazém:</L>
@@ -145,7 +145,7 @@ export default function FnbInventory() {
           </fieldset>
 
           <fieldset className="bg-white px-3 pb-3 flex-1" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-            <legend className="text-[13px] px-1 font-bold">Filtros</legend>
+            <legend className="text-[12px] px-1 font-bold">Filtros</legend>
             <div className="flex gap-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export default function FnbInventory() {
                   ['exclude_inactive', 'Excluir inativos', true],
                   ['start_zero', 'Iniciar com contagem física a zero', false],
                 ].map(([k, label, def]: any) => (
-                  <label key={k} className="flex items-center gap-2 text-[13px] cursor-pointer">
+                  <label key={k} className="flex items-center gap-2 text-[12px] cursor-pointer">
                     <input type="checkbox"
                       checked={edit[k] ?? def}
                       onChange={(e) => setEdit({ ...edit, [k]: e.target.checked })}
@@ -200,7 +200,7 @@ export default function FnbInventory() {
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden mx-3 mb-3 border border-[#E6E8EC] bg-white">
-          <div className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[13px]">
+          <div className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[12px]">
             <span>Filtro:</span>
             <input value={filtro} onChange={(e) => setFiltro(e.target.value)}
               className={`${inp} w-[240px]`} style={inputStyle} />
@@ -211,7 +211,7 @@ export default function FnbInventory() {
             </span>
           </div>
           <div className="flex-1 overflow-auto">
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
                 <tr className="bg-[#F7F8FA]">
                   <th rowSpan={2} className="text-left font-normal px-2 py-1 border-b border-r border-[#F1F2F4]">Código</th>
@@ -267,7 +267,7 @@ export default function FnbInventory() {
               </tbody>
             </table>
           </div>
-          <div className="px-3 py-2 text-[12.5px] text-[#111827] bg-[#F7F8FA] border-t border-[#E6E8EC]">
+          <div className="px-3 py-2 text-[11px] text-[#111827] bg-[#F7F8FA] border-t border-[#E6E8EC]">
             Ao <b>lançar</b>, o stock passa a ser o que se contou. A diferença fica como movimento
             de ajuste no histórico, com o nome do responsável — quebras não desaparecem em silêncio.
           </div>
@@ -346,7 +346,7 @@ export default function FnbInventory() {
       </div>
 
       <div className="flex-1 overflow-auto bg-white">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
             {['Número', 'Criado em', 'Armazém', 'Responsável', 'Data referência', 'Estado'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
@@ -366,7 +366,7 @@ export default function FnbInventory() {
                   <td className="px-2 py-1">{r.responsible || r.created_by || '—'}</td>
                   <td className="px-2 py-1">{r.doc_date}</td>
                   <td className="px-2 py-1">
-                    <span className="px-2 py-0.5 text-[12.5px] font-semibold"
+                    <span className="px-2 py-0.5 text-[11px] font-semibold"
                       style={{ background: estado[1], color: estado[2] }}>{estado[0]}</span>
                   </td>
                 </tr>
@@ -400,7 +400,7 @@ export default function FnbInventory() {
           },
         },
       ]} right={
-        <span className="text-[12.5px] text-[#6B7280]">
+        <span className="text-[11px] text-[#6B7280]">
           Contagem física vs stock teórico. A diferença é o que desapareceu.
         </span>
       } />

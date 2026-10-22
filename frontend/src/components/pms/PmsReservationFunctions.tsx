@@ -7,8 +7,8 @@ import { aviso, confirmar, pedir } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 const esc = (s: any) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] as string));
-const inp = 'border border-[#E6E8EC] rounded-[8px] px-2 py-1 text-[13px]';
-const btn = 'px-3 py-1.5 text-[13px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
+const inp = 'border border-[#E6E8EC] rounded-[8px] px-2 py-1 text-[12px]';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
 
 /** Moldura comum dos painéis das Funções da reserva. */
 export function Painel({ titulo, onClose, children, rodape }: any) {
@@ -18,10 +18,10 @@ export function Painel({ titulo, onClose, children, rodape }: any) {
            onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-2.5 text-white"
              style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>
-          <span className="font-bold text-[13px]">{titulo}</span>
+          <span className="font-bold text-[12px]">{titulo}</span>
           <button onClick={onClose} className="hover:bg-white/15 rounded px-1.5"><X size={16} /></button>
         </div>
-        <div className="p-4 overflow-auto bg-[#F7F8FA] flex-1 min-h-0 text-[13px]">{children}</div>
+        <div className="p-4 overflow-auto bg-[#F7F8FA] flex-1 min-h-0 text-[12px]">{children}</div>
         <div className="px-4 py-2 border-t border-[#F1F2F4] bg-white flex items-center justify-between">
           <div>{rodape}</div>
           <button className={btn} onClick={onClose}>Fechar</button>
@@ -69,7 +69,7 @@ export function EncargosFixos({ reserva, onClose }: any) {
     <Painel titulo={`Encargos fixos — ${reserva.confirmation}`} onClose={onClose}
       rodape={<span className="text-gray-600">Total estimado para a estadia: <b>{money(totalEstadia)} Kz</b></span>}>
       <div className="bg-white border border-[#E6E8EC] rounded-[8px] overflow-hidden mb-3">
-        <div className="grid grid-cols-[1fr_120px_110px_90px_36px] gap-2 px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12.5px] font-bold text-[#6B7280]">
+        <div className="grid grid-cols-[1fr_120px_110px_90px_36px] gap-2 px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
           <span>Descrição</span><span>Tipo</span><span className="text-right">Valor</span><span>Frequência</span><span />
         </div>
         {linhas.map((l: any) => (
@@ -104,7 +104,7 @@ export function EncargosFixos({ reserva, onClose }: any) {
         <button className={btn} disabled={!novo.description.trim() || !novo.amount} onClick={criar}>
           <Plus size={13} />Acrescentar</button>
       </div>
-      <div className="text-[12.5px] text-gray-500 mt-2">
+      <div className="text-[11px] text-gray-500 mt-2">
         "Por noite" é lançado pela Auditoria da Noite, uma vez por cada noite da estadia.
         Sem essa marca, é lançado uma só vez, no check-in.
       </div>
@@ -141,12 +141,12 @@ export function Depositos({ reserva, onClose }: any) {
         <div key={p.id} className="bg-white border border-[#E6E8EC] rounded-[8px] p-3 mb-2 flex items-center justify-between">
           <div>
             <div className="font-bold">{money(p.amount)} {p.currency} · {p.status_display}</div>
-            <div className="text-[12.5px] text-gray-500">
+            <div className="text-[11px] text-gray-500">
               {p.method_display}{p.reference ? ` · ${p.reference}` : ''}
               {p.confirmed_by ? ` · confirmado por ${p.confirmed_by}` : ''}
               {p.status === 'PAID' && (p.posted_to_folio ? ' · lançado na conta' : ' · por lançar na conta')}
             </div>
-            {p.message && <div className="text-[12.5px] text-gray-500 mt-0.5">{p.message}</div>}
+            {p.message && <div className="text-[11px] text-gray-500 mt-0.5">{p.message}</div>}
           </div>
           {p.status === 'PENDING' && (
             <button className={btn} onClick={() => confirmarEntrada(p)}>Confirmar entrada</button>
@@ -177,11 +177,11 @@ export function Voucher({ reserva, onClose, onSaved }: any) {
         <label className="flex flex-col gap-1">Nº do voucher da agência / operador
           <input className={inp} value={valor} onChange={(e) => setValor(e.target.value)}
                  placeholder="Ex: BK-884512" /></label>
-        <div className="text-[12.5px] text-gray-500">
+        <div className="text-[11px] text-gray-500">
           É o número que a agência emitiu e que o hóspede traz consigo. Serve para a recepção
           conferir a reserva à chegada e para a faturação à agência no fim do mês.
         </div>
-        <div className="text-[12.5px] text-gray-600 border-t border-[#F1F2F4] pt-2">
+        <div className="text-[11px] text-gray-600 border-t border-[#F1F2F4] pt-2">
           Origem: <b>{reserva.source_display || reserva.source}</b>
           {reserva.channel_name ? ` · Canal: ${reserva.channel_name}` : ''}
           {reserva.block_code ? ` · Bloco: ${reserva.block_code}` : ''}
@@ -234,7 +234,7 @@ export function Comissoes({ reserva, onClose }: any) {
         </div>
       </div>
       {pct === 0 && (
-        <div className="text-[12.5px] text-gray-500 mt-2">
+        <div className="text-[11px] text-gray-500 mt-2">
           Esta reserva não tem comissão: nem o canal que a trouxe nem a ficha do hóspede têm
           percentagem definida. Define-se no <b>Channel Manager</b> (por canal) ou na ficha da
           entidade (<b>Comissões</b>).
@@ -246,7 +246,7 @@ export function Comissoes({ reserva, onClose }: any) {
 function Linha({ l, v, nota, forte }: any) {
   return (
     <div className="flex justify-between items-baseline">
-      <span className="text-gray-600">{l}{nota && <span className="text-[11.5px] text-gray-400"> · {nota}</span>}</span>
+      <span className="text-gray-600">{l}{nota && <span className="text-[10px] text-gray-400"> · {nota}</span>}</span>
       <span className={forte ? 'font-bold text-[#111827]' : ''}>{v}</span>
     </div>
   );
@@ -304,7 +304,7 @@ export function EnviarEmail({ reserva, tipo, onClose }: any) {
               <option value="">— escrever aqui em baixo —</option>
               {modelos.map((t: any) => <option key={t.code} value={t.code}>{t.name}</option>)}
             </select>
-            <span className="text-[12.5px] text-gray-500">
+            <span className="text-[11px] text-gray-500">
               Os modelos são os do Marketing, com o texto na língua do hóspede. Escolhido um
               modelo, o assunto e o texto abaixo são ignorados.
             </span>
@@ -317,7 +317,7 @@ export function EnviarEmail({ reserva, tipo, onClose }: any) {
             <textarea className={inp + ' h-28 resize-none'} value={texto}
                       onChange={(e) => setTexto(e.target.value)} /></label>
         </>)}
-        <div className="text-[12.5px] text-gray-500">
+        <div className="text-[11px] text-gray-500">
           Todos os envios ficam registados na caixa de saída (Marketing). Sem servidor de e-mail
           configurado, o envio fica em modo simulado e é dito aqui.
         </div>
@@ -441,7 +441,7 @@ export function CartaoHospede({ reserva, onClose }: any) {
         <Linha l="Quarto" v={reserva.room_number || '— por atribuir —'} />
         <Linha l="Estadia" v={`${reserva.check_in} → ${reserva.check_out} (${reserva.nights} noites)`} />
       </div>
-      <div className="text-[12.5px] text-gray-500 mt-2">
+      <div className="text-[11px] text-gray-500 mt-2">
         É a ficha que o hóspede assina no balcão. Os dados em falta preenchem-se na ficha do
         cliente (Hóspedes &amp; Empresas) ou pelo Leitor de Documentos.
       </div>
@@ -508,7 +508,7 @@ export function TiposLimpeza({ reserva, onClose }: any) {
           <input className={inp} value={titulo} onChange={(e) => setTitulo(e.target.value)} /></label>
       </div>
       <div className="bg-white border border-[#E6E8EC] rounded-[8px] overflow-hidden">
-        <div className="px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12.5px] font-bold text-[#6B7280]">
+        <div className="px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
           Tarefas deste quarto
         </div>
         {tarefas.map((t: any) => (
@@ -519,7 +519,7 @@ export function TiposLimpeza({ reserva, onClose }: any) {
         ))}
         {tarefas.length === 0 && <div className="px-3 py-3 text-gray-500">Sem tarefas para este quarto.</div>}
       </div>
-      <div className="text-[12.5px] text-gray-500 mt-2">
+      <div className="text-[11px] text-gray-500 mt-2">
         Concluir uma tarefa de <b>limpeza</b> devolve o quarto a Livre/Limpo. Uma de manutenção não —
         reparar o chuveiro não é limpar o quarto.
       </div>

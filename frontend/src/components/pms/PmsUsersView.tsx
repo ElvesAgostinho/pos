@@ -43,7 +43,7 @@ export default function PmsUsersView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[13px] text-[#6B7280]">
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12px] text-[#6B7280]">
         <ShieldCheck size={14} />
         A criação de utilizadores, senha e acesso a hotéis é feita em Segurança → Utilizadores. Aqui só se ajusta o acesso aos ecrãs do PMS.
       </div>
@@ -56,7 +56,7 @@ export default function PmsUsersView() {
           { header: 'Acesso PMS', accessor: (r: any) => <span className="text-[#111827]">{accessLabel(r)}</span>, width: '15%' },
           { header: 'Ações', accessor: (r: any) => (
             <button onClick={() => setTarget(r)} disabled={r.is_superuser}
-              className="text-[12.5px] text-[#6B7280] hover:underline disabled:opacity-40 disabled:no-underline">
+              className="text-[11px] text-[#6B7280] hover:underline disabled:opacity-40 disabled:no-underline">
               Permissões PMS…
             </button>
           ), width: '10%' },

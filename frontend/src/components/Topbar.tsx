@@ -53,7 +53,7 @@ export default function Topbar({ onSelectView, moduleKey = 'admin' }: TopbarProp
         </button>
         {open && (
           <div className="absolute left-0 top-11 bg-[#1E2A44] border border-[#1E2A44] min-w-[280px] shadow-2xl py-1 z-50 max-h-[70vh] overflow-auto">
-            <div className="px-3 py-1.5 flex items-center gap-2 border-b border-[#1E2A44]"><Brand size="text-base" /><span className="text-[11.5px] uppercase tracking-widest text-gray-500">Os seus módulos</span></div>
+            <div className="px-3 py-1.5 flex items-center gap-2 border-b border-[#1E2A44]"><Brand size="text-base" /><span className="text-[10px] uppercase tracking-widest text-gray-500">Os seus módulos</span></div>
             {licensed.map((m) => (
               <button key={m.key} onClick={() => switchTo(m.key)}
                 className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-[#1E2A44] ${m.key === moduleKey ? 'bg-[#1E2A44]' : ''}`}>
@@ -66,7 +66,7 @@ export default function Topbar({ onSelectView, moduleKey = 'admin' }: TopbarProp
         )}
       </div>
 
-      <div className="flex items-center gap-3 text-gray-300 text-[12.5px]">
+      <div className="flex items-center gap-3 text-gray-300 text-[11px]">
         <span className="text-[#DC2626] font-semibold">{dateStr}</span>
         <div className="flex items-center gap-1"><User size={13} /><span>{lic ? 'online' : ''}</span></div>
       </div>

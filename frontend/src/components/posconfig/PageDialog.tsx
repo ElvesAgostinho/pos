@@ -39,11 +39,11 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
   const [cols, setCols] = useState(colsDefeito || 4);
   const [rows, setRows] = useState(rowsDefeito || 4);
 
-  const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+  const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
   const Linha = ({ label: t, children }: { label: string; children: any }) => (
     <div className="flex items-center gap-3 mb-3">
-      <span className="w-[130px] text-[13px] text-[#111827] flex-shrink-0">{t}</span>
+      <span className="w-[130px] text-[12px] text-[#111827] flex-shrink-0">{t}</span>
       {children}
     </div>
   );
@@ -86,13 +86,13 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
 
         <div className="bg-white p-5 border-y border-[#F1F2F4]">
           <Linha label="Tipo:">
-            <label className="flex items-center gap-2 text-[13px] mr-8 cursor-pointer">
+            <label className="flex items-center gap-2 text-[12px] mr-8 cursor-pointer">
               <input type="radio" checked={tipo === 'PAGE'} onChange={() => setTipo('PAGE')} className="w-4 h-4" />
               Adicionar Página
             </label>
             {/* SUBPÁGINA sem página aberta não tem onde entrar — fica apagada, e diz
                 porquê, em vez de criar uma pasta órfã que ninguém encontra depois. */}
-            <label className={`flex items-center gap-2 text-[13px] ${podeSubpagina
+            <label className={`flex items-center gap-2 text-[12px] ${podeSubpagina
               ? 'cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
               title={podeSubpagina ? '' : 'Abra primeiro uma página — a subpágina vive dentro dela.'}>
               <input type="radio" disabled={!podeSubpagina}
@@ -115,14 +115,14 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
 
           {/* a pré-visualização da tecla: vê-se a cor antes de a criar */}
           <div className="flex items-center gap-3 mt-4">
-            <span className="w-[130px] text-[13px] text-[#111827]">Fica assim:</span>
+            <span className="w-[130px] text-[12px] text-[#111827]">Fica assim:</span>
             <div className="w-[150px] h-[54px] flex items-center justify-center font-bold text-[15px]
               border-2 border-black rounded-[8px]
               shadow-[inset_0_2px_0_rgba(255,255,255,0.28),inset_0_-3px_0_rgba(0,0,0,0.4)]"
               style={{ background: cor, color: texto }}>
               {label || (tipo === 'PAGE' ? 'PÁGINA' : 'SUBPÁGINA')}
             </div>
-            <span className="text-[13px] text-[#6B7280]">grelha {cols} × {rows}</span>
+            <span className="text-[12px] text-[#6B7280]">grelha {cols} × {rows}</span>
           </div>
         </div>
 
@@ -131,12 +131,12 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
             tipo, label: label.trim() || (tipo === 'PAGE' ? 'NOVA PÁGINA' : 'NOVA SUBPÁGINA'),
             price_level: preco, color: cor, text_color: texto, cols, rows,
           })}
-            className="flex items-center gap-2 text-[13px] text-[#111827] hover:bg-[#F7F8FA] px-3 py-1.5">
+            className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] px-3 py-1.5">
             <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={13} /></span>
             OK
           </button>
           <button onClick={onClose}
-            className="flex items-center gap-2 text-[13px] text-[#111827] hover:bg-[#F7F8FA] px-3 py-1.5">
+            className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] px-3 py-1.5">
             <span className="w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center"><Glyph icon="✕" size={13} /></span>
             Fechar
           </button>

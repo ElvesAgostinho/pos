@@ -48,7 +48,7 @@ export default function PmsRoomsBulkEditView({ onNavigate }: { onNavigate?: (s: 
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 overflow-auto p-3">
-        <table className="border-collapse text-[13px] w-full max-w-[560px]">
+        <table className="border-collapse text-[12px] w-full max-w-[560px]">
           <thead>
             <tr>
               <th className="text-left border-b border-[#E6E8EC] pb-1 pr-2">Número do quarto*</th>
@@ -81,21 +81,21 @@ export default function PmsRoomsBulkEditView({ onNavigate }: { onNavigate?: (s: 
                 <div className="text-[14px] font-semibold text-[#111827]">
                   Ainda não há categorias de quarto
                 </div>
-                <div className="text-[13px] text-[#6B7280] mt-1.5 max-w-md mx-auto leading-relaxed">
+                <div className="text-[12px] text-[#6B7280] mt-1.5 max-w-md mx-auto leading-relaxed">
                   Um quarto pertence sempre a uma categoria — é ela que tem o preço e a
                   capacidade. Crie primeiro as suas categorias (Standard, Suite…) e depois
                   volte aqui para dar entrada dos quartos.
                 </div>
                 {onNavigate && (
                   <button onClick={() => onNavigate('room_types')}
-                    className="mt-4 px-5 py-2 text-[13px] font-semibold text-white rounded-[999px] hover:brightness-110"
+                    className="mt-4 px-5 py-2 text-[12px] font-semibold text-white rounded-[8px] hover:brightness-110"
                     style={{ background: '#2563EB' }}>
                     Criar categorias de quarto
                   </button>
                 )}
               </>
             ) : (
-              <div className="text-[13px] text-[#6B7280]">
+              <div className="text-[12px] text-[#6B7280]">
                 Sem quartos — clique em <b>Adicionar Linha</b> para dar entrada do primeiro.
               </div>
             )}

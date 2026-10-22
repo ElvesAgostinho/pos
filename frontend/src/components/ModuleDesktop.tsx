@@ -90,7 +90,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
           </button>
           {switcher && (
             <div className="absolute left-0 top-11 bg-[#1E2A44] border border-[#1E2A44] min-w-[280px] shadow-2xl py-1 z-40 max-h-[75vh] overflow-auto">
-              <div className="px-3 py-1.5 flex items-center gap-2 border-b border-[#1E2A44]"><ML cls="text-base" /><span className="text-[11.5px] uppercase tracking-widest text-gray-500">Os seus módulos</span></div>
+              <div className="px-3 py-1.5 flex items-center gap-2 border-b border-[#1E2A44]"><ML cls="text-base" /><span className="text-[10px] uppercase tracking-widest text-gray-500">Os seus módulos</span></div>
               {licensed.map((m) => (
                 <button key={m.key} onClick={() => { setSwitcher(false); onOpen(`home:${m.key}`); }}
                   className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-[#1E2A44] ${m.key === moduleKey ? 'bg-[#1E2A44]' : ''}`}>
@@ -153,7 +153,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
                       style={{ opacity: real ? 1 : 0.4, filter: real ? 'none' : 'grayscale(70%)' }}>
                       {emoji}
                     </div>
-                    <span className="text-[12.5px] text-center leading-tight px-1 text-white group-hover:bg-[#1E2A44]" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.85)' }}>{item.name}</span>
+                    <span className="text-[11px] text-center leading-tight px-1 text-white group-hover:bg-[#1E2A44]" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.85)' }}>{item.name}</span>
                   </button>
                 );
               })}
@@ -174,12 +174,12 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
       <div className="h-9 bg-[#DBEAFE] flex items-center px-1 gap-1 flex-shrink-0 relative"
         style={{ boxShadow: 'inset 0 2px 0 #F1F2F4, inset 0 1px 0 #FFFFFF' }}>
         <button onClick={() => setStartOpen((o) => !o)}
-          className="h-7 px-2.5 flex items-center gap-1.5 font-bold text-[13px] text-black active:translate-y-px"
+          className="h-7 px-2.5 flex items-center gap-1.5 font-bold text-[12px] text-black active:translate-y-px"
           style={{ background: '#E6E8EC', boxShadow: startOpen ? 'inset -1px -1px 0 #FFFFFF, inset 1px 1px 0 #1E2A44, inset -2px -2px 0 #F1F2F4, inset 2px 2px 0 #3B82F6' : 'inset -1px -1px 0 #1E2A44, inset 1px 1px 0 #FFFFFF, inset -2px -2px 0 #3B82F6, inset 2px 2px 0 #F1F2F4' }}>
           <span className="text-sm font-black leading-none"><span className="text-[#111827]">M</span><span className="text-[#6B7280]">L</span></span> Iniciar
         </button>
-        <div className="flex-1 text-[11.5px] text-gray-700 px-2 truncate">System Mwana Lodge · Licenciado a {user?.name || 'Cliente Demo'}</div>
-        <div className="h-7 px-3 flex items-center text-[13px] text-black" style={{ boxShadow: 'inset -1px -1px 0 #FFFFFF, inset 1px 1px 0 #3B82F6' }}>
+        <div className="flex-1 text-[10px] text-gray-700 px-2 truncate">System Mwana Lodge · Licenciado a {user?.name || 'Cliente Demo'}</div>
+        <div className="h-7 px-3 flex items-center text-[12px] text-black" style={{ boxShadow: 'inset -1px -1px 0 #FFFFFF, inset 1px 1px 0 #3B82F6' }}>
           {clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
         </div>
         {startOpen && (
@@ -192,12 +192,12 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
               <div className="flex-1 py-1">
                 {licensed.map((m) => (
                   <button key={m.key} onClick={() => { setStartOpen(false); onOpen(`home:${m.key}`); }}
-                    className={`w-full flex items-center gap-2 text-left px-3 py-1.5 text-[13px] hover:bg-[#1E2A44] hover:text-white ${m.key === moduleKey ? 'font-bold' : ''}`}>
+                    className={`w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12px] hover:bg-[#1E2A44] hover:text-white ${m.key === moduleKey ? 'font-bold' : ''}`}>
                     <LayoutGrid size={13} className="text-gray-600" />{m.title.replace(/^\d+\s·\s/, '')}
                   </button>
                 ))}
                 <div className="border-t border-[#E6E8EC] mt-1 pt-1">
-                  <button onClick={logout} className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-[13px] hover:bg-[#1E2A44] hover:text-white"><Power size={13} />Terminar sessão</button>
+                  <button onClick={logout} className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12px] hover:bg-[#1E2A44] hover:text-white"><Power size={13} />Terminar sessão</button>
                 </div>
               </div>
             </div>
@@ -214,10 +214,10 @@ function RoadmapPlaceholder({ id }: { id: string }) {
     <div className="h-full w-full flex items-center justify-center p-6">
       <div className="bg-white border border-[#E6E8EC] p-8 max-w-lg text-center shadow">
         <div className="w-14 h-14 mx-auto mb-4 bg-[#F7F8FA] border border-[#E6E8EC] rounded-full flex items-center justify-center"><Construction size={26} className="text-[#6B7280]" /></div>
-        <div className="text-[11.5px] uppercase tracking-widest text-gray-500 mb-1">{MODULE_OF[id] || ''}</div>
+        <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{MODULE_OF[id] || ''}</div>
         <h2 className="text-lg font-bold text-[#6B7280] mb-2">{title}</h2>
-        <div className="inline-block text-[11.5px] font-bold text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
-        <p className="text-[13px] text-gray-600">Não é um erro. Esta função está a ser construída — o módulo está ativo na sua licença.</p>
+        <div className="inline-block text-[10px] font-bold text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-0.5 rounded mb-2">EM DESENVOLVIMENTO</div>
+        <p className="text-[12px] text-gray-600">Não é um erro. Esta função está a ser construída — o módulo está ativo na sua licença.</p>
       </div>
     </div>
   );

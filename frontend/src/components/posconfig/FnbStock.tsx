@@ -4,9 +4,9 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[130px]', children }: any) => (
-  <span className={`text-[13px] text-[#111827] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#111827] ${w} flex-shrink-0`}>{children}</span>
 );
 
 function useList(ep: string, key: string, params?: any) {
@@ -90,7 +90,7 @@ export default function FnbStock() {
       <td className="px-2 py-1 font-semibold">
         {r.name}
         {Number(r.quantity) < 0 && (
-          <span className="ml-2 text-[12.5px] text-[#DC2626] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
+          <span className="ml-2 text-[11px] text-[#DC2626] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
         )}
       </td>
       {!agrupar && <td className="px-2 py-1">{r.warehouse}</td>}
@@ -139,11 +139,11 @@ export default function FnbStock() {
               {armazens.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
             </select>
           </div>
-          <label className="flex items-center gap-2 text-[13px] cursor-pointer">
+          <label className="flex items-center gap-2 text-[12px] cursor-pointer">
             <input type="checkbox" checked={agrupar} onChange={(e) => setAgrupar(e.target.checked)} className="w-4 h-4" />
             Agrupar por armazém
           </label>
-          <label className="flex items-center gap-2 text-[13px] cursor-pointer">
+          <label className="flex items-center gap-2 text-[12px] cursor-pointer">
             <input type="checkbox" checked={soComQtd} onChange={(e) => { setSoComQtd(e.target.checked); setPage(1); }} className="w-4 h-4" />
             Só com quantidades
           </label>
@@ -153,7 +153,7 @@ export default function FnbStock() {
       </div>
 
       <div className="flex-1 overflow-auto bg-white">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
             {['Código', 'Artigo', ...(agrupar ? [] : ['Armazém']), 'Stock Qtd.', 'Custo médio', 'Valor', 'Mínimo'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
@@ -179,7 +179,7 @@ export default function FnbStock() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[13px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -201,7 +201,7 @@ export default function FnbStock() {
         },
         { label: 'Exportar para Excel', icon: '⬇', color: '#1E2A44', onClick: exportar },
       ]} right={
-        <span className="text-[12.5px] text-[#6B7280]">
+        <span className="text-[11px] text-[#6B7280]">
           O valor é a quantidade ao custo médio — é o dinheiro parado dentro do armazém.
         </span>
       } />

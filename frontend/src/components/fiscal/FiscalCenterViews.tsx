@@ -17,21 +17,21 @@ const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFracti
 function Kpi({ label, value, tone = '#3B82F6', sub }: { label: string; value: any; tone?: string; sub?: string }) {
   return (
     <div className="bg-white border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] px-3 py-2 min-w-[150px]">
-      <div className="text-[11.5px] uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="text-[10px] uppercase tracking-wide text-gray-500">{label}</div>
       <div className="text-xl font-bold" style={{ color: tone }}>{value}</div>
-      {sub && <div className="text-[11.5px] text-gray-500">{sub}</div>}
+      {sub && <div className="text-[10px] text-gray-500">{sub}</div>}
     </div>
   );
 }
 function Section({ title, children }: { title: string; children: any }) {
   return (
     <div>
-      <div className="text-[12.5px] font-bold text-[#6B7280] mb-2 uppercase">{title}</div>
+      <div className="text-[11px] font-bold text-[#6B7280] mb-2 uppercase">{title}</div>
       {children}
     </div>
   );
 }
-const btn = 'px-3 py-1.5 text-[13px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5';
 
 // ======================================================================
 // 1 · Dashboard Fiscal
@@ -103,7 +103,7 @@ export function FiscalSeriesView() {
       footer={<div className="text-gray-600">Numeração sequencial contínua por série · cadeia de hash verificável (auditoria)</div>}>
       <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
         <Section title="Nova série">
-          <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-2 text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-2 text-[12px]">
             <label className="flex flex-col">Código<input className="border border-[#E6E8EC] px-2 py-1 w-20" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} /></label>
             <label className="flex flex-col">Tipo
               <select className="border border-[#E6E8EC] px-2 py-1" value={form.doc_type} onChange={e => setForm({ ...form, doc_type: e.target.value })}>
@@ -116,7 +116,7 @@ export function FiscalSeriesView() {
           </div>
         </Section>
         <Section title="Séries">
-          <div className="bg-white border border-[#E6E8EC] text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] text-[12px]">
             <div className="grid grid-cols-7 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1">
               <span>Documento</span><span>Série</span><span>Exercício</span><span>Nº atual</span><span>Certificada</span><span>Ambiente</span><span></span>
             </div>
@@ -130,13 +130,13 @@ export function FiscalSeriesView() {
             ))}
           </div>
           {verify.data && (
-            <div className="mt-2 text-[13px] bg-white border border-[#E6E8EC] p-2">
+            <div className="mt-2 text-[12px] bg-white border border-[#E6E8EC] p-2">
               Cadeia {verify.data.all_ok ? <span className="text-[#111827] font-bold">ÍNTEGRA</span> : <span className="text-[#B91C1C] font-bold">COMPROMETIDA</span>} · {verify.data.count} documentos verificados
             </div>
           )}
         </Section>
         <Section title="Tipos de documento (Rules Engine)">
-          <div className="bg-white border border-[#E6E8EC] text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] text-[12px]">
             <div className="grid grid-cols-5 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Código</span><span>Nome</span><span>SAF-T</span><span>Assina</span><span>Retificativo</span></div>
             {(types || []).map((t: any) => (
               <div key={t.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#F1F2F4]"><span className="font-bold">{t.code}</span><span>{t.name}</span><span>{t.saft_type}</span><span><GridToggle value={!!t.signable} title="Documento assinável (regra fiscal)" /></span><span><GridToggle value={!!t.is_rectifying} title="Documento retificativo (regra fiscal)" /></span></div>
@@ -167,11 +167,11 @@ function ProductPicker({ onPick }: { onPick: (item: any) => void }) {
       <div className="flex items-center gap-1 border border-[#E6E8EC] bg-white px-2 py-1">
         <Boxes size={14} className="text-[#6B7280]" />
         <input value={q} onFocus={() => setOpen(true)} onChange={e => { setQ(e.target.value); setOpen(true); }}
-          placeholder="Filtrar e adicionar produto (código, nome, código de barras)…" className="flex-1 outline-none text-[13px]" />
-        {q && <button onClick={() => setQ('')} className="text-gray-400 text-[12.5px]">limpar</button>}
+          placeholder="Filtrar e adicionar produto (código, nome, código de barras)…" className="flex-1 outline-none text-[12px]" />
+        {q && <button onClick={() => setQ('')} className="text-gray-400 text-[11px]">limpar</button>}
       </div>
       {open && (
-        <div className="absolute z-30 left-0 right-0 bg-white border border-[#E6E8EC] shadow-lg max-h-56 overflow-auto text-[13px]" onMouseLeave={() => setOpen(false)}>
+        <div className="absolute z-30 left-0 right-0 bg-white border border-[#E6E8EC] shadow-lg max-h-56 overflow-auto text-[12px]" onMouseLeave={() => setOpen(false)}>
           {list.slice(0, 20).map((it: any) => (
             <button key={it.id} onClick={() => { onPick(it); setOpen(false); setQ(''); }}
               className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[#F7F8FA] text-left border-b border-[#F1F2F4]">
@@ -213,7 +213,7 @@ export function FiscalDocumentsView() {
       footer={<div className="text-gray-600">Cada documento é validado, numerado sequencialmente, assinado (RSA) e encadeado por hash · imutável</div>}>
       <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
         <Section title="Emitir documento">
-          <div className="bg-white border border-[#E6E8EC] p-3 space-y-2 text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] p-3 space-y-2 text-[12px]">
             <div className="flex flex-wrap gap-2 items-end">
               <label className="flex flex-col">Série
                 <select className="border border-[#E6E8EC] px-2 py-1" value={hdr.series} onChange={e => setHdr({ ...hdr, series: e.target.value })}>
@@ -247,11 +247,11 @@ export function FiscalDocumentsView() {
         </Section>
         <Section title="Documentos emitidos">
           <form className="flex items-center gap-2 mb-2" onSubmit={(e) => { e.preventDefault(); setPage(1); setQ(search); }}>
-            <input className="border border-[#E6E8EC] px-2 py-1 text-[13px] w-72" placeholder="Pesquisar nº, cliente ou NIF…" value={search} onChange={e => setSearch(e.target.value)} />
+            <input className="border border-[#E6E8EC] px-2 py-1 text-[12px] w-72" placeholder="Pesquisar nº, cliente ou NIF…" value={search} onChange={e => setSearch(e.target.value)} />
             <button className={btn} type="submit">Pesquisar</button>
-            {q && <button type="button" className="text-[13px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
+            {q && <button type="button" className="text-[12px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
           </form>
-          <div className="bg-white border border-[#E6E8EC] text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] text-[12px]">
             <div className="grid grid-cols-[1fr_90px_1fr_100px_80px_170px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Documento</span><span>Data</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span className="text-right">Ações</span></div>
             {rows.map((r: any) => (
               <div key={r.id} className="grid grid-cols-[1fr_90px_1fr_100px_80px_170px] px-2 py-1 border-b border-[#F1F2F4] items-center">
@@ -308,7 +308,7 @@ export function CommercialDocumentsView() {
       footer={<div className="text-gray-600">Documentos não-fiscais, editáveis em rascunho · convertem-se em Fatura (entram então no motor de assinatura/SAF-T)</div>}>
       <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
         <Section title="Novo documento">
-          <div className="bg-white border border-[#E6E8EC] p-3 space-y-2 text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] p-3 space-y-2 text-[12px]">
             <div className="flex flex-wrap gap-2 items-end">
               <label className="flex flex-col">Tipo
                 <select className="border border-[#E6E8EC] px-2 py-1" value={hdr.kind} onChange={e => setHdr({ ...hdr, kind: e.target.value })}>
@@ -337,7 +337,7 @@ export function CommercialDocumentsView() {
           </div>
         </Section>
         <Section title="Documentos">
-          <div className="bg-white border border-[#E6E8EC] text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] text-[12px]">
             <div className="grid grid-cols-[110px_90px_1fr_100px_100px_1fr] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Nº</span><span>Tipo</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span>Ações</span></div>
             {rows.map((r: any) => (
               <div key={r.id} className="grid grid-cols-[110px_90px_1fr_100px_100px_1fr] px-2 py-1 border-b border-[#F1F2F4] items-center">
@@ -378,7 +378,7 @@ export function TaxEngineView() {
       footer={<div className="text-gray-600">Taxas e isenções parametrizáveis · aplicadas automaticamente na emissão (POS, Financeiro, manual)</div>}>
       <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
         <Section title="Nova taxa">
-          <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-2 text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-2 text-[12px]">
             <label className="flex flex-col">Código<input className="border border-[#E6E8EC] px-2 py-1 w-24" value={r.code} onChange={e => setR({ ...r, code: e.target.value })} /></label>
             <label className="flex flex-col">Nome<input className="border border-[#E6E8EC] px-2 py-1 w-64" value={r.name} onChange={e => setR({ ...r, name: e.target.value })} /></label>
             <label className="flex flex-col">%<input type="number" className="border border-[#E6E8EC] px-2 py-1 w-20" value={r.percentage} onChange={e => setR({ ...r, percentage: e.target.value })} /></label>
@@ -388,7 +388,7 @@ export function TaxEngineView() {
           </div>
         </Section>
         <Section title="Taxas de IVA">
-          <div className="bg-white border border-[#E6E8EC] text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] text-[12px]">
             <div className="grid grid-cols-5 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Código</span><span>Nome</span><span className="text-right">%</span><span>Padrão</span><span>Isenta</span></div>
             {(rates || []).map((x: any) => (
               <div key={x.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#F1F2F4]"><span className="font-bold">{x.code}</span><span>{x.name}</span><span className="text-right">{Number(x.percentage)}%</span><span><GridToggle value={!!x.is_default} title="Taxa por defeito" /></span><span><GridToggle value={!!x.is_exempt} title="Isenta de IVA" /></span></div>
@@ -396,7 +396,7 @@ export function TaxEngineView() {
           </div>
         </Section>
         <Section title="Motivos de isenção">
-          <div className="bg-white border border-[#E6E8EC] text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] text-[12px]">
             {(exemptions || []).map((x: any) => (
               <div key={x.id} className="flex gap-3 px-2 py-1 border-b border-[#F1F2F4]"><span className="font-bold w-14">{x.code}</span><span>{x.description}</span></div>
             ))}
@@ -432,11 +432,11 @@ export function FiscalArchiveView() {
       footer={<div className="text-gray-600">Arquivo imutável · imprimir (PDF), exportar XML por documento e SAF-T por período · nunca eliminar</div>}>
       <div className="p-4 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
         <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); setPage(1); setQ(search); }}>
-          <input className="border border-[#E6E8EC] px-2 py-1 text-[13px] w-72" placeholder="Pesquisar nº, cliente ou NIF…" value={search} onChange={e => setSearch(e.target.value)} />
+          <input className="border border-[#E6E8EC] px-2 py-1 text-[12px] w-72" placeholder="Pesquisar nº, cliente ou NIF…" value={search} onChange={e => setSearch(e.target.value)} />
           <button className={btn} type="submit">Pesquisar</button>
-          {q && <button type="button" className="text-[13px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
+          {q && <button type="button" className="text-[12px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}
         </form>
-        <div className="bg-white border border-[#E6E8EC] text-[13px]">
+        <div className="bg-white border border-[#E6E8EC] text-[12px]">
           <div className="grid grid-cols-[1fr_86px_1fr_100px_90px_180px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Documento</span><span>Data</span><span>Cliente</span><span className="text-right">Total</span><span>Estado</span><span>Ações</span></div>
           {rows.map((r: any) => (
             <div key={r.id} className="grid grid-cols-[1fr_86px_1fr_100px_90px_180px] px-2 py-1 border-b border-[#F1F2F4] items-center">
@@ -476,13 +476,13 @@ export function SaftCenterView() {
       footer={<div className="text-gray-600">Ficheiro normalizado SAF-T(AO) · Header · MasterFiles · SourceDocuments (SalesInvoices/WorkingDocuments)</div>}>
       <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
         <Section title="Gerar SAF-T(AO)">
-          <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-3 text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-3 text-[12px]">
             <label className="flex flex-col">Início<input type="date" className="border border-[#E6E8EC] px-2 py-1" value={start} onChange={e => setStart(e.target.value)} /></label>
             <label className="flex flex-col">Fim<input type="date" className="border border-[#E6E8EC] px-2 py-1" value={end} onChange={e => setEnd(e.target.value)} /></label>
             <button className={btn} onClick={download}><Download size={13} /> Exportar XML</button>
           </div>
         </Section>
-        <div className="text-[13px] text-gray-600 bg-white border border-[#E6E8EC] p-3">
+        <div className="text-[12px] text-gray-600 bg-white border border-[#E6E8EC] p-3">
           O motor SAF-T é orientado a dados; novos layouts exigidos pela AGT (Contabilidade, Faturação, Inventário) podem ser acrescentados sem alterar o núcleo do ERP.
         </div>
       </div>
@@ -505,7 +505,7 @@ export function FiscalConnectivityView() {
   const test = useMutation({ mutationFn: async (t: string) => (await apiClient.post('fiscal/test-center/', { test: t })).data });
   const R = test.data?.results || {};
   const row = (k: string, label: string) => R[k] ? (
-    <div className="flex items-center gap-2 text-[13px]">{R[k].ok ? <CheckCircle2 size={14} className="text-[#6B7280]" /> : <XCircle size={14} className="text-[#B91C1C]" />}<b>{label}:</b> {R[k].detail}</div>
+    <div className="flex items-center gap-2 text-[12px]">{R[k].ok ? <CheckCircle2 size={14} className="text-[#6B7280]" /> : <XCircle size={14} className="text-[#B91C1C]" />}<b>{label}:</b> {R[k].detail}</div>
   ) : null;
   return (
     <ClassicWindow title="Fiscal Connectivity Center — AGT" icon={<Radio size={14} className="text-gray-300" />}
@@ -521,13 +521,13 @@ export function FiscalConnectivityView() {
             {test.data && (
               <div className="space-y-1 pt-1">
                 {row('keys', 'Chaves RSA')}{row('signature', 'Assinatura')}{row('saft', 'SAF-T')}{row('xml', 'XML')}{row('qr', 'QR Code')}{row('agt', 'Ligação AGT')}
-                <div className="text-[13px] pt-1 font-bold">{test.data.overall_ok ? <span className="text-[#111827]">Todos os testes OK</span> : <span className="text-[#6B7280]">Há itens por configurar</span>}</div>
+                <div className="text-[12px] pt-1 font-bold">{test.data.overall_ok ? <span className="text-[#111827]">Todos os testes OK</span> : <span className="text-[#6B7280]">Há itens por configurar</span>}</div>
               </div>
             )}
           </div>
         </Section>
         <Section title="Ligação AGT (AGT API Manager)">
-          <div className="bg-white border border-[#E6E8EC] p-3 grid grid-cols-2 gap-2 text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] p-3 grid grid-cols-2 gap-2 text-[12px]">
             <label className="flex flex-col">Ambiente
               <select className="border border-[#E6E8EC] px-2 py-1" value={c.environment} onChange={e => setC({ ...c, environment: e.target.value })}><option value="SANDBOX">Sandbox</option><option value="PROD">Produção</option></select></label>
             <label className="flex flex-col">Nome<input className="border border-[#E6E8EC] px-2 py-1" value={c.name} onChange={e => setC({ ...c, name: e.target.value })} /></label>
@@ -542,7 +542,7 @@ export function FiscalConnectivityView() {
             <div className="col-span-2"><button className={btn} onClick={() => saveConn.mutate()}><Send size={13} /> Guardar ligação</button></div>
           </div>
           {(conns || []).length > 0 && (
-            <div className="mt-2 bg-white border border-[#E6E8EC] text-[13px]">
+            <div className="mt-2 bg-white border border-[#E6E8EC] text-[12px]">
               {(conns || []).map((cn: any) => (
                 <div key={cn.id} className="flex items-center gap-3 px-2 py-1 border-b border-[#F1F2F4]">
                   <Radio size={13} /> <b>{cn.name}</b> [{cn.environment}] · segredo {cn.has_client_secret ? '••••••••' : '—'} · saúde {cn.last_health_status || 'n/d'}
@@ -552,7 +552,7 @@ export function FiscalConnectivityView() {
           )}
         </Section>
         <Section title="Certificados & Chaves">
-          <div className="bg-white border border-[#E6E8EC] text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] text-[12px]">
             <div className="grid grid-cols-5 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Alias</span><span>Algoritmo</span><span>Validade</span><span>Estado</span><span>Chave privada</span></div>
             {(certs || []).length === 0 && <div className="px-2 py-2 text-gray-500 flex items-center gap-2"><KeyRound size={13} /> Motor usa o par RSA do sistema (licensing/engine). Importe certificados AGT quando disponíveis.</div>}
             {(certs || []).map((ct: any) => (
@@ -575,7 +575,7 @@ export function FiscalAuditView() {
     <ClassicWindow title="Auditoria Fiscal" icon={<ShieldCheck size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Registo imutável de todas as operações fiscais (quem, quando, IP, documento)</div>}>
       <div className="p-4 bg-[#F7F8FA] h-full overflow-auto">
-        <div className="bg-white border border-[#E6E8EC] text-[13px]">
+        <div className="bg-white border border-[#E6E8EC] text-[12px]">
           <div className="grid grid-cols-5 font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Evento</span><span>Documento</span><span>Utilizador</span><span>IP</span><span>Quando</span></div>
           {rows.map((r: any) => (
             <div key={r.id} className="grid grid-cols-5 px-2 py-1 border-b border-[#F1F2F4]"><span className="font-bold">{r.event}</span><span>{r.document_ref || '—'}</span><span>{r.user || '—'}</span><span>{r.ip_address || '—'}</span><span>{new Date(r.created_at).toLocaleString('pt-PT')}</span></div>

@@ -34,7 +34,7 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
   const go = (section: string) => onNavigate?.(section);
 
   return (
-    <div className="flex flex-col h-full bg-[#F7F8FA] overflow-auto p-4 gap-4 text-[13px]">
+    <div className="flex flex-col h-full bg-[#F7F8FA] overflow-auto p-4 gap-4 text-[12px]">
       <div className="bg-white border border-[#E6E8EC]">
         <div className="px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] font-bold text-[#111827]">
           Primeiros Passos
@@ -49,7 +49,7 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
             </button>
           ))}
           {!onNavigate && (
-            <div className="text-[11.5px] text-[#6B7280] px-2 pt-1">A navegação direta a partir daqui ainda não está ligada ao menu.</div>
+            <div className="text-[10px] text-[#6B7280] px-2 pt-1">A navegação direta a partir daqui ainda não está ligada ao menu.</div>
           )}
         </div>
       </div>
@@ -65,9 +65,9 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
               <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#F1F2F4]">
                 <div>
                   <div className="font-semibold text-[#111827]">{r.guest_name}</div>
-                  <div className="text-[11.5px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
+                  <div className="text-[10px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
                 </div>
-                <span className="text-[11.5px] text-[#111827]">{r.status_display}</span>
+                <span className="text-[10px] text-[#111827]">{r.status_display}</span>
               </div>
             ))}
           </div>
@@ -83,9 +83,9 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
               <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#F1F2F4]">
                 <div>
                   <div className="font-semibold text-[#111827]">{r.guest_name}</div>
-                  <div className="text-[11.5px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
+                  <div className="text-[10px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
                 </div>
-                <span className="text-[11.5px] text-[#111827]">{r.status_display}</span>
+                <span className="text-[10px] text-[#111827]">{r.status_display}</span>
               </div>
             ))}
           </div>

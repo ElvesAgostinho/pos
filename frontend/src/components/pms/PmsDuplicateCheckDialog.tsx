@@ -46,20 +46,20 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="p-2 bg-white border-b border-[#F1F2F4] flex items-end gap-3 text-[13px]">
+        <div className="p-2 bg-white border-b border-[#F1F2F4] flex items-end gap-3 text-[12px]">
           <label className="flex items-center gap-2 flex-1">
             <span className="w-[110px]">Pesquisa livre:</span>
             <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus className="border border-[#E6E8EC] p-1 bg-white flex-1" />
           </label>
           <button onClick={() => refetch()}
-            className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] py-2"
+            className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px] py-2"
             style={{ background: '#1E2A44' }}>
             <RefreshCw size={18} /> Pesquisar
           </button>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          {isFetching ? <div className="p-4 text-gray-400 text-[13px]">A verificar…</div> : groups.length === 0 ? (
-            <div className="p-6 text-center text-gray-400 text-[13px]">Sem entidades duplicadas encontradas.</div>
+          {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A verificar…</div> : groups.length === 0 ? (
+            <div className="p-6 text-center text-gray-400 text-[12px]">Sem entidades duplicadas encontradas.</div>
           ) : (
             <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined}
               onRowClick={(r: any) => setSelId(r.id)} onRowDoubleClick={() => abrirDetalhes()}
@@ -78,7 +78,7 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
             lista em tempo real — um segundo filtro seria a mesma coisa duas
             vezes (o ClassicGrid também tem o seu próprio filtro embutido,
             aqui desligado com filterable={false} para não ficar um 3º). */}
-        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[13px]">
+        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12px]">
           <button disabled={!selId} onClick={abrirDetalhes}
             className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA] disabled:opacity-30 disabled:hover:bg-transparent">
             <Users size={13} /> Detalhes

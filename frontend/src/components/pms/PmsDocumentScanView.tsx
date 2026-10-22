@@ -62,7 +62,7 @@ export default function PmsDocumentScanView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex-1 overflow-auto p-3 space-y-3 text-[12.5px]">
+      <div className="flex-1 overflow-auto p-3 space-y-3 text-[11px]">
         <label className="flex flex-col max-w-[400px]">Procurar hóspede (nome, e-mail, nº documento)
           <input value={search} onChange={(e) => setSearch(e.target.value)} className={inp} placeholder="Escreva pelo menos 2 letras…" />
         </label>
@@ -85,7 +85,7 @@ export default function PmsDocumentScanView() {
             <div className="w-full h-40 bg-[#F7F8FA] border border-[#E6E8EC] flex items-center justify-center overflow-hidden">
               {selected.photo_url ? <img src={selected.photo_url} alt="documento" className="max-w-full max-h-full object-contain" /> : <span className="text-gray-400">Sem foto de documento</span>}
             </div>
-            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[12.5px] cursor-pointer hover:bg-[#F7F8FA]">
+            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[11px] cursor-pointer hover:bg-[#F7F8FA]">
               {uploading ? 'A carregar…' : 'Carregar foto do documento…'}
               <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => upload(e.target.files?.[0])} />
             </label>

@@ -109,7 +109,7 @@ const CustomerLogin: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  const winBtn ='h-8 px-4 text-[13px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] hover:bg-[#F7F8FA] active:shadow-[inset_1px_1px_0_#3B82F6] active:translate-y-px';
+  const winBtn ='h-8 px-4 text-[12px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] hover:bg-[#F7F8FA] active:shadow-[inset_1px_1px_0_#3B82F6] active:translate-y-px';
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4"
@@ -120,7 +120,7 @@ const CustomerLogin: React.FC = () => {
       {/* Janela de login */}
       <div className="w-[760px] max-w-full bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden">
         {/* Barra de título */}
-        <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: `linear-gradient(180deg, ${barColor} 0%, ${shade(barColor, -18)} 100%)` }}>
+        <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: `linear-gradient(180deg, ${barColor} 0%, ${shade(barColor, -18)} 100%)` }}>
           <span className="flex items-center gap-2"><Building2 size={14} /> {erpName} — Início de Sessão</span>
           <button onClick={() => setConfig(true)} title="Configurações" className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><Settings size={14} /></button>
         </div>
@@ -133,7 +133,7 @@ const CustomerLogin: React.FC = () => {
               : <div className="text-5xl font-black"><span className="text-[#111827]">M</span><span className="text-white">L</span></div>}
             <div className="text-center text-white">
               <div className="text-lg font-bold leading-tight">{company}</div>
-              <div className="text-[12.5px] opacity-80 mt-1">{erpName}</div>
+              <div className="text-[11px] opacity-80 mt-1">{erpName}</div>
             </div>
           </div>
 
@@ -143,61 +143,61 @@ const CustomerLogin: React.FC = () => {
               /* TROCA OBRIGATÓRIA: o gestor marcou "Obrigar a mudar a password" — não
                  se entra sem a trocar. A caixa desliga-se sozinha ao gravar. */
               <form onSubmit={handleTrocarPassword} className="space-y-3">
-                <div className="text-[13px] font-bold text-gray-800 mb-1">Mudança de palavra-passe obrigatória</div>
-                <div className="text-[13px] text-gray-600 mb-3">
+                <div className="text-[12px] font-bold text-gray-800 mb-1">Mudança de palavra-passe obrigatória</div>
+                <div className="text-[12px] text-gray-600 mb-3">
                   A sua conta foi entregue com uma palavra-passe provisória. Defina a sua antes de continuar.
                 </div>
                 <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-                  <label className="text-[13px] text-gray-700 text-right">Nova palavra-passe:</label>
+                  <label className="text-[12px] text-gray-700 text-right">Nova palavra-passe:</label>
                   <div className="flex items-center gap-1.5 bg-white border border-[#E6E8EC] h-9 px-2">
                     <Lock size={14} className="text-gray-500" />
                     <input type="password" autoFocus value={novaPw} onChange={(e) => setNovaPw(e.target.value)}
-                      className="flex-1 outline-none text-[13px]" />
+                      className="flex-1 outline-none text-[12px]" />
                   </div>
-                  <label className="text-[13px] text-gray-700 text-right">Confirmar:</label>
+                  <label className="text-[12px] text-gray-700 text-right">Confirmar:</label>
                   <div className="flex items-center gap-1.5 bg-white border border-[#E6E8EC] h-9 px-2">
                     <Lock size={14} className="text-gray-500" />
                     <input type="password" value={confirmaPw} onChange={(e) => setConfirmaPw(e.target.value)}
-                      className="flex-1 outline-none text-[13px]" />
+                      className="flex-1 outline-none text-[12px]" />
                   </div>
                 </div>
-                {error && <div className="ml-[158px] text-[13px] text-[#B91C1C] bg-[#FEF2F2] border border-[#DC2626] px-2 py-1">{error}</div>}
+                {error && <div className="ml-[158px] text-[12px] text-[#B91C1C] bg-[#FEF2F2] border border-[#DC2626] px-2 py-1">{error}</div>}
                 <div className="flex justify-end gap-2 pt-1">
                   <button type="submit" disabled={loading || novaPw.length < 6}
                     className={`${winBtn} font-bold disabled:opacity-50`} style={{ background: '#F7F8FA' }}>
                     {loading ? 'A gravar…' : 'Gravar e entrar'}
                   </button>
                 </div>
-                <div className="text-[12.5px] text-gray-500">Mínimo 6 caracteres, diferente da atual.</div>
+                <div className="text-[11px] text-gray-500">Mínimo 6 caracteres, diferente da atual.</div>
               </form>
             ) : (
             <>
-            <div className="text-[13px] text-gray-600 mb-4">{welcome}</div>
+            <div className="text-[12px] text-gray-600 mb-4">{welcome}</div>
             <form onSubmit={handleLogin} className="space-y-3">
               <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-                <label className="text-[13px] text-gray-700 text-right">Empresa:</label>
+                <label className="text-[12px] text-gray-700 text-right">Empresa:</label>
                 <div className="flex items-center gap-2 bg-white border border-[#E6E8EC] h-9 px-2">
                   <Building2 size={14} className="text-gray-500" />
-                  <select className="flex-1 outline-none text-[13px] bg-white">
+                  <select className="flex-1 outline-none text-[12px] bg-white">
                     <option>{company}</option>
                   </select>
                 </div>
 
-                <label className="text-[13px] text-gray-700 text-right">Utilizador:</label>
+                <label className="text-[12px] text-gray-700 text-right">Utilizador:</label>
                 <div className="flex items-center gap-1.5 bg-white border border-[#E6E8EC] h-9 px-2">
                   <User size={14} className="text-gray-500" />
-                  <input autoFocus value={username} onChange={(e) => setUsername(e.target.value)} className="flex-1 outline-none text-[13px]" />
+                  <input autoFocus value={username} onChange={(e) => setUsername(e.target.value)} className="flex-1 outline-none text-[12px]" />
                 </div>
 
-                <label className="text-[13px] text-gray-700 text-right">Palavra-passe:</label>
+                <label className="text-[12px] text-gray-700 text-right">Palavra-passe:</label>
                 <div className="flex items-center gap-1.5 bg-white border border-[#E6E8EC] h-9 px-2">
                   <Lock size={14} className="text-gray-500" />
-                  <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="flex-1 outline-none text-[13px]" />
+                  <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} className="flex-1 outline-none text-[12px]" />
                   <button type="button" onClick={() => setShowPw((s) => !s)} className="text-gray-500 hover:text-gray-800">{showPw ? <EyeOff size={14} /> : <Eye size={14} />}</button>
                 </div>
               </div>
 
-              <div className="pl-[118px] space-y-1 text-[13px] text-gray-700">
+              <div className="pl-[118px] space-y-1 text-[12px] text-gray-700">
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Memorizar utilizador</label>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} /> Entrar automaticamente</label>
                 <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
@@ -206,7 +206,7 @@ const CustomerLogin: React.FC = () => {
                 </button>
               </div>
 
-              {error && <div className="ml-[118px] text-[13px] text-[#B91C1C] bg-[#FEF2F2] border border-[#DC2626] px-2 py-1">{error}</div>}
+              {error && <div className="ml-[118px] text-[12px] text-[#B91C1C] bg-[#FEF2F2] border border-[#DC2626] px-2 py-1">{error}</div>}
 
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => { setUsername(''); setPassword(''); setError(''); }} className={winBtn}>Cancelar</button>
@@ -221,7 +221,7 @@ const CustomerLogin: React.FC = () => {
         </div>
 
         {/* Barra de estado (rodapé) */}
-        <div className="h-7 flex items-center gap-4 px-3 text-[12.5px] text-gray-700 border-t border-[#E6E8EC] bg-[#F7F8FA]">
+        <div className="h-7 flex items-center gap-4 px-3 text-[11px] text-gray-700 border-t border-[#E6E8EC] bg-[#F7F8FA]">
           <span>Servidor: <b>localhost:8000</b></span>
           <span className="opacity-40">|</span>
           <span>Base: <b>ERP_2026</b></span>
@@ -239,19 +239,19 @@ const CustomerLogin: React.FC = () => {
       {config && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfig(false)}>
           <div className="w-[420px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-            <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: barColor }}>
+            <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: barColor }}>
               <span className="flex items-center gap-2"><Settings size={14} />Configurações de Ligação</span>
               <button onClick={() => setConfig(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
             </div>
-            <div className="p-4 space-y-2 text-[13px]">
+            <div className="p-4 space-y-2 text-[12px]">
               <Row label="Servidor SQL / API" value="localhost:8000" />
               <Row label="Base de dados" value="ERP_2026" />
               <Row label="Idioma" value="Português (Angola)" />
               <div className="flex items-center justify-between pt-2">
-                <span className="flex items-center gap-1 text-[13px]"><Wifi size={13} className={online ? 'text-[#6B7280]' : 'text-[#B91C1C]'} />{online ? 'Servidor acessível' : 'Sem ligação'}</span>
+                <span className="flex items-center gap-1 text-[12px]"><Wifi size={13} className={online ? 'text-[#6B7280]' : 'text-[#B91C1C]'} />{online ? 'Servidor acessível' : 'Sem ligação'}</span>
                 <button onClick={() => { setOnline(null); apiClient.get('licensing/status/').then(() => setOnline(true)).catch((e) => setOnline(!!e?.response)); }} className={winBtn}>Testar ligação</button>
               </div>
-              <div className="text-[12.5px] text-gray-500 pt-1">Para personalizar logo/imagem/cores use Administração → Aparência.</div>
+              <div className="text-[11px] text-gray-500 pt-1">Para personalizar logo/imagem/cores use Administração → Aparência.</div>
             </div>
           </div>
         </div>
@@ -261,12 +261,12 @@ const CustomerLogin: React.FC = () => {
       {showReset && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowReset(false)}>
           <div className="w-[420px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-            <div className="h-8 flex items-center justify-between px-2 text-white text-[13px] font-semibold" style={{ background: barColor }}>
+            <div className="h-8 flex items-center justify-between px-2 text-white text-[12px] font-semibold" style={{ background: barColor }}>
               <span className="flex items-center gap-2"><KeyRound size={14} />Repor password</span>
               <button onClick={() => setShowReset(false)} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
             </div>
-            <form onSubmit={handleResetPassword} className="p-4 space-y-3 text-[13px]">
-              <p className="text-gray-600 text-[13px]">
+            <form onSubmit={handleResetPassword} className="p-4 space-y-3 text-[12px]">
+              <p className="text-gray-600 text-[12px]">
                 Peça ao fornecedor um código (válido 30 min, só serve uma vez) e escreva-o aqui com a sua nova password.
               </p>
               <label className="block">
@@ -285,7 +285,7 @@ const CustomerLogin: React.FC = () => {
                   className="w-full h-9 px-2 bg-white border border-[#E6E8EC] outline-none" />
               </label>
               {resetMsg && (
-                <div className={`text-[13px] px-2 py-1 border ${resetMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
+                <div className={`text-[12px] px-2 py-1 border ${resetMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
                   {resetMsg.text}
                 </div>
               )}

@@ -33,7 +33,7 @@ export default function OutletsView() {
     <ClassicWindow title="Outlets (Pontos de Venda)" icon={<Store size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Nº registos: {outlets.length}</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-28" />
           <input placeholder="Nome do outlet" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={draft.outlet_type} onChange={(e) => setDraft({ ...draft, outlet_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
@@ -50,11 +50,11 @@ export default function OutletsView() {
               { header: 'Nome', accessor: 'name', width: '40%' },
               { header: 'Tipo', accessor: (r: any) => typeLabel(r.outlet_type), width: '17%' },
               { header: 'Tabela de Preço', accessor: (r: any) => (
-                <select value={r.price_list || ''} onChange={(e) => setPriceList(r.id, e.target.value)} className="border border-[#E6E8EC] p-0.5 bg-white text-[12.5px]">
+                <select value={r.price_list || ''} onChange={(e) => setPriceList(r.id, e.target.value)} className="border border-[#E6E8EC] p-0.5 bg-white text-[11px]">
                   <option value="">— base —</option>{priceLists.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>), width: '18%' },
               { header: 'Armazém (stock)', accessor: (r: any) => (
-                <select value={r.warehouse || ''} onChange={(e) => setWarehouse(r.id, e.target.value)} className="border border-[#E6E8EC] p-0.5 bg-white text-[12.5px]">
+                <select value={r.warehouse || ''} onChange={(e) => setWarehouse(r.id, e.target.value)} className="border border-[#E6E8EC] p-0.5 bg-white text-[11px]">
                   <option value="">— nenhum —</option>{warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
                 </select>), width: '18%' },
               { header: 'Ativo', width: '6%',

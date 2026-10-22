@@ -4,13 +4,13 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph, Box } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
-const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[12px] bg-white';
 type Bottom = 'license' | 'member' | 'texts' | 'bank';
 
 function Row({ label, children, w = 'w-[110px]' }: any) {
   return (
-    <label className="flex items-center gap-2 text-[13px] min-w-0">
+    <label className="flex items-center gap-2 text-[12px] min-w-0">
       <span className={`${w} flex-shrink-0 text-[#111827]`}>{label}</span>
       {children}
     </label>
@@ -125,7 +125,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
   const BTab = ({ id, label }: any) => (
     <button onClick={() => setBottom(id)}
-      className={`px-6 py-2 text-[13px] font-semibold ${bottom === id ? 'bg-[#1E2A44] text-white' : 'bg-[#F7F8FA] text-[#111827] hover:bg-[#F7F8FA]'}`}>
+      className={`px-6 py-2 text-[12px] font-semibold ${bottom === id ? 'bg-[#1E2A44] text-white' : 'bg-[#F7F8FA] text-[#111827] hover:bg-[#F7F8FA]'}`}>
       {label}
     </button>
   );
@@ -133,7 +133,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">A editar {src?.name}</span>
+        <span className="text-[12px] font-bold text-[#111827]">A editar {src?.name}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -162,7 +162,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
             <div className="flex mt-2">
               {([['main', 'Main contacts'], ['sec', 'Secondary contacts']] as const).map(([k, label]) => (
                 <button key={k} onClick={() => setTab(k)}
-                  className={`px-6 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#1E2A44] text-white' : 'bg-[#F7F8FA] text-[#111827] hover:bg-[#F7F8FA]'}`}>{label}</button>
+                  className={`px-6 py-2 text-[12px] font-semibold ${tab === k ? 'bg-[#1E2A44] text-white' : 'bg-[#F7F8FA] text-[#111827] hover:bg-[#F7F8FA]'}`}>{label}</button>
               ))}
             </div>
             <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-1.5" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
@@ -214,7 +214,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 <span className={`${inp} flex-1 min-w-0 truncate text-[#111827] bg-[#F7F8FA]`} style={inputStyle}>
                   {d.logo_url ? d.logo_url.split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                 </span>
-                <span className="px-3 py-1 text-[13px] font-semibold bg-[#1E2A44] text-white hover:bg-[#1E2A44] flex-shrink-0">
+                <span className="px-3 py-1 text-[12px] font-semibold bg-[#1E2A44] text-white hover:bg-[#1E2A44] flex-shrink-0">
                   Carregar…
                 </span>
                 <input type="file" accept="image/*" className="hidden"
@@ -241,9 +241,9 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
               style={{ background: d.bg_color || '#FFFFFF' }}>
               {d.logo_url
                 ? <img src={d.logo_url} alt="" className="max-h-full max-w-full object-contain" />
-                : <span className="text-[13px]" style={{ color: d.text_color || '#3B82F6' }}>Sem logótipo</span>}
+                : <span className="text-[12px]" style={{ color: d.text_color || '#3B82F6' }}>Sem logótipo</span>}
             </div>
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_master} onChange={(e) => set('is_master', e.target.checked)} className="w-4 h-4" />
               Master (hotel principal desta instalação)
             </label>
@@ -268,7 +268,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
               <Row label={label} w={w}><input value={value ?? '—'} readOnly className={`${inp} flex-1 bg-[#F7F8FA] text-[#111827]`} /></Row>
             );
             return (
-              <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-[13px]">
+              <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-[12px]">
                 <div className="space-y-2">
                   <Row label="Contacto:">
                     <input value={d.license_contact || ''} onChange={(e) => set('license_contact', e.target.value)}
@@ -283,7 +283,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   <RO label="Código Licença:" value={lic.license_code} />
                 </div>
                 <div className="space-y-2">
-                  <label className="flex items-start gap-2 text-[13px]">
+                  <label className="flex items-start gap-2 text-[12px]">
                     <span className="w-[150px] flex-shrink-0 text-[#111827]">POS Location Name:</span>
                     <textarea value={d.pos_location_name || ''} onChange={(e) => set('pos_location_name', e.target.value)}
                       rows={3} className={`${inp} flex-1`} style={inputStyle} />
@@ -293,13 +293,13 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   <RO label="Máx. Terminais (Portátil):" value={lic.max_terminals_mobile} w="w-[150px]" />
                   <div className="pt-2 border-t border-[#F1F2F4] space-y-1">
                     {Object.entries(lic.limits || {}).map(([k, v]: any) => (
-                      <div key={k} className={`text-[12.5px] ${v.available === 0 ? 'text-[#DC2626] font-bold' : 'text-[#111827]'}`}>
+                      <div key={k} className={`text-[11px] ${v.available === 0 ? 'text-[#DC2626] font-bold' : 'text-[#111827]'}`}>
                         {v.label}: <b>{v.used}</b> em uso de <b>{v.licensed}</b> licenciado(s)
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="col-span-2 flex items-center gap-2 text-[12.5px] text-[#6B7280] border-t border-[#F1F2F4] pt-2">
+                <div className="col-span-2 flex items-center gap-2 text-[11px] text-[#6B7280] border-t border-[#F1F2F4] pt-2">
                   <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="🔑" size={13} /></span>
                   <span className="flex-1">
                     <b>Gestor de licenças</b> — os campos a cinzento vêm do ficheiro de licença assinado pelo fornecedor
@@ -313,7 +313,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
           {bottom === 'member' && (
             <div className="flex gap-3">
-              <table className="flex-1 text-[13px] border-collapse">
+              <table className="flex-1 text-[12px] border-collapse">
                 <thead><tr className="bg-[#F7F8FA]">
                   <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Grupo</th>
                   <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] w-[100px]">Ordem</th>
@@ -338,7 +338,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 {[['＋', 'Adicionar', '#1E2A44', () => setPopup({ group: groups[0]?.id, sort_order: 100, is_active: true })],
                   ['✎', 'Editar', '#3B82F6', () => mems[0] && setPopup({ ...mems[0], _i: 0 })],
                   ['−', 'Apagar', '#DC2626', () => set('memberships', mems.slice(0, -1))]].map(([ic, lb, c, fn]: any) => (
-                  <button key={lb} onClick={fn} className="flex items-center gap-2 w-full px-2 py-1.5 bg-[#1E2A44] text-white text-[13px] hover:bg-[#1E2A44]">
+                  <button key={lb} onClick={fn} className="flex items-center gap-2 w-full px-2 py-1.5 bg-[#1E2A44] text-white text-[12px] hover:bg-[#1E2A44]">
                     <span className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: c }}><Glyph icon={ic} size={13} /></span>{lb}
                   </button>
                 ))}
@@ -348,7 +348,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
           {bottom === 'texts' && (
             <div className="overflow-auto max-h-[300px]">
-              <table className="w-full text-[13px] border-collapse">
+              <table className="w-full text-[12px] border-collapse">
                 <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
                   {['Código', 'Descrição', 'TEXT', 'Ativo', 'Source', 'Bold', 'Italic', 'Font Size', 'Font Name', 'Alignment'].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4] whitespace-nowrap">{h}</th>
@@ -357,11 +357,11 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 <tbody>
                   {texts.map((t, i) => (
                     <tr key={i} className="border-b border-[#F1F2F4]">
-                      <td className="px-2 py-1 border border-[#F1F2F4] font-mono text-[12.5px]">{t.code}</td>
+                      <td className="px-2 py-1 border border-[#F1F2F4] font-mono text-[11px]">{t.code}</td>
                       <td className="px-2 py-1 border border-[#F1F2F4]">{t.description}</td>
                       <td className="p-0.5 border border-[#F1F2F4]"><input value={t.text || ''} onChange={(e) => setText(i, 'text', e.target.value)} className={cell} /></td>
                       <td className="text-center border border-[#F1F2F4]"><input type="checkbox" checked={!!t.is_active} onChange={(e) => setText(i, 'is_active', e.target.checked)} className="w-4 h-4" /></td>
-                      <td className="px-2 py-1 border border-[#F1F2F4] text-[12.5px] text-[#6B7280]">{t.source}</td>
+                      <td className="px-2 py-1 border border-[#F1F2F4] text-[11px] text-[#6B7280]">{t.source}</td>
                       <td className="text-center border border-[#F1F2F4]"><input type="checkbox" checked={!!t.bold} onChange={(e) => setText(i, 'bold', e.target.checked)} className="w-4 h-4" /></td>
                       <td className="text-center border border-[#F1F2F4]"><input type="checkbox" checked={!!t.italic} onChange={(e) => setText(i, 'italic', e.target.checked)} className="w-4 h-4" /></td>
                       <td className="p-0.5 border border-[#F1F2F4] w-[80px]"><input type="number" value={t.font_size} onChange={(e) => setText(i, 'font_size', Number(e.target.value))} className={cell} /></td>
@@ -375,7 +375,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   ))}
                 </tbody>
               </table>
-              <div className="text-[12.5px] text-[#6B7280] mt-2">
+              <div className="text-[11px] text-[#6B7280] mt-2">
                 A <b>Source</b> diz de onde o valor é lido (ex.: <code>T_HOTEL.Name1</code>). Mudar o NIF na ficha muda-o em
                 todos os documentos — não há dois sítios a discordar um do outro.
               </div>
@@ -384,7 +384,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
           {bottom === 'bank' && (
             <div>
-              <table className="w-full text-[13px] border-collapse">
+              <table className="w-full text-[12px] border-collapse">
                 <thead><tr className="bg-[#F7F8FA]">
                   {['Nome', 'Balcão', 'Conta', 'NIB', 'IBAN', 'SWIFT', 'BIC', 'SEPA', 'Por defeito', ''].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4]">{h}</th>
@@ -395,7 +395,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                     const F = ({ k, mono }: any) => (
                       <td className="p-0.5 border border-[#F1F2F4]">
                         <input defaultValue={b[k] || ''} onBlur={(e) => e.target.value !== (b[k] || '') && updBank.mutate({ id: b.id, data: { [k]: e.target.value } })}
-                          className={`${cell} ${mono ? 'font-mono text-[12.5px]' : ''}`} />
+                          className={`${cell} ${mono ? 'font-mono text-[11px]' : ''}`} />
                       </td>
                     );
                     return (
@@ -410,7 +410,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                         </td>
                         <td className="text-center border border-[#F1F2F4]">
                           <button onClick={() => confirm(`Apagar a conta "${b.bank_name}"?`) && delBank.mutate(b.id)}
-                            className="text-[#B91C1C] font-bold text-[12.5px]">Apagar</button>
+                            className="text-[#B91C1C] font-bold text-[11px]">Apagar</button>
                         </td>
                       </tr>
                     );
@@ -419,15 +419,15 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 </tbody>
               </table>
               <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#F1F2F4]">
-                <button onClick={() => addBank.mutate()} className="flex items-center gap-2 text-[13px] text-[#111827] hover:bg-[#F7F8FA] px-1 py-1">
+                <button onClick={() => addBank.mutate()} className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] px-1 py-1">
                   <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar
                 </button>
                 <span className="w-px h-6 bg-[#F7F8FA]" />
                 <button onClick={() => banks.length && confirm('Apagar a última conta?') && delBank.mutate(banks[banks.length - 1].id)}
-                  disabled={!banks.length} className="flex items-center gap-2 text-[13px] text-[#111827] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
+                  disabled={!banks.length} className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
                   <span className="w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center">−</span> Apagar
                 </button>
-                <span className="ml-auto text-[12.5px] text-[#6B7280]">Estas contas saem impressas no rodapé da fatura — é por aqui que o cliente paga.</span>
+                <span className="ml-auto text-[11px] text-[#6B7280]">Estas contas saem impressas no rodapé da fatura — é por aqui que o cliente paga.</span>
               </div>
             </div>
           )}
@@ -473,13 +473,13 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowLicenseManager(false)}>
           <div className="bg-white w-[680px] max-h-[85vh] rounded shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="px-4 py-2.5 flex items-center justify-between text-white" style={{ background: '#3B82F6' }}>
-              <span className="font-bold text-[13px] flex items-center gap-2"><Glyph icon="🔑" size={14} /> Gestor de Licenças</span>
+              <span className="font-bold text-[12px] flex items-center gap-2"><Glyph icon="🔑" size={14} /> Gestor de Licenças</span>
               <button onClick={() => setShowLicenseManager(false)} className="hover:text-[#DC2626] text-[16px] leading-none">×</button>
             </div>
 
-            <div className="p-4 overflow-y-auto flex-1 text-[13px] space-y-4">
+            <div className="p-4 overflow-y-auto flex-1 text-[12px] space-y-4">
               {syncMsg && (
-                <div className={`px-2 py-1.5 rounded border text-[13px] ${syncMsg.ok ? 'bg-[#F7F8FA] border-[#F1F2F4] text-[#111827]' : 'bg-[#FEF2F2] border-[#DC2626] text-[#B91C1C]'}`}>
+                <div className={`px-2 py-1.5 rounded border text-[12px] ${syncMsg.ok ? 'bg-[#F7F8FA] border-[#F1F2F4] text-[#111827]' : 'bg-[#FEF2F2] border-[#DC2626] text-[#B91C1C]'}`}>
                   {syncMsg.text}
                 </div>
               )}
@@ -508,7 +508,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 </div>
                 <div className="grid grid-cols-3 gap-x-3 gap-y-1">
                   {(lic.modules || []).map((m: string) => (
-                    <div key={m} className="flex items-center gap-1.5 text-[12.5px] text-[#111827]">
+                    <div key={m} className="flex items-center gap-1.5 text-[11px] text-[#111827]">
                       <Glyph icon="✓" size={10} /> {m}
                     </div>
                   ))}
@@ -519,7 +519,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 <div>
                   <div className="font-bold text-[#111827] mb-1.5 border-b border-[#F1F2F4] pb-1">Consumo</div>
                   {Object.entries(lic.limits).map(([k, v]: any) => (
-                    <div key={k} className={`text-[12.5px] ${v.available === 0 ? 'text-[#DC2626] font-bold' : 'text-[#111827]'}`}>
+                    <div key={k} className={`text-[11px] ${v.available === 0 ? 'text-[#DC2626] font-bold' : 'text-[#111827]'}`}>
                       {v.label}: <b>{v.used}</b> em uso de <b>{v.licensed}</b> licenciado(s)
                     </div>
                   ))}
@@ -531,21 +531,21 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                   quem está a ver este ecrã, nunca na pasta do servidor. */}
               <div className="border border-[#E6E8EC] bg-[#F7F8FA] rounded p-3">
                 <div className="font-bold text-[#111827] mb-1">Renovar carregando um ficheiro</div>
-                <div className="text-[12.5px] text-[#111827] mb-2">
+                <div className="text-[11px] text-[#111827] mb-2">
                   Recebeu um license.key novo do fornecedor (ex.: depois de pagar)? Escolha-o aqui.
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="file" accept=".key,text/plain"
                     onChange={(e) => setFicheiroLic(e.target.files?.[0] || null)}
-                    className="flex-1 text-[12.5px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-[#1E2A44] file:text-white file:font-bold file:cursor-pointer" />
+                    className="flex-1 text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-[#1E2A44] file:text-white file:font-bold file:cursor-pointer" />
                   <button onClick={enviarFicheiroLicenca} disabled={uploading || !ficheiroLic}
-                    className="h-8 px-3 text-[13px] font-bold text-white rounded disabled:opacity-50 flex-shrink-0"
+                    className="h-8 px-3 text-[12px] font-bold text-white rounded disabled:opacity-50 flex-shrink-0"
                     style={{ background: '#1E2A44' }}>
                     {uploading ? 'A enviar…' : 'Submeter'}
                   </button>
                 </div>
                 {uploadMsg && (
-                  <div className={`mt-2 text-[12.5px] px-2 py-1 rounded border ${uploadMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
+                  <div className={`mt-2 text-[11px] px-2 py-1 rounded border ${uploadMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
                     {uploadMsg.text}
                   </div>
                 )}
@@ -553,12 +553,12 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
             </div>
 
             <div className="border-t border-[#F1F2F4] px-4 py-2.5 flex justify-between items-center bg-[#F7F8FA]">
-              <span className="text-[12.5px] text-[#6B7280] max-w-[380px]">
+              <span className="text-[11px] text-[#6B7280] max-w-[380px]">
                 Só o fornecedor emite/alarga módulos, terminais ou validade. Isto só puxa a
                 licença mais recente já emitida por ele.
               </span>
               <button onClick={puxarLicencaPCC} disabled={syncing}
-                className="h-8 px-4 text-[13px] font-bold text-white rounded disabled:opacity-50 flex-shrink-0"
+                className="h-8 px-4 text-[12px] font-bold text-white rounded disabled:opacity-50 flex-shrink-0"
                 style={{ background: '#3B82F6' }}>
                 {syncing ? 'A puxar…' : '🌐 Puxar licença do PCC'}
               </button>

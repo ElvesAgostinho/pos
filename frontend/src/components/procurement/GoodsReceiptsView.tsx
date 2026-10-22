@@ -51,13 +51,13 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
             {!isNew && !validated && (
               <ClassicButton icon={CheckCircle} label="Validar Receção" onClick={() => validate.mutate(currentId!)} />
             )}
-            {validated && <span className="text-[#111827] font-bold text-[12.5px] flex items-center gap-1"><Check size={12} strokeWidth={3} /> Validada — performance do fornecedor atualizada</span>}
+            {validated && <span className="text-[#111827] font-bold text-[11px] flex items-center gap-1"><Check size={12} strokeWidth={3} /> Validada — performance do fornecedor atualizada</span>}
           </div>
           <ClassicButton icon={ArrowLeft} label="Voltar à Lista" onClick={onBack} />
         </>
       }
     >
-      <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto text-[12.5px] space-y-4">
+      <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto text-[11px] space-y-4">
         <div className="border border-[#E6E8EC] bg-white p-2">
           <h3 className="font-bold text-[#6B7280] border-b border-[#E6E8EC] mb-2 pb-1">Cabeçalho</h3>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">

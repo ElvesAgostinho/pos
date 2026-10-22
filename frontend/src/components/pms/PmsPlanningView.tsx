@@ -63,7 +63,7 @@ export default function PmsPlanningView() {
         { label: 'Atualizar', icon: '⟳', color: '#1E2A44', onClick: () => refetch() },
       ]} />
       <div className="flex-1 overflow-auto">
-        <table className="border-collapse text-[12.5px] w-full">
+        <table className="border-collapse text-[11px] w-full">
           <thead>
             <tr>
               <th className="sticky left-0 bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 text-left min-w-[130px] z-10">Quarto</th>
@@ -88,7 +88,7 @@ export default function PmsPlanningView() {
                   while (j < DAYS_VISIBLE && fmtISO(days[j]) < res.check_out) { span++; j++; }
                   cells.push(
                     <td key={dayIdx} colSpan={span} onClick={() => setSelId(res.id)}
-                      className="border border-[#E6E8EC] px-1 py-1 text-white text-[11.5px] font-semibold cursor-pointer truncate hover:brightness-110"
+                      className="border border-[#E6E8EC] px-1 py-1 text-white text-[10px] font-semibold cursor-pointer truncate hover:brightness-110"
                       style={{ background: res.color_tag || STATUS_COLOR[res.status] || '#3B82F6' }}
                       title={`${res.confirmation} · ${res.guest_name} · ${res.check_in} → ${res.check_out}`}>
                       {res.guest_name}
@@ -115,7 +115,7 @@ export default function PmsPlanningView() {
           </tbody>
         </table>
         {unassigned.length > 0 && (
-          <div className="p-2 text-[12.5px] text-[#6B7280] border-t border-[#F1F2F4]">
+          <div className="p-2 text-[11px] text-[#6B7280] border-t border-[#F1F2F4]">
             {unassigned.length} reserva(s) sem quarto atribuído neste período (não aparecem no mapa) — atribua um quarto na ficha da reserva.
           </div>
         )}

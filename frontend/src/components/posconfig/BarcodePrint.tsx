@@ -79,12 +79,12 @@ export default function BarcodePrint() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       {/* Filtros */}
-      <div className="flex items-start gap-6 px-4 py-3 border-b border-[#F1F2F4] text-[13px]">
+      <div className="flex items-start gap-6 px-4 py-3 border-b border-[#F1F2F4] text-[12px]">
         <div className="grid grid-cols-2 gap-x-6 gap-y-2 flex-1">
           <label className="flex items-center gap-2">
             <span className="w-[90px] text-[#111827]">Sub Família:</span>
             <select value={f.subfamily} onChange={(e) => setF({ ...f, subfamily: e.target.value })}
-              className="border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white flex-1" style={inputStyle}>
+              className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white flex-1" style={inputStyle}>
               <option value="">(Todos)</option>
               {subs.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
@@ -92,19 +92,19 @@ export default function BarcodePrint() {
           <label className="flex items-center gap-2">
             <span className="w-[90px] text-[#111827]">Nível de Preço:</span>
             <input type="number" min={1} max={6} value={f.level} onChange={(e) => setF({ ...f, level: Number(e.target.value) })}
-              className="border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white w-[80px]" style={inputStyle} />
+              className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white w-[80px]" style={inputStyle} />
           </label>
           <label className="flex items-center gap-2">
             <span className="w-[90px] text-[#111827]">Pesquisar:</span>
             <input value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })}
-              className="border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white flex-1" style={inputStyle} />
+              className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white flex-1" style={inputStyle} />
           </label>
         </div>
         <SearchButton onClick={() => { setApplied({ ...f }); setSel({}); }} className="h-[62px]" />
       </div>
 
       {/* Barra de seleção */}
-      <div className="flex items-center gap-5 px-4 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[13px]">
+      <div className="flex items-center gap-5 px-4 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12px]">
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={rows.length > 0 && Object.keys(sel).length === rows.length} onChange={selectAll} className="w-4 h-4" />
           Selecionar Tudo
@@ -112,12 +112,12 @@ export default function BarcodePrint() {
         <label className="flex items-center gap-2">
           Quantidade:
           <input type="number" min={1} value={qty} onChange={(e) => setQty(Number(e.target.value) || 1)}
-            className="border border-[#E6E8EC] px-2 py-1 text-[13px] w-[80px] bg-white" style={inputStyle} />
+            className="border border-[#E6E8EC] px-2 py-1 text-[12px] w-[80px] bg-white" style={inputStyle} />
         </label>
         <label className="flex items-center gap-2">
           Modelo de Impressão:
           <select value={model} onChange={(e) => setModel(e.target.value)}
-            className="border border-[#E6E8EC] px-2 py-1 text-[13px] w-[220px] bg-white" style={inputStyle}>
+            className="border border-[#E6E8EC] px-2 py-1 text-[12px] w-[220px] bg-white" style={inputStyle}>
             {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </label>
@@ -126,7 +126,7 @@ export default function BarcodePrint() {
 
       {/* Grelha */}
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0">
             <tr className="bg-[#F7F8FA] text-[#111827]">
               <th className="w-[40px] border border-[#F1F2F4]" />
@@ -149,7 +149,7 @@ export default function BarcodePrint() {
                 <td className="px-1 py-0.5 border border-[#F1F2F4] w-[90px]">
                   <input type="number" min={1} value={sel[r.id] || ''} disabled={!sel[r.id]}
                     onChange={(e) => setSel((s) => ({ ...s, [r.id]: Number(e.target.value) || 1 }))}
-                    className="w-full border border-[#F1F2F4] px-1 py-0.5 text-[13px] text-right disabled:bg-[#F7F8FA]" />
+                    className="w-full border border-[#F1F2F4] px-1 py-0.5 text-[12px] text-right disabled:bg-[#F7F8FA]" />
                 </td>
               </tr>
             ))}

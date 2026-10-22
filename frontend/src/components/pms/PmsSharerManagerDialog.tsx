@@ -26,7 +26,7 @@ export default function PmsSharerManagerDialog({ reservation: r, onClose }: { re
           </button>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          <table className="w-full text-[13px] border-collapse">
+          <table className="w-full text-[12px] border-collapse">
             <thead style={{ background: '#F7F8FA' }}>
               <tr>{['Nº Quarto', 'Nome', 'Hóspede Principal', 'Check-In', 'Check-Out', 'Tipo de Reserva'].map((h) => (
                 <th key={h} className="text-left px-3 py-1.5 border-b border-[#E6E8EC] font-semibold">{h}</th>))}
@@ -45,10 +45,10 @@ export default function PmsSharerManagerDialog({ reservation: r, onClose }: { re
               ))}
             </tbody>
           </table>
-          {rows.length === 0 && <div className="p-6 text-center text-gray-400 text-[13px]">Não foram encontrados dados.</div>}
+          {rows.length === 0 && <div className="p-6 text-center text-gray-400 text-[12px]">Não foram encontrados dados.</div>}
         </div>
         <div className="flex justify-end px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>

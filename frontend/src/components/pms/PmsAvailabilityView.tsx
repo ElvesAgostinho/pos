@@ -40,7 +40,7 @@ const plusDays = (iso: string, n: number) => {
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short' });
 
 function PanelHead({ children }: { children: any }) {
-  return <div className="px-2 py-1 font-bold text-[12.5px] border-b border-[#E6E8EC] bg-[#F7F8FA]">{children}</div>;
+  return <div className="px-2 py-1 font-bold text-[11px] border-b border-[#E6E8EC] bg-[#F7F8FA]">{children}</div>;
 }
 
 export default function PmsAvailabilityView() {
@@ -116,26 +116,26 @@ export default function PmsAvailabilityView() {
       {/* Categorias dos Hotéis */}
       {catOpen ? (
         <div className="w-[240px] border-r border-[#E6E8EC] bg-white flex flex-col flex-shrink-0">
-          <div className="px-2 py-1.5 font-bold text-[12.5px] border-b border-[#E6E8EC] bg-[#F7F8FA] flex items-center justify-between">
+          <div className="px-2 py-1.5 font-bold text-[11px] border-b border-[#E6E8EC] bg-[#F7F8FA] flex items-center justify-between">
             Categorias dos Hotéis
             <button onClick={() => setCatOpen(false)} title="Encolher" className="text-[#6B7280] hover:text-[#111827]">
               <ChevronsLeft size={13} />
             </button>
           </div>
           <button onClick={() => setTreeOpen((o) => !o)}
-            className="text-left px-2 py-1.5 text-[13px] font-bold flex items-center gap-1 bg-[#3B82F6] text-black">
+            className="text-left px-2 py-1.5 text-[12px] font-bold flex items-center gap-1 bg-[#3B82F6] text-black">
             {treeOpen ? <ChevronDown size={13} /> : <ChevronUp size={13} className="rotate-90" />}
             <Building2 size={13} /> {hotelName || '—'}
           </button>
           {treeOpen && (
             <>
               <button onClick={() => setRoomType('')}
-                className={`text-left pl-8 pr-3 py-1.5 text-[13px] ${!roomType ? 'bg-[#1E2A44] text-white' : 'hover:bg-[#F7F8FA]'}`}>
+                className={`text-left pl-8 pr-3 py-1.5 text-[12px] ${!roomType ? 'bg-[#1E2A44] text-white' : 'hover:bg-[#F7F8FA]'}`}>
                 (Todas as categorias)
               </button>
               {list.map((rt: any) => (
                 <button key={rt.id} onClick={() => setRoomType(String(rt.id))}
-                  className={`text-left pl-8 pr-3 py-1.5 text-[13px] flex items-center gap-1.5 ${roomType === String(rt.id) ? 'bg-[#1E2A44] text-white' : 'text-[#111827] hover:bg-[#F7F8FA]'}`}>
+                  className={`text-left pl-8 pr-3 py-1.5 text-[12px] flex items-center gap-1.5 ${roomType === String(rt.id) ? 'bg-[#1E2A44] text-white' : 'text-[#111827] hover:bg-[#F7F8FA]'}`}>
                   <Bed size={12} /> {rt.name}
                 </button>
               ))}
@@ -150,7 +150,7 @@ export default function PmsAvailabilityView() {
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex gap-3 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px] items-stretch">
+        <div className="flex gap-3 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px] items-stretch">
           {/* Modo */}
           <div className="border border-[#E6E8EC] bg-white flex-shrink-0">
             <PanelHead>Modo</PanelHead>
@@ -224,7 +224,7 @@ export default function PmsAvailabilityView() {
             </div>
 
             <button onClick={() => refetch()}
-              className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px] m-2"
+              className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px] m-2"
               style={{ background: '#1E2A44' }}>
               <RefreshCw size={20} /> Pesquisar
             </button>
@@ -232,7 +232,7 @@ export default function PmsAvailabilityView() {
         </div>
 
         <div className="flex-1 p-3 overflow-auto">
-          {isLoading ? <div className="text-gray-400 text-[13px]">A carregar…</div> : modo === 'Lista' ? (
+          {isLoading ? <div className="text-gray-400 text-[12px]">A carregar…</div> : modo === 'Lista' ? (
             <div className="h-[440px]">
               <ClassicGrid columns={listaCols} data={listaRows} rowKey="id" filterable={false} />
             </div>
@@ -261,7 +261,7 @@ export default function PmsAvailabilityView() {
               não têm nenhum lançamento real por trás nesta fase (não inventam dados).
               Só faz sentido para o gráfico de barras, não para a grelha "Lista". */}
           {modo !== 'Lista' && (
-            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 mt-2 text-[12.5px] text-[#111827]">
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 mt-2 text-[11px] text-[#111827]">
               {LEGEND.map((l) => (
                 <span key={l.key} className="flex items-center gap-1.5">
                   <span className="w-3.5 h-3.5 inline-block" style={{ background: l.color }} /> {l.label}
@@ -271,7 +271,7 @@ export default function PmsAvailabilityView() {
           )}
         </div>
 
-        <div className="flex items-center justify-between px-2 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[12.5px] text-gray-600">
+        <div className="flex items-center justify-between px-2 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[11px] text-gray-600">
           <button onClick={() => setShowNewRes(true)} className="flex items-center gap-2 text-[#111827] hover:text-black">
             <span className="w-7 h-7 rounded-full flex items-center justify-center text-white" style={{ background: '#3B82F6' }}>
               <BedDouble size={14} />

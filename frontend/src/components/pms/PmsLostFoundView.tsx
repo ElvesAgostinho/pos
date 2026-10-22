@@ -64,7 +64,7 @@ export default function PmsLostFoundView() {
             { header: 'Quarto', accessor: (r: any) => r.room_number || '—', width: '15%' },
           ]} />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[12.5px] overflow-auto">
+        <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
           <div className="font-bold text-[#111827]">{selId ? 'Editar Objeto' : 'Novo Objeto Encontrado'}</div>
           <label className="flex flex-col">Descrição<input value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inp} /></label>
           <div className="flex gap-2">

@@ -12,7 +12,7 @@ const when = (v: any) => (v ? new Date(v).toLocaleString('pt-PT', { day: '2-digi
 function Panel({ title, children, right }: any) {
   return (
     <div className="bg-white border border-[#E6E8EC]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
-      <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[13px] font-bold text-[#111827]"
+      <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[12px] font-bold text-[#111827]"
         style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }}>
         <span>{title}</span>{right}
       </div>
@@ -21,7 +21,7 @@ function Panel({ title, children, right }: any) {
   );
 }
 
-const btn = 'px-3 py-1.5 text-[12.5px] font-semibold border border-[#E6E8EC] text-[#111827] flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#E6E8EC] text-[#111827] flex items-center gap-1.5';
 const btnStyle = {
   background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4)',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
@@ -87,7 +87,7 @@ export default function AgtTransmitView() {
 
   const Kpi = ({ label, value, color }: any) => (
     <div className="flex-1 bg-white border border-[#E6E8EC] px-3 py-2" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
-      <div className="text-[11.5px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
+      <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
       <div className="text-[22px] font-black leading-tight" style={{ color: color || '#1E2A44' }}>{value ?? '—'}</div>
     </div>
   );
@@ -107,7 +107,7 @@ export default function AgtTransmitView() {
             </button>
           </div>}>
           {c?.simulation ? (
-            <div className="flex items-start gap-2 p-2 bg-[#F7F8FA] border border-[#E6E8EC] text-[13px]">
+            <div className="flex items-start gap-2 p-2 bg-[#F7F8FA] border border-[#E6E8EC] text-[12px]">
               <ShieldAlert size={20} className="text-[#111827] flex-shrink-0" />
               <div>
                 <div className="font-bold text-[#111827]">Modo simulação — ainda não está a comunicar com a AGT a sério</div>
@@ -120,22 +120,22 @@ export default function AgtTransmitView() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 text-[13px]">
+            <div className="flex items-center gap-3 text-[12px]">
               <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border border-[#E6E8EC]">
                 <ShieldCheck size={20} className="text-[#111827]" />
                 <div>
                   <div className="font-bold text-[#111827]">Ligada · {c?.environment === 'PROD' ? 'Produção' : 'Sandbox'}</div>
-                  <div className="text-[12.5px] text-gray-600">{c?.url_submit}</div>
+                  <div className="text-[11px] text-gray-600">{c?.url_submit}</div>
                 </div>
               </div>
-              <div className="text-[12.5px] text-gray-600">
+              <div className="text-[11px] text-gray-600">
                 Estado: <b>{c?.health || '—'}</b> · verificado {when(c?.health_at)}<br />
                 Tentativas máx.: {c?.max_retries} · timeout {c?.timeout_seconds}s
                 {!c?.has_credentials && <div className="text-[#DC2626] font-bold flex items-center gap-1"><AlertTriangle size={13} /> Sem credenciais configuradas</div>}
               </div>
             </div>
           )}
-          <div className="mt-2 text-[12.5px] text-gray-600">
+          <div className="mt-2 text-[11px] text-gray-600">
             Certificado AGT: <b>{f?.certified ? f.certificate_number : 'não certificado'}</b> · ambiente {f?.environment === 'PROD' ? 'Produção' : 'Testes'}
           </div>
         </Panel>
@@ -151,7 +151,7 @@ export default function AgtTransmitView() {
         </div>
 
         {(q?.documents_not_queued ?? 0) > 0 && (
-          <div className="flex items-center gap-2 p-2 bg-[#F7F8FA] border border-[#DC2626] text-[13px] text-[#DC2626] font-bold">
+          <div className="flex items-center gap-2 p-2 bg-[#F7F8FA] border border-[#DC2626] text-[12px] text-[#DC2626] font-bold">
             <AlertTriangle size={14} />
             {q.documents_not_queued} documento(s) emitido(s) antes desta funcionalidade existir não estão em fila.
             Foram emitidos e assinados corretamente — só não passaram pelo transmissor.
@@ -160,7 +160,7 @@ export default function AgtTransmitView() {
 
         {/* Detalhe */}
         <Panel title="Documentos e estado da comunicação"
-          right={<span className="text-[12.5px] font-normal text-gray-500">{subs.length} submissão(ões) · atualiza sozinho</span>}>
+          right={<span className="text-[11px] font-normal text-gray-500">{subs.length} submissão(ões) · atualiza sozinho</span>}>
           <ClassicGrid rowKey="id" data={subs} onRowClick={(r: any) => setSel(r)} columns={[
             { header: 'Documento', accessor: 'invoice_no', width: '12%' },
             { header: 'Cliente', accessor: (r: any) => r.customer_name || '—', width: '18%' },
@@ -168,17 +168,17 @@ export default function AgtTransmitView() {
             { header: 'Estado', accessor: (r: any) => {
               const s = STATUS[r.status] || { label: r.status, bg: '#3B82F6', icon: Clock };
               const I = s.icon;
-              return <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11.5px] font-bold text-white" style={{ background: s.bg }}>
+              return <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: s.bg }}>
                 <I size={10} />{s.label}{r.simulated ? ' (simulado)' : ''}
               </span>;
             }, width: '16%' },
             { header: 'Tent.', accessor: 'attempts', width: '6%' },
-            { header: 'Protocolo AGT', accessor: (r: any) => <span className="font-mono text-[11.5px]">{r.agt_reference || '—'}</span>, width: '16%' },
+            { header: 'Protocolo AGT', accessor: (r: any) => <span className="font-mono text-[10px]">{r.agt_reference || '—'}</span>, width: '16%' },
             { header: 'Aceite em', accessor: (r: any) => when(r.acked_at), width: '12%' },
             { header: '', accessor: (r: any) => (
               r.status !== 'ACK' ? (
                 <button onClick={(e: any) => { e.stopPropagation(); retry.mutate(r.id); }}
-                  className="px-1.5 py-0.5 text-[11.5px] font-bold border border-[#1E2A44] text-white"
+                  className="px-1.5 py-0.5 text-[10px] font-bold border border-[#1E2A44] text-white"
                   style={{ background: 'linear-gradient(to bottom, #1E2A44, #3B82F6)' }}>Reenviar</button>
               ) : null), width: '10%' },
           ]} />
@@ -188,7 +188,7 @@ export default function AgtTransmitView() {
         {sel && (
           <Panel title={`Prova de comunicação — ${sel.invoice_no}`}
             right={<button onClick={() => setSel(null)} className="text-[14px] leading-none text-gray-500 hover:text-black">×</button>}>
-            <div className="grid grid-cols-2 gap-3 text-[12.5px]">
+            <div className="grid grid-cols-2 gap-3 text-[11px]">
               <div className="space-y-1">
                 <div><span className="text-gray-500">Chave de idempotência:</span> <span className="font-mono">{sel.idempotency_key}</span></div>
                 <div><span className="text-gray-500">Código HTTP:</span> <b>{sel.http_status ?? '—'}</b></div>
@@ -200,7 +200,7 @@ export default function AgtTransmitView() {
               </div>
               <div>
                 <div className="text-gray-500 mb-1">Conteúdo enviado (o que a AGT recebeu):</div>
-                <pre className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 overflow-auto max-h-56 font-mono text-[11.5px]">{sel.payload_preview || sel.payload || '—'}</pre>
+                <pre className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 overflow-auto max-h-56 font-mono text-[10px]">{sel.payload_preview || sel.payload || '—'}</pre>
               </div>
             </div>
           </Panel>

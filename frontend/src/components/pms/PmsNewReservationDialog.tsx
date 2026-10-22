@@ -15,8 +15,8 @@ const plusDays = (iso: string, n: number) => { const d = new Date(iso); d.setDat
 function Panel({ title, children, className = '' }: { title: string; children: any; className?: string }) {
   return (
     <div className={`border border-[#E6E8EC] bg-white flex flex-col ${className}`}>
-      <div className="px-2 py-1 font-bold text-[12.5px] border-b border-[#E6E8EC] bg-[#F7F8FA] flex-shrink-0">{title}</div>
-      <div className="p-2 flex flex-col gap-1.5 text-[12.5px] flex-1 overflow-auto">{children}</div>
+      <div className="px-2 py-1 font-bold text-[11px] border-b border-[#E6E8EC] bg-[#F7F8FA] flex-shrink-0">{title}</div>
+      <div className="p-2 flex flex-col gap-1.5 text-[11px] flex-1 overflow-auto">{children}</div>
     </div>
   );
 }
@@ -184,7 +184,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
             ) : (
               <div className="flex-1">
                 <div className="font-semibold">{guest.name}</div>
-                <div className="text-[11.5px] text-gray-500">{guest.code}{guest.tax_id ? ` · NIF ${guest.tax_id}` : ''}</div>
+                <div className="text-[10px] text-gray-500">{guest.code}{guest.tax_id ? ` · NIF ${guest.tax_id}` : ''}</div>
               </div>
             )}
             <button onClick={() => setShowEntity(true)}
@@ -349,12 +349,12 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
         </div>
 
         <div className="flex justify-end gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black px-2">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black px-2">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
           <button onClick={save} disabled={saving}
-            className="px-4 py-1.5 text-[13px] font-bold text-white disabled:opacity-50" style={{ background: '#1E2A44' }}>
+            className="px-4 py-1.5 text-[12px] font-bold text-white disabled:opacity-50" style={{ background: '#1E2A44' }}>
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
         </div>

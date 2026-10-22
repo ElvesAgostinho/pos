@@ -24,7 +24,7 @@ export default function CategoriesView() {
       footer={<div className="text-gray-600">Nº registos: {categories.length}</div>}
     >
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Nome da categoria" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={draft.parent} onChange={(e) => setDraft({ ...draft, parent: e.target.value === '' ? '' : Number(e.target.value) })} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">— sem pai —</option>

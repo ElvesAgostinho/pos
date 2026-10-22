@@ -24,8 +24,8 @@ function useCrud(resource: keyof typeof accApi, params?: any) {
   };
 }
 const Card = ({ label, value, tone, sub }: any) => (
-  <div className="bg-white border border-[#E6E8EC] p-3"><div className="text-[11.5px] text-gray-500 uppercase">{label}</div>
-    <div className={`text-xl font-bold ${tone || 'text-[#6B7280]'}`}>{value}</div>{sub && <div className="text-[12.5px] text-gray-500">{sub}</div>}</div>
+  <div className="bg-white border border-[#E6E8EC] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div>
+    <div className={`text-xl font-bold ${tone || 'text-[#6B7280]'}`}>{value}</div>{sub && <div className="text-[11px] text-gray-500">{sub}</div>}</div>
 );
 
 // ==================== Dashboard ====================
@@ -34,7 +34,7 @@ export function AccDashboardView() {
   return (
     <ClassicWindow title="Contabilidade — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Contabilidade Geral (PGC-AO)</div>}>
       <div className="p-3 grid grid-cols-4 gap-2">
-        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : <>
+        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Total do Ativo" value={AOA(d.total_assets)} /><Card label="Total do Passivo" value={AOA(d.total_liabilities)} />
           <Card label="Proveitos" value={AOA(d.total_income)} tone="text-[#111827]" /><Card label="Custos" value={AOA(d.total_expense)} tone="text-[#111827]" />
           <Card label="Resultado líquido" value={AOA(d.net_result)} tone={d.net_result >= 0 ? 'text-[#111827]' : 'text-[#B91C1C]'} sub={d.net_result >= 0 ? 'Lucro' : 'Prejuízo'} />
@@ -55,7 +55,7 @@ export function AccChartView() {
   return (
     <ClassicWindow title="Plano de Contas (PGC-AO)" icon={<BookOpen size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Contas: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Código" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#E6E8EC] p-1 w-20" />
           <input placeholder="Nome da conta" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={f.account_class} onChange={(e) => setF({ ...f, account_class: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">{Object.entries(CLASSES).map(([k, v]) => <option key={k} value={k}>{k} · {v}</option>)}</select>
@@ -122,7 +122,7 @@ export function AccEntriesView() {
         {/* Editor / detalhe */}
         <div className="w-3/5 flex flex-col">
           {sel ? (
-            <div className="flex-1 overflow-auto p-2 text-[12.5px]">
+            <div className="flex-1 overflow-auto p-2 text-[11px]">
               <div className="flex items-center justify-between mb-2">
                 <div><b>{sel.number}</b> · {sel.journal_name} · {sel.entry_date}<br /><span className="text-gray-600">{sel.description}</span></div>
                 <div className="flex gap-1">
@@ -139,7 +139,7 @@ export function AccEntriesView() {
               <div className="flex justify-end gap-4 mt-2 pr-2 font-bold"><span>Débito: {AOA(sel.total_debit)}</span><span>Crédito: {AOA(sel.total_credit)}</span></div>
             </div>
           ) : (
-            <div className="flex-1 overflow-auto p-2 text-[12.5px]">
+            <div className="flex-1 overflow-auto p-2 text-[11px]">
               <div className="font-bold text-[#6B7280] mb-2">Novo lançamento</div>
               <div className="flex flex-wrap items-end gap-2 mb-2">
                 <select value={hdr.journal} onChange={(e) => setHdr({ ...hdr, journal: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white"><option value="">Diário…</option>{journals.map((j: any) => <option key={j.id} value={j.id}>{j.code} · {j.name}</option>)}</select>
@@ -188,7 +188,7 @@ export function AccJournalsView() {
     <ClassicWindow title="Diários & Exercícios" icon={<ScrollText size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Diários: {j.rows.length} · Exercícios: {p.rows.length}</div>}>
       <div className="flex h-full">
         <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
             <input placeholder="Cód." value={nj.code} onChange={(e) => setNj({ ...nj, code: e.target.value })} className="border border-[#E6E8EC] p-1 w-14" />
             <input placeholder="Nome do diário" value={nj.name} onChange={(e) => setNj({ ...nj, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
             <select value={nj.journal_type} onChange={(e) => setNj({ ...nj, journal_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">{Object.entries(TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
@@ -199,7 +199,7 @@ export function AccJournalsView() {
           ]} /></div>
         </div>
         <div className="w-1/2 flex flex-col">
-          <div className="p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px] font-bold">Exercícios contabilísticos</div>
+          <div className="p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px] font-bold">Exercícios contabilísticos</div>
           <div className="flex-1 overflow-hidden"><ClassicGrid rowKey="id" data={p.rows} columns={[
             { header: 'Exercício', accessor: 'name', width: '28%' }, { header: 'Início', accessor: 'start_date', width: '24%' }, { header: 'Fim', accessor: 'end_date', width: '24%' },
             { header: 'Estado', accessor: (r: any) => <button onClick={() => toggleClose(r.id)} className={`flex items-center gap-1 ${r.is_closed ? 'text-[#B91C1C]' : 'text-[#111827]'}`}>{r.is_closed ? <><Lock size={11} />Fechado</> : <><Unlock size={11} />Aberto</>}</button>, width: '24%' },
@@ -219,7 +219,7 @@ export function AccLedgerView() {
   return (
     <ClassicWindow title="Razão (movimentos por conta)" icon={<ScrollText size={14} className="text-gray-300" />} footer={<div className="text-gray-600">{data ? `Saldo final: ${AOA(data.final_balance)}` : 'Selecione uma conta'}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <select value={code} onChange={(e) => setCode(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white"><option value="">Conta…</option>{accounts.map((a: any) => <option key={a.id} value={a.code}>{a.code} · {a.name}</option>)}</select>
           {data && <span className="text-gray-600">{data.account.name} ({data.account.normal_side === 'D' ? 'devedora' : 'credora'})</span>}
         </div>
@@ -228,7 +228,7 @@ export function AccLedgerView() {
           { header: 'Débito', accessor: (r: any) => Number(r.debit) ? AOA(r.debit) : '', width: '12%' }, { header: 'Crédito', accessor: (r: any) => Number(r.credit) ? AOA(r.credit) : '', width: '12%' },
           { header: 'Saldo', accessor: (r: any) => AOA(r.balance), width: '12%' },
         ]} />
-        {!code && <div className="text-center text-gray-400 text-[13px] py-8">Escolha uma conta para ver o razão.</div>}</div>
+        {!code && <div className="text-center text-gray-400 text-[12px] py-8">Escolha uma conta para ver o razão.</div>}</div>
       </div>
     </ClassicWindow>
   );
@@ -246,7 +246,7 @@ export function AccTrialBalanceView() {
         { header: 'Débito', accessor: (r: any) => AOA(r.debit), width: '15%' }, { header: 'Crédito', accessor: (r: any) => AOA(r.credit), width: '15%' },
         { header: 'Saldo Dev.', accessor: (r: any) => r.saldo_devedor ? AOA(r.saldo_devedor) : '', width: '15%' }, { header: 'Saldo Cred.', accessor: (r: any) => r.saldo_credor ? AOA(r.saldo_credor) : '', width: '15%' },
       ]} />
-      {rows.length === 0 && <div className="text-center text-gray-400 text-[13px] py-8">Sem movimentos lançados.</div>}</div>
+      {rows.length === 0 && <div className="text-center text-gray-400 text-[12px] py-8">Sem movimentos lançados.</div>}</div>
     </ClassicWindow>
   );
 }
@@ -262,7 +262,7 @@ export function AccIntegrationView() {
   const p = data?.pending ?? { pos: [], purchase: [], treasury: [] };
   const Section = ({ title, source, rows }: any) => (
     <div className="bg-white border border-[#E6E8EC]">
-      <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[12.5px] font-bold flex items-center justify-between">
+      <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold flex items-center justify-between">
         <span>{title} — {rows.length} pendente(s)</span>
         {rows.length > 0 && <ClassicButton icon={Zap} label="Contabilizar" onClick={() => run.mutate([source])} />}
       </div>
@@ -272,7 +272,7 @@ export function AccIntegrationView() {
           { header: 'Data', accessor: 'date', width: '27%' },
           { header: 'Valor', accessor: (r: any) => AOA(r.amount), width: '27%' },
         ]} />
-        {rows.length === 0 && <div className="text-center text-gray-400 text-[12.5px] py-3 flex items-center justify-center gap-1"><Check size={13} /> Tudo contabilizado</div>}
+        {rows.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3 flex items-center justify-center gap-1"><Check size={13} /> Tudo contabilizado</div>}
       </div>
     </div>
   );
@@ -280,14 +280,14 @@ export function AccIntegrationView() {
     <ClassicWindow title="Integração Contabilística (Auto-Posting)" icon={<Zap size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{data ? `${data.total} documento(s) por contabilizar` : '—'}</div>}>
       <div className="p-3 space-y-3">
-        <div className="bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-2 text-[12.5px] text-gray-700 flex items-center justify-between">
+        <div className="bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-2 text-[11px] text-gray-700 flex items-center justify-between">
           <span>Gera lançamentos automaticamente: <b>Venda POS</b> → Dr Caixa / Cr Vendas+IVA · <b>Compras</b> → Dr Existências / Cr Fornecedores · <b>Tesouraria</b> → Recebimentos/Pagamentos.</span>
           <div className="flex gap-1">
             <ClassicButton icon={RefreshCw} label="Atualizar" onClick={() => qc.invalidateQueries({ queryKey: ['acc', 'autoPost'] })} />
             <ClassicButton icon={Zap} label="Contabilizar tudo" onClick={() => run.mutate(['pos', 'purchase', 'treasury'])} />
           </div>
         </div>
-        {isLoading ? <div className="text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : <>
+        {isLoading ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Section title="Vendas POS" source="pos" rows={p.pos} />
           <Section title="Compras (faturas de fornecedor)" source="purchase" rows={p.purchase} />
           <Section title="Tesouraria (recebimentos/pagamentos)" source="treasury" rows={p.treasury} />
@@ -295,8 +295,8 @@ export function AccIntegrationView() {
 
         {/* Apuramento de resultados (fecho de exercício) */}
         <div className="bg-white border border-[#E6E8EC]">
-          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[12.5px] font-bold">Apuramento de Resultados (fecho de exercício)</div>
-          <div className="p-3 flex items-center justify-between text-[12.5px]">
+          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Apuramento de Resultados (fecho de exercício)</div>
+          <div className="p-3 flex items-center justify-between text-[11px]">
             <span className="text-gray-600">Transfere Proveitos (classe 6) e Custos (classe 7) para a conta de Resultado Líquido (88).</span>
             <ClassicButton icon={CheckCircle} label="Apurar resultados" onClick={async () => {
               const pv = await accApi.closeResultsPreview();
@@ -315,35 +315,35 @@ export function AccIntegrationView() {
 export function AccStatementsView() {
   const { data: is_ } = useQuery({ queryKey: ['acc', 'incomeStatement'], queryFn: () => accApi.incomeStatement() });
   const { data: bs } = useQuery({ queryKey: ['acc', 'balanceSheet'], queryFn: () => accApi.balanceSheet() });
-  const Line = ({ label, value, bold }: any) => <div className={`flex justify-between py-0.5 border-b border-[#F1F2F4] text-[12.5px] ${bold ? 'font-bold' : ''}`}><span>{label}</span><span>{AOA(value)}</span></div>;
-  const Panel = ({ title, children }: any) => <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[12.5px] font-bold">{title}</div><div className="p-2">{children}</div></div>;
+  const Line = ({ label, value, bold }: any) => <div className={`flex justify-between py-0.5 border-b border-[#F1F2F4] text-[11px] ${bold ? 'font-bold' : ''}`}><span>{label}</span><span>{AOA(value)}</span></div>;
+  const Panel = ({ title, children }: any) => <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">{title}</div><div className="p-2">{children}</div></div>;
   return (
     <ClassicWindow title="Demonstrações Financeiras" icon={<FileBarChart size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Demonstração de Resultados + Balanço (PGC-AO)</div>}>
       <div className="p-3 grid grid-cols-2 gap-3">
         <Panel title="Demonstração de Resultados">
           {is_ ? <>
-            <div className="text-[11.5px] text-gray-500 uppercase mt-1">Proveitos</div>
+            <div className="text-[10px] text-gray-500 uppercase mt-1">Proveitos</div>
             {is_.income.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Total Proveitos" value={is_.total_income} bold />
-            <div className="text-[11.5px] text-gray-500 uppercase mt-2">Custos</div>
+            <div className="text-[10px] text-gray-500 uppercase mt-2">Custos</div>
             {is_.expense.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Total Custos" value={is_.total_expense} bold />
-            <div className={`flex justify-between py-1 mt-1 font-bold text-[13px] ${is_.net_result >= 0 ? 'text-[#111827]' : 'text-[#B91C1C]'}`}><span>Resultado ({is_.result_label})</span><span>{AOA(is_.net_result)}</span></div>
+            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${is_.net_result >= 0 ? 'text-[#111827]' : 'text-[#B91C1C]'}`}><span>Resultado ({is_.result_label})</span><span>{AOA(is_.net_result)}</span></div>
           </> : <div className="text-gray-400">A carregar…</div>}
         </Panel>
         <Panel title="Balanço">
           {bs ? <>
-            <div className="text-[11.5px] text-gray-500 uppercase mt-1">Ativo</div>
+            <div className="text-[10px] text-gray-500 uppercase mt-1">Ativo</div>
             {bs.assets.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Total do Ativo" value={bs.total_assets} bold />
-            <div className="text-[11.5px] text-gray-500 uppercase mt-2">Passivo</div>
+            <div className="text-[10px] text-gray-500 uppercase mt-2">Passivo</div>
             {bs.liabilities.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Total do Passivo" value={bs.total_liabilities} bold />
-            <div className="text-[11.5px] text-gray-500 uppercase mt-2">Fundos Próprios</div>
+            <div className="text-[10px] text-gray-500 uppercase mt-2">Fundos Próprios</div>
             {bs.equity.map((x: any, i: number) => <Line key={i} label={x.name} value={x.amount} />)}
             <Line label="Resultado do exercício" value={bs.net_result} />
             <Line label="Total Fundos Próprios" value={bs.total_equity} bold />
-            <div className={`flex justify-between py-1 mt-1 font-bold text-[13px] ${bs.balanced ? 'text-[#111827]' : 'text-[#B91C1C]'}`}><span className="flex items-center gap-1">Passivo + Fundos Próprios {bs.balanced ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}</span><span>{AOA(bs.total_liabilities_equity)}</span></div>
+            <div className={`flex justify-between py-1 mt-1 font-bold text-[12px] ${bs.balanced ? 'text-[#111827]' : 'text-[#B91C1C]'}`}><span className="flex items-center gap-1">Passivo + Fundos Próprios {bs.balanced ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}</span><span>{AOA(bs.total_liabilities_equity)}</span></div>
           </> : <div className="text-gray-400">A carregar…</div>}
         </Panel>
       </div>

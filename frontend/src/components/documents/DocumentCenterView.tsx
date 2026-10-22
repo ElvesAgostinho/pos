@@ -69,8 +69,8 @@ export default function DocumentCenterView() {
       <div className="h-full flex flex-col">
         <div className="flex gap-1 px-3 pt-2 bg-[#F7F8FA] border-b border-[#E6E8EC]">
           <button onClick={() => setView('docs')}
-            className="px-4 py-1.5 text-[13px] font-bold border border-b-0 bg-[#F7F8FA] text-gray-600 border-[#E6E8EC]">Documentos</button>
-          <button className="px-4 py-1.5 text-[13px] font-bold border border-b-0 bg-white text-[#111827] border-[#E6E8EC]">
+            className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#F7F8FA] text-gray-600 border-[#E6E8EC]">Documentos</button>
+          <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#111827] border-[#E6E8EC]">
             Trilho de Auditoria (tudo o que aconteceu)
           </button>
         </div>
@@ -84,9 +84,9 @@ export default function DocumentCenterView() {
       footer={<div className="text-gray-600">Todos os documentos de todos os módulos · pesquisa global (nº, cliente, mesa, quarto, valor) · {data?.count ?? 0} resultado(s)</div>}>
       <div className="flex flex-col h-full bg-[#F7F8FA]">
         <div className="flex gap-1 px-3 pt-2 bg-[#F7F8FA] border-b border-[#E6E8EC]">
-          <button className="px-4 py-1.5 text-[13px] font-bold border border-b-0 bg-white text-[#111827] border-[#E6E8EC]">Documentos</button>
+          <button className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-white text-[#111827] border-[#E6E8EC]">Documentos</button>
           <button onClick={() => setView('trail')}
-            className="px-4 py-1.5 text-[13px] font-bold border border-b-0 bg-[#F7F8FA] text-gray-600 border-[#E6E8EC] hover:bg-[#F7F8FA]">
+            className="px-4 py-1.5 text-[12px] font-bold border border-b-0 bg-[#F7F8FA] text-gray-600 border-[#E6E8EC] hover:bg-[#F7F8FA]">
             Trilho de Auditoria (tudo o que aconteceu)
           </button>
         </div>
@@ -100,29 +100,29 @@ export default function DocumentCenterView() {
         <form className="flex items-center gap-2 p-2 border-b border-[#E6E8EC]" onSubmit={(e) => { e.preventDefault(); setQ(search); }}>
           <div className="flex items-center gap-1 bg-white border border-[#E6E8EC] px-2 flex-1 max-w-lg">
             <Search size={14} className="text-gray-500" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquisar: FT2026… · Mesa 12 · Quarto 405 · João Silva · Coca-Cola · valor…" className="flex-1 py-1.5 outline-none text-[13px]" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquisar: FT2026… · Mesa 12 · Quarto 405 · João Silva · Coca-Cola · valor…" className="flex-1 py-1.5 outline-none text-[12px]" />
           </div>
-          <button type="submit" className="px-3 py-1.5 text-[13px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA]">Pesquisar</button>
-          {q && <button type="button" className="text-[13px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); }}>limpar</button>}
-          <button type="button" onClick={() => setShowAdv((s) => !s)} className={`px-3 py-1.5 text-[13px] border border-[#E6E8EC] flex items-center gap-1 ${advActive ? 'bg-[#F7F8FA] font-bold' : 'bg-gradient-to-b from-white to-[#F7F8FA]'}`}><SlidersHorizontal size={13} />Filtros{advActive ? ' •' : ''}</button>
+          <button type="submit" className="px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA]">Pesquisar</button>
+          {q && <button type="button" className="text-[12px] text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); }}>limpar</button>}
+          <button type="button" onClick={() => setShowAdv((s) => !s)} className={`px-3 py-1.5 text-[12px] border border-[#E6E8EC] flex items-center gap-1 ${advActive ? 'bg-[#F7F8FA] font-bold' : 'bg-gradient-to-b from-white to-[#F7F8FA]'}`}><SlidersHorizontal size={13} />Filtros{advActive ? ' •' : ''}</button>
           {/* Exportação multi-formato */}
           <div className="ml-auto flex items-center gap-1.5">
-            <span className="text-[12.5px] text-gray-500 mr-1">Exportar:</span>
+            <span className="text-[11px] text-gray-500 mr-1">Exportar:</span>
             {EXPORTS.map((ex) => (
               <button key={ex.label} type="button" onClick={ex.run} title={`Exportar em ${ex.label}`} disabled={!rows.length}
                 className="flex flex-col items-center justify-center w-[54px] h-[46px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] disabled:opacity-40 rounded-[8px]">
                 <ex.icon size={20} style={{ color: ex.color }} strokeWidth={1.7} />
-                <span className="text-[11.5px] mt-0.5 text-gray-700">{ex.label}</span>
+                <span className="text-[10px] mt-0.5 text-gray-700">{ex.label}</span>
               </button>
             ))}
             <button type="button" onClick={() => setShowRS((s) => !s)} title="Windows Reporting Services"
               className={`flex flex-col items-center justify-center w-[54px] h-[46px] border border-[#E6E8EC] rounded-[8px] ${reportServer ? 'bg-[#F7F8FA]' : 'bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA]'}`}>
-              <Server size={20} className="text-[#6B7280]" strokeWidth={1.7} /><span className="text-[11.5px] mt-0.5 text-gray-700">Servidor</span>
+              <Server size={20} className="text-[#6B7280]" strokeWidth={1.7} /><span className="text-[10px] mt-0.5 text-gray-700">Servidor</span>
             </button>
           </div>
         </form>
         {showAdv && (
-          <div className="flex flex-wrap items-end gap-3 px-3 py-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[12.5px]">
+          <div className="flex flex-wrap items-end gap-3 px-3 py-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[11px]">
             <label className="flex flex-col text-gray-600">Data de<input type="date" value={adv.dateFrom} onChange={(e) => setAdv({ ...adv, dateFrom: e.target.value })} className="border border-[#E6E8EC] px-2 py-1" /></label>
             <label className="flex flex-col text-gray-600">Data até<input type="date" value={adv.dateTo} onChange={(e) => setAdv({ ...adv, dateTo: e.target.value })} className="border border-[#E6E8EC] px-2 py-1" /></label>
             <label className="flex flex-col text-gray-600">Valor mín.<input type="number" value={adv.valMin} onChange={(e) => setAdv({ ...adv, valMin: e.target.value })} className="border border-[#E6E8EC] px-2 py-1 w-24" /></label>
@@ -133,7 +133,7 @@ export default function DocumentCenterView() {
           </div>
         )}
         {showRS && (
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[12.5px]">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[11px]">
             <Server size={13} className="text-[#6B7280]" />
             <span className="text-gray-700">Windows Reporting Services:</span>
             <input value={reportServer} onChange={(e) => setReportServer(e.target.value)} placeholder="http://servidor/ReportServer" className="border border-[#E6E8EC] px-2 py-1 w-72" />
@@ -145,11 +145,11 @@ export default function DocumentCenterView() {
         <div className="flex flex-1 overflow-hidden">
           {/* Pastas por área */}
           <div className="w-52 flex-shrink-0 bg-white border-r border-[#E6E8EC] overflow-auto py-1">
-            <button onClick={() => setCat('')} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-left hover:bg-[#F7F8FA] ${cat === '' ? 'bg-[#F7F8FA] font-bold' : ''}`}><Folder size={14} className="text-[#111827]" />Todos os documentos</button>
+            <button onClick={() => setCat('')} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left hover:bg-[#F7F8FA] ${cat === '' ? 'bg-[#F7F8FA] font-bold' : ''}`}><Folder size={14} className="text-[#111827]" />Todos os documentos</button>
             {cats.map((c: any) => {
               const Icon = CAT_ICON[c.key] || Folder;
               return (
-                <button key={c.key} onClick={() => setCat(c.key)} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-left hover:bg-[#F7F8FA] ${cat === c.key ? 'bg-[#F7F8FA] font-bold' : ''}`}>
+                <button key={c.key} onClick={() => setCat(c.key)} className={`w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left hover:bg-[#F7F8FA] ${cat === c.key ? 'bg-[#F7F8FA] font-bold' : ''}`}>
                   <Icon size={14} style={{ color: CAT_COLOR[c.key] }} />{c.name}
                 </button>
               );
@@ -157,12 +157,12 @@ export default function DocumentCenterView() {
           </div>
           {/* Resultados */}
           <div className="flex-1 overflow-auto">
-            <div className="grid grid-cols-[110px_1fr_1fr_110px_100px_90px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1 text-[13px] sticky top-0"><span>Documento</span><span>Tipo</span><span>Cliente / Ref.</span><span className="text-right">Valor</span><span>Data</span><span>Estado</span></div>
+            <div className="grid grid-cols-[110px_1fr_1fr_110px_100px_90px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1 text-[12px] sticky top-0"><span>Documento</span><span>Tipo</span><span>Cliente / Ref.</span><span className="text-right">Valor</span><span>Data</span><span>Estado</span></div>
             {filtered.map((r: any, i: number) => {
               const Icon = CAT_ICON[r.category] || FileText;
               return (
                 <div key={i} onClick={() => r.module && setSel({ module: r.module, id: r.ref })}
-                  className="grid grid-cols-[110px_1fr_1fr_110px_100px_90px] px-2 py-1 border-b border-[#F1F2F4] text-[13px] items-center hover:bg-[#FFFFFF] cursor-pointer">
+                  className="grid grid-cols-[110px_1fr_1fr_110px_100px_90px] px-2 py-1 border-b border-[#F1F2F4] text-[12px] items-center hover:bg-[#FFFFFF] cursor-pointer">
                   <span className="font-bold flex items-center gap-1.5"><Icon size={12} style={{ color: CAT_COLOR[r.category] }} />{r.number}</span>
                   <span className="text-gray-700">{r.doc_type}</span>
                   <span className="truncate">{r.party || '—'}</span>
@@ -172,7 +172,7 @@ export default function DocumentCenterView() {
                 </div>
               );
             })}
-            {filtered.length === 0 && <div className="px-3 py-6 text-gray-500 text-center text-[13px]">Sem documentos para este filtro/pesquisa.</div>}
+            {filtered.length === 0 && <div className="px-3 py-6 text-gray-500 text-center text-[12px]">Sem documentos para este filtro/pesquisa.</div>}
           </div>
         </div>
       </div>
@@ -188,25 +188,25 @@ function DocDetail({ sel, onClose, onOpen }: { sel: { module: string; id: string
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
       <div className="w-[560px] max-h-[85vh] bg-white border border-[#E6E8EC] shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <div className="h-8 flex items-center justify-between px-2 bg-[#3B82F6] text-white text-[13px] font-semibold flex-shrink-0">
+        <div className="h-8 flex items-center justify-between px-2 bg-[#3B82F6] text-white text-[12px] font-semibold flex-shrink-0">
           <span className="flex items-center gap-2"><FileText size={14} />{det.title || 'Documento'}</span>
           <button onClick={onClose} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>
         </div>
-        <div className="p-4 overflow-auto text-[13px]">
+        <div className="p-4 overflow-auto text-[12px]">
           <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-3">
             {Object.entries(det.fields || {}).map(([k, v]: any) => (
               <div key={k} className="flex justify-between border-b border-[#F1F2F4] py-0.5"><span className="text-gray-500">{k}</span><span className="font-semibold text-right">{String(v)}</span></div>
             ))}
           </div>
           {det.items?.length ? (
-            <div className="mb-3"><div className="text-[12.5px] font-bold text-[#6B7280] uppercase mb-1">Itens</div>
+            <div className="mb-3"><div className="text-[11px] font-bold text-[#6B7280] uppercase mb-1">Itens</div>
               <div className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 space-y-0.5">{det.items.map((it: string, i: number) => <div key={i}>{it}</div>)}</div>
             </div>
           ) : null}
           {sel.module === 'fiscal' && det.printable && (
             <button onClick={() => printFiscalInvoice(Number(sel.id), false)} className="mb-3 px-3 py-1.5 border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] flex items-center gap-1.5"><Printer size={13} />Imprimir documento</button>
           )}
-          <div className="text-[12.5px] font-bold text-[#6B7280] uppercase mb-1 flex items-center gap-1"><Link2 size={13} />Documentos ligados ({links.length})</div>
+          <div className="text-[11px] font-bold text-[#6B7280] uppercase mb-1 flex items-center gap-1"><Link2 size={13} />Documentos ligados ({links.length})</div>
           {links.length === 0 && <div className="text-gray-500">Sem ligações.</div>}
           {links.map((l: any, i: number) => (
             <button key={i} disabled={!l.module} onClick={() => l.module && onOpen({ module: l.module, id: l.id })}

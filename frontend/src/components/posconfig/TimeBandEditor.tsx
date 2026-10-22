@@ -4,8 +4,8 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
-const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[12px] bg-white';
 
 /**
  * HORÁRIO-PERÍODO — a faixa horária (ex.: "08:01 as 10:00").
@@ -52,49 +52,49 @@ export default function TimeBandEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo período' : `A editar ${d.name}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo período' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Identificação */}
         <div className="w-[52%] p-6 space-y-3 border-r border-[#F1F2F4]">
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[90px] text-[#111827]">Código:<span className="text-[#DC2626]">*</span></span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)} className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[90px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
             <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} placeholder="08:01 as 10:00"
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[90px] text-[#111827]">Cor:</span>
             <input type="color" value={d.color || '#3B82F6'} onChange={(e) => set('color', e.target.value)}
               className="w-10 h-8 border border-[#E6E8EC]" />
             <input value={d.color || ''} onChange={(e) => set('color', e.target.value)}
               className={`${inp} w-[230px] font-mono`} style={{ ...inputStyle, background: d.color, color: '#FFFFFF' }} />
           </label>
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[90px] text-[#111827]">Ordem:</span>
             <input type="number" value={d.sort_order ?? 0} onChange={(e) => set('sort_order', Number(e.target.value))}
               className={`${inp} w-[290px]`} style={inputStyle} />
           </label>
-          <label className="flex items-center gap-2 text-[13px] pt-1">
+          <label className="flex items-center gap-2 text-[12px] pt-1">
             <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
             Ativo
           </label>
 
-          <div className="text-[12.5px] text-[#6B7280] pt-3 border-t border-[#F1F2F4]">
+          <div className="text-[11px] text-[#6B7280] pt-3 border-t border-[#F1F2F4]">
             A cor é a que aparece nos gráficos de ocupação e nos relatórios por faixa horária.
           </div>
         </div>
 
         {/* Períodos */}
         <div className="flex-1 flex flex-col">
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#F1F2F4]">Períodos</div>
+          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">Períodos</div>
           <div className="flex-1 overflow-auto">
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
                 <tr className="bg-[#F7F8FA] text-[#111827]">
                   <th className="text-left font-normal px-3 py-1.5 border-b border-[#F1F2F4]">De</th>
@@ -117,19 +117,19 @@ export default function TimeBandEditor({ row, onClose }: { row: any; onClose: ()
           </div>
 
           {overlap && (
-            <div className="px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12.5px] text-[#111827]">
+            <div className="px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[11px] text-[#111827]">
               <b>Atenção:</b> há períodos sobrepostos. Nos relatórios, as vendas dessas horas
               seriam contadas duas vezes.
             </div>
           )}
 
           <div className="flex items-center gap-4 px-3 py-2 border-t border-[#F1F2F4] bg-[#F7F8FA]">
-            <button onClick={addSlot} className="flex items-center gap-2 text-[13px] text-[#111827] hover:bg-[#F7F8FA] px-1 py-1">
+            <button onClick={addSlot} className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] px-1 py-1">
               <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
             <span className="w-px h-6 bg-[#F7F8FA]" />
             <button onClick={delSlot} disabled={sel === null}
-              className="flex items-center gap-2 text-[13px] text-[#111827] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
+              className="flex items-center gap-2 text-[12px] text-[#111827] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
               <span className="w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center">−</span> Apagar
             </button>
           </div>

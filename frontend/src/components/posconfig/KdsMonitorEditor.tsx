@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Box } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
 const BOTOES: [string, string, string][] = [
   ['PRODUCTION', 'Produção', 'O cozinheiro marca que começou a preparar.'],
@@ -23,7 +23,7 @@ const OPCOES: [string, string][] = [
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
-    <label className="flex items-center gap-3 text-[13px]">
+    <label className="flex items-center gap-3 text-[12px]">
       <span className="w-[110px] flex-shrink-0 text-[#111827]">{label}</span>
       {children}
     </label>
@@ -82,7 +82,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo monitor' : `A editar ${d.name}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo monitor' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -115,7 +115,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
               <option value="ITEM">Por artigo</option>
             </select>
           </Row>
-          <div className="text-[12.5px] text-[#6B7280] pl-[122px] -mt-1">
+          <div className="text-[11px] text-[#6B7280] pl-[122px] -mt-1">
             {d.kind === 'ORDER'
               ? 'Vê-se a mesa inteira — os pratos saem juntos.'
               : 'Cada prato solto — para postos de linha.'}
@@ -124,27 +124,27 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
           </Box>
 
           <div className="pt-2">
-            <div className="text-[13px] font-semibold text-[#111827] mb-1">Botões:</div>
+            <div className="text-[12px] font-semibold text-[#111827] mb-1">Botões:</div>
             <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               {BOTOES.map(([k, l, ajuda]) => (
-                <label key={k} className="flex items-start gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[13px] hover:bg-[#FFFFFF] cursor-pointer">
+                <label key={k} className="flex items-start gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
                   <input type="checkbox" checked={bts.includes(k)} onChange={() => toggleB(k)} className="w-4 h-4 mt-px" />
                   <span><b>{l}</b> <span className="text-[#6B7280]">— {ajuda}</span></span>
                 </label>
               ))}
             </div>
             {bts.length === 0 && (
-              <div className="text-[12.5px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 mt-1">
+              <div className="text-[11px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 mt-1">
                 Sem botões, o cozinheiro não consegue avançar nenhum pedido.
               </div>
             )}
           </div>
 
           <div className="pt-2">
-            <div className="text-[13px] font-semibold text-[#111827] mb-1">Opções:</div>
+            <div className="text-[12px] font-semibold text-[#111827] mb-1">Opções:</div>
             <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
               {OPCOES.map(([k, l]) => (
-                <label key={k} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[13px] hover:bg-[#FFFFFF] cursor-pointer">
+                <label key={k} className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
                   <input type="checkbox" checked={!!opts[k]}
                     onChange={(e) => set('options', { ...opts, [k]: e.target.checked })} className="w-4 h-4" />
                   {l}
@@ -156,7 +156,7 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
 
         {/* Direita */}
         <div className="flex-1 p-4 space-y-3 overflow-auto">
-          <label className="flex items-center gap-2 text-[13px]">
+          <label className="flex items-center gap-2 text-[12px]">
             <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
             Ativo
           </label>
@@ -175,10 +175,10 @@ export default function KdsMonitorEditor({ row, onClose }: { row: any; onClose: 
           </Row>
 
           <div className="mt-3" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-            <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#E6E8EC]">
+            <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#E6E8EC]">
               Impressoras — as ativas substituem as de origem do pedido
             </div>
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead><tr className="bg-[#F7F8FA]">
                 <th className="w-[60px] font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Ativo</th>
                 <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Código</th>

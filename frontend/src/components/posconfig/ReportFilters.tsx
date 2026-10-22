@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { inputStyle, Glyph } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[12px] bg-white';
 
 /**
  * FILTRO AVANÇADO — aplica-se ANTES de abrir o relatório, e a QUALQUER relatório.
@@ -58,13 +58,13 @@ export default function ReportFilters({
     <div className="border border-[#E6E8EC] bg-white">
       <button onClick={() => setAberto(!aberto)}
         className="w-full flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-left">
-        <span className="text-[13px] font-bold text-[#111827] flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtro avançado</span>
+        <span className="text-[12px] font-bold text-[#111827] flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtro avançado</span>
         {ativos > 0 && (
-          <span className="px-2 py-0.5 bg-[#3B82F6] text-white text-[12.5px] font-semibold">
+          <span className="px-2 py-0.5 bg-[#3B82F6] text-white text-[11px] font-semibold">
             {ativos} ativo(s)
           </span>
         )}
-        <span className="ml-auto text-[13px] text-[#6B7280]">{aberto ? '−' : '+'}</span>
+        <span className="ml-auto text-[12px] text-[#6B7280]">{aberto ? '−' : '+'}</span>
       </button>
 
       {aberto && (
@@ -74,7 +74,7 @@ export default function ReportFilters({
             <div className="flex flex-wrap items-center gap-x-8 gap-y-2 pb-3 border-b border-[#F1F2F4]">
               {params.map((x: any) => (
                 <div key={x.key} className="flex items-center gap-2">
-                  <span className="text-[13px] text-[#111827]">{x.label}:</span>
+                  <span className="text-[12px] text-[#111827]">{x.label}:</span>
                   {x.type === 'warehouse' ? (
                     <select value={values[x.key] ?? ''}
                       onChange={(e) => setValues?.({ ...values, [x.key]: e.target.value })}
@@ -94,7 +94,7 @@ export default function ReportFilters({
                 </div>
               ))}
               {preset && (
-                <span className="text-[12.5px] text-[#111827]">
+                <span className="text-[11px] text-[#111827]">
                   As datas estão a ser dadas pelo período rápido.
                 </span>
               )}
@@ -103,39 +103,39 @@ export default function ReportFilters({
 
           {/* PERÍODO RÁPIDO */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[13px] text-[#111827] w-[130px]">Período rápido:</span>
+            <span className="text-[12px] text-[#111827] w-[130px]">Período rápido:</span>
             {presets.map((p: any) => (
               <button key={p.value}
                 onClick={() => setPreset(preset === p.value ? '' : p.value)}
-                className={`px-3 py-1 text-[13px] border ${preset === p.value
+                className={`px-3 py-1 text-[12px] border ${preset === p.value
                   ? 'bg-[#3B82F6] text-white border-[#E6E8EC] font-semibold'
                   : 'bg-white border-[#E6E8EC] hover:bg-[#FFFFFF]'}`}>
                 {p.label}
               </button>
             ))}
-            {preset && <span className="text-[12.5px] text-[#6B7280]">(ignora as datas acima)</span>}
+            {preset && <span className="text-[11px] text-[#6B7280]">(ignora as datas acima)</span>}
           </div>
 
           {/* COMPARAÇÃO — um número sozinho não diz nada. */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[13px] text-[#111827] w-[130px]">Comparar com:</span>
+            <span className="text-[12px] text-[#111827] w-[130px]">Comparar com:</span>
             {compares.map((c: any) => (
               <button key={c.value}
                 onClick={() => set('compare', adv.compare === c.value ? '' : c.value)}
-                className={`px-3 py-1 text-[13px] border ${adv.compare === c.value
+                className={`px-3 py-1 text-[12px] border ${adv.compare === c.value
                   ? 'bg-[#1E2A44] text-white border-[#1E2A44] font-semibold'
                   : 'bg-white border-[#E6E8EC] hover:bg-[#F7F8FA]'}`}>
                 {c.label}
               </button>
             ))}
-            <span className="text-[12.5px] text-[#6B7280]">
+            <span className="text-[11px] text-[#6B7280]">
               "Vendeu 2,4M" não é informação. "2,4M, menos 12% do que na semana passada" é.
             </span>
           </div>
 
           {/* JANELA HORÁRIA */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[13px] text-[#111827] w-[130px]">Só entre as horas:</span>
+            <span className="text-[12px] text-[#111827] w-[130px]">Só entre as horas:</span>
             <select value={adv.hour_from ?? ''} onChange={(e) => set('hour_from', e.target.value)}
               className={`${inp} w-[90px]`} style={inputStyle}>
               <option value="">—</option>
@@ -143,7 +143,7 @@ export default function ReportFilters({
                 <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>
               ))}
             </select>
-            <span className="text-[13px]">e</span>
+            <span className="text-[12px]">e</span>
             <select value={adv.hour_to ?? ''} onChange={(e) => set('hour_to', e.target.value)}
               className={`${inp} w-[90px]`} style={inputStyle}>
               <option value="">—</option>
@@ -151,67 +151,67 @@ export default function ReportFilters({
                 <option key={h} value={h}>{String(h).padStart(2, '0')}:59</option>
               ))}
             </select>
-            <span className="text-[12.5px] text-[#6B7280]">
+            <span className="text-[11px] text-[#6B7280]">
               Atravessa a meia-noite (22 → 06 é o turno da noite — é aí que as coisas estranhas acontecem).
             </span>
           </div>
 
           {/* DIAS DA SEMANA */}
           <div className="flex items-center gap-2">
-            <span className="text-[13px] text-[#111827] w-[130px]">Dias da semana:</span>
+            <span className="text-[12px] text-[#111827] w-[130px]">Dias da semana:</span>
             {DIAS.map((d, i) => (
               <button key={i}
                 onClick={() => set('weekdays', dias.includes(i)
                   ? dias.filter((x) => x !== i) : [...dias, i])}
-                className={`w-[46px] py-1 text-[13px] border ${dias.includes(i)
+                className={`w-[46px] py-1 text-[12px] border ${dias.includes(i)
                   ? 'bg-[#1E2A44] text-white border-[#1E2A44] font-semibold'
                   : 'bg-white border-[#E6E8EC] hover:bg-[#FFFFFF]'}`}>
                 {d}
               </button>
             ))}
             <button onClick={() => set('weekdays', dias.length === 7 ? [] : [0, 1, 2, 3, 4, 5, 6])}
-              className="ml-2 text-[12.5px] text-[#6B7280] hover:underline">
+              className="ml-2 text-[11px] text-[#6B7280] hover:underline">
               {dias.length === 7 ? 'nenhum' : 'todos'}
             </button>
           </div>
 
           {/* VALOR */}
           <div className="flex items-center gap-2">
-            <span className="text-[13px] text-[#111827] w-[130px]">Valor entre:</span>
+            <span className="text-[12px] text-[#111827] w-[130px]">Valor entre:</span>
             <input type="number" value={adv.min ?? ''} onChange={(e) => set('min', e.target.value)}
               placeholder="mínimo" className={`${inp} w-[130px]`} style={inputStyle} />
-            <span className="text-[13px]">e</span>
+            <span className="text-[12px]">e</span>
             <input type="number" value={adv.max ?? ''} onChange={(e) => set('max', e.target.value)}
               placeholder="máximo" className={`${inp} w-[130px]`} style={inputStyle} />
-            <span className="text-[12.5px] text-[#6B7280]">na coluna de dinheiro do relatório</span>
+            <span className="text-[11px] text-[#6B7280]">na coluna de dinheiro do relatório</span>
           </div>
 
           {/* TEXTO LIVRE */}
           <div className="flex items-center gap-2">
-            <span className="text-[13px] text-[#111827] w-[130px]">Contém o texto:</span>
+            <span className="text-[12px] text-[#111827] w-[130px]">Contém o texto:</span>
             <input value={adv.q ?? ''} onChange={(e) => set('q', e.target.value)}
               placeholder="nome, documento, artigo, IP…"
               className={`${inp} w-[320px]`} style={inputStyle} />
-            <span className="text-[12.5px] text-[#6B7280]">procura em todas as colunas</span>
+            <span className="text-[11px] text-[#6B7280]">procura em todas as colunas</span>
           </div>
 
           {/* AGRUPAR / ORDENAR / LIMITAR */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[13px] text-[#111827] w-[130px]">Agrupar e somar por:</span>
+            <span className="text-[12px] text-[#111827] w-[130px]">Agrupar e somar por:</span>
             <select value={adv.group_by ?? ''} onChange={(e) => set('group_by', e.target.value)}
               className={`${inp} w-[170px]`} style={inputStyle}>
               <option value="">(não agrupar)</option>
               {groupOpts.map((g: any) => <option key={g.value} value={g.value}>{g.label}</option>)}
             </select>
 
-            <span className="text-[13px] text-[#111827] ml-4">Ordenar:</span>
+            <span className="text-[12px] text-[#111827] ml-4">Ordenar:</span>
             <select value={adv.sort_dir ?? 'desc'} onChange={(e) => set('sort_dir', e.target.value)}
               className={`${inp} w-[130px]`} style={inputStyle}>
               <option value="desc">Maior primeiro</option>
               <option value="asc">Menor primeiro</option>
             </select>
 
-            <span className="text-[13px] text-[#111827] ml-4">Mostrar só:</span>
+            <span className="text-[12px] text-[#111827] ml-4">Mostrar só:</span>
             <select value={adv.limit ?? ''} onChange={(e) => set('limit', e.target.value)}
               className={`${inp} w-[130px]`} style={inputStyle}>
               <option value="">Todas as linhas</option>
@@ -223,10 +223,10 @@ export default function ReportFilters({
 
           <div className="flex items-center gap-3 pt-2 border-t border-[#F1F2F4]">
             <button onClick={() => { setAdv({}); setPreset(''); }}
-              className="px-3 py-1 text-[13px] border border-[#DC2626] text-[#DC2626]">
+              className="px-3 py-1 text-[12px] border border-[#DC2626] text-[#DC2626]">
               Limpar filtro
             </button>
-            <span className="text-[12.5px] text-[#6B7280]">
+            <span className="text-[11px] text-[#6B7280]">
               O filtro corre no servidor — as somas e os totais são os das linhas que sobram.
             </span>
           </div>

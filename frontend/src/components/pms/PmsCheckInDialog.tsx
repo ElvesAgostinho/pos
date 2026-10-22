@@ -52,7 +52,7 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="p-3 text-[13px] flex flex-col gap-3">
+        <div className="p-3 text-[12px] flex flex-col gap-3">
           <div className="flex items-center justify-between border border-[#E6E8EC] bg-white p-2">
             <div>
               <div className="font-bold text-[15px]">{reservation.confirmation}</div>
@@ -81,11 +81,11 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
         </div>
         <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC]">
           <button onClick={doCheckIn} disabled={saving}
-            className="flex items-center gap-2 px-3 py-1.5 text-[13px] font-semibold text-[#111827] disabled:opacity-50">
+            className="flex items-center gap-2 px-3 py-1.5 text-[12px] font-semibold text-[#111827] disabled:opacity-50">
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: '#3B82F6' }}>✓</span>
             {saving ? 'A processar…' : 'Check-In'}
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>

@@ -227,8 +227,12 @@ export const SECTIONS = [
 /** Etiqueta + campo, alinhados como nos formulários clássicos. */
 export function Field({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
-    <label className="flex items-center gap-2 text-[13px]">
-      <span className={`text-[#111827] ${wide ? 'whitespace-nowrap' : 'w-[74px]'} flex-shrink-0`}>{label}</span>
+    <label className="flex items-center gap-2 text-[12px]">
+      {/* `min-w` em vez de `w`: a caixa tem uma largura MÍNIMA (para as etiquetas
+          curtas alinharem umas com as outras) mas cresce quando o texto é mais
+          comprido, em vez de o deixar transbordar por cima do campo ao lado —
+          era o que acontecia com "Sub Família:" e "Pesquisa por texto livre:". */}
+      <span className={`text-[#111827] whitespace-nowrap ${wide ? '' : 'min-w-[74px]'} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
@@ -238,7 +242,7 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
   { value: any; onChange: (v: string) => void; options: { value: any; label: string }[]; all?: boolean; allLabel?: string }) {
   return (
     <select value={value ?? ''} onChange={(e) => onChange(e.target.value)}
-      className="border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white min-w-[170px] flex-1"
+      className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white min-w-[170px] flex-1"
       style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.10)' }}>
       {all && <option value="">{allLabel}</option>}
       {options.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
@@ -254,8 +258,8 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
     <div className="flex items-center gap-1.5 px-3 py-2.5 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.lineSoft }}>
       {actions.map((a) => (
         <button key={a.label} onClick={a.onClick} disabled={a.disabled} title={a.title}
-          className="flex items-center gap-2 px-3.5 py-1.5 text-[13px] font-medium text-[#111827] disabled:opacity-35 disabled:cursor-default hover:bg-[#F3F4F6] active:bg-[#E6E8EC] transition-colors"
-          style={{ borderRadius: RADIUS.pill }}>
+          className="flex items-center gap-2 px-3 py-1.5 text-[12px] font-medium text-[#111827] disabled:opacity-35 disabled:cursor-default hover:bg-[#F3F4F6] active:bg-[#E6E8EC] transition-colors"
+          style={{ borderRadius: RADIUS.sm }}>
           <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
             style={{ color: a.disabled ? '#3B82F6' : a.color }}><Glyph icon={a.icon} size={15} /></span>
           {a.label}
@@ -270,9 +274,9 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
 export function Tab({ active, onClick, children }: any) {
   return (
     <button onClick={onClick}
-      className={`px-4 py-1.5 text-[13px] font-medium transition-colors ${active
+      className={`px-3.5 py-1.5 text-[12px] font-medium transition-colors ${active
         ? 'bg-[#DBEAFE] text-[#1D4ED8]' : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]'}`}
-      style={{ borderRadius: RADIUS.pill }}>
+      style={{ borderRadius: RADIUS.sm }}>
       {children}
     </button>
   );
@@ -299,7 +303,7 @@ export function Box({ title, children, className = '' }: { title?: string; child
         boxShadow: SHADOW.soft,
       }}>
       {title && (
-        <h3 className="text-[13px] font-semibold mb-3" style={{ color: TOKENS.textOnLight }}>
+        <h3 className="text-[12px] font-semibold mb-3" style={{ color: TOKENS.textOnLight }}>
           {title}
         </h3>
       )}
@@ -321,7 +325,7 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
       className={`flex items-center justify-center gap-2 px-6 py-2.5 text-white font-semibold
         hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default
         transition-[filter] ${className}`}
-      style={{ background: TOKENS.brand, borderRadius: RADIUS.pill, boxShadow: SHADOW.xs }}>
+      style={{ background: TOKENS.brand, borderRadius: RADIUS.sm, boxShadow: SHADOW.xs }}>
       <Glyph icon={icon} size={16} />
       <span className="text-[13.5px]">{label}</span>
     </button>
@@ -331,14 +335,14 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 /** Linha etiqueta→campo dentro das caixas. */
 export function Row({ label, children, w = 'w-[120px]' }: { label: string; children: ReactNode; w?: string }) {
   return (
-    <label className="flex items-center gap-3 text-[13px] py-[5px] min-w-0">
-      <span className={`text-[#6B7280] ${w} flex-shrink-0`}>{label}</span>
+    <label className="flex items-center gap-3 text-[12px] py-[5px] min-w-0">
+      <span className={`text-[#6B7280] whitespace-nowrap ${w.replace('w-[', 'min-w-[')} flex-shrink-0`}>{label}</span>
       {children}
     </label>
   );
 }
 
-export const inputCls = 'border border-[#E6E8EC] px-3 py-1.5 text-[13px] bg-white flex-1 min-w-0 '
+export const inputCls = 'border border-[#E6E8EC] px-3 py-1.5 text-[12px] bg-white flex-1 min-w-0 '
   + 'rounded-[8px] outline-none focus:border-[#2563EB] transition-colors';
 // Sombra interior discreta (substitui o "afundado" 3D de antes) — aplicada
 // inline (style={inputStyle}) para continuar a ganhar da regra global em
@@ -351,7 +355,7 @@ export const inputStyle = {};
 
 export function Check({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
-    <label className="flex items-center gap-2 text-[13px] py-[3px] cursor-pointer">
+    <label className="flex items-center gap-2 text-[12px] py-[3px] cursor-pointer">
       <input type="checkbox" checked={!!checked} onChange={(e) => onChange(e.target.checked)} className="w-4 h-4" />
       {label}
     </label>

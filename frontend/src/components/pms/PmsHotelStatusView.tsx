@@ -20,9 +20,9 @@ function StatCard({ label, value, sub, icon }: { label: string; value: any; sub?
     <div className="border border-[#E6E8EC] p-3 flex items-center gap-3 bg-white">
       <span className="text-[#111827]"><Glyph icon={icon} size={22} /></span>
       <div className="min-w-0">
-        <div className="text-[11.5px] text-[#6B7280] uppercase font-semibold tracking-tight">{label}</div>
+        <div className="text-[10px] text-[#6B7280] uppercase font-semibold tracking-tight">{label}</div>
         <div className="text-[18px] font-bold text-[#111827] truncate">
-          {value}{sub && <span className="text-[12.5px] font-normal text-[#6B7280] ml-1">({sub})</span>}
+          {value}{sub && <span className="text-[11px] font-normal text-[#6B7280] ml-1">({sub})</span>}
         </div>
       </div>
     </div>
@@ -70,7 +70,7 @@ export default function PmsHotelStatusView() {
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="border border-[#E6E8EC] bg-white">
-            <div className="px-2 py-1 font-bold text-[12.5px] bg-[#F7F8FA] border-b border-[#E6E8EC]">
+            <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border-b border-[#E6E8EC]">
               Chegadas de Hoje ({data?.arrivals_count ?? 0})
             </div>
             <div style={{ height: 210 }}>
@@ -84,7 +84,7 @@ export default function PmsHotelStatusView() {
             </div>
           </div>
           <div className="border border-[#E6E8EC] bg-white">
-            <div className="px-2 py-1 font-bold text-[12.5px] bg-[#F7F8FA] border-b border-[#E6E8EC]">
+            <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border-b border-[#E6E8EC]">
               Saídas de Hoje ({data?.departures_count ?? 0})
             </div>
             <div style={{ height: 210 }}>
@@ -99,14 +99,14 @@ export default function PmsHotelStatusView() {
           </div>
         </div>
 
-        <div className="font-bold text-[13px] text-[#111827] mb-2">Mapa de Quartos</div>
+        <div className="font-bold text-[12px] text-[#111827] mb-2">Mapa de Quartos</div>
         <div className="grid grid-cols-8 gap-2 bg-white p-2 border border-[#E6E8EC]">
           {rooms.map((r: any) => (
             <button key={r.id} onClick={() => r.reservation && setSelId(r.reservation.id)}
               title={r.reservation ? `${r.reservation.confirmation} · ${r.reservation.guest_name}` : r.status_display}
-              className={`border p-2 text-left text-[12.5px] ${ROOM_STATUS_STYLE[r.status] || ''} ${r.reservation ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}>
-              <div className="font-bold text-[13px]">{r.number}</div>
-              <div className="text-[11.5px] truncate">{r.room_type_name}</div>
+              className={`border p-2 text-left text-[11px] ${ROOM_STATUS_STYLE[r.status] || ''} ${r.reservation ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}>
+              <div className="font-bold text-[12px]">{r.number}</div>
+              <div className="text-[10px] truncate">{r.room_type_name}</div>
               <div className="text-[9px] mt-1 font-semibold">{r.status_display}</div>
               {r.reservation && <div className="text-[9px] truncate mt-0.5">{r.reservation.guest_name}</div>}
             </button>

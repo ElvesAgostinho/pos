@@ -39,7 +39,7 @@ export default function PmsRoomTypesView() {
             { header: 'Preço base', accessor: 'base_rate', width: '20%' },
           ]} />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[12.5px]">
+        <div className="w-1/2 p-3 space-y-2 text-[11px]">
           <label className="flex flex-col">Código<input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1" /></label>
           <label className="flex flex-col">Nome<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
           <div className="flex gap-2">

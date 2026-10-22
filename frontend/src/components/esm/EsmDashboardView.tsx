@@ -13,7 +13,7 @@ const StatCard = ({ title, value, subtitle }: { title: string; value: React.Reac
       <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
       <div className="text-2xl font-bold text-[#6B7280]">{value}</div>
     </div>
-    {subtitle && <div className="text-[11.5px] text-gray-600 font-medium">{subtitle}</div>}
+    {subtitle && <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>}
   </div>
 );
 
@@ -56,7 +56,7 @@ export default function EsmDashboardView() {
               {/* Top fornecedores por performance */}
               <Panel title="Top Fornecedores (Índice de Desempenho)">
                 {(data?.top_suppliers?.length ?? 0) === 0 ? (
-                  <div className="text-[12.5px] text-gray-500 py-4 text-center">Sem dados de desempenho ainda.</div>
+                  <div className="text-[11px] text-gray-500 py-4 text-center">Sem dados de desempenho ainda.</div>
                 ) : (
                   <div className="space-y-2">
                     {data!.top_suppliers.map((s) => (
@@ -64,8 +64,8 @@ export default function EsmDashboardView() {
                         <div className="flex items-center gap-2 min-w-0">
                           <Award size={14} className="text-[#6B7280] flex-shrink-0" />
                           <div className="min-w-0">
-                            <div className="text-[12.5px] font-bold text-gray-800 truncate">{s.commercial_name}</div>
-                            <div className="text-[11.5px] text-gray-500">[{s.code}] · Pontualidade {Number(s.punctuality).toFixed(0)}%</div>
+                            <div className="text-[11px] font-bold text-gray-800 truncate">{s.commercial_name}</div>
+                            <div className="text-[10px] text-gray-500">[{s.code}] · Pontualidade {Number(s.punctuality).toFixed(0)}%</div>
                           </div>
                         </div>
                         <div className={`text-lg font-bold ${scoreColor(s.overall_score)}`}>{s.overall_score}</div>
@@ -78,19 +78,19 @@ export default function EsmDashboardView() {
               {/* Documentos a expirar */}
               <Panel title={`Certificados / Documentos a Expirar (30 dias)`}>
                 {(data?.expired_documents ?? 0) > 0 && (
-                  <div className="flex items-center gap-1 text-[12.5px] text-[#B91C1C] font-bold mb-2">
+                  <div className="flex items-center gap-1 text-[11px] text-[#B91C1C] font-bold mb-2">
                     <AlertTriangle size={13} /> {data!.expired_documents} documento(s) já expirado(s)!
                   </div>
                 )}
                 {(data?.expiring_documents?.length ?? 0) === 0 ? (
-                  <div className="text-[12.5px] text-gray-500 py-4 text-center">Nada a expirar nos próximos 30 dias.</div>
+                  <div className="text-[11px] text-gray-500 py-4 text-center">Nada a expirar nos próximos 30 dias.</div>
                 ) : (
                   <div className="space-y-1">
                     {data!.expiring_documents.map((d) => (
-                      <div key={d.id} className="flex items-center justify-between bg-white border border-[#E6E8EC] px-2 py-1 text-[12.5px]">
+                      <div key={d.id} className="flex items-center justify-between bg-white border border-[#E6E8EC] px-2 py-1 text-[11px]">
                         <div className="min-w-0">
                           <div className="font-bold text-gray-800 truncate">{d.title}</div>
-                          <div className="text-[11.5px] text-gray-500 truncate">{d.supplier_name} · {d.document_type}</div>
+                          <div className="text-[10px] text-gray-500 truncate">{d.supplier_name} · {d.document_type}</div>
                         </div>
                         <span className="text-[#111827] font-bold ml-2 flex-shrink-0">{d.expiration_date}</span>
                       </div>
@@ -102,14 +102,14 @@ export default function EsmDashboardView() {
               {/* Contratos a terminar */}
               <Panel title="Contratos a Terminar (30 dias)">
                 {(data?.expiring_contracts?.length ?? 0) === 0 ? (
-                  <div className="text-[12.5px] text-gray-500 py-4 text-center">Nenhum contrato a terminar em breve.</div>
+                  <div className="text-[11px] text-gray-500 py-4 text-center">Nenhum contrato a terminar em breve.</div>
                 ) : (
                   <div className="space-y-1">
                     {data!.expiring_contracts.map((c) => (
-                      <div key={c.id} className="flex items-center justify-between bg-white border border-[#E6E8EC] px-2 py-1 text-[12.5px]">
+                      <div key={c.id} className="flex items-center justify-between bg-white border border-[#E6E8EC] px-2 py-1 text-[11px]">
                         <div className="min-w-0">
                           <div className="font-bold text-gray-800 truncate">{c.reference}</div>
-                          <div className="text-[11.5px] text-gray-500 truncate">{c.supplier_name}</div>
+                          <div className="text-[10px] text-gray-500 truncate">{c.supplier_name}</div>
                         </div>
                         <span className="text-[#111827] font-bold ml-2 flex-shrink-0">{c.end_date}</span>
                       </div>

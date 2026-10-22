@@ -31,25 +31,25 @@ export default function PriceListsView() {
       <div className="flex h-full">
         {/* Tabelas */}
         <div className="w-64 border-r border-[#E6E8EC] flex flex-col">
-          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-2 space-y-1 text-[12.5px]">
+          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-2 space-y-1 text-[11px]">
             <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-full" />
             <input placeholder="Nome da tabela" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1 w-full" />
             <ClassicButton icon={Plus} label="Nova Tabela" onClick={addList} />
           </div>
           <div className="flex-1 overflow-auto">
             {lists.map((l: any) => (
-              <div key={l.id} onClick={() => setSel(l.id)} className={`flex items-center justify-between px-3 py-2 text-[13px] cursor-pointer border-b border-[#F1F2F4] ${active?.id === l.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#F7F8FA]'}`}>
-                <span><b>{l.name}</b><br /><span className="text-gray-500 text-[11.5px]">{l.code} · {l.item_count ?? (l.items?.length || 0)} artigos</span></span>
+              <div key={l.id} onClick={() => setSel(l.id)} className={`flex items-center justify-between px-3 py-2 text-[12px] cursor-pointer border-b border-[#F1F2F4] ${active?.id === l.id ? 'bg-[#F7F8FA]' : 'hover:bg-[#F7F8FA]'}`}>
+                <span><b>{l.name}</b><br /><span className="text-gray-500 text-[10px]">{l.code} · {l.item_count ?? (l.items?.length || 0)} artigos</span></span>
                 <button onClick={(e) => { e.stopPropagation(); del.mutate(l.id); }} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>
               </div>
             ))}
-            {lists.length === 0 && <div className="p-3 text-gray-400 text-[12.5px]">Sem tabelas. Crie a primeira.</div>}
+            {lists.length === 0 && <div className="p-3 text-gray-400 text-[11px]">Sem tabelas. Crie a primeira.</div>}
           </div>
         </div>
 
         {/* Artigos da tabela selecionada */}
         <div className="flex-1 flex flex-col">
-          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px] flex flex-wrap items-end gap-2">
+          <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px] flex flex-wrap items-end gap-2">
             <span className="font-bold text-[#6B7280]">{active ? `Preços · ${active.name}` : 'Selecione uma tabela'}</span>
             {active && <>
               <select value={line.item} onChange={(e) => setLine({ ...line, item: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white ml-auto">

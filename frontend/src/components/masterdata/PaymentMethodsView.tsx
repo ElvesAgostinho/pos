@@ -35,7 +35,7 @@ export default function PaymentMethodsView() {
     return (
       <ClassicWindow title="Novo Método de Pagamento" icon={<CreditCard size={14} className="text-gray-300" />}
         footer={<><ClassicButton icon={Save} label="Gravar" onClick={save} /><ClassicButton label="Cancelar" onClick={() => setMode('list')} /></>}>
-        <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto text-[12.5px]">
+        <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto text-[11px]">
           <div className="border border-[#E6E8EC] bg-white p-2 max-w-2xl">
             <h3 className="font-bold text-[#6B7280] border-b border-[#E6E8EC] mb-2 pb-1">Método de Pagamento (Master Data)</h3>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">

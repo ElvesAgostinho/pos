@@ -4,9 +4,9 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[12px] bg-white';
 const L = ({ w = 'w-[110px]', children }: any) => (
-  <span className={`text-[13px] text-[#111827] ${w} flex-shrink-0`}>{children}</span>
+  <span className={`text-[12px] text-[#111827] ${w} flex-shrink-0`}>{children}</span>
 );
 
 /**
@@ -117,26 +117,26 @@ export default function PosDocSearch() {
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-[720px] mx-auto bg-white border border-[#F1F2F4] p-8 shadow">
             {doc.voided && (
-              <div className="mb-3 px-3 py-2 bg-[#F7F8FA] border border-[#DC2626] text-[#DC2626] font-bold text-[13px]">
+              <div className="mb-3 px-3 py-2 bg-[#F7F8FA] border border-[#DC2626] text-[#DC2626] font-bold text-[12px]">
                 DOCUMENTO ANULADO
               </div>
             )}
             <div className="flex justify-between">
               <div>
                 <div className="text-[17px] font-bold">{doc.company}</div>
-                <div className="text-[13px] text-[#6B7280]">NIF: {doc.company_tax_id}</div>
+                <div className="text-[12px] text-[#6B7280]">NIF: {doc.company_tax_id}</div>
               </div>
               <div className="text-right">
                 <div className="text-[15px] font-bold">{doc.type}</div>
                 <div className="text-[14px] font-mono">{doc.invoice_no}</div>
-                <div className="text-[13px] text-[#6B7280]">{doc.date}</div>
+                <div className="text-[12px] text-[#6B7280]">{doc.date}</div>
                 {doc.print_count > 0 && (
-                  <div className="text-[12.5px] text-[#DC2626] font-bold">2ª VIA (impressa {doc.print_count}x)</div>
+                  <div className="text-[11px] text-[#DC2626] font-bold">2ª VIA (impressa {doc.print_count}x)</div>
                 )}
               </div>
             </div>
 
-            <div className="mt-5 text-[13px] border-t border-b border-[#F1F2F4] py-3">
+            <div className="mt-5 text-[12px] border-t border-b border-[#F1F2F4] py-3">
               <div><b>Cliente:</b> {doc.customer}</div>
               <div><b>NIF:</b> {doc.customer_tax_id || 'Consumidor Final'}</div>
               <div className="text-[#6B7280] mt-1">
@@ -145,7 +145,7 @@ export default function PosDocSearch() {
               </div>
             </div>
 
-            <table className="w-full text-[13px] mt-4">
+            <table className="w-full text-[12px] mt-4">
               <thead><tr className="border-b border-[#1E2A44]">
                 <th className="text-left py-1">Artigo</th>
                 <th className="text-right">Qtd</th>
@@ -166,15 +166,15 @@ export default function PosDocSearch() {
               </tbody>
             </table>
 
-            <div className="mt-4 text-[13px] text-right space-y-1">
+            <div className="mt-4 text-[12px] text-right space-y-1">
               <div>Incidência: {money(doc.net)}</div>
               <div>IVA: {money(doc.tax)}</div>
               <div className="text-[17px] font-bold">TOTAL: {money(doc.gross)} Kz</div>
             </div>
-            <div className="mt-2 text-[13px] italic text-[#111827]">
+            <div className="mt-2 text-[12px] italic text-[#111827]">
               Valor por extenso: {doc.amount_in_words}
             </div>
-            <div className="mt-6 text-[11.5px] text-[#6B7280] break-all">
+            <div className="mt-6 text-[10px] text-[#6B7280] break-all">
               {(doc.hash || '').slice(0, 1)}{(doc.hash || '').slice(10, 11)}{(doc.hash || '').slice(20, 21)}{(doc.hash || '').slice(30, 31)}
               -Processado por programa validado n.º {doc.certificate}
             </div>
@@ -189,7 +189,7 @@ export default function PosDocSearch() {
             onClick: () => setAnular({ id: ver, number: doc.invoice_no }),
           },
         ]} right={
-          <span className="text-[12.5px] text-[#6B7280]">
+          <span className="text-[11px] text-[#6B7280]">
             Um documento fiscal não se apaga — anula-se com nota de crédito, também assinada.
           </span>
         } />
@@ -267,7 +267,7 @@ export default function PosDocSearch() {
       </div>
 
       <div className="flex-1 overflow-auto bg-white">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
             {['Nome', 'Número', 'Data', 'Total', 'NIF', 'Entidade', 'Operador', 'Estado'].map((h) => (
               <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] border-r border-r-[#F1F2F4]">{h}</th>
@@ -286,7 +286,7 @@ export default function PosDocSearch() {
                 <td className="px-2 py-1">{r.entity}</td>
                 <td className="px-2 py-1 text-[#6B7280]">{r.operator}</td>
                 <td className="px-2 py-1">
-                  <span className={`px-2 py-0.5 text-[12.5px] font-semibold ${r.voided
+                  <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.voided
                     ? 'bg-[#F7F8FA] text-[#DC2626]'
                     : r.settled ? 'bg-[#F7F8FA] text-[#111827]' : 'bg-[#F7F8FA] text-[#111827]'}`}>
                     {r.voided ? 'Anulado' : r.settled ? 'Liquidado' : 'Por receber'}
@@ -301,7 +301,7 @@ export default function PosDocSearch() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[13px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -336,10 +336,10 @@ function PopupAnular({ anular, setAnular, acao }: any) {
     <>
       <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setAnular(null)} />
       <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[460px]">
-        <div className="px-3 py-2 bg-[#1E2A44] text-white text-[13px] font-bold flex justify-between">
+        <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold flex justify-between">
           Anular {anular.number} <button onClick={() => setAnular(null)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
         </div>
-        <div className="p-4 space-y-3 text-[13px]">
+        <div className="p-4 space-y-3 text-[12px]">
           <div className="text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1.5">
             O documento não é apagado: é emitida uma <b>nota de crédito</b>, assinada e
             encadeada. É o que a AGT exige.

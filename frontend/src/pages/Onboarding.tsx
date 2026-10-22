@@ -153,16 +153,16 @@ const Onboarding: React.FC = () => {
               <Upload size={16} className="text-[#6B7280] mt-0.5 shrink-0" />
               <div className="font-bold text-[#111827]">Carregar o ficheiro (recomendado)</div>
             </div>
-            <p className="text-[13px] text-gray-600">
+            <p className="text-[12px] text-gray-600">
               O técnico já lhe entregou o <code className="bg-gray-200 px-1 rounded">license.key</code> (email,
               WhatsApp, pen). Escolha-o aqui, no SEU computador — nunca precisa de abrir a pasta
               do servidor.
             </p>
             <input ref={fileInputRef} type="file" accept=".key,text/plain"
               onChange={(e) => setFicheiro(e.target.files?.[0] || null)}
-              className="w-full text-[13px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#3B82F6] file:text-white file:font-bold hover:file:bg-[#1E2A44] file:cursor-pointer" />
+              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#3B82F6] file:text-white file:font-bold hover:file:bg-[#1E2A44] file:cursor-pointer" />
             {enviarMsg && (
-              <div className={`text-[13px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
+              <div className={`text-[12px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
                 {enviarMsg.text}
               </div>
             )}
@@ -177,22 +177,22 @@ const Onboarding: React.FC = () => {
               <Wifi size={16} className="text-[#6B7280] mt-0.5 shrink-0" />
               <div className="font-bold text-[#111827]">Ativação automática (só código + senha, sem ficheiro)</div>
             </div>
-            <p className="text-[13px] text-gray-600">
+            <p className="text-[12px] text-gray-600">
               Os mesmos dois dados que já tem para correr o setup.exe (PCC → Gestão de Clientes
               → Acessos) — sem copiar nenhum ficheiro à mão.
             </p>
             <label className="block">
-              <span className="text-gray-700 block mb-1 text-[13px]">Código do cliente (ex.: CLI-1234):</span>
+              <span className="text-gray-700 block mb-1 text-[12px]">Código do cliente (ex.: CLI-1234):</span>
               <input autoFocus value={clientCode} onChange={(e) => setClientCode(e.target.value)}
                 className="w-full h-9 px-2 bg-white border border-gray-300 rounded outline-none font-mono" />
             </label>
             <label className="block">
-              <span className="text-gray-700 block mb-1 text-[13px]">Senha de instalação:</span>
+              <span className="text-gray-700 block mb-1 text-[12px]">Senha de instalação:</span>
               <input type="password" value={installPassword} onChange={(e) => setInstallPassword(e.target.value)}
                 className="w-full h-9 px-2 bg-white border border-gray-300 rounded outline-none" />
             </label>
             {ativarMsg && (
-              <div className={`text-[13px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
+              <div className={`text-[12px] px-2 py-1 rounded border ${ativarMsg.ok ? 'text-[#111827] bg-[#F7F8FA] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
                 {ativarMsg.text}
               </div>
             )}
@@ -230,14 +230,14 @@ const Onboarding: React.FC = () => {
                     Diagnóstico: {DIAGNOSIS_LABEL[pre.diagnosis] || pre.diagnosis}
                   </div>
                   <p className="text-gray-700 mt-1">{pre.detail}</p>
-                  <div className="mt-2 text-[12.5px] text-gray-500 font-mono bg-white/60 border border-gray-200 rounded p-2 space-y-0.5">
+                  <div className="mt-2 text-[11px] text-gray-500 font-mono bg-white/60 border border-gray-200 rounded p-2 space-y-0.5">
                     <div>caminho: {pre.checked_path}</div>
                     <div>existe: {String(pre.exists)}
                       {pre.size_bytes != null && ` · ${pre.size_bytes} bytes`}
                       {pre.modified_at && ` · modificado ${pre.modified_at}`}</div>
                     {pre.client_code && <div>cliente: {pre.client_code} · licença: {pre.license_number} · válida até: {pre.valid_until}</div>}
                   </div>
-                  <p className="text-[12.5px] text-gray-400 mt-2">
+                  <p className="text-[11px] text-gray-400 mt-2">
                     Copie este quadro e envie ao suporte — não é preciso correr nenhum script.
                   </p>
                 </div>

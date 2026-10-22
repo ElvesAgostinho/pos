@@ -17,28 +17,28 @@ export default function PmsEventsForecastView() {
 
   return (
     <div className="h-full overflow-auto bg-white p-4">
-      <div className="flex items-center gap-2 mb-4 text-[13px]">
+      <div className="flex items-center gap-2 mb-4 text-[12px]">
         <span className="font-semibold text-[#6B7280]">Meses a prever:</span>
         <select value={months} onChange={(e) => setMonths(Number(e.target.value))} className="border border-[#E6E8EC] px-2 py-1">
           {[3, 6, 12].map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
         {!isLoading && <span className="ml-auto text-gray-600">Total previsto: <b className="text-[#111827]">{money(data?.total)}</b></span>}
       </div>
-      <div className="text-[12.5px] text-gray-500 mb-3">Soma apenas eventos com estado <b>Confirmado</b> — pedidos ainda não confirmados não entram na previsão.</div>
+      <div className="text-[11px] text-gray-500 mb-3">Soma apenas eventos com estado <b>Confirmado</b> — pedidos ainda não confirmados não entram na previsão.</div>
       <div className="border border-[#E6E8EC]">
-        <div className="grid grid-cols-[1fr_140px] font-bold bg-[#F7F8FA] px-3 py-1.5 text-[13px] border-b border-[#E6E8EC]">
+        <div className="grid grid-cols-[1fr_140px] font-bold bg-[#F7F8FA] px-3 py-1.5 text-[12px] border-b border-[#E6E8EC]">
           <span>Mês</span><span className="text-right">Receita prevista</span>
         </div>
         {rows.map((r) => (
           <div key={r.label} className="px-3 py-2 border-b border-[#F1F2F4]">
-            <div className="grid grid-cols-[1fr_140px] items-center text-[13px]">
+            <div className="grid grid-cols-[1fr_140px] items-center text-[12px]">
               <span className="text-[#111827] font-semibold">{r.label}</span>
               <span className="text-right font-bold text-[#111827]">{money(r.revenue)}</span>
             </div>
             <div className="h-1.5 bg-[#F7F8FA] mt-1"><div className="h-full bg-[#3B82F6]" style={{ width: `${(r.revenue / max) * 100}%` }} /></div>
           </div>
         ))}
-        {rows.length === 0 && !isLoading && <div className="px-3 py-4 text-center text-gray-400 text-[13px]">Sem eventos confirmados no período.</div>}
+        {rows.length === 0 && !isLoading && <div className="px-3 py-4 text-center text-gray-400 text-[12px]">Sem eventos confirmados no período.</div>}
       </div>
     </div>
   );

@@ -4,12 +4,12 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Box } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
-const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
+const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[12px] bg-white';
 
 function Row({ label, children }: { label: string; children: any }) {
   return (
-    <label className="flex items-start gap-3 text-[13px]">
+    <label className="flex items-start gap-3 text-[12px]">
       <span className="w-[130px] flex-shrink-0 text-[#111827] pt-1">{label}</span>
       {children}
     </label>
@@ -83,7 +83,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">
+        <span className="text-[12px] font-bold text-[#111827]">
           {isNew ? 'Nova série' : `A editar ${d.name || d.type_name || d.code}`}
         </span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
@@ -98,7 +98,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 className={`${inp} w-[180px]`} style={inputStyle} />
             </Row>
-            <label className="flex items-center gap-2 text-[13px] pt-1">
+            <label className="flex items-center gap-2 text-[12px] pt-1">
               <input type="checkbox" checked={!!d.is_closed} onChange={(e) => set('is_closed', e.target.checked)} className="w-4 h-4" />
               Série fechada
             </label>
@@ -116,7 +116,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
             <div>
               <input value={d.current_number ?? 0} readOnly
                 className={`${inp} w-[240px] bg-[#F7F8FA] text-[#6B7280]`} style={inputStyle} />
-              <div className="text-[12.5px] text-[#111827] mt-1 max-w-[240px]">
+              <div className="text-[11px] text-[#111827] mt-1 max-w-[240px]">
                 Só de leitura: é o último nº emitido. Reescrevê-lo <b>partia a sequência</b>,
                 que é o que a AGT confere.
               </div>
@@ -135,7 +135,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
           </Row>
 
           <div className="flex items-start gap-3">
-            <label className="flex items-center gap-2 text-[13px] w-[130px] pt-1">
+            <label className="flex items-center gap-2 text-[12px] w-[130px] pt-1">
               <input type="checkbox" checked={!!d.recovery_series} className="w-4 h-4"
                 onChange={(e) => set('recovery_series', e.target.checked ? (series as any[])[0]?.id ?? null : null)} />
               Série de Recuperação
@@ -190,14 +190,14 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
                 onChange={(e) => set('einvoice_reference', e.target.value)}
                 placeholder="(nenhum)" className={`${inp} w-[240px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle} />
             </Row>
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
               Ativo
             </label>
           </div>
 
           {d.is_closed && (
-            <div className="text-[12.5px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1">
+            <div className="text-[11px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1">
               Série <b>fechada</b>: o servidor recusa emitir nela. Abra uma nova série para continuar.
             </div>
           )}
@@ -208,7 +208,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
           <div className="flex border-b-2 border-[#1E2A44] px-2">
             {([['models', 'Modelo de Impressão'], ['copies', 'Texto das Vias']] as const).map(([k, l]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`px-4 py-1.5 text-[13px] font-semibold border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+                className={`px-4 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
                 {l}
               </button>
             ))}
@@ -217,7 +217,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
           {tab === 'models' ? (
             <>
               <div className="flex-1 overflow-auto">
-                <table className="w-full text-[13px] border-collapse">
+                <table className="w-full text-[12px] border-collapse">
                   <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
                     {['Tipo', 'Código', 'Descrição', 'Modelo', 'Vias', 'Max. Vias', 'Ordem', 'Modelo defeito', 'Ativo'].map((h) => (
                       <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] whitespace-nowrap">{h}</th>
@@ -257,23 +257,23 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
                 </table>
               </div>
               <div className="flex items-center gap-4 px-3 py-2 bg-[#F7F8FA] border-t border-[#F1F2F4]">
-                <button onClick={addPm} className="flex items-center gap-2 text-[13px] hover:bg-[#F7F8FA] px-1 py-1">
-                  <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[12.5px]">＋</span> Adicionar
+                <button onClick={addPm} className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1">
+                  <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">＋</span> Adicionar
                 </button>
                 <button onClick={copyPm} disabled={sel === null}
-                  className="flex items-center gap-2 text-[13px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
-                  <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[12.5px]">⧉</span> Copiar
+                  className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
+                  <span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center text-[11px]">⧉</span> Copiar
                 </button>
                 <button onClick={delPm} disabled={sel === null}
-                  className="flex items-center gap-2 text-[13px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
-                  <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[12.5px]">−</span> Apagar
+                  className="flex items-center gap-2 text-[12px] hover:bg-[#F7F8FA] px-1 py-1 disabled:opacity-35">
+                  <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-[11px]">−</span> Apagar
                 </button>
               </div>
             </>
           ) : (
             <div className="flex-1 overflow-auto p-4 space-y-3">
               {[0, 1, 2, 3, 4].map((i) => (
-                <label key={i} className="flex items-center gap-3 text-[13px]">
+                <label key={i} className="flex items-center gap-3 text-[12px]">
                   <span className="w-[24px] text-[#111827]">{i + 1}:</span>
                   <input value={texts[i] || ''} className={`${inp} flex-1`} style={inputStyle}
                     onChange={(e) => {
@@ -283,7 +283,7 @@ export default function DocumentEditor({ row, onClose }: { row: any; onClose: ()
                     }} />
                 </label>
               ))}
-              <div className="text-[12.5px] text-[#6B7280] pt-2 border-t border-[#F1F2F4]">
+              <div className="text-[11px] text-[#6B7280] pt-2 border-t border-[#F1F2F4]">
                 É o que sai impresso em cada cópia. A 1ª via é o <b>Original</b> (a do cliente);
                 as outras vão para o arquivo e para a contabilidade.
               </div>

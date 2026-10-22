@@ -44,7 +44,7 @@ export default function ItemAdvancedView() {
     <ClassicWindow title="Artigo Enterprise — Variantes, Unidades & Custo" icon={<Boxes size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Doses/variantes, unidades com conversão e custo real vindo da ficha técnica.</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <label className="font-bold text-gray-700">Artigo:</label>
           <select value={itemId || ''} onChange={(e) => setItemId(e.target.value ? Number(e.target.value) : undefined)} className="border border-[#E6E8EC] p-1 bg-white min-w-[240px]">
             <option value="">— selecione —</option>{items.map((i: any) => <option key={i.id} value={i.id}>[{i.code}] {i.name}</option>)}
@@ -56,8 +56,8 @@ export default function ItemAdvancedView() {
           <div className="flex-1 grid grid-cols-2 gap-3 p-3 overflow-auto">
             {/* Variantes / Doses */}
             <div className="border border-[#E6E8EC] flex flex-col min-h-0">
-              <div className="bg-[#F7F8FA] px-2 py-1 font-bold text-[#6B7280] text-[12.5px]">Variantes / Doses (½ dose, garrafa, copo…)</div>
-              <div className="flex flex-wrap items-end gap-1 p-2 text-[12.5px] border-b border-[#F1F2F4]">
+              <div className="bg-[#F7F8FA] px-2 py-1 font-bold text-[#6B7280] text-[11px]">Variantes / Doses (½ dose, garrafa, copo…)</div>
+              <div className="flex flex-wrap items-end gap-1 p-2 text-[11px] border-b border-[#F1F2F4]">
                 <input placeholder="Código" value={vd.code} onChange={(e) => setVd({ ...vd, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-20" />
                 <input placeholder="Nome" value={vd.name} onChange={(e) => setVd({ ...vd, name: e.target.value })} className="border border-[#E6E8EC] p-1 w-24" />
                 <input placeholder="Preço" type="number" value={vd.sale_price} onChange={(e) => setVd({ ...vd, sale_price: e.target.value })} className="border border-[#E6E8EC] p-1 w-20" />
@@ -76,8 +76,8 @@ export default function ItemAdvancedView() {
 
             {/* Unidades com conversão */}
             <div className="border border-[#E6E8EC] flex flex-col min-h-0">
-              <div className="bg-[#F7F8FA] px-2 py-1 font-bold text-[#6B7280] text-[12.5px]">Unidades com conversão (comprar em Caixa, vender em Unidade)</div>
-              <div className="flex flex-wrap items-end gap-1 p-2 text-[12.5px] border-b border-[#F1F2F4]">
+              <div className="bg-[#F7F8FA] px-2 py-1 font-bold text-[#6B7280] text-[11px]">Unidades com conversão (comprar em Caixa, vender em Unidade)</div>
+              <div className="flex flex-wrap items-end gap-1 p-2 text-[11px] border-b border-[#F1F2F4]">
                 <select value={ud.uom} onChange={(e) => setUd({ ...ud, uom: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
                   <option value="">— unidade —</option>{uoms.map((u: any) => <option key={u.id} value={u.id}>{u.code} · {u.name}</option>)}
                 </select>
@@ -98,7 +98,7 @@ export default function ItemAdvancedView() {
             </div>
 
             {/* Ficha técnica → custo */}
-            <div className="col-span-2 border border-[#E6E8EC] p-3 text-[13px] bg-white">
+            <div className="col-span-2 border border-[#E6E8EC] p-3 text-[12px] bg-white">
               <div className="font-bold text-[#6B7280] mb-1">Ficha Técnica → Custo real</div>
               {recipe ? (
                 <div className="flex items-center gap-4">

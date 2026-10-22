@@ -111,7 +111,7 @@ export default function StockMovementsView() {
                <ClassicButton icon={Plus} label="Adicionar Linha" onClick={() => setLines([...lines, { quantity: 1, conversion_factor: 1 }])} />
             </div>
             <div className="flex-1 overflow-auto">
-              <table className="w-full text-[12.5px] border-collapse">
+              <table className="w-full text-[11px] border-collapse">
                 <thead className="bg-[#F7F8FA] border-b border-[#E6E8EC]">
                   <tr>
                     <th className="p-1 border-r border-[#F1F2F4] text-left">Artigo</th>

@@ -50,12 +50,12 @@ export default function PlanningOptions() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#F1F2F4]">
+      <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
         Arraste para ordenar
       </div>
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
             <th className="w-[40px] border-b border-[#F1F2F4]" />
             <th className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">Espaço</th>
@@ -76,18 +76,18 @@ export default function PlanningOptions() {
                   <div className="flex items-center gap-2">
                     <input type="color" value={r.bg_color} onChange={(e) => set(i, 'bg_color', e.target.value)}
                       className="w-9 h-7 border border-[#E6E8EC]" />
-                    <span className="font-mono text-[12.5px] text-[#6B7280]">{r.bg_color}</span>
+                    <span className="font-mono text-[11px] text-[#6B7280]">{r.bg_color}</span>
                   </div>
                 </td>
                 <td className="p-1">
                   <div className="flex items-center gap-2">
                     <input type="color" value={r.text_color} onChange={(e) => set(i, 'text_color', e.target.value)}
                       className="w-9 h-7 border border-[#E6E8EC]" />
-                    <span className="font-mono text-[12.5px] text-[#6B7280]">{r.text_color}</span>
+                    <span className="font-mono text-[11px] text-[#6B7280]">{r.text_color}</span>
                   </div>
                 </td>
                 <td className="p-1">
-                  <div className="px-3 py-1.5 text-[13px] font-bold text-center"
+                  <div className="px-3 py-1.5 text-[12px] font-bold text-center"
                     style={{ background: r.bg_color, color: r.text_color }}>
                     {r.name}
                   </div>

@@ -10,7 +10,7 @@ const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFracti
 function Panel({ title, icon: Icon, color, children }: any) {
   return (
     <div className="bg-white border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF]">
-      <div className="flex items-center gap-2 px-3 py-1.5 text-white text-[13px] font-bold" style={{ background: color }}>
+      <div className="flex items-center gap-2 px-3 py-1.5 text-white text-[12px] font-bold" style={{ background: color }}>
         <Icon size={15} />{title}
       </div>
       <div className="p-3">{children}</div>
@@ -18,7 +18,7 @@ function Panel({ title, icon: Icon, color, children }: any) {
   );
 }
 function Stat({ label, value, tone = '#3B82F6' }: any) {
-  return <div className="flex flex-col"><span className="text-[11.5px] uppercase tracking-wide text-gray-500">{label}</span><span className="text-2xl font-bold" style={{ color: tone }}>{value}</span></div>;
+  return <div className="flex flex-col"><span className="text-[10px] uppercase tracking-wide text-gray-500">{label}</span><span className="text-2xl font-bold" style={{ color: tone }}>{value}</span></div>;
 }
 
 // ======================= PAINEL DO PROPRIETÁRIO =======================
@@ -55,7 +55,7 @@ export function OperationsCenterView() {
                 <Stat label="Nº faturas" value={s.tickets ?? 0} />
                 <Stat label="Ticket médio" value={money(s.avg_ticket)} />
               </div>
-              <div className="text-[12.5px] text-gray-500">Em aberto (mesas): {money(s.open_amount)} · caixas abertas: {cash.sessions_open ?? 0}</div>
+              <div className="text-[11px] text-gray-500">Em aberto (mesas): {money(s.open_amount)} · caixas abertas: {cash.sessions_open ?? 0}</div>
             </div>
           </Panel>
 
@@ -75,11 +75,11 @@ export function OperationsCenterView() {
           <Panel title={`ALERTAS (${d?.alerts_count ?? 0})`} icon={AlertTriangle} color="#DC2626">
             <div className="space-y-1 max-h-40 overflow-auto">
               {alerts.map((a: any, i: number) => (
-                <div key={i} className={`text-[13px] flex items-start gap-1.5 px-1.5 py-1 rounded ${a.level === 'error' ? 'bg-[#FEF2F2] text-[#B91C1C]' : 'bg-[#F7F8FA] text-[#111827]'}`}>
+                <div key={i} className={`text-[12px] flex items-start gap-1.5 px-1.5 py-1 rounded ${a.level === 'error' ? 'bg-[#FEF2F2] text-[#B91C1C]' : 'bg-[#F7F8FA] text-[#111827]'}`}>
                   <span>{a.icon}</span><span>{a.msg}</span>
                 </div>
               ))}
-              {alerts.length === 0 && <div className="text-[13px] text-[#111827] flex items-center gap-1"><TrendingUp size={13} />Tudo sob controlo. Sem alertas.</div>}
+              {alerts.length === 0 && <div className="text-[12px] text-[#111827] flex items-center gap-1"><TrendingUp size={13} />Tudo sob controlo. Sem alertas.</div>}
             </div>
           </Panel>
         </div>
@@ -109,9 +109,9 @@ export function LiveTablesMonitor() {
                 {tk ? (
                   <>
                     <div className="text-[15px] font-bold text-[#6B7280]">{money(tk.grand_total)}</div>
-                    <div className="text-[11.5px] opacity-90 flex items-center justify-center gap-1"><Clock size={10} />{mins}min · {tk.operator_name}</div>
+                    <div className="text-[10px] opacity-90 flex items-center justify-center gap-1"><Clock size={10} />{mins}min · {tk.operator_name}</div>
                   </>
-                ) : (<div className="text-[11.5px] opacity-90">{t.status_display}</div>)}
+                ) : (<div className="text-[10px] opacity-90">{t.status_display}</div>)}
               </div>
             );
           })}

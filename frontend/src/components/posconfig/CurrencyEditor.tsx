@@ -4,19 +4,19 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
 function Fieldset({ title, children }: { title: string; children: any }) {
   return (
     <fieldset className="px-4 pb-3 pt-1 min-w-0" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-      <legend className="text-[13px] text-[#111827] px-1">{title}</legend>
+      <legend className="text-[12px] text-[#111827] px-1">{title}</legend>
       <div className="space-y-2">{children}</div>
     </fieldset>
   );
 }
 function Row({ label, children, w = 'w-[150px]' }: { label: string; children: any; w?: string }) {
   return (
-    <label className="flex items-center gap-3 text-[13px] min-w-0">
+    <label className="flex items-center gap-3 text-[12px] min-w-0">
       <span className={`${w} flex-shrink-0 text-[#111827]`}>{label}</span>
       {children}
     </label>
@@ -86,7 +86,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Nova moeda' : `A editar ${d.code}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Nova moeda' : `A editar ${d.code}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -98,7 +98,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
               <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())}
                 maxLength={8} className={`${inp} flex-1`} style={inputStyle} />
             </Row>
-            <label className="flex items-start gap-3 text-[13px]">
+            <label className="flex items-start gap-3 text-[12px]">
               <span className="w-[110px] flex-shrink-0 text-[#111827] pt-1">Descrição:</span>
               <textarea value={d.name || ''} onChange={(e) => set('name', e.target.value)} rows={3}
                 className={`${inp} flex-1`} style={inputStyle} />
@@ -106,29 +106,29 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
               Ativo
             </label>
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.is_local} onChange={(e) => set('is_local', e.target.checked)} className="w-4 h-4" />
               Moeda Local
             </label>
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[12px]">
               <input type="checkbox" checked={!!d.print_on_pos_docs} onChange={(e) => set('print_on_pos_docs', e.target.checked)} className="w-4 h-4" />
               Imprimir nos documentos de POS
             </label>
             {d.is_local && (
-              <div className="text-[12.5px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1">
+              <div className="text-[11px] text-[#111827] bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1">
                 Só pode haver <b>uma</b> moeda local — ao gravar, as outras deixam de o ser.
                 É nela que a contabilidade fecha.
               </div>
             )}
             <div className="flex items-center gap-3 pt-1">
-              <span className="text-[13px] w-[110px]">Símbolo:</span>
+              <span className="text-[12px] w-[110px]">Símbolo:</span>
               <input value={d.symbol || ''} onChange={(e) => set('symbol', e.target.value)}
                 maxLength={8} className={`${inp} w-[130px]`} style={inputStyle} />
-              <span className="text-[13px]">Símbolo (Unicode):</span>
+              <span className="text-[12px]">Símbolo (Unicode):</span>
               <input value={d.symbol_unicode || ''} onChange={(e) => set('symbol_unicode', e.target.value)}
                 maxLength={16} placeholder="Kz  $  €" className={`${inp} w-[110px]`} style={inputStyle} />
             </div>
@@ -147,11 +147,11 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
               <Row label="Taxa de Compra:">{num('buy_rate')}</Row>
               <Row label="Taxa de Venda:">{num('sell_rate')}</Row>
               <Row label="Margem:">{num('margin')}</Row>
-              <label className="flex items-center gap-2 text-[13px] pt-1">
+              <label className="flex items-center gap-2 text-[12px] pt-1">
                 <input type="checkbox" checked={!!d.excluded} onChange={(e) => set('excluded', e.target.checked)} className="w-4 h-4" />
                 Excluído
               </label>
-              <div className="text-[12.5px] text-[#6B7280] pt-1">
+              <div className="text-[11px] text-[#6B7280] pt-1">
                 Compra abaixo de venda: a diferença é a margem do balcão de câmbio.
               </div>
             </Fieldset>
@@ -159,7 +159,7 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
             <Fieldset title="Taxa de Câmbio para lançamentos em moeda estrangeira">
               <Row label="Taxa de Câmbio:">{num('rate_to_base')}</Row>
               <Row label="Margem:">{num('exchange_margin')}</Row>
-              <div className="text-[12.5px] text-[#6B7280] pt-1">
+              <div className="text-[11px] text-[#6B7280] pt-1">
                 É esta que converte a conta para a moeda local — na fatura e na contabilidade.
               </div>
             </Fieldset>
@@ -173,14 +173,14 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
             </Row>
 
             <div className="pt-3 space-y-2">
-              <label className="flex items-center gap-3 text-[13px]">
+              <label className="flex items-center gap-3 text-[12px]">
                 <input type="radio" checked={d.commission_mode === 'FIXED'} onChange={() => set('commission_mode', 'FIXED')} className="w-4 h-4" />
                 <span className="w-[130px]">Comissão Fixa</span>
                 <input type="number" step="any" value={d.commission_fixed ?? 0} disabled={d.commission_mode !== 'FIXED'}
                   onChange={(e) => set('commission_fixed', e.target.value)}
                   className={`${inp} w-[210px] disabled:bg-[#F7F8FA] disabled:text-[#6B7280]`} style={inputStyle} />
               </label>
-              <label className="flex items-center gap-3 text-[13px]">
+              <label className="flex items-center gap-3 text-[12px]">
                 <input type="radio" checked={d.commission_mode === 'PERCENT'} onChange={() => set('commission_mode', 'PERCENT')} className="w-4 h-4" />
                 <span className="w-[130px]">Comissão Perct.</span>
                 <input type="number" step="any" value={d.commission_percent ?? 0} disabled={d.commission_mode !== 'PERCENT'}
@@ -227,7 +227,7 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
         </div>
 
         <div className="flex-1 overflow-auto bg-white">
-          <table className="w-full text-[13px] border-collapse">
+          <table className="w-full text-[12px] border-collapse">
             <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
               {['Data da alteração', 'Utilizador', 'Código ISO', 'Descrição', 'Taxa de Câmbio', 'Taxa de Compra', 'Taxa de Venda', 'Ativo'].map((h) => (
                 <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4] whitespace-nowrap">{h}</th>
@@ -254,7 +254,7 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
           </table>
         </div>
 
-        <div className="px-3 py-1.5 text-[12.5px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#F1F2F4]">
+        <div className="px-3 py-1.5 text-[11px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#F1F2F4]">
           Só de leitura — é a prova de com que taxa cada fatura foi convertida.
         </div>
         <Toolbar actions={[{ icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose }]} />

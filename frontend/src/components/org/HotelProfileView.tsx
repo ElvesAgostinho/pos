@@ -66,7 +66,7 @@ export default function HotelProfileView() {
 
   const Tab = ({ id, label }: any) => (
     <button onClick={() => setTab(id)}
-      className={`px-4 py-1.5 text-[13px] font-bold border border-b-0 ${tab === id ? 'bg-white text-[#111827] border-[#E6E8EC]' : 'bg-[#F7F8FA] text-gray-600 border-[#E6E8EC]'}`}>
+      className={`px-4 py-1.5 text-[12px] font-bold border border-b-0 ${tab === id ? 'bg-white text-[#111827] border-[#E6E8EC]' : 'bg-[#F7F8FA] text-gray-600 border-[#E6E8EC]'}`}>
       {label}
     </button>
   );
@@ -78,7 +78,7 @@ export default function HotelProfileView() {
 
         {/* Completude — o que falta e porquê */}
         {c && (
-          <div className={`m-3 mb-0 p-2.5 border flex items-start gap-2 text-[13px] ${c.missing.length ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#E6E8EC]'}`}>
+          <div className={`m-3 mb-0 p-2.5 border flex items-start gap-2 text-[12px] ${c.missing.length ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#E6E8EC]'}`}>
             {c.missing.length ? <AlertTriangle size={18} className="text-[#111827] flex-shrink-0 mt-0.5" />
               : <CheckCircle2 size={18} className="text-[#111827] flex-shrink-0 mt-0.5" />}
             <div className="flex-1">
@@ -176,7 +176,7 @@ export default function HotelProfileView() {
             <>
               <FormSection title="Contas bancárias impressas na fatura" cols={1}
                 hint="é por aqui que o cliente lhe paga — sem isto, ele recebe a fatura e não sabe para onde transferir">
-                <table className="w-full text-[13px] border-collapse">
+                <table className="w-full text-[12px] border-collapse">
                   <thead>
                     <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }} className="text-[#111827]">
                       {['Banco', 'IBAN', 'Nº de conta', 'SWIFT', 'Moeda', 'Sai na fatura', ''].map((x) => (
@@ -188,8 +188,8 @@ export default function HotelProfileView() {
                     {banks.map((b: any) => (
                       <tr key={b.id} className="border-b border-[#F1F2F4]">
                         <td className="px-2 py-1 font-bold">{b.bank_name}</td>
-                        <td className="px-2 py-1 font-mono text-[12.5px]">{b.iban || '—'}</td>
-                        <td className="px-2 py-1 font-mono text-[12.5px]">{b.account_number || '—'}</td>
+                        <td className="px-2 py-1 font-mono text-[11px]">{b.iban || '—'}</td>
+                        <td className="px-2 py-1 font-mono text-[11px]">{b.account_number || '—'}</td>
                         <td className="px-2 py-1">{b.swift || '—'}</td>
                         <td className="px-2 py-1">{b.currency}</td>
                         <td className="px-2 py-1">
@@ -198,7 +198,7 @@ export default function HotelProfileView() {
                         </td>
                         <td className="px-2 py-1">
                           <button onClick={() => confirm(`Remover a conta ${b.bank_name}?`) && delBank.mutate(b.id)}
-                            className="text-[#B91C1C] hover:text-[#B91C1C] text-[12.5px] font-bold">Remover</button>
+                            className="text-[#B91C1C] hover:text-[#B91C1C] text-[11px] font-bold">Remover</button>
                         </td>
                       </tr>
                     ))}
@@ -234,16 +234,16 @@ export default function HotelProfileView() {
               hint="pertence ao software — instalada pelo fornecedor">
               <div className={`p-3 border flex items-center gap-3 ${cert?.certified ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#E6E8EC]'}`}>
                 {cert?.certified ? <ShieldCheck size={26} className="text-[#111827]" /> : <ShieldAlert size={26} className="text-[#111827]" />}
-                <div className="text-[13px]">
+                <div className="text-[12px]">
                   <div className={`font-bold ${cert?.certified ? 'text-[#111827]' : 'text-[#111827]'}`}>
                     {cert?.certified ? `Certificado AGT nº ${cert.certificate_number}` : 'Ainda não certificado (ambiente de testes)'}
                   </div>
-                  <div className="text-gray-600 text-[12.5px]">
+                  <div className="text-gray-600 text-[11px]">
                     Ambiente: {cert?.environment === 'PROD' ? 'Produção' : 'Testes'} · chave de assinatura v{cert?.key_version}
                   </div>
                 </div>
               </div>
-              <div className="text-[12.5px] text-gray-700 mt-2">
+              <div className="text-[11px] text-gray-700 mt-2">
                 O número de certificação é atribuído pela AGT ao <b>programa</b>, não à sua empresa — e é o mesmo em todos
                 os clientes deste software. Assim que a certificação for emitida, passa a sair <b>automaticamente</b> em todas
                 as faturas, no QR Code e no SAF-T, sem que tenha de configurar nada. Não é editável aqui, por segurança:

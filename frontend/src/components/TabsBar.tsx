@@ -21,7 +21,7 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
     <div className="flex items-center justify-between bg-[#1E2A44] h-7 px-2 select-none border-b border-[#1E2A44]">
 
       {/* Window Title */}
-      <div className="flex items-center text-white text-[13px] font-medium">
+      <div className="flex items-center text-white text-[12px] font-medium">
         <ActiveIcon size={14} className="mr-2" />
         {activeMeta.title}
       </div>
@@ -29,7 +29,7 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
       {/* Sessão + Window Controls (Classic Windows style) */}
       <div className="flex items-center space-x-1">
         {userName && (
-          <span className="text-[#6B7280] text-[12.5px] mr-2 flex items-center">
+          <span className="text-[#6B7280] text-[11px] mr-2 flex items-center">
             <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] mr-1.5" /> {userName}
           </span>
         )}

@@ -40,35 +40,35 @@ export default function PmsRoomsView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 p-3 grid grid-cols-6 gap-2 overflow-auto content-start">
         {rows.map((r: any) => (
-          <div key={r.id} className={`border p-2 text-[12.5px] rounded-[12px] ${STATUS_STYLE[r.status] || ''}`}>
-            <div className="font-bold text-[13px]">{r.number}</div>
-            <div className="text-[11.5px] mb-1">{r.room_type_name}</div>
+          <div key={r.id} className={`border p-2 text-[11px] rounded-[12px] ${STATUS_STYLE[r.status] || ''}`}>
+            <div className="font-bold text-[12px]">{r.number}</div>
+            <div className="text-[10px] mb-1">{r.room_type_name}</div>
             {/* AÇÃO ÓBVIA primeiro: o seletor sozinho escondia a única forma de
                 libertar um quarto (ninguém procura um dropdown minúsculo para
                 dizer "já está limpo"). O seletor fica por baixo, para os casos
                 que estes botões não cobrem. */}
             {r.status === 'VACANT_DIRTY' && (
               <button onClick={() => setStatus(r.id, 'VACANT_CLEAN')}
-                className="w-full mb-1 px-1 py-1 text-[11.5px] font-semibold text-white rounded-[8px] hover:brightness-110 transition-[filter]"
+                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[8px] hover:brightness-110 transition-[filter]"
                 style={{ background: '#1E2A44' }}>
                 ✔ Marcar como limpo
               </button>
             )}
             {r.status === 'OOO' && (
               <button onClick={() => setStatus(r.id, 'VACANT_DIRTY')}
-                className="w-full mb-1 px-1 py-1 text-[11.5px] font-semibold text-white rounded-[8px] hover:brightness-110 transition-[filter]"
+                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[8px] hover:brightness-110 transition-[filter]"
                 style={{ background: '#3B82F6' }}>
                 ↩ Voltar ao serviço
               </button>
             )}
             {r.status === 'VACANT_CLEAN' && (
               <button onClick={() => setStatus(r.id, 'OOO')}
-                className="w-full mb-1 px-1 py-1 text-[11.5px] font-semibold rounded-[8px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA] transition-colors text-[#B91C1C]">
+                className="w-full mb-1 px-1 py-1 text-[10px] font-semibold rounded-[8px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA] transition-colors text-[#B91C1C]">
                 ⊘ Pôr fora de serviço
               </button>
             )}
             <select value={r.status} onChange={(e) => setStatus(r.id, e.target.value)}
-              className="w-full text-[11.5px] border border-black/10 bg-white/70 rounded-[8px]">
+              className="w-full text-[10px] border border-black/10 bg-white/70 rounded-[8px]">
               <option value="VACANT_CLEAN">Livre / Limpo</option>
               <option value="VACANT_DIRTY">Livre / Por limpar</option>
               <option value="OCCUPIED">Ocupado</option>
@@ -83,8 +83,8 @@ export default function PmsRoomsView() {
       {showNew && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
           <div className="w-[360px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
-            <div className="h-8 flex items-center px-3 text-white text-[13px] font-bold" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>Novo Quarto</div>
-            <div className="p-3 space-y-2 text-[12.5px]">
+            <div className="h-8 flex items-center px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>Novo Quarto</div>
+            <div className="p-3 space-y-2 text-[11px]">
               <label className="flex flex-col">Número<input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} className="border border-[#E6E8EC] p-1" /></label>
               <label className="flex flex-col">Categoria
                 <select value={form.room_type} onChange={(e) => setForm({ ...form, room_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">

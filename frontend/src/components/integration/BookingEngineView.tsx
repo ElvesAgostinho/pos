@@ -6,7 +6,7 @@ import { Globe, KeyRound, RefreshCw, Link2, Search, Calendar, Lightbulb } from '
 import { aviso } from '../../ui/dialogo';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const btn = 'px-3 py-1.5 text-[13px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5';
 
 export default function BookingEngineView() {
   const qc = useQueryClient();
@@ -46,8 +46,8 @@ export default function BookingEngineView() {
       <div className="p-4 space-y-4 bg-[#F7F8FA] h-full overflow-auto">
         {/* Config */}
         <div className="bg-white border border-[#E6E8EC] p-3">
-          <div className="flex items-center gap-2 mb-3 text-[#6B7280] font-bold text-[13px]"><Globe size={14} />Configuração do motor de reservas</div>
-          <div className="grid grid-cols-2 gap-3 text-[13px]">
+          <div className="flex items-center gap-2 mb-3 text-[#6B7280] font-bold text-[12px]"><Globe size={14} />Configuração do motor de reservas</div>
+          <div className="grid grid-cols-2 gap-3 text-[12px]">
             <label className="flex items-center gap-2"><input type="checkbox" checked={!!f.enabled} onChange={e => setF({ ...f, enabled: e.target.checked })} /> Motor de reservas <b>ativo</b></label>
             <label className="flex items-center gap-2">Moeda <input className="border border-[#E6E8EC] px-2 py-1 w-24" value={f.currency || ''} onChange={e => setF({ ...f, currency: e.target.value })} /></label>
             <label className="flex items-center gap-2">Adiantamento % <input type="number" className="border border-[#E6E8EC] px-2 py-1 w-24" value={f.deposit_percent ?? 0} onChange={e => setF({ ...f, deposit_percent: e.target.value })} /></label>
@@ -63,7 +63,7 @@ export default function BookingEngineView() {
 
         {/* Links + chave + ligações do ecossistema */}
         {settings ? (
-          <div className="bg-white border border-[#E6E8EC] p-3 text-[13px] space-y-2">
+          <div className="bg-white border border-[#E6E8EC] p-3 text-[12px] space-y-2">
             <div className="flex items-center gap-2 flex-wrap"><Link2 size={14} className="text-[#6B7280]" /><b>Site público de reservas:</b>
               <a href={publicLink} target="_blank" rel="noreferrer" className="font-mono text-[#6B7280] hover:underline">{publicLink}</a>
               <button className={btn} onClick={() => window.open(publicLink, '_blank')}>Abrir site →</button></div>
@@ -72,18 +72,18 @@ export default function BookingEngineView() {
               <button className={btn} onClick={() => window.open(clientLink, '_blank')}>Abrir →</button></div>
             <div className="flex items-center gap-2"><KeyRound size={14} className="text-[#6B7280]" /><b>Chave da API:</b> <span className="font-mono bg-[#F7F8FA] px-2 py-0.5 border border-[#F1F2F4] break-all">{settings.api_key}</span>
               <button className="text-[#6B7280] hover:underline flex items-center gap-1" onClick={() => rotate.mutate()}><RefreshCw size={12} />rodar</button></div>
-            <div className="text-[12.5px] text-gray-600 border-t border-[#F1F2F4] pt-2">
+            <div className="text-[11px] text-gray-600 border-t border-[#F1F2F4] pt-2">
               <b>Ecossistema de reservas (tudo o que foi criado):</b> Site público ↑ · Área do cliente ↑ · <b>Channel Manager</b> (OTAs Booking/Expedia…) no Integration Center → "Channel Manager" · Reservas recebidas no <b>PMS → Reservas</b> · Pagamento online do adiantamento (acima).
             </div>
-            <div className="text-[12.5px] text-gray-500">Fluxo: Site → Booking Engine → <b>API (esta chave)</b> → PMS → SQL.</div>
+            <div className="text-[11px] text-gray-500">Fluxo: Site → Booking Engine → <b>API (esta chave)</b> → PMS → SQL.</div>
           </div>
         ) : (
-          <div className="bg-[#F7F8FA] border border-[#E6E8EC] p-3 text-[12.5px] text-[#111827]">Guarde a configuração acima para gerar o link do site público e a chave da API.</div>
+          <div className="bg-[#F7F8FA] border border-[#E6E8EC] p-3 text-[11px] text-[#111827]">Guarde a configuração acima para gerar o link do site público e a chave da API.</div>
         )}
 
         {/* ---- Como apontar o SEU domínio para o sistema (passo a passo) ---- */}
         {settings && (
-          <div className="bg-white border border-[#E6E8EC] p-3 text-[13px]">
+          <div className="bg-white border border-[#E6E8EC] p-3 text-[12px]">
             <div className="flex items-center gap-2 mb-2 text-[#6B7280] font-bold"><Globe size={14} />Como usar o SEU domínio (ex.: reservas.hotelluanda.ao)</div>
             <ol className="space-y-2 text-gray-700 list-decimal pl-5">
               <li>
@@ -92,27 +92,27 @@ export default function BookingEngineView() {
               <li>
                 Crie um registo com estes valores exatos:
                 <table className="mt-1 border-collapse w-full max-w-lg">
-                  <tbody className="text-[12.5px]">
+                  <tbody className="text-[11px]">
                     <tr><td className="border border-[#F1F2F4] px-2 py-1 bg-[#F7F8FA] font-bold w-24">Tipo</td><td className="border border-[#F1F2F4] px-2 py-1 font-mono">CNAME</td></tr>
                     <tr><td className="border border-[#F1F2F4] px-2 py-1 bg-[#F7F8FA] font-bold">Nome / Host</td><td className="border border-[#F1F2F4] px-2 py-1 font-mono">reservas</td></tr>
                     <tr><td className="border border-[#F1F2F4] px-2 py-1 bg-[#F7F8FA] font-bold">Valor / Destino</td><td className="border border-[#F1F2F4] px-2 py-1 font-mono">{window.location.hostname}</td></tr>
                     <tr><td className="border border-[#F1F2F4] px-2 py-1 bg-[#F7F8FA] font-bold">TTL</td><td className="border border-[#F1F2F4] px-2 py-1 font-mono">3600</td></tr>
                   </tbody>
                 </table>
-                <span className="text-[12.5px] text-gray-500">Se o sistema estiver num IP fixo, use antes um registo <b>A</b> a apontar para esse IP.</span>
+                <span className="text-[11px] text-gray-500">Se o sistema estiver num IP fixo, use antes um registo <b>A</b> a apontar para esse IP.</span>
               </li>
               <li>Escreva o domínio completo no campo <b>"Domínio personalizado (CNAME)"</b> acima e clique em <b>Guardar configuração</b>.</li>
               <li>Aguarde a propagação do DNS (<b>15 min a 24 h</b>). Depois, <span className="font-mono">https://reservas.oseudominio.ao</span> abre o seu site de reservas.</li>
               <li><b>HTTPS:</b> no servidor, emita o certificado gratuito (Let's Encrypt): <span className="font-mono bg-[#F7F8FA] px-1">certbot --nginx -d reservas.oseudominio.ao</span></li>
             </ol>
-            <div className="mt-2 p-2 bg-[#F7F8FA] border border-[#F1F2F4] text-[12.5px] text-[#6B7280] flex items-start gap-1.5">
+            <div className="mt-2 p-2 bg-[#F7F8FA] border border-[#F1F2F4] text-[11px] text-[#6B7280] flex items-start gap-1.5">
               <Lightbulb size={14} className="flex-shrink-0 mt-px" /> Enquanto não tiver domínio próprio, o site funciona já no link acima. O domínio só troca o endereço — nada mais muda.
             </div>
           </div>
         )}
 
         {/* Testador de disponibilidade */}
-        <div className="bg-white border border-[#E6E8EC] p-3 text-[13px]">
+        <div className="bg-white border border-[#E6E8EC] p-3 text-[12px]">
           <div className="flex items-center gap-2 mb-2 text-[#6B7280] font-bold"><Search size={14} />Testar disponibilidade (como o site faria)</div>
           <div className="flex items-end gap-2 mb-2">
             <label className="flex flex-col">Entrada<input type="date" className="border border-[#E6E8EC] px-2 py-1" value={ci} onChange={e => setCi(e.target.value)} /></label>

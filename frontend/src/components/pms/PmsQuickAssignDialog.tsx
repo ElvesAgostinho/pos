@@ -68,7 +68,7 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
           </div>
           <div className="w-1/2 overflow-auto">
             {!selRes ? (
-              <div className="p-6 text-center text-gray-400 text-[13px]">Escolha uma reserva à esquerda para ver os quartos livres.</div>
+              <div className="p-6 text-center text-gray-400 text-[12px]">Escolha uma reserva à esquerda para ver os quartos livres.</div>
             ) : (
               <ClassicGrid rowKey="id" data={roomRows} onRowClick={(r: any) => atribuir(r.id)}
                 columns={[
@@ -81,7 +81,7 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
             )}
           </div>
         </div>
-        <div className="flex items-stretch gap-3 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12.5px] flex-shrink-0">
+        <div className="flex items-stretch gap-3 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[11px] flex-shrink-0">
           <label className="flex flex-col gap-0.5 flex-1">Reservation info:
             <textarea readOnly rows={2} className="border border-[#E6E8EC] p-1 bg-white resize-none"
               value={selRes ? `${selRes.confirmation} · ${selRes.guest_name} · ${selRes.room_type_name} · ${selRes.check_in} → ${selRes.check_out}` : ''} />

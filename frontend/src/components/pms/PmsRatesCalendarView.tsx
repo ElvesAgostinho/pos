@@ -56,7 +56,7 @@ export default function PmsRatesCalendarView() {
         { label: 'Atualização em Massa', icon: '✎', color: '#1E2A44', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
       ]} />
       <div className="flex-1 overflow-auto">
-        <table className="border-collapse text-[12.5px] w-full">
+        <table className="border-collapse text-[11px] w-full">
           <thead>
             <tr>
               <th className="sticky left-0 bg-[#F7F8FA] border border-[#E6E8EC] px-2 py-1 text-left min-w-[220px] z-10">Categoria / Tarifa</th>

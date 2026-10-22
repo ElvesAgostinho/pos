@@ -252,7 +252,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="p-3 flex flex-col gap-2 text-[13px]">
+        <div className="p-3 flex flex-col gap-2 text-[12px]">
           <label className="flex flex-col gap-0.5">Entidade:
             <select disabled className="border border-[#E6E8EC] p-1.5 bg-[#F7F8FA] rounded-[8px]"><option>{r.guest_name}</option></select>
           </label>
@@ -262,7 +262,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
             </select>
           </label>
           {/* Pré-visualização dos números — o que vai sair no papel, antes de imprimir. */}
-          <div className="border border-[#E6E8EC] rounded-[8px] bg-white p-2.5 text-[12.5px]">
+          <div className="border border-[#E6E8EC] rounded-[8px] bg-white p-2.5 text-[11px]">
             <div className="flex justify-between"><span className="text-[#6B7280]">Consumos</span><span>{encargos.length}</span></div>
             <div className="flex justify-between"><span className="text-[#6B7280]">Base tributável</span><span>{money(base)}</span></div>
             <div className="flex justify-between"><span className="text-[#6B7280]">IVA ({pct}%)</span><span>{money(iva)}</span></div>
@@ -273,16 +273,16 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
               <div className="flex justify-between text-[#B91C1C]"><span>Por pagar</span><span>{money(total - totalPago)} Kz</span></div>
             )}
           </div>
-          <div className="text-[11.5px] text-[#B91C1C] leading-snug">
+          <div className="text-[10px] text-[#B91C1C] leading-snug">
             A pró-forma não é documento fiscal — a factura AGT sai no check-out.
           </div>
         </div>
         <div className="flex items-center gap-3 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC]">
-          <button onClick={imprimir} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black"><Printer size={14} /> Imprimir</button>
+          <button onClick={imprimir} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black"><Printer size={14} /> Imprimir</button>
           <button onClick={enviarEmail} disabled={enviando}
-            className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black disabled:text-gray-400">
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black disabled:text-gray-400">
             <Mail size={14} /> {enviando ? 'A enviar…' : 'Enviar E-mail'}</button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black ml-auto">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black ml-auto">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>

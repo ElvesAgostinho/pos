@@ -34,13 +34,13 @@ function HotelSelect({ value, onChange }: { value: string; onChange: (v: string)
 export function HmcDashboardView() {
   const { data: d, isLoading } = useQuery({ queryKey: ['hmc', 'dashboard'], queryFn: () => hmcApi.dashboard() });
   const Card = ({ label, value }: any) => (
-    <div className="bg-white border border-[#E6E8EC] p-3"><div className="text-[11.5px] text-gray-500 uppercase">{label}</div><div className="text-2xl font-bold text-[#6B7280]">{value ?? '—'}</div></div>
+    <div className="bg-white border border-[#E6E8EC] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div><div className="text-2xl font-bold text-[#6B7280]">{value ?? '—'}</div></div>
   );
   return (
     <ClassicWindow title="Hotel Management — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Centro 04 · estrutura física e dimensões de gestão</div>}>
       <div className="p-3">
-        {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : (
+        {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
           <div className="grid grid-cols-4 gap-2">
             <Card label="Hotéis" value={d.hotels} /><Card label="Edifícios" value={d.buildings} />
             <Card label="Pisos" value={d.floors} /><Card label="Quartos" value={d.rooms} />
@@ -62,7 +62,7 @@ export function HmcBuildingsView() {
   return (
     <ClassicWindow title="Blocos / Torres / Edifícios" icon={<Building2 size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Edifícios: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <HotelSelect value={f.hotel} onChange={(v) => setF({ ...f, hotel: v })} />
           <input placeholder="Código" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#E6E8EC] p-1 w-20" />
           <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
@@ -92,7 +92,7 @@ export function HmcFloorsView() {
   return (
     <ClassicWindow title="Pisos & Alas" icon={<Layers size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Pisos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <select value={bld} onChange={(e) => setBld(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">Todos os edifícios</option>{buildings.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
@@ -121,7 +121,7 @@ function CentersView({ resource, title, icon, extraField }: { resource: 'profitC
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Centros: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <HotelSelect value={f.hotel} onChange={(v) => setF({ ...f, hotel: v })} />
           <input placeholder="Código" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#E6E8EC] p-1 w-24" />
           <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
@@ -153,7 +153,7 @@ export function HmcResourcesView() {
   return (
     <ClassicWindow title="Recursos & Equipamentos" icon={<Wrench size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Recursos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <HotelSelect value={f.hotel} onChange={(v) => setF({ ...f, hotel: v })} />
           <input placeholder="Código" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} className="border border-[#E6E8EC] p-1 w-20" />
           <input placeholder="Nome" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />

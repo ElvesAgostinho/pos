@@ -23,7 +23,7 @@ export default function DocumentSeriesView() {
     <ClassicWindow title="Séries de Documentos (Master Data)" icon={<FileText size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Nº registos: {series.length}</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-24" />
           <input placeholder="Nome" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <select value={draft.document_type} onChange={(e) => setDraft({ ...draft, document_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">

@@ -11,14 +11,14 @@ export default function PmsSaveSearchDialog({ initial, onCancel, onConfirm }: {
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
       <div className="w-[380px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[13px] font-bold" style={{ background: '#1E2A44' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: '#1E2A44' }}>
           Nova pesquisa
           <button onClick={onCancel} title="Fechar"
             className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="p-3 text-[13px]">
+        <div className="p-3 text-[12px]">
           <label className="flex flex-col gap-1">
             Introduza o nome desta pesquisa
             <input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus
@@ -27,9 +27,9 @@ export default function PmsSaveSearchDialog({ initial, onCancel, onConfirm }: {
           </label>
         </div>
         <div className="flex justify-end gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC]">
-          <button onClick={onCancel} className="px-3 py-1 text-[13px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">Cancelar</button>
+          <button onClick={onCancel} className="px-3 py-1 text-[12px] border border-[#E6E8EC] bg-white hover:bg-[#F7F8FA]">Cancelar</button>
           <button onClick={() => nome.trim() && onConfirm(nome.trim())} disabled={!nome.trim()}
-            className="px-3 py-1 text-[13px] font-semibold text-white disabled:opacity-50" style={{ background: '#1E2A44' }}>
+            className="px-3 py-1 text-[12px] font-semibold text-white disabled:opacity-50" style={{ background: '#1E2A44' }}>
             OK
           </button>
         </div>

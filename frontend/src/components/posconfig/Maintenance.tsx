@@ -5,7 +5,7 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Glyph } from './kit';
 import { TOKENS } from '../../config/theme';
 
-const inp = 'border border-[#E6E8EC] px-1.5 py-1 text-[13px] w-full bg-white';
+const inp = 'border border-[#E6E8EC] px-1.5 py-1 text-[12px] w-full bg-white';
 
 /**
  * MANUTENÇÃO — criação e alteração RÁPIDA de artigos, em massa.
@@ -73,7 +73,7 @@ export default function Maintenance() {
 
   const Common = ({ label, children }: any) => (
     <tr className="border-b border-[#F1F2F4]">
-      <td className="px-2 py-1 text-[13px] text-[#111827] w-[120px] border-r border-[#F1F2F4]">{label}</td>
+      <td className="px-2 py-1 text-[12px] text-[#111827] w-[120px] border-r border-[#F1F2F4]">{label}</td>
       <td className="px-2 py-1">{children}</td>
     </tr>
   );
@@ -81,7 +81,7 @@ export default function Maintenance() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       {/* Tipo */}
-      <div className="flex items-center gap-8 px-4 py-3 border-b border-[#F1F2F4] text-[13px]">
+      <div className="flex items-center gap-8 px-4 py-3 border-b border-[#F1F2F4] text-[12px]">
         <span className="text-[#111827]">Tipo:</span>
         {([['create', 'Criação rápida de artigos'], ['update', 'Alteração rápida de artigos'], ['prices', 'Alterações de Preço']] as const).map(([k, label]) => (
           <label key={k} className="flex items-center gap-2 cursor-pointer">
@@ -91,14 +91,14 @@ export default function Maintenance() {
         ))}
       </div>
 
-      <div className="px-4 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[13px] font-bold text-[#111827]">
+      <div className="px-4 py-2 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12px] font-bold text-[#111827]">
         {mode === 'create' ? 'Criação rápida de artigos' : mode === 'update' ? 'Alteração rápida de artigos' : 'Alterações de Preço'}
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Dados comuns */}
         <div className="w-[380px] flex-shrink-0 flex flex-col m-3 mr-0" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-          <div className="px-3 py-1.5 border-b border-[#F1F2F4] text-[13px] font-bold" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)', color: TOKENS.selectedText }}>Dados Comuns</div>
+          <div className="px-3 py-1.5 border-b border-[#F1F2F4] text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)', color: TOKENS.selectedText }}>Dados Comuns</div>
           <div className="flex-1 overflow-auto">
             <table className="w-full">
               <thead>
@@ -149,7 +149,7 @@ export default function Maintenance() {
               </tbody>
             </table>
           </div>
-          <div className="text-[12.5px] text-[#6B7280] p-2 border-t border-[#F1F2F4]">
+          <div className="text-[11px] text-[#6B7280] p-2 border-t border-[#F1F2F4]">
             O que é comum define-se aqui uma vez; em baixo escreve-se só o que muda.
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function Maintenance() {
         {/* Linhas */}
         <div className="flex-1 flex flex-col overflow-hidden m-3">
           <div className="flex-1 overflow-auto" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0">
                 <tr style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)' }}>
                   {['Código', 'Descrição', 'Código PLU', 'Preço 1', 'Preço 2', 'Preço 3', 'Preço 4', 'Preço 5'].map((h, i) => (
@@ -185,13 +185,13 @@ export default function Maintenance() {
                 ))}
               </tbody>
             </table>
-            <button onClick={addLine} className="flex items-center gap-2 m-2 text-[13px] text-[#111827]">
+            <button onClick={addLine} className="flex items-center gap-2 m-2 text-[12px] text-[#111827]">
               <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="＋" size={13} /></span>
               Acrescentar linha
             </button>
           </div>
 
-          <div className="flex items-center gap-4 px-3 py-2 border-t border-[#F1F2F4] bg-[#F7F8FA] text-[13px]">
+          <div className="flex items-center gap-4 px-3 py-2 border-t border-[#F1F2F4] bg-[#F7F8FA] text-[12px]">
             <button onClick={() => run.mutate()} disabled={run.isPending}
               className="flex items-center gap-2 font-semibold text-[#111827] disabled:opacity-50">
               <span className="w-7 h-7 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={14} /></span>
@@ -199,7 +199,7 @@ export default function Maintenance() {
             </button>
             <span className="opacity-30">|</span>
             <span>Estado:</span>
-            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#3B82F6] text-white text-[12.5px] flex items-center justify-center">·</span>{lines.length}</span>
+            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#3B82F6] text-white text-[11px] flex items-center justify-center">·</span>{lines.length}</span>
             <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#1E2A44] text-white flex items-center justify-center"><Glyph icon="✔" size={11} /></span>{result.ok}</span>
             <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center"><Glyph icon="✖" size={11} /></span>{result.fail}</span>
             <button onClick={() => { setLines([{ code: '', name: '', plu_code: '', p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }]); setResult({ ok: 0, fail: 0, errors: [] }); }}
@@ -208,7 +208,7 @@ export default function Maintenance() {
             </button>
           </div>
           {result.errors.length > 0 && (
-            <div className="px-3 py-2 bg-[#F7F8FA] border-t border-[#DC2626] text-[12.5px] text-[#DC2626] max-h-[80px] overflow-auto">
+            <div className="px-3 py-2 bg-[#F7F8FA] border-t border-[#DC2626] text-[11px] text-[#DC2626] max-h-[80px] overflow-auto">
               {result.errors.map((e, i) => <div key={i}>• {e}</div>)}
             </div>
           )}

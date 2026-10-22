@@ -58,11 +58,11 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[560px] max-h-[85vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>
+        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>
           Atualização em Massa de Tarifas
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>
-        <div className="flex-1 overflow-auto p-3 space-y-3 text-[12.5px]">
+        <div className="flex-1 overflow-auto p-3 space-y-3 text-[11px]">
           <div>
             <div className="font-bold text-[#111827] mb-1">Tarifas a atualizar*</div>
             <div className="border border-[#E6E8EC] bg-white max-h-[110px] overflow-auto">
@@ -84,12 +84,12 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
           <div className="flex flex-wrap gap-1">
             {WEEKDAYS.map(([label, d]) => (
               <button key={d} onClick={() => toggleWd(d)}
-                className={`px-2.5 py-1 rounded-full text-[12.5px] font-semibold border ${weekdays.has(d) ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white text-[#6B7280] border-[#E6E8EC]'}`}>
+                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${weekdays.has(d) ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white text-[#6B7280] border-[#E6E8EC]'}`}>
                 {label}
               </button>
             ))}
-            <button onClick={() => setWeekdays(new Set([0, 1, 2, 3, 4, 5, 6]))} className="text-[#1D4ED8] underline text-[12.5px] px-1">Todos</button>
-            <button onClick={() => setWeekdays(new Set())} className="text-[#6B7280] underline text-[12.5px] px-1">Nenhum</button>
+            <button onClick={() => setWeekdays(new Set([0, 1, 2, 3, 4, 5, 6]))} className="text-[#1D4ED8] underline text-[11px] px-1">Todos</button>
+            <button onClick={() => setWeekdays(new Set())} className="text-[#6B7280] underline text-[11px] px-1">Nenhum</button>
           </div>
 
           <div className="font-bold text-[#111827] pt-1">O que mudar</div>
@@ -104,9 +104,9 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-2"><input type="checkbox" checked={updateSaleState} onChange={(e) => setUpdateSaleState(e.target.checked)} disabled={removeOverrides} />Estado de venda</label>
             <button onClick={() => setSaleState('AVAILABLE')} disabled={!updateSaleState || removeOverrides}
-              className={`px-2 py-1 text-[12.5px] border disabled:opacity-40 ${saleState === 'AVAILABLE' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white border-[#E6E8EC]'}`}>Disponível</button>
+              className={`px-2 py-1 text-[11px] border disabled:opacity-40 ${saleState === 'AVAILABLE' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'bg-white border-[#E6E8EC]'}`}>Disponível</button>
             <button onClick={() => setSaleState('UNAVAILABLE')} disabled={!updateSaleState || removeOverrides}
-              className={`px-2 py-1 text-[12.5px] border disabled:opacity-40 ${saleState === 'UNAVAILABLE' ? 'bg-[#DC2626] text-white border-[#DC2626]' : 'bg-white border-[#E6E8EC]'}`}>Fechado</button>
+              className={`px-2 py-1 text-[11px] border disabled:opacity-40 ${saleState === 'UNAVAILABLE' ? 'bg-[#DC2626] text-white border-[#DC2626]' : 'bg-white border-[#E6E8EC]'}`}>Fechado</button>
           </div>
 
           <div className="border-t border-[#E6E8EC] pt-2">

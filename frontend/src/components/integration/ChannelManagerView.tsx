@@ -6,7 +6,7 @@ import { Network, Plus, RefreshCw, DownloadCloud, UploadCloud, Link2, Lightbulb,
 import ChannelRoomMapDialog from './ChannelRoomMapDialog';
 import { notifyError } from '../../utils/friendlyError';
 
-const btn = 'px-3 py-1.5 text-[13px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px flex items-center gap-1.5';
 const PROVIDERS: [string, string][] = [['BOOKING', 'Booking.com'], ['EXPEDIA', 'Expedia'], ['AIRBNB', 'Airbnb'], ['AGODA', 'Agoda'], ['HOTELS', 'Hotels.com'], ['TRIVAGO', 'Trivago'], ['GOOGLE', 'Google Hotels'], ['OTHER', 'Outro']];
 const PROV_COLOR: Record<string, string> = { BOOKING: '#1E2A44', EXPEDIA: '#1E2A44', AIRBNB: '#DC2626', AGODA: '#1E2A44', HOTELS: '#DC2626', TRIVAGO: '#DC2626', GOOGLE: '#3B82F6', OTHER: '#3B82F6' };
 // Tem de bater certo com Channel.STATUS no backend (models.py): Desligado/
@@ -32,9 +32,9 @@ export default function ChannelManagerView() {
         <button onClick={() => syncAll.mutate()} className={btn}><RefreshCw size={12} className={syncAll.isPending ? 'animate-spin' : ''} />Sincronizar todos</button></div>}>
       <div className="p-4 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
         {/* ONDE OBTER AS CREDENCIAIS de cada plataforma */}
-        <div className="bg-white border border-[#E6E8EC] p-3 text-[13px]">
+        <div className="bg-white border border-[#E6E8EC] p-3 text-[12px]">
           <div className="font-bold text-[#6B7280] mb-2">Onde obter as credenciais de cada plataforma</div>
-          <table className="w-full border-collapse text-[12.5px]">
+          <table className="w-full border-collapse text-[11px]">
             <thead>
               <tr className="bg-[#F7F8FA]">
                 <th className="border border-[#F1F2F4] px-2 py-1 text-left">Plataforma</th>
@@ -60,14 +60,14 @@ export default function ChannelManagerView() {
               ))}
             </tbody>
           </table>
-          <div className="mt-2 p-2 bg-[#F7F8FA] border border-[#F1F2F4] text-[12.5px] text-[#6B7280]">
+          <div className="mt-2 p-2 bg-[#F7F8FA] border border-[#F1F2F4] text-[11px] text-[#6B7280]">
             <div className="flex items-start gap-1.5"><Lightbulb size={14} className="flex-shrink-0 mt-px" /> <span><b>Como funciona:</b> preenche em baixo o canal, o <b>Property ID</b> e a <b>Chave API</b> → o sistema envia disponibilidade e tarifas, e recebe as reservas automaticamente (com <b>anti-overbooking</b>). As reservas entram no <b>PMS → Reservas</b>.</span></div>
             <div className="flex items-start gap-1.5 mt-1"><TriangleAlert size={14} className="flex-shrink-0 mt-px" /> <span>As OTAs só dão as credenciais a software <b>homologado</b> por elas — este é o passo comercial a fazer com cada plataforma.</span></div>
           </div>
         </div>
 
         {/* Ligar canal */}
-        <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-2 text-[13px]">
+        <div className="bg-white border border-[#E6E8EC] p-3 flex flex-wrap items-end gap-2 text-[12px]">
           <label className="flex flex-col">Canal<select className="border border-[#E6E8EC] px-2 py-1" value={f.provider} onChange={e => setF({ ...f, provider: e.target.value })}>{PROVIDERS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
           <label className="flex flex-col">Nome<input className="border border-[#E6E8EC] px-2 py-1 w-40" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="Ex: Booking Hotel X" /></label>
           <label className="flex flex-col">Property ID<input className="border border-[#E6E8EC] px-2 py-1 w-32" value={f.property_id} onChange={e => setF({ ...f, property_id: e.target.value })} /></label>
@@ -82,34 +82,34 @@ export default function ChannelManagerView() {
             <div key={ch.id} className="bg-white border border-[#E6E8EC] p-3">
               <div className="flex items-center justify-between">
                 <span className="font-bold flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: PROV_COLOR[ch.provider] }} />{ch.provider_display}</span>
-                <span className="text-[11.5px] px-1.5 py-0.5 rounded text-white" style={{ background: ST_COLOR[ch.status] }}>{ch.status_display}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded text-white" style={{ background: ST_COLOR[ch.status] }}>{ch.status_display}</span>
               </div>
-              <div className="text-[13px] text-gray-700 mt-1">{ch.name}</div>
-              <div className="text-[11.5px] text-gray-500">Property {ch.property_id || '—'} · comissão {Number(ch.commission_percent)}%</div>
+              <div className="text-[12px] text-gray-700 mt-1">{ch.name}</div>
+              <div className="text-[10px] text-gray-500">Property {ch.property_id || '—'} · comissão {Number(ch.commission_percent)}%</div>
               <button onClick={() => setMapeando(ch)}
-                className={`text-[11.5px] mt-0.5 underline-offset-2 hover:underline ${ch.mapped_rooms ? 'text-[#6B7280]' : 'text-[#DC2626] font-bold'}`}>
+                className={`text-[10px] mt-0.5 underline-offset-2 hover:underline ${ch.mapped_rooms ? 'text-[#6B7280]' : 'text-[#DC2626] font-bold'}`}>
                 {ch.mapped_rooms ? `${ch.mapped_rooms} categoria(s) mapeada(s)` : 'Sem categorias mapeadas — nada a sincronizar'}
               </button>
-              <div className="text-[11.5px] text-gray-400">{ch.last_sync_at ? `última sync ${new Date(ch.last_sync_at).toLocaleString('pt-PT')}` : 'nunca sincronizado'}</div>
+              <div className="text-[10px] text-gray-400">{ch.last_sync_at ? `última sync ${new Date(ch.last_sync_at).toLocaleString('pt-PT')}` : 'nunca sincronizado'}</div>
               <div className="flex gap-1 mt-2 flex-wrap">
-                <button className="text-[12.5px] text-[#6B7280] hover:underline flex items-center gap-0.5" onClick={() => setMapeando(ch)}><Rows3 size={12} />Mapeamento</button>
-                <button className="text-[12.5px] text-[#6B7280] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'sync_availability' })}><UploadCloud size={12} />Enviar disp.</button>
-                <button className="text-[12.5px] text-[#6B7280] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'pull' })}><DownloadCloud size={12} />Receber reservas</button>
+                <button className="text-[11px] text-[#6B7280] hover:underline flex items-center gap-0.5" onClick={() => setMapeando(ch)}><Rows3 size={12} />Mapeamento</button>
+                <button className="text-[11px] text-[#6B7280] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'sync_availability' })}><UploadCloud size={12} />Enviar disp.</button>
+                <button className="text-[11px] text-[#6B7280] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'pull' })}><DownloadCloud size={12} />Receber reservas</button>
                 {ch.status === 'CONNECTED' ? (
-                  <button className="text-[12.5px] text-[#DC2626] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'disconnect' })}><Unplug size={12} />Desligar</button>
+                  <button className="text-[11px] text-[#DC2626] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'disconnect' })}><Unplug size={12} />Desligar</button>
                 ) : (
-                  <button className="text-[12.5px] text-[#111827] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'connect' })}><Link2 size={12} />Marcar como ligado</button>
+                  <button className="text-[11px] text-[#111827] hover:underline flex items-center gap-0.5" onClick={() => act.mutate({ id: ch.id, a: 'connect' })}><Link2 size={12} />Marcar como ligado</button>
                 )}
               </div>
             </div>
           ))}
-          {channels.length === 0 && <div className="col-span-3 text-gray-500 text-[13px]">Sem canais ligados. Ligue Booking.com, Expedia, etc. acima.</div>}
+          {channels.length === 0 && <div className="col-span-3 text-gray-500 text-[12px]">Sem canais ligados. Ligue Booking.com, Expedia, etc. acima.</div>}
         </div>
 
         {/* Log de sincronização */}
         <div>
-          <div className="text-[12.5px] font-bold text-[#6B7280] mb-1 uppercase flex items-center gap-1"><Link2 size={13} />Registo de sincronização</div>
-          <div className="bg-white border border-[#E6E8EC] text-[13px]">
+          <div className="text-[11px] font-bold text-[#6B7280] mb-1 uppercase flex items-center gap-1"><Link2 size={13} />Registo de sincronização</div>
+          <div className="bg-white border border-[#E6E8EC] text-[12px]">
             <div className="grid grid-cols-[140px_100px_90px_1fr_130px] font-bold bg-[#F7F8FA] border-b border-[#F1F2F4] px-2 py-1"><span>Canal</span><span>Direção</span><span>Evento</span><span>Resumo</span><span>Quando</span></div>
             {logs.map((l: any) => (
               <div key={l.id} className="grid grid-cols-[140px_100px_90px_1fr_130px] px-2 py-1 border-b border-[#F1F2F4] items-center">
@@ -123,7 +123,7 @@ export default function ChannelManagerView() {
             {logs.length === 0 && <div className="px-3 py-2 text-gray-500">Sem sincronizações ainda.</div>}
           </div>
         </div>
-        <div className="text-[12.5px] text-gray-500">As chamadas às APIs das OTAs ligam-se aqui quando as credenciais/certificação de cada canal estiverem disponíveis (Booking.com Connectivity, Expedia EPS, etc.). A arquitetura (mapeamento, push/pull, anti-overbooking) já está pronta.</div>
+        <div className="text-[11px] text-gray-500">As chamadas às APIs das OTAs ligam-se aqui quando as credenciais/certificação de cada canal estiverem disponíveis (Booking.com Connectivity, Expedia EPS, etc.). A arquitetura (mapeamento, push/pull, anti-overbooking) já está pronta.</div>
       </div>
       {mapeando && <ChannelRoomMapDialog channel={mapeando} onClose={() => setMapeando(null)} />}
     </ClassicWindow>

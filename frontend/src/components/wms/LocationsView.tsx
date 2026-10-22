@@ -30,7 +30,7 @@ const LocationNode = ({
   };
 
   return (
-    <div className="select-none text-[12.5px] font-sans">
+    <div className="select-none text-[11px] font-sans">
       <div 
         className={`flex items-center p-1 border-b border-[#F1F2F4] hover:bg-[#F7F8FA] transition-colors`}
         style={{ paddingLeft: `${level * 16 + 4}px` }}
@@ -167,7 +167,7 @@ export default function LocationsView() {
         }
       >
         <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto">
-          <form id="location-form" onSubmit={handleSave} className="text-[12.5px] grid grid-cols-1 gap-4">
+          <form id="location-form" onSubmit={handleSave} className="text-[11px] grid grid-cols-1 gap-4">
             
             <div className="border border-[#E6E8EC] bg-white p-2">
               <h3 className="font-bold text-[#6B7280] border-b border-[#E6E8EC] mb-2 pb-1">Identificação</h3>
@@ -242,7 +242,7 @@ export default function LocationsView() {
     >
       <div className="flex flex-col h-full bg-white">
         {/* Selector Header */}
-        <div className="flex items-center p-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[12.5px]">
+        <div className="flex items-center p-2 border-b border-[#E6E8EC] bg-[#F7F8FA] text-[11px]">
           <span className="font-bold mr-2">Armazém:</span>
           <select 
             value={selectedWarehouseId || ''} 
@@ -259,16 +259,16 @@ export default function LocationsView() {
         {/* Tree List */}
         <div className="flex-1 overflow-auto bg-white p-2">
           {!selectedWarehouseId ? (
-            <div className="text-gray-500 text-[12.5px] p-4 text-center border border-[#F1F2F4] bg-[#FFFFFF]">
+            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#F1F2F4] bg-[#FFFFFF]">
               Selecione um armazém para gerir o seu layout.
             </div>
           ) : isLoading ? (
-            <div className="text-gray-500 text-[12.5px] p-4 text-center border border-[#F1F2F4] bg-[#FFFFFF]">
+            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#F1F2F4] bg-[#FFFFFF]">
               A carregar árvore de localizações...
             </div>
           ) : locationsTree && locationsTree.length > 0 ? (
             <div className="border border-[#E6E8EC] bg-white">
-              <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-1 flex text-[11.5px] font-bold text-gray-800">
+              <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] p-1 flex text-[10px] font-bold text-gray-800">
                 <div className="w-16">Nível</div>
                 <div className="w-16">Código</div>
                 <div className="flex-1">Nome / Descrição</div>
@@ -287,7 +287,7 @@ export default function LocationsView() {
               </div>
             </div>
           ) : (
-            <div className="text-gray-500 text-[12.5px] p-4 text-center border border-[#F1F2F4] bg-[#FFFFFF]">
+            <div className="text-gray-500 text-[11px] p-4 text-center border border-[#F1F2F4] bg-[#FFFFFF]">
               Nenhuma zona criada neste armazém. Comece por criar uma "Nova Zona".
             </div>
           )}

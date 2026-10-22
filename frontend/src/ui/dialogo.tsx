@@ -180,7 +180,7 @@ export default function DialogoHost() {
             <span className="h-[2px] bg-white rounded" />
             <span className="h-[2px] bg-white rounded" />
           </span>
-          <span className="flex-1 text-center text-white/70 text-[13px]">arraste para mover</span>
+          <span className="flex-1 text-center text-white/70 text-[12px]">arraste para mover</span>
         </div>
 
 

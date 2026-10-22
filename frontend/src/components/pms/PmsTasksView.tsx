@@ -84,21 +84,21 @@ export default function PmsTasksView() {
             {
               header: 'Estado', width: '16%',
               accessor: (r: any) => (
-                <span className="px-1.5 py-0.5 text-white text-[11.5px] font-semibold" style={{ background: STATUS_COLOR[r.status] || '#3B82F6' }}>
+                <span className="px-1.5 py-0.5 text-white text-[10px] font-semibold" style={{ background: STATUS_COLOR[r.status] || '#3B82F6' }}>
                   {statusLabel(r.status)}
                 </span>
               ),
             },
           ]} />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[12.5px] overflow-auto">
+        <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
           <div className="font-bold text-[#111827]">{selId ? 'Editar Tarefa' : 'Nova Tarefa'}</div>
           <label className="flex flex-col">Título<input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inp} /></label>
           <label className="flex flex-col">Tipo de tarefa
             <select value={form.task_type || 'CLEANING'} onChange={(e) => setForm({ ...form, task_type: e.target.value })} className={inp}>
               {TASK_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
-            <span className="text-[11.5px] text-[#6B7280] mt-0.5">
+            <span className="text-[10px] text-[#6B7280] mt-0.5">
               Só "Limpeza" liberta o quarto (Por limpar → Livre/Limpo) ao ser concluída.
             </span>
           </label>

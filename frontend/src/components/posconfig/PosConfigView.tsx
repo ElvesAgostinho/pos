@@ -245,7 +245,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             title="Trocar de módulo"
             className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-black/15' : 'hover:bg-black/10'}`}>
             {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
-            <span className="text-[13px] text-white">▾</span>
+            <span className="text-[12px] text-white">▾</span>
           </button>
 
           {menu === '__ml' && (
@@ -311,7 +311,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             )}
           </div>
         ))}
-        <div className="ml-auto flex items-center gap-4 text-[13px]">
+        <div className="ml-auto flex items-center gap-4 text-[12px]">
           <span className="font-semibold">{new Date().toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
           <span className="opacity-30">|</span>
           <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
@@ -328,7 +328,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           </span>{' '}
           {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
         </div>
-        <div className="flex items-center gap-0.5 text-[13px] font-normal">
+        <div className="flex items-center gap-0.5 text-[12px] font-normal">
           <button onClick={() => setLocked(true)} title="Bloquear ecrã"
             className="w-7 h-7 flex items-center justify-center hover:bg-white/15 transition-colors" style={{ borderRadius: RADIUS.sm }}>
             <Lock size={13} />
@@ -351,12 +351,12 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         <div className="w-[236px] flex-shrink-0 border-r border-[#E6E8EC] bg-white overflow-auto">
           {favs.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[13px] font-semibold text-[#111827] bg-[#F7F8FA] border-b border-[#E6E8EC] flex items-center gap-1.5">
+              <div className="px-3 py-2 text-[12px] font-semibold text-[#111827] bg-[#F7F8FA] border-b border-[#E6E8EC] flex items-center gap-1.5">
                 <Glyph icon="♥" size={13} /> Favoritos
               </div>
               {favs.map((f) => (
                 <div key={f.key}
-                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[13px] border-b border-[#F1F2F4] cursor-pointer ${section === f.key ? 'bg-[#F7F8FA] text-[#111827] font-bold' : 'text-[#111827] hover:bg-[#FFFFFF]'}`}>
+                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[12px] border-b border-[#F1F2F4] cursor-pointer ${section === f.key ? 'bg-[#F7F8FA] text-[#111827] font-bold' : 'text-[#111827] hover:bg-[#FFFFFF]'}`}>
                   <span className="flex-1" onClick={() => { setSection(f.key); setEditing(null); }}>{f.label}</span>
                   <button title="Tirar dos favoritos"
                     onClick={() => {
@@ -377,7 +377,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             return (
             <div key={grp.key}>
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[13px] font-bold uppercase tracking-tight border-b-2 hover:brightness-[0.98]"
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[12px] font-bold uppercase tracking-tight border-b-2 hover:brightness-[0.98]"
                 style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)', borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>
                 <span>{grp.title}</span>
                 <span className="text-[16px] leading-none text-[#6B7280]">{open[grp.key] ? '−' : '+'}</span>
@@ -388,7 +388,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                     const ativo = section === it.key;
                     return (
                     <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
-                      className="w-full flex items-center gap-2 pl-3 pr-3 py-1.5 text-[13px] text-left border-b border-l-[3px]"
+                      className="w-full flex items-center gap-2 pl-3 pr-3 py-1.5 text-[12px] text-left border-b border-l-[3px]"
                       style={{
                         borderBottomColor: '#F7F8FA',
                         borderLeftColor: ativo ? TOKENS.accent : 'transparent',
@@ -475,7 +475,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'photo_url', label: '', width: '52px',
                   render: (r: any) => r.photo_url
                     ? <img src={r.photo_url} alt="" className="w-7 h-7 object-contain" />
-                    : <span className="text-[11.5px] text-[#6B7280]">sem foto</span> },
+                    : <span className="text-[10px] text-[#6B7280]">sem foto</span> },
                 { key: 'code', label: 'Código', width: '18%' },
                 { key: 'name', label: 'Descrição' },
                 { key: 'is_active', label: 'Ativo', width: '10%', toggle: true },
@@ -1040,7 +1040,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'code', label: 'Código', width: '14%' },
                 { key: 'name', label: 'Descrição', width: '20%',
                   render: (r: any) => (
-                    <span className="inline-block px-4 py-1 text-[13px] font-bold rounded-[8px]"
+                    <span className="inline-block px-4 py-1 text-[12px] font-bold rounded-[8px]"
                       style={{ background: r.bg_color, color: r.text_color }}>{r.name}</span>
                   ) },
                 { key: 'equivalent_display', label: 'Estado equivalente', width: '16%' },
@@ -1205,7 +1205,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'code', label: 'Código', width: '16%' },
                 { key: 'name', label: 'Descrição', width: '24%',
                   render: (r: any) => (
-                    <span className="inline-block px-6 py-1 text-[13px] font-bold rounded-[8px]"
+                    <span className="inline-block px-6 py-1 text-[12px] font-bold rounded-[8px]"
                       style={{ background: r.bg_color, color: r.text_color }}>{r.name}</span>
                   ) },
                 { key: 'equivalent', label: 'Estado equivalente', width: '18%',
@@ -1291,7 +1291,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 { key: 'is_active', label: 'Ativo:', type: 'checkbox' },
               ]} />
           ) : section !== 'articles' ? (
-            <div className="flex-1 flex items-center justify-center text-[#6B7280] text-[13px]">
+            <div className="flex-1 flex items-center justify-center text-[#6B7280] text-[12px]">
               {SECTIONS.flatMap((g) => g.items).find((i) => i.key === section)?.label} — a construir a seguir.
             </div>
           ) : editing !== null ? (
@@ -1341,7 +1341,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   <Field label="Pesquisa por texto livre:" wide>
                     <input value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })}
                       onKeyDown={(e) => e.key === 'Enter' && search()}
-                      className="border border-[#E6E8EC] px-2 py-1 text-[13px] w-[220px] bg-white"
+                      className="border border-[#E6E8EC] px-2 py-1 text-[12px] w-[220px] bg-white"
                       style={{ boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.10)' }} />
                   </Field>
                 </div>
@@ -1353,7 +1353,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
 
               {/* GRELHA */}
               <div className="flex-1 overflow-auto bg-white">
-                <table className="w-full text-[13px] border-collapse">
+                <table className="w-full text-[12px] border-collapse">
                   <thead className="sticky top-0">
                     <tr className="text-[#111827]" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 55%, #F1F2F4 100%)' }}>
                       {['Código', 'Descrição', 'Sub Família', 'Preço', 'Iva', 'Isenções', 'Stock', 'Impressoras', 'Unidades (Compra/Stock/Venda)', 'Ativo'].map((h, i) => (
@@ -1405,7 +1405,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               </div>
 
               {/* PAGINAÇÃO */}
-              <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[13px]">
+              <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[12px]">
                 <span>Nº registos a visualizar:</span>
                 <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
                   className="border border-[#E6E8EC] px-2 py-0.5 bg-white">
@@ -1446,7 +1446,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
       {/* Rodapé — nº de certificação AGT, sempre em tempo real (fiscal.FiscalConfig,
           a mesma fonte que assina as faturas). Nunca um texto fixo no código: enquanto
           não há certificação real diz isso mesmo, sem fingir um número. */}
-      <div className="h-6 flex items-center px-3 text-[11.5px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
+      <div className="h-6 flex items-center px-3 text-[10px] text-[#6B7280] bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
         <span>System Mwana Lodge</span>
         <span className="mx-2 opacity-40">|</span>
         <span>

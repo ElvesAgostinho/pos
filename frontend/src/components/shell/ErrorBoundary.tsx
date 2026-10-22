@@ -35,16 +35,16 @@ export default class ErrorBoundary extends Component<Props, State> {
             <div className="bg-[#DC2626] text-white px-4 py-2 flex items-center gap-2 text-sm font-bold">
               <AlertTriangle size={16} /> Ocorreu um erro neste ecrã
             </div>
-            <div className="p-4 space-y-3 text-[13px] text-gray-700">
+            <div className="p-4 space-y-3 text-[12px] text-gray-700">
               <p>O ecrã não pôde ser apresentado. O resto do sistema continua a funcionar — pode voltar à árvore e abrir outro ecrã.</p>
-              <pre className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 text-[12.5px] text-[#B91C1C] overflow-auto max-h-40 whitespace-pre-wrap">{this.state.error.message}</pre>
+              <pre className="bg-[#F7F8FA] border border-[#F1F2F4] p-2 text-[11px] text-[#B91C1C] overflow-auto max-h-40 whitespace-pre-wrap">{this.state.error.message}</pre>
               <div className="flex gap-2">
                 <button onClick={() => this.setState({ error: null })}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] text-[12.5px] hover:bg-[#F7F8FA]">
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[#F7F8FA] border border-[#E6E8EC] text-[11px] hover:bg-[#F7F8FA]">
                   <RefreshCw size={12} /> Tentar novamente
                 </button>
                 <button onClick={() => window.location.reload()}
-                  className="px-3 py-1.5 bg-[#3B82F6] text-white text-[12.5px] hover:bg-[#1E2A44]">Recarregar sistema</button>
+                  className="px-3 py-1.5 bg-[#3B82F6] text-white text-[11px] hover:bg-[#1E2A44]">Recarregar sistema</button>
               </div>
             </div>
           </div>

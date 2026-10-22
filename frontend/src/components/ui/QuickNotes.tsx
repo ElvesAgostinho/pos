@@ -39,7 +39,7 @@ export default function QuickNotes({ onClose }: QuickNotesProps) {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           onBlur={handleSave}
-          className="flex-1 w-full bg-transparent border-none outline-none resize-none text-[13px] leading-tight font-serif p-1"
+          className="flex-1 w-full bg-transparent border-none outline-none resize-none text-[12px] leading-tight font-serif p-1"
           placeholder="Escreva aqui os seus apontamentos..."
           autoFocus
         />
@@ -48,7 +48,7 @@ export default function QuickNotes({ onClose }: QuickNotesProps) {
       <div className="bg-[#F7F8FA] border-t border-[#E6E8EC] p-1.5 flex justify-end">
         <button 
           onClick={handleSave}
-          className="flex items-center text-[11.5px] bg-[#F7F8FA] hover:bg-[#DBEAFE] border border-[#E6E8EC] px-2 py-1 text-black font-medium"
+          className="flex items-center text-[10px] bg-[#F7F8FA] hover:bg-[#DBEAFE] border border-[#E6E8EC] px-2 py-1 text-black font-medium"
         >
           <Save size={10} className="mr-1" />
           Guardar Nota

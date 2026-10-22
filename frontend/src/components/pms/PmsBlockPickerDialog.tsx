@@ -26,7 +26,7 @@ export default function PmsBlockPickerDialog({ onClose, onSelect }: { onClose: (
             </button>
           </div>
         </div>
-        <div className="p-2 bg-white border-b border-[#F1F2F4] flex items-center gap-2 text-[13px]">
+        <div className="p-2 bg-white border-b border-[#F1F2F4] flex items-center gap-2 text-[12px]">
           Pesquisa livre:
           <span className="relative">
             <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus
@@ -49,10 +49,10 @@ export default function PmsBlockPickerDialog({ onClose, onSelect }: { onClose: (
         </div>
         <div className="flex justify-between items-center px-3 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC]">
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
-            className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
             <Hand size={13} /> Selecionar
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white">
               <X size={9} strokeWidth={3} />
             </span>

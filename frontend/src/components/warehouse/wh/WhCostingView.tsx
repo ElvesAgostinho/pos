@@ -11,13 +11,13 @@ export default function WhCostingView() {
     <ClassicWindow title="Valorização de Stock (FIFO / FEFO)" icon={<Calculator size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Valor total imobilizado: <span className="font-bold text-[#6B7280]">{AOA(d?.total_value)}</span></div>}>
       <div className="p-3 space-y-3">
-        {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : (
+        {isLoading || !d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
           <>
-            <div className="bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-2 text-[12.5px] text-gray-700">
+            <div className="bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-2 text-[11px] text-gray-700">
               <b>Método de custeio:</b> {d.method}
             </div>
             <div className="bg-white border border-[#E6E8EC]">
-              <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[12.5px] font-bold text-gray-700">Valorização por armazém</div>
+              <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold text-gray-700">Valorização por armazém</div>
               <ClassicGrid rowKey="warehouse" data={d.by_warehouse} columns={[
                 { header: 'Armazém', accessor: 'warehouse', width: '40%' },
                 { header: 'SKUs', accessor: 'skus', width: '15%' },
@@ -26,7 +26,7 @@ export default function WhCostingView() {
               ]} />
             </div>
             <div className="bg-white border border-[#E6E8EC]">
-              <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[12.5px] font-bold text-gray-700">Top artigos por valor imobilizado</div>
+              <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold text-gray-700">Top artigos por valor imobilizado</div>
               <ClassicGrid rowKey="item" data={d.top_items} columns={[
                 { header: 'Artigo', accessor: 'item', width: '38%' },
                 { header: 'Armazém', accessor: 'warehouse', width: '25%' },

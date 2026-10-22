@@ -66,11 +66,11 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
               <button onClick={() => setAberto(false)} className="w-6 h-6 bg-[#DC2626] text-white font-bold flex items-center justify-center"><X size={14} /></button>
             </div>
             <div className="max-h-[50vh] overflow-auto">
-              <div className="grid grid-cols-[1fr_60px] px-3 py-1.5 text-[12.5px] font-bold text-[#6B7280] bg-[#F7F8FA] border-b border-[#F1F2F4]">
+              <div className="grid grid-cols-[1fr_60px] px-3 py-1.5 text-[11px] font-bold text-[#6B7280] bg-[#F7F8FA] border-b border-[#F1F2F4]">
                 <span>Grupo</span><span className="text-center">Tem</span>
               </div>
               {(data?.groups || []).map((g: any) => (
-                <label key={g.id} className="grid grid-cols-[1fr_60px] items-center px-3 py-1.5 text-[13px] border-b border-[#F1F2F4] hover:bg-[#F7F8FA] cursor-pointer">
+                <label key={g.id} className="grid grid-cols-[1fr_60px] items-center px-3 py-1.5 text-[12px] border-b border-[#F1F2F4] hover:bg-[#F7F8FA] cursor-pointer">
                   <span>{g.name}</span>
                   <span className="flex justify-center">
                     <input type="checkbox" checked={!!marcado[g.id]}
@@ -78,14 +78,14 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
                   </span>
                 </label>
               ))}
-              {!data && <div className="px-3 py-4 text-center text-[#6B7280] text-[13px]">A carregar…</div>}
+              {!data && <div className="px-3 py-4 text-center text-[#6B7280] text-[12px]">A carregar…</div>}
             </div>
             <div className="grid grid-cols-2 gap-1 p-1 bg-[#F7F8FA]">
               <button onClick={gravar} disabled={gravando || !data}
-                className="py-1.5 bg-[#1E2A44] text-white text-[13px] font-bold disabled:opacity-50">
+                className="py-1.5 bg-[#1E2A44] text-white text-[12px] font-bold disabled:opacity-50">
                 {gravando ? 'A gravar…' : 'Gravar'}
               </button>
-              <button onClick={() => setAberto(false)} className="py-1.5 bg-[#3B82F6] text-white text-[13px] font-bold">Fechar</button>
+              <button onClick={() => setAberto(false)} className="py-1.5 bg-[#3B82F6] text-white text-[12px] font-bold">Fechar</button>
             </div>
           </div>
         </div>

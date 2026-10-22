@@ -27,9 +27,9 @@ function useCrud(resource: keyof typeof finalApi, params?: any) {
 function Card({ label, value, tone, sub }: any) {
   return (
     <div className="bg-white border border-[#E6E8EC] p-3">
-      <div className="text-[11.5px] text-gray-500 uppercase">{label}</div>
+      <div className="text-[10px] text-gray-500 uppercase">{label}</div>
       <div className={`text-2xl font-bold ${tone || 'text-[#6B7280]'}`}>{value ?? '—'}</div>
-      {sub && <div className="text-[12.5px] text-gray-500">{sub}</div>}
+      {sub && <div className="text-[11px] text-gray-500">{sub}</div>}
     </div>
   );
 }
@@ -40,7 +40,7 @@ export function WfcDashboardView() {
   return (
     <ClassicWindow title="Workflow — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Centro 19 · fluxos e tarefas</div>}>
       <div className="p-3 grid grid-cols-4 gap-2">
-        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : <>
+        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Fluxos ativos" value={d.flows} /><Card label="Tarefas pendentes" value={d.tasks_pending} tone="text-[#111827]" />
           <Card label="Em curso" value={d.tasks_in_progress} /><Card label="Concluídas" value={d.tasks_done} tone="text-[#111827]" />
           <Card label="Urgentes por fechar" value={d.tasks_urgent} tone={d.tasks_urgent ? 'text-[#B91C1C]' : 'text-[#111827]'} /><Card label="Total tarefas" value={d.tasks_total} />
@@ -57,7 +57,7 @@ export function WfcFlowsView() {
   return (
     <ClassicWindow title="Workflow — Fluxos" icon={<GitBranch size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Fluxos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Nome do fluxo" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Evento gatilho" value={f.trigger_event} onChange={(e) => setF({ ...f, trigger_event: e.target.value })} className="border border-[#E6E8EC] p-1 w-40" />
           <input placeholder="Descrição" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className="border border-[#E6E8EC] p-1" />
@@ -86,7 +86,7 @@ export function WfcTasksView() {
   return (
     <ClassicWindow title="Workflow — Tarefas" icon={<ListTodo size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Tarefas: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Título" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} className="border border-[#E6E8EC] p-1" />
           <input placeholder="Responsável" value={f.assignee} onChange={(e) => setF({ ...f, assignee: e.target.value })} className="border border-[#E6E8EC] p-1 w-28" />
           <select value={f.priority} onChange={(e) => setF({ ...f, priority: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">{Object.entries(PR).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
@@ -99,7 +99,7 @@ export function WfcTasksView() {
             { header: 'Tarefa', accessor: 'title', width: '26%' }, { header: 'Responsável', accessor: (r: any) => r.assignee || '—', width: '14%' },
             { header: 'Fluxo', accessor: (r: any) => r.flow_name || '—', width: '16%' },
             { header: 'Prioridade', accessor: (r: any) => <span className={ptone(r.priority)}>{PR[r.priority]}</span>, width: '12%' },
-            { header: 'Estado', accessor: (r: any) => <select value={r.status} onChange={(e) => update.mutate({ id: r.id, data: { status: e.target.value } })} className="bg-transparent border-none text-[12.5px]">{Object.entries(ST).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>, width: '14%' },
+            { header: 'Estado', accessor: (r: any) => <select value={r.status} onChange={(e) => update.mutate({ id: r.id, data: { status: e.target.value } })} className="bg-transparent border-none text-[11px]">{Object.entries(ST).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>, width: '14%' },
             { header: 'Prazo', accessor: (r: any) => r.due_date || '—', width: '12%' },
             { header: '', accessor: (r: any) => <button onClick={() => remove.mutate(r.id)} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>, width: '6%' },
           ]} />
@@ -116,7 +116,7 @@ export function ProcDashboardView() {
   return (
     <ClassicWindow title="Compras — Dashboard" icon={<ShoppingCart size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Centro 08 · requisições, encomendas, receções</div>}>
       <div className="p-3 grid grid-cols-4 gap-2">
-        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : <>
+        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Requisições" value={sum(d.requisitions)} /><Card label="Encomendas" value={sum(d.purchase_orders)} />
           <Card label="Receções (GRN)" value={d.goods_receipts} /><Card label="Devoluções" value={sum(d.returns)} />
           <Card label="A aguardar aprovação" value={d.pending_approval} tone={d.pending_approval ? 'text-[#111827]' : 'text-[#111827]'} />
@@ -143,7 +143,7 @@ export function ProcReturnsView() {
     <ClassicWindow title="Compras — Devoluções a Fornecedor" icon={<Undo2 size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Devoluções: {rows.length}</div>}>
       <div className="flex h-full">
         <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
             <select value={hdr.supplier} onChange={(e) => setHdr({ ...hdr, supplier: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white max-w-[130px]"><option value="">Fornecedor…</option>{suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.commercial_name}</option>)}</select>
             <select value={hdr.warehouse} onChange={(e) => setHdr({ ...hdr, warehouse: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white"><option value="">Armazém…</option>{warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}</select>
             <ClassicButton icon={Plus} label="Nova" onClick={createRet} />
@@ -158,11 +158,11 @@ export function ProcReturnsView() {
         </div>
         <div className="w-1/2 flex flex-col">
           {sel ? <>
-            <div className="flex items-center justify-between p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+            <div className="flex items-center justify-between p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
               <span className="font-bold">{sel.number} · {sel.supplier_name}</span>
               {sel.status !== 'CONFIRMED' ? <ClassicButton icon={CheckCircle} label="Confirmar (saída stock)" onClick={() => doConfirm(sel.id)} /> : <span className="text-[#111827] font-bold flex items-center gap-1"><Check size={13} strokeWidth={3} /> Confirmada</span>}
             </div>
-            {sel.status !== 'CONFIRMED' && <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+            {sel.status !== 'CONFIRMED' && <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
               <select value={ln.item} onChange={(e) => setLn({ ...ln, item: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white max-w-[160px]"><option value="">Artigo…</option>{items.map((i: any) => <option key={i.id} value={i.id}>{i.name}</option>)}</select>
               <input type="number" placeholder="Qtd" value={ln.quantity} onChange={(e) => setLn({ ...ln, quantity: e.target.value })} className="border border-[#E6E8EC] p-1 w-16" />
               <ClassicButton icon={Plus} label="Linha" onClick={addLine} />
@@ -172,7 +172,7 @@ export function ProcReturnsView() {
                 { header: 'Artigo', accessor: (r: any) => `${r.item_code || ''} ${r.item_name || ''}`.trim(), width: '65%' }, { header: 'Qtd', accessor: 'quantity', width: '35%' },
               ]} />
             </div>
-          </> : <div className="flex-1 flex items-center justify-center text-gray-400 text-[13px]">Selecione ou crie uma devolução.</div>}
+          </> : <div className="flex-1 flex items-center justify-center text-gray-400 text-[12px]">Selecione ou crie uma devolução.</div>}
         </div>
       </div>
     </ClassicWindow>
@@ -190,7 +190,7 @@ export function ProcPlanningView() {
           { header: 'Em stock', accessor: (r: any) => <span className="text-[#B91C1C] font-bold">{r.on_hand}</span>, width: '12%' }, { header: 'Mínimo', accessor: 'min', width: '10%' },
           { header: 'Sugerido', accessor: (r: any) => <span className="text-[#111827] font-bold">{r.suggested_qty}</span>, width: '12%' }, { header: 'Custo est.', accessor: (r: any) => AOA(r.est_cost), width: '16%' },
         ]} />
-        {rows.length === 0 && <div className="text-center text-gray-400 text-[13px] py-8">Nenhum artigo abaixo do mínimo. Defina stock mínimo nos níveis de stock.</div>}
+        {rows.length === 0 && <div className="text-center text-gray-400 text-[12px] py-8">Nenhum artigo abaixo do mínimo. Defina stock mínimo nos níveis de stock.</div>}
       </div>
     </ClassicWindow>
   );
@@ -202,7 +202,7 @@ export function ComDashboardView() {
   return (
     <ClassicWindow title="Comercial — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Centro 06 · promoções, combos, fidelização</div>}>
       <div className="p-3 grid grid-cols-4 gap-2">
-        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : <>
+        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Promoções ativas" value={d.promotions_active} sub={`${d.promotions_total} no total`} /><Card label="Combos" value={d.combos} />
           <Card label="Programas fidelização" value={d.loyalty_programs} /><Card label="Escalões" value={d.loyalty_tiers} />
           <Card label="Gift cards ativos" value={d.giftcards_active} /><Card label="Saldo gift cards" value={d.giftcards_balance != null ? AOA(d.giftcards_balance) : '—'} tone="text-[#111827]" />
@@ -225,7 +225,7 @@ export function ComLoyaltyView() {
     <ClassicWindow title="Comercial — Fidelização (Loyalty)" icon={<Award size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Programas: {rows.length}</div>}>
       <div className="flex h-full">
         <div className="w-1/2 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+          <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
             <input placeholder="Programa" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
             <input type="number" placeholder="Pts/Kz" value={f.points_per_currency} onChange={(e) => setF({ ...f, points_per_currency: e.target.value })} className="border border-[#E6E8EC] p-1 w-16" title="Pontos por Kz gasto" />
             <input type="number" placeholder="Kz/pt" value={f.redeem_value} onChange={(e) => setF({ ...f, redeem_value: e.target.value })} className="border border-[#E6E8EC] p-1 w-16" title="Valor de resgate por ponto" />
@@ -241,7 +241,7 @@ export function ComLoyaltyView() {
         </div>
         <div className="w-1/2 flex flex-col">
           {sel ? <>
-            <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+            <div className="flex flex-wrap items-end gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
               <input placeholder="Escalão (Ouro…)" value={t.name} onChange={(e) => setT({ ...t, name: e.target.value })} className="border border-[#E6E8EC] p-1 w-24" />
               <input type="number" placeholder="Min. pts" value={t.min_points} onChange={(e) => setT({ ...t, min_points: e.target.value })} className="border border-[#E6E8EC] p-1 w-20" />
               <input type="number" placeholder="Desc.%" value={t.discount_percent} onChange={(e) => setT({ ...t, discount_percent: e.target.value })} className="border border-[#E6E8EC] p-1 w-16" />
@@ -255,7 +255,7 @@ export function ComLoyaltyView() {
                 { header: '', accessor: (r: any) => <button onClick={() => tiers.remove.mutate(r.id)} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>, width: '8%' },
               ]} />
             </div>
-          </> : <div className="flex-1 flex items-center justify-center text-gray-400 text-[13px]">Selecione um programa para gerir escalões.</div>}
+          </> : <div className="flex-1 flex items-center justify-center text-gray-400 text-[12px]">Selecione um programa para gerir escalões.</div>}
         </div>
       </div>
     </ClassicWindow>
@@ -275,7 +275,7 @@ export function FinReconciliationView() {
   return (
     <ClassicWindow title="Finanças — Reconciliação Bancária" icon={<Banknote size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Reconciliações: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <select value={f.account} onChange={(e) => setF({ ...f, account: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white"><option value="">Conta…</option>{accounts.map((a: any) => <option key={a.id} value={a.id}>{a.name} ({a.code})</option>)}</select>
           {acc && <span className="text-gray-600">Sistema: <b>{AOA(acc.balance)}</b></span>}
           <input type="date" value={f.statement_date} onChange={(e) => setF({ ...f, statement_date: e.target.value })} className="border border-[#E6E8EC] p-1" />
@@ -304,7 +304,7 @@ export function AdmGroupsView() {
   return (
     <ClassicWindow title="Administração — Grupos Empresariais" icon={<Building size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Grupos: {rows.length}</div>}>
       <div className="p-2 space-y-2 h-full flex flex-col">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[12.5px]">
+        <div className="flex items-end gap-2 bg-[#F7F8FA] border border-[#E6E8EC] p-2 text-[11px]">
           <input placeholder="Nome do grupo" value={name} onChange={(e) => setName(e.target.value)} className="border border-[#E6E8EC] p-1" />
           <ClassicButton icon={Plus} label="Adicionar" onClick={add} />
         </div>
@@ -327,11 +327,11 @@ export function AdmModuleStatusView() {
   return (
     <ClassicWindow title="Administração — Estado dos Módulos" icon={<ShieldCheck size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Módulos e funcionalidades licenciadas</div>}>
       <div className="p-3 grid grid-cols-2 gap-3">
-        <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[12.5px] font-bold">Módulos ativos ({modules.length})</div>
-          <div className="p-2 text-[13px]">{modules.length ? modules.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F1F2F4] flex items-center gap-1"><Check size={12} strokeWidth={3} className="text-[#111827]" /> {typeof m === 'string' ? m : (m.name || m.code || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem informação.</div>}</div>
+        <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Módulos ativos ({modules.length})</div>
+          <div className="p-2 text-[12px]">{modules.length ? modules.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F1F2F4] flex items-center gap-1"><Check size={12} strokeWidth={3} className="text-[#111827]" /> {typeof m === 'string' ? m : (m.name || m.code || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem informação.</div>}</div>
         </div>
-        <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[12.5px] font-bold">Funcionalidades ({features.length})</div>
-          <div className="p-2 text-[13px]">{features.length ? features.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F1F2F4]">• {typeof m === 'string' ? m : (m.name || m.key || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem restrições / sem informação.</div>}</div>
+        <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">Funcionalidades ({features.length})</div>
+          <div className="p-2 text-[12px]">{features.length ? features.map((m: any, i: number) => <div key={i} className="py-0.5 border-b border-[#F1F2F4]">• {typeof m === 'string' ? m : (m.name || m.key || JSON.stringify(m))}</div>) : <div className="text-gray-400">Sem restrições / sem informação.</div>}</div>
         </div>
       </div>
     </ClassicWindow>
@@ -340,10 +340,10 @@ export function AdmModuleStatusView() {
 
 export function AdmVersionsView() {
   const { data: d } = useQuery({ queryKey: ['final', 'systemInfo'], queryFn: () => finalApi.systemInfo() });
-  const Row = ({ k, v }: any) => <div className="flex justify-between border-b border-[#F1F2F4] py-1 text-[13px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
+  const Row = ({ k, v }: any) => <div className="flex justify-between border-b border-[#F1F2F4] py-1 text-[12px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
   return (
     <ClassicWindow title="Administração — Versões" icon={<ShieldCheck size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Informação de versão e ambiente</div>}>
-      <div className="p-3">{!d ? <div className="text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : (
+      <div className="p-3">{!d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (
         <div className="bg-white border border-[#E6E8EC] p-3 max-w-lg">
           <Row k="Aplicação" v={`${d.app} v${d.version}`} /><Row k="Atualização" v={d.update?.up_to_date ? <span className="flex items-center gap-1"><Check size={12} strokeWidth={3} /> Atualizado</span> : `Disponível ${d.update?.latest}`} />
           <Row k="Base de dados" v={d.database} /><Row k="Python" v={d.python} /><Row k="Django" v={d.django} /><Row k="Plataforma" v={d.platform} /><Row k="Modo debug" v={String(d.debug)} />
@@ -359,7 +359,7 @@ export function SecDashboardView() {
   return (
     <ClassicWindow title="Segurança — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Centro 03 · utilizadores, sessões e acessos</div>}>
       <div className="p-3 grid grid-cols-4 gap-2">
-        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[13px]">A carregar…</div> : <>
+        {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Utilizadores" value={d.users_total} sub={`${d.users_active} ativos`} /><Card label="Staff" value={d.staff} />
           <Card label="Administradores" value={d.superusers} /><Card label="Sessões ativas" value={d.active_sessions} />
           <Card label="Operadores POS" value={d.pos_operators} />
@@ -379,7 +379,7 @@ function SecurityPolicyEditor({ title, icon, fields }: { title: string; icon: an
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Política de segurança global</div>}>
       <div className="p-3 max-w-md space-y-2">
         {fields.map((fl) => (
-          <div key={fl.key} className="flex items-center justify-between text-[13px] border-b border-[#F1F2F4] py-1.5">
+          <div key={fl.key} className="flex items-center justify-between text-[12px] border-b border-[#F1F2F4] py-1.5">
             <span className="text-gray-600">{fl.label}</span>
             {fl.type === 'bool'
               ? <input type="checkbox" checked={!!p[fl.key]} onChange={(e) => setForm({ ...p, [fl.key]: e.target.checked })} />

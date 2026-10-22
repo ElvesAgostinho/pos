@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 type Tab = 'tables' | 'documents' | 'shortcuts' | 'payments' | 'privacy';
 
 const TABS: [Tab, string][] = [
@@ -84,7 +84,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -95,21 +95,21 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
           <Box title="Identificação">
           <div className="space-y-2 pt-1.5">
             <div className="flex items-center gap-6">
-              <label className="flex items-center gap-3 text-[13px]">
+              <label className="flex items-center gap-3 text-[12px]">
                 <span className="w-[70px] text-[#111827]">Nr:</span>
                 <input type="number" value={d.number ?? 0} onChange={(e) => set('number', Number(e.target.value))} className={`${inp} w-[130px]`} style={inputStyle} />
               </label>
-              <label className="flex items-center gap-2 text-[13px] ml-auto">
+              <label className="flex items-center gap-2 text-[12px] ml-auto">
                 <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
                 Ativo
               </label>
             </div>
             <div className="flex items-center gap-6">
-              <label className="flex items-center gap-3 text-[13px]">
+              <label className="flex items-center gap-3 text-[12px]">
                 <span className="w-[70px] text-[#111827]">Código:<span className="text-[#DC2626]">*</span></span>
                 <input value={d.code || ''} onChange={(e) => set('code', e.target.value.toUpperCase())} className={`${inp} w-[160px]`} style={inputStyle} />
               </label>
-              <label className="flex items-center gap-3 text-[13px] ml-auto">
+              <label className="flex items-center gap-3 text-[12px] ml-auto">
                 <span className="text-[#111827]">Por defeito:</span>
                 <select value={d.default_module || ''} onChange={(e) => set('default_module', e.target.value)} className={`${inp} w-[190px]`} style={inputStyle}>
                   <option value="">—</option>
@@ -118,11 +118,11 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
                 </select>
               </label>
             </div>
-            <label className="flex items-center gap-3 text-[13px]">
+            <label className="flex items-center gap-3 text-[12px]">
               <span className="w-[70px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
               <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inp} flex-1`} style={inputStyle} />
             </label>
-            <label className="flex items-start gap-3 text-[13px]">
+            <label className="flex items-start gap-3 text-[12px]">
               <span className="w-[70px] text-[#111827] pt-1">Memo:</span>
               <textarea value={d.memo || ''} onChange={(e) => set('memo', e.target.value)} rows={3} className={`${inp} flex-1`} style={inputStyle} />
             </label>
@@ -133,7 +133,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
           <div className="flex border-b-2 border-[#1E2A44] px-2 overflow-x-auto">
             {TABS.map(([k, label]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+                className={`px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap border-b-[3px] ${tab === k ? 'border-[#1E2A44] text-[#111827] bg-white' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
                 {label}
               </button>
             ))}
@@ -141,7 +141,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
 
           <div className="flex-1 overflow-auto">
             {tab === 'privacy' ? (
-              <table className="w-full text-[13px] border-collapse">
+              <table className="w-full text-[12px] border-collapse">
                 <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
                   {['Permission', 'Leitura', 'Escrita', 'Info'].map((h) => (
                     <th key={h} className="text-left font-normal px-2 py-1.5 border-b border-[#F1F2F4]">{h}</th>
@@ -155,14 +155,14 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
                         <td className="px-2 py-1.5 font-bold">{p.code} - {p.name}</td>
                         <td className="text-center"><input type="checkbox" checked={!!v.read} onChange={(e) => setBox(p.code, { ...v, read: e.target.checked })} className="w-4 h-4" /></td>
                         <td className="text-center"><input type="checkbox" checked={!!v.write} onChange={(e) => setBox(p.code, { ...v, write: e.target.checked })} className="w-4 h-4" /></td>
-                        <td className="px-2 py-1.5 text-[12.5px] text-[#6B7280]">{p.info}</td>
+                        <td className="px-2 py-1.5 text-[11px] text-[#6B7280]">{p.info}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             ) : (
-              <table className="w-full text-[13px] border-collapse">
+              <table className="w-full text-[12px] border-collapse">
                 <tbody>
                   {boxes.map((b) => (
                     <tr key={b} className="border-b border-[#F1F2F4] hover:bg-[#FFFFFF]">
@@ -181,18 +181,18 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
 
         {/* Direita: permissões numeradas */}
         <div className="w-[420px] flex-shrink-0 flex flex-col">
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#F1F2F4]">Permissões</div>
+          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">Permissões</div>
           <div className="flex-1 overflow-auto">
             {roots.map((r) => {
               const kids = rights.filter((k) => k.parent === r.id);
               return (
                 <div key={r.id}>
-                  <label className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[13px] hover:bg-[#FFFFFF] cursor-pointer">
+                  <label className="flex items-center gap-2 px-2 py-1.5 border-b border-[#F1F2F4] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
                     <input type="checkbox" checked={chosen.includes(r.id)} onChange={() => toggleRight(r.id)} className="w-4 h-4" />
                     <span className="text-[#6B7280] font-mono">{r.number}</span>={r.name}
                   </label>
                   {kids.map((k) => (
-                    <label key={k.id} className="flex items-center gap-2 pl-8 pr-2 py-1.5 border-b border-[#F1F2F4] text-[13px] hover:bg-[#FFFFFF] cursor-pointer">
+                    <label key={k.id} className="flex items-center gap-2 pl-8 pr-2 py-1.5 border-b border-[#F1F2F4] text-[12px] hover:bg-[#FFFFFF] cursor-pointer">
                       <input type="checkbox" checked={chosen.includes(k.id)} onChange={() => toggleRight(k.id)} className="w-4 h-4" />
                       <span className="text-[#6B7280] font-mono">{k.number}</span>={k.name}
                     </label>
@@ -202,10 +202,10 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
             })}
           </div>
           <button onClick={() => set('right_ids', chosen.length === rights.length ? [] : rights.map((r) => r.id))}
-            className="py-2 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[13px] hover:bg-[#F7F8FA]">
+            className="py-2 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px] hover:bg-[#F7F8FA]">
             {chosen.length === rights.length ? 'Desmarcar Tudo' : 'Selecionar Tudo'}
           </button>
-          <div className="px-3 py-1.5 text-[12.5px] text-[#6B7280] border-t border-[#F1F2F4]">
+          <div className="px-3 py-1.5 text-[11px] text-[#6B7280] border-t border-[#F1F2F4]">
             {chosen.length} de {rights.length} permissões · o número é a referência do suporte.
           </div>
         </div>

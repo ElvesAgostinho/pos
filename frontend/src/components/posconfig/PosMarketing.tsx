@@ -5,8 +5,8 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 import EntityEditor from './EntityEditor';
 
-const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[13px] bg-white';
-const lbl = 'text-[13px] text-[#111827] w-[120px] flex-shrink-0';
+const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[12px] bg-white';
+const lbl = 'text-[12px] text-[#111827] w-[120px] flex-shrink-0';
 
 /** Lista simples de um endpoint (as tabelas que o POS já tem). */
 function useList(ep: string, key: string) {
@@ -23,7 +23,7 @@ function useList(ep: string, key: string) {
 const Painel = ({ title, children, right }: any) => (
   <div className="bg-white" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
     <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#E6E8EC]">
-      <span className="text-[13px] font-bold text-[#111827]">{title}</span>
+      <span className="text-[12px] font-bold text-[#111827]">{title}</span>
       {right}
     </div>
     {children}
@@ -162,7 +162,7 @@ export function EntitySearch() {
               </div>
               <F k="member_card_number" label="Nº do cartão:" />
               <div className="flex items-center gap-2">
-                <label className="flex items-center gap-2 text-[13px] cursor-pointer">
+                <label className="flex items-center gap-2 text-[12px] cursor-pointer">
                   <input type="checkbox" checked={!!edit.is_blocked}
                     onChange={(e) => setEdit({ ...edit, is_blocked: e.target.checked })} className="w-4 h-4" />
                   Bloqueado
@@ -181,7 +181,7 @@ export function EntitySearch() {
               </div>
             </div>
             {req.size > 0 && (
-              <div className="px-4 pb-3 text-[12.5px] text-[#111827]">
+              <div className="px-4 pb-3 text-[11px] text-[#111827]">
                 Obrigatórios nesta casa: {regras.filter((r: any) => r.is_required).map((r: any) => r.label).join(', ')}.
               </div>
             )}
@@ -212,7 +212,7 @@ export function EntitySearch() {
           <div className="flex gap-0 px-3 pt-2">
             {[['S', 'Pesquisa simples'], ['A', 'Pesquisa Avançada']].map(([k, t]) => (
               <button key={k} onClick={() => setTab(k as any)}
-                className={`px-4 py-1.5 text-[13px] border-b-2 ${tab === k
+                className={`px-4 py-1.5 text-[12px] border-b-2 ${tab === k
                   ? 'border-[#E6E8EC] font-bold text-[#111827] bg-white'
                   : 'border-transparent text-[#6B7280] hover:bg-[#F7F8FA]'}`}>
                 {t}
@@ -288,7 +288,7 @@ export function EntitySearch() {
       <div className="flex-1 flex flex-col overflow-hidden p-3">
         <Painel title="Resultado da pesquisa">
           <div className="overflow-auto" style={{ maxHeight: '46vh' }}>
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
                 {['Apelido', 'Nome', 'Outros nomes', 'Nr. cliente', 'Tipo', 'Morada', 'Contacto',
                   'Cartão', ...camposPers.map((c: any) => c.name), 'Informações'].map((h) => (
@@ -327,7 +327,7 @@ export function EntitySearch() {
               </tbody>
             </table>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[13px]">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
             <span>Nº registos a visualizar:</span>
             <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
               className={`${inp} w-[70px]`} style={inputStyle}>
@@ -353,19 +353,19 @@ export function EntitySearch() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setObrig(false)} />
           <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[440px]">
-            <div className="px-3 py-2 bg-[#1E2A44] text-white text-[13px] font-bold flex justify-between">
+            <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold flex justify-between">
               Campos obrigatórios <button onClick={() => setObrig(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
             <div className="p-3 max-h-[50vh] overflow-auto">
-              <div className="text-[12.5px] text-[#6B7280] mb-2">
+              <div className="text-[11px] text-[#6B7280] mb-2">
                 O servidor recusa gravar uma entidade sem estes campos. Não é um aviso — é uma regra.
               </div>
               {regras.map((r: any) => (
-                <label key={r.id} className="flex items-center gap-2 py-1 text-[13px] cursor-pointer">
+                <label key={r.id} className="flex items-center gap-2 py-1 text-[12px] cursor-pointer">
                   <input type="checkbox" checked={!!r.is_required}
                     onChange={(e) => regra.mutate({ id: r.id, v: e.target.checked })}
                     disabled={r.field === 'name'} className="w-4 h-4" />
-                  {r.label}{r.field === 'name' && <span className="text-[#6B7280] text-[12.5px]">(sempre)</span>}
+                  {r.label}{r.field === 'name' && <span className="text-[#6B7280] text-[11px]">(sempre)</span>}
                 </label>
               ))}
             </div>
@@ -378,10 +378,10 @@ export function EntitySearch() {
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setDups(false)} />
           <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[620px]">
-            <div className="px-3 py-2 bg-[#1E2A44] text-white text-[13px] font-bold flex justify-between">
+            <div className="px-3 py-2 bg-[#1E2A44] text-white text-[12px] font-bold flex justify-between">
               Controlo de duplicação <button onClick={() => setDups(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
-            <div className="p-3 max-h-[55vh] overflow-auto text-[13px]">
+            <div className="p-3 max-h-[55vh] overflow-auto text-[12px]">
               {(duplicados?.groups || []).length === 0 ? (
                 <div className="text-center text-[#111827] py-8 font-bold flex items-center justify-center gap-1.5">
                   <Glyph icon="✔" size={15} /> Nenhuma entidade repetida.
@@ -510,7 +510,7 @@ export function EventRequests() {
               <F k="price_per_pax" label="Preço/pax:" type="number" w="w-[140px]" />
               <F k="extra_total" label="Extras:" type="number" w="w-[140px]" />
               <div className="flex items-center gap-2">
-                <label className="flex items-center gap-2 text-[13px] cursor-pointer">
+                <label className="flex items-center gap-2 text-[12px] cursor-pointer">
                   <input type="checkbox" checked={!!edit.answered}
                     onChange={(e) => setEdit({ ...edit, answered: e.target.checked })} className="w-4 h-4" />
                   Respondido
@@ -522,7 +522,7 @@ export function EventRequests() {
                   rows={3} className={`${inp} w-[620px]`} style={inputStyle} />
               </div>
             </div>
-            <div className="px-4 pb-3 text-[12.5px] text-[#111827]">
+            <div className="px-4 pb-3 text-[11px] text-[#111827]">
               O <b>Estado da reserva</b> decide se o espaço fica bloqueado: um Confirmado tira a sala do
               mercado e o sistema recusa outro à mesma hora; uma Opção não bloqueia.
               Marcar <b>Respondido</b> tira o pedido da lista de trabalho do comercial.
@@ -548,7 +548,7 @@ export function EventRequests() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#F7F8FA] text-[13px]">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#F7F8FA] text-[12px]">
         <button onClick={exportar} className="flex items-center gap-2 px-2 py-1 hover:bg-[#F7F8FA]">
           <span className="text-[#111827]"><Glyph icon="📊" size={15} /></span> Exportar para Excel
         </button>
@@ -562,7 +562,7 @@ export function EventRequests() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
             {['Data do pedido', 'Nome', 'Espaço', 'Telefone', 'E-mail', 'Data', 'Pax',
               'Tipo de Evento', 'Notas', 'Estado'].map((h) => (
@@ -587,7 +587,7 @@ export function EventRequests() {
                 <td className="px-2 py-1">{r.event_type_name || '—'}</td>
                 <td className="px-2 py-1 text-[#6B7280] max-w-[220px] truncate">{r.notes || ''}</td>
                 <td className="px-2 py-1">
-                  <span className={`px-2 py-0.5 text-[12.5px] font-semibold ${r.answered
+                  <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.answered
                     ? 'bg-[#F7F8FA] text-[#111827]' : 'bg-[#F7F8FA] text-[#111827]'}`}>
                     {r.answered ? 'Respondido' : 'Não Respondido'}
                   </span>
@@ -601,7 +601,7 @@ export function EventRequests() {
         </table>
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[13px]">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F7F8FA] border-t border-[#F1F2F4] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className={`${inp} w-[70px]`} style={inputStyle}>
@@ -619,7 +619,7 @@ export function EventRequests() {
         { label: 'Adicionar', icon: '➕', onClick: () => setEdit({ pax: 0, price_per_pax: 0, extra_total: 0, answered: false }) },
         { label: 'Editar', icon: '✏', disabled: !sel, onClick: () => setEdit({ ...rows.find((r) => r.id === sel) }) },
       ]} right={
-        <span className="text-[12.5px] text-[#6B7280] flex items-center gap-1">Duplo-clique abre o pedido. <Glyph icon="🔒" size={11} /> = o estado bloqueia o espaço.</span>
+        <span className="text-[11px] text-[#6B7280] flex items-center gap-1">Duplo-clique abre o pedido. <Glyph icon="🔒" size={11} /> = o estado bloqueia o espaço.</span>
       } />
     </div>
   );

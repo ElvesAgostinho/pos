@@ -42,7 +42,7 @@ export default function ProfileAccessView() {
       <div className="flex h-full">
         {/* Perfis */}
         <div className="w-1/3 border-r border-[#E6E8EC] flex flex-col">
-          <div className="flex items-end gap-1 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+          <div className="flex items-end gap-1 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
             <input placeholder="Novo perfil (ex.: Rececionista)" value={newName} onChange={(e) => setNewName(e.target.value)} className="border border-[#E6E8EC] p-1 flex-1" />
             <ClassicButton icon={Plus} label="Criar" onClick={() => newName.trim() && createProfile.mutate(newName.trim())} />
           </div>
@@ -57,18 +57,18 @@ export default function ProfileAccessView() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {sel ? (
             <>
-              <div className="p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px] flex items-center justify-between">
+              <div className="p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px] flex items-center justify-between">
                 <span className="font-bold">{sel.name}</span>
                 <label className="flex items-center gap-1.5"><input type="checkbox" checked={full} onChange={(e) => setFull(e.target.checked)} /> Acesso total (vê tudo)</label>
               </div>
               <div className="flex-1 overflow-auto p-2">
-                <div className={`text-[12.5px] text-gray-500 mb-2 ${full ? '' : 'font-bold text-[#6B7280]'}`}>
+                <div className={`text-[11px] text-gray-500 mb-2 ${full ? '' : 'font-bold text-[#6B7280]'}`}>
                   {full ? 'Este perfil vê todos os centros. Desmarque "Acesso total" para restringir.' : 'Escolha os centros que este perfil pode ver:'}
                 </div>
                 {!full && (
                   <div className="grid grid-cols-2 gap-1">
                     {MODULES.map((m) => (
-                      <label key={m.key} className={`flex items-center gap-2 px-2 py-1.5 border text-[12.5px] cursor-pointer ${mods.includes(m.key) ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-white border-[#F1F2F4]'}`}>
+                      <label key={m.key} className={`flex items-center gap-2 px-2 py-1.5 border text-[11px] cursor-pointer ${mods.includes(m.key) ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-white border-[#F1F2F4]'}`}>
                         <input type="checkbox" checked={mods.includes(m.key)} onChange={() => toggleMod(m.key)} />
                         {m.title.replace(/^\d+\s·\s/, '')}
                       </label>
@@ -80,7 +80,7 @@ export default function ProfileAccessView() {
                 <ClassicButton icon={Save} label="Guardar acessos" onClick={() => save.mutate({ full_access: full, allowed_modules: full ? [] : mods })} />
               </div>
             </>
-          ) : <div className="flex-1 flex items-center justify-center text-gray-400 text-[13px]">Selecione um perfil para definir os acessos.</div>}
+          ) : <div className="flex-1 flex items-center justify-center text-gray-400 text-[12px]">Selecione um perfil para definir os acessos.</div>}
         </div>
       </div>
     </ClassicWindow>

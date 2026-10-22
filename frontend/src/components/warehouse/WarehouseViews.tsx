@@ -19,7 +19,7 @@ export function WarehousesView() {
     <ClassicWindow title="Armazéns (Warehouse)" icon={<WhIcon size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{whs.length} armazém(éns)</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <input placeholder="Nome do armazém" value={name} onChange={(e) => setName(e.target.value)} className="border border-[#E6E8EC] p-1" />
           <ClassicButton icon={Plus} label="Adicionar Armazém" onClick={() => { if (name) create.mutate({ name }, { onSuccess: () => setName('') }); }} />
         </div>
@@ -56,7 +56,7 @@ export function StockLevelsView() {
     <ClassicWindow title="Stock Atual & Operações (Warehouse)" icon={<Boxes size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Custo médio ponderado móvel · a receção de compras entra aqui automaticamente</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px]">
+        <div className="flex flex-wrap items-end gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
           <select value={wh || ''} onChange={(e) => setWh(e.target.value ? Number(e.target.value) : undefined)} className="border border-[#E6E8EC] p-1 bg-white">
             <option value="">— armazém —</option>{whs.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
           </select>
@@ -103,7 +103,7 @@ export function StockMovementsView() {
     <ClassicWindow title="Movimentos de Stock (ledger)" icon={<History size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{count} movimento(s) · histórico completo (entradas, saídas, transferências, ajustes, receções)</div>}>
       <div className="flex flex-col h-full">
-        <form className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[12.5px]" onSubmit={(e) => { e.preventDefault(); setPage(1); setQ(search); }}>
+        <form className="flex items-center gap-2 bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px]" onSubmit={(e) => { e.preventDefault(); setPage(1); setQ(search); }}>
           <input className="border border-[#E6E8EC] p-1 w-64" placeholder="Pesquisar artigo (código/nome) ou referência…" value={search} onChange={e => setSearch(e.target.value)} />
           <ClassicButton label="Pesquisar" onClick={() => { setPage(1); setQ(search); }} />
           {q && <button type="button" className="text-[#6B7280] hover:underline" onClick={() => { setSearch(''); setQ(''); setPage(1); }}>limpar</button>}

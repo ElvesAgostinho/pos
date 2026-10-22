@@ -31,7 +31,7 @@ export default function DashboardMDMView() {
         <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
         <div className="text-2xl font-bold text-[#6B7280]">{value}</div>
       </div>
-      <div className="text-[11.5px] text-gray-600 font-medium">{subtitle}</div>
+      <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>
     </div>
   );
 

@@ -28,7 +28,7 @@ export default function GuideDialog() {
       <div className="w-[460px] bg-[#F7F8FA] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
         {/* Barra de título */}
-        <div className="h-8 flex items-center gap-2 px-3 text-white font-bold text-[13px]"
+        <div className="h-8 flex items-center gap-2 px-3 text-white font-bold text-[12px]"
           style={{ background: 'linear-gradient(to bottom, #3B82F6, #3B82F6 55%, #1E2A44)' }}>
           <TriangleAlert size={14} />{g.title}
         </div>
@@ -36,10 +36,10 @@ export default function GuideDialog() {
         <div className="p-4 flex gap-3">
           <div className="w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center text-[22px] text-white"
             style={{ background: 'linear-gradient(to bottom, #3B82F6, #3B82F6)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.25)' }}>!</div>
-          <div className="flex-1 text-[13px] text-[#111827]">
+          <div className="flex-1 text-[12px] text-[#111827]">
             <div className="whitespace-pre-line font-semibold leading-relaxed">{g.message}</div>
             {g.hint && (
-              <div className="mt-3 p-2 bg-[#F7F8FA] border border-[#F1F2F4] text-[12.5px] text-[#6B7280] flex gap-2">
+              <div className="mt-3 p-2 bg-[#F7F8FA] border border-[#F1F2F4] text-[11px] text-[#6B7280] flex gap-2">
                 <Lightbulb size={14} className="flex-shrink-0 mt-px" /><span><b>O que fazer:</b> {g.hint}</span>
               </div>
             )}
@@ -48,7 +48,7 @@ export default function GuideDialog() {
 
         <div className="px-4 py-2.5 bg-gradient-to-b from-[#F7F8FA] to-[#F7F8FA] border-t border-[#E6E8EC] flex justify-end">
           <button onClick={() => setG(null)} autoFocus
-            className="px-6 py-1.5 text-[13px] font-semibold text-[#111827] border"
+            className="px-6 py-1.5 text-[12px] font-semibold text-[#111827] border"
             style={{
               background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4)',
               borderColor: '#3B82F6',

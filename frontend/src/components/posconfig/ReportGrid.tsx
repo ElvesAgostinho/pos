@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { inputStyle, money, Glyph } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-[2px] text-[12.5px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-[2px] text-[11px] bg-white';
 
 /**
  * GRELHA DE RELATÓRIO com FILTROS AVANÇADOS — como no Excel, mas a sério.
@@ -159,7 +159,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
   return (
     <>
       {/* ── barra de filtros ── */}
-      <div className="flex items-center gap-2 mb-2 text-[13px]">
+      <div className="flex items-center gap-2 mb-2 text-[12px]">
         <button onClick={() => setPainel(!painel)}
           className={`px-3 py-1 border ${conds.length ? 'border-[#E6E8EC] bg-[#F7F8FA] text-[#111827] font-semibold' : 'border-[#E6E8EC] bg-white'}`}>
           <span className="inline-flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtros avançados{conds.length ? ` (${conds.length})` : ''}</span>
@@ -189,7 +189,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       {colsPainel && (
         <div className="mb-2 p-2 border border-[#F1F2F4] bg-[#FFFFFF] flex flex-wrap gap-3">
           {cols.map((c) => (
-            <label key={c[0]} className="flex items-center gap-1.5 text-[13px] cursor-pointer">
+            <label key={c[0]} className="flex items-center gap-1.5 text-[12px] cursor-pointer">
               <input type="checkbox" checked={!ocultas.includes(c[0])}
                 onChange={(e) => setOcultas(e.target.checked
                   ? ocultas.filter((x) => x !== c[0]) : [...ocultas, c[0]])}
@@ -202,7 +202,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
 
       {painel && (
         <div className="mb-2 p-3 border border-[#F1F2F4] bg-[#FFFFFF]">
-          <div className="flex items-center gap-3 mb-2 text-[13px]">
+          <div className="flex items-center gap-3 mb-2 text-[12px]">
             <span className="font-semibold">Mostrar as linhas em que</span>
             <select value={modo} onChange={(e) => setModo(e.target.value as any)}
               className={`${inp} w-[130px]`} style={inputStyle}>
@@ -215,7 +215,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
           </div>
 
           {conds.length === 0 && (
-            <div className="text-[12.5px] text-[#6B7280]">
+            <div className="text-[11px] text-[#6B7280]">
               Sem condições. Clique em <b>+ Condição</b> — por exemplo: <i>Total</i> maior que <i>10000</i>
               {' '}E <i>Operador</i> contém <i>ana</i>.
             </div>
@@ -223,7 +223,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
 
           {conds.map((c, i) => (
             <div key={i} className="flex items-center gap-2 py-1">
-              <span className="text-[12.5px] text-[#6B7280] w-[26px]">{i === 0 ? '' : (modo === 'AND' ? 'E' : 'OU')}</span>
+              <span className="text-[11px] text-[#6B7280] w-[26px]">{i === 0 ? '' : (modo === 'AND' ? 'E' : 'OU')}</span>
               <select value={c.col}
                 onChange={(e) => setConds(conds.map((x, k) => k === i ? { ...x, col: e.target.value } : x))}
                 className={`${inp} w-[180px]`} style={inputStyle}>
@@ -240,7 +240,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
                   className={`${inp} w-[150px]`} style={inputStyle} />
               )}
               {c.op === 'between' && (<>
-                <span className="text-[12.5px]">e</span>
+                <span className="text-[11px]">e</span>
                 <input value={c.v2}
                   onChange={(e) => setConds(conds.map((x, k) => k === i ? { ...x, v2: e.target.value } : x))}
                   className={`${inp} w-[150px]`} style={inputStyle} />
@@ -253,7 +253,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
       )}
 
       {/* ── grelha ── */}
-      <table className="w-full text-[13px] border-collapse">
+      <table className="w-full text-[12px] border-collapse">
         <thead>
           <tr className="bg-[#F7F8FA]">
             {visiveis.map((c) => (
@@ -273,7 +273,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
               <th key={c[0]} className="px-1 py-1 border border-[#F1F2F4]">
                 <input value={rapido[c[0]] ?? ''} placeholder="filtrar…"
                   onChange={(e) => setRapido({ ...rapido, [c[0]]: e.target.value })}
-                  className="w-full border border-[#E6E8EC] px-1 py-[2px] text-[12.5px] font-normal" />
+                  className="w-full border border-[#E6E8EC] px-1 py-[2px] text-[11px] font-normal" />
               </th>
             ))}
           </tr>

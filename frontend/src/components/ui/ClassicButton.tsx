@@ -11,7 +11,7 @@ export default function ClassicButton({ icon: Icon, iconColor = 'text-gray-700',
   const raised = 'linear-gradient(to bottom, #FFFFFF 0%, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4 100%)';
   return (
     <button
-      className={`flex items-center gap-1.5 px-3 py-1.5 border text-[12.5px] font-semibold text-[#111827] focus:outline-none focus:ring-1 focus:ring-[#E6E8EC] transition-none ${props.disabled ? 'opacity-45 cursor-not-allowed' : 'active:translate-y-px'} ${className}`}
+      className={`flex items-center gap-1.5 px-3 py-1.5 border text-[11px] font-semibold text-[#111827] focus:outline-none focus:ring-1 focus:ring-[#E6E8EC] transition-none ${props.disabled ? 'opacity-45 cursor-not-allowed' : 'active:translate-y-px'} ${className}`}
       style={{
         background: raised, borderColor: '#3B82F6',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.18)',

@@ -56,8 +56,8 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
             {isNew && <ClassicButton icon={Save} label="Criar Ordem" onClick={save} />}
             {!isNew && po && (
               <>
-                <span className="text-[12.5px] text-gray-700">Total: <b className="text-[#6B7280]">{fmt(po.total_amount)}</b></span>
-                <select value={po.status} onChange={(e) => setStatus.mutate({ id: currentId!, status: e.target.value })} className="border border-[#E6E8EC] p-1 text-[12.5px] ml-3 bg-white">
+                <span className="text-[11px] text-gray-700">Total: <b className="text-[#6B7280]">{fmt(po.total_amount)}</b></span>
+                <select value={po.status} onChange={(e) => setStatus.mutate({ id: currentId!, status: e.target.value })} className="border border-[#E6E8EC] p-1 text-[11px] ml-3 bg-white">
                   {Object.entries(PO_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </>
@@ -67,7 +67,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
         </>
       }
     >
-      <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto text-[12.5px] space-y-4">
+      <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto text-[11px] space-y-4">
         <div className="border border-[#E6E8EC] bg-white p-2">
           <h3 className="font-bold text-[#6B7280] border-b border-[#E6E8EC] mb-2 pb-1">Cabeçalho</h3>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-2">
@@ -118,7 +118,7 @@ function PODetail({ poId, onBack }: { poId: number | null; onBack: () => void })
                 { header: '', accessor: (r: any) => <button onClick={() => delLine.mutate(r.id)} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>, width: '5%' },
               ]}
             />
-            <div className="flex justify-end mt-2 text-[13px] font-bold text-[#6B7280] pr-2">Total da Ordem: {fmt(po?.total_amount)}</div>
+            <div className="flex justify-end mt-2 text-[12px] font-bold text-[#6B7280] pr-2">Total da Ordem: {fmt(po?.total_amount)}</div>
           </div>
         )}
       </div>

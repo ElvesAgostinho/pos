@@ -92,21 +92,21 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[640px] max-h-[80vh] bg-[#F7F8FA] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-8 flex items-center justify-between px-3 text-white text-[13px] font-bold" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>
+        <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold" style={{ background: 'linear-gradient(to bottom, #1E2A44, #1E2A44)' }}>
           <span className="flex items-center gap-1.5"><Glyph icon="💳" size={13} /> Conta — {folio?.confirmation}</span>
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>
         </div>
 
         {folio?.sibling_folios?.length > 0 && (
           <div className="flex gap-1 px-2 py-1 bg-[#F7F8FA] border-b border-[#E6E8EC]">
-            <button onClick={() => setFolioId(folio.id)} className="px-2 py-0.5 text-[11.5px] font-bold bg-[#1E2A44] text-white">{folio.label}</button>
+            <button onClick={() => setFolioId(folio.id)} className="px-2 py-0.5 text-[10px] font-bold bg-[#1E2A44] text-white">{folio.label}</button>
             {folio.sibling_folios.map((s: any) => (
-              <button key={s.id} onClick={() => setFolioId(s.id)} className="px-2 py-0.5 text-[11.5px] font-bold bg-white border border-[#E6E8EC] hover:bg-[#F7F8FA]">{s.label}</button>
+              <button key={s.id} onClick={() => setFolioId(s.id)} className="px-2 py-0.5 text-[10px] font-bold bg-white border border-[#E6E8EC] hover:bg-[#F7F8FA]">{s.label}</button>
             ))}
           </div>
         )}
 
-        <div className="px-3 py-2 bg-white border-b border-[#F1F2F4] flex items-center justify-between text-[12.5px]">
+        <div className="px-3 py-2 bg-white border-b border-[#F1F2F4] flex items-center justify-between text-[11px]">
           <span>{folio?.label} · {folio?.status_display} · {folio?.room_number ? `Quarto ${folio.room_number}` : ''}</span>
           <span className="font-bold text-[14px] text-[#111827]">Saldo: {folio?.balance}</span>
         </div>
@@ -133,7 +133,7 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
           { label: folio?.fiscal_document_number ? `Ver Fatura (${folio.fiscal_document_number})` : 'Gerar Fatura (AGT)',
             icon: '🧾', color: '#1E2A44', onClick: generateInvoice },
         ]} right={
-          <button onClick={onClose} className="px-2 py-1 text-[13px] text-[#111827] border border-transparent hover:border-[#E6E8EC] hover:bg-[#F7F8FA] rounded-[8px]">Fechar</button>
+          <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#111827] border border-transparent hover:border-[#E6E8EC] hover:bg-[#F7F8FA] rounded-[8px]">Fechar</button>
         } />
       </div>
     </div>

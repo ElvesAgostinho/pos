@@ -90,10 +90,10 @@ export default function PmsFinanceView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex gap-3 p-3 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[13px]">
-        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[11.5px] text-gray-500">Total Receitas</div><div className="font-bold text-[#111827]">{money(totalIncome)}</div></div>
-        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[11.5px] text-gray-500">Total Despesas</div><div className="font-bold text-[#DC2626]">{money(totalExpense)}</div></div>
-        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[11.5px] text-gray-500">Saldo</div><div className="font-bold text-[#111827]">{money(totalIncome - totalExpense)}</div></div>
+      <div className="flex gap-3 p-3 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12px]">
+        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Total Receitas</div><div className="font-bold text-[#111827]">{money(totalIncome)}</div></div>
+        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Total Despesas</div><div className="font-bold text-[#DC2626]">{money(totalExpense)}</div></div>
+        <div className="bg-white border border-[#E6E8EC] px-3 py-1.5 flex-1"><div className="text-[10px] text-gray-500">Saldo</div><div className="font-bold text-[#111827]">{money(totalIncome - totalExpense)}</div></div>
       </div>
       <div className="flex flex-1 overflow-hidden">
         <div className="w-3/5 border-r border-[#E6E8EC]">
@@ -105,7 +105,7 @@ export default function PmsFinanceView() {
             { header: 'Valor', accessor: (r: any) => <span className={r.kind === 'expense' ? 'text-[#DC2626]' : 'text-[#111827]'}>{r.kind === 'expense' ? '-' : '+'}{money(Number(r.amount))}</span>, width: '18%' },
           ]} />
         </div>
-        <div className="w-2/5 p-3 space-y-2 text-[12.5px] overflow-auto">
+        <div className="w-2/5 p-3 space-y-2 text-[11px] overflow-auto">
           <div className="font-bold text-[#111827]">Nova Transação</div>
           <label className="flex flex-col">Tipo
             <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} className={inp}>

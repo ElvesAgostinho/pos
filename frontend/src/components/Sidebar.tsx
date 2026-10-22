@@ -25,7 +25,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
   const singleModule = !!scopeKey;
 
   return (
-    <div className="w-60 bg-[#F7F8FA] border-r border-[#E6E8EC] flex flex-col text-[12.5px] font-sans select-none overflow-y-auto">
+    <div className="w-60 bg-[#F7F8FA] border-r border-[#E6E8EC] flex flex-col text-[11px] font-sans select-none overflow-y-auto">
       {/* Voltar ao ambiente de trabalho do módulo */}
       <button onClick={() => onSelectView && onSelectView(`home:${scopeKey || 'admin'}`)}
         className="flex items-center gap-2 px-2 py-1.5 m-1.5 mb-1 bg-[#3B82F6] text-white hover:bg-[#1E2A44] transition-colors"
@@ -47,7 +47,7 @@ export default function Sidebar({ activeView = 'home:admin', onSelectView, scope
             >
               <span onClick={(e) => { e.stopPropagation(); toggle(mod.key); }}
                 className="mr-2 text-gray-500 font-mono text-xs w-3 text-center hover:text-black">{isOpen ? '−' : '+'}</span>
-              <span className="text-[#6B7280] text-[12.5px] flex-1 font-bold">{mod.title}</span>
+              <span className="text-[#6B7280] text-[11px] flex-1 font-bold">{mod.title}</span>
             </div>
 
             {isOpen && (

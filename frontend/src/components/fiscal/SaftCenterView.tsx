@@ -10,7 +10,7 @@ import { notifyError } from '../../utils/friendlyError';
 function Panel({ title, children, right }: any) {
   return (
     <div className="bg-white border border-[#E6E8EC]" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.12)' }}>
-      <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[13px] font-bold text-[#111827]"
+      <div className="px-3 py-1.5 border-b border-[#E6E8EC] flex items-center justify-between text-[12px] font-bold text-[#111827]"
         style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }}>
         <span>{title}</span>{right}
       </div>
@@ -19,7 +19,7 @@ function Panel({ title, children, right }: any) {
   );
 }
 
-const btn = 'px-3 py-1.5 text-[12.5px] font-semibold border border-[#E6E8EC] text-[#111827]';
+const btn = 'px-3 py-1.5 text-[11px] font-semibold border border-[#E6E8EC] text-[#111827]';
 const btnStyle = {
   background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4)',
   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',
@@ -66,33 +66,33 @@ export default function SaftCenterView() {
         {/* Estado fiscal */}
         <Panel title="Configuração Fiscal">
           {f ? (
-            <div className="flex items-center gap-4 text-[13px]">
+            <div className="flex items-center gap-4 text-[12px]">
               <div className={`flex items-center gap-2 px-3 py-2 border ${f.certified ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#E6E8EC]'}`}>
                 {f.certified ? <ShieldCheck size={22} className="text-[#111827]" /> : <ShieldAlert size={22} className="text-[#111827]" />}
                 <div>
                   <div className={`font-bold ${f.certified ? 'text-[#111827]' : 'text-[#111827]'}`}>
                     {f.certified ? `Certificado AGT nº ${f.certificate_number}` : 'Não certificado (ambiente de testes)'}
                   </div>
-                  <div className="text-[12.5px] text-gray-600">{f.company_name} · NIF {f.company_nif} · SAF-T v{f.saft_version} · {f.environment === 'PROD' ? 'Produção' : 'Testes'}</div>
+                  <div className="text-[11px] text-gray-600">{f.company_name} · NIF {f.company_nif} · SAF-T v{f.saft_version} · {f.environment === 'PROD' ? 'Produção' : 'Testes'}</div>
                 </div>
               </div>
               <div className="flex items-end gap-2">
-                <label className="flex flex-col text-[12.5px] text-gray-600">Período de
+                <label className="flex flex-col text-[11px] text-gray-600">Período de
                   <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="border border-[#E6E8EC] px-2 py-1 bg-white" /></label>
-                <label className="flex flex-col text-[12.5px] text-gray-600">até
+                <label className="flex flex-col text-[11px] text-gray-600">até
                   <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="border border-[#E6E8EC] px-2 py-1 bg-white" /></label>
               </div>
             </div>
-          ) : <div className="text-gray-400 text-[13px]">A carregar…</div>}
+          ) : <div className="text-gray-400 text-[12px]">A carregar…</div>}
         </Panel>
 
         {/* Perfis de exportação */}
         <div className="grid grid-cols-2 gap-3">
           {profiles.map((p: any) => (
             <Panel key={p.key} title={p.label}
-              right={p.required ? <span className="text-[11.5px] bg-[#DC2626] text-white px-1.5 py-0.5 font-bold">OBRIGATÓRIO AGT</span>
-                : <span className="text-[11.5px] text-gray-500">opcional</span>}>
-              <div className="text-[12.5px] text-gray-700 mb-3 min-h-[32px]">{p.description}</div>
+              right={p.required ? <span className="text-[10px] bg-[#DC2626] text-white px-1.5 py-0.5 font-bold">OBRIGATÓRIO AGT</span>
+                : <span className="text-[10px] text-gray-500">opcional</span>}>
+              <div className="text-[11px] text-gray-700 mb-3 min-h-[32px]">{p.description}</div>
               <div className="flex gap-2">
                 <button onClick={() => validate(p.key)} disabled={busy === p.key} className={btn} style={btnStyle}>
                   {busy === p.key ? 'A validar…' : 'Validar XML'}
@@ -103,7 +103,7 @@ export default function SaftCenterView() {
                 </button>
               </div>
               {check?.key === p.key && (
-                <div className={`mt-2 p-2 border text-[12.5px] ${check.valid ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#DC2626]'}`}>
+                <div className={`mt-2 p-2 border text-[11px] ${check.valid ? 'bg-[#F7F8FA] border-[#E6E8EC]' : 'bg-[#F7F8FA] border-[#DC2626]'}`}>
                   <div className="flex items-center gap-1.5 font-bold">
                     {check.valid ? <CheckCircle2 size={13} className="text-[#111827]" /> : <XCircle size={13} className="text-[#B91C1C]" />}
                     {check.valid ? 'XML válido' : 'XML com problemas'} · {check.elements} elementos · {(check.size_bytes / 1024).toFixed(1)} KB
@@ -118,14 +118,14 @@ export default function SaftCenterView() {
         </div>
 
         {/* Histórico */}
-        <Panel title="Histórico de Exportações" right={<span className="text-[12.5px] font-normal text-gray-500 flex items-center gap-1"><History size={12} />{(hist || []).length} registo(s)</span>}>
+        <Panel title="Histórico de Exportações" right={<span className="text-[11px] font-normal text-gray-500 flex items-center gap-1"><History size={12} />{(hist || []).length} registo(s)</span>}>
           <ClassicGrid rowKey="id" data={hist || []} columns={[
             { header: 'Perfil', accessor: 'profile_label', width: '20%' },
             { header: 'Período', accessor: (r: any) => `${r.start_date} → ${r.end_date}`, width: '20%' },
             { header: 'Ficheiro', accessor: 'filename', width: '26%' },
             { header: 'Tamanho', accessor: (r: any) => `${(r.size_bytes / 1024).toFixed(1)} KB`, width: '9%' },
             { header: 'Válido', accessor: (r: any) => r.is_valid ? <CheckCircle2 size={14} className="text-[#111827]" /> : <XCircle size={14} className="text-[#B91C1C]" />, width: '7%' },
-            { header: 'Impressão digital (SHA-256)', accessor: (r: any) => <span className="font-mono text-[11.5px]">{(r.sha256 || '').slice(0, 20)}…</span>, width: '18%' },
+            { header: 'Impressão digital (SHA-256)', accessor: (r: any) => <span className="font-mono text-[10px]">{(r.sha256 || '').slice(0, 20)}…</span>, width: '18%' },
           ]} />
         </Panel>
       </div>

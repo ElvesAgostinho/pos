@@ -104,18 +104,18 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
         </div>
         <div className="flex-1 overflow-auto bg-white">
           {isLoading ? (
-            <div className="p-4 text-gray-400 text-[13px]">A carregar…</div>
+            <div className="p-4 text-gray-400 text-[12px]">A carregar…</div>
           ) : !profileSummary ? (
-            <div className="p-6 text-center text-gray-400 text-[13px]">Este utilizador ainda não tem um perfil (RBAC) atribuído — atribua um perfil em Segurança → Utilizadores primeiro.</div>
+            <div className="p-6 text-center text-gray-400 text-[12px]">Este utilizador ainda não tem um perfil (RBAC) atribuído — atribua um perfil em Segurança → Utilizadores primeiro.</div>
           ) : !profile ? (
-            <div className="p-6 text-center text-gray-400 text-[13px]">Não foi possível carregar os dados completos do perfil "{profileSummary.name}".</div>
+            <div className="p-6 text-center text-gray-400 text-[12px]">Não foi possível carregar os dados completos do perfil "{profileSummary.name}".</div>
           ) : profile.full_access !== false ? (
-            <div className="p-6 text-center text-gray-500 text-[13px]">
+            <div className="p-6 text-center text-gray-500 text-[12px]">
               O perfil <b>{profile.name}</b> deste utilizador tem <b>acesso total</b> — vê todos os ecrãs do PMS.
               Para restringir, desmarque "Acesso total" no perfil (Acessos por Perfil) e depois volte aqui.
             </div>
           ) : (
-            <table className="w-full text-[13px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <thead style={{ background: '#F7F8FA' }}>
                 <tr><th className="w-10 border-b border-[#E6E8EC]"></th><th className="text-left px-3 py-1.5 border-b border-[#E6E8EC] font-semibold">Ecrã do PMS</th></tr>
               </thead>
@@ -132,11 +132,11 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
         </div>
         <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
           <button onClick={gravar} disabled={saving || !profile || profile.full_access !== false}
-            className="flex items-center gap-2 text-[13px] font-semibold text-[#111827] disabled:opacity-50 hover:text-black">
+            className="flex items-center gap-2 text-[12px] font-semibold text-[#111827] disabled:opacity-50 hover:text-black">
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: '#3B82F6' }}><Check size={13} /></span>
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black ml-auto">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black ml-auto">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>

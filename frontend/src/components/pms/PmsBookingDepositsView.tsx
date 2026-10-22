@@ -6,7 +6,7 @@ import { Wallet, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso, confirmar } from '../../ui/dialogo';
 
-const btn = 'px-3 py-1.5 text-[13px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
+const btn = 'px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] active:translate-y-px inline-flex items-center gap-1.5 disabled:opacity-40';
 const ST_COLOR: Record<string, string> = { PENDING: '#3B82F6', PAID: '#1E2A44', FAILED: '#DC2626', REFUNDED: '#3B82F6' };
 const METODOS: [string, string][] = [
   ['TRANSFER', 'Transferência bancária'], ['CASH', 'Numerário'],
@@ -74,7 +74,7 @@ export default function PmsBookingDepositsView() {
             <RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />Actualizar</button>
         </div>}>
       <div className="p-4 space-y-3 bg-[#F7F8FA] h-full overflow-auto">
-        <div className="bg-white border border-[#E6E8EC] rounded-[12px] p-3 flex flex-wrap items-center gap-3 text-[13px]">
+        <div className="bg-white border border-[#E6E8EC] rounded-[12px] p-3 flex flex-wrap items-center gap-3 text-[12px]">
           <label className="flex items-center gap-2">Mostrar
             <select className="border border-[#E6E8EC] rounded-[8px] px-2 py-1" value={filtro}
                     onChange={(e) => setFiltro(e.target.value)}>
@@ -92,20 +92,20 @@ export default function PmsBookingDepositsView() {
         </div>
 
         <div className="bg-white border border-[#E6E8EC] rounded-[12px] overflow-hidden">
-          <div className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[12.5px] font-bold text-[#6B7280]">
+          <div className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4] text-[11px] font-bold text-[#6B7280]">
             <span>Reserva</span><span>Hóspede</span><span>Entrada</span><span>Valor</span>
             <span>Situação</span><span>Confirmar entrada</span>
           </div>
           {pagamentos.map((p: any) => (
-            <div key={p.id} className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-2 border-b border-[#F1F2F4] items-center text-[13px]">
+            <div key={p.id} className="grid grid-cols-[110px_1fr_100px_110px_1fr_150px] gap-2 px-3 py-2 border-b border-[#F1F2F4] items-center text-[12px]">
               <span className="font-mono text-[#6B7280]">{p.confirmation}</span>
               <span className="font-bold">{p.guest_name || '—'}</span>
               <span>{p.check_in ? new Date(p.check_in).toLocaleDateString('pt-PT') : '—'}</span>
               <span className="font-bold">{money(p.amount)} {p.currency}</span>
               <span>
-                <span className="text-[11.5px] px-1.5 py-0.5 rounded text-white" style={{ background: ST_COLOR[p.status] }}>
+                <span className="text-[10px] px-1.5 py-0.5 rounded text-white" style={{ background: ST_COLOR[p.status] }}>
                   {p.status_display}</span>
-                <span className="block text-[11.5px] text-gray-500 mt-0.5" title={p.message || ''}>
+                <span className="block text-[10px] text-gray-500 mt-0.5" title={p.message || ''}>
                   {p.status === 'PAID'
                     ? `${p.method_display}${p.reference ? ' · ' + p.reference : ''}${p.confirmed_by ? ' · por ' + p.confirmed_by : ''}`
                     : (p.message || '')}
@@ -115,35 +115,35 @@ export default function PmsBookingDepositsView() {
               {p.status === 'PENDING' ? (
                 <span className="flex flex-col gap-1">
                   <span className="flex gap-1">
-                    <select className="border border-[#E6E8EC] rounded-[8px] px-1 py-0.5 text-[12.5px] flex-1"
+                    <select className="border border-[#E6E8EC] rounded-[8px] px-1 py-0.5 text-[11px] flex-1"
                             value={metodo[p.id] || 'TRANSFER'}
                             onChange={(e) => setMetodo({ ...metodo, [p.id]: e.target.value })}>
                       {METODOS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
                   </span>
-                  <input className="border border-[#E6E8EC] rounded-[8px] px-1 py-0.5 text-[12.5px]"
+                  <input className="border border-[#E6E8EC] rounded-[8px] px-1 py-0.5 text-[11px]"
                          placeholder="Referência" value={refer[p.id] || ''}
                          onChange={(e) => setRefer({ ...refer, [p.id]: e.target.value })} />
                   <span className="flex gap-1">
-                    <button className="text-[12.5px] text-[#111827] hover:underline inline-flex items-center gap-0.5"
+                    <button className="text-[11px] text-[#111827] hover:underline inline-flex items-center gap-0.5"
                             onClick={async () => {
                               if (await confirmar(
                                 `Confirma que entraram ${money(p.amount)} ${p.currency} da reserva ${p.confirmation}?`,
                                 'Confirmar depósito')) confirmarPagamento.mutate(p);
                             }}><CheckCircle2 size={12} />Recebido</button>
-                    <button className="text-[12.5px] text-[#DC2626] hover:underline inline-flex items-center gap-0.5"
+                    <button className="text-[11px] text-[#DC2626] hover:underline inline-flex items-center gap-0.5"
                             onClick={() => marcarFalhado.mutate(p)}><XCircle size={12} />Falhou</button>
                   </span>
                 </span>
               ) : (
-                <span className="text-gray-400 text-[12.5px]">
+                <span className="text-gray-400 text-[11px]">
                   {p.paid_at ? new Date(p.paid_at).toLocaleString('pt-PT') : '—'}
                 </span>
               )}
             </div>
           ))}
           {pagamentos.length === 0 && (
-            <div className="px-3 py-6 text-center text-[13px] text-gray-500">
+            <div className="px-3 py-6 text-center text-[12px] text-gray-500">
               {filtro === 'PENDING'
                 ? 'Nenhum depósito por receber.'
                 : 'Sem registos para este filtro.'}
@@ -151,7 +151,7 @@ export default function PmsBookingDepositsView() {
           )}
         </div>
 
-        <div className="text-[12.5px] text-gray-500">
+        <div className="text-[11px] text-gray-500">
           Com os provedores reais (Multicaixa Express, EMIS, Stripe, PayPal) quem confirma um pagamento é
           o próprio gateway — essa ligação ainda não está credenciada nesta instalação, por isso os
           depósitos ficam aqui à espera de alguém confirmar que o dinheiro entrou. A percentagem do

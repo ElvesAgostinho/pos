@@ -101,7 +101,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
         <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-          <span className="text-[13px] font-bold text-[#111827]">
+          <span className="text-[12px] font-bold text-[#111827]">
             {editing.id ? `A editar ${editing.name || ''}` : `Novo ${title.toLowerCase()}`}
           </span>
           <button onClick={() => setEditing(null)} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
@@ -111,7 +111,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
           <Box title="Dados" className="max-w-[820px]">
             <div className="space-y-2.5 pt-1.5">
               {fields.map((f) => (
-                <label key={f.key} className={`flex gap-3 text-[13px] ${f.type === 'textarea' ? 'items-start' : 'items-center'}`}>
+                <label key={f.key} className={`flex gap-3 text-[12px] ${f.type === 'textarea' ? 'items-start' : 'items-center'}`}>
                   <span className={`w-[160px] flex-shrink-0 text-[#111827] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
                     {f.label}{f.required && <span className="text-[#DC2626]">*</span>}
                   </span>
@@ -138,7 +138,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                         <span className={`${inputCls} flex-1 min-w-0 truncate text-[#111827] bg-[#F7F8FA]`} style={inputStyle}>
                           {editing[f.key] ? String(editing[f.key]).split('/').pop() : 'Nenhum ficheiro — clique para carregar'}
                         </span>
-                        <span className="px-3 py-1 text-[13px] font-semibold bg-[#1E2A44] text-white hover:bg-[#1E2A44] flex-shrink-0">
+                        <span className="px-3 py-1 text-[12px] font-semibold bg-[#1E2A44] text-white hover:bg-[#1E2A44] flex-shrink-0">
                           Carregar…
                         </span>
                         <input type="file" accept="image/*" className="hidden"
@@ -165,7 +165,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                       onChange={(e) => set(f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
                       className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
                   )}
-                  {f.help && <span className="text-[12.5px] text-[#6B7280]">{f.help}</span>}
+                  {f.help && <span className="text-[11px] text-[#6B7280]">{f.help}</span>}
                 </label>
               ))}
             </div>
@@ -191,11 +191,11 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#F7F8FA] text-[13px]">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#F7F8FA] text-[12px]">
         <span className="text-[#111827]">Pesquisar:</span>
         <div className="flex items-center border border-[#E6E8EC] bg-white" style={inputStyle}>
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }}
-            className="px-2 py-1 text-[13px] outline-none w-[220px]" />
+            className="px-2 py-1 text-[12px] outline-none w-[220px]" />
           <span className="px-2 text-[#6B7280]"><Glyph icon="🔍" size={13} /></span>
         </div>
       </div>
@@ -203,7 +203,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
       {banner}
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-[13px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           {/* Cabeçalho estilo Explorer/Excel clássico: relevo em gradiente + divisórias
               verticais entre colunas — é o detalhe que faz uma grelha parecer folha de
               cálculo a sério, não uma lista HTML qualquer. */}
@@ -252,7 +252,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
         </table>
       </div>
 
-      <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[13px]">
+      <div className="flex items-center gap-3 px-3 py-1.5 border-t border-[#E6E8EC] bg-[#F7F8FA] text-[12px]">
         <span>Nº registos a visualizar:</span>
         <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           className="border border-[#E6E8EC] px-2 py-0.5 bg-white">

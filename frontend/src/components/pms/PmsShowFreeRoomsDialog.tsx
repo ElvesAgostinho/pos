@@ -54,7 +54,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="p-2 bg-white border-b border-[#F1F2F4] flex flex-wrap items-end gap-3 text-[13px]">
+        <div className="p-2 bg-white border-b border-[#F1F2F4] flex flex-wrap items-end gap-3 text-[12px]">
           <label className="flex flex-col gap-0.5">De:
             <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className="border border-[#E6E8EC] p-1 bg-white" />
           </label>
@@ -75,7 +75,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
               <span>Atributos:</span>
               <div className="flex flex-wrap gap-x-3 gap-y-0.5 border border-[#E6E8EC] bg-white p-1 max-h-[58px] overflow-auto">
                 {atributos.map((a: any) => (
-                  <label key={a.id} className="flex items-center gap-1 text-[12.5px] whitespace-nowrap">
+                  <label key={a.id} className="flex items-center gap-1 text-[11px] whitespace-nowrap">
                     <input type="checkbox" checked={atribSel.includes(a.id)}
                       onChange={(e) => setAtribSel(e.target.checked
                         ? [...atribSel, a.id] : atribSel.filter((x) => x !== a.id))} />
@@ -89,13 +89,13 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nº do quarto…" className="border border-[#E6E8EC] p-1 bg-white" />
           </label>
           <button onClick={() => refetch()}
-            className="w-[130px] flex-shrink-0 flex items-center justify-center gap-2 text-white font-bold text-[13px] py-2"
+            className="w-[130px] flex-shrink-0 flex items-center justify-center gap-2 text-white font-bold text-[12px] py-2"
             style={{ background: '#1E2A44' }}>
             <RefreshCw size={16} /> Pesquisar
           </button>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          {isFetching ? <div className="p-4 text-gray-400 text-[13px]">A carregar…</div> : (
+          {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A carregar…</div> : (
             <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined}
               onRowClick={(r: any) => setSelId(r.id)} onRowDoubleClick={(r: any) => onSelect(r)}
               // As colunas "Camas Extra", "C.O. Esperado hoje", "Inspeccionado",
@@ -118,10 +118,10 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
         </div>
         <div className="flex justify-between items-center px-3 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC]">
           <button disabled={!sel} onClick={() => sel && onSelect(sel)}
-            className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] disabled:text-gray-400 hover:text-black disabled:hover:text-gray-400">
             <Hand size={13} /> Selecionar
           </button>
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white">
               <X size={9} strokeWidth={3} />
             </span>

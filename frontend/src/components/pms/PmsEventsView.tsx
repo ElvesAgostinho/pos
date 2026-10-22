@@ -69,7 +69,7 @@ export default function PmsEventsView() {
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[13px]">
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12px]">
         <span className="font-semibold text-[#6B7280]">Pesquisar:</span>
         <input className={`${inp} flex-1 max-w-xs`} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nome, local, cliente…" />
         <span className="text-gray-500">{rows.length} evento(s)</span>
@@ -81,12 +81,12 @@ export default function PmsEventsView() {
             { header: 'Nome', accessor: 'name', width: '30%' },
             { header: 'Local', accessor: (r: any) => r.venue || '—', width: '20%' },
             { header: 'Estado', accessor: (r: any) => (
-              <span className="text-white px-1.5 py-0.5 text-[11.5px] font-bold" style={{ background: STATUS_COLOR[r.status] }}>{r.status_display}</span>
+              <span className="text-white px-1.5 py-0.5 text-[10px] font-bold" style={{ background: STATUS_COLOR[r.status] }}>{r.status_display}</span>
             ), width: '20%' },
             { header: 'Receita Est.', accessor: (r: any) => Number(r.estimated_revenue || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 }), width: '15%' },
           ]} />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[12.5px] overflow-auto">
+        <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
           <label className="flex flex-col">Nome do evento<input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inp} /></label>
           <div className="flex gap-2">
             <label className="flex-1 flex flex-col">Data<input type="date" value={form.event_date || ''} onChange={(e) => setForm({ ...form, event_date: e.target.value })} className={inp} /></label>

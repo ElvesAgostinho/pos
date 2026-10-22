@@ -27,7 +27,7 @@ function Campo({ x, params, setParams, armazens }: {
   x: any; params: any; setParams: (v: any) => void; armazens: any[];
 }) {
   const val = params[x.key] ?? '';
-  const cls = 'w-[240px] border border-[#E6E8EC] px-2 py-[5px] text-[13px] bg-white';
+  const cls = 'w-[240px] border border-[#E6E8EC] px-2 py-[5px] text-[12px] bg-white';
   if (x.type === 'bool_sn') {
     return (
       <select value={val} onChange={(e) => setParams({ ...params, [x.key]: e.target.value })}
@@ -196,7 +196,7 @@ export default function PosReports() {
 
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-4 py-2 border-b border-[#F1F2F4] text-[13px] flex-shrink-0">
+        <div className="px-4 py-2 border-b border-[#F1F2F4] text-[12px] flex-shrink-0">
           <button onClick={() => { correr.reset(); setRep(null); setPasta(null); }}
             className="text-[#6B7280] hover:underline">Start Page</button>
           <span className="mx-1 text-[#6B7280]">&gt;</span>
@@ -207,7 +207,7 @@ export default function PosReports() {
         </div>
 
         {/* ── barra do visualizador — como o sistema de referência ── */}
-        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-[#F1F2F4] bg-[#F7F8FA] flex-shrink-0 text-[13px]">
+        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-[#F1F2F4] bg-[#F7F8FA] flex-shrink-0 text-[12px]">
           <button title="Primeira página" disabled={pagina <= 1} onClick={() => setPagina(1)}
             className="px-2 py-1 border border-[#E6E8EC] bg-white disabled:opacity-40 disabled:cursor-default hover:enabled:bg-[#F7F8FA]">|◀</button>
           <button title="Página anterior" disabled={pagina <= 1} onClick={() => setPagina((p) => Math.max(1, p - 1))}
@@ -252,28 +252,28 @@ export default function PosReports() {
                 <div className="text-[20px] font-bold text-[#111827]">
                   {d.title}
                   {d.grouped_by && (
-                    <span className="ml-2 text-[13px] font-normal text-[#111827]">
+                    <span className="ml-2 text-[12px] font-normal text-[#111827]">
                       · agrupado por {d.grouped_by}
                     </span>
                   )}
                 </div>
-                <div className="text-[13px] text-[#111827] mt-1"><b>{d.company}</b> · NIF {d.tax_id}</div>
-                <div className="text-[13px] text-[#111827]">{d.folder}</div>
+                <div className="text-[12px] text-[#111827] mt-1"><b>{d.company}</b> · NIF {d.tax_id}</div>
+                <div className="text-[12px] text-[#111827]">{d.folder}</div>
                 {d.params?.from && (
-                  <div className="text-[13px] text-[#111827]">
+                  <div className="text-[12px] text-[#111827]">
                     De data: {d.params.from} — A data: {d.params.to}
                   </div>
                 )}
-                <div className="text-[13px] text-[#111827]">
+                <div className="text-[12px] text-[#111827]">
                   Incluir detalhes? <b>{d.params?.detailed || 'Não'}</b>
                 </div>
                 {outrosParams.map((x: any) => (
-                  <div key={x.key} className="text-[13px] text-[#111827]">
+                  <div key={x.key} className="text-[12px] text-[#111827]">
                     {x.label}: {d.params[x.key]}
                   </div>
                 ))}
               </div>
-              <div className="text-[12.5px] text-[#6B7280] italic text-right">
+              <div className="text-[11px] text-[#6B7280] italic text-right">
                 Data de impressão:<br />
                 {new Date(d.generated_at).toLocaleString('pt-PT')}<br />
                 {d.user}
@@ -284,7 +284,7 @@ export default function PosReports() {
               page={pagina} pageSize={PAGE_SIZE}
               onPageInfo={({ page, totalPages }) => { setTotalPaginas(totalPages); if (page !== pagina) setPagina(page); }} />
 
-            <div className="mt-6 pt-3 border-t border-[#F1F2F4] text-[11.5px] text-[#6B7280] flex justify-between">
+            <div className="mt-6 pt-3 border-t border-[#F1F2F4] text-[10px] text-[#6B7280] flex justify-between">
               <span>System Mwana Lodge © {new Date().getFullYear()}. Todos os direitos reservados.<br />{idTecnico}</span>
               <span>Página {pagina} de {totalPaginas}</span>
             </div>
@@ -302,7 +302,7 @@ export default function PosReports() {
   if (rep) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        <div className="px-4 py-2 border-b border-[#F1F2F4] text-[13px]">
+        <div className="px-4 py-2 border-b border-[#F1F2F4] text-[12px]">
           <button onClick={() => { setRep(null); setPasta(null); }}
             className="text-[#6B7280] hover:underline">Start Page</button>
           <span className="mx-1 text-[#6B7280]">&gt;</span>
@@ -317,13 +317,13 @@ export default function PosReports() {
               <div className="grid grid-cols-2 gap-x-10 gap-y-4">
                 {rep.params.map((x: any) => (
                   <div key={x.key} className="flex items-center gap-3">
-                    <span className="w-[170px] flex-shrink-0 text-[13px] text-[#111827]">{x.label}:</span>
+                    <span className="w-[170px] flex-shrink-0 text-[12px] text-[#111827]">{x.label}:</span>
                     <Campo x={x} params={params} setParams={setParams} armazens={armazens as any[]} />
                   </div>
                 ))}
               </div>
               <button onClick={() => correr.mutate()} disabled={!podeExibir || correr.isPending}
-                className="flex-shrink-0 px-6 py-2.5 bg-[#F7F8FA] border border-[#E6E8EC] hover:enabled:bg-[#F7F8FA] text-[13px] font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                className="flex-shrink-0 px-6 py-2.5 bg-[#F7F8FA] border border-[#E6E8EC] hover:enabled:bg-[#F7F8FA] text-[12px] font-medium disabled:opacity-50 disabled:cursor-not-allowed">
                 {correr.isPending ? 'A gerar…' : 'Exibir Relatório'}
               </button>
             </div>
@@ -340,7 +340,7 @@ export default function PosReports() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center px-4 py-2 border-b border-[#F1F2F4]">
-        <div className="text-[13px]">
+        <div className="text-[12px]">
           <button onClick={() => setPasta(null)} className="text-[#6B7280] hover:underline">Start Page</button>
           {pasta && (<>
             <span className="mx-1 text-[#6B7280]">&gt;</span>
@@ -348,20 +348,20 @@ export default function PosReports() {
           </>)}
         </div>
         <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Search"
-          className="ml-auto border border-[#E6E8EC] px-3 py-1 text-[13px] w-[320px]" style={inputStyle} />
+          className="ml-auto border border-[#E6E8EC] px-3 py-1 text-[12px] w-[320px]" style={inputStyle} />
       </div>
 
       <div className="flex-1 overflow-auto p-6">
         {busca ? (
           <div className="space-y-1">
-            <div className="text-[13px] text-[#6B7280] mb-3">{encontrados.length} relatório(s)</div>
+            <div className="text-[12px] text-[#6B7280] mb-3">{encontrados.length} relatório(s)</div>
             {encontrados.map((r: any) => (
               <button key={r.code} onClick={() => { setBusca(''); abrirRelatorio(r, r.folder); }}
                 className="flex items-start gap-3 w-full text-left p-2 hover:bg-[#FFFFFF]">
                 <span className="w-5 h-6 flex-shrink-0 bg-white border border-[#E6E8EC]" />
                 <span>
-                  <span className="text-[13px] text-[#111827]">{r.name}</span>
-                  <span className="block text-[12.5px] text-[#6B7280]">{r.folder.code} {r.folder.name}</span>
+                  <span className="text-[12px] text-[#111827]">{r.name}</span>
+                  <span className="block text-[11px] text-[#6B7280]">{r.folder.code} {r.folder.name}</span>
                 </span>
               </button>
             ))}
@@ -376,7 +376,7 @@ export default function PosReports() {
                   <span className="absolute inset-x-1 top-3 h-px bg-[#F7F8FA]" />
                   <span className="absolute inset-x-1 top-[18px] h-px bg-[#F7F8FA]" />
                 </span>
-                <span className="text-[13px] text-[#111827] leading-5">{r.name}</span>
+                <span className="text-[12px] text-[#111827] leading-5">{r.name}</span>
               </button>
             ))}
           </div>
@@ -405,7 +405,7 @@ export default function PosReports() {
                 </span>
                 <span>
                   <span className="text-[14px] text-[#111827]">{f.code} {f.name}</span>
-                  <span className="block text-[12.5px] text-[#6B7280]">{f.count} relatório(s)</span>
+                  <span className="block text-[11px] text-[#6B7280]">{f.count} relatório(s)</span>
                 </span>
               </button>
             ))}
@@ -414,7 +414,7 @@ export default function PosReports() {
       </div>
 
       <Toolbar actions={pasta ? [{ label: 'Voltar', icon: '◀', color: '#3B82F6', onClick: voltar }] : []}
-        right={<span className="text-[12.5px] text-[#6B7280]">
+        right={<span className="text-[11px] text-[#6B7280]">
           Tudo o que o POS sabe, em pastas. Clique numa pasta para ver os relatórios.
         </span>} />
     </div>

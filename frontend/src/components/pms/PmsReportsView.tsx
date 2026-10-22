@@ -16,7 +16,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-white border border-[#E6E8EC] px-3 py-2 flex-1 min-w-[110px]">
-      <div className="text-[11.5px] text-gray-500">{label}</div>
+      <div className="text-[10px] text-gray-500">{label}</div>
       <div className="font-bold text-[16px] text-[#111827]">{value}</div>
     </div>
   );
@@ -41,19 +41,19 @@ export default function PmsReportsView() {
   const { data: chg } = useQuery({ queryKey: ['pms', 'reports', 'charges', dateFrom, dateTo], queryFn: async () => (await apiClient.get('pms/reports/charges/', { params })).data, enabled: tab === 'charges' });
   const { data: hk } = useQuery({ queryKey: ['pms', 'reports', 'housekeeping', dateFrom, dateTo], queryFn: async () => (await apiClient.get('pms/reports/housekeeping/', { params })).data, enabled: tab === 'housekeeping' });
 
-  const inp = 'border border-[#E6E8EC] p-1 bg-white text-[12.5px]';
+  const inp = 'border border-[#E6E8EC] p-1 bg-white text-[11px]';
 
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex border-b border-[#E6E8EC] bg-[#F7F8FA]">
         {TABS.map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-[13px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
+            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
             {label}
           </button>
         ))}
       </div>
-      <div className="flex items-center gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[12.5px]">
+      <div className="flex items-center gap-2 p-2 bg-[#F7F8FA] border-b border-[#E6E8EC] text-[11px]">
         <span className="font-semibold text-[#111827]">Período:</span>
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={inp} />
         <span>a</span>
@@ -73,27 +73,27 @@ export default function PmsReportsView() {
             <div className="grid grid-cols-2 gap-4">
               <div className="border border-[#E6E8EC] p-2">
                 <div className="flex items-center justify-between mb-1">
-                  <div className="font-bold text-[#111827] text-[13px]">Origem das Reservas</div>
+                  <div className="font-bold text-[#111827] text-[12px]">Origem das Reservas</div>
                   <div className="flex gap-1">
-                    <button onClick={() => setSourceMetric('revenue')} className={`text-[11.5px] px-1.5 py-0.5 border ${sourceMetric === 'revenue' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>Receita</button>
-                    <button onClick={() => setSourceMetric('reservations')} className={`text-[11.5px] px-1.5 py-0.5 border ${sourceMetric === 'reservations' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>Reservas</button>
+                    <button onClick={() => setSourceMetric('revenue')} className={`text-[10px] px-1.5 py-0.5 border ${sourceMetric === 'revenue' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>Receita</button>
+                    <button onClick={() => setSourceMetric('reservations')} className={`text-[10px] px-1.5 py-0.5 border ${sourceMetric === 'reservations' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>Reservas</button>
                   </div>
                 </div>
                 <MiniBarChart data={perf.reservation_sources} labelKey="source" valueKey={sourceMetric}
                   formatValue={sourceMetric === 'revenue' ? money : (v) => String(v)} />
               </div>
               <div className="border border-[#E6E8EC] p-2">
-                <div className="font-bold text-[#111827] text-[13px] mb-1">RevPAR por Categoria</div>
+                <div className="font-bold text-[#111827] text-[12px] mb-1">RevPAR por Categoria</div>
                 <MiniBarChart data={perf.revpar_by_category} labelKey="room_type" valueKey="revpar" formatValue={money} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="border border-[#E6E8EC] p-2">
-                <div className="font-bold text-[#111827] text-[13px] mb-1">Receita Diária</div>
+                <div className="font-bold text-[#111827] text-[12px] mb-1">Receita Diária</div>
                 <MiniLineChart data={perf.daily_revenue} labelKey="date" valueKey="revenue" formatValue={money} />
               </div>
               <div className="border border-[#E6E8EC] p-2">
-                <div className="font-bold text-[#111827] text-[13px] mb-1">Taxa de Ocupação Diária</div>
+                <div className="font-bold text-[#111827] text-[12px] mb-1">Taxa de Ocupação Diária</div>
                 <MiniLineChart data={perf.daily_occupancy_pct} labelKey="date" valueKey="occupancy_pct" formatValue={(v) => `${v}%`} />
               </div>
             </div>
@@ -101,7 +101,7 @@ export default function PmsReportsView() {
         )}
 
         {tab === 'revenue' && rev && (
-          <table className="w-full text-[12.5px] border-collapse">
+          <table className="w-full text-[11px] border-collapse">
             <thead><tr className="border-b border-[#E6E8EC] text-left">
               <th className="py-1">Reserva</th><th>Data</th><th>Quarto</th>
               <th className="text-right">Encargos de Quarto</th><th className="text-right">Pagamentos</th><th className="text-right">Receita</th>
@@ -123,7 +123,7 @@ export default function PmsReportsView() {
         )}
 
         {tab === 'occupancy' && occ && (
-          <table className="w-full text-[12.5px] border-collapse">
+          <table className="w-full text-[11px] border-collapse">
             <thead><tr className="border-b border-[#E6E8EC] text-left">
               <th className="py-1">Data</th><th className="text-center">Quartos Ocupados</th><th className="text-center">Check-ins</th><th className="text-center">Check-outs</th><th className="text-right">Receita do Dia</th>
             </tr></thead>
@@ -139,7 +139,7 @@ export default function PmsReportsView() {
         )}
 
         {tab === 'payments' && pay && (
-          <table className="w-full text-[12.5px] border-collapse">
+          <table className="w-full text-[11px] border-collapse">
             <thead><tr className="border-b border-[#E6E8EC] text-left"><th className="py-1">Data</th><th>Descrição</th><th>Reserva</th><th className="text-right">Valor</th></tr></thead>
             <tbody>
               {pay.rows.map((r: any, i: number) => (
@@ -152,7 +152,7 @@ export default function PmsReportsView() {
         )}
 
         {tab === 'charges' && chg && (
-          <table className="w-full text-[12.5px] border-collapse">
+          <table className="w-full text-[11px] border-collapse">
             <thead><tr className="border-b border-[#E6E8EC] text-left"><th className="py-1">Item</th><th className="text-center">Quantidade</th><th className="text-right">Receita</th></tr></thead>
             <tbody>
               {chg.rows.map((r: any, i: number) => (
@@ -168,11 +168,11 @@ export default function PmsReportsView() {
           <div>
             <div className="flex gap-1 mb-2">
               {([['check_ins', 'Check-in'], ['check_outs', 'Check-out'], ['stay_overs', 'Estadia']] as const).map(([k, label]) => (
-                <button key={k} onClick={() => setHkTab(k)} className={`px-2 py-1 text-[12.5px] border ${hkTab === k ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>{label}</button>
+                <button key={k} onClick={() => setHkTab(k)} className={`px-2 py-1 text-[11px] border ${hkTab === k ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>{label}</button>
               ))}
             </div>
             {hk.rows.map((r: any, i: number) => (
-              <div key={i} className="border-b border-[#F1F2F4] py-1.5 text-[12.5px]">
+              <div key={i} className="border-b border-[#F1F2F4] py-1.5 text-[11px]">
                 <div className="font-semibold text-[#111827]">{r.date} · {r[`${hkTab}_count`]} {hkTab === 'check_ins' ? 'check-in(s)' : hkTab === 'check_outs' ? 'check-out(s)' : 'estadia(s)'}</div>
                 {r[hkTab].map((it: any, j: number) => (
                   <div key={j} className="text-gray-600 pl-2">Quarto {it.room} · {it.guest} · {it.reservation}</div>

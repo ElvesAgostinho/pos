@@ -30,7 +30,7 @@ export default function CombosView() {
     <ClassicWindow title="Combos / Menus (Commercial → alimenta o POS)" icon={<Layers size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{combos.length} combo(s) · o POS lança os componentes (routing KDS) e desconta para o preço do combo</div>}>
       <div className="flex flex-col h-full">
-        <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[12.5px] space-y-1">
+        <div className="bg-[#F7F8FA] border-b border-[#E6E8EC] px-3 py-2 text-[11px] space-y-1">
           <div className="flex flex-wrap items-end gap-2">
             <input placeholder="Nome do combo" value={name} onChange={(e) => setName(e.target.value)} className="border border-[#E6E8EC] p-1" />
             <input placeholder="Preço combo" type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="border border-[#E6E8EC] p-1 w-28" />

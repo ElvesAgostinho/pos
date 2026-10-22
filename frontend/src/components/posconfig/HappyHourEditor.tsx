@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, Box } from './kit';
 
-const inp = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white';
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 /** As cores dos níveis de preço — as mesmas do original, para o olho reconhecer. */
@@ -83,20 +83,20 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white" onMouseUp={() => setPainting(false)}>
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo Happy Hour' : `A editar ${d.name}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo Happy Hour' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
       <div className="p-4 border-b border-[#F1F2F4]">
         <Box title="Identificação">
         <div className="space-y-2 pt-1.5">
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[110px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
             placeholder="Happy Hour de Verão" className={`${inp} w-[420px]`} style={inputStyle} />
         </label>
 
-        <div className="flex items-center gap-8 text-[13px]">
+        <div className="flex items-center gap-8 text-[12px]">
           <span className="w-[110px] text-[#111827]">Tipo:</span>
           <label className="flex items-center gap-2">
             <input type="radio" checked={d.kind === 'PRICE'} onChange={() => set('kind', 'PRICE')} className="w-4 h-4" />
@@ -108,13 +108,13 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
           </label>
         </div>
 
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[110px] text-[#111827]">Mostrar Meias Horas:</span>
           <input type="checkbox" checked={!!d.show_half_hours}
             onChange={(e) => set('show_half_hours', e.target.checked)} className="w-4 h-4" />
         </label>
 
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[110px] text-[#111827]">Ponto de venda:</span>
           <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)}
             className={`${inp} w-[280px]`} style={inputStyle}>
@@ -133,7 +133,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
       <div className="flex-1 flex overflow-hidden">
         {/* Grelha hora × dia */}
         <div className="flex-1 overflow-auto">
-          <table className="text-[13px] border-collapse select-none">
+          <table className="text-[12px] border-collapse select-none">
             <thead className="sticky top-0"><tr className="bg-[#F7F8FA]">
               <th className="text-left font-normal px-2 py-1.5 border border-[#F1F2F4] w-[130px]">Hora</th>
               {DIAS.map((x) => <th key={x} className="font-normal px-4 py-1.5 border border-[#F1F2F4]">{x}</th>)}
@@ -168,29 +168,29 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
 
         {/* Paleta */}
         <div className="w-[220px] flex-shrink-0 border-l border-[#F1F2F4] bg-[#FFFFFF]">
-          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[13px] font-bold text-[#111827] border-b border-[#F1F2F4]">
+          <div className="px-3 py-1.5 bg-[#F7F8FA] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">
             {d.kind === 'PRICE' ? 'Preço' : 'Desconto'}
           </div>
           {d.kind === 'PRICE' ? (
             NIVEIS.map((n) => (
               <button key={n.v} onClick={() => setBrush(n.v)}
-                className={`w-full py-3 text-[13px] font-semibold border-b border-white ${brush === n.v ? 'ring-2 ring-inset ring-[#1E2A44]' : ''}`}
+                className={`w-full py-3 text-[12px] font-semibold border-b border-white ${brush === n.v ? 'ring-2 ring-inset ring-[#1E2A44]' : ''}`}
                 style={{ background: n.bg, color: n.fg }}>
                 {n.label}
               </button>
             ))
           ) : (
             <div className="p-3 space-y-2">
-              <div className="text-[12.5px] text-[#6B7280]">Percentagem a aplicar nas horas pintadas:</div>
+              <div className="text-[11px] text-[#6B7280]">Percentagem a aplicar nas horas pintadas:</div>
               <input type="number" value={brush} onChange={(e) => setBrush(Number(e.target.value))}
                 className={`${inp} w-full`} style={inputStyle} />
-              <button onClick={() => setBrush(0)} className="w-full py-2 bg-white border border-[#E6E8EC] text-[13px]">
+              <button onClick={() => setBrush(0)} className="w-full py-2 bg-white border border-[#E6E8EC] text-[12px]">
                 Limpar (preço normal)
               </button>
             </div>
           )}
 
-          <div className="p-3 text-[12.5px] text-[#6B7280] border-t border-[#F1F2F4] mt-2">
+          <div className="p-3 text-[11px] text-[#6B7280] border-t border-[#F1F2F4] mt-2">
             Arraste sobre a grelha para pintar. <b>{Object.keys(cells).length}</b> hora(s) marcada(s).
             <div className="mt-2 pt-2 border-t border-[#F1F2F4]">
               Os níveis 1..5 são os <b>preços da ficha do artigo</b>. Sem preço nesse nível,

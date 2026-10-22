@@ -102,7 +102,7 @@ const CollaboratorWizard: React.FC<Props> = ({ onComplete, onCancel }) => {
       }
     >
       <div className="p-4 bg-[#F7F8FA] h-full overflow-y-auto">
-        <form onSubmit={handleSubmit} className="text-[12.5px] grid grid-cols-1 gap-4 max-w-2xl">
+        <form onSubmit={handleSubmit} className="text-[11px] grid grid-cols-1 gap-4 max-w-2xl">
           
           <div className="border border-[#E6E8EC] bg-white p-2">
             <h3 className="font-bold text-[#6B7280] border-b border-[#E6E8EC] mb-2 pb-1">Identificação</h3>

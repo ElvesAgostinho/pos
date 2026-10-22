@@ -86,7 +86,7 @@ export default function SupplierDetailView({ supplierId, onBack }: Props) {
           <div className="flex items-center space-x-2">
             <ClassicButton icon={Save} label="Gravar" onClick={handleSave} />
             {!isNew && supplier && (
-              <span className="text-[12.5px] text-gray-600 ml-2">
+              <span className="text-[11px] text-gray-600 ml-2">
                 Índice de Desempenho:{' '}
                 <span className={`font-bold ${scoreColor(supplier.performance_profile?.overall_score ?? 0)}`}>
                   {supplier.performance_profile?.overall_score ?? '—'}/100
@@ -109,7 +109,7 @@ export default function SupplierDetailView({ supplierId, onBack }: Props) {
                 key={t.id}
                 disabled={disabled}
                 onClick={() => setTab(t.id)}
-                className={`px-3 py-1 text-[12.5px] border border-b-0 mr-1 ${
+                className={`px-3 py-1 text-[11px] border border-b-0 mr-1 ${
                   active ? 'bg-white border-[#E6E8EC] font-bold text-[#6B7280]' : 'bg-[#F7F8FA] border-[#E6E8EC] text-gray-600'
                 } ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#FFFFFF]'}`}
               >
@@ -119,7 +119,7 @@ export default function SupplierDetailView({ supplierId, onBack }: Props) {
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto bg-[#F7F8FA] p-4 text-[12.5px]">
+        <div className="flex-1 overflow-y-auto bg-[#F7F8FA] p-4 text-[11px]">
           {tab === 'geral' && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               <Section title="Identificação">
@@ -365,7 +365,7 @@ function PerformanceTab({ supplier, onRecalc, recalculating }: { supplier?: Supp
 
   const Metric = ({ label, value, suffix = '%' }: { label: string; value: any; suffix?: string }) => (
     <div className="bg-white border border-[#E6E8EC] p-3">
-      <div className="text-[11.5px] text-gray-600 mb-1">{label}</div>
+      <div className="text-[10px] text-gray-600 mb-1">{label}</div>
       <div className="text-xl font-bold text-[#6B7280]">{value ?? '—'}{value != null && suffix}</div>
     </div>
   );

@@ -11,6 +11,8 @@ import {
   ShoppingCart, CreditCard, Landmark, User, Tag, MonitorSmartphone, Moon, Sparkles, Users,
 } from 'lucide-react';
 
+import { ICONES_3D } from '../ui/Icon3D';
+
 const ICONS: Record<string, any> = {
   rooms: BedDouble, bed: BedDouble,
   reservations: CalendarCheck,
@@ -38,7 +40,13 @@ const ICONS: Record<string, any> = {
   broom: Sparkles,
 };
 
-export default function ClassicIcon({ name, size = 26 }: { name: string; size?: number }) {
+export default function ClassicIcon({ name, size = 26, cor }: { name: string; size?: number; cor?: string }) {
+  // ÍCONE 3D PRIMEIRO. No Ambiente de Trabalho o ícone não acompanha texto — é
+  // o elemento, e é por ele que se escolhe onde entrar. Aí vale a pena ter
+  // volume (ver Icon3D.tsx). Para os nomes que ainda não têm versão 3D, volta
+  // ao traço, que continua a ser melhor do que um desenho a menos.
+  const Tridimensional = ICONES_3D[name?.toLowerCase?.()];
+  if (Tridimensional) return <Tridimensional size={Math.round(size * 1.5)} cor={cor} />;
   const Icon = ICONS[name] || StickyNote;
   return <Icon size={size} strokeWidth={1.75} />;
 }

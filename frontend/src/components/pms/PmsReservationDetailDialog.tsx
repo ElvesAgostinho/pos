@@ -28,7 +28,7 @@ const TABS = ['Detalhe selecionado', 'Grupo', 'Funções', 'Documentos', 'Outras
 function TabBtn({ active, onClick, children }: any) {
   return (
     <button onClick={onClick}
-      className={`px-3 py-1.5 text-[13px] font-semibold border-b-2 ${active ? 'border-[#1E2A44] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+      className={`px-3 py-1.5 text-[12px] font-semibold border-b-2 ${active ? 'border-[#1E2A44] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
       {children}
     </button>
   );
@@ -38,7 +38,7 @@ function TabBtn({ active, onClick, children }: any) {
 function Act({ icon: Icon, label, onClick, disabled }: any) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-1.5 px-2 py-1.5 text-[13px] text-[#111827] whitespace-nowrap flex-shrink-0 hover:bg-[#F7F8FA] disabled:opacity-35 disabled:cursor-default disabled:hover:bg-transparent">
+      className="flex items-center gap-1.5 px-2 py-1.5 text-[12px] text-[#111827] whitespace-nowrap flex-shrink-0 hover:bg-[#F7F8FA] disabled:opacity-35 disabled:cursor-default disabled:hover:bg-transparent">
       <Icon size={13} /> {label}
     </button>
   );
@@ -143,7 +143,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
 
         {/* mini-grelha desta reserva */}
         <div className="bg-white border-b border-[#F1F2F4] overflow-auto">
-          <table className="w-full text-[12.5px] border-collapse">
+          <table className="w-full text-[11px] border-collapse">
             <thead style={{ background: '#F7F8FA' }}>
               <tr>
                 {['ID', 'Hóspede', 'Quarto', 'Categoria', 'Pax', 'Estado', 'Check-In', 'Check-Out', 'Conta'].map((h) => (
@@ -159,7 +159,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                 <td className="px-2 py-1.5">{res.room_type_name}</td>
                 <td className="px-2 py-1.5">{res.adults + res.children}</td>
                 <td className="px-2 py-1.5">
-                  <span className="text-[11.5px] text-white font-semibold px-2 py-0.5 rounded" style={{ background: STATUS_COLOR[res.status] }}>
+                  <span className="text-[10px] text-white font-semibold px-2 py-0.5 rounded" style={{ background: STATUS_COLOR[res.status] }}>
                     {STATUS_LABEL[res.status] || res.status}
                   </span>
                 </td>
@@ -181,41 +181,41 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
               <div className="w-[280px] flex-shrink-0 border border-[#E6E8EC]">
                 <div className="p-3 border-b border-[#F1F2F4]">
                   <div className="font-bold text-[15px] flex items-center gap-1.5">{res.guest_name}</div>
-                  <div className="flex justify-between text-[12.5px] mt-1">
+                  <div className="flex justify-between text-[11px] mt-1">
                     <span className="text-[#111827]">{fmtD(res.check_in)}</span>
                     <span className="text-[#B91C1C]">{fmtD(res.check_out)}</span>
                   </div>
-                  <div className="text-center text-[12.5px] text-gray-500">{res.nights} noite(s)</div>
+                  <div className="text-center text-[11px] text-gray-500">{res.nights} noite(s)</div>
                 </div>
                 <div className="text-center text-white font-bold py-1.5" style={{ background: STATUS_COLOR[res.status] }}>
                   {STATUS_LABEL[res.status] || res.status}
                 </div>
                 <div className="p-3 border-b border-[#F1F2F4] flex items-center justify-between">
                   <span className="font-semibold">{res.room_type_name}</span>
-                  <span className="text-gray-500 text-[12.5px]">#{res.id}</span>
+                  <span className="text-gray-500 text-[11px]">#{res.id}</span>
                 </div>
                 {Number(res.rate) > 0 && (
                   <div className="p-3 border-b border-[#F1F2F4] font-bold text-[16px]">
                     {Number(res.rate).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} Kz
-                    <span className="text-[12.5px] font-normal text-gray-500 float-right">Pax: {res.adults}/{res.children}</span>
+                    <span className="text-[11px] font-normal text-gray-500 float-right">Pax: {res.adults}/{res.children}</span>
                   </div>
                 )}
-                <div className="p-3 border-b border-[#F1F2F4] text-[12.5px]">
+                <div className="p-3 border-b border-[#F1F2F4] text-[11px]">
                   <div className="text-gray-500">Data Criação</div>
                   <div>{fmtDT(res.created_at)}</div>
                 </div>
-                <div className="p-3 text-[12.5px]">
+                <div className="p-3 text-[11px]">
                   <div className="text-gray-500">Package</div>
                   <div>{res.rate_plan_code || '(nenhum)'}</div>
                 </div>
               </div>
               <div className="flex-1">
                 <label className="flex flex-col gap-1">
-                  <span className="text-[13px] font-semibold">Notas:</span>
+                  <span className="text-[12px] font-semibold">Notas:</span>
                   <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={6}
-                    className="border border-[#E6E8EC] p-2 text-[13px]" />
+                    className="border border-[#E6E8EC] p-2 text-[12px]" />
                   <button onClick={gravarNotas} disabled={savingNotes}
-                    className="self-start flex items-center gap-1.5 px-3 py-1 bg-[#1E2A44] text-white text-[13px] font-semibold disabled:opacity-50">
+                    className="self-start flex items-center gap-1.5 px-3 py-1 bg-[#1E2A44] text-white text-[12px] font-semibold disabled:opacity-50">
                     <Save size={13} /> {savingNotes ? 'A gravar…' : 'Gravar notas'}
                   </button>
                 </label>
@@ -227,8 +227,8 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
             res.block ? (
               <div className="p-4">
                 <div className="font-bold mb-2">{block?.code} · {block?.description}</div>
-                {block && <div className="text-[12.5px] text-gray-500 mb-3">{block.valid_from} → {block.valid_to}</div>}
-                <table className="w-full text-[12.5px] border-collapse">
+                {block && <div className="text-[11px] text-gray-500 mb-3">{block.valid_from} → {block.valid_to}</div>}
+                <table className="w-full text-[11px] border-collapse">
                   <thead style={{ background: '#F7F8FA' }}><tr>
                     {['Confirmação', 'Hóspede', 'Categoria', 'Quarto', 'Check-In', 'Check-Out', 'Estado'].map((h) => (
                       <th key={h} className="text-left px-2 py-1.5 border-b border-[#E6E8EC]">{h}</th>))}
@@ -245,7 +245,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                   </tbody>
                 </table>
               </div>
-            ) : <div className="p-6 text-center text-gray-400 text-[13px]">Esta reserva não está associada a nenhum grupo/bloco.</div>
+            ) : <div className="p-6 text-center text-gray-400 text-[12px]">Esta reserva não está associada a nenhum grupo/bloco.</div>
           )}
 
           {tab === 'Funções' && (
@@ -257,7 +257,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                 { title: 'Outros', items: [['Recriar conta', 'recriar'], ['Tipos de limpeza', 'limpeza']] },
               ].map((g) => (
                 <div key={g.title} className="w-[220px]">
-                  <div className="px-2 py-1 font-bold text-[12.5px] bg-[#F7F8FA] border border-[#E6E8EC] border-b-0">{g.title}</div>
+                  <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border border-[#E6E8EC] border-b-0">{g.title}</div>
                   <div className="border border-[#E6E8EC]">
                     {g.items.map(([label, action]: any) => (
                       <button key={label}
@@ -268,7 +268,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                           else if (action === 'recriar') recriarConta();
                           else setFuncao(action);
                         }}
-                        className="w-full text-left px-3 py-2 text-[13px] border-b last:border-b-0 border-[#F1F2F4] hover:bg-[#F7F8FA]">
+                        className="w-full text-left px-3 py-2 text-[12px] border-b last:border-b-0 border-[#F1F2F4] hover:bg-[#F7F8FA]">
                         {label}
                       </button>
                     ))}
@@ -283,9 +283,9 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
 
           {tab === 'Outras reservas do hóspede' && (
             outrasRows.length === 0 ? (
-              <div className="p-6 text-center text-gray-400 text-[13px]">{res.guest_name} não tem outras reservas.</div>
+              <div className="p-6 text-center text-gray-400 text-[12px]">{res.guest_name} não tem outras reservas.</div>
             ) : (
-              <table className="w-full text-[12.5px] border-collapse">
+              <table className="w-full text-[11px] border-collapse">
                 <thead style={{ background: '#F7F8FA' }}><tr>
                   {['Hotel', 'Confirmação', 'Check-In', 'Check-Out', 'Pax', 'Quarto', 'Estado'].map((h) => (
                     <th key={h} className="text-left px-2 py-1.5 border-b border-[#E6E8EC]">{h}</th>))}
@@ -307,9 +307,9 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
           {tab === 'Outros' && (
             <div className="p-4 flex gap-4 flex-wrap items-start">
               <div className="w-[420px] border border-[#E6E8EC]">
-                <div className="px-2 py-1 font-bold text-[12.5px] bg-[#F7F8FA] border-b border-[#E6E8EC]">Limite de crédito — {res.guest_name}</div>
-                {!guest ? <div className="p-3 text-gray-400 text-[12.5px]">A carregar…</div> : (
-                  <div className="p-3 flex items-center gap-2 text-[13px]">
+                <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border-b border-[#E6E8EC]">Limite de crédito — {res.guest_name}</div>
+                {!guest ? <div className="p-3 text-gray-400 text-[11px]">A carregar…</div> : (
+                  <div className="p-3 flex items-center gap-2 text-[12px]">
                     <input type="number" defaultValue={guest.credit_limit} onBlur={(e) => gravarCredito('credit_limit', e.target.value)}
                       className="border border-[#E6E8EC] p-1 w-[110px]" />
                     <select defaultValue={guest.credit_limit_mode} onChange={(e) => gravarCredito('credit_limit_mode', e.target.value)}
@@ -321,10 +321,10 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
                 )}
               </div>
               <div className="w-[320px] border border-[#E6E8EC]">
-                <div className="px-2 py-1 font-bold text-[12.5px] bg-[#F7F8FA] border-b border-[#E6E8EC]">Código QR</div>
+                <div className="px-2 py-1 font-bold text-[11px] bg-[#F7F8FA] border-b border-[#E6E8EC]">Código QR</div>
                 <div className="p-4 flex flex-col items-center gap-2">
                   <QRCodeSVG value={`RES:${res.confirmation}`} size={160} />
-                  <div className="text-[11.5px] text-gray-500">RES:{res.confirmation}</div>
+                  <div className="text-[10px] text-gray-500">RES:{res.confirmation}</div>
                 </div>
               </div>
             </div>
@@ -391,7 +391,7 @@ function AbaDocumentos({ reservaId }: { reservaId: number }) {
     queryKey: ['pms', 'reservation-documents', reservaId],
     queryFn: async () => (await apiClient.get(`pms/reservations/${reservaId}/documents/`)).data,
   });
-  if (isLoading) return <div className="p-6 text-center text-gray-400 text-[13px]">A carregar…</div>;
+  if (isLoading) return <div className="p-6 text-center text-gray-400 text-[12px]">A carregar…</div>;
   const faturas = data?.invoices || [];
   const docsHospede = data?.guest_documents || [];
 
@@ -400,9 +400,9 @@ function AbaDocumentos({ reservaId }: { reservaId: number }) {
   };
 
   return (
-    <div className="p-4 space-y-4 text-[13px]">
+    <div className="p-4 space-y-4 text-[12px]">
       <div>
-        <div className="font-bold text-[12.5px] text-[#6B7280] uppercase mb-1">Facturas desta reserva</div>
+        <div className="font-bold text-[11px] text-[#6B7280] uppercase mb-1">Facturas desta reserva</div>
         <div className="border border-[#E6E8EC] rounded-[8px] overflow-hidden bg-white">
           {faturas.map((f: any) => (
             <div key={f.id} className="grid grid-cols-[1fr_130px_120px_110px_90px] gap-2 px-3 py-1.5 border-b border-[#F1F2F4] items-center">
@@ -410,7 +410,7 @@ function AbaDocumentos({ reservaId }: { reservaId: number }) {
               <span className="font-mono text-[#6B7280]">{f.number}</span>
               <span className="text-gray-600">{f.date}</span>
               <span className="text-right font-semibold">{Number(f.total).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</span>
-              <button className="text-[12.5px] text-[#111827] hover:underline" onClick={() => abrir(f.id)}>Ver / Imprimir</button>
+              <button className="text-[11px] text-[#111827] hover:underline" onClick={() => abrir(f.id)}>Ver / Imprimir</button>
             </div>
           ))}
           {faturas.length === 0 && (
@@ -423,7 +423,7 @@ function AbaDocumentos({ reservaId }: { reservaId: number }) {
       </div>
 
       <div>
-        <div className="font-bold text-[12.5px] text-[#6B7280] uppercase mb-1">Documentos do hóspede</div>
+        <div className="font-bold text-[11px] text-[#6B7280] uppercase mb-1">Documentos do hóspede</div>
         <div className="border border-[#E6E8EC] rounded-[8px] overflow-hidden bg-white">
           {docsHospede.map((d: any) => (
             <div key={d.id} className="grid grid-cols-[1fr_140px_110px_90px] gap-2 px-3 py-1.5 border-b border-[#F1F2F4] items-center">
@@ -431,8 +431,8 @@ function AbaDocumentos({ reservaId }: { reservaId: number }) {
               <span className="font-mono text-[#6B7280]">{d.number || '—'}</span>
               <span className="text-gray-600">{d.date || '—'}</span>
               {d.url
-                ? <a className="text-[12.5px] text-[#111827] hover:underline" href={d.url} target="_blank" rel="noreferrer">Abrir</a>
-                : <span className="text-[12.5px] text-gray-400">sem ficheiro</span>}
+                ? <a className="text-[11px] text-[#111827] hover:underline" href={d.url} target="_blank" rel="noreferrer">Abrir</a>
+                : <span className="text-[11px] text-gray-400">sem ficheiro</span>}
             </div>
           ))}
           {docsHospede.length === 0 && (
@@ -462,7 +462,7 @@ function AbaCamposPersonalizados({ reservaId }: { reservaId: number }) {
   const [valores, setValores] = useState<Record<string, string> | null>(null);
   const [gravando, setGravando] = useState(false);
 
-  if (isLoading) return <div className="p-6 text-center text-gray-400 text-[13px]">A carregar…</div>;
+  if (isLoading) return <div className="p-6 text-center text-gray-400 text-[12px]">A carregar…</div>;
   const campos = data?.fields || [];
   const actual = valores ?? Object.fromEntries(campos.map((c: any) => [c.code, c.value || '']));
   const set = (k: string, v: string) => setValores({ ...actual, [k]: v });
@@ -479,7 +479,7 @@ function AbaCamposPersonalizados({ reservaId }: { reservaId: number }) {
 
   if (campos.length === 0) {
     return (
-      <div className="p-6 text-center text-gray-500 text-[13px] leading-relaxed">
+      <div className="p-6 text-center text-gray-500 text-[12px] leading-relaxed">
         Este hotel ainda não definiu campos próprios para as reservas.<br />
         Defina-os em <b>Configuração POS → Campos personalizados</b>, com a localização
         <b> Reserva (Detalhe)</b> — aparecem aqui logo a seguir.
@@ -488,7 +488,7 @@ function AbaCamposPersonalizados({ reservaId }: { reservaId: number }) {
   }
 
   return (
-    <div className="p-4 text-[13px]">
+    <div className="p-4 text-[12px]">
       <div className="bg-white border border-[#E6E8EC] rounded-[8px] p-3 grid grid-cols-2 gap-x-8 gap-y-2">
         {campos.map((c: any) => (
           <label key={c.code} className="flex items-center gap-2">
@@ -515,10 +515,10 @@ function AbaCamposPersonalizados({ reservaId }: { reservaId: number }) {
       </div>
       <div className="mt-3 flex items-center gap-2">
         <button disabled={gravando || !valores} onClick={gravar}
-          className="px-3 py-1.5 text-[13px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] disabled:opacity-40">
+          className="px-3 py-1.5 text-[12px] border border-[#E6E8EC] rounded-[8px] bg-gradient-to-b from-white to-[#F7F8FA] hover:to-[#F7F8FA] disabled:opacity-40">
           {gravando ? 'A gravar…' : 'Gravar campos'}
         </button>
-        {valores && <span className="text-[12.5px] text-[#DC2626]">Há alterações por gravar.</span>}
+        {valores && <span className="text-[11px] text-[#DC2626]">Há alterações por gravar.</span>}
       </div>
     </div>
   );

@@ -15,10 +15,10 @@ export function FormSection({ title, hint, children, cols = 2 }:
   { title: string; hint?: string; children: ReactNode; cols?: 1 | 2 | 3 }) {
   return (
     <div className="bg-white border border-[#E6E8EC] mb-3" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0,0,0,0.10)' }}>
-      <div className="px-3 py-1.5 border-b border-[#E6E8EC] text-[13px] font-bold text-[#111827]"
+      <div className="px-3 py-1.5 border-b border-[#E6E8EC] text-[12px] font-bold text-[#111827]"
         style={{ background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA)' }}>
         {title}
-        {hint && <span className="ml-2 font-normal text-[12.5px] text-gray-500">{hint}</span>}
+        {hint && <span className="ml-2 font-normal text-[11px] text-gray-500">{hint}</span>}
       </div>
       <div className={`p-3 grid gap-x-4 gap-y-2 ${cols === 1 ? '' : cols === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
         {children}
@@ -27,7 +27,7 @@ export function FormSection({ title, hint, children, cols = 2 }:
   );
 }
 
-const inputCls = 'border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white w-full outline-none focus:border-[#1E2A44]';
+const inputCls = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white w-full outline-none focus:border-[#1E2A44]';
 const inputStyle = { boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.12)' };
 
 interface FieldProps {
@@ -47,7 +47,7 @@ export function Field({ label, value, onChange, required, help, type = 'text', o
   const missing = required && empty;
   return (
     <label className={`flex flex-col gap-0.5 ${span ? 'col-span-full' : ''}`}>
-      <span className="text-[12.5px] font-bold text-gray-700">
+      <span className="text-[11px] font-bold text-gray-700">
         {label}{required && <span className="text-[#DC2626] ml-0.5">*</span>}
       </span>
       {options ? (
@@ -65,18 +65,18 @@ export function Field({ label, value, onChange, required, help, type = 'text', o
           style={{ ...inputStyle, borderColor: missing ? '#DC2626' : undefined, background: disabled ? '#F7F8FA' : '#FFFFFF' }} />
       )}
       {/* Só se diz o que falta QUANDO falta — nunca uma parede de avisos. */}
-      {missing && help && <span className="text-[11.5px] text-[#DC2626]">{help}</span>}
-      {!missing && help && <span className="text-[11.5px] text-gray-500">{help}</span>}
+      {missing && help && <span className="text-[10px] text-[#DC2626]">{help}</span>}
+      {!missing && help && <span className="text-[10px] text-gray-500">{help}</span>}
     </label>
   );
 }
 
 export const btnPrimary = {
-  className: 'px-4 py-1.5 text-[13px] font-bold text-white border border-[#1E2A44]',
+  className: 'px-4 py-1.5 text-[12px] font-bold text-white border border-[#1E2A44]',
   style: { background: 'linear-gradient(to bottom, #1E2A44, #3B82F6)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)' },
 };
 export const btnNormal = {
-  className: 'px-3 py-1.5 text-[13px] font-semibold border border-[#E6E8EC] text-[#111827]',
+  className: 'px-3 py-1.5 text-[12px] font-semibold border border-[#E6E8EC] text-[#111827]',
   style: {
     background: 'linear-gradient(to bottom, #FFFFFF, #F7F8FA 48%, #F1F2F4 52%, #F1F2F4)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 2px rgba(0,0,0,0.18)',

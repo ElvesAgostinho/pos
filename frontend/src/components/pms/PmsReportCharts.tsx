@@ -23,7 +23,7 @@ export function MiniLineChart({ data, labelKey, valueKey, height = 120, formatVa
   const x = (i: number) => padL + (data.length > 1 ? (i / (data.length - 1)) * innerW : innerW / 2);
   const y = (v: number) => padT + innerH - ((v - min) / range) * innerH;
 
-  if (data.length === 0) return <div className="text-center text-gray-400 py-6 text-[12.5px]">Sem dados no período.</div>;
+  if (data.length === 0) return <div className="text-center text-gray-400 py-6 text-[11px]">Sem dados no período.</div>;
 
   const linePath = values.map((v, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(v)}`).join(' ');
   const areaPath = `${linePath} L ${x(values.length - 1)} ${padT + innerH} L ${x(0)} ${padT + innerH} Z`;
@@ -57,14 +57,14 @@ export function MiniBarChart({ data, labelKey, valueKey, formatValue }: {
 }) {
   const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(...data.map((d) => Number(d[valueKey]) || 0), 1);
-  if (data.length === 0) return <div className="text-center text-gray-400 py-6 text-[12.5px]">Sem dados no período.</div>;
+  if (data.length === 0) return <div className="text-center text-gray-400 py-6 text-[11px]">Sem dados no período.</div>;
   return (
     <div className="space-y-1.5">
       {data.map((d, i) => {
         const v = Number(d[valueKey]) || 0;
         const pct = (v / max) * 100;
         return (
-          <div key={i} className="flex items-center gap-2 text-[12.5px]" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
+          <div key={i} className="flex items-center gap-2 text-[11px]" onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
             <div className="w-[110px] truncate text-[#6B7280]" title={d[labelKey]}>{d[labelKey]}</div>
             <div className="flex-1 bg-[#F7F8FA] h-4 relative">
               <div className="h-4" style={{ width: `${pct}%`, background: hover === i ? '#1E2A44' : PETROL }} />

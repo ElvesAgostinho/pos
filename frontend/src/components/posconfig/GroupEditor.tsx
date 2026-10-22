@@ -4,7 +4,7 @@ import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputCls, inputStyle, Box } from './kit';
 
-const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[13px] bg-white';
+const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[12px] bg-white';
 
 /**
  * GRUPO (Parâmetros do Sistema) — o topo da estrutura.
@@ -46,7 +46,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#F7F8FA] border-b border-[#F1F2F4]">
-        <span className="text-[13px] font-bold text-[#111827]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
+        <span className="text-[12px] font-bold text-[#111827]">{isNew ? 'Novo grupo' : `A editar ${d.name}`}</span>
         <button onClick={onClose} className="text-[16px] text-[#6B7280] hover:text-black leading-none">×</button>
       </div>
 
@@ -54,22 +54,22 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
         {/* Identificação */}
         <Box title="Identificação" className="mb-4">
           <div className="space-y-2 pt-1.5">
-          <label className="flex items-start gap-3 text-[13px]">
+          <label className="flex items-start gap-3 text-[12px]">
             <span className="w-[110px] text-[#111827] pt-1">Código:</span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)}
               className={`${inputCls} w-[640px] flex-none`} style={inputStyle} />
           </label>
-          <label className="flex items-start gap-3 text-[13px]">
+          <label className="flex items-start gap-3 text-[12px]">
             <span className="w-[110px] text-[#111827] pt-1">Descrição:<span className="text-[#DC2626]">*</span></span>
             <textarea value={d.name || ''} onChange={(e) => set('name', e.target.value)} rows={3}
-              className="border border-[#E6E8EC] px-2 py-1 text-[13px] bg-white w-[640px]" style={inputStyle} />
+              className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white w-[640px]" style={inputStyle} />
           </label>
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[110px] text-[#111827]">Ordem:</span>
             <input type="number" value={d.sort_order ?? 100} onChange={(e) => set('sort_order', Number(e.target.value))}
               className={`${inputCls} w-[160px] flex-none`} style={inputStyle} />
           </label>
-          <label className="flex items-center gap-3 text-[13px]">
+          <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[110px] text-[#111827]">Ativo:</span>
             <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />
           </label>
@@ -80,14 +80,14 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
         <div className="flex">
           {([['lang', 'Línguas'], ['cur', 'Moedas']] as const).map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-8 py-2 text-[13px] font-semibold ${tab === k ? 'bg-[#1E2A44] text-white' : 'bg-[#F7F8FA] text-[#111827] hover:bg-[#F7F8FA]'}`}>
+              className={`px-8 py-2 text-[12px] font-semibold ${tab === k ? 'bg-[#1E2A44] text-white' : 'bg-[#F7F8FA] text-[#111827] hover:bg-[#F7F8FA]'}`}>
               {label}
             </button>
           ))}
         </div>
 
         <div className="flex" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
-          <table className="flex-1 text-[13px] border-collapse">
+          <table className="flex-1 text-[12px] border-collapse">
             <thead>
               <tr className="bg-[#F7F8FA] text-[#111827]">
                 {(tab === 'lang'
@@ -119,7 +119,7 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
                     <input type="radio" checked={!!r.is_default} onChange={() => setDefault(i)} className="w-4 h-4" />
                   </td>
                   <td className="px-2 text-center">
-                    <button onClick={() => del(i)} className="text-[#B91C1C] font-bold text-[12.5px]">−</button>
+                    <button onClick={() => del(i)} className="text-[#B91C1C] font-bold text-[11px]">−</button>
                   </td>
                 </tr>
               ))}
@@ -130,17 +130,17 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
           </table>
 
           <div className="w-[150px] flex-shrink-0 border-l border-[#F1F2F4] p-2 space-y-1">
-            <button onClick={add} className="flex items-center gap-2 text-[13px] w-full px-1 py-1 hover:bg-[#F7F8FA]">
+            <button onClick={add} className="flex items-center gap-2 text-[12px] w-full px-1 py-1 hover:bg-[#F7F8FA]">
               <span className="w-6 h-6 rounded-full bg-[#1E2A44] text-white flex items-center justify-center">＋</span> Adicionar
             </button>
             <button onClick={() => list.length && del(list.length - 1)} disabled={!list.length}
-              className="flex items-center gap-2 text-[13px] w-full px-1 py-1 hover:bg-[#F7F8FA] disabled:opacity-35">
+              className="flex items-center gap-2 text-[12px] w-full px-1 py-1 hover:bg-[#F7F8FA] disabled:opacity-35">
               <span className="w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center">−</span> Apagar
             </button>
           </div>
         </div>
 
-        <div className="text-[12.5px] text-[#6B7280] mt-2">
+        <div className="text-[11px] text-[#6B7280] mt-2">
           {tab === 'lang'
             ? 'A língua "por omissão" é aquela em que o sistema fala quando não conhece a do hóspede.'
             : 'A taxa é face à moeda base (a que está "por omissão"). É por ela que se convertem os pagamentos em divisas.'}

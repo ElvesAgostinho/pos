@@ -36,15 +36,15 @@ function RequiredFieldsDialog({ onClose }: { onClose: () => void }) {
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="p-3 overflow-auto bg-white text-[13px]">
-          <div className="text-[12.5px] text-[#6B7280] mb-2">
+        <div className="p-3 overflow-auto bg-white text-[12px]">
+          <div className="text-[11px] text-[#6B7280] mb-2">
             O servidor recusa gravar uma entidade sem estes campos. Não é um aviso — é uma regra.
           </div>
           {rows.map((r: any) => (
             <label key={r.id} className="flex items-center gap-2 py-1 cursor-pointer">
               <input type="checkbox" checked={!!r.is_required} disabled={r.field === 'name' || toggle.isPending}
                 onChange={(e) => toggle.mutate({ id: r.id, v: e.target.checked })} className="w-4 h-4" />
-              {r.label || r.field}{r.field === 'name' && <span className="text-[#6B7280] text-[12.5px]"> (sempre)</span>}
+              {r.label || r.field}{r.field === 'name' && <span className="text-[#6B7280] text-[11px]"> (sempre)</span>}
             </label>
           ))}
         </div>
@@ -76,15 +76,15 @@ function GuestInfoDialog({ guest, onClose }: { guest: any; onClose: () => void }
             <X size={12} strokeWidth={3} />
           </button>
         </div>
-        <div className="px-3 py-2 bg-white border-b border-[#E6E8EC] text-[13px] flex gap-6 flex-shrink-0">
+        <div className="px-3 py-2 bg-white border-b border-[#E6E8EC] text-[12px] flex gap-6 flex-shrink-0">
           <span><b>Nr. cliente:</b> {guest.code || '—'}</span>
           <span><b>Contacto:</b> {guest.contact || '—'}</span>
           <span><b>NIF:</b> {guest.tax_id || '—'}</span>
           <span><b>Estadias concluídas:</b> {stays}</span>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          {isFetching ? <div className="p-4 text-gray-400 text-[13px]">A carregar…</div> : rows.length === 0 ? (
-            <div className="p-6 text-center text-gray-400 text-[13px]">Este hóspede ainda não tem reservas.</div>
+          {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A carregar…</div> : rows.length === 0 ? (
+            <div className="p-6 text-center text-gray-400 text-[12px]">Este hóspede ainda não tem reservas.</div>
           ) : (
             <ClassicGrid rowKey="id" data={rows} filterable={false} columns={[
               { header: 'Confirmação', accessor: 'confirmation', width: '15%' },
@@ -99,7 +99,7 @@ function GuestInfoDialog({ guest, onClose }: { guest: any; onClose: () => void }
           )}
         </div>
         <div className="flex justify-end px-3 py-2 bg-[#F7F8FA] border-t border-[#E6E8EC] flex-shrink-0">
-          <button onClick={onClose} className="flex items-center gap-1.5 text-[13px] font-semibold text-[#111827] hover:text-black">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black">
             <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={9} strokeWidth={3} /></span>
             Fechar
           </button>
@@ -178,7 +178,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
           </div>
         </div>
 
-        <div className="bg-white border-b border-[#F1F2F4] text-[13px]">
+        <div className="bg-white border-b border-[#F1F2F4] text-[12px]">
           <div className="flex border-b border-[#F1F2F4]">
             <button onClick={() => setTab('S')}
               className={`px-4 py-1.5 font-semibold ${tab === 'S' ? 'bg-white border-b-2 border-[#1E2A44]' : 'bg-[#F7F8FA] text-[#6B7280]'}`}>
@@ -220,7 +220,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
               )}
             </div>
             <button onClick={pesquisar}
-              className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[13px]"
+              className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px]"
               style={{ background: '#1E2A44' }}>
               <RefreshCw size={20} /> Pesquisar
             </button>
@@ -228,7 +228,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
         </div>
 
         <div className="flex-1 overflow-auto bg-white">
-          {isFetching ? <div className="p-4 text-gray-400 text-[13px]">A carregar…</div> : (
+          {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A carregar…</div> : (
             <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined}
               onRowClick={(r: any) => setSelId(r.id)}
               onRowDoubleClick={(r: any) => onSelect(r)}
@@ -245,7 +245,7 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
           )}
         </div>
 
-        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[13px]">
+        <div className="flex items-center gap-1 px-2 py-1.5 bg-[#F7F8FA] border-t border-[#E6E8EC] text-[12px]">
           <button onClick={() => setEditing({ is_blocked: false })} className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#F7F8FA]">
             <Plus size={13} /> Adicionar
           </button>

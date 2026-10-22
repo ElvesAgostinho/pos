@@ -82,7 +82,7 @@ export default function PmsGuestsCompaniesView() {
       <div className="flex border-b border-[#E6E8EC] bg-[#F7F8FA]">
         {(['guests', 'companies'] as const).map((t) => (
           <button key={t} onClick={() => trocarAba(t)}
-            className={`px-4 py-2 text-[13px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
+            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
             {t === 'guests' ? 'Hóspedes' : 'Empresas'}
           </button>
         ))}
@@ -103,7 +103,7 @@ export default function PmsGuestsCompaniesView() {
                 ]
           } />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[12.5px] overflow-auto">
+        <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
           <label className="flex flex-col">Nome<input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inp} /></label>
           {tab === 'companies' && (
             <label className="flex flex-col">NIF<input value={form.tax_id || ''} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} className={inp} /></label>

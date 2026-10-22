@@ -73,7 +73,7 @@ export default function PmsProductsServicesView() {
             { header: 'À venda', accessor: (r: MdItem) => (r.is_sold ? 'Sim' : 'Não'), width: '13%' },
           ]} />
         </div>
-        <div className="w-1/2 p-3 space-y-2 text-[12.5px] overflow-auto">
+        <div className="w-1/2 p-3 space-y-2 text-[11px] overflow-auto">
           <div className="font-bold text-[#111827]">{selId ? 'Editar Produto/Serviço' : 'Novo Produto/Serviço'}</div>
           <label className="flex flex-col">Nome<input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inp} /></label>
           <div className="flex gap-2">
