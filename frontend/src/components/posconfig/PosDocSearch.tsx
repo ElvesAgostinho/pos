@@ -335,7 +335,7 @@ function PopupAnular({ anular, setAnular, acao }: any) {
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setAnular(null)} />
-      <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[460px]">
+      <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[460px] max-w-full">
         <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold flex justify-between">
           Anular {anular.number} <button onClick={() => setAnular(null)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
         </div>

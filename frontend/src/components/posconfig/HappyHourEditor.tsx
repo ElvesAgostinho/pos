@@ -93,7 +93,7 @@ export default function HappyHourEditor({ row, onClose }: { row: any; onClose: (
         <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[110px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)}
-            placeholder="Happy Hour de Verão" className={`${inp} w-[420px]`} style={inputStyle} />
+            placeholder="Happy Hour de Verão" className={`${inp} w-[420px] max-w-full`} style={inputStyle} />
         </label>
 
         <div className="flex items-center gap-8 text-[12px]">

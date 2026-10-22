@@ -57,7 +57,7 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
-      <div className="w-[560px] max-h-[85vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+      <div className="w-[560px] max-w-full max-h-[85vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
         <div className="h-8 flex items-center justify-between px-3 text-white text-[12px] font-bold flex-shrink-0" style={{ background: 'linear-gradient(to bottom, #2563EB, #2563EB)' }}>
           Atualização em Massa de Tarifas
           <button onClick={onClose} className="text-white/80 hover:text-white">×</button>

@@ -482,3 +482,90 @@ class PosFalaComOPmsTests(CasaMontada):
         r = self.client.post(f'/api/pos/tickets/{conta}/pay/',
                              {'payment_method': self.quarto.id, 'amount': '8500.00'}, format='json')
         self.assertEqual(r.status_code, 400, r.content[:300])
+
+
+class SegundaViaTests(CasaMontada):
+    """Reimprimir não é reemitir.
+
+    O empregado a quem falha a impressora carrega outra vez em "faturar" — e é
+    assim que saem duas faturas da mesma venda, com dois números, para um só
+    cliente. A 2ª via existe para isso não acontecer: mesmo número, mesma
+    assinatura, papel novo.
+    """
+
+    def _conta_paga(self):
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        r = self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                             {'payment_method': self.dinheiro.id, 'amount': '8500.00'},
+                             format='json')
+        self.assertEqual(r.status_code, 200, r.content[:400])
+        return conta
+
+    def test_segunda_via_no_terminal_mantem_o_numero(self):
+        conta = self._conta_paga()
+        from fiscal.models import FiscalDocument
+        doc = FiscalDocument.objects.get(source_module='pos', source_ref=str(conta))
+
+        antes = PrintJob.objects.filter(job_type='INVOICE').count()
+        r = self.client.post(f'/api/pos/tickets/{conta}/reprint/', {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:400])
+        self.assertEqual(r.data['invoice_no'], doc.invoice_no,
+                         'A reimpressão saiu com outro número — são duas faturas da mesma venda.')
+
+        job = PrintJob.objects.filter(job_type='INVOICE').order_by('-id').first()
+        self.assertEqual(PrintJob.objects.filter(job_type='INVOICE').count(), antes + 1)
+        self.assertIn('2ª VIA', job.title, 'A 2ª via saiu sem se identificar como tal.')
+        self.assertIn('2ª VIA', job.content)
+        # Não é dinheiro a entrar outra vez: a gaveta não tem razão para abrir.
+        self.assertFalse(job.opens_drawer, 'A 2ª via abriu a gaveta do dinheiro.')
+
+        # E não criou documento fiscal nenhum — é o ponto todo.
+        self.assertEqual(FiscalDocument.objects.filter(source_module='pos',
+                                                       source_ref=str(conta)).count(), 1,
+                         'A reimpressão emitiu um segundo documento fiscal.')
+
+    def test_nao_se_reimprime_o_que_ainda_nao_existe(self):
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        r = self.client.post(f'/api/pos/tickets/{conta}/reprint/', {}, format='json')
+        self.assertEqual(r.status_code, 400, 'Reimprimiu uma conta que nunca teve documento.')
+
+    def test_segunda_via_no_backoffice_conta_as_vias(self):
+        """Pelo arquivo (Pesquisa de Documentos), dias depois — o caminho de quem
+        não está ao balcão. Cada via fica contada: duas vias iguais a circular é
+        o princípio de uma fatura paga duas vezes."""
+        conta = self._conta_paga()
+        from fiscal.models import FiscalDocument
+        doc = FiscalDocument.objects.get(source_module='pos', source_ref=str(conta))
+
+        r = self.client.post(f'/api/pos/reports/documents/{doc.id}/', {'action': 'print'},
+                             format='json')
+        self.assertEqual(r.status_code, 200, r.content[:400])
+        self.assertFalse(r.data['copy'], 'A primeira impressão foi marcada como 2ª via.')
+
+        r = self.client.post(f'/api/pos/reports/documents/{doc.id}/', {'action': 'print'},
+                             format='json')
+        self.assertTrue(r.data['copy'], 'A segunda impressão não foi marcada como 2ª via.')
+        doc.refresh_from_db()
+        self.assertEqual(doc.print_count, 2)
+
+
+class ErrosQueSeLeemTests(CasaMontada):
+    """A base de dados recusa gravações por razões que não têm nada de interno.
+
+    Um código repetido é um erro de quem está a escrever, com solução imediata.
+    Apresentá-lo como "Ocorreu um erro interno ao processar o pedido" faz o
+    utilizador fechar a caixa, tentar outra vez, ver o mesmo, e telefonar.
+    """
+
+    def test_codigo_repetido_diz_que_esta_repetido(self):
+        dados = {'code': 'CX01', 'name': 'Caixa', 'account_type': 'CASH', 'currency': 'AOA'}
+        self.assertEqual(self.client.post('/api/finance/accounts/', dados, format='json').status_code, 201)
+
+        r = self.client.post('/api/finance/accounts/', dados, format='json')
+        self.assertEqual(r.status_code, 400,
+                         'Um código repetido ainda responde "erro interno do servidor".')
+        texto = str(r.data).lower()
+        self.assertIn('já existe', texto, f'A mensagem não diz o que se passa: {r.data}')
+        self.assertIn('código', texto, f'A mensagem não diz QUAL o campo repetido: {r.data}')

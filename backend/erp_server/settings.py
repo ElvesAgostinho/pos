@@ -156,6 +156,10 @@ else:
     CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 REST_FRAMEWORK = {
+    # Os erros da BASE DE DADOS chegavam ao ecrã como "Ocorreu um erro interno ao
+    # processar o pedido" — um código repetido ou um campo em branco apresentados
+    # como avaria do sistema. Ver core/exceptions.py.
+    'EXCEPTION_HANDLER': 'core.exceptions.handler',
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],

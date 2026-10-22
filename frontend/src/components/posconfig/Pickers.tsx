@@ -45,7 +45,7 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
-      <div className="bg-[#EEF1F5] border border-[#E6E8EC] w-[620px] max-h-[80vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#EEF1F5] border border-[#E6E8EC] w-[620px] max-w-full max-h-[80vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <Head title="Adicionar - Sub Família" onClose={onClose} />
 
         <div className="flex items-center gap-3 px-3 py-2 bg-white border-b border-[#F1F2F4]">

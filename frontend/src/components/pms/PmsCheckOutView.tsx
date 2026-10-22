@@ -62,7 +62,7 @@ export default function PmsCheckOutView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-[420px] flex-shrink-0 border-r border-[#F1F2F4] flex flex-col">
+        <div className="w-[420px] max-w-full flex-shrink-0 border-r border-[#F1F2F4] flex flex-col">
           <div className="p-2 border-b border-[#F1F2F4]">
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Pesquisar por hóspede, quarto ou confirmação…"
               className="w-full border border-[#E6E8EC] p-1.5 text-[12px]" />

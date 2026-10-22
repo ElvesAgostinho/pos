@@ -272,7 +272,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
 
               <div className="flex gap-3">
                 {/* Turnos */}
-                <div className="w-[420px] flex flex-col" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
+                <div className="w-[420px] max-w-full flex flex-col" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
                   <div className="px-2 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4]">
                     Dias: {lines.length ? Array.from(workDays).sort().map((w) => DAYS[w]).join(', ') : '—'}
                   </div>

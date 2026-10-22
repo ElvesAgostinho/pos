@@ -244,7 +244,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[560px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
+      <div className="w-[560px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
           Fatura Proforma para a reserva {r.confirmation}
           <button onClick={onClose} title="Fechar"

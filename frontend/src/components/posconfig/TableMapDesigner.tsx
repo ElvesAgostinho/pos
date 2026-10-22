@@ -219,7 +219,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
           </div>
 
           {/* Lugares / Reservas online */}
-          <div className="w-[420px] flex-shrink-0 border-l border-[#E6E8EC] bg-white flex flex-col">
+          <div className="w-[420px] max-w-full flex-shrink-0 border-l border-[#E6E8EC] bg-white flex flex-col">
             <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4]">Lugares</div>
             <div className="flex-1 overflow-auto">
               <table className="w-full text-[12px] border-collapse">

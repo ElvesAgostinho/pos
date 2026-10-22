@@ -38,7 +38,7 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
-      <div className="w-[900px] max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+      <div className="w-[900px] max-w-full max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
           Controlo de duplicação
           <button onClick={onClose} title="Fechar"

@@ -201,7 +201,7 @@ function MealEditDialog({ reservation: r, onClose, onSaved }: { reservation: any
 
   return (
     <div className="fixed inset-0 z-[9300] flex items-center justify-center bg-black/40">
-      <div className="w-[420px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
+      <div className="w-[420px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
           Refeição
           <button onClick={onClose} className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white"><X size={12} strokeWidth={3} /></button>

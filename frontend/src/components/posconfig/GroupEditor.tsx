@@ -57,12 +57,12 @@ export default function GroupEditor({ row, onClose }: { row: any; onClose: () =>
           <label className="flex items-start gap-3 text-[12px]">
             <span className="w-[110px] text-[#111827] pt-1">Código:</span>
             <input value={d.code || ''} onChange={(e) => set('code', e.target.value)}
-              className={`${inputCls} w-[640px] flex-none`} style={inputStyle} />
+              className={`${inputCls} w-[640px] max-w-full flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-start gap-3 text-[12px]">
             <span className="w-[110px] text-[#111827] pt-1">Descrição:<span className="text-[#DC2626]">*</span></span>
             <textarea value={d.name || ''} onChange={(e) => set('name', e.target.value)} rows={3}
-              className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white w-[640px]" style={inputStyle} />
+              className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white w-[640px] max-w-full" style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[110px] text-[#111827]">Ordem:</span>

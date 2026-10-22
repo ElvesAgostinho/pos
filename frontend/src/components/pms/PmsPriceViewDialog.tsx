@@ -21,7 +21,7 @@ export default function PmsPriceViewDialog({ reservation: r, onClose }: { reserv
 
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
-      <div className="w-[720px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
+      <div className="w-[720px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
         <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
           Visualizar Preço
           <button onClick={onClose} title="Fechar"

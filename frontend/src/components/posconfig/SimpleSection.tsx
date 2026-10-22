@@ -111,16 +111,25 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
           <Box title="Dados" className="max-w-[820px]">
             <div className="space-y-2.5 pt-1.5">
               {fields.map((f) => (
-                <label key={f.key} className={`flex gap-3 text-[12px] ${f.type === 'textarea' ? 'items-start' : 'items-center'}`}>
-                  <span className={`w-[160px] flex-shrink-0 text-[#111827] ${f.type === 'textarea' ? 'pt-1' : ''}`}>
+                /* O CAMPO E A SUA AJUDA SÃO UMA COLUNA, não dois vizinhos.
+                   A ajuda estava AO LADO do campo, na mesma linha. Com uma etiqueta
+                   de 160px e um campo de 600px dentro de uma caixa de 820, sobravam-
+                   lhe uns vinte pixéis — e um <span> dentro de um flex encolhe até
+                   caber: o texto partia LETRA A LETRA, uma por linha, numa coluna
+                   fininha ao canto. Não era texto cortado por acaso, era texto
+                   espremido por construção, em todos os ecrãs feitos com isto.
+                   Agora desce para debaixo do campo, onde tem a largura toda. */
+                <label key={f.key} className="flex gap-3 text-[12px] items-start">
+                  <span className="w-[160px] flex-shrink-0 text-[#111827] pt-1.5">
                     {f.label}{f.required && <span className="text-[#DC2626]">*</span>}
                   </span>
+                  <span className="flex-1 min-w-0">
                   {f.type === 'textarea' ? (
                     <textarea value={editing[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} rows={5}
-                      className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
+                      className={`${inputCls} ${f.width || 'w-[300px]'} max-w-full flex-none`} style={inputStyle} />
                   ) : f.type === 'select' ? (
                     <select value={editing[f.key] ?? ''} onChange={(e) => set(f.key, Number(e.target.value) || e.target.value || null)}
-                      className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle}>
+                      className={`${inputCls} ${f.width || 'w-[300px]'} max-w-full flex-none`} style={inputStyle}>
                       <option value="">—</option>
                       {(f.options || []).map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
                     </select>
@@ -130,7 +139,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                     // SÓ por upload, de propósito (ver CompanyEditor/ArticleEditor): um URL
                     // escrito à mão aponta para fora; um ficheiro carregado fica no disco
                     // do próprio servidor do hotel, como tudo o resto.
-                    <div className={`flex items-center gap-2 ${f.width || 'w-[420px]'} flex-none min-w-0`}>
+                    <div className={`flex items-center gap-2 ${f.width || 'w-[420px]'} max-w-full flex-none min-w-0`}>
                       {editing[f.key] && (
                         <img src={editing[f.key]} alt="" className="w-8 h-8 object-contain border border-[#F1F2F4] bg-white flex-shrink-0" />
                       )}
@@ -163,9 +172,10 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                   ) : (
                     <input type={f.type || 'text'} value={editing[f.key] ?? ''}
                       onChange={(e) => set(f.key, f.type === 'number' ? Number(e.target.value) : e.target.value)}
-                      className={`${inputCls} ${f.width || 'w-[300px]'} flex-none`} style={inputStyle} />
+                      className={`${inputCls} ${f.width || 'w-[300px]'} max-w-full flex-none`} style={inputStyle} />
                   )}
-                  {f.help && <span className="text-[11px] text-[#6B7280]">{f.help}</span>}
+                  {f.help && <span className="block text-[11px] text-[#6B7280] mt-1 leading-snug">{f.help}</span>}
+                  </span>
                 </label>
               ))}
             </div>

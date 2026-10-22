@@ -59,7 +59,7 @@ export default function ScheduleEditor({ row, onClose }: { row: any; onClose: ()
         <label className="flex items-center gap-3 text-[12px]">
           <span className="w-[90px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
           <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} placeholder="Happy Hour de Verão"
-            className={`${inp} w-[420px]`} style={inputStyle} />
+            className={`${inp} w-[420px] max-w-full`} style={inputStyle} />
         </label>
         <label className="flex items-center gap-2 text-[12px]">
           <input type="checkbox" checked={!!d.is_active} onChange={(e) => set('is_active', e.target.checked)} className="w-4 h-4" />

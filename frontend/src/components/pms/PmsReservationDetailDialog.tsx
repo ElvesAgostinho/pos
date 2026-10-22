@@ -306,7 +306,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
 
           {tab === 'Outros' && (
             <div className="p-4 flex gap-4 flex-wrap items-start">
-              <div className="w-[420px] border border-[#E6E8EC]">
+              <div className="w-[420px] max-w-full border border-[#E6E8EC]">
                 <div className="px-2 py-1 font-bold text-[11px] bg-[#EEF1F5] border-b border-[#E6E8EC]">Limite de crédito — {res.guest_name}</div>
                 {!guest ? <div className="p-3 text-gray-400 text-[11px]">A carregar…</div> : (
                   <div className="p-3 flex items-center gap-2 text-[12px]">

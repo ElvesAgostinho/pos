@@ -150,7 +150,7 @@ export function EntitySearch() {
               <div className="col-span-2 flex items-center gap-2">
                 <span className={lbl}>Morada:</span>
                 <input value={edit.address ?? ''} onChange={(e) => setEdit({ ...edit, address: e.target.value })}
-                  className={`${inp} w-[600px]`} style={inputStyle} />
+                  className={`${inp} w-[600px] max-w-full`} style={inputStyle} />
               </div>
               <div className="flex items-center gap-2">
                 <span className={lbl}>Cartão membro:</span>
@@ -172,12 +172,12 @@ export function EntitySearch() {
                 <span className={lbl}>Motivo bloqueio:</span>
                 <input value={edit.block_reason ?? ''} onChange={(e) => setEdit({ ...edit, block_reason: e.target.value })}
                   disabled={!edit.is_blocked}
-                  className={`${inp} w-[600px] disabled:bg-[#EEF1F5]`} style={inputStyle} />
+                  className={`${inp} w-[600px] max-w-full disabled:bg-[#EEF1F5]`} style={inputStyle} />
               </div>
               <div className="col-span-3 flex items-start gap-2">
                 <span className={lbl}>Informações:</span>
                 <textarea value={edit.notes ?? ''} onChange={(e) => setEdit({ ...edit, notes: e.target.value })}
-                  rows={3} className={`${inp} w-[600px]`} style={inputStyle} />
+                  rows={3} className={`${inp} w-[600px] max-w-full`} style={inputStyle} />
               </div>
             </div>
             {req.size > 0 && (
@@ -352,7 +352,7 @@ export function EntitySearch() {
       {obrig && (
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setObrig(false)} />
-          <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[440px]">
+          <div className="fixed left-1/2 top-1/4 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[440px] max-w-full">
             <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold flex justify-between">
               Campos obrigatórios <button onClick={() => setObrig(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
@@ -377,7 +377,7 @@ export function EntitySearch() {
       {dups && (
         <>
           <div className="fixed inset-0 bg-black/40 z-[70]" onClick={() => setDups(false)} />
-          <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[620px]">
+          <div className="fixed left-1/2 top-1/5 -translate-x-1/2 z-[71] bg-white border border-[#E6E8EC] shadow-2xl w-[620px] max-w-full">
             <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold flex justify-between">
               Controlo de duplicação <button onClick={() => setDups(false)} className="inline-flex"><Glyph icon="✕" size={13} /></button>
             </div>
@@ -519,7 +519,7 @@ export function EventRequests() {
               <div className="col-span-3 flex items-start gap-2">
                 <span className={lbl}>Notas:</span>
                 <textarea value={edit.notes ?? ''} onChange={(e) => setEdit({ ...edit, notes: e.target.value })}
-                  rows={3} className={`${inp} w-[620px]`} style={inputStyle} />
+                  rows={3} className={`${inp} w-[620px] max-w-full`} style={inputStyle} />
               </div>
             </div>
             <div className="px-4 pb-3 text-[11px] text-[#111827]">

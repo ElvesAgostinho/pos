@@ -49,7 +49,7 @@ const RequireLicense = ({ children }: { children: JSX.Element }) => {
   if (isError) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-[#2563EB]">
-        <div className="bg-white border border-[#E6E8EC] shadow-2xl w-[440px]">
+        <div className="bg-white border border-[#E6E8EC] shadow-2xl w-[440px] max-w-full">
           <div className="px-4 py-2 bg-[#DC2626] text-white font-bold text-sm">Sem ligação ao servidor</div>
           <div className="p-4 text-[12px] text-gray-700 space-y-3">
             <p>Não foi possível contactar o servidor da aplicação (<b>localhost:8000</b>). Verifique se o serviço está a correr.</p>

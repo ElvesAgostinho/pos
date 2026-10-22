@@ -477,7 +477,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       {/* Popup "Membro de" */}
       {popup && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" onClick={() => setPopup(null)}>
-          <div className="bg-white border border-[#E6E8EC] w-[560px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white border border-[#E6E8EC] w-[560px] max-w-full shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
               <span>A editar {groups.find((g: any) => g.id === popup.group)?.name || 'grupo'}</span>
               <button onClick={() => setPopup(null)} className="text-white inline-flex"><Glyph icon="✕" size={14} /></button>
@@ -511,7 +511,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
           autenticada pela posse da licença já instalada). */}
       {showLicenseManager && lic && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowLicenseManager(false)}>
-          <div className="bg-white w-[680px] max-h-[85vh] rounded shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white w-[680px] max-w-full max-h-[85vh] rounded shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="px-4 py-2.5 flex items-center justify-between text-white" style={{ background: '#3B82F6' }}>
               <span className="font-bold text-[12px] flex items-center gap-2"><Glyph icon="🔑" size={14} /> Gestor de Licenças</span>
               <button onClick={() => setShowLicenseManager(false)} className="hover:text-[#DC2626] text-[16px] leading-none">×</button>

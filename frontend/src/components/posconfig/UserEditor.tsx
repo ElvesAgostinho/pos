@@ -423,7 +423,7 @@ export default function UserEditor({ row, onClose }: { row: any; onClose: () => 
       {/* Popup da password */}
       {pwModal && (
         <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={() => setPwModal(null)}>
-          <div className="bg-white border border-[#E6E8EC] w-[440px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white border border-[#E6E8EC] w-[440px] max-w-full shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
               {pwModal === 'pos' ? 'PIN do Terminal' : 'Password'}
             </div>

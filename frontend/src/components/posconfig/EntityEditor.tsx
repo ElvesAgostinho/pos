@@ -675,7 +675,7 @@ function Comissoes({ eid, d: _d, T }: any) {
     </div>
     {add && (
       <div className="fixed inset-0 bg-black/40 z-[400] flex items-center justify-center" onClick={() => setAdd(null)}>
-        <div onClick={(e) => e.stopPropagation()} className="w-[560px] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden">
+        <div onClick={(e) => e.stopPropagation()} className="w-[560px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden">
           <div className="h-8 flex items-center justify-between px-3 text-[#111827] text-[12px] font-bold bg-[#FFFFFF] border-b border-[#E6E8EC]">
             <span>Add Comission</span><button onClick={() => setAdd(null)} className="w-5 h-5 bg-[#DC2626] flex items-center justify-center"><Glyph icon="✕" size={11} /></button></div>
           <div className="p-4 space-y-2">

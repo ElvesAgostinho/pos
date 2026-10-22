@@ -72,7 +72,7 @@ export default function SubFamilyEditor({ row, families, onClose }:
           </label>
           <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[200px] text-[#111827]">Descrição:<span className="text-[#DC2626]">*</span></span>
-            <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inputCls} w-[640px] flex-none`} style={inputStyle} />
+            <input value={d.name || ''} onChange={(e) => set('name', e.target.value)} className={`${inputCls} w-[640px] max-w-full flex-none`} style={inputStyle} />
           </label>
           <label className="flex items-center gap-3 text-[12px]">
             <span className="w-[200px] text-[#111827]">Família:<span className="text-[#DC2626]">*</span></span>

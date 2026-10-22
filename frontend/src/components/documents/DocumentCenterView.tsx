@@ -187,7 +187,7 @@ function DocDetail({ sel, onClose, onOpen }: { sel: { module: string; id: string
   const links = data?.links || [];
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="w-[560px] max-h-[85vh] bg-white border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="w-[560px] max-w-full max-h-[85vh] bg-white border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="h-8 flex items-center justify-between px-2 bg-[#3B82F6] text-white text-[12px] font-semibold flex-shrink-0">
           <span className="flex items-center gap-2"><FileText size={14} />{det.title || 'Documento'}</span>
           <button onClick={onClose} className="w-6 h-6 flex items-center justify-center hover:bg-white/20"><X size={14} /></button>

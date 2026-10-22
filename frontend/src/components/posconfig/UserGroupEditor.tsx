@@ -194,7 +194,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
         </div>
 
         {/* Direita: permissões numeradas */}
-        <div className="w-[420px] flex-shrink-0 flex flex-col">
+        <div className="w-[420px] max-w-full flex-shrink-0 flex flex-col">
           <div className="px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold text-[#111827] border-b border-[#F1F2F4]">Permissões</div>
           <div className="flex-1 overflow-auto">
             {roots.map((r) => {
