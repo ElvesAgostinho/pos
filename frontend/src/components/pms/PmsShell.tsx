@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { X, Users, Building2 } from 'lucide-react';
+import { X, Users } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
 import { Glyph } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
 import { MENUS } from './pmsMenus';
+import { MenuTopo, MenuItem } from '../shared/MenuTopo';
 import { useActiveModules } from '../../hooks/useActiveModules';
-import { TOKENS, RADIUS, SHADOW } from '../../config/theme';
+import { TOKENS, RADIUS } from '../../config/theme';
 import PmsPermissionsDialog from './PmsPermissionsDialog';
 import { useMyAccess } from '../../hooks/useActiveModules';
 import PmsAvailabilityView from './PmsAvailabilityView';
@@ -157,7 +158,6 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
     if (pedida) localStorage.removeItem('pms_section');
     return pedida || 'home_dashboard';
   });
-  const [menu, setMenu] = useState<string | null>(null);
   const [showPerms, setShowPerms] = useState(false);
   const cur = SECTIONS[section];
   const Comp = cur.Comp;
@@ -186,80 +186,34 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
 
   return (
     <div className="h-full flex flex-col" style={{ background: '#EEF1F5', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-      {/* Barra de menus (topo escuro) — cabeçalho próprio do PMS */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white"
-        style={{ background: TOKENS.brand, height: 56 }}>
-        <div className="relative pr-4 mr-2">
-          <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')} title="Trocar de módulo"
-            className={`flex items-center gap-2 px-2 py-1 leading-none rounded-[12px] transition-colors ${menu === '__ml' ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-            {logoUrl ? <img src={logoUrl} alt="" className="h-9 w-9 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={20} className="flex-shrink-0" />}
-          </button>
-          {menu === '__ml' && (
-            <>
-              <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full mt-2 z-[61] min-w-[240px] py-2 overflow-hidden"
-                style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.lineSoft}`,
-                         borderRadius: RADIUS.md, boxShadow: SHADOW.pop }}>
-                <button onClick={() => { setMenu(null); localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
-                  <span className="w-5 flex items-center justify-center text-[#6B7280]"><Glyph icon="🖥" size={15} /></span>
-                  Ambiente de Trabalho
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {MENUS_VISIVEIS.map((m) => (
-          <div key={m.title} className="relative">
-            {/* Só troca de menu ao CLICAR — havia um onMouseEnter aqui que trocava
-                de menu só de o rato passar por cima do título ao caminho de outro
-                sítio, sem se clicar em nada: o operador achava que o sistema
-                "saltava sozinho" de secção. */}
-            <button onClick={() => setMenu(menu === m.title ? null : m.title)}
-              // A seta "▾" saiu: com os títulos todos na barra, não cabia ao lado
-              // do texto e caía para uma segunda linha debaixo de cada menu.
-              // Que um título de menu abre uma lista já se percebe por si.
-              className={`px-4 py-2 text-[14px] font-medium transition-colors whitespace-nowrap ${
-                menu === m.title ? 'text-white' : 'text-white/85 hover:text-white hover:bg-white/10'}`}
-              style={{
-                background: menu === m.title ? 'rgba(255,255,255,0.2)' : 'transparent',
-                borderRadius: RADIUS.sm,
-              }}>
-              {m.title}
-            </button>
-            {menu === m.title && (
-              <>
-                <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full mt-2 z-[61] min-w-[270px] py-2 overflow-hidden"
-                  style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.lineSoft}`,
-                           borderRadius: RADIUS.md, boxShadow: SHADOW.pop }}>
-                  {m.items.map((it, i) => (
-                    <button key={i}
-                      onClick={() => {
-                        setMenu(null);
-                        if (it.soon) { aviso(`"${it.label}" ainda não está construído nesta fase do PMS.`); return; }
-                        if (it.url) { window.open(it.url, '_blank'); return; }
-                        if (it.section) {
-                          if (!screenAllowed(`pms_${it.section}`)) { aviso('Sem permissão para aceder a este ecrã.'); return; }
-                          setSection(it.section);
-                        }
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
-                      <Glyph icon={it.icon} size={15} chip />
-                      {it.label}{it.soon && <span className="ml-auto text-[10px] opacity-50">(brevemente)</span>}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+      {/* A BARRA DE MENUS é partilhada com a Configuração POS (MenuTopo).
+          Eram duas, escritas à parte, a fazer o mesmo — e mantê-las iguais era
+          trabalho manual, que se esquece. O que fica aqui é só o que é MESMO
+          do PMS: o que acontece ao escolher um item. */}
+      <MenuTopo
+        menus={MENUS_VISIVEIS}
+        logoUrl={logoUrl}
+        onDesktop={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
+        larguraLista={270}
+        extra={
+          <div className="ml-auto flex items-center gap-4 text-[12px]">
+            <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
           </div>
-        ))}
-
-        <div className="ml-auto flex items-center gap-4 text-[12px]">
-          <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
-        </div>
-      </div>
+        }
+        renderItem={(it: any, i, fechar) => (
+          <MenuItem key={i} icon={it.icon} label={it.label}
+            nota={it.soon && <span className="ml-auto text-[10px] opacity-50">(brevemente)</span>}
+            onClick={() => {
+              fechar();
+              if (it.soon) { aviso(`"${it.label}" ainda não está construído nesta fase do PMS.`); return; }
+              if (it.url) { window.open(it.url, '_blank'); return; }
+              if (it.section) {
+                if (!screenAllowed(`pms_${it.section}`)) { aviso('Sem permissão para aceder a este ecrã.'); return; }
+                setSection(it.section);
+              }
+            }} />
+        )}
+      />
 
       {/* Título da secção ativa */}
       {/* CABEÇALHO DA SECÇÃO — branco, não uma segunda barra escura. Duas

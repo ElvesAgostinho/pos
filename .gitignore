@@ -59,4 +59,11 @@ servidor.log
 backend/webapp/
 instalador/pacote/
 instalador/Output/
+# E QUALQUER ARQUIVO DO QUE SAI DE LÁ. A pasta estava ignorada, um ZIP dela não:
+# `instalador/Output.zip` leva o instalador E o `senhas.txt` — a senha de
+# instalação e a do dono, em claro. Bastava um `git add -A` na raiz para irem
+# para o repositório, e uma senha que chega ao histórico do git não se apaga.
+instalador/Output*.zip
+instalador/*.zip
+instalador/senhas.txt
 instalador/pcc_url.txt

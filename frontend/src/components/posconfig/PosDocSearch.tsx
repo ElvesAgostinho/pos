@@ -80,33 +80,153 @@ export default function PosDocSearch() {
     a.download = 'documentos.csv'; a.click();
   };
 
+  /**
+   * IMPRIMIR — o MESMO papel que saiu do terminal, não um resumo.
+   *
+   * Isto montava um documento próprio: nome e NIF em texto, tabela, total. Sem
+   * logótipo, sem QR, sem morada, sem contactos, sem contas bancárias. O mesmo
+   * documento fiscal saía em dois papéis DIFERENTES conforme o sítio de onde se
+   * mandasse imprimir — e era este, o do arquivo, o mais pobre dos dois. É
+   * precisamente a 2ª via que se dá a um cliente que volta dias depois, ou que
+   * se junta a uma prestação de contas.
+   *
+   * Duas coisas que estavam erradas e não eram só de aspecto:
+   *
+   *  · o QR não existia. A AGT exige-o impresso, e nenhum telemóvel lê texto —
+   *    agora vem do servidor como imagem, a mesma que o terminal imprime;
+   *  · a menção ("XXXX-Processado por programa validado n.º …") era
+   *    RECONSTRUÍDA aqui, a partir de quatro caracteres do hash em posições
+   *    fixas. Isso é uma regra fiscal, não tem nada que viver no browser: se
+   *    mudasse de um lado, a 2ª via passava a contradizer o original. Agora vem
+   *    gravada no documento, tal como foi impressa da primeira vez.
+   */
   const imprimir = () => {
     if (!doc) return;
     const w = window.open('', '_blank');
     if (!w) return;
+    const e = doc.emitente || {};
+    const segundaVia = (doc.print_count || 0) > 0;
+    const morada = [e.address, [e.postal_code, e.city].filter(Boolean).join(' '), e.province]
+      .filter(Boolean).join(' · ');
+    const contactos = [e.phone && `Tel. ${e.phone}`, e.email].filter(Boolean).join(' · ');
+    const mencao = doc.print_mention
+      || `Processado por programa validado n.º ${doc.certificate || ''}`;
+
     w.document.write(`
       <html><head><title>${doc.invoice_no}</title><style>
-        body{font-family:'Segoe UI',sans-serif;font-size:12px;padding:24px;max-width:700px}
-        h1{font-size:16px;margin:0} .muted{color:#3B82F6} table{width:100%;border-collapse:collapse;margin-top:12px}
-        th{text-align:left;border-bottom:1px solid #2563EB;padding:4px} td{padding:4px;border-bottom:1px solid #EEF1F5}
-        .r{text-align:right} .tot{font-size:15px;font-weight:bold}
-        .mention{margin-top:16px;font-size:10px;color:#2563EB}
+        @page { margin: 14mm }
+        body{font-family:'Segoe UI',Tahoma,sans-serif;font-size:12px;color:#111827;max-width:760px;margin:0 auto}
+        .topo{display:flex;align-items:flex-start;gap:16px;border-bottom:2px solid #111827;padding-bottom:10px}
+        .logo{max-height:68px;max-width:190px;object-fit:contain}
+        .emit{flex:1}
+        .emit h1{font-size:17px;margin:0 0 2px}
+        .emit .l{font-size:11px;color:#6B7280;line-height:1.5}
+        .doc{text-align:right;white-space:nowrap}
+        .doc .t{font-size:15px;font-weight:bold}
+        .via{display:inline-block;margin-top:4px;border:1px solid #B91C1C;color:#B91C1C;
+             font-size:10px;font-weight:bold;padding:1px 6px;letter-spacing:.5px}
+        .anulado{margin-top:6px;color:#B91C1C;font-weight:bold;font-size:13px}
+        .partes{display:flex;gap:24px;margin:12px 0}
+        .partes div{flex:1;font-size:11px;line-height:1.6}
+        .partes b{color:#6B7280;font-weight:600}
+        table{width:100%;border-collapse:collapse;margin-top:6px}
+        th{text-align:left;border-bottom:1px solid #111827;padding:5px 4px;font-size:11px}
+        td{padding:5px 4px;border-bottom:1px solid #E6E8EC}
+        .r{text-align:right}
+        .fecho{display:flex;gap:20px;margin-top:14px;align-items:flex-start}
+        .fecho .esq{flex:1;font-size:11px;line-height:1.7}
+        .fecho .dir{text-align:right;min-width:230px}
+        .tot{font-size:17px;font-weight:bold;border-top:2px solid #111827;padding-top:6px;margin-top:4px}
+        .rodape{display:flex;gap:16px;align-items:flex-end;margin-top:18px;
+                border-top:1px solid #E6E8EC;padding-top:10px}
+        .rodape .txt{flex:1;font-size:10px;color:#6B7280;line-height:1.6}
+        .qr{width:104px;height:104px}
       </style></head><body>
-      <h1>${doc.company}</h1><div class="muted">NIF: ${doc.company_tax_id}</div>
-      <h2>${doc.type} ${doc.invoice_no}${doc.print_count > 0 ? ' — 2ª VIA' : ''}</h2>
-      <div>Data: ${doc.date} · Operador: ${doc.operator || ''} ${doc.place ? '· ' + doc.place : ''}</div>
-      <div>Cliente: ${doc.customer} · NIF: ${doc.customer_tax_id || 'Consumidor Final'}</div>
-      <table><thead><tr><th>Artigo</th><th class="r">Qtd</th><th class="r">Preço</th><th class="r">IVA</th><th class="r">Total</th></tr></thead>
-      <tbody>${doc.lines.map((l: any) => `<tr><td>${l.description}</td><td class="r">${Number(l.quantity)}</td>
-        <td class="r">${Number(l.unit_price).toFixed(2)}</td><td class="r">${l.tax}%</td>
-        <td class="r">${Number(l.total).toFixed(2)}</td></tr>`).join('')}</tbody></table>
-      <p>Incidência: ${doc.net} · IVA: ${doc.tax}</p>
-      <p class="tot">TOTAL: ${doc.gross} Kz</p>
-      <p>Valor por extenso: ${doc.amount_in_words || ''}</p>
-      <div class="mention">${(doc.hash || '').slice(0, 1)}${(doc.hash || '').slice(10, 11)}${(doc.hash || '').slice(20, 21)}${(doc.hash || '').slice(30, 31)}-Processado por programa validado n.º ${doc.certificate || ''}</div>
+
+      <div class="topo">
+        ${e.logo_url ? `<img class="logo" src="${e.logo_url}" alt="" />` : ''}
+        <div class="emit">
+          <h1>${e.trade_name || doc.company || ''}</h1>
+          ${e.name && e.name !== e.trade_name ? `<div class="l">${e.name}</div>` : ''}
+          <div class="l">NIF: ${doc.company_tax_id || ''}</div>
+          ${morada ? `<div class="l">${morada}</div>` : ''}
+          ${contactos ? `<div class="l">${contactos}</div>` : ''}
+        </div>
+        <div class="doc">
+          <div class="t">${doc.type}</div>
+          <div class="t">${doc.invoice_no}</div>
+          <div class="l">${doc.date}</div>
+          ${segundaVia ? '<div class="via">2ª VIA</div>' : ''}
+          ${doc.voided ? '<div class="anulado">ANULADO</div>' : ''}
+        </div>
+      </div>
+
+      <div class="partes">
+        <div>
+          <b>Cliente</b><br>${doc.customer || 'Consumidor Final'}<br>
+          NIF: ${doc.customer_tax_id || 'Consumidor Final'}
+        </div>
+        <div>
+          <b>Emissão</b><br>
+          Operador: ${doc.operator || '—'}<br>
+          ${doc.place ? `Local: ${doc.place}<br>` : ''}
+          ${doc.payment ? `Pagamento: ${doc.payment}` : ''}
+        </div>
+      </div>
+
+      <table>
+        <thead><tr>
+          <th>Artigo</th><th class="r">Qtd</th><th class="r">Preço</th>
+          <th class="r">IVA</th><th class="r">Total</th>
+        </tr></thead>
+        <tbody>${doc.lines.map((l: any) => `<tr>
+          <td>${l.description}</td>
+          <td class="r">${Number(l.quantity)}</td>
+          <td class="r">${Number(l.unit_price).toFixed(2)}</td>
+          <td class="r">${l.tax}%</td>
+          <td class="r">${Number(l.total).toFixed(2)}</td></tr>`).join('')}</tbody>
+      </table>
+
+      <div class="fecho">
+        <div class="esq">
+          ${doc.amount_in_words ? `<b>Valor por extenso:</b> ${doc.amount_in_words}<br>` : ''}
+          ${(doc.bank_accounts || []).length
+            ? `<b>Pagamento por transferência:</b><br>` +
+              doc.bank_accounts.map((b: any) => `${b.bank} — IBAN ${b.iban}`).join('<br>')
+            : ''}
+        </div>
+        <div class="dir">
+          <div>Incidência: ${doc.net}</div>
+          <div>IVA: ${doc.tax}</div>
+          <div class="tot">TOTAL: ${doc.gross} Kz</div>
+        </div>
+      </div>
+
+      <div class="rodape">
+        <div class="txt">
+          ${mencao}
+          ${segundaVia ? `<br>Reimpressão nº ${doc.print_count + 1} — o número e a assinatura são os do original.` : ''}
+        </div>
+        ${doc.qr_png ? `<img class="qr" src="${doc.qr_png}" alt="QR AGT" />` : ''}
+      </div>
+
       </body></html>`);
     w.document.close();
-    w.print();
+    // A imagem do logótipo e a do QR têm de estar CARREGADAS antes de imprimir —
+    // senão sai uma folha com dois quadrados vazios, que é pior do que não as ter.
+    const mandarImprimir = () => { w.focus(); w.print(); };
+    if (w.document.images.length) {
+      let faltam = w.document.images.length;
+      const conta = () => { if (--faltam <= 0) mandarImprimir(); };
+      Array.from(w.document.images).forEach((img: any) => {
+        if (img.complete) conta();
+        else { img.onload = conta; img.onerror = conta; }
+      });
+      // Rede lenta ou imagem inacessível: imprime na mesma ao fim de 3 segundos.
+      setTimeout(mandarImprimir, 3000);
+    } else {
+      mandarImprimir();
+    }
     acao.mutate({ id: ver, action: 'print' });
   };
 

@@ -4502,8 +4502,27 @@ class PosDocDetailView(APIView):
                       for b in CompanyBankAccount.objects.filter(show_on_invoice=True)]
         except Exception:
             pass
+        # O MESMO EMITENTE E O MESMO QR DA FATURA DO TERMINAL.
+        #
+        # Este ecrã montava o cabeçalho à mão — nome e NIF da configuração
+        # fiscal, e mais nada. Sem logótipo e sem QR: o mesmo documento saía em
+        # dois papéis DIFERENTES conforme o sítio de onde se mandava imprimir, e
+        # era precisamente o do arquivo (a 2ª via, a que se dá a um cliente que
+        # volta dias depois) o mais pobre dos dois.
+        #
+        # `_emitente` já resolve o logótipo nos dois sítios onde ele pode estar
+        # (configuração fiscal ou ficha do hotel) e o nome legal da empresa; o
+        # QR vem como imagem, que é o que um telemóvel lê — a string em bruto
+        # colada ao rodapé não serve nem a pessoas nem a leitores.
+        from fiscal.views import _emitente, _qr_png
+        emitente = _emitente(cfg)
         return Response({
-            'company': cfg.company_name, 'company_tax_id': cfg.company_nif,
+            # Mantém-se o formato antigo (company/company_tax_id) para o ecrã
+            # não partir, e acrescenta-se o resto.
+            'company': emitente['name'] or cfg.company_name,
+            'company_tax_id': emitente['nif'] or cfg.company_nif,
+            'emitente': emitente,
+            'qr_png': _qr_png(d.qr_data),
             'certificate': cfg.certificate_number,
             'bank_accounts': bancos,
             'invoice_no': d.invoice_no, 'type': d.doc_type.name, 'date': str(d.doc_date),
@@ -4515,6 +4534,11 @@ class PosDocDetailView(APIView):
             'net': str(d.net_total), 'tax': str(d.tax_total), 'gross': str(d.gross_total),
             'amount_in_words': d.amount_in_words,
             'hash': d.doc_hash, 'voided': d.status == 'A',
+            # A MENÇÃO tal como foi impressa no original. O ecrã reconstruía-a a
+            # partir do hash (4 caracteres em posições fixas) — e essa é uma
+            # regra fiscal que não tem nada que viver no browser: se mudar, a 2ª
+            # via passa a contradizer o original. Vem gravada no documento.
+            'print_mention': d.print_mention,
             'print_count': d.print_count,
         })
 

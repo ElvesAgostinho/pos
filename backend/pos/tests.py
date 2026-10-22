@@ -363,6 +363,266 @@ class CobrancaEDocumentoTests(CasaMontada):
                          'O talão de conferência fechou a conta.')
 
 
+class FechoDeCaixaTests(CasaMontada):
+    """ONDE O DINHEIRO SE CONFERE.
+
+    O fecho de caixa é a única altura do dia em que o sistema e a gaveta são
+    postos lado a lado. Se a conta do "esperado" estiver errada, o erro não
+    aparece como erro: aparece como uma falta — e alguém fica com a suspeita
+    em cima. É por isso que esta classe existe.
+
+    A fórmula é: fundo inicial + vendas em dinheiro + reforços e entradas
+    − sangrias e saídas. Cada parcela tem aqui o seu teste, porque cada uma
+    delas já esteve em falta em sistemas a sério.
+    """
+
+    def _vender(self, valor='8500.00', item=None):
+        conta = self.abrir_conta()
+        self.pedir(conta, item or self.bife, 1)
+        r = self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                             {'payment_method': self.dinheiro.id, 'amount': valor},
+                             format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        return conta
+
+    def _esperado(self):
+        return CashSession.objects.get(pk=self.caixa.pk).expected_cash
+
+    # ── a conta do esperado ─────────────────────────────────────────────────
+
+    def test_caixa_sem_vendas_espera_o_fundo_inicial(self):
+        self.assertEqual(self._esperado(), Decimal('10000'),
+                         'Uma caixa acabada de abrir já não bate certo com o fundo.')
+
+    def test_as_vendas_em_dinheiro_entram_no_esperado(self):
+        """Parece óbvio e já esteve em falta: o fecho só somava os movimentos
+        manuais. Um "esperado" que ignora as vendas do dia não reconcilia nada —
+        é o fundo de maneio a andar às voltas."""
+        self._vender()
+        self.assertEqual(self._esperado(), Decimal('18500'),
+                         '10000 de fundo + 8500 de venda = 18500.')
+
+    def test_a_sangria_tira_e_o_reforco_poe(self):
+        """Sangria: dinheiro que sai da gaveta para o cofre a meio do dia."""
+        self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/add_movement/',
+                         {'movement_type': 'SANGRIA', 'amount': '5000',
+                          'reason': 'Para o cofre'}, format='json')
+        self.assertEqual(self._esperado(), Decimal('5000'))
+
+        self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/add_movement/',
+                         {'movement_type': 'REFORCO', 'amount': '2000',
+                          'reason': 'Trocos'}, format='json')
+        self.assertEqual(self._esperado(), Decimal('7000'))
+
+    def test_o_que_se_paga_por_cartao_nao_esta_na_gaveta(self):
+        """Um pagamento que não é dinheiro não pode entrar no esperado — senão
+        o fecho acusa sempre falta, pelo valor exacto do que se pagou a cartão."""
+        from mdm.models import PaymentMethod
+        tpa = PaymentMethod.objects.create(code='TPA', name='TPA', method_type='CARD', for_pos=True)
+        OutletPaymentMethod.objects.create(outlet=self.outlet, payment_method=tpa)
+
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': tpa.id, 'amount': '8500.00'}, format='json')
+        self.assertEqual(self._esperado(), Decimal('10000'),
+                         'O cartão foi contado como dinheiro na gaveta.')
+
+    def test_a_gorjeta_sai_com_quem_a_recebeu(self):
+        """(8214) O troco que o cliente deixa é dinheiro que sai da gaveta para o
+        empregado, não para a casa. Contá-lo dava SEMPRE falta no fecho, pelo
+        valor das gorjetas do dia — e a culpa caía em quem estava ao balcão."""
+        self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/add_movement/',
+                         {'movement_type': 'GRATIFICACAO', 'amount': '500',
+                          'reason': 'Gorjeta'}, format='json')
+        self.assertEqual(self._esperado(), Decimal('10000'),
+                         'A gorjeta foi contada como dinheiro da casa.')
+
+    # ── o fecho ─────────────────────────────────────────────────────────────
+
+    def test_o_fecho_regista_sobra_e_falta_pelo_sinal(self):
+        self._vender()
+        r = self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/close/',
+                             {'counted_amount': '18300'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        s = CashSession.objects.get(pk=self.caixa.pk)
+        self.assertEqual(s.expected_amount, Decimal('18500'))
+        self.assertEqual(s.counted_amount, Decimal('18300'))
+        self.assertEqual(s.difference, Decimal('-200'),
+                         'Faltaram 200 e a diferença não é negativa.')
+        self.assertEqual(s.status, 'CLOSED')
+
+    def test_contagem_certa_fecha_sem_diferenca(self):
+        self._vender()
+        self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/close/',
+                         {'counted_amount': '18500'}, format='json')
+        self.assertEqual(CashSession.objects.get(pk=self.caixa.pk).difference, Decimal('0'))
+
+    def test_uma_caixa_fechada_nao_se_fecha_outra_vez(self):
+        """Fechar duas vezes reescrevia a contagem — e com ela a diferença que
+        alguém já tinha justificado."""
+        self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/close/',
+                         {'counted_amount': '10000'}, format='json')
+        r = self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/close/',
+                             {'counted_amount': '99999'}, format='json')
+        self.assertEqual(r.status_code, 400, r.content[:300])
+        self.assertEqual(CashSession.objects.get(pk=self.caixa.pk).counted_amount,
+                         Decimal('10000'), 'A segunda contagem apagou a primeira.')
+
+    def test_caixa_fechada_nao_aceita_movimentos(self):
+        """Uma sangria lançada depois do fecho mudava o esperado de uma sessão
+        já reconciliada: a diferença gravada deixava de bater com a fórmula."""
+        self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/close/',
+                         {'counted_amount': '10000'}, format='json')
+        r = self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/add_movement/',
+                             {'movement_type': 'SANGRIA', 'amount': '1000'}, format='json')
+        self.assertEqual(r.status_code, 400, r.content[:300])
+
+    def test_movimento_de_valor_invalido_e_recusado(self):
+        for valor in ('0', '-500', 'abc'):
+            r = self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/add_movement/',
+                                 {'movement_type': 'SANGRIA', 'amount': valor}, format='json')
+            self.assertEqual(r.status_code, 400, f'Aceitou uma sangria de "{valor}".')
+        self.assertEqual(self._esperado(), Decimal('10000'))
+
+    def test_tipo_de_movimento_inventado_e_recusado(self):
+        r = self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/add_movement/',
+                             {'movement_type': 'DESAPARECEU', 'amount': '100'}, format='json')
+        self.assertEqual(r.status_code, 400, r.content[:300])
+
+    def test_o_fecho_deixa_rasto_na_auditoria(self):
+        """Uma diferença de caixa é uma conversa com uma pessoa. Sem registo de
+        quem fechou, quando e com que valores, não há conversa possível."""
+        from pos.models import POSAuditLog
+        self._vender()
+        self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/close/',
+                         {'counted_amount': '18300', 'closed_by': 'Supervisor'},
+                         format='json')
+        ev = POSAuditLog.objects.filter(event_type='CASH_CLOSE').first()
+        self.assertIsNotNone(ev, 'O fecho de caixa não foi registado na auditoria.')
+        # O registo guarda os valores como texto, com os cêntimos — compara-se
+        # o NÚMERO, não a forma como ficou escrito.
+        self.assertEqual(Decimal(ev.old_value), Decimal('18500'))   # esperado
+        self.assertEqual(Decimal(ev.new_value), Decimal('18300'))   # contado
+        self.assertEqual(ev.amount, Decimal('-200'))
+
+    def test_a_caixa_do_dia_seguinte_comeca_do_zero(self):
+        """Cada sessão conta só o que passou por ela. Sem isto, as vendas de
+        ontem apareciam no esperado de hoje e o fecho nunca mais batia."""
+        self._vender()
+        self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/close/',
+                         {'counted_amount': '18500'}, format='json')
+
+        nova = CashSession.objects.create(outlet=self.outlet, opening_float=Decimal('10000'),
+                                          opened_by='dono_teste', operator_name='Empregado 2',
+                                          status='OPEN')
+        self.assertEqual(nova.expected_cash, Decimal('10000'),
+                         'A caixa nova herdou as vendas da anterior.')
+
+class FechoDoDiaTests(CasaMontada):
+    """O QUE FECHA O SERVIÇO.
+
+    Não é a auditoria da noite do hotel (essa lança o alojamento nos folios).
+    Este fecha o DIA DE VENDAS, e existe por uma razão simples: nenhum terminal
+    pode ficar aberto de um dia para o outro. Se ficar, as vendas de amanhã
+    entram na caixa de hoje e nenhum fecho volta a bater certo — e o erro só se
+    descobre dias depois, quando já ninguém se lembra do que aconteceu.
+    """
+
+    def _estado(self):
+        return self.client.get('/api/pos/ops/day-close/').data
+
+    def test_o_painel_mostra_o_que_esta_por_fechar(self):
+        """Antes de fechar, quem está ao balcão tem de VER o que falta: que
+        caixas continuam abertas, que contas ficaram por cobrar, e em que mesa.
+        É esta lista que evita o "fechar à pressa" e descobrir no dia seguinte."""
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+
+        d = self._estado()
+        self.assertEqual(len(d['open_cash_sessions']), 1,
+                         'A caixa aberta não aparece no painel do fecho.')
+        self.assertEqual(len(d['open_tickets']), 1,
+                         'A conta por cobrar não aparece no painel do fecho.')
+        self.assertEqual(d['open_tickets'][0]['where'], 'Mesa 12',
+                         'O painel não diz EM QUE MESA está a conta por cobrar.')
+        self.assertEqual(d['sales_today']['count'], 0)
+
+    def test_nao_se_fecha_o_dia_com_contas_por_cobrar(self):
+        """É comida servida sem dinheiro a entrar. O fecho recusa e DIZ quantas."""
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+
+        r = self.client.post('/api/pos/ops/day-close/', {}, format='json')
+        self.assertEqual(r.status_code, 409, r.content[:300])
+        self.assertEqual(r.data['open_tickets'], 1)
+        self.assertEqual(CashSession.objects.get(pk=self.caixa.pk).status, 'OPEN',
+                         'Recusou o fecho mas fechou a caixa à mesma.')
+
+    def test_com_tudo_cobrado_o_dia_fecha_e_as_caixas_com_ele(self):
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': self.dinheiro.id, 'amount': '8500.00'}, format='json')
+
+        r = self.client.post('/api/pos/ops/day-close/', {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.assertEqual(CashSession.objects.get(pk=self.caixa.pk).status, 'CLOSED',
+                         'O dia fechou e a caixa ficou aberta.')
+
+    def test_forcar_o_fecho_e_uma_decisao_explicita(self):
+        """Há noites em que é preciso (uma conta esquecida de uma mesa que já
+        foi embora). Mas tem de ser uma ESCOLHA, não o caminho fácil — por isso
+        só acontece com `force`, e nunca por omissão."""
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+
+        self.assertEqual(self.client.post('/api/pos/ops/day-close/', {}, format='json').status_code, 409)
+        r = self.client.post('/api/pos/ops/day-close/', {'force': True}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.assertEqual(CashSession.objects.get(pk=self.caixa.pk).status, 'CLOSED')
+
+    def test_fechar_terminais_nao_e_fechar_o_dia(self):
+        """Ao fim do turno fecham-se os postos; o dia de vendas continua. São
+        duas coisas diferentes e o sistema não as pode confundir."""
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': self.dinheiro.id, 'amount': '8500.00'}, format='json')
+
+        r = self.client.post('/api/pos/ops/day-close/', {'terminals_only': True}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.assertEqual(r.data['closed_sessions'], 1)
+        self.assertEqual(CashSession.objects.get(pk=self.caixa.pk).status, 'CLOSED')
+
+    def test_o_arquivo_fiscal_nunca_e_varrido(self):
+        """O fecho do dia é a vassoura do registo OPERACIONAL (8036). Os
+        documentos fiscais não são operação: são o arquivo legal, e a AGT pode
+        pedi-los anos depois."""
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': self.dinheiro.id, 'amount': '8500.00'}, format='json')
+        from fiscal.models import FiscalDocument
+        antes = FiscalDocument.objects.count()
+        self.assertTrue(antes, 'A venda não gerou documento — o teste não prova nada.')
+
+        self.client.post('/api/pos/ops/day-close/', {}, format='json')
+        self.assertEqual(FiscalDocument.objects.count(), antes,
+                         'O fecho do dia apagou documentos fiscais.')
+
+    def test_o_dia_fechado_fica_registado(self):
+        """Sem rasto de quem fechou e quando, não há como reconstruir uma noite."""
+        from pos.models import POSAuditLog
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': self.dinheiro.id, 'amount': '8500.00'}, format='json')
+        self.client.post('/api/pos/ops/day-close/', {}, format='json')
+
+        self.assertTrue(POSAuditLog.objects.filter(event_type='CASH_CLOSE').exists(),
+                        'O fecho do dia não deixou rasto nenhum.')
+
 class PosFalaComOPmsTests(CasaMontada):
     """A travessia: o consumo feito na sala tem de cair no quarto certo."""
 
@@ -524,6 +784,54 @@ class SegundaViaTests(CasaMontada):
         self.assertEqual(FiscalDocument.objects.filter(source_module='pos',
                                                        source_ref=str(conta)).count(), 1,
                          'A reimpressão emitiu um segundo documento fiscal.')
+
+    def test_a_segunda_via_do_arquivo_leva_logotipo_e_qr(self):
+        """O MESMO papel, venha de onde vier.
+
+        O ecrã do arquivo montava um documento próprio — nome, NIF, tabela,
+        total — sem logótipo, sem QR, sem morada e sem contas bancárias. O mesmo
+        documento fiscal saía em dois papéis diferentes conforme o sítio de onde
+        se mandasse imprimir, e era este, o do arquivo, o mais pobre: justamente
+        o que se dá a um cliente que volta dias depois.
+
+        O QR não é decoração: a AGT exige-o impresso, e nenhum telemóvel lê a
+        string de dados em bruto que lá estava a fazer falta.
+        """
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': self.dinheiro.id, 'amount': '8500.00'}, format='json')
+        from fiscal.models import FiscalDocument
+        doc = FiscalDocument.objects.get(source_module='pos', source_ref=str(conta))
+
+        d = self.client.get(f'/api/pos/reports/documents/{doc.id}/').data
+
+        self.assertIn('emitente', d, 'O arquivo não sabe quem emitiu o documento.')
+        self.assertTrue(d['emitente']['name'], 'A 2ª via sairia sem o nome de quem emitiu.')
+        self.assertIn('logo_url', d['emitente'])
+        self.assertIn('qr_png', d, 'A 2ª via sairia sem o QR que a AGT exige.')
+        self.assertTrue(d['qr_png'] and d['qr_png'].startswith('data:image'),
+                        f'O QR não veio como imagem: {str(d.get("qr_png"))[:60]}')
+        # E a menção vem GRAVADA, não reconstruída no browser a partir do hash.
+        self.assertEqual(d['print_mention'], doc.print_mention)
+        self.assertIn('programa validado', d['print_mention'])
+
+    def test_o_logotipo_do_hotel_chega_a_segunda_via(self):
+        """O hotel carrega o logótipo uma vez (ficha da Empresa) e ele aparece
+        em todo o lado — inclusive no papel que sai de casa."""
+        self.hotel.logo_url = 'http://servidor/media/logos/hotel.png'
+        self.hotel.save(update_fields=['logo_url'])
+
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': self.dinheiro.id, 'amount': '8500.00'}, format='json')
+        from fiscal.models import FiscalDocument
+        doc = FiscalDocument.objects.get(source_module='pos', source_ref=str(conta))
+
+        d = self.client.get(f'/api/pos/reports/documents/{doc.id}/').data
+        self.assertEqual(d['emitente']['logo_url'], 'http://servidor/media/logos/hotel.png',
+                         'O logótipo do hotel não chega à 2ª via.')
 
     def test_nao_se_reimprime_o_que_ainda_nao_existe(self):
         conta = self.abrir_conta()

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock, Building2 } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
@@ -11,6 +11,7 @@ import MessageEditor from './MessageEditor';
 import Maintenance from './Maintenance';
 import BarcodePrint from './BarcodePrint';
 import GroupEditor from './GroupEditor';
+import { MenuTopo, MenuItem, MenuSeparador } from '../shared/MenuTopo';
 import CompanyEditor from './CompanyEditor';
 import TerminalEditor from './TerminalEditor';
 import SectorEditor from './SectorEditor';
@@ -58,7 +59,7 @@ import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton } from './kit';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
-import { TOKENS, accentGradient, RADIUS, SHADOW } from '../../config/theme';
+import { TOKENS, RADIUS } from '../../config/theme';
 
 /**
  * Os menus do topo. Cada entrada abre um ECRÃ REAL do sistema:
@@ -153,7 +154,6 @@ export default function PosConfigView({ onDesktop, onOpen }: {
     if (pedida) localStorage.removeItem('posc_section');
     return pedida || 'articles';
   });
-  const [menu, setMenu] = useState<string | null>(null);
   // Sessão — o POS é o ÚNICO ecrã que a maioria dos utilizadores vê (é ecrã inteiro,
   // sem a moldura do resto do backoffice) — sem isto, não havia como bloquear o
   // ecrã nem terminar sessão sem sair pelo Ambiente de Trabalho primeiro.
@@ -236,92 +236,51 @@ export default function PosConfigView({ onDesktop, onOpen }: {
 
   return (
     <div className="h-full flex flex-col" style={{ background: '#EEF1F5', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-      {/* ---------- BARRA DE MENUS (mesma barra do Ambiente de Trabalho — dourada,
-          com o logótipo, letra preta) ---------- */}
-      <div className="flex items-center gap-1 px-3 flex-shrink-0 text-white" style={{ background: accentGradient(), height: 56 }}>
-        {/* Logo — é aqui que se troca de módulo. */}
-        <div className="relative pr-4 mr-2">
-          <button onClick={() => setMenu(menu === '__ml' ? null : '__ml')}
-            title="Trocar de módulo"
-            className={`flex items-center gap-2 px-2 py-1 leading-none ${menu === '__ml' ? 'bg-black/15' : 'hover:bg-black/10'}`}>
-            {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
-          </button>
-
-          {menu === '__ml' && (
-            <>
-              <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-              <div className="absolute left-0 top-full mt-2 z-[61] min-w-[240px] py-2 overflow-hidden"
-                style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.lineSoft}`,
-                         borderRadius: RADIUS.md, boxShadow: SHADOW.pop }}>
-                <button onClick={() => { setMenu(null); onDesktop?.(); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
-                  <Glyph icon="🖥" size={15} chip />Ambiente de Trabalho
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-        {MENUS.map((m) => (
-          <div key={m.title} className="relative">
-            <button onClick={() => setMenu(menu === m.title ? null : m.title)}
-              onMouseEnter={() => menu && setMenu(m.title)}
-              className={`px-4 py-2 text-[14px] font-medium transition-colors whitespace-nowrap ${
-                menu === m.title ? 'text-white' : 'text-white/85 hover:text-white hover:bg-white/10'}`}
-              style={{
-                background: menu === m.title ? 'rgba(255,255,255,0.2)' : 'transparent',
-                borderRadius: RADIUS.sm,
-              }}>
-              {m.title}
-            </button>
-            {menu === m.title && (
-              <>
-                {/* clicar fora fecha */}
-                <div className="fixed inset-0 z-[60]" onClick={() => setMenu(null)} />
-                <div className="absolute left-0 top-full mt-2 z-[61] min-w-[260px] py-2 overflow-hidden"
-                  style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.lineSoft}`,
-                           borderRadius: RADIUS.md, boxShadow: SHADOW.pop }}>
-                  {m.items.map((it: any, i: number) => it.sep ? (
-                    <div key={i} className="my-1.5 border-t border-[#F1F2F4]" />
-                  ) : (
-                    <button key={i}
-                      onClick={() => {
-                        setMenu(null);
-                        if (it.fav) {
-                          // FAVORITOS — guarda a secção onde o utilizador está agora.
-                          // É o atalho de quem passa o dia no mesmo ecrã.
-                          const atual = SECTIONS.flatMap((g) => g.items).find((x) => x.key === section);
-                          const guardados = JSON.parse(localStorage.getItem('posc_favs') || '[]');
-                          if (!guardados.some((f: any) => f.key === section)) {
-                            // Lista NOVA (não a mesma): senão o React não redesenha a barra.
-                            const novos = [...guardados, { key: section, label: atual?.label || section }];
-                            localStorage.setItem('posc_favs', JSON.stringify(novos));
-                            setFavs(novos);
-                          }
-                          notifyGuide({
-                            title: 'Adicionado aos favoritos',
-                            message: `"${atual?.label || section}" fica agora no topo da lista de secções.`,
-                          });
-                        }
-                        else if (it.section) setSection(it.section);
-                        else if (it.view && onOpen) onOpen(it.view);
-                        else if (it.url) window.open(it.url, '_blank');
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
-                      <Glyph icon={it.icon} size={15} chip />
-                      {it.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+      {/* A MESMA BARRA DE MENUS do PMS (MenuTopo). Eram duas, escritas à
+          parte — e foi por isso que esta ficou meses com a seta "▾" que já
+          tinha sido removida do PMS, e com um `onMouseEnter` que fazia o menu
+          trocar só por o rato lhe passar por cima a caminho de outro sítio.
+          Aqui fica só o que é MESMO da Configuração POS: os favoritos, os
+          separadores, e os ecrãs que cada item abre. */}
+      <MenuTopo
+        menus={MENUS}
+        logoUrl={logoUrl}
+        onDesktop={() => onDesktop?.()}
+        extra={
+          <div className="ml-auto flex items-center gap-4 text-[12px]">
+            <span className="font-semibold">{new Date().toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
+            <span className="opacity-30">|</span>
+            <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
           </div>
-        ))}
-        <div className="ml-auto flex items-center gap-4 text-[12px]">
-          <span className="font-semibold">{new Date().toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
-          <span className="opacity-30">|</span>
-          <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
-        </div>
-      </div>
+        }
+        renderItem={(it: any, i, fechar) => it.sep ? (
+          <MenuSeparador key={i} />
+        ) : (
+          <MenuItem key={i} icon={it.icon} label={it.label}
+            onClick={() => {
+              fechar();
+              if (it.fav) {
+                // FAVORITOS — guarda a secção onde o utilizador está agora.
+                // É o atalho de quem passa o dia no mesmo ecrã.
+                const atual = SECTIONS.flatMap((g) => g.items).find((x) => x.key === section);
+                const guardados = JSON.parse(localStorage.getItem('posc_favs') || '[]');
+                if (!guardados.some((f: any) => f.key === section)) {
+                  // Lista NOVA (não a mesma): senão o React não redesenha a barra.
+                  const novos = [...guardados, { key: section, label: atual?.label || section }];
+                  localStorage.setItem('posc_favs', JSON.stringify(novos));
+                  setFavs(novos);
+                }
+                notifyGuide({
+                  title: 'Adicionado aos favoritos',
+                  message: `"${atual?.label || section}" fica agora no topo da lista de secções.`,
+                });
+              }
+              else if (it.section) setSection(it.section);
+              else if (it.view && onOpen) onOpen(it.view);
+              else if (it.url) window.open(it.url, '_blank');
+            }} />
+        )}
+      />
 
       {/* Título da janela — preto. O dourado e o logótipo ficam só na barra de
           cima do Ambiente de Trabalho. */}
