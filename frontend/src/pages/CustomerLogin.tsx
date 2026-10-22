@@ -140,177 +140,180 @@ const CustomerLogin: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden"
+    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden"
       style={{ fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif" }}>
 
-      {/* FUNDO. A fotografia do cliente quando existe; senão, um fundo construído
-          a partir da cor da instalação — nunca uma imagem de marca que não é dele. */}
-      {loginBg ? (
-        <>
-          <img src={loginBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(120deg, rgba(8,15,30,0.78) 0%, rgba(8,15,30,0.52) 55%, rgba(8,15,30,0.70) 100%)' }} />
-        </>
-      ) : (
-        <>
-          <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${shade(barColor, -40)} 0%, ${shade(barColor, -62)} 55%, #070D1A 100%)` }} />
-          <div className="absolute inset-0 opacity-70" style={{
-            background: `radial-gradient(60% 55% at 18% 12%, ${shade(barColor, 18)}55 0%, transparent 70%),`
-              + `radial-gradient(52% 48% at 88% 82%, ${shade(barColor, 4)}44 0%, transparent 72%)`,
-          }} />
-        </>
-      )}
+      {/* ══ ESQUERDA: a imagem, de alto a baixo ════════════════════════════════
+          Não é um cartão pousado no meio do ecrã: a fotografia ocupa a sua
+          metade inteira, sem margem nem canto, e o formulário ocupa a outra.
+          A fotografia é a do CLIENTE (Administração → Aparência). Sem ela fica
+          um fundo construído a partir da cor da instalação — nunca uma imagem
+          de marca que não é dele. */}
+      <div className="relative hidden md:flex md:w-[46%] lg:w-[42%] flex-shrink-0 flex-col justify-between p-12 text-white overflow-hidden">
+        {loginBg ? (
+          <>
+            <img src={loginBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(8,15,30,0.80) 0%, rgba(8,15,30,0.55) 50%, rgba(8,15,30,0.88) 100%)' }} />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0" style={{ background: `linear-gradient(155deg, ${shade(barColor, -32)} 0%, ${shade(barColor, -58)} 58%, #070D1A 100%)` }} />
+            <div className="absolute inset-0 opacity-75" style={{
+              background: `radial-gradient(70% 55% at 15% 8%, ${shade(barColor, 20)}55 0%, transparent 72%),`
+                + `radial-gradient(60% 50% at 95% 90%, ${shade(barColor, 6)}4D 0%, transparent 75%)`,
+            }} />
+          </>
+        )}
 
-      {/* CARTÃO DE VIDRO */}
-      <div className="relative w-[980px] max-w-full overflow-hidden"
-        style={{
-          borderRadius: RADIUS.lg,
-          border: '1px solid rgba(255,255,255,0.16)',
-          boxShadow: '0 24px 70px rgba(2,8,23,0.55)',
-          backdropFilter: 'blur(18px)',
-          background: 'rgba(255,255,255,0.08)',
-        }}>
-        <div className="flex flex-col md:flex-row">
+        {/* Marca */}
+        <div className="relative">
+          {logo
+            ? <img src={logo} alt="" className="max-h-16 max-w-[190px] object-contain" />
+            : <span className="w-14 h-14 flex items-center justify-center bg-white/12 border border-white/20"
+                style={{ borderRadius: RADIUS.md }}><Building2 size={28} /></span>}
+        </div>
 
-          {/* ── Marca (esquerda) ───────────────────────────────────────────── */}
-          <div className="md:w-[360px] flex-shrink-0 px-8 py-9 flex flex-col text-white"
-            style={{ background: 'rgba(8,15,30,0.42)' }}>
-            <div className="flex items-center gap-3">
-              {logo
-                ? <img src={logo} alt="" className="max-h-14 max-w-[150px] object-contain" />
-                : <span className="w-12 h-12 flex items-center justify-center bg-white/12 border border-white/20"
-                    style={{ borderRadius: RADIUS.md }}><Building2 size={24} /></span>}
-            </div>
-            <div className="mt-6">
-              <div className="text-[22px] font-semibold leading-tight">{company}</div>
-              <div className="text-[13px] text-white/60 mt-1">{erpName}</div>
-            </div>
-            <p className="text-[13px] leading-relaxed text-white/70 mt-5">{welcome}</p>
+        <div className="relative">
+          <div className="text-[34px] lg:text-[40px] font-semibold leading-[1.1] tracking-tight">{company}</div>
+          <div className="text-[14px] text-white/55 mt-2">{erpName}</div>
+          <p className="text-[15px] leading-relaxed text-white/75 mt-6 max-w-[380px]">{welcome}</p>
+        </div>
 
-            <div className="flex-1" />
-
-            {/* Estado da instalação — a mesma informação da antiga barra de
-                estado, agora onde não concorre com o formulário. */}
-            <dl className="mt-8 space-y-2 text-[12px]">
-              <Linha rotulo="Servidor" valor="localhost:8000" />
-              <Linha rotulo="Base de dados" valor="ERP_2026" />
-              <Linha rotulo="Versão" valor="1.0.0" />
-              <div className="flex items-center justify-between gap-3 pt-1.5 border-t border-white/10">
-                <span className="text-white/55 flex items-center gap-1.5"><Wifi size={13} />Ligação</span>
-                <span className="flex items-center gap-1.5 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full" style={{
-                    background: online === null ? '#9CA3AF' : online ? '#22C55E' : '#F87171',
-                  }} />
-                  {online === null ? 'a verificar…' : online ? 'Online' : 'Offline'}
-                </span>
-              </div>
-            </dl>
+        {/* Estado da instalação — a mesma informação da antiga barra de estado,
+            agora onde não concorre com o formulário. */}
+        <dl className="relative space-y-2.5 text-[12.5px] max-w-[380px]">
+          <Linha rotulo="Servidor" valor="localhost:8000" />
+          <Linha rotulo="Base de dados" valor="ERP_2026" />
+          <Linha rotulo="Versão" valor="1.0.0" />
+          <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-white/10">
+            <span className="text-white/55 flex items-center gap-1.5"><Wifi size={13} />Ligação</span>
+            <span className="flex items-center gap-1.5 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full" style={{
+                background: online === null ? '#9CA3AF' : online ? '#22C55E' : '#F87171',
+              }} />
+              {online === null ? 'a verificar…' : online ? 'Online' : 'Offline'}
+            </span>
           </div>
+        </dl>
+      </div>
 
-          {/* ── Formulário (direita) ───────────────────────────────────────── */}
-          <div className="flex-1 bg-white px-8 py-9 relative">
-            <button onClick={() => setConfig(true)} title="Configurações de ligação"
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
-              style={{ borderRadius: RADIUS.sm }}>
-              <Settings size={16} />
-            </button>
+      {/* ══ DIREITA: as credenciais ═══════════════════════════════════════════
+          Ecrã estreito (telemóvel/tablet ao alto) não tem duas metades: a da
+          esquerda esconde-se e esta fica com tudo, com a marca por cima para o
+          utilizador continuar a saber em que sistema está a entrar. */}
+      <div className="flex-1 bg-white relative flex items-center justify-center px-6 sm:px-10 lg:px-16 py-10 overflow-auto">
+        <div className="w-full max-w-[460px]">
+          <div className="md:hidden mb-8 flex items-center gap-3">
+            {logo
+              ? <img src={logo} alt="" className="max-h-10 max-w-[120px] object-contain" />
+              : <span className="w-10 h-10 flex items-center justify-center text-white" style={{ background: barColor, borderRadius: RADIUS.sm }}><Building2 size={20} /></span>}
+            <div>
+              <div className="text-[16px] font-semibold text-[#111827] leading-tight">{company}</div>
+              <div className="text-[12px] text-[#9CA3AF]">{erpName}</div>
+            </div>
+          </div>
+          <button onClick={() => setConfig(true)} title="Configurações de ligação"
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+            style={{ borderRadius: RADIUS.sm }}>
+            <Settings size={16} />
+          </button>
 
-            {trocar ? (
-              /* TROCA OBRIGATÓRIA: o gestor marcou "Obrigar a mudar a password" — não
-                 se entra sem a trocar. A caixa desliga-se sozinha ao gravar. */
-              <form onSubmit={handleTrocarPassword} className="space-y-4">
-                <div>
-                  <h1 className="text-[20px] font-semibold text-[#111827]">Defina a sua palavra-passe</h1>
-                  <p className="text-[13px] text-[#6B7280] mt-1.5">
-                    A sua conta foi entregue com uma palavra-passe provisória. Defina a sua antes de continuar.
-                  </p>
-                </div>
-                <div>
-                  <label className={rotulo}>Nova palavra-passe</label>
-                  <Campo icone={<Lock size={16} />}>
-                    <input type="password" autoFocus value={novaPw} onChange={(e) => setNovaPw(e.target.value)}
-                      className={campo} style={{ borderRadius: RADIUS.sm }} />
-                  </Campo>
-                </div>
-                <div>
-                  <label className={rotulo}>Confirmar</label>
-                  <Campo icone={<Lock size={16} />}>
-                    <input type="password" value={confirmaPw} onChange={(e) => setConfirmaPw(e.target.value)}
-                      className={campo} style={{ borderRadius: RADIUS.sm }} />
-                  </Campo>
-                </div>
-                {error && <Erro texto={error} />}
-                <button type="submit" disabled={loading || novaPw.length < 6}
-                  className="w-full h-11 text-[14px] font-semibold text-white transition-opacity disabled:opacity-50"
-                  style={{ background: barColor, borderRadius: RADIUS.sm }}>
-                  {loading ? 'A gravar…' : 'Gravar e entrar'}
-                </button>
-                <p className="text-[12px] text-[#9CA3AF]">Mínimo 6 caracteres, diferente da atual.</p>
-              </form>
-            ) : (
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <h1 className="text-[20px] font-semibold text-[#111827]">Início de sessão</h1>
-                  <p className="text-[13px] text-[#6B7280] mt-1.5">Entre com as suas credenciais para continuar.</p>
-                </div>
+          {trocar ? (
+            /* TROCA OBRIGATÓRIA: o gestor marcou "Obrigar a mudar a password" — não
+               se entra sem a trocar. A caixa desliga-se sozinha ao gravar. */
+            <form onSubmit={handleTrocarPassword} className="space-y-5">
+              <div>
+                <h1 className="text-[28px] font-semibold text-[#111827] tracking-tight">Defina a sua palavra-passe</h1>
+                <p className="text-[13px] text-[#6B7280] mt-1.5">
+                  A sua conta foi entregue com uma palavra-passe provisória. Defina a sua antes de continuar.
+                </p>
+              </div>
+              <div>
+                <label className={rotulo}>Nova palavra-passe</label>
+                <Campo icone={<Lock size={16} />}>
+                  <input type="password" autoFocus value={novaPw} onChange={(e) => setNovaPw(e.target.value)}
+                    className={campo} style={{ borderRadius: RADIUS.sm }} />
+                </Campo>
+              </div>
+              <div>
+                <label className={rotulo}>Confirmar</label>
+                <Campo icone={<Lock size={16} />}>
+                  <input type="password" value={confirmaPw} onChange={(e) => setConfirmaPw(e.target.value)}
+                    className={campo} style={{ borderRadius: RADIUS.sm }} />
+                </Campo>
+              </div>
+              {error && <Erro texto={error} />}
+              <button type="submit" disabled={loading || novaPw.length < 6}
+                className="w-full h-11 text-[14px] font-semibold text-white transition-opacity disabled:opacity-50"
+                style={{ background: barColor, borderRadius: RADIUS.sm }}>
+                {loading ? 'A gravar…' : 'Gravar e entrar'}
+              </button>
+              <p className="text-[12px] text-[#9CA3AF]">Mínimo 6 caracteres, diferente da atual.</p>
+            </form>
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <h1 className="text-[28px] font-semibold text-[#111827] tracking-tight">Início de sessão</h1>
+                <p className="text-[14px] text-[#6B7280] mt-2">Entre com as suas credenciais para continuar.</p>
+              </div>
 
-                <div>
-                  <label className={rotulo}>Empresa</label>
-                  <Campo icone={<Building2 size={16} />}>
-                    <select className={`${campo} appearance-none cursor-pointer`} style={{ borderRadius: RADIUS.sm }}>
-                      <option>{company}</option>
-                    </select>
-                  </Campo>
-                </div>
+              <div>
+                <label className={rotulo}>Empresa</label>
+                <Campo icone={<Building2 size={16} />}>
+                  <select className={`${campo} appearance-none cursor-pointer`} style={{ borderRadius: RADIUS.sm }}>
+                    <option>{company}</option>
+                  </select>
+                </Campo>
+              </div>
 
-                <div>
-                  <label className={rotulo}>Utilizador</label>
-                  <Campo icone={<User size={16} />}>
-                    <input autoFocus value={username} onChange={(e) => setUsername(e.target.value)}
-                      placeholder="o seu utilizador" className={campo} style={{ borderRadius: RADIUS.sm }} />
-                  </Campo>
-                </div>
+              <div>
+                <label className={rotulo}>Utilizador</label>
+                <Campo icone={<User size={16} />}>
+                  <input autoFocus value={username} onChange={(e) => setUsername(e.target.value)}
+                    placeholder="o seu utilizador" className={campo} style={{ borderRadius: RADIUS.sm }} />
+                </Campo>
+              </div>
 
-                <div>
-                  <label className={rotulo}>Palavra-passe</label>
-                  <Campo icone={<Lock size={16} />}>
-                    <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••" className={`${campo} pr-11`} style={{ borderRadius: RADIUS.sm }} />
-                    <button type="button" onClick={() => setShowPw((s) => !s)} tabIndex={-1}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#374151] transition-colors">
-                      {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </Campo>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 text-[13px] flex-wrap">
-                  <div className="flex items-center gap-4 text-[#374151]">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-                      Memorizar
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} />
-                      Entrar automaticamente
-                    </label>
-                  </div>
-                  <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
-                    className="flex items-center gap-1.5 text-[#2563EB] hover:underline">
-                    <KeyRound size={13} />Esqueci-me da password
+              <div>
+                <label className={rotulo}>Palavra-passe</label>
+                <Campo icone={<Lock size={16} />}>
+                  <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••" className={`${campo} pr-11`} style={{ borderRadius: RADIUS.sm }} />
+                  <button type="button" onClick={() => setShowPw((s) => !s)} tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#374151] transition-colors">
+                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
+                </Campo>
+              </div>
+
+              <div className="flex items-center justify-between gap-3 text-[13px] flex-wrap">
+                <div className="flex items-center gap-4 text-[#374151]">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                    Memorizar
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} />
+                    Entrar automaticamente
+                  </label>
                 </div>
-
-                {error && <Erro texto={error} />}
-
-                <button type="submit" disabled={loading || !username}
-                  className="w-full h-11 flex items-center justify-center gap-2 text-[14px] font-semibold text-white transition-opacity disabled:opacity-50"
-                  style={{ background: barColor, borderRadius: RADIUS.sm }}>
-                  <LogIn size={16} />{loading ? 'A entrar…' : 'Entrar'}
+                <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
+                  className="flex items-center gap-1.5 text-[#2563EB] hover:underline">
+                  <KeyRound size={13} />Esqueci-me da password
                 </button>
-              </form>
-            )}
+              </div>
+
+              {error && <Erro texto={error} />}
+
+              <button type="submit" disabled={loading || !username}
+                className="w-full h-11 flex items-center justify-center gap-2 text-[14px] font-semibold text-white transition-opacity disabled:opacity-50"
+                style={{ background: barColor, borderRadius: RADIUS.sm }}>
+                <LogIn size={16} />{loading ? 'A entrar…' : 'Entrar'}
+              </button>
+            </form>
+          )}
           </div>
         </div>
-      </div>
 
       {/* Diálogo Configurações */}
       {config && (
