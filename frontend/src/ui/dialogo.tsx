@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useArrastar } from '../pages/pos/useArrastar';
+import { TOKENS, RADIUS, SHADOW } from '../config/theme';
 
 /**
  * OS DIÁLOGOS DO SISTEMA — em vez dos do Windows.
@@ -12,6 +14,14 @@ import { useArrastar } from '../pages/pos/useArrastar';
  *
  * Estes são nossos: mesma paleta, mesmo relevo, alvos de dedo, e o teclado tátil por
  * dentro quando é para escrever.
+ *
+ * DOIS ASPECTOS, UM SÓ COMPORTAMENTO. O desenho tátil — azul cheio, bordas negras,
+ * botões de 66px, teclado no ecrã — foi feito para o Terminal POS, onde se toca com o
+ * dedo e muitas vezes de pé. No backoffice, com rato e teclado, o mesmo diálogo parecia
+ * um corpo estranho vindo de outro programa: gigante, escuro, com relevos que mais nada
+ * no ecrã tem. Aqui a decisão é pela ROTA (`/pos…`), não pelo tipo de ecrã: um posto de
+ * recepção com ecrã tátil continua a ser backoffice. O Terminal fica exactamente como
+ * estava; o resto do sistema recebe um diálogo ao nível do que está por baixo.
  *
  * COMO SE USA (a partir de qualquer sítio, sem passar props):
  *     aviso('Não foi possível cobrar.')                    // em vez de alert()
@@ -90,6 +100,9 @@ const CINZA = 'bg-gradient-to-b from-[#2563EB] to-[#2563EB]';
  * pedidos ficam em fila à espera, em vez de se perderem.
  */
 export default function DialogoHost() {
+  // A ROTA decide o aspecto: `/pos…` é o Terminal (tátil, não se lhe toca), o
+  // resto é backoffice. Ver a nota no topo do ficheiro.
+  const noTerminal = useLocation().pathname.startsWith('/pos');
   const { ref, pegar, pos } = useArrastar();
   const [atual, setAtual] = useState<Pedido | null>(null);
   const [pendentes, setPendentes] = useState<Pedido[]>([]);
@@ -162,6 +175,111 @@ export default function DialogoHost() {
   };
   const perigo = atual.tom === 'perigo';
 
+  // ── BACKOFFICE ────────────────────────────────────────────────────────────
+  // Cartão branco, cabeçalho na cor da marca, cantos suaves e botões de tamanho
+  // normal: o mesmo vocabulário do resto dos ecrãs. O teclado no ecrã continua a
+  // existir (um posto tátil pode precisar dele), mas escondido atrás de um
+  // pedido — quem tem teclado físico escreve logo no campo.
+  if (!noTerminal) {
+    const chave = 'h-[38px] text-[14px] font-medium text-[#111827] bg-white border border-[#E6E8EC]'
+      + ' hover:bg-[#EFF6FF] hover:border-[#BFDBFE] active:translate-y-px transition-colors';
+    return (
+      <div className="fixed inset-0 z-[9000] flex items-center justify-center p-4"
+        style={{ background: 'rgba(11,18,32,0.45)', backdropFilter: 'blur(2px)' }}
+        onClick={() => fechar(atual.tipo === 'CONFIRMAR' ? false : null)}>
+        <div className="max-w-[95vw] bg-white overflow-hidden"
+          style={{
+            width: atual.tipo === 'PEDIR' ? 560 : 460,
+            borderRadius: RADIUS.lg,
+            boxShadow: SHADOW.pop,
+          }}
+          onClick={(e) => e.stopPropagation()}>
+
+          <div className="h-11 flex items-center justify-between px-4 text-white select-none"
+            style={{ background: perigo ? TOKENS.danger : TOKENS.bar }}>
+            <span className="text-[14px] font-semibold truncate">{atual.titulo}</span>
+            <button onClick={() => fechar(atual.tipo === 'CONFIRMAR' ? false : null)}
+              className="w-7 h-7 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 text-[16px] leading-none transition-colors"
+              style={{ borderRadius: RADIUS.sm }}>×</button>
+          </div>
+
+          {atual.mensagem && (
+            <div className="px-5 py-4 text-[13.5px] leading-relaxed text-[#374151] whitespace-pre-wrap max-h-[46vh] overflow-auto">
+              {atual.mensagem}
+            </div>
+          )}
+
+          {atual.tipo === 'PEDIR' && (
+            <div className="px-5 pb-1 space-y-2">
+              <input autoFocus value={texto}
+                inputMode={atual.entrada === 'numero' ? 'decimal' : 'text'}
+                onChange={(e) => setTexto(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); fechar(texto.trim() || null); }
+                  if (e.key === 'Escape') { e.preventDefault(); fechar(null); }
+                }}
+                placeholder="escreva…"
+                className="w-full h-10 px-3 text-[14px] text-[#111827] bg-white border border-[#E6E8EC] outline-none
+                  placeholder:text-[#9CA3AF] focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]"
+                style={{ borderRadius: RADIUS.sm }} />
+              {!mostrarTeclado ? (
+                <button onClick={() => setMostrarTeclado(true)}
+                  className="text-[12px] text-[#6B7280] hover:text-[#1D4ED8] hover:underline">
+                  mostrar teclado no ecrã
+                </button>
+              ) : atual.entrada === 'numero' ? (
+                <div className="grid grid-cols-3 gap-1.5">
+                  {NUMEROS.flat().map((t) => (
+                    <button key={t} onClick={() => tecla(t)} className={chave}
+                      style={{ borderRadius: RADIUS.sm }}>{t}</button>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {LETRAS.map((linha, i) => (
+                    <div key={i} className="grid gap-1.5"
+                      style={{ gridTemplateColumns: `repeat(${linha.length}, minmax(0,1fr))` }}>
+                      {linha.map((t) => (
+                        <button key={t} onClick={() => tecla(t)} className={chave}
+                          style={{ borderRadius: RADIUS.sm }}>{maiusc ? t.toUpperCase() : t}</button>
+                      ))}
+                    </div>
+                  ))}
+                  <div className="grid gap-1.5" style={{ gridTemplateColumns: '1.4fr 5fr 1fr 1fr 1fr' }}>
+                    <button onClick={() => setMaiusc(!maiusc)} style={{ borderRadius: RADIUS.sm }}
+                      className={maiusc ? 'h-[38px] text-[14px] font-semibold text-white bg-[#2563EB]' : chave}>ABC</button>
+                    <button onClick={() => setTexto(texto + ' ')} className={chave} style={{ borderRadius: RADIUS.sm }} />
+                    <button onClick={() => tecla('0')} className={chave} style={{ borderRadius: RADIUS.sm }}>0</button>
+                    <button onClick={() => setTexto(`${texto}.`)} className={chave} style={{ borderRadius: RADIUS.sm }}>.</button>
+                    <button onClick={() => tecla('⌫')} className={chave} style={{ borderRadius: RADIUS.sm }}>⌫</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-2 px-5 py-3 mt-1 border-t border-[#F1F2F4] bg-[#FAFBFC]">
+            {atual.tipo !== 'AVISO' && (
+              <button onClick={() => fechar(atual.tipo === 'CONFIRMAR' ? false : null)}
+                className="px-4 h-9 text-[13px] font-medium text-[#374151] bg-white border border-[#E6E8EC] hover:bg-[#F3F4F6] transition-colors"
+                style={{ borderRadius: RADIUS.sm }}>
+                Cancelar
+              </button>
+            )}
+            <button
+              onClick={() => fechar(atual.tipo === 'PEDIR' ? (texto.trim() || null)
+                : atual.tipo === 'CONFIRMAR' ? true : undefined)}
+              className="px-5 h-9 text-[13px] font-semibold text-white transition-colors"
+              style={{ background: perigo ? TOKENS.danger : TOKENS.bar, borderRadius: RADIUS.sm }}>
+              {atual.tipo === 'AVISO' ? 'OK' : 'Confirmar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── TERMINAL POS ──────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-[9000] bg-black/65 flex items-center justify-center p-4"
       onClick={() => fechar(atual.tipo === 'CONFIRMAR' ? false : null)}>

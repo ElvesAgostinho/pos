@@ -25,6 +25,7 @@ export default function BookingEngineView() {
   const rotate = useMutation({ mutationFn: async () => (await apiClient.post(`pms/booking-settings/${settings.id}/rotate_key/`, {})).data, onSuccess: () => qc.invalidateQueries({ queryKey: ['booking-settings'] }) });
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const pronto = !!settings?.api_key;
   const publicLink = settings ? `${origin}/book/${settings.slug}` : '—';
   const clientLink = settings ? `${origin}/reserva/${settings.slug}` : '—';
 
@@ -34,10 +35,15 @@ export default function BookingEngineView() {
   const d2 = new Date(today.getTime() + 9 * 864e5).toISOString().slice(0, 10);
   const [ci, setCi] = useState(d1); const [co, setCo] = useState(d2);
   const [avail, setAvail] = useState<any>(null);
+  // O teste só existe depois de haver chave. Antes disso o botão está desligado e
+  // a razão está escrita ao lado — interromper com uma caixa de aviso para dizer
+  // "guarde primeiro" era dar a ordem errada: primeiro o estorvo, depois a
+  // explicação. Agora a explicação chega antes de se carregar em nada.
+  const [erroTeste, setErroTeste] = useState('');
   const test = async () => {
-    if (!settings?.api_key) return aviso('Guarde a configuração primeiro (gera a chave).');
+    setErroTeste('');
     try { const r = await apiClient.get('pms/booking/availability/', { params: { key: settings.api_key, check_in: ci, check_out: co, adults: 2 } }); setAvail(r.data); }
-    catch (e: any) { aviso(e?.response?.data?.detail || 'Erro'); }
+    catch (e: any) { setErroTeste(e?.response?.data?.detail || 'Não foi possível consultar a disponibilidade.'); }
   };
 
   return (
@@ -114,14 +120,16 @@ export default function BookingEngineView() {
         {/* Testador de disponibilidade */}
         <div className="bg-white border border-[#E6E8EC] p-3 text-[12px]">
           <div className="flex items-center gap-2 mb-2 text-[#6B7280] font-bold"><Search size={14} />Testar disponibilidade (como o site faria)</div>
-          <div className="flex items-end gap-2 mb-2">
-            <label className="flex flex-col">Entrada<input type="date" className="border border-[#E6E8EC] px-2 py-1" value={ci} onChange={e => setCi(e.target.value)} /></label>
-            <label className="flex flex-col">Saída<input type="date" className="border border-[#E6E8EC] px-2 py-1" value={co} onChange={e => setCo(e.target.value)} /></label>
-            <button className={btn} onClick={test}><Calendar size={13} />Verificar</button>
+          <div className="flex items-end gap-2 mb-2 flex-wrap">
+            <label className="flex flex-col">Entrada<input type="date" className="border border-[#E6E8EC] px-2 py-1 rounded-[8px]" value={ci} onChange={e => setCi(e.target.value)} /></label>
+            <label className="flex flex-col">Saída<input type="date" className="border border-[#E6E8EC] px-2 py-1 rounded-[8px]" value={co} onChange={e => setCo(e.target.value)} /></label>
+            <button className={`${btn} ${pronto ? '' : 'opacity-50 cursor-not-allowed'}`} disabled={!pronto} onClick={test}><Calendar size={13} />Verificar</button>
+            {!pronto && <span className="text-[11px] text-[#6B7280] self-center">Grave a configuração acima para gerar a chave da API.</span>}
           </div>
+          {erroTeste && <div className="mb-2 px-2.5 py-1.5 text-[11px] text-[#B91C1C] bg-[#FEF2F2] border border-[#FECACA] rounded-[8px]">{erroTeste}</div>}
           {avail && (
             <div className="border border-[#F1F2F4]">
-              <div className="grid grid-cols-[1fr_90px_110px_110px] font-bold bg-[#EEF1F5] px-2 py-1"><span>Tipo de quarto</span><span>Disponível</span><span className="text-right">€/noite</span><span className="text-right">Total</span></div>
+              <div className="grid grid-cols-[1fr_90px_110px_110px] font-bold bg-[#EEF1F5] px-2 py-1"><span>Tipo de quarto</span><span>Disponível</span><span className="text-right">{f.currency || 'AOA'}/noite</span><span className="text-right">Total</span></div>
               {(avail.rooms || []).map((r: any) => (
                 <div key={r.room_type} className="grid grid-cols-[1fr_90px_110px_110px] px-2 py-1 border-b border-[#F1F2F4]"><span>{r.name} <span className="text-gray-400">({r.board})</span></span><span>{r.available}</span><span className="text-right">{money(r.price_per_night)}</span><span className="text-right font-bold">{money(r.total)}</span></div>
               ))}

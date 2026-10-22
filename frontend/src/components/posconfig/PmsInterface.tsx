@@ -381,7 +381,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-2 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
+      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
         <span>
           {isHotel
             ? `Ligações Multi Hotel - ${isNew ? 'Adicionar' : `Editar ${d.description || ''}`}`

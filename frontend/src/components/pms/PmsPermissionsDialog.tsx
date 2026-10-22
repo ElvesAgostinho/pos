@@ -56,10 +56,10 @@ export default function PmsPermissionsDialog({ screenId, screenLabel, hotelName,
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
       <div className="w-[520px] max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
           Permissões - {screenLabel} - {hotelName}
           <button onClick={onClose} title="Fechar"
-            className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
+            className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">
             <X size={12} strokeWidth={3} />
           </button>
         </div>

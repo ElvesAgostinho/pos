@@ -297,11 +297,11 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
   return (
     <div className="fixed inset-0 bg-black/45 z-[9500] flex items-center justify-center" onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()}
-        className="w-[1200px] max-w-[96vw] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl flex flex-col"
+        className="w-[1200px] max-w-[96vw] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col"
         style={{ height: 'min(86vh, 760px)', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold bg-[#FFFFFF] border-b border-[#E6E8EC]">
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold bg-[#2563EB] border-b border-[#E6E8EC]">
           <span>{eid ? `Entidade — ${d.name || d.code}` : 'Nova entidade'}</span>
-          <button onClick={onClose} className="w-6 h-6 bg-[#DC2626] text-white text-[12px] flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
+          <button onClick={onClose} className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors"><Glyph icon="✕" size={13} /></button>
         </div>
 
         <div className="flex-1 flex overflow-hidden">

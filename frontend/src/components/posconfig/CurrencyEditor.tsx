@@ -221,7 +221,7 @@ function CurrencyHistory({ id, code, onClose }: { id: number; code: string; onCl
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[70]" onClick={onClose}>
       <div className="bg-[#EEF1F5] border border-[#E6E8EC] w-[1000px] max-w-[95vw] h-[65vh] flex flex-col shadow-2xl rounded-[16px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-3 py-2 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
+        <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
           <span>{code} - Histórico</span>
           <button onClick={onClose} className="w-5 h-5 bg-[#DC2626] leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
         </div>

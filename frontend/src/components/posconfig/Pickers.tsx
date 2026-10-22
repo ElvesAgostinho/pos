@@ -17,7 +17,7 @@ const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
 function Head({ title, onClose }: { title: string; onClose: () => void }) {
   return (
-    <div className="flex items-center justify-between px-3 py-2 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
+    <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
       <span>{title}</span>
       <button onClick={onClose} className="w-5 h-5 bg-[#DC2626] text-white leading-none flex items-center justify-center"><Glyph icon="✕" size={11} /></button>
     </div>

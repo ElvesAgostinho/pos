@@ -438,7 +438,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       {popup && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" onClick={() => setPopup(null)}>
           <div className="bg-white border border-[#E6E8EC] w-[560px] shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-3 py-2 text-[#111827] text-[14px] font-bold" style={{ background: '#FFFFFF' }}>
+            <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
               <span>A editar {groups.find((g: any) => g.id === popup.group)?.name || 'grupo'}</span>
               <button onClick={() => setPopup(null)} className="text-white inline-flex"><Glyph icon="✕" size={14} /></button>
             </div>

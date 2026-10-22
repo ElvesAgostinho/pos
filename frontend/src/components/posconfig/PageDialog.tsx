@@ -81,7 +81,7 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
 
         <div className="h-[40px] bg-[#2563EB] flex items-center justify-end px-2">
           <button onClick={onClose}
-            className="w-[26px] h-[22px] bg-[#DC2626] text-white font-bold leading-none flex items-center justify-center"><Glyph icon="✕" size={13} /></button>
+            className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors"><Glyph icon="✕" size={13} /></button>
         </div>
 
         <div className="bg-white p-5 border-y border-[#F1F2F4]">

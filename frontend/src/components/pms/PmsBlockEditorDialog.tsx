@@ -67,12 +67,12 @@ export default function PmsBlockEditorDialog({ block, copyFrom, onClose, onSaved
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[900px] max-w-[97vw] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(85vh, 700px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-[#111827] text-[14px] font-bold flex-shrink-0" style={{ background: '#FFFFFF' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
           {selId ? `Bloco — ${form.code}` : copyFrom ? 'Copiar Reserva de Grupo' : 'Nova Reserva de Grupo'}
           <div className="flex items-center gap-2">
-            <button className="text-white/70 hover:text-white" title="Janelas"><Copy size={13} /></button>
+            <button className="text-white/75 hover:text-white transition-colors" title="Janelas"><Copy size={13} /></button>
             <button onClick={onClose} title="Fechar"
-              className="w-5 h-5 rounded-full flex items-center justify-center bg-[#DC2626] text-white hover:brightness-110">
+              className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">
               <X size={12} strokeWidth={3} />
             </button>
           </div>
