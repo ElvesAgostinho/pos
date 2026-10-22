@@ -24,10 +24,10 @@ export default function AgtCertificationView() {
       footer={<div className="text-gray-600">A certificação pertence ao software (fabricante) — instalada pelo fornecedor, não alterável no sistema do cliente</div>}>
       <div className="p-4 space-y-3 max-w-3xl">
         {/* Estado */}
-        <div className={`border p-3 flex items-center gap-3 ${certified ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#E6E8EC]'}`}>
-          {certified ? <ShieldCheck size={28} className="text-[#111827]" /> : <ShieldAlert size={28} className="text-[#111827]" />}
+        <div className={`border p-3 flex items-center gap-3 ${certified ? 'bg-[#F0FDF4] border-[#BBF7D0]' : 'bg-[#FFFBEB] border-[#FDE68A]'}`}>
+          {certified ? <ShieldCheck size={28} className="text-[#16A34A]" /> : <ShieldAlert size={28} className="text-[#D97706]" />}
           <div className="flex-1">
-            <div className={`font-bold text-[12px] ${certified ? 'text-[#111827]' : 'text-[#111827]'}`}>{data?.status_label || '—'}</div>
+            <div className={`font-bold text-[12px] ${certified ? 'text-[#16A34A]' : 'text-[#D97706]'}`}>{data?.status_label || '—'}</div>
             <div className="text-[11px] text-gray-600">
               {data?.company_name} · NIF {data?.company_nif} · Ambiente: <b>{data?.environment === 'PROD' ? 'Produção' : 'Testes'}</b>
               {certified && <> · Certificado nº <b>{data?.certificate_number}</b></>}

@@ -221,6 +221,46 @@ def _collect(request=None):
         data['support'] = {}
         data['update'] = {'current_version': APP_VERSION, 'latest_version': None, 'available': False}
 
+    # ---- Estado FISCAL — o que falta a este diagnóstico quando o cliente
+    # liga a dizer "não consigo faturar".
+    #
+    # O diagnóstico remoto trazia sistema, base de dados, email, licença,
+    # módulos, impressoras, terminais e atualizações — e NADA sobre o lado
+    # fiscal. Num sistema angolano é precisamente aí que está o risco legal, e
+    # era a única coisa que quem assiste à distância não conseguia ver sem pedir
+    # ao cliente para abrir ecrãs e ler números ao telefone: se está
+    # certificado, com que número, em que ambiente, e se o motor de assinatura
+    # sequer funciona. Três linhas que poupam uma chamada inteira.
+    try:
+        from fiscal import signing
+        from fiscal.models import FiscalConfig, FiscalDocument
+        cfg = FiscalConfig.get()
+        certificado = bool(cfg.certificate_number and cfg.certificate_number not in ('0000', '', '0'))
+        # O motor assina mesmo? É diferente de "as chaves existem": um par
+        # trocado existe em disco e não assina nada.
+        try:
+            msg = signing.build_message('2026-01-01', '2026-01-01T00:00:00', 'FT T/1', '100.00', '')
+            assina = signing.verify_message(msg, signing.sign_message(msg))
+        except Exception as e:
+            assina, erro_chaves = False, str(e)[:120]
+        else:
+            erro_chaves = None
+        ultimo = FiscalDocument.objects.order_by('-id').first()
+        data['fiscal'] = {
+            'certified': certificado,
+            'certificate_number': cfg.certificate_number or None,
+            'environment': cfg.environment,
+            'key_version': cfg.key_version,
+            'signing_engine': 'operacional' if assina else 'INDISPONÍVEL',
+            'signing_error': erro_chaves,
+            'company_name': cfg.company_name or None,
+            'company_nif': cfg.company_nif or None,
+            'last_document': ultimo.invoice_no if ultimo else None,
+            'last_document_at': ultimo.issued_at.isoformat() if (ultimo and ultimo.issued_at) else None,
+        }
+    except Exception as e:
+        data['fiscal'] = {'erro': f'não foi possível ler o estado fiscal: {e}'}
+
     # ---- Eventos recentes (auditoria) ----
     events = []
     try:

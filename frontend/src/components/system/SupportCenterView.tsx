@@ -51,7 +51,10 @@ export default function SupportCenterView() {
     try {
       const r = await apiClient.post('licensing/sync/', {});
       aviso(r.data?.detail || 'Sincronizado com o PCC.');
-      qc.invalidateQueries({ queryKey: ['support-diag'] });
+      // Tudo, não só este ecrã: a sincronização traz módulos, limites,
+      // certificação AGT e dados da empresa, que meia dúzia de ecrãs leem com
+      // chaves de cache diferentes. Ver a nota em CompanyEditor.
+      qc.invalidateQueries();
     } catch (e: any) {
       aviso(e?.response?.data?.detail || 'Não foi possível sincronizar com o PCC.');
     } finally {
@@ -74,6 +77,7 @@ export default function SupportCenterView() {
   const sys = d?.system || {}, db = d?.database || {}, lic = d?.license || {}, sv = d?.services || {}, counts = d?.data_counts || {}, events = d?.recent_events || [];
   const pr = d?.printers || {}, term = d?.terminals || {}, sup = d?.support || {};
   const email = d?.email || {}, sync = d?.sync || {}, sessions: any[] = d?.sessions || [];
+  const fis = d?.fiscal || {};
 
   return (
     <ClassicWindow title="Support Center — Diagnóstico & Estado" icon={<LifeBuoy size={14} className="text-gray-300" />}
@@ -124,6 +128,21 @@ export default function SupportCenterView() {
           <Row label="API" value={sv.api} ok={sv.api === 'online'} />
           <Row label="Base de dados" value={sv.database} ok={sv.database === 'online'} />
           {Object.entries(counts).map(([k, v]: any) => <Row key={k} label={k.replace('_', ' ')} value={v} />)}
+        </Section>
+
+        {/* ESTADO FISCAL — a primeira coisa que se pergunta quando o cliente
+            liga a dizer "não consigo faturar". Estava a faltar: o técnico tinha
+            de pedir ao dono para abrir ecrãs e ler números ao telefone. */}
+        <Section title="Fiscal (AGT)" icon={ShieldCheck}>
+          <Row label="Certificação" value={fis.certified ? `n.º ${fis.certificate_number}` : 'não certificado (0000)'}
+            ok={!!fis.certified} />
+          <Row label="Ambiente" value={fis.environment === 'PROD' ? 'Produção' : 'Testes'}
+            ok={fis.environment === 'PROD'} />
+          <Row label="Motor de assinatura" value={fis.signing_engine || '—'}
+            ok={fis.signing_engine === 'operacional'} />
+          {fis.signing_error && <Row label="Erro das chaves" value={fis.signing_error} ok={false} />}
+          <Row label="Versão da chave" value={fis.key_version ?? '—'} />
+          <Row label="Último documento" value={fis.last_document || 'nenhum emitido'} />
         </Section>
 
         <Section title="Impressoras (spooler)" icon={Printer}>

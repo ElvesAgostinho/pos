@@ -29,7 +29,7 @@ export default function WhDashboardView() {
             <Card icon={<PackageX size={12} />} label="Movimentos hoje" value={d.movements_today} />
             <Card icon={<ArrowLeftRight size={12} />} label="Transferências abertas" value={d.open_transfers} tone={d.open_transfers ? 'text-[#111827]' : undefined} />
             <Card icon={<ClipboardList size={12} />} label="Inventários abertos" value={d.open_counts} tone={d.open_counts ? 'text-[#111827]' : undefined} />
-            <Card icon={<AlertTriangle size={12} />} label="Lotes a expirar (30d)" value={`${d.lots_expiring_30d}`} sub={d.lots_expired ? `${d.lots_expired} já expirados` : undefined} tone={d.lots_expiring_30d ? 'text-[#111827]' : 'text-[#111827]'} />
+            <Card icon={<AlertTriangle size={12} />} label="Lotes a expirar (30d)" value={`${d.lots_expiring_30d}`} sub={d.lots_expired ? `${d.lots_expired} já expirados` : undefined} tone={d.lots_expiring_30d ? 'text-[#D97706]' : 'text-[#6B7280]'} />
           </div>
         )}
       </div>

@@ -256,7 +256,7 @@ export default function PosCurrentAccounts() {
                   {money(r.cc_balance)}
                 </td>
                 <td className="px-2 py-1.5 text-right font-bold"
-                  style={{ color: Number(r.advance_balance) > 0 ? '#2563EB' : '#2563EB' }}>
+                  style={{ color: Number(r.advance_balance) > 0 ? '#16A34A' : '#6B7280' }}>
                   {money(r.advance_balance)}
                 </td>
               </tr>

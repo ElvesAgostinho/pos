@@ -114,7 +114,7 @@ export default function FnbPayables() {
                     <td className="px-2 py-1 text-right font-bold">{money(d.total)}</td>
                     <td className="px-2 py-1">
                       <span className={`px-2 py-0.5 text-[11px] ${d.posted
-                        ? 'bg-[#EEF1F5] text-[#111827]' : 'bg-[#EEF1F5] text-[#111827]'}`}>
+                        ? 'bg-[#F0FDF4] text-[#16A34A]' : 'bg-[#FFFBEB] text-[#D97706]'}`}>
                         {d.posted ? 'Lançado' : 'Por lançar'}
                       </span>
                     </td>

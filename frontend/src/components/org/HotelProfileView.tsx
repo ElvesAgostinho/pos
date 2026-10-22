@@ -78,9 +78,9 @@ export default function HotelProfileView() {
 
         {/* Completude — o que falta e porquê */}
         {c && (
-          <div className={`m-3 mb-0 p-2.5 border flex items-start gap-2 text-[12px] ${c.missing.length ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#E6E8EC]'}`}>
-            {c.missing.length ? <AlertTriangle size={18} className="text-[#111827] flex-shrink-0 mt-0.5" />
-              : <CheckCircle2 size={18} className="text-[#111827] flex-shrink-0 mt-0.5" />}
+          <div className={`m-3 mb-0 p-2.5 border flex items-start gap-2 text-[12px] ${c.missing.length ? 'bg-[#FFFBEB] border-[#FDE68A]' : 'bg-[#F0FDF4] border-[#BBF7D0]'}`}>
+            {c.missing.length ? <AlertTriangle size={18} className="text-[#D97706] flex-shrink-0 mt-0.5" />
+              : <CheckCircle2 size={18} className="text-[#16A34A] flex-shrink-0 mt-0.5" />}
             <div className="flex-1">
               <div className="font-bold flex items-center gap-2">
                 Ficha {c.percent}% completa
@@ -232,10 +232,10 @@ export default function HotelProfileView() {
           {tab === 'cert' && (
             <FormSection title="Certificação AGT" cols={1}
               hint="pertence ao software — instalada pelo fornecedor">
-              <div className={`p-3 border flex items-center gap-3 ${cert?.certified ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#E6E8EC]'}`}>
-                {cert?.certified ? <ShieldCheck size={26} className="text-[#111827]" /> : <ShieldAlert size={26} className="text-[#111827]" />}
+              <div className={`p-3 border flex items-center gap-3 ${cert?.certified ? 'bg-[#F0FDF4] border-[#BBF7D0]' : 'bg-[#FFFBEB] border-[#FDE68A]'}`}>
+                {cert?.certified ? <ShieldCheck size={26} className="text-[#16A34A]" /> : <ShieldAlert size={26} className="text-[#D97706]" />}
                 <div className="text-[12px]">
-                  <div className={`font-bold ${cert?.certified ? 'text-[#111827]' : 'text-[#111827]'}`}>
+                  <div className={`font-bold ${cert?.certified ? 'text-[#16A34A]' : 'text-[#D97706]'}`}>
                     {cert?.certified ? `Certificado AGT nº ${cert.certificate_number}` : 'Ainda não certificado (ambiente de testes)'}
                   </div>
                   <div className="text-gray-600 text-[11px]">

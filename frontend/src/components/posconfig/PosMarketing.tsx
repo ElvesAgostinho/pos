@@ -588,7 +588,7 @@ export function EventRequests() {
                 <td className="px-2 py-1 text-[#6B7280] max-w-[220px] truncate">{r.notes || ''}</td>
                 <td className="px-2 py-1">
                   <span className={`px-2 py-0.5 text-[11px] font-semibold ${r.answered
-                    ? 'bg-[#EEF1F5] text-[#111827]' : 'bg-[#EEF1F5] text-[#111827]'}`}>
+                    ? 'bg-[#F0FDF4] text-[#16A34A]' : 'bg-[#FFFBEB] text-[#D97706]'}`}>
                     {r.answered ? 'Respondido' : 'Não Respondido'}
                   </span>
                 </td>

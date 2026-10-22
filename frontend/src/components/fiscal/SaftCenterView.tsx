@@ -67,10 +67,10 @@ export default function SaftCenterView() {
         <Panel title="Configuração Fiscal">
           {f ? (
             <div className="flex items-center gap-4 text-[12px]">
-              <div className={`flex items-center gap-2 px-3 py-2 border ${f.certified ? 'bg-[#EEF1F5] border-[#E6E8EC]' : 'bg-[#EEF1F5] border-[#E6E8EC]'}`}>
-                {f.certified ? <ShieldCheck size={22} className="text-[#111827]" /> : <ShieldAlert size={22} className="text-[#111827]" />}
+              <div className={`flex items-center gap-2 px-3 py-2 border ${f.certified ? 'bg-[#F0FDF4] border-[#BBF7D0]' : 'bg-[#FFFBEB] border-[#FDE68A]'}`}>
+                {f.certified ? <ShieldCheck size={22} className="text-[#16A34A]" /> : <ShieldAlert size={22} className="text-[#D97706]" />}
                 <div>
-                  <div className={`font-bold ${f.certified ? 'text-[#111827]' : 'text-[#111827]'}`}>
+                  <div className={`font-bold ${f.certified ? 'text-[#16A34A]' : 'text-[#D97706]'}`}>
                     {f.certified ? `Certificado AGT nº ${f.certificate_number}` : 'Não certificado (ambiente de testes)'}
                   </div>
                   <div className="text-[11px] text-gray-600">{f.company_name} · NIF {f.company_nif} · SAF-T v{f.saft_version} · {f.environment === 'PROD' ? 'Produção' : 'Testes'}</div>

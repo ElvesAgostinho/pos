@@ -88,17 +88,26 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       const d2 = r.data;
       setSyncMsg({ ok: true, text: `${d2.detail} — válida até ${d2.valid_until}.`
         + (d2.restart_needed ? ' ⚠ Módulos mudaram: reinicie o serviço para entrarem.' : '') });
-      // A LICENÇA NOVA TEM DE CHEGAR AO RESTO DO SISTEMA, não só a este painel.
+      // TUDO SE RECARREGA, e é de propósito.
       //
-      // Só se recarregava a ficha da empresa — o painel mostrava os módulos
-      // novos e a árvore, os menus e os ecrãs continuavam a trabalhar com a
-      // lista antiga, em cache. Quem acabava de comprar o PMS puxava a licença,
-      // via "PMS" escrito aqui, e não tinha PMS em sítio nenhum. Parecia que a
-      // compra não tinha chegado; tinha, só não era mostrada.
-      qc.invalidateQueries({ queryKey: ['posc', 'company', row?.id] });
-      qc.invalidateQueries({ queryKey: ['licensing'] });   // estado, módulos ativos, features
-      qc.invalidateQueries({ queryKey: ['auth', 'access'] });   // o que cada perfil pode ver
-      qc.invalidateQueries({ queryKey: ['fiscal', 'certificate'] });  // a certificação AGT vem no mesmo canal
+      // Só se recarregava a ficha da empresa. O painel mostrava os módulos novos
+      // enquanto a árvore, os menus e os ecrãs continuavam com a lista antiga em
+      // cache — quem acabava de comprar o PMS via "PMS" escrito aqui e não o
+      // tinha em sítio nenhum. Parecia que a compra não tinha chegado; tinha, só
+      // não era mostrada.
+      //
+      // Este pedido não traz "uma licença": traz os módulos, os limites, a
+      // CERTIFICAÇÃO AGT (número e chaves de assinatura), a ligação da fatura
+      // eletrónica e os dados da empresa. Tudo isso é lido por ecrãs diferentes,
+      // com chaves de cache diferentes — Centro Fiscal, SAF-T, Ficha do Hotel,
+      // Transmissão AGT, árvore, menus. Uma lista dessas chaves fica
+      // desatualizada na primeira vez que alguém acrescentar um ecrã, e o
+      // sintoma volta: o número de certificação aparece num sítio e não noutro.
+      //
+      // Depois de uma sincronização quase nada do que está no ecrã continua
+      // garantidamente verdade. Recarregar tudo é a resposta honesta — e custa
+      // um punhado de pedidos, uma vez, num botão que se carrega raramente.
+      qc.invalidateQueries();
     } catch (e: any) {
       setSyncMsg({ ok: false, text: e?.response?.data?.detail || 'Não foi possível puxar a licença do PCC.' });
     } finally {
@@ -118,10 +127,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       // Mesma razão do `puxarLicencaPCC`: carregar o ficheiro pela mão ou puxar
       // do PCC acabam na mesma licença em disco, e o sistema tem de a ver pelos
       // dois caminhos.
-      qc.invalidateQueries({ queryKey: ['posc', 'company', row?.id] });
-      qc.invalidateQueries({ queryKey: ['licensing'] });
-      qc.invalidateQueries({ queryKey: ['auth', 'access'] });
-      qc.invalidateQueries({ queryKey: ['fiscal', 'certificate'] });
+      qc.invalidateQueries();
     } catch (e: any) {
       setUploadMsg({ ok: false, text: e?.response?.data?.detail || 'Não foi possível carregar o ficheiro.' });
     } finally {

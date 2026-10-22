@@ -312,7 +312,7 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
               <div className="flex items-center gap-1.5 flex-1">
                 {['', '#DC2626', '#D97706', '#2563EB', '#3B82F6', '#3B82F6'].map((c) => (
                   <button key={c || 'none'} type="button" onClick={() => setColorTag(c)} title={c || '(nenhuma)'}
-                    className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ${colorTag === c ? 'border-[#E6E8EC]' : 'border-[#E6E8EC]'}`}
+                    className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ${colorTag === c ? 'border-[#111827]' : 'border-[#E6E8EC]'}`}
                     style={{ background: c || '#FFFFFF' }}>
                     {!c && <X size={12} className="text-gray-400 m-auto" />}
                   </button>

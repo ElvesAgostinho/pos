@@ -175,6 +175,36 @@ class QuandoCorreMalTests(CircuitoPcc):
         self.assertEqual(self._no_disco(), self.instalada,
                          'Sem internet, a licença instalada foi alterada.')
 
+    def test_endereco_que_nao_e_um_pcc_diz_isso_mesmo(self):
+        """O caso mais confuso de todos: HÁ um servidor vivo naquele endereço,
+        por isso não parece problema de rede — e o dono fica a ver "404".
+
+        Acontece sempre que o endereço aponta para o sítio errado: para o
+        próprio ERP (que não publica as rotas do PCC), para um site qualquer,
+        ou para um PCC antigo. A resposta tem de dizer QUE o endereço está
+        errado, não repetir o número.
+        """
+        class _NaoEPcc:
+            status_code = 404
+            @staticmethod
+            def json():
+                raise ValueError('isto é HTML, não JSON')
+
+        with self._ligar_ao_pcc(resposta_falsa=_NaoEPcc()):
+            r = self.client.post('/api/licensing/sync/', {}, format='json')
+        self.assertEqual(r.status_code, 502)
+        self.assertIn('não é uma consola PCC', str(r.data))
+        self.assertEqual(self._no_disco(), self.instalada)
+
+    def test_sem_ligacao_a_mensagem_diz_onde_se_corrige(self):
+        """Falhar não chega: tem de dizer o que fazer a seguir."""
+        with self._ligar_ao_pcc(rebenta=OSError('ligação recusada')):
+            r = self.client.post('/api/licensing/sync/', {}, format='json')
+        texto = str(r.data)
+        self.assertIn('PCC_URL', texto, 'Não diz onde se corrige o endereço.')
+        self.assertIn('continua a trabalhar', texto,
+                      'Não tranquiliza: o sistema não pára por estar sem PCC.')
+
     def test_licenca_de_outro_cliente_e_recusada(self):
         """Um PCC comprometido, ou uma troca de ficheiros, não entra aqui."""
         class _Outro:

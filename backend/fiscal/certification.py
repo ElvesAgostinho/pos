@@ -40,16 +40,74 @@ def vendor_authorized(request):
     return bool(expected) and hmac.compare_digest(expected, given)
 
 
+def _instalar_chaves(private_key, public_key):
+    """Troca o par de assinatura — só se o novo par REALMENTE assinar.
+
+    A prova é feita numa pasta à parte: escreve-se lá, assina-se uma mensagem de
+    exemplo e verifica-se. As chaves a trabalhar não são tocadas enquanto isso
+    não passar.
+    """
+    import shutil
+    import tempfile
+    from pathlib import Path
+
+    novo_priv = private_key.strip() + '\n'
+    novo_pub = public_key.strip() + '\n'
+
+    original = signing.ENGINE_DIR
+    erro = None
+    with tempfile.TemporaryDirectory(prefix='prova-chaves-') as tmp:
+        prova = Path(tmp)
+        (prova / 'private.pem').write_text(novo_priv, encoding='ascii')
+        (prova / 'public.pem').write_text(novo_pub, encoding='ascii')
+        signing.ENGINE_DIR = prova
+        signing.PRIVATE_KEY_PATH = prova / 'private.pem'
+        signing.PUBLIC_KEY_PATH = prova / 'public.pem'
+        try:
+            msg = signing.build_message('2026-01-01', '2026-01-01T00:00:00',
+                                        'FT T/1', '100.00', '')
+            valida = signing.verify_message(msg, signing.sign_message(msg))
+        except Exception as e:
+            valida, erro = False, e
+        finally:
+            signing.ENGINE_DIR = original
+            signing.PRIVATE_KEY_PATH = original / 'private.pem'
+            signing.PUBLIC_KEY_PATH = original / 'public.pem'
+
+    if not valida:
+        detalhe = ' (%s)' % erro if erro else ''
+        raise ValueError('As chaves de assinatura recebidas não validam%s — nada '
+                         'foi alterado. O par que estava instalado continua a '
+                         'trabalhar.' % detalhe)
+
+    # Passou. Guarda-se o par antigo ao lado antes de o substituir.
+    signing.ENGINE_DIR.mkdir(parents=True, exist_ok=True)
+    for caminho in (signing.PRIVATE_KEY_PATH, signing.PUBLIC_KEY_PATH):
+        if caminho.exists():
+            shutil.copyfile(str(caminho), str(caminho) + '.bak')
+    signing.PRIVATE_KEY_PATH.write_text(novo_priv, encoding='ascii')
+    signing.PUBLIC_KEY_PATH.write_text(novo_pub, encoding='ascii')
+
+
 def apply_certification(cert=None, private_key=None, public_key=None):
-    """Instala as credenciais do fabricante. Usado pelo PCC e pelo instalador."""
+    """Instala as credenciais do fabricante. Usado pelo PCC e pelo instalador.
+
+    PRIMEIRO EXPERIMENTA, DEPOIS GRAVA — e nunca o contrário.
+
+    Isto gravava as chaves novas em disco e só DEPOIS testava se assinavam. Se
+    não assinassem (um par trocado, uma transferência truncada, um copiar-colar
+    que perdeu uma linha), a função levantava o erro — mas as chaves boas já
+    tinham sido escritas por cima, e não existiam em lado nenhum para repor. A
+    partir daí o hotel não emitia uma única factura: toda a assinatura falhava.
+
+    Pior ainda pelo sítio onde acontecia: o erro saía como um aviso de passagem
+    ("a certificação AGT falhou") no fim de uma sincronização com o PCC — que é
+    precisamente quando ninguém está a olhar para o sistema fiscal. O estrago
+    descobria-se na primeira venda.
+    """
     cfg = FiscalConfig.get()
     if private_key and public_key:
-        signing.ENGINE_DIR.mkdir(parents=True, exist_ok=True)
-        signing.PRIVATE_KEY_PATH.write_text(private_key.strip() + '\n', encoding='ascii')
-        signing.PUBLIC_KEY_PATH.write_text(public_key.strip() + '\n', encoding='ascii')
-        msg = signing.build_message('2026-01-01', '2026-01-01T00:00:00', 'FT T/1', '100.00', '')
-        if not signing.verify_message(msg, signing.sign_message(msg)):
-            raise ValueError('As chaves não validam (assinatura inválida).')
+        _instalar_chaves(private_key, public_key)
         cfg.key_version = (cfg.key_version or 1) + 1
     if cert:
         cfg.certificate_number = cert.strip()

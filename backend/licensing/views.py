@@ -167,6 +167,29 @@ def _aplicar_extras_pcc(body):
     return flags, None
 
 
+
+def _responde_como_pcc(r):
+    """Este 404 veio de um PCC a sério, ou de um servidor que não é um PCC?
+
+    Os dois casos chegam aqui com o mesmo código e querem respostas opostas:
+
+      · o PCC CONHECE o pedido e responde 404 porque não conhece ESTE cliente
+        ("Cliente XPTO desconhecido no PCC") — é informação útil, tem de passar
+        tal como veio;
+      · o endereço não é um PCC de todo e devolve a página de erro do servidor
+        — aí o 404 não diz nada ao dono, e o que ele precisa de saber é que o
+        endereço está errado.
+
+    A diferença está na RESPOSTA: um PCC responde em JSON com um `detail`
+    escrito para ser lido; um servidor qualquer devolve HTML.
+    """
+    try:
+        corpo = r.json()
+    except Exception:
+        return False
+    return isinstance(corpo, dict) and bool(corpo.get('detail'))
+
+
 class LicenseSyncView(APIView):
     """SINCRONIZAR COM O PCC — o botão do Gestor de licenças.
 
@@ -202,12 +225,31 @@ class LicenseSyncView(APIView):
                           json={'license_key': atual_raw, 'hostname': hostname,
                                'app_version': APP_VERSION}, timeout=20)
         except Exception as e:
-            return Response({'detail': f'Sem ligação ao PCC ({pcc}): {e}'}, status=502)
+            return Response({'detail':
+                f'Sem ligação ao PCC em {pcc}. Verifique que o endereço está certo '
+                f'(variável PCC_URL) e que a consola do fornecedor está a correr. '
+                f'O sistema continua a trabalhar com a licença que tem — offline é '
+                f'o desenho, não a falha.'
+                f'\n\nDetalhe técnico: {e}'}, status=502)
+        if r.status_code == 404 and not _responde_como_pcc(r):
+            # RESPONDEU, mas não é um PCC. É o caso mais confuso de todos: há um
+            # servidor vivo naquele endereço, por isso não parece um problema de
+            # rede — e o utilizador fica a ver "404" sem saber o que fazer com
+            # isso. Acontece sempre que PCC_URL aponta para o sítio errado: para
+            # o próprio ERP (que não publica as rotas /api/clm/), para um site
+            # qualquer, ou para um PCC numa versão que ainda não tem esta rota.
+            return Response({'detail':
+                f'O endereço {pcc} respondeu, mas não é uma consola PCC: não conhece '
+                f'o pedido de licenças. Confirme o endereço do fornecedor (variável '
+                f'PCC_URL) — em instalações novas ele vem do instalador; num posto de '
+                f'desenvolvimento aponta por omissão para o próprio ERP, que não é um '
+                f'PCC.'}, status=502)
         if r.status_code != 200:
             try:
                 return Response(r.json(), status=r.status_code)
             except Exception:
-                return Response({'detail': f'PCC respondeu {r.status_code}.'}, status=502)
+                return Response({'detail': f'O PCC em {pcc} respondeu {r.status_code} '
+                                           f'e nada foi alterado.'}, status=502)
 
         nova_raw = (r.json().get('license_key') or '').strip()
         try:

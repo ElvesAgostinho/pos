@@ -119,7 +119,7 @@ export function ProcDashboardView() {
         {!d ? <div className="col-span-4 text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
           <Card label="Requisições" value={sum(d.requisitions)} /><Card label="Encomendas" value={sum(d.purchase_orders)} />
           <Card label="Receções (GRN)" value={d.goods_receipts} /><Card label="Devoluções" value={sum(d.returns)} />
-          <Card label="A aguardar aprovação" value={d.pending_approval} tone={d.pending_approval ? 'text-[#111827]' : 'text-[#111827]'} />
+          <Card label="A aguardar aprovação" value={d.pending_approval} tone={d.pending_approval ? 'text-[#D97706]' : 'text-[#6B7280]'} />
         </>}
       </div>
     </ClassicWindow>

@@ -402,7 +402,9 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
           </label>
         )}
 
-        <Row label={isHotel ? 'Id do Hotel:' : 'Id do Hotel:'}>
+        {/* O campo grava `hotel_id` ou `company_id` consoante o caso — a etiqueta
+            dizia "Id do Hotel" nos dois, e num deles estava a mentir. */}
+        <Row label={isHotel ? 'Id do Hotel:' : 'Id da Empresa:'}>
           <input value={isHotel ? (d.hotel_id ?? '0') : (d.company_id ?? '0')}
             onChange={(e) => set(isHotel ? 'hotel_id' : 'company_id', e.target.value)}
             className={`${inp} w-[280px]`} style={inputStyle} />
