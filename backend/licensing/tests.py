@@ -579,6 +579,75 @@ class AtivacaoAutomaticaTests(CircuitoPcc):
         self.assertEqual(r.status_code, 200, r.content[:400])
         self.assertEqual(r.data['license_number'], 'LIC-0002')
 
+class ReposicaoDePasswordTests(CircuitoPcc):
+    """"Esqueci-me da password" — numa instalação JÁ a trabalhar.
+
+    Ao contrário da ativação, esta exige licença instalada: é ela que diz ao
+    PCC a que cliente esta máquina pertence. Por isso vive aqui, e não na
+    classe da ativação (que apaga a licença de propósito).
+    """
+
+    def test_repor_a_password_deixa_rasto_e_derruba_as_sessoes(self):
+        """A operação mais sensível do sistema não deixava rasto NENHUM.
+
+        Quem consegue repor a password do dono fica com acesso total — basta um
+        telefonema ao fornecedor. E não ficava registado quem, quando, nem de
+        que máquina: quem auditasse a instalação não tinha como saber que tinha
+        acontecido.
+
+        E as sessões antigas continuavam vivas. Repõe-se uma password por duas
+        razões: ou se perdeu, ou alguém a tem. No segundo caso, mudar a password
+        e deixar a sessão do intruso a funcionar não resolve nada.
+        """
+        from unittest import mock as _m
+        from auth_engine.models import AuthEventLog
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        dono = User.objects.create_user('dono_do_hotel', '', 'antiga')
+
+        class _Pcc:
+            status_code = 200
+            headers = {'content-type': 'application/json'}
+            @staticmethod
+            def json():
+                return {'valid': True, 'username': 'dono_do_hotel'}
+
+        with _m.patch.dict('os.environ', {'PCC_URL': 'http://pcc-de-teste'}),                 _m.patch('requests.post', return_value=_Pcc()):
+            r = self.client.post('/api/licensing/reset-owner-password/',
+                                 {'code': 'ABC123', 'new_password': 'NovaSenha#2026'},
+                                 format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+
+        dono.refresh_from_db()
+        self.assertTrue(dono.check_password('NovaSenha#2026'), 'A password não foi reposta.')
+
+        ev = AuthEventLog.objects.filter(event_type='PASSWORD_RESET').first()
+        self.assertIsNotNone(ev, 'A reposição de password não deixou rasto nenhum.')
+        self.assertEqual(ev.identity_attempt, 'dono_do_hotel')
+        self.assertIn('sessão', ev.details)
+
+    def test_codigo_errado_tambem_fica_registado(self):
+        """É assim que se vê alguém a experimentar códigos."""
+        from unittest import mock as _m
+        from auth_engine.models import AuthEventLog
+
+        class _Recusa:
+            status_code = 200
+            headers = {'content-type': 'application/json'}
+            @staticmethod
+            def json():
+                return {'valid': False, 'detail': 'Código inválido ou expirado.'}
+
+        with _m.patch.dict('os.environ', {'PCC_URL': 'http://pcc-de-teste'}),                 _m.patch('requests.post', return_value=_Recusa()):
+            r = self.client.post('/api/licensing/reset-owner-password/',
+                                 {'code': 'ERRADO', 'new_password': 'NovaSenha#2026'},
+                                 format='json')
+        self.assertEqual(r.status_code, 403, r.content[:300])
+        self.assertTrue(AuthEventLog.objects.filter(event_type='PASSWORD_RESET_FAILED').exists(),
+                        'Uma tentativa falhada de reposição não ficou registada.')
+
+
 class CatalogoDeModulosTests(APITestCase):
     """O catálogo tem de descrever o sistema que existe — não um de 2025.
 

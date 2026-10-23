@@ -40,6 +40,12 @@ class AuthEventLog(models.Model):
         ('LOGOUT', 'Logout'),
         ('SESSION_SUSPENDED', 'Session Suspended'),
         ('SESSION_RESUMED', 'Session Resumed'),
+        # REPOSIÇÃO DE PASSWORD. É a operação mais sensível do sistema — quem a
+        # consegue fazer fica com acesso total — e não deixava rasto NENHUM:
+        # nem quem, nem quando, nem de onde. Uma tentativa falhada também conta,
+        # porque é assim que se vê alguém a experimentar códigos.
+        ('PASSWORD_RESET', 'Password reposta (código do fornecedor)'),
+        ('PASSWORD_RESET_FAILED', 'Reposição de password recusada'),
     ]
 
     event_type = models.CharField(max_length=50, choices=EVENT_CHOICES)

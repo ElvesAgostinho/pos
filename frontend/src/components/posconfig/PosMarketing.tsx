@@ -410,6 +410,22 @@ export function EntitySearch() {
 }
 
 // ═══════════════════════════════════════════════ PEDIDOS DE EVENTOS
+/** Fora do componente de propósito: definido lá dentro, seria um tipo novo a
+    cada render e o React desmontaria o campo a cada tecla — perdia-se o foco
+    e as letras seguintes iam parar a outro sítio. */
+function Sel({ k, label, list, edit, setEdit, lbl }: any) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={lbl}>{label}</span>
+      <select value={edit[k] ?? ''} onChange={(e) => setEdit({ ...edit, [k]: e.target.value || null })}
+      className={`${inp} w-[230px]`} style={inputStyle}>
+      <option value="">(Nenhum)</option>
+      {list.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
+      </select>
+    </div>
+  );
+}
+
 export function EventRequests() {
   const qc = useQueryClient();
   const [estado, setEstado] = useState('0');       // por omissão: Não Respondido
@@ -469,16 +485,6 @@ export function EventRequests() {
   };
 
   if (edit) {
-    const Sel = ({ k, label, list }: any) => (
-      <div className="flex items-center gap-2">
-        <span className={lbl}>{label}</span>
-        <select value={edit[k] ?? ''} onChange={(e) => setEdit({ ...edit, [k]: e.target.value || null })}
-          className={`${inp} w-[230px]`} style={inputStyle}>
-          <option value="">(Nenhum)</option>
-          {list.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
-        </select>
-      </div>
-    );
     const F = ({ k, label, type = 'text', w = 'w-[230px]' }: any) => (
       <div className="flex items-center gap-2">
         <span className={lbl}>{label}</span>
@@ -493,20 +499,20 @@ export function EventRequests() {
           <Painel title={edit.id ? `Pedido ${edit.number} — ${edit.title}` : 'Novo pedido de evento'}>
             <div className="grid grid-cols-3 gap-x-8 gap-y-2 p-4">
               <F k="title" label="Designação:" />
-              <Sel k="customer" label="Entidade:" list={entidades} />
+              <Sel k="customer" label="Entidade:" list={entidades} edit={edit} setEdit={setEdit} lbl={lbl} />
               <F k="contact_name" label="Nome do contacto:" />
               <F k="phone" label="Telefone:" />
               <F k="email" label="E-mail:" />
-              <Sel k="event_type" label="Tipo de Evento:" list={tipos} />
+              <Sel k="event_type" label="Tipo de Evento:" list={tipos} edit={edit} setEdit={setEdit} lbl={lbl} />
               <F k="start_at" label="Data (início):" type="datetime-local" />
               <F k="end_at" label="Data (fim):" type="datetime-local" />
               <F k="pax" label="Pax:" type="number" w="w-[100px]" />
-              <Sel k="space" label="Espaço:" list={espacos} />
-              <Sel k="layout" label="Disposição:" list={layouts} />
-              <Sel k="state" label="Estado da reserva:" list={estados} />
-              <Sel k="segment" label="Segmento:" list={segmentos} />
-              <Sel k="channel" label="Canal:" list={canais} />
-              <Sel k="package" label="Package:" list={packages} />
+              <Sel k="space" label="Espaço:" list={espacos} edit={edit} setEdit={setEdit} lbl={lbl} />
+              <Sel k="layout" label="Disposição:" list={layouts} edit={edit} setEdit={setEdit} lbl={lbl} />
+              <Sel k="state" label="Estado da reserva:" list={estados} edit={edit} setEdit={setEdit} lbl={lbl} />
+              <Sel k="segment" label="Segmento:" list={segmentos} edit={edit} setEdit={setEdit} lbl={lbl} />
+              <Sel k="channel" label="Canal:" list={canais} edit={edit} setEdit={setEdit} lbl={lbl} />
+              <Sel k="package" label="Package:" list={packages} edit={edit} setEdit={setEdit} lbl={lbl} />
               <F k="price_per_pax" label="Preço/pax:" type="number" w="w-[140px]" />
               <F k="extra_total" label="Extras:" type="number" w="w-[140px]" />
               <div className="flex items-center gap-2">

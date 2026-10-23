@@ -393,6 +393,28 @@ class UploadLicenseView(APIView):
         })
 
 
+
+def _registar_reposicao(request, evento, username, detalhe):
+    """Deixa rasto de uma reposição de password — conseguida ou tentada.
+
+    Era a única operação do sistema capaz de dar acesso total a quem telefona ao
+    fornecedor, e não ficava registada em lado nenhum: nem quem, nem quando, nem
+    de que máquina. Quem auditasse a instalação não tinha como saber que tinha
+    acontecido; quem andasse a experimentar códigos nunca seria apanhado.
+
+    Nunca rebenta: um registo que falha não pode impedir o dono de recuperar o
+    acesso ao próprio sistema.
+    """
+    try:
+        from auth_engine.models import AuthEventLog
+        ip = (request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+              or request.META.get('REMOTE_ADDR'))
+        AuthEventLog.objects.create(event_type=evento, identity_attempt=username or '(desconhecido)',
+                                    ip_address=ip or None, details=detalhe)
+    except Exception:
+        pass
+
+
 class OwnerPasswordResetView(APIView):
     """"ESQUECI-ME DA PASSWORD" — repõe a password do dono numa instalação JÁ A
     CORRER, sem PowerShell nem ida à máquina. O dono pede ao fornecedor um
@@ -436,6 +458,8 @@ class OwnerPasswordResetView(APIView):
 
         body = r.json() if r.headers.get('content-type', '').startswith('application/json') else {}
         if r.status_code != 200 or not body.get('valid'):
+            _registar_reposicao(request, 'PASSWORD_RESET_FAILED', None,
+                                body.get('detail') or 'Código inválido ou expirado.')
             return Response({'detail': body.get('detail') or 'Código inválido ou expirado.'},
                             status=r.status_code if r.status_code != 200 else 403)
 
@@ -446,7 +470,27 @@ class OwnerPasswordResetView(APIView):
         user.set_password(nova_password)
         user.is_active = True
         user.save(update_fields=['password', 'is_active'])
-        return Response({'detail': f'Password de "{username}" reposta — entre já com a nova.'})
+
+        # AS SESSÕES ANTIGAS CAEM. Repõe-se uma password por duas razões: ou se
+        # perdeu, ou alguém a tem. No segundo caso, mudar a password e deixar a
+        # sessão de quem entrou continuar a funcionar não resolve nada — o
+        # intruso fica lá dentro com o token que já tinha. Mudar a password tem
+        # de significar "a partir de agora, só com a nova".
+        sessoes = 0
+        try:
+            from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+            for t in OutstandingToken.objects.filter(user=user):
+                _, criado = BlacklistedToken.objects.get_or_create(token=t)
+                sessoes += 1 if criado else 0
+        except Exception:
+            pass   # sem a app de lista negra, a password nova já basta
+
+        _registar_reposicao(request, 'PASSWORD_RESET', username,
+                            f'Password reposta pelo código do fornecedor; '
+                            f'{sessoes} sessão(ões) anterior(es) terminada(s).')
+
+        return Response({'detail': f'Password de "{username}" reposta — entre já com a nova.',
+                         'sessions_closed': sessoes})
 
 
 class ApplyUpdateView(APIView):

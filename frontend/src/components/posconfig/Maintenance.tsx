@@ -14,6 +14,18 @@ const inp = 'border border-[#E6E8EC] px-1.5 py-1 text-[12px] w-full bg-white';
  * de trabalho. Aqui define-se UMA VEZ o que é comum (grupo, família, IVA, venda/compra)
  * e escrevem-se só as linhas que mudam: código, descrição, PLU e os preços.
  */
+/** Fora do componente de propósito: definido lá dentro, seria um tipo novo a
+    cada render e o React desmontaria o que está por baixo — qualquer campo
+    aqui dentro perderia o foco a cada tecla. */
+function Common({ label, children }: any) {
+  return (
+    <tr className="border-b border-[#F1F2F4]">
+      <td className="px-2 py-1 text-[12px] text-[#111827] w-[120px] border-r border-[#F1F2F4]">{label}</td>
+      <td className="px-2 py-1">{children}</td>
+    </tr>
+  );
+}
+
 export default function Maintenance() {
   const qc = useQueryClient();
   const [mode, setMode] = useState<'create' | 'update' | 'prices'>('create');
@@ -71,12 +83,6 @@ export default function Maintenance() {
     onError: notifyError,
   });
 
-  const Common = ({ label, children }: any) => (
-    <tr className="border-b border-[#F1F2F4]">
-      <td className="px-2 py-1 text-[12px] text-[#111827] w-[120px] border-r border-[#F1F2F4]">{label}</td>
-      <td className="px-2 py-1">{children}</td>
-    </tr>
-  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">

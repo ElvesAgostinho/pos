@@ -116,6 +116,19 @@ function GuestInfoDialog({ guest, onClose }: { guest: any; onClose: () => void }
  * Só a moldura (título escuro, botões) é do PMS — os dados e a lógica são
  * ligados, não duplicados.
  */
+/** Fora do componente de propósito: definido lá dentro, seria um tipo novo a
+    cada render e o React desmontaria o <input> a cada tecla — o campo perdia
+    o foco e as letras seguintes iam parar a outro sítio. */
+function Adv({ k, label, adv, setAdv }: { k: string; label: string; adv: any; setAdv: any }) {
+  return (
+    <label className="flex items-center gap-2">
+      <span className="w-[110px] text-[#111827]">{label}</span>
+      <input value={adv[k] || ''} onChange={(e) => setAdv((a: any) => ({ ...a, [k]: e.target.value }))}
+        className="border border-[#E6E8EC] p-1 bg-white flex-1" />
+    </label>
+  );
+}
+
 export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: () => void; onSelect: (entity: any) => void }) {
   const qc = useQueryClient();
   const [tab, setTab] = useState<'S' | 'A'>('S');
@@ -156,13 +169,6 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
       onSaved={() => { setEditing(null); invalidate(); }} />;
   }
 
-  const Adv = ({ k, label }: { k: string; label: string }) => (
-    <label className="flex items-center gap-2">
-      <span className="w-[110px] text-[#111827]">{label}</span>
-      <input value={adv[k] || ''} onChange={(e) => setAdv((a: any) => ({ ...a, [k]: e.target.value }))}
-        className="border border-[#E6E8EC] p-1 bg-white flex-1" />
-    </label>
-  );
 
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
@@ -208,14 +214,14 @@ export default function PmsEntityPickerDialog({ onClose, onSelect }: { onClose: 
                 </label>
               ) : (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                  <Adv k="last_name" label="Apelido:" />
-                  <Adv k="name" label="Nome:" />
-                  <Adv k="other_names" label="Outros nomes:" />
-                  <Adv k="code" label="Nr. cliente:" />
-                  <Adv k="tax_id" label="Nr. contrib.:" />
-                  <Adv k="id_number" label="Nr. de identif.:" />
-                  <Adv k="contact" label="E-mail/Telefone:" />
-                  <Adv k="city" label="Cidade:" />
+                  <Adv k="last_name" label="Apelido:" adv={adv} setAdv={setAdv} />
+                  <Adv k="name" label="Nome:" adv={adv} setAdv={setAdv} />
+                  <Adv k="other_names" label="Outros nomes:" adv={adv} setAdv={setAdv} />
+                  <Adv k="code" label="Nr. cliente:" adv={adv} setAdv={setAdv} />
+                  <Adv k="tax_id" label="Nr. contrib.:" adv={adv} setAdv={setAdv} />
+                  <Adv k="id_number" label="Nr. de identif.:" adv={adv} setAdv={setAdv} />
+                  <Adv k="contact" label="E-mail/Telefone:" adv={adv} setAdv={setAdv} />
+                  <Adv k="city" label="Cidade:" adv={adv} setAdv={setAdv} />
                 </div>
               )}
             </div>

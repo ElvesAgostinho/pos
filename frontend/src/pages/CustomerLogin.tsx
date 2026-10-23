@@ -180,14 +180,6 @@ const CustomerLogin: React.FC = () => {
   const botaoClaro = 'h-10 px-4 text-[13px] font-medium text-[#374151] bg-white border border-[#E6E8EC]'
     + ' hover:bg-[#F3F4F6] transition-colors';
 
-  /** Campo com ícone à esquerda — o mesmo desenho nos três sítios onde aparece. */
-  const Campo = ({ icone, children }: { icone: React.ReactNode; children: React.ReactNode }) => (
-    <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none">{icone}</span>
-      {children}
-    </div>
-  );
-
   if (aEntrarSozinho) {
     return (
       <div className="h-screen w-full flex items-center justify-center text-white"
@@ -439,6 +431,32 @@ const CustomerLogin: React.FC = () => {
     </div>
   );
 };
+
+/**
+ * CAMPO COM ÍCONE — e a razão de estar AQUI FORA, e não dentro do componente.
+ *
+ * Estava definido dentro de `CustomerLogin`. Isso cria um TIPO DE COMPONENTE
+ * NOVO a cada render — e o React compara tipos por identidade: tipo diferente
+ * significa "outro componente", por isso desmonta o que lá estava e monta um
+ * novo. Na prática, o `<input>` era DESTRUÍDO E RECRIADO a cada tecla.
+ *
+ * O que se via: escrevia-se uma letra, o campo perdia o foco, o browser punha-o
+ * noutro sítio qualquer — e as letras seguintes iam parar a um campo que não
+ * tinha nada a ver. Era impossível escrever um utilizador ou uma password
+ * inteira, e o login falhava sempre. Não era "as credenciais estão erradas":
+ * era o ecrã a não deixar escrevê-las.
+ *
+ * Definido ao nível do módulo, o tipo é SEMPRE o mesmo, o React reaproveita o
+ * campo, e o foco fica onde deve.
+ */
+function Campo({ icone, children }: { icone: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none">{icone}</span>
+      {children}
+    </div>
+  );
+}
 
 /** Uma linha do painel de estado, à esquerda. */
 function Linha({ rotulo, valor }: { rotulo: string; valor: string }) {

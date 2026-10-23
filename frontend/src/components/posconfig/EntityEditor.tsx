@@ -80,6 +80,32 @@ function RecGrid({ eid, kind, cols, titulo }: { eid: number; kind: string; cols:
   );
 }
 
+/** Fora do componente de propósito: definido lá dentro, seria um tipo novo a
+    cada render e o React desmontaria o campo a cada tecla — perdia-se o foco
+    e as letras seguintes iam parar a outro sítio. */
+function S({ k, l, opts, w, d, set }: any) {
+  return (
+    <Row l={l} w={w}><select value={d[k] ?? ''} onChange={(e) => set(k, e.target.value || null)} className={inp} style={inputStyle}>
+      <option value="">- Outro -</option>{(opts as any[]).map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></Row>);
+}
+
+/** Fora do componente de propósito: definido lá dentro, seria um tipo novo a
+    cada render e o React desmontaria o campo a cada tecla — perdia-se o foco
+    e as letras seguintes iam parar a outro sítio. */
+function C({ k, l, d, set }: any) {
+  return (
+    <label className="flex items-center gap-1.5 text-[12px]"><input type="checkbox" checked={!!d[k]} onChange={(e) => set(k, e.target.checked)} className="w-4 h-4" />{l}</label>);
+}
+
+/** Fora do componente de propósito: definido lá dentro, seria um tipo novo a
+    cada render e o React desmontaria o campo a cada tecla — perdia-se o foco e
+    as letras seguintes iam parar a outro sítio. É o campo mais usado desta
+    ficha; com ele dentro, escrever o nome de uma entidade era impossível. */
+function T({ k, l, w, tipo = 'text', d, set }: any) {
+  return (
+    <Row l={l} w={w}><input type={tipo} value={d[k] ?? ''} onChange={(e) => set(k, e.target.value)} className={inp} style={inputStyle} /></Row>);
+}
+
 export default function EntityEditor({ entity, onClose, onSaved }: {
   entity: any; onClose: () => void; onSaved: () => void;
 }) {
@@ -283,16 +309,6 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
     }
   };
 
-  const T = ({ k, l, w, tipo = 'text' }: any) => (
-    <Row l={l} w={w}><input type={tipo} value={d[k] ?? ''} onChange={(e) => set(k, e.target.value)} className={inp} style={inputStyle} /></Row>);
-  const S = ({ k, l, opts, w }: any) => (
-    <Row l={l} w={w}><select value={d[k] ?? ''} onChange={(e) => set(k, e.target.value || null)} className={inp} style={inputStyle}>
-      <option value="">- Outro -</option>{(opts as any[]).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</select></Row>);
-  const C = ({ k, l }: any) => (
-    <label className="flex items-center gap-1.5 text-[12px]"><input type="checkbox" checked={!!d[k]} onChange={(e) => set(k, e.target.checked)} className="w-4 h-4" />{l}</label>);
-  // P/Cx agora são COLUNAS REAIS da ficha (mdm.Customer) — nada em JSON.
-  const P = T;
-  const Cx = C;
 
   return (
     <div className="fixed inset-0 bg-black/45 z-[9500] flex items-center justify-center" onClick={onClose}>
@@ -318,51 +334,51 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
 
           <div className="flex-1 overflow-auto p-3 space-y-2">
             {sec === 'perfil' && (<Box title="Perfil"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
-              <T k="code" l="Nr. cliente:" /> <P k="internal_id" l="Id Interno:" />
-              <S k="entity_type" l="Tipo de entidade:" opts={tipos} />
-              <div className="flex gap-4 items-center"><C k="is_supplier" l="É fornecedor" /><Cx k="sync_enabled" l="Sincronizar" /><C k="is_active" l="Ativo" /></div>
-              <T k="title" l="Título:" /> <P k="online_checkin_pct" l="Preench. Online Check-in (%):" w={190} />
-              <P k="long_title" l="Tít. longo:" /> <P k="prefix" l="Prefixo:" />
-              <P k="short_title" l="Título curto:" /> <T k="language" l="Língua:" />
-              <T k="last_name" l="Apelido:" /> <P k="mailing_language" l="Língua mailing:" />
-              <T k="name" l="Nome:" /> <P k="stat_aggregator" l="Agregador Estatístico:" />
-              <T k="other_names" l="Outros nomes:" /> <P k="planning_color" l="Cor para planning:" />
+              <T k="code" l="Nr. cliente:" d={d} set={set} /> <T k="internal_id" l="Id Interno:" d={d} set={set} />
+              <S k="entity_type" l="Tipo de entidade:" opts={tipos} d={d} set={set} />
+              <div className="flex gap-4 items-center"><C k="is_supplier" l="É fornecedor" d={d} set={set} /><C k="sync_enabled" l="Sincronizar" d={d} set={set} /><C k="is_active" l="Ativo" d={d} set={set} /></div>
+              <T k="title" l="Título:" d={d} set={set} /> <T k="online_checkin_pct" l="Preench. Online Check-in (%):" w={190} d={d} set={set} />
+              <T k="long_title" l="Tít. longo:" d={d} set={set} /> <T k="prefix" l="Prefixo:" d={d} set={set} />
+              <T k="short_title" l="Título curto:" d={d} set={set} /> <T k="language" l="Língua:" d={d} set={set} />
+              <T k="last_name" l="Apelido:" d={d} set={set} /> <T k="mailing_language" l="Língua mailing:" d={d} set={set} />
+              <T k="name" l="Nome:" d={d} set={set} /> <T k="stat_aggregator" l="Agregador Estatístico:" d={d} set={set} />
+              <T k="other_names" l="Outros nomes:" d={d} set={set} /> <T k="planning_color" l="Cor para planning:" d={d} set={set} />
               <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[12px] font-bold">Morada principal</div>
-              <T k="address" l="Morada 1:" /> <T k="address2" l="Morada 2:" />
-              <P k="address3" l="Morada 3:" /> <T k="postal_code" l="Cód. Postal:" />
-              <T k="city" l="Cidade:" /> <T k="country" l="País:" />
-              <P k="phone_prefix" l="Prefixo telefónico:" /> <P k="region" l="Região:" />
-              <P k="district" l="Distrito:" />
+              <T k="address" l="Morada 1:" d={d} set={set} /> <T k="address2" l="Morada 2:" d={d} set={set} />
+              <T k="address3" l="Morada 3:" d={d} set={set} /> <T k="postal_code" l="Cód. Postal:" d={d} set={set} />
+              <T k="city" l="Cidade:" d={d} set={set} /> <T k="country" l="País:" d={d} set={set} />
+              <T k="phone_prefix" l="Prefixo telefónico:" d={d} set={set} /> <T k="region" l="Região:" d={d} set={set} />
+              <T k="district" l="Distrito:" d={d} set={set} />
               <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[12px] font-bold">Morada de Faturação</div>
-              <T k="billing_address" l="Morada 1:" /> <P k="billing_address2" l="Morada 2:" />
-              <P k="billing_postal" l="Cód. Postal:" /> <P k="billing_city" l="Cidade:" />
-              <P k="billing_country" l="País:" />
+              <T k="billing_address" l="Morada 1:" d={d} set={set} /> <T k="billing_address2" l="Morada 2:" d={d} set={set} />
+              <T k="billing_postal" l="Cód. Postal:" d={d} set={set} /> <T k="billing_city" l="Cidade:" d={d} set={set} />
+              <T k="billing_country" l="País:" d={d} set={set} />
             </div></Box>)}
 
             {sec === 'ident' && (<Box title="Dados de identificação"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
-              <T k="birth_date" l="Data de nasc.:" tipo="date" /> <T k="doc_type" l="Tipo de doc.:" />
-              <T k="birth_place" l="Local de nasc.:" /> <T k="id_number" l="Nr. de identif.:" />
-              <T k="nationality" l="Nacionalidade:" /> <T k="doc_issue_date" l="Data emissão:" tipo="date" />
-              <T k="gender" l="Género:" /> <T k="doc_valid_until" l="Validade:" tipo="date" />
-              <T k="iata" l="IATA:" /> <T k="doc_issue_place" l="Local emissão:" />
-              <T k="tax_id" l="Nr. contrib.:" /> <T k="doc_issued_by" l="Emitido por:" />
-              <T k="account_number" l="Nº de conta:" /> <T k="position" l="Cargo:" />
+              <T k="birth_date" l="Data de nasc.:" tipo="date" d={d} set={set} /> <T k="doc_type" l="Tipo de doc.:" d={d} set={set} />
+              <T k="birth_place" l="Local de nasc.:" d={d} set={set} /> <T k="id_number" l="Nr. de identif.:" d={d} set={set} />
+              <T k="nationality" l="Nacionalidade:" d={d} set={set} /> <T k="doc_issue_date" l="Data emissão:" tipo="date" d={d} set={set} />
+              <T k="gender" l="Género:" d={d} set={set} /> <T k="doc_valid_until" l="Validade:" tipo="date" d={d} set={set} />
+              <T k="iata" l="IATA:" d={d} set={set} /> <T k="doc_issue_place" l="Local emissão:" d={d} set={set} />
+              <T k="tax_id" l="Nr. contrib.:" d={d} set={set} /> <T k="doc_issued_by" l="Emitido por:" d={d} set={set} />
+              <T k="account_number" l="Nº de conta:" d={d} set={set} /> <T k="position" l="Cargo:" d={d} set={set} />
               <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[12px] font-bold">Outra informação</div>
-              <T k="other_number" l="Número:" /> <T k="internal_status" l="Status interno:" />
-              <T k="portal_password" l="Password:" tipo="password" /> <T k="plate" l="Matrícula:" />
-              <T k="brand" l="Marca:" />
+              <T k="other_number" l="Número:" d={d} set={set} /> <T k="internal_status" l="Status interno:" d={d} set={set} />
+              <T k="portal_password" l="Password:" tipo="password" d={d} set={set} /> <T k="plate" l="Matrícula:" d={d} set={set} />
+              <T k="brand" l="Marca:" d={d} set={set} />
               <div className="col-span-2 border-t border-[#F1F2F4] pt-1 text-[12px] font-bold">Foto / Assinatura</div>
-              <T k="photo_url" l="Foto (URL):" /> <T k="signature_url" l="Assinatura (URL):" />
+              <T k="photo_url" l="Foto (URL):" d={d} set={set} /> <T k="signature_url" l="Assinatura (URL):" d={d} set={set} />
               <div className="col-span-2 text-[11px] text-[#DC2626]">Por favor evitar imagens com tamanho superior a 200 KB.</div>
             </div></Box>)}
 
             {sec === 'contactos' && (<>
               <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
-                <T k="phone" l="Telefone 1:" /> <T k="phone2" l="Telefone 2:" />
-                <T k="fax" l="Fax 1:" /> <T k="fax2" l="Fax 2:" />
-                <T k="mobile" l="Telemóvel 1:" /> <T k="mobile2" l="Telemóvel 2:" />
-                <T k="email" l="E-mail 1:" /> <T k="email2" l="E-mail 2:" />
-                <T k="site" l="Site 1:" /> <T k="site2" l="Site 2:" />
+                <T k="phone" l="Telefone 1:" d={d} set={set} /> <T k="phone2" l="Telefone 2:" d={d} set={set} />
+                <T k="fax" l="Fax 1:" d={d} set={set} /> <T k="fax2" l="Fax 2:" d={d} set={set} />
+                <T k="mobile" l="Telemóvel 1:" d={d} set={set} /> <T k="mobile2" l="Telemóvel 2:" d={d} set={set} />
+                <T k="email" l="E-mail 1:" d={d} set={set} /> <T k="email2" l="E-mail 2:" d={d} set={set} />
+                <T k="site" l="Site 1:" d={d} set={set} /> <T k="site2" l="Site 2:" d={d} set={set} />
               </div>
               <RecGrid eid={eid} kind="SOCIAL" titulo="Redes Sociais"
                 cols={[['janela', 'Abrir nova janela'], ['descricao', 'Descrição'],
@@ -371,8 +387,8 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
 
             {sec === 'cartoes' && (<>
               <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 mb-2">
-                <S k="member_card" l="Cartão principal:" opts={cartoes} />
-                <T k="member_card_number" l="Número do cartão:" />
+                <S k="member_card" l="Cartão principal:" opts={cartoes} d={d} set={set} />
+                <T k="member_card_number" l="Número do cartão:" d={d} set={set} />
               </div>
               <RecGrid eid={eid} kind="CARD" titulo="Cartões de membro (todos)"
                 cols={[['nome', 'Nome'], ['numero', 'Número'], ['valido_de', 'Válido de'], ['valido_ate', 'Válido até'],
@@ -402,25 +418,25 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
 
             {sec === 'reserva' && (<Box title="Reserva"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
               <div className="col-span-2 text-[12px] font-bold">Preferências do hóspede</div>
-              <T k="pref_complex" l="Complexo:" /> <T k="pref_price_list" l="Lista Preços:" />
-              <T k="pref_category" l="Categoria:" /> <T k="pref_package" l="Package:" />
-              <T k="pref_meals" l="Refeições:" /> <T k="pref_pos_price" l="Preço POS:" tipo="number" />
-              <T k="pref_rest_table" l="Mesa Rest.:" /> <T k="pref_meal_type" l="Tipo de Refeição:" />
+              <T k="pref_complex" l="Complexo:" d={d} set={set} /> <T k="pref_price_list" l="Lista Preços:" d={d} set={set} />
+              <T k="pref_category" l="Categoria:" d={d} set={set} /> <T k="pref_package" l="Package:" d={d} set={set} />
+              <T k="pref_meals" l="Refeições:" d={d} set={set} /> <T k="pref_pos_price" l="Preço POS:" tipo="number" d={d} set={set} />
+              <T k="pref_rest_table" l="Mesa Rest.:" d={d} set={set} /> <T k="pref_meal_type" l="Tipo de Refeição:" d={d} set={set} />
               <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Informação da reserva</div>
-              <C k="suggest_on_reservation" l="Sugerir por omissão na reserva" /> <T k="pref_room" l="Quarto:" />
+              <C k="suggest_on_reservation" l="Sugerir por omissão na reserva" d={d} set={set} /> <T k="pref_room" l="Quarto:" d={d} set={set} />
               <Row l="Texto da sugestão:" w={120}><textarea value={d.suggestion_text ?? ''} onChange={(e) => set('suggestion_text', e.target.value)} rows={2} className="flex-1 border border-[#E6E8EC] text-[12px] p-1" style={inputStyle} /></Row>
-              <div className="space-y-1.5"><T k="pref_discount" l="Desconto:" /><T k="pref_discount_rule" l="Regra de Desc.:" /></div>
+              <div className="space-y-1.5"><T k="pref_discount" l="Desconto:" d={d} set={set} /><T k="pref_discount_rule" l="Regra de Desc.:" d={d} set={set} /></div>
               <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Aviso / Bloqueio</div>
-              <C k="has_warnings" l="Hóspede com avisos" /> <C k="only_cash" l="Apenas cash" />
+              <C k="has_warnings" l="Hóspede com avisos" d={d} set={set} /> <C k="only_cash" l="Apenas cash" d={d} set={set} />
               <Row l="Texto do aviso:" w={120}><textarea value={d.warning_text ?? ''} onChange={(e) => set('warning_text', e.target.value)} rows={2} className="flex-1 border border-[#E6E8EC] text-[12px] p-1" style={inputStyle} /></Row>
               <div className="space-y-1.5">
-                <C k="is_blocked" l="Bloquear reserva e contas" />
+                <C k="is_blocked" l="Bloquear reserva e contas" d={d} set={set} />
                 <Row l="Modo:" w={60}><select value={d.block_mode ?? ''} onChange={(e) => set('block_mode', e.target.value || null)} className={inp} style={inputStyle}><option value="">—</option><option value="AVISO">Aviso</option><option value="BLOQUEIO">Bloqueio</option></select></Row>
-                <T k="block_from" l="Bloquear de:" tipo="date" /> <T k="block_to" l="Até:" tipo="date" />
+                <T k="block_from" l="Bloquear de:" tipo="date" d={d} set={set} /> <T k="block_to" l="Até:" tipo="date" d={d} set={set} />
               </div>
               <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Interfaces externos</div>
-              <T k="pay_tv" l="Pay-TV:" /> <T k="video" l="Video:" />
-              <T k="minibar" l="Minibar:" />
+              <T k="pay_tv" l="Pay-TV:" d={d} set={set} /> <T k="video" l="Video:" d={d} set={set} />
+              <T k="minibar" l="Minibar:" d={d} set={set} />
               <div className="text-[11px] text-[#6B7280]">Se "(nenhum)", usam-se os valores por defeito da interface.</div>
             </div></Box>)}
 
@@ -432,9 +448,9 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
             </>)}
 
             {sec === 'salesmk' && (<Box title="Sales &amp; Marketing"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
-              <div className="col-span-2 flex gap-5"><C k="include_mailings" l="Incluir nos mailings" /></div>
+              <div className="col-span-2 flex gap-5"><C k="include_mailings" l="Incluir nos mailings" d={d} set={set} /></div>
               <div className="col-span-2 text-[12px] font-bold">Tipos de mailings</div>
-              <div className="col-span-2 flex gap-5"><C k="mailing_general" l="Mailing Geral" /><C k="mailing_events" l="Mailing de Eventos" /><C k="mailing_birthday" l="Mailing de Aniversário" /></div>
+              <div className="col-span-2 flex gap-5"><C k="mailing_general" l="Mailing Geral" d={d} set={set} /><C k="mailing_events" l="Mailing de Eventos" d={d} set={set} /><C k="mailing_birthday" l="Mailing de Aniversário" d={d} set={set} /></div>
               <div className="col-span-2"><RecGrid eid={eid} kind="SELCODE" titulo="Códigos de seleção"
                 cols={[['codigo', 'Código'], ['descricao', 'Descrição']]} /></div>
               {interesses.length > 0 && (
@@ -457,23 +473,23 @@ export default function EntityEditor({ entity, onClose, onSaved }: {
                 </div>
               )}
               <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Códigos de Sales & Marketing</div>
-              <S k="segment" l="Segmento:" opts={segs} /> <T k="vip_code" l="Código VIP:" />
-              <S k="sub_segment" l="Sub-Segmento:" opts={subsegs} /> <S k="channel" l="Canal de Dist.:" opts={canais} />
-              <T k="vip_discount_percent" l="Desc. VIP (%):" />
-              <div className="flex gap-4"><C k="is_vip" l="É VIP" /><C k="distinction_program" l="Incluído no programa de distinção" /></div>
+              <S k="segment" l="Segmento:" opts={segs} d={d} set={set} /> <T k="vip_code" l="Código VIP:" d={d} set={set} />
+              <S k="sub_segment" l="Sub-Segmento:" opts={subsegs} d={d} set={set} /> <S k="channel" l="Canal de Dist.:" opts={canais} d={d} set={set} />
+              <T k="vip_discount_percent" l="Desc. VIP (%):" d={d} set={set} />
+              <div className="flex gap-4"><C k="is_vip" l="É VIP" d={d} set={set} /><C k="distinction_program" l="Incluído no programa de distinção" d={d} set={set} /></div>
             </div></Box>)}
 
-            {sec === 'comissoes' && <Comissoes eid={eid} d={d} T={T} />}
+            {sec === 'comissoes' && <Comissoes eid={eid} d={d} set={set} />}
 
             {sec === 'pagperm' && (<Box title="Pagamentos / Permissões"><div className="grid grid-cols-2 gap-x-8 gap-y-1.5 pt-1.5">
               <div className="col-span-2 text-[12px] font-bold">Contas correntes</div>
-              <C k="allow_cc_checkout" l="Permitir check-out para contas correntes" /> <T k="financial_number" l="Nº financeiro:" />
-              <T k="cc_by" l="C. correntes por:" /> <T k="credit_days" l="Cond. crédito (dias):" tipo="number" />
+              <C k="allow_cc_checkout" l="Permitir check-out para contas correntes" d={d} set={set} /> <T k="financial_number" l="Nº financeiro:" d={d} set={set} />
+              <T k="cc_by" l="C. correntes por:" d={d} set={set} /> <T k="credit_days" l="Cond. crédito (dias):" tipo="number" d={d} set={set} />
               <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Limite de Crédito (Em aberto)</div>
-              <T k="credit_limit" l="Limite crédito:" /> <T k="credit_limit_mode" l="Restrições:" />
-              <C k="credit_limit_pos_enabled" l="Limite crédito (POS)" /> <T k="credit_limit_pos" l="Valor (POS):" />
+              <T k="credit_limit" l="Limite crédito:" d={d} set={set} /> <T k="credit_limit_mode" l="Restrições:" d={d} set={set} />
+              <C k="credit_limit_pos_enabled" l="Limite crédito (POS)" d={d} set={set} /> <T k="credit_limit_pos" l="Valor (POS):" d={d} set={set} />
               <div className="col-span-2 text-[12px] font-bold border-t border-[#F1F2F4] pt-1">Fatura Electrónica / Imposto Retido</div>
-              <T k="einvoice_mode" l="Fatura Electrónica:" /> <T k="withholding_tax" l="Imposto Retido:" />
+              <T k="einvoice_mode" l="Fatura Electrónica:" d={d} set={set} /> <T k="withholding_tax" l="Imposto Retido:" d={d} set={set} />
               <div className="col-span-2 text-[11px] text-[#6B7280]">O limite é IMPOSTO pelo motor ao cobrar em conta corrente; bloqueada = crédito recusado.</div>
             </div></Box>)}
 
@@ -637,7 +653,7 @@ function InfoSeccoes({ eid }: { eid: number }) {
 }
 
 /** COMISSÕES — como no HOST: cabeçalho (código+%) e janela "Add Comission" com datas. */
-function Comissoes({ eid, d: _d, T }: any) {
+function Comissoes({ eid, d: _d, set }: any) {
   const qc = useQueryClient();
   const [add, setAdd] = useState<any | null>(null);
   const { data: rows = [] } = useQuery({
@@ -656,7 +672,7 @@ function Comissoes({ eid, d: _d, T }: any) {
   };
   return (<>
     <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 mb-2">
-      <T k="commission_code" l="Cód. Comissão:" /> <T k="commission_pct" l="Percent. comissão:" tipo="number" />
+      <T k="commission_code" l="Cód. Comissão:" d={_d} set={set} /> <T k="commission_pct" l="Percent. comissão:" tipo="number" d={_d} set={set} />
     </div>
     <div style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
       <div className="px-2 py-1 bg-[#EEF1F5] text-[12px] font-bold flex justify-between">

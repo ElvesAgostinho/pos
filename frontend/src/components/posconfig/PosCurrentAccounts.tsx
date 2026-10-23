@@ -16,6 +16,20 @@ const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[12px] bg-white';
  * Uma empresa pode dever 300.000 do mês passado e ter 100.000 de sinal do evento
  * de sábado. Misturar os dois é a maneira mais rápida de cobrar duas vezes.
  */
+/** Fora do componente de propósito: definido lá dentro, seria um tipo novo a
+    cada render e o React desmontaria o <input> a cada tecla — o campo perdia
+    o foco e as letras seguintes iam parar a outro sítio. */
+function Campo({ k, label, f, setF, pesquisar }: any) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[12px] text-[#111827] w-[100px]">{label}</span>
+      <input value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
+        onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
+        className={`${inp} w-[190px]`} style={inputStyle} />
+    </div>
+  );
+}
+
 export default function PosCurrentAccounts() {
   const qc = useQueryClient();
   const [scope, setScope] = useState('CC');
@@ -60,14 +74,6 @@ export default function PosCurrentAccounts() {
     setPage(1);
   };
 
-  const Campo = ({ k, label }: any) => (
-    <div className="flex items-center gap-2">
-      <span className="text-[12px] text-[#111827] w-[100px]">{label}</span>
-      <input value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
-        onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
-        className={`${inp} w-[190px]`} style={inputStyle} />
-    </div>
-  );
 
   // ---------- a conta de UMA entidade (Contas Correntes / Cash Advance) ----------
   if (conta && det) {
@@ -214,14 +220,14 @@ export default function PosCurrentAccounts() {
               </div>
             </div>
             <div className="space-y-2">
-              <Campo k="id" label="ID:" />
-              <Campo k="name" label="Nome:" />
-              <Campo k="q" label="Pesquisa livre:" />
+              <Campo k="id" label="ID:" f={f} setF={setF} pesquisar={pesquisar} />
+              <Campo k="name" label="Nome:" f={f} setF={setF} pesquisar={pesquisar} />
+              <Campo k="q" label="Pesquisa livre:" f={f} setF={setF} pesquisar={pesquisar} />
             </div>
             <div className="space-y-2">
-              <Campo k="tax_id" label="Nr. contrib.:" />
-              <Campo k="phone" label="Telefone:" />
-              <Campo k="address" label="Morada:" />
+              <Campo k="tax_id" label="Nr. contrib.:" f={f} setF={setF} pesquisar={pesquisar} />
+              <Campo k="phone" label="Telefone:" f={f} setF={setF} pesquisar={pesquisar} />
+              <Campo k="address" label="Morada:" f={f} setF={setF} pesquisar={pesquisar} />
             </div>
           </div>
         </fieldset>

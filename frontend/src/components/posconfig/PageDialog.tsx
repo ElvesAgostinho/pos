@@ -16,6 +16,31 @@ import { inputStyle, Glyph } from './kit';
  * bebidas pode ter 5 colunas de garrafas e a dos pratos 3 colunas largas. Herda a do
  * teclado como ponto de partida, que é o que acontece em 9 de 10 páginas.
  */
+const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
+
+/** Fora do componente de propósito: definido lá dentro, seria um tipo novo a
+    cada render e o React desmontaria o que está por baixo — qualquer campo
+    aqui dentro perderia o foco a cada tecla. */
+function Linha({ label: t, children }: { label: string; children: any }) {
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <span className="w-[130px] text-[12px] text-[#111827] flex-shrink-0">{t}</span>
+      {children}
+    </div>
+  );
+}
+
+function Cor({ v, set }: { v: string; set: (c: string) => void }) {
+  return (
+    <div className="flex items-center gap-2">
+      <input value={v} onChange={(e) => set(e.target.value)} className={`${inp} w-[130px] font-mono`} style={inputStyle} />
+      <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(v) ? v : '#2563EB'}
+        onChange={(e) => set(e.target.value.toUpperCase())}
+        className="w-[38px] h-[26px] border border-[#E6E8EC] p-0 bg-white cursor-pointer" />
+    </div>
+  );
+}
+
 export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
   colsDefeito, rowsDefeito, precoDefeito, onOk, onClose }: {
   /** só se pode criar subpágina quando há uma página aberta onde a pôr */
@@ -39,14 +64,7 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
   const [cols, setCols] = useState(colsDefeito || 4);
   const [rows, setRows] = useState(rowsDefeito || 4);
 
-  const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
-  const Linha = ({ label: t, children }: { label: string; children: any }) => (
-    <div className="flex items-center gap-3 mb-3">
-      <span className="w-[130px] text-[12px] text-[#111827] flex-shrink-0">{t}</span>
-      {children}
-    </div>
-  );
 
   // Um número com setas, como no original — teclas de +/− valem mais que escrever.
   const Numero = ({ v, set, min = 1, max = 12 }: {
@@ -65,14 +83,6 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
     </div>
   );
 
-  const Cor = ({ v, set }: { v: string; set: (c: string) => void }) => (
-    <div className="flex items-center gap-2">
-      <input value={v} onChange={(e) => set(e.target.value)} className={`${inp} w-[130px] font-mono`} style={inputStyle} />
-      <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(v) ? v : '#2563EB'}
-        onChange={(e) => set(e.target.value.toUpperCase())}
-        className="w-[38px] h-[26px] border border-[#E6E8EC] p-0 bg-white cursor-pointer" />
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-[75]" onClick={onClose}>
