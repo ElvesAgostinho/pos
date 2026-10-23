@@ -128,6 +128,27 @@ class CasaMontada(APITestCase):
         self.assertEqual(r.status_code, 201, r.content[:400])
         return r.data['id']
 
+    def _hospede_instalado(self):
+        """Uma reserva com check-in feito e folio aberto — o estado normal à noite."""
+        from datetime import timedelta
+
+        from mdm.models import Customer
+        from pms.models import Folio, Reservation, Room, RoomType
+
+        # O hóspede é uma ENTIDADE do cadastro mestre (mdm.Customer), a mesma a
+        # quem se emite a fatura — o PMS não tem um cadastro de pessoas à parte.
+        tipo = RoomType.objects.create(hotel=self.hotel, code='STD', name='Standard',
+                                       base_rate=Decimal('25000'))
+        quarto = Room.objects.create(hotel=self.hotel, room_type=tipo, number='101')
+        hospede = Customer.objects.create(code='C001', name='Ana Silva')
+        hoje = timezone.localdate()
+        reserva = Reservation.objects.create(
+            hotel=self.hotel, confirmation='RES0001', guest=hospede, room=quarto, room_type=tipo,
+            check_in=hoje, check_out=hoje + timedelta(days=2),
+            status='CHECKED_IN', adults=1)
+        folio = Folio.objects.create(reservation=reserva, number='F0001', status='OPEN')
+        return quarto, folio
+
     def pedir(self, ticket_id, item, qty=1, **extra):
         dados = {'item': item.id, 'quantity': qty}
         dados.update(extra)
@@ -362,6 +383,241 @@ class CobrancaEDocumentoTests(CasaMontada):
         self.assertEqual(POSTicket.objects.get(pk=conta).status, 'OPEN',
                          'O talão de conferência fechou a conta.')
 
+
+class UmDiaDeTrabalhoTests(CasaMontada):
+    """O DIA INTEIRO, DO PRINCÍPIO AO FIM — e visto pelas três pessoas que o vivem.
+
+    Os outros testes desta casa verificam peças. Este verifica o DIA: abre-se a
+    caixa de manhã, serve-se um passante ao balcão, instala-se um hóspede que
+    janta e manda para o quarto, emitem-se os papéis, o contabilista procura o
+    que tem de lançar, o dono pede as contas, e à noite fecha-se tudo.
+
+    É aqui que os erros de LÓGICA aparecem — os que nenhuma peça isolada revela.
+    Um total que bate em cada ecrã e não bate no fim do dia; dinheiro que entra
+    na caixa e não aparece no relatório; uma venda que a AGT vê e a contabilidade
+    não. Com dinheiro e com a AGT pelo meio, um erro destes não é um defeito de
+    programa: é uma inspeção.
+
+    Cada passo diz QUEM o faz, porque é assim que se percebe se o sistema serve
+    as pessoas que o usam.
+    """
+
+    def _doc_de(self, ticket_id):
+        from fiscal.models import FiscalDocument
+        return FiscalDocument.objects.filter(source_module='pos',
+                                             source_ref=str(ticket_id)).first()
+
+    def test_um_dia_inteiro_de_servico(self):
+        from decimal import Decimal as D
+        from fiscal.models import FiscalDocument
+
+        # ═══ MANHÃ · a caixa abre ════════════════════════════════════════════
+        # (O EMPREGADO) O fundo de maneio entra na gaveta.
+        caixa = CashSession.objects.get(pk=self.caixa.pk)
+        self.assertEqual(caixa.status, 'OPEN')
+        self.assertEqual(caixa.expected_cash, D('10000'),
+                         'A caixa abre e já não bate certo com o fundo.')
+
+        # ═══ ALMOÇO · um PASSANTE ao balcão ══════════════════════════════════
+        # (O EMPREGADO) Mesa 12: um bife e duas cervejas.
+        passante = self.abrir_conta(guest_type='PASSANTE')
+        self.pedir(passante, self.bife, 1)
+        self.pedir(passante, self.cerveja, 2)
+
+        # OS PEDIDOS VÃO PARA ONDE TÊM DE IR — comida à cozinha, bebida ao bar.
+        r = self.client.post(f'/api/pos/tickets/{passante}/fire_kitchen/', {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        comandas = {j.job_type: j for j in PrintJob.objects.filter(reference__isnull=False)}
+        self.assertIn('Bife à Casa', comandas['KITCHEN'].content)
+        self.assertIn('Cerveja Cuca', comandas['BAR'].content)
+        self.assertNotIn('Cerveja', comandas['KITCHEN'].content,
+                         'A cozinha recebeu a bebida.')
+        self.assertNotIn('Bife', comandas['BAR'].content,
+                         'O bar recebeu a comida.')
+
+        # (O CLIENTE) Pede a conta antes de pagar — talão de conferência.
+        r = self.client.post(f'/api/pos/tickets/{passante}/consult/', {}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content[:300])
+        self.assertEqual(POSTicket.objects.get(pk=passante).status, 'OPEN',
+                         'A consulta de mesa fechou a conta.')
+
+        # (O EMPREGADO) Cobra em dinheiro: 8500 + 2×1200 = 10900.
+        total_passante = D(self.client.get(f'/api/pos/tickets/{passante}/').data['grand_total'])
+        self.assertEqual(total_passante, D('10900.00'))
+        r = self.client.post(f'/api/pos/tickets/{passante}/pay/',
+                             {'payment_method': self.dinheiro.id,
+                              'amount': str(total_passante)}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+
+        # O PAPEL SAI COM O TROCO — assinado e encadeado, sem segundo botão.
+        doc_passante = self._doc_de(passante)
+        self.assertIsNotNone(doc_passante, 'O passante pagou e não levou documento.')
+        self.assertEqual(doc_passante.gross_total, total_passante)
+        self.assertTrue(doc_passante.doc_hash and doc_passante.doc_hash != '0')
+        self.assertIn('programa validado', doc_passante.print_mention or '')
+
+        # ═══ TARDE · chega um HÓSPEDE ════════════════════════════════════════
+        quarto, folio = self._hospede_instalado()
+
+        # (O DONO) Antes de o hóspede jantar, quer uma PROFORMA do evento que
+        # está a negociar — documento comercial, não fiscal: não numera série
+        # fiscal nenhuma nem conta para a AGT enquanto não for convertido.
+        from fiscal import commercial
+        pf = commercial.create_document(
+            kind='PROFORMA', customer_name='Empresa Cliente, Lda.',
+            customer_tax_id='5417000000', operator_name='Dono',
+            lines=[{'description': 'Jantar de grupo (20 pessoas)', 'quantity': 20,
+                    'unit_price': D('8500'), 'tax_percentage': D('14')}])
+        self.assertTrue(pf.number.startswith('PRF'), f'A proforma saiu como {pf.number}.')
+        self.assertEqual(FiscalDocument.objects.filter(doc_type__code='PF').count(), 0,
+                         'A proforma numerou uma série FISCAL — não é um documento fiscal.')
+
+        # ═══ NOITE · o hóspede janta e manda para o quarto ═══════════════════
+        hospede = self.abrir_conta(guest_type='HOTEL')
+        self.pedir(hospede, self.bife, 1)
+        self.pedir(hospede, self.cerveja, 1)
+        self.client.post(f'/api/pos/tickets/{hospede}/fire_kitchen/', {}, format='json')
+        total_hospede = D(self.client.get(f'/api/pos/tickets/{hospede}/').data['grand_total'])
+
+        r = self.client.post(f'/api/pos/tickets/{hospede}/pay/',
+                             {'payment_method': self.quarto.id,
+                              'amount': str(total_hospede), 'room': quarto.number},
+                             format='json')
+        self.assertEqual(r.status_code, 200, r.content[:400])
+
+        # O JANTAR ESTÁ NO QUARTO, e NÃO na gaveta — ninguém pagou dinheiro.
+        self.assertEqual(sum(c.amount for c in folio.charges.filter(is_void=False)),
+                         total_hospede, 'O jantar não chegou inteiro ao quarto.')
+        caixa = CashSession.objects.get(pk=self.caixa.pk)
+        self.assertEqual(caixa.expected_cash, D('10000') + total_passante,
+                         'A conta quarto foi contada como dinheiro na gaveta — '
+                         'o fecho ia acusar uma sobra que não existe.')
+
+        # ═══ O CONTABILISTA ══════════════════════════════════════════════════
+        # Ele não anda a perguntar: procura o que está por lançar, e lança.
+        #
+        # O plano de contas é o mesmo que o instalador cria (seed_accounting) —
+        # e foi este teste que descobriu que o instalador NÃO o corria: sem
+        # diário, `post_pos_ticket` devolvia None em silêncio e as vendas nunca
+        # chegavam à contabilidade.
+        from django.core.management import call_command
+        call_command('seed_accounting', verbosity=0)
+        from accounting.posting import post_pos_ticket
+        lancamento = post_pos_ticket(POSTicket.objects.get(pk=passante))
+        self.assertIsNotNone(lancamento, 'A venda do passante não gerou lançamento.')
+        debitos = sum(l.debit for l in lancamento.lines.all())
+        creditos = sum(l.credit for l in lancamento.lines.all())
+        self.assertEqual(debitos, creditos,
+                         f'Partidas dobradas desequilibradas: {debitos} ≠ {creditos}.')
+        self.assertEqual(debitos, total_passante,
+                         'A contabilidade não lançou o mesmo que entrou na caixa.')
+
+        # Lançar DUAS VEZES a mesma venda duplicaria a receita do mês.
+        outra = post_pos_ticket(POSTicket.objects.get(pk=passante))
+        self.assertEqual(lancamento.id, getattr(outra, 'id', lancamento.id),
+                         'A mesma venda foi lançada duas vezes na contabilidade.')
+
+        # ═══ O DONO pede as contas do dia ════════════════════════════════════
+        r = self.client.post('/api/pos/reports/run/',
+                             {'code': 'rec_dia', 'params': {}}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        # O dia rendeu as DUAS vendas — a do passante (dinheiro na gaveta) e a do
+        # hóspede (lançada no quarto). A forma de pagamento é diferente; a
+        # receita é receita nas duas. Um relatório que só contasse o dinheiro
+        # dava ao dono metade do que a casa realmente vendeu.
+        self.assertEqual(D(str(r.data['totals']['total'])), total_passante + total_hospede,
+                         f'O relatório do dia não soma as duas vendas: {r.data["totals"]}')
+
+        # O relatório de IVA é o que acompanha a declaração.
+        r = self.client.post('/api/pos/reports/run/',
+                             {'code': 'fat_iva', 'params': {}}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.assertTrue(r.data.get('rows'), 'O resumo de IVA do dia veio vazio.')
+
+        # ═══ FECHO · o empregado conta a gaveta ══════════════════════════════
+        esperado = CashSession.objects.get(pk=self.caixa.pk).expected_cash
+        self.assertEqual(esperado, D('20900'), '10000 de fundo + 10900 do passante.')
+
+        r = self.client.post(f'/api/pos/cash-sessions/{self.caixa.id}/close/',
+                             {'counted_amount': str(esperado), 'closed_by': 'Empregado 1'},
+                             format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        caixa = CashSession.objects.get(pk=self.caixa.pk)
+        self.assertEqual(caixa.difference, D('0'), 'A gaveta não bateu certo.')
+
+        # ═══ FECHO DO DIA ════════════════════════════════════════════════════
+        r = self.client.post('/api/pos/ops/day-close/', {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+
+        # O ARQUIVO FISCAL SOBREVIVE AO FECHO — a AGT pode pedi-lo anos depois.
+        self.assertTrue(FiscalDocument.objects.filter(pk=doc_passante.pk).exists(),
+                        'O fecho do dia apagou o documento fiscal do passante.')
+
+        # ═══ MANHÃ SEGUINTE · o hóspede faz check-out ════════════════════════
+        from fiscal.models import TaxRate
+        TaxRate.objects.get_or_create(code='IVA14', defaults={
+            'name': 'IVA 14%', 'percentage': D('14'), 'is_default': True, 'is_active': True})
+        self.client.post(f'/api/pms/folios/{folio.id}/settle/', {}, format='json')
+        r = self.client.post(f'/api/pms/folios/{folio.id}/generate-invoice/', {}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content[:400])
+        self.assertEqual(D(str(r.data['total'])), total_hospede,
+                         'A fatura do check-out não inclui o jantar.')
+
+        r = self.client.post(f'/api/pms/reservations/{folio.reservation_id}/check_out/',
+                             {}, format='json')
+        self.assertIn(r.status_code, (200, 201), r.content[:400])
+
+        # ═══ O QUE O DIA TEM DE DECLARAR ═════════════════════════════════════
+        # Duas vendas, dois clientes, dois caminhos — e a soma tem de fechar.
+        total_fiscal = sum(d.gross_total for d in FiscalDocument.objects.all()
+                           if d.doc_type.code in ('FR', 'FT'))
+        self.assertEqual(total_fiscal, total_passante + total_hospede,
+                         f'O que o sistema declara ({total_fiscal}) não é o que '
+                         f'vendeu ({total_passante + total_hospede}).')
+    def test_um_consumo_no_quarto_so_e_declarado_uma_vez(self):
+        """O DEFEITO MAIS CARO QUE ESTE PERCURSO ENCONTROU.
+
+        Ao cobrar com "Conta Quarto", o POS emitia uma fatura — e o PMS emitia
+        outra no check-out, pelo mesmo consumo. O MESMO jantar era declarado
+        DUAS VEZES à AGT: o hotel pagava IVA a dobrar sobre cada consumo de
+        hóspede e o SAF-T declarava receita que nunca existiu.
+
+        E nada no ecrã dava por isso — vistas uma a uma, as duas faturas estavam
+        certas. Só somando o dia é que a diferença aparece.
+
+        A regra já existia escrita no outro caminho que faz o mesmo
+        (`charge_to_room`: "NÃO fiscaliza aqui"). Faltava no `pay()`, que é
+        precisamente o botão por onde o empregado passa.
+        """
+        from fiscal.models import FiscalDocument
+        quarto, folio = self._hospede_instalado()
+
+        conta = self.abrir_conta(guest_type='HOTEL')
+        self.pedir(conta, self.bife, 1)
+        r = self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                             {'payment_method': self.quarto.id, 'amount': '8500.00',
+                              'room': quarto.number}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+
+        # O POS NÃO emite nada: quem paga é o hóspede no check-out.
+        self.assertFalse(
+            FiscalDocument.objects.filter(source_module='pos', source_ref=str(conta)).exists(),
+            'O POS faturou um consumo que vai ser faturado outra vez no check-out.')
+        # Mas o consumo ESTÁ no quarto — não se perdeu.
+        self.assertEqual(sum(c.amount for c in folio.charges.filter(is_void=False)),
+                         Decimal('8500.00'))
+
+    def test_a_venda_a_dinheiro_continua_a_ser_faturada(self):
+        """O reverso: não vá a correcção acima calar também o caso normal."""
+        from fiscal.models import FiscalDocument
+        conta = self.abrir_conta()
+        self.pedir(conta, self.bife, 1)
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': self.dinheiro.id, 'amount': '8500.00'},
+                         format='json')
+        self.assertTrue(
+            FiscalDocument.objects.filter(source_module='pos', source_ref=str(conta)).exists(),
+            'Uma venda a dinheiro deixou de ser faturada.')
 
 class FechoDeCaixaTests(CasaMontada):
     """ONDE O DINHEIRO SE CONFERE.
@@ -625,27 +881,6 @@ class FechoDoDiaTests(CasaMontada):
 
 class PosFalaComOPmsTests(CasaMontada):
     """A travessia: o consumo feito na sala tem de cair no quarto certo."""
-
-    def _hospede_instalado(self):
-        """Uma reserva com check-in feito e folio aberto — o estado normal à noite."""
-        from datetime import timedelta
-
-        from mdm.models import Customer
-        from pms.models import Folio, Reservation, Room, RoomType
-
-        # O hóspede é uma ENTIDADE do cadastro mestre (mdm.Customer), a mesma a
-        # quem se emite a fatura — o PMS não tem um cadastro de pessoas à parte.
-        tipo = RoomType.objects.create(hotel=self.hotel, code='STD', name='Standard',
-                                       base_rate=Decimal('25000'))
-        quarto = Room.objects.create(hotel=self.hotel, room_type=tipo, number='101')
-        hospede = Customer.objects.create(code='C001', name='Ana Silva')
-        hoje = timezone.localdate()
-        reserva = Reservation.objects.create(
-            hotel=self.hotel, confirmation='RES0001', guest=hospede, room=quarto, room_type=tipo,
-            check_in=hoje, check_out=hoje + timedelta(days=2),
-            status='CHECKED_IN', adults=1)
-        folio = Folio.objects.create(reservation=reserva, number='F0001', status='OPEN')
-        return quarto, folio
 
     def test_consumo_do_hospede_cai_no_folio_do_quarto(self):
         quarto, folio = self._hospede_instalado()

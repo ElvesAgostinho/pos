@@ -1,18 +1,23 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
+  "plugins": [
+    "react",
+    "typescript",
+    "oxc"
+  ],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }],
-
-    "react/no-unstable-nested-components": ["error", { "allowAsProps": true }]
-  },
-  "overrides": [
-    {
-      "files": ["src/pages/PosTerminal.tsx", "src/pages/PosStation.tsx"],
-      "rules": {
-        "react/no-unstable-nested-components": "off"
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
       }
-    }
-  ]
+    ],
+    "react/no-unstable-nested-components": [
+      "error",
+      {
+        "allowAsProps": true
+      }
+    ]
+  }
 }

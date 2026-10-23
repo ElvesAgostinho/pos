@@ -232,6 +232,19 @@ def main():
     # 0 unidades de medida configuradas. Idempotente, como os outros seeds acima.
     correr('seed_uoms')
 
+    # O PLANO DE CONTAS (PGC-AO), OS DIÁRIOS E O EXERCÍCIO.
+    #
+    # O comando existia e o instalador nunca o corria. Sem plano de contas não há
+    # diário; sem diário, `post_pos_ticket` devolve None e DESISTE EM SILÊNCIO —
+    # cada venda do dia era lançada na caixa, declarada à AGT, e não chegava à
+    # contabilidade. Ninguém dava por nada até o contabilista abrir o sistema ao
+    # fim do mês e encontrar o razão vazio, com as vendas todas já emitidas e o
+    # período a fechar.
+    #
+    # Idempotente (update_or_create), como os outros seeds: numa atualização não
+    # mexe no que o contabilista já ajustou.
+    correr('seed_accounting')
+
     # A LICENÇA primeiro: pode trazer a conta do dono com ela, e nesse caso não
     # se pede nada a ninguém.
     activar_licenca()

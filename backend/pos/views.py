@@ -1540,9 +1540,30 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 pass   # a fidelização NUNCA pode partir uma venda
 
             _safe_consume(ticket, request)   # saída de stock (ficha técnica/artigo)
-            # Conta corrente: o documento é uma FATURA (por receber), não uma fatura-recibo.
-            _safe_fiscalize(ticket, request, credito=bool(pm.current_account),
-                            customer=entidade)
+
+            # ══ O QUE VAI PARA O QUARTO NÃO SE FATURA AQUI ══════════════════
+            #
+            # Um consumo lançado no folio NÃO é uma venda concluída no POS: o
+            # hóspede ainda não pagou nada. Quem paga é ele no CHECK-OUT, e é aí
+            # que sai a fatura — a do folio, com o alojamento e todos os
+            # consumos juntos.
+            #
+            # Isto emitia um documento fiscal na mesma, ao cobrar. Resultado: o
+            # MESMO jantar era declarado DUAS VEZES à AGT — uma pelo POS ao
+            # lançar no quarto, outra pelo PMS ao fechar o folio. O hotel pagava
+            # IVA a dobrar sobre cada consumo de hóspede, o SAF-T declarava
+            # receita que não existiu, e nada no ecrã dava por isso: as duas
+            # faturas estavam certas vistas uma a uma.
+            #
+            # A regra já existia e estava escrita no outro caminho que faz o
+            # mesmo (`charge_to_room`, mais abaixo: "NÃO fiscaliza aqui"). Só
+            # este não a aplicava — e era por este que o empregado passava,
+            # porque é o botão de cobrar.
+            vai_para_o_folio = bool(pm.charge_to_room or pm.method_type == 'ROOM')
+            if not vai_para_o_folio:
+                # Conta corrente: o documento é uma FATURA (por receber), não uma fatura-recibo.
+                _safe_fiscalize(ticket, request, credito=bool(pm.current_account),
+                                customer=entidade)
             # O TALÃO SAI AO COBRAR — todas as VIAS da série (Original p/ o cliente,
             # as outras p/ arquivo e contabilidade) entram na fila; o print_agent
             # despacha-as para a térmica. Antes só saía pelo botão manual.
