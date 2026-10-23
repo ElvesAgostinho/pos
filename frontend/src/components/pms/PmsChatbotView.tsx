@@ -13,6 +13,24 @@ import { aviso } from '../../ui/dialogo';
 
 type Msg = { from: 'user' | 'bot'; text: string };
 
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Cartao({ valor, titulo, texto, selo, f, setF, modo }: any) {
+  return (
+  <button type="button" onClick={() => setF({ ...f, connection_mode: valor })}
+    className={`flex-1 text-left p-3 rounded-[12px] border transition-colors ${
+      modo === valor ? 'border-[#2563EB] bg-white shadow-sm' : 'border-[#E6E8EC] bg-[#EEF1F5] hover:bg-white'}`}>
+    <div className="flex items-center gap-2">
+      <span className={`w-3.5 h-3.5 rounded-full border-[4px] ${modo === valor ? 'border-[#2563EB]' : 'border-[#D0D5DD]'}`} />
+      <span className="font-bold text-[11px] text-[#111827]">{titulo}</span>
+      {selo && <span className="text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#EEF1F5] text-[#6B7280] font-semibold uppercase tracking-wide">{selo}</span>}
+    </div>
+    <div className="text-[11px] text-[#6B7280] mt-1.5 leading-relaxed">{texto}</div>
+  </button>
+);
+}
+
 export default function PmsChatbotView() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<'ligacao' | 'config' | 'sim'>('ligacao');
@@ -188,18 +206,6 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
   const ligado = estado?.session_status === 'CONNECTED';
   const emparelhando = estado?.session_status === 'PAIRING';
 
-  const Cartao = ({ valor, titulo, texto, selo }: any) => (
-    <button type="button" onClick={() => setF({ ...f, connection_mode: valor })}
-      className={`flex-1 text-left p-3 rounded-[12px] border transition-colors ${
-        modo === valor ? 'border-[#2563EB] bg-white shadow-sm' : 'border-[#E6E8EC] bg-[#EEF1F5] hover:bg-white'}`}>
-      <div className="flex items-center gap-2">
-        <span className={`w-3.5 h-3.5 rounded-full border-[4px] ${modo === valor ? 'border-[#2563EB]' : 'border-[#D0D5DD]'}`} />
-        <span className="font-bold text-[11px] text-[#111827]">{titulo}</span>
-        {selo && <span className="text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#EEF1F5] text-[#6B7280] font-semibold uppercase tracking-wide">{selo}</span>}
-      </div>
-      <div className="text-[11px] text-[#6B7280] mt-1.5 leading-relaxed">{texto}</div>
-    </button>
-  );
 
   return (
     <div className="flex-1 overflow-auto p-4 space-y-3 text-[12px] bg-[#EEF1F5]">
@@ -211,9 +217,9 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
 
       <div className="flex gap-3">
         <Cartao valor="BRIDGE" titulo="API não oficial" selo="liga em minutos"
-          texto="Usa o número que o hotel já tem. Liga-se lendo um QR Code com o telemóvel, ou recebendo um código de 8 letras — tal como o WhatsApp Web. Precisa de um serviço de ponte a correr." />
+          texto="Usa o número que o hotel já tem. Liga-se lendo um QR Code com o telemóvel, ou recebendo um código de 8 letras — tal como o WhatsApp Web. Precisa de um serviço de ponte a correr." f={f} setF={setF} modo={modo} />
         <Cartao valor="OFFICIAL" titulo="API oficial (Meta)" selo="homologada"
-          texto="O caminho oficial da Meta: sem risco de bloqueio e com modelos de mensagem aprovados. Exige conta WhatsApp Business verificada e aprovação da Meta." />
+          texto="O caminho oficial da Meta: sem risco de bloqueio e com modelos de mensagem aprovados. Exige conta WhatsApp Business verificada e aprovação da Meta." f={f} setF={setF} modo={modo} />
       </div>
 
       {modo === 'BRIDGE' ? (

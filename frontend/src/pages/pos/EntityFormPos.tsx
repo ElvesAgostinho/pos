@@ -26,6 +26,23 @@ import { IcoVisto, IcoCruz } from './Icons';
  * APELIDO e PAÍS a vermelho: são os que a ficha exige. Vê-se o que falta antes de tentar
  * gravar, em vez de descobrir no fim.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Aba({ k, label, aba, setAba }: {
+  k: 'PRINCIPAL' | 'FATURACAO'; label: string;
+  aba: 'PRINCIPAL' | 'FATURACAO'; setAba: (v: 'PRINCIPAL' | 'FATURACAO') => void;
+}) {
+  return (
+  <button onClick={() => setAba(k)}
+    className={`px-6 h-[46px] text-[16px] font-bold border-2 border-black
+      ${aba === k ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white'
+        : 'bg-gradient-to-b from-[#3a3a3a] to-[#222] text-white/80'}`}>
+    {label}
+  </button>
+);
+}
+
 export default function EntityFormPos({ entidade, onGravado, onClose }: {
   /** para editar; vazio = nova */
   entidade?: any | null;
@@ -82,14 +99,6 @@ export default function EntityFormPos({ entidade, onGravado, onClose }: {
     } finally { setBusy(false); }
   };
 
-  const Aba = ({ k, label }: { k: 'PRINCIPAL' | 'FATURACAO'; label: string }) => (
-    <button onClick={() => setAba(k)}
-      className={`px-6 h-[46px] text-[16px] font-bold border-2 border-black
-        ${aba === k ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white'
-          : 'bg-gradient-to-b from-[#3a3a3a] to-[#222] text-white/80'}`}>
-      {label}
-    </button>
-  );
 
   return (
     <ComTeclado>
@@ -125,8 +134,8 @@ export default function EntityFormPos({ entidade, onGravado, onClose }: {
 
             {/* ── as duas moradas ── */}
             <div className="flex gap-1 pt-2">
-              <Aba k="PRINCIPAL" label="Morada principal" />
-              <Aba k="FATURACAO" label="Morada de Faturação" />
+              <Aba k="PRINCIPAL" label="Morada principal" aba={aba} setAba={setAba} />
+              <Aba k="FATURACAO" label="Morada de Faturação" aba={aba} setAba={setAba} />
             </div>
 
             <div className="border-2 border-black p-1 space-y-1 bg-black/20">

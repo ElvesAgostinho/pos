@@ -9,6 +9,23 @@ import Window from './Window';
  * login o terminal para AQUI, antes das mesas e antes de vender. Não é opcional e não
  * se fecha — um PIN provisório partilhado é uma auditoria que não vale nada.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Campo({ id, label, v, campo, setCampo }: {
+  id: 'A' | 'N' | 'C'; label: string; v: string;
+  campo: 'A' | 'N' | 'C'; setCampo: (v: 'A' | 'N' | 'C') => void;
+}) {
+  return (
+  <button onClick={() => setCampo(id)}
+    className={`flex items-center justify-between px-3 h-[46px] rounded border-2 text-left
+      ${campo === id ? 'border-[#c9a400] bg-[#2a2a2a]' : 'border-[#3a3a3a] bg-[#222]'}`}>
+    <span className="text-white/70 text-[14px]">{label}</span>
+    <span className="text-white text-[22px] tracking-[6px]">{'●'.repeat(v.length) || '—'}</span>
+  </button>
+);
+}
+
 export default function PinChange({ operador, onDone }: {
   operador: any; onDone: () => void;
 }) {
@@ -43,14 +60,6 @@ export default function PinChange({ operador, onDone }: {
     }
   };
 
-  const Campo = ({ id, label, v }: { id: 'A' | 'N' | 'C'; label: string; v: string }) => (
-    <button onClick={() => setCampo(id)}
-      className={`flex items-center justify-between px-3 h-[46px] rounded border-2 text-left
-        ${campo === id ? 'border-[#c9a400] bg-[#2a2a2a]' : 'border-[#3a3a3a] bg-[#222]'}`}>
-      <span className="text-white/70 text-[14px]">{label}</span>
-      <span className="text-white text-[22px] tracking-[6px]">{'●'.repeat(v.length) || '—'}</span>
-    </button>
-  );
 
   return (
     <Window title="Mudar o PIN (obrigatório)" width={430}>
@@ -58,9 +67,9 @@ export default function PinChange({ operador, onDone }: {
         <div className="text-white/80 text-[14px]">
           {operador?.name} — o gestor marcou a sua ficha para <b>mudar o PIN</b> antes de trabalhar.
         </div>
-        <Campo id="A" label="PIN atual" v={atual} />
-        <Campo id="N" label="PIN novo (mín. 4 dígitos)" v={novo} />
-        <Campo id="C" label="Confirmar o PIN novo" v={confirmar} />
+        <Campo id="A" label="PIN atual" v={atual} campo={campo} setCampo={setCampo} />
+        <Campo id="N" label="PIN novo (mín. 4 dígitos)" v={novo} campo={campo} setCampo={setCampo} />
+        <Campo id="C" label="Confirmar o PIN novo" v={confirmar} campo={campo} setCampo={setCampo} />
 
         <div className="grid grid-cols-3 gap-1 mt-1">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((t) => (

@@ -10,6 +10,19 @@ import { TOKENS } from '../../config/theme';
  * hoje, que contas estão abertas e há quanto tempo, que mesas estão ocupadas, e se a
  * cozinha tem comandas paradas. Atualiza-se sozinho.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Card({ label, value, sub, color }: any) {
+  return (
+  <div className="bg-white px-4 py-3 flex-1" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
+    <div className="text-[11px] text-[#6B7280] uppercase tracking-wide">{label}</div>
+    <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#2563EB' }}>{value}</div>
+    {sub && <div className="text-[11px] text-[#6B7280]">{sub}</div>}
+  </div>
+);
+}
+
 export default function PosOnline() {
   const { data: d } = useQuery({
     queryKey: ['pos-online'],
@@ -19,13 +32,6 @@ export default function PosOnline() {
 
   if (!d) return <div className="flex-1 flex items-center justify-center text-[#6B7280]">A carregar…</div>;
 
-  const Card = ({ label, value, sub, color }: any) => (
-    <div className="bg-white px-4 py-3 flex-1" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
-      <div className="text-[11px] text-[#6B7280] uppercase tracking-wide">{label}</div>
-      <div className="text-[26px] font-bold leading-tight" style={{ color: color || '#2563EB' }}>{value}</div>
-      {sub && <div className="text-[11px] text-[#6B7280]">{sub}</div>}
-    </div>
-  );
   const panelStyle = { boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft };
   const panelHeader = 'px-3 py-1.5 text-[12px] font-bold border-b';
   const panelHeaderStyle = { background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 100%)', borderColor: TOKENS.line, color: TOKENS.textOnLight };

@@ -42,6 +42,18 @@ const STATUS: Record<string, { label: string; bg: string; icon: any }> = {
  * A venda nunca espera: o documento é emitido e entra em fila; o transmissor envia-o
  * assim que houver linha, com reenvio automático e chave de idempotência (nunca duplica).
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Kpi({ label, value, color }: any) {
+  return (
+  <div className="flex-1 bg-white border border-[#E6E8EC] px-3 py-2" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
+    <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
+    <div className="text-[22px] font-black leading-tight" style={{ color: color || '#2563EB' }}>{value ?? '—'}</div>
+  </div>
+);
+}
+
 export default function AgtTransmitView() {
   const qc = useQueryClient();
   const [sel, setSel] = useState<any>(null);
@@ -85,12 +97,6 @@ export default function AgtTransmitView() {
   const q = data?.queue;
   const f = data?.fiscal;
 
-  const Kpi = ({ label, value, color }: any) => (
-    <div className="flex-1 bg-white border border-[#E6E8EC] px-3 py-2" style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
-      <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
-      <div className="text-[22px] font-black leading-tight" style={{ color: color || '#2563EB' }}>{value ?? '—'}</div>
-    </div>
-  );
 
   return (
     <ClassicWindow title="Transmissão AGT — Faturação Eletrónica" icon={<Radio size={14} className="text-gray-300" />}

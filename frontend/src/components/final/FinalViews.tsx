@@ -35,6 +35,13 @@ function Card({ label, value, tone, sub }: any) {
 }
 
 // ==================== Workflow (19) ====================
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Row({ k, v }: any) {
+  return <div className="flex justify-between border-b border-[#F1F2F4] py-1 text-[12px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
+}
+
 export function WfcDashboardView() {
   const { data: d } = useQuery({ queryKey: ['final', 'wfDashboard'], queryFn: () => finalApi.wfDashboard() });
   return (
@@ -340,7 +347,6 @@ export function AdmModuleStatusView() {
 
 export function AdmVersionsView() {
   const { data: d } = useQuery({ queryKey: ['final', 'systemInfo'], queryFn: () => finalApi.systemInfo() });
-  const Row = ({ k, v }: any) => <div className="flex justify-between border-b border-[#F1F2F4] py-1 text-[12px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
   return (
     <ClassicWindow title="Administração — Versões" icon={<ShieldCheck size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Informação de versão e ambiente</div>}>
       <div className="p-3">{!d ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : (

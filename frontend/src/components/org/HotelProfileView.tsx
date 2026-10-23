@@ -11,6 +11,18 @@ import { notifyError, notifyGuide } from '../../utils/friendlyError';
  * Antes isto não existia: os dados fiscais estavam na base de dados sem ecrã nenhum
  * para os introduzir, e o hotel só tinha "nome" e "localização".
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Tab({ id, label, tab, setTab }: any) {
+  return (
+  <button onClick={() => setTab(id)}
+    className={`px-4 py-1.5 text-[12px] font-bold border border-b-0 ${tab === id ? 'bg-white text-[#111827] border-[#E6E8EC]' : 'bg-[#EEF1F5] text-gray-600 border-[#E6E8EC]'}`}>
+    {label}
+  </button>
+);
+}
+
 export default function HotelProfileView() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<'hotel' | 'fiscal' | 'banks' | 'cert'>('hotel');
@@ -64,12 +76,6 @@ export default function HotelProfileView() {
   const cert = data?.certification;
   const miss = (field: string) => (c?.missing || []).find((m: any) => m.field === field)?.why;
 
-  const Tab = ({ id, label }: any) => (
-    <button onClick={() => setTab(id)}
-      className={`px-4 py-1.5 text-[12px] font-bold border border-b-0 ${tab === id ? 'bg-white text-[#111827] border-[#E6E8EC]' : 'bg-[#EEF1F5] text-gray-600 border-[#E6E8EC]'}`}>
-      {label}
-    </button>
-  );
 
   return (
     <ClassicWindow title="Ficha do Hotel — Dados da Propriedade" icon={<Building2 size={14} className="text-gray-300" />}
@@ -100,10 +106,10 @@ export default function HotelProfileView() {
         )}
 
         <div className="px-3 pt-3 flex gap-1">
-          <Tab id="hotel" label="Propriedade & Contactos" />
-          <Tab id="fiscal" label="Dados Fiscais (saem na fatura)" />
-          <Tab id="banks" label="Contas Bancárias" />
-          <Tab id="cert" label="Certificação AGT" />
+          <Tab id="hotel" label="Propriedade & Contactos" tab={tab} setTab={setTab} />
+          <Tab id="fiscal" label="Dados Fiscais (saem na fatura)" tab={tab} setTab={setTab} />
+          <Tab id="banks" label="Contas Bancárias" tab={tab} setTab={setTab} />
+          <Tab id="cert" label="Certificação AGT" tab={tab} setTab={setTab} />
         </div>
 
         <div className="mx-3 mb-3 bg-[#EEF1F5] border border-[#E6E8EC] p-3 flex-1 overflow-auto">

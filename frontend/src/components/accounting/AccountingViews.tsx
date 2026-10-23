@@ -29,6 +29,42 @@ const Card = ({ label, value, tone, sub }: any) => (
 );
 
 // ==================== Dashboard ====================
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Line({ label, value, bold }: any) {
+  return <div className={`flex justify-between py-0.5 border-b border-[#F1F2F4] text-[11px] ${bold ? 'font-bold' : ''}`}><span>{label}</span><span>{AOA(value)}</span></div>;
+}
+
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Panel({ title, children }: any) {
+  return <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">{title}</div><div className="p-2">{children}</div></div>;
+}
+
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Section({ title, source, rows, run }: any) {
+  return (
+  <div className="bg-white border border-[#E6E8EC]">
+    <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold flex items-center justify-between">
+      <span>{title} — {rows.length} pendente(s)</span>
+      {rows.length > 0 && <ClassicButton icon={Zap} label="Contabilizar" onClick={() => run.mutate([source])} />}
+    </div>
+    <div className="max-h-40 overflow-auto">
+      <ClassicGrid rowKey="ref" data={rows} columns={[
+        { header: 'Documento', accessor: (r: any) => `${r.kind ? r.kind + ' ' : ''}${r.ref}`, width: '46%' },
+        { header: 'Data', accessor: 'date', width: '27%' },
+        { header: 'Valor', accessor: (r: any) => AOA(r.amount), width: '27%' },
+      ]} />
+      {rows.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3 flex items-center justify-center gap-1"><Check size={13} /> Tudo contabilizado</div>}
+    </div>
+  </div>
+);
+}
+
 export function AccDashboardView() {
   const { data: d } = useQuery({ queryKey: ['acc', 'dashboard'], queryFn: () => accApi.dashboard() });
   return (
@@ -260,22 +296,6 @@ export function AccIntegrationView() {
     onSuccess: (r: any) => { aviso(r.detail); qc.invalidateQueries({ queryKey: ['acc'] }); },
   });
   const p = data?.pending ?? { pos: [], purchase: [], treasury: [] };
-  const Section = ({ title, source, rows }: any) => (
-    <div className="bg-white border border-[#E6E8EC]">
-      <div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold flex items-center justify-between">
-        <span>{title} — {rows.length} pendente(s)</span>
-        {rows.length > 0 && <ClassicButton icon={Zap} label="Contabilizar" onClick={() => run.mutate([source])} />}
-      </div>
-      <div className="max-h-40 overflow-auto">
-        <ClassicGrid rowKey="ref" data={rows} columns={[
-          { header: 'Documento', accessor: (r: any) => `${r.kind ? r.kind + ' ' : ''}${r.ref}`, width: '46%' },
-          { header: 'Data', accessor: 'date', width: '27%' },
-          { header: 'Valor', accessor: (r: any) => AOA(r.amount), width: '27%' },
-        ]} />
-        {rows.length === 0 && <div className="text-center text-gray-400 text-[11px] py-3 flex items-center justify-center gap-1"><Check size={13} /> Tudo contabilizado</div>}
-      </div>
-    </div>
-  );
   return (
     <ClassicWindow title="Integração Contabilística (Auto-Posting)" icon={<Zap size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">{data ? `${data.total} documento(s) por contabilizar` : '—'}</div>}>
@@ -288,9 +308,9 @@ export function AccIntegrationView() {
           </div>
         </div>
         {isLoading ? <div className="text-center text-gray-400 py-8 text-[12px]">A carregar…</div> : <>
-          <Section title="Vendas POS" source="pos" rows={p.pos} />
-          <Section title="Compras (faturas de fornecedor)" source="purchase" rows={p.purchase} />
-          <Section title="Tesouraria (recebimentos/pagamentos)" source="treasury" rows={p.treasury} />
+          <Section title="Vendas POS" source="pos" rows={p.pos} run={run} />
+          <Section title="Compras (faturas de fornecedor)" source="purchase" rows={p.purchase} run={run} />
+          <Section title="Tesouraria (recebimentos/pagamentos)" source="treasury" rows={p.treasury} run={run} />
         </>}
 
         {/* Apuramento de resultados (fecho de exercício) */}
@@ -315,8 +335,6 @@ export function AccIntegrationView() {
 export function AccStatementsView() {
   const { data: is_ } = useQuery({ queryKey: ['acc', 'incomeStatement'], queryFn: () => accApi.incomeStatement() });
   const { data: bs } = useQuery({ queryKey: ['acc', 'balanceSheet'], queryFn: () => accApi.balanceSheet() });
-  const Line = ({ label, value, bold }: any) => <div className={`flex justify-between py-0.5 border-b border-[#F1F2F4] text-[11px] ${bold ? 'font-bold' : ''}`}><span>{label}</span><span>{AOA(value)}</span></div>;
-  const Panel = ({ title, children }: any) => <div className="bg-white border border-[#E6E8EC]"><div className="bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-1.5 text-[11px] font-bold">{title}</div><div className="p-2">{children}</div></div>;
   return (
     <ClassicWindow title="Demonstrações Financeiras" icon={<FileBarChart size={14} className="text-gray-300" />} footer={<div className="text-gray-600">Demonstração de Resultados + Balanço (PGC-AO)</div>}>
       <div className="p-3 grid grid-cols-2 gap-3">

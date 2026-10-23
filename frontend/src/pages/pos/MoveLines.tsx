@@ -28,6 +28,78 @@ import { IcoCruz, IcoDinheiro, IcoParciais, IcoPessoas, IcoVisto } from './Icons
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Painel({ conta, id: _id, setId, sel, setSel, lado, modo, esq, setEditarPax, setEscolherMesa }: any) {
+  return (
+    <div className="flex-1 flex flex-col min-w-0">
+      <div className="h-[44px] bg-[#3a3a3a] flex items-center px-3 gap-2">
+        <span className="text-white text-[19px] font-bold truncate flex-1">
+          Mesa no: {conta?.table_label || '—'} ({conta?.guests ?? 0})
+        </span>
+        {modo === 'TRANSFER' && lado === 'DIR' && (
+          <button onClick={() => setEscolherMesa(true)}
+            className="h-[38px] px-3 bg-[#0f8b8d] text-white text-[14px] font-bold rounded">
+            escolher mesa
+          </button>
+        )}
+        {/* (👤) número de clientes deste lado — abre a MESMA ficha da abertura da
+            mesa, só sem o tipo (Passante/Hotel/Interno), que já ficou decidido.
+            Existe nas DUAS funções (Parciais e Transferências): mudar de mesa ou
+            separar a conta não muda quantas pessoas há de cada lado. */}
+        <button onClick={() => setEditarPax(lado)} disabled={lado === 'DIR' && !_id}
+          title="Número de clientes"
+          className="w-[38px] h-[34px] flex items-center justify-center bg-[#1f1f1f] text-white rounded
+            disabled:opacity-30">
+          <IcoPessoas size={18} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-[70px_1fr_120px] bg-[#2b2b2b] text-white text-[16px] font-bold px-2 py-2">
+        <span>Qtd</span><span>Descrição</span><span className="text-right">Total</span>
+      </div>
+
+      <div className="flex-1 bg-[#8a8a8a]/30 overflow-auto pos-arrasta border-2 border-[#c9a400]">
+        {(conta?.lines || []).map((l: any) => (
+          <button key={l.id}
+            onClick={() => setSel(sel.includes(l.id)
+              ? sel.filter((x: number) => x !== l.id) : [...sel, l.id])}
+            className={`w-full grid grid-cols-[70px_1fr_120px] px-2 py-2 text-left text-white
+              text-[15px] border-b border-black/20 ${sel.includes(l.id) ? 'bg-[#0f8b8d]' : ''}`}>
+            <span>{Number(l.quantity)}</span>
+            <span className="truncate">
+              {l.description}
+              {['FIRED', 'PREPARING', 'READY'].includes(l.kds_status) && (
+                <span className="ml-1 text-[11px] text-[#f0c000]">• na cozinha</span>
+              )}
+            </span>
+            <span className="text-right">{money(l.line_total)}</span>
+          </button>
+        ))}
+        {!conta && (
+          <div className="text-white/50 text-center py-10">
+            {modo === 'TRANSFER' ? 'Escolha a mesa de destino.' : 'Ainda não há subconta.'}
+          </div>
+        )}
+      </div>
+
+      {/* AS PESSOAS DA MESA — o mesmo carrossel da venda: tocar num número troca a
+          subconta (consulta-se qualquer conta da mesa); um número vazio ACRESCENTA
+          uma pessoa. Nas PARCIAIS o painel direito, mesmo vazio, mostra as pessoas
+          da MESMA mesa — é assim que se escolhe para QUEM vai o artigo. */}
+      <SubcontaBar conta={conta}
+        mesa={modo === 'SPLIT' ? esq?.table : conta?.table}
+        outlet={modo === 'SPLIT' ? esq?.outlet : conta?.outlet}
+        onSwitch={(nid) => { setId(nid); setSel([]); }} />
+
+      <div className="h-[52px] bg-[#8a8a8a] flex items-center justify-end px-3">
+        <span className="text-white text-[28px] font-bold">{money(conta?.grand_total)}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }: {
   modo: 'SPLIT' | 'TRANSFER';
   ticket: any;                 // a conta de onde se parte
@@ -202,74 +274,6 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
   };
 
   // ── uma conta (painel) ────────────────────────────────────────────────────
-  const Painel = ({ conta, id: _id, setId, sel, setSel, lado }: any) => {
-    return (
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="h-[44px] bg-[#3a3a3a] flex items-center px-3 gap-2">
-          <span className="text-white text-[19px] font-bold truncate flex-1">
-            Mesa no: {conta?.table_label || '—'} ({conta?.guests ?? 0})
-          </span>
-          {modo === 'TRANSFER' && lado === 'DIR' && (
-            <button onClick={() => setEscolherMesa(true)}
-              className="h-[38px] px-3 bg-[#0f8b8d] text-white text-[14px] font-bold rounded">
-              escolher mesa
-            </button>
-          )}
-          {/* (👤) número de clientes deste lado — abre a MESMA ficha da abertura da
-              mesa, só sem o tipo (Passante/Hotel/Interno), que já ficou decidido.
-              Existe nas DUAS funções (Parciais e Transferências): mudar de mesa ou
-              separar a conta não muda quantas pessoas há de cada lado. */}
-          <button onClick={() => setEditarPax(lado)} disabled={lado === 'DIR' && !_id}
-            title="Número de clientes"
-            className="w-[38px] h-[34px] flex items-center justify-center bg-[#1f1f1f] text-white rounded
-              disabled:opacity-30">
-            <IcoPessoas size={18} />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-[70px_1fr_120px] bg-[#2b2b2b] text-white text-[16px] font-bold px-2 py-2">
-          <span>Qtd</span><span>Descrição</span><span className="text-right">Total</span>
-        </div>
-
-        <div className="flex-1 bg-[#8a8a8a]/30 overflow-auto pos-arrasta border-2 border-[#c9a400]">
-          {(conta?.lines || []).map((l: any) => (
-            <button key={l.id}
-              onClick={() => setSel(sel.includes(l.id)
-                ? sel.filter((x: number) => x !== l.id) : [...sel, l.id])}
-              className={`w-full grid grid-cols-[70px_1fr_120px] px-2 py-2 text-left text-white
-                text-[15px] border-b border-black/20 ${sel.includes(l.id) ? 'bg-[#0f8b8d]' : ''}`}>
-              <span>{Number(l.quantity)}</span>
-              <span className="truncate">
-                {l.description}
-                {['FIRED', 'PREPARING', 'READY'].includes(l.kds_status) && (
-                  <span className="ml-1 text-[11px] text-[#f0c000]">• na cozinha</span>
-                )}
-              </span>
-              <span className="text-right">{money(l.line_total)}</span>
-            </button>
-          ))}
-          {!conta && (
-            <div className="text-white/50 text-center py-10">
-              {modo === 'TRANSFER' ? 'Escolha a mesa de destino.' : 'Ainda não há subconta.'}
-            </div>
-          )}
-        </div>
-
-        {/* AS PESSOAS DA MESA — o mesmo carrossel da venda: tocar num número troca a
-            subconta (consulta-se qualquer conta da mesa); um número vazio ACRESCENTA
-            uma pessoa. Nas PARCIAIS o painel direito, mesmo vazio, mostra as pessoas
-            da MESMA mesa — é assim que se escolhe para QUEM vai o artigo. */}
-        <SubcontaBar conta={conta}
-          mesa={modo === 'SPLIT' ? esq?.table : conta?.table}
-          outlet={modo === 'SPLIT' ? esq?.outlet : conta?.outlet}
-          onSwitch={(nid) => { setId(nid); setSel([]); }} />
-
-        <div className="h-[52px] bg-[#8a8a8a] flex items-center justify-end px-3">
-          <span className="text-white text-[28px] font-bold">{money(conta?.grand_total)}</span>
-        </div>
-      </div>
-    );
-  };
 
   // Sair da janela: se ficou uma mesa "escolhida como destino" mas NENHUM artigo
   // chegou a passar para ela, essa conta não serve para nada — só prende a mesa
@@ -299,7 +303,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
       <div className="flex flex-col" style={{ height: '66vh' }}>
 
         <div className="flex-1 flex overflow-hidden">
-          <Painel conta={esq} id={esqId} setId={setEsqId} sel={selEsq} setSel={setSelEsq} lado="ESQ" />
+          <Painel conta={esq} id={esqId} setId={setEsqId} sel={selEsq} setSel={setSelEsq} lado="ESQ" modo={modo} esq={esq} setEditarPax={setEditarPax} setEscolherMesa={setEscolherMesa} />
 
           <div className="w-[110px] bg-[#1f1f1f] flex flex-col items-center justify-center gap-2 px-2">
             <button onClick={() => mover(true, true)}
@@ -337,7 +341,7 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
             </div>
           </div>
 
-          <Painel conta={dir} id={dirId} setId={setDirId} sel={selDir} setSel={setSelDir} lado="DIR" />
+          <Painel conta={dir} id={dirId} setId={setDirId} sel={selDir} setSel={setSelDir} lado="DIR" modo={modo} esq={esq} setEditarPax={setEditarPax} setEscolherMesa={setEscolherMesa} />
         </div>
 
         {modo === 'SPLIT' ? (

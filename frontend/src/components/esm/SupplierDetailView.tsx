@@ -43,6 +43,18 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
   </div>
 );
 
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Metric({ label, value, suffix = '%' }: { label: string; value: any; suffix?: string }) {
+  return (
+  <div className="bg-white border border-[#E6E8EC] p-3">
+    <div className="text-[10px] text-gray-600 mb-1">{label}</div>
+    <div className="text-xl font-bold text-[#6B7280]">{value ?? '—'}{value != null && suffix}</div>
+  </div>
+);
+}
+
 export default function SupplierDetailView({ supplierId, onBack }: Props) {
   const [currentId, setCurrentId] = useState<number | null>(supplierId);
   const [tab, setTab] = useState<TabId>('geral');
@@ -363,12 +375,6 @@ function PerformanceTab({ supplier, onRecalc, recalculating }: { supplier?: Supp
   const p = supplier?.performance_profile;
   const q = supplier?.quality_controls?.[0];
 
-  const Metric = ({ label, value, suffix = '%' }: { label: string; value: any; suffix?: string }) => (
-    <div className="bg-white border border-[#E6E8EC] p-3">
-      <div className="text-[10px] text-gray-600 mb-1">{label}</div>
-      <div className="text-xl font-bold text-[#6B7280]">{value ?? '—'}{value != null && suffix}</div>
-    </div>
-  );
 
   return (
     <div className="grid grid-cols-1 gap-4">

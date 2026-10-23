@@ -16,6 +16,20 @@ const L = ({ w = 'w-[100px]', children }: any) => (
  * a pagar") que ainda não foram pagas, agrupadas pela ENTIDADE do cadastro. Muda-se a
  * caixa da série e o documento entra — ou sai — daqui. Não há regra escondida no código.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Campo({ k, label, w = 'w-[220px]', f, setF, setAplicado }: any) {
+  return (
+  <div className="flex items-center gap-2">
+    <L>{label}</L>
+    <input value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
+      onKeyDown={(e) => e.key === 'Enter' && setAplicado({ ...f })}
+      className={`${inp} ${w}`} style={inputStyle} />
+  </div>
+);
+}
+
 export default function FnbPayables() {
   const qc = useQueryClient();
   const [f, setF] = useState<any>({});
@@ -74,14 +88,6 @@ export default function FnbPayables() {
   const vista = rows.slice((page - 1) * pageSize, page * pageSize);
   const selRow = rows.find((r) => r.id === sel);
 
-  const Campo = ({ k, label, w = 'w-[220px]' }: any) => (
-    <div className="flex items-center gap-2">
-      <L>{label}</L>
-      <input value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
-        onKeyDown={(e) => e.key === 'Enter' && setAplicado({ ...f })}
-        className={`${inp} ${w}`} style={inputStyle} />
-    </div>
-  );
 
   // ─────────────── a conta de um fornecedor
   if (aberta) {
@@ -144,14 +150,14 @@ export default function FnbPayables() {
           <legend className="text-[12px] px-1">Critérios de pesquisa</legend>
           <div className="flex gap-10">
             <div className="space-y-2">
-              <Campo k="id" label="ID:" w="w-[100px]" />
-              <Campo k="name" label="Nome:" />
-              <Campo k="q" label="Pesquisa livre:" />
+              <Campo k="id" label="ID:" w="w-[100px]" f={f} setF={setF} setAplicado={setAplicado} />
+              <Campo k="name" label="Nome:" f={f} setF={setF} setAplicado={setAplicado} />
+              <Campo k="q" label="Pesquisa livre:" f={f} setF={setF} setAplicado={setAplicado} />
             </div>
             <div className="space-y-2">
-              <Campo k="tax_id" label="Nr. contrib.:" />
-              <Campo k="phone" label="Telefone:" />
-              <Campo k="address" label="Morada:" />
+              <Campo k="tax_id" label="Nr. contrib.:" f={f} setF={setF} setAplicado={setAplicado} />
+              <Campo k="phone" label="Telefone:" f={f} setF={setF} setAplicado={setAplicado} />
+              <Campo k="address" label="Morada:" f={f} setF={setF} setAplicado={setAplicado} />
             </div>
             <SearchButton onClick={() => { setAplicado({ ...f }); setPage(1); }} className="ml-auto" />
           </div>

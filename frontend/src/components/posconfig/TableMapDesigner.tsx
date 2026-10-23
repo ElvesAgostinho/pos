@@ -15,6 +15,18 @@ const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
  *
  * Uma mesa com CONTA ABERTA nunca é apagada — o servidor recusa e diz quais.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Btn({ onClick, children, disabled }: any) {
+  return (
+  <button onClick={onClick} disabled={disabled}
+    className="flex items-center gap-2 px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-35">
+    {children}
+  </button>
+);
+}
+
 export default function TableMapDesigner({ sector, mode, onClose }:
   { sector: any; mode: 'design' | 'online'; onClose: () => void }) {
   const qc = useQueryClient();
@@ -112,12 +124,6 @@ export default function TableMapDesigner({ sector, mode, onClose }:
   const total = tables.length;
   const online = tables.filter((t) => t.online_reservation).length;
 
-  const Btn = ({ onClick, children, disabled }: any) => (
-    <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-3 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-35">
-      {children}
-    </button>
-  );
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-6" onClick={onClose}>

@@ -41,6 +41,26 @@ function Cor({ v, set }: { v: string; set: (c: string) => void }) {
   );
 }
 
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria o campo a cada tecla. */
+function Numero({ v, set, min = 1, max = 12 }: {
+    v: number; set: (n: number) => void; min?: number; max?: number;
+}) {
+  return (
+    <div className="flex">
+      <input type="number" value={v} min={min} max={max}
+        onChange={(e) => set(Math.max(min, Math.min(max, Number(e.target.value) || min)))}
+        className={`${inp} w-[110px]`} style={inputStyle} />
+      <div className="flex flex-col border border-l-0 border-[#E6E8EC]">
+        <button onClick={() => set(Math.min(max, v + 1))}
+          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#EEF1F5] hover:bg-[#EEF1F5]">▲</button>
+        <button onClick={() => set(Math.max(min, v - 1))}
+          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#EEF1F5] hover:bg-[#EEF1F5] border-t border-[#E6E8EC]">▼</button>
+      </div>
+    </div>
+  );
+}
+
 export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
   colsDefeito, rowsDefeito, precoDefeito, onOk, onClose }: {
   /** só se pode criar subpágina quando há uma página aberta onde a pôr */
@@ -67,21 +87,6 @@ export default function PageDialog({ podeSubpagina, corDefeito, textoDefeito,
 
 
   // Um número com setas, como no original — teclas de +/− valem mais que escrever.
-  const Numero = ({ v, set, min = 1, max = 12 }: {
-    v: number; set: (n: number) => void; min?: number; max?: number;
-  }) => (
-    <div className="flex">
-      <input type="number" value={v} min={min} max={max}
-        onChange={(e) => set(Math.max(min, Math.min(max, Number(e.target.value) || min)))}
-        className={`${inp} w-[110px]`} style={inputStyle} />
-      <div className="flex flex-col border border-l-0 border-[#E6E8EC]">
-        <button onClick={() => set(Math.min(max, v + 1))}
-          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#EEF1F5] hover:bg-[#EEF1F5]">▲</button>
-        <button onClick={() => set(Math.max(min, v - 1))}
-          className="h-[13px] w-[20px] text-[9px] leading-none bg-[#EEF1F5] hover:bg-[#EEF1F5] border-t border-[#E6E8EC]">▼</button>
-      </div>
-    </div>
-  );
 
 
   return (

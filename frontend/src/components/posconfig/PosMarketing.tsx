@@ -45,6 +45,34 @@ function valorPersonalizado(linha: any, campo: any) {
   return v;
 }
 
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Campo({ k, label, w = 'w-[190px]', f, setF, pesquisar, lbl }: any) {
+  return (
+  <div className="flex items-center gap-2">
+    <span className={lbl}>{label}</span>
+    <input value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
+      onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
+      className={`${inp} ${w}`} style={inputStyle} />
+  </div>
+);
+}
+
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function F({ k, label, type = 'text', w = 'w-[230px]', edit, setEdit, lbl }: any) {
+  return (
+  <div className="flex items-center gap-2">
+    <span className={lbl}>{label}</span>
+    <input type={type} value={type === 'datetime-local' ? (edit[k] || '').slice(0, 16) : (edit[k] ?? '')}
+      onChange={(e) => setEdit({ ...edit, [k]: e.target.value })}
+      className={`${inp} ${w}`} style={inputStyle} />
+  </div>
+);
+}
+
 export function EntitySearch() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<'S' | 'A'>('S');
@@ -84,12 +112,6 @@ export function EntitySearch() {
   });
 
   const inval = () => qc.invalidateQueries({ queryKey: ['posmkt'] });
-  const gravar = useMutation({
-    mutationFn: (v: any) => v.id ? apiClient.patch(`pos/marketing/entities/${v.id}/`, v)
-      : apiClient.post('pos/marketing/entities/', v),
-    onSuccess: () => { setEdit(null); inval(); notifyGuide({ title: 'Entidade gravada', message: 'É a mesma ficha que a faturação usa.' }); },
-    onError: notifyError,
-  });
   const regra = useMutation({
     mutationFn: ({ id, v }: any) => apiClient.patch(`pos/marketing/entity-rules/${id}/`, { is_required: v }),
     onSuccess: inval, onError: notifyError,
@@ -113,97 +135,8 @@ export function EntitySearch() {
         onSaved={() => qc.invalidateQueries({ queryKey: ['mkt'] })} />
     );
   }
-  // (ficha antiga inline mantida abaixo apenas como referência morta — nunca alcançada)
-  if (false && edit) {
-    const F = ({ k, label, type = 'text' }: any) => (
-      <div className="flex items-center gap-2">
-        <span className={lbl}>{label}</span>
-        <input type={type} value={edit[k] ?? ''} onChange={(e) => setEdit({ ...edit, [k]: e.target.value })}
-          className={`${inp} w-[230px]`} style={inputStyle} />
-      </div>
-    );
-    const req = new Set(regras.filter((r: any) => r.is_required).map((r: any) => r.field));
-    return (
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
-        <div className="flex-1 overflow-auto p-3">
-          <Painel title={edit.id ? `Ficha de entidade — ${edit.name}` : 'Nova entidade'}>
-            <div className="grid grid-cols-3 gap-x-8 gap-y-2 p-4">
-              <F k="code" label="Nr. cliente:" />
-              <F k="name" label="Nome:" />
-              <F k="last_name" label="Apelido:" />
-              <F k="other_names" label="Outros nomes:" />
-              <div className="flex items-center gap-2">
-                <span className={lbl}>Tipo de entidade:</span>
-                <select value={edit.entity_type ?? ''} onChange={(e) => setEdit({ ...edit, entity_type: e.target.value || null })}
-                  className={`${inp} w-[230px]`} style={inputStyle}>
-                  <option value="">(Nenhum)</option>
-                  {tipos.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </div>
-              <F k="tax_id" label="Nr. contrib.:" />
-              <F k="id_number" label="Nr. de identif.:" />
-              <F k="nationality" label="Nacionalidade:" />
-              <F k="country" label="País:" />
-              <F k="birth_date" label="Data de nasc.:" type="date" />
-              <F k="email" label="E-mail:" />
-              <F k="phone" label="Telefone:" />
-              <div className="col-span-2 flex items-center gap-2">
-                <span className={lbl}>Morada:</span>
-                <input value={edit.address ?? ''} onChange={(e) => setEdit({ ...edit, address: e.target.value })}
-                  className={`${inp} w-[600px] max-w-full`} style={inputStyle} />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={lbl}>Cartão membro:</span>
-                <select value={edit.member_card ?? ''} onChange={(e) => setEdit({ ...edit, member_card: e.target.value || null })}
-                  className={`${inp} w-[230px]`} style={inputStyle}>
-                  <option value="">(Nenhum)</option>
-                  {cartoes.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </div>
-              <F k="member_card_number" label="Nº do cartão:" />
-              <div className="flex items-center gap-2">
-                <label className="flex items-center gap-2 text-[12px] cursor-pointer">
-                  <input type="checkbox" checked={!!edit.is_blocked}
-                    onChange={(e) => setEdit({ ...edit, is_blocked: e.target.checked })} className="w-4 h-4" />
-                  Bloqueado
-                </label>
-              </div>
-              <div className="col-span-2 flex items-center gap-2">
-                <span className={lbl}>Motivo bloqueio:</span>
-                <input value={edit.block_reason ?? ''} onChange={(e) => setEdit({ ...edit, block_reason: e.target.value })}
-                  disabled={!edit.is_blocked}
-                  className={`${inp} w-[600px] max-w-full disabled:bg-[#EEF1F5]`} style={inputStyle} />
-              </div>
-              <div className="col-span-3 flex items-start gap-2">
-                <span className={lbl}>Informações:</span>
-                <textarea value={edit.notes ?? ''} onChange={(e) => setEdit({ ...edit, notes: e.target.value })}
-                  rows={3} className={`${inp} w-[600px] max-w-full`} style={inputStyle} />
-              </div>
-            </div>
-            {req.size > 0 && (
-              <div className="px-4 pb-3 text-[11px] text-[#111827]">
-                Obrigatórios nesta casa: {regras.filter((r: any) => r.is_required).map((r: any) => r.label).join(', ')}.
-              </div>
-            )}
-          </Painel>
-        </div>
-        <Toolbar actions={[
-          { label: 'Gravar', icon: '✔', color: '#111827', onClick: () => gravar.mutate(edit) },
-          { label: 'Fechar', icon: '✖', color: '#3B82F6', onClick: () => setEdit(null) },
-        ]} />
-      </div>
-    );
-  }
 
   // ---------- pesquisa ----------
-  const Campo = ({ k, label, w = 'w-[190px]' }: any) => (
-    <div className="flex items-center gap-2">
-      <span className={lbl}>{label}</span>
-      <input value={f[k] ?? ''} onChange={(e) => setF({ ...f, [k]: e.target.value })}
-        onKeyDown={(e) => e.key === 'Enter' && pesquisar()}
-        className={`${inp} ${w}`} style={inputStyle} />
-    </div>
-  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
@@ -248,16 +181,16 @@ export function EntitySearch() {
                       {tipos.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
                   </div>
-                  <Campo k="code" label="Nr. cliente:" />
-                  <Campo k="tax_id" label="Nr. contrib.:" />
-                  <Campo k="last_name" label="Apelido:" />
-                  <Campo k="name" label="Nome:" />
-                  <Campo k="id_number" label="Nr. de identif.:" />
-                  <Campo k="other_names" label="Outros nomes:" />
-                  <Campo k="contact" label="E-mail/Telefone:" />
-                  <Campo k="nationality" label="Nacionalidade:" />
-                  <Campo k="country" label="País:" />
-                  <Campo k="address" label="Morada:" />
+                  <Campo k="code" label="Nr. cliente:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="tax_id" label="Nr. contrib.:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="last_name" label="Apelido:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="name" label="Nome:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="id_number" label="Nr. de identif.:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="other_names" label="Outros nomes:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="contact" label="E-mail/Telefone:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="nationality" label="Nacionalidade:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="country" label="País:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
+                  <Campo k="address" label="Morada:" f={f} setF={setF} pesquisar={pesquisar} lbl={lbl} />
                   <div className="flex items-center gap-2">
                     <span className={lbl}>Cartão Mem.:</span>
                     <select value={f.member_card ?? ''} onChange={(e) => setF({ ...f, member_card: e.target.value })}
@@ -485,36 +418,28 @@ export function EventRequests() {
   };
 
   if (edit) {
-    const F = ({ k, label, type = 'text', w = 'w-[230px]' }: any) => (
-      <div className="flex items-center gap-2">
-        <span className={lbl}>{label}</span>
-        <input type={type} value={type === 'datetime-local' ? (edit[k] || '').slice(0, 16) : (edit[k] ?? '')}
-          onChange={(e) => setEdit({ ...edit, [k]: e.target.value })}
-          className={`${inp} ${w}`} style={inputStyle} />
-      </div>
-    );
     return (
       <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
         <div className="flex-1 overflow-auto p-3">
           <Painel title={edit.id ? `Pedido ${edit.number} — ${edit.title}` : 'Novo pedido de evento'}>
             <div className="grid grid-cols-3 gap-x-8 gap-y-2 p-4">
-              <F k="title" label="Designação:" />
+              <F k="title" label="Designação:" edit={edit} setEdit={setEdit} lbl={lbl} />
               <Sel k="customer" label="Entidade:" list={entidades} edit={edit} setEdit={setEdit} lbl={lbl} />
-              <F k="contact_name" label="Nome do contacto:" />
-              <F k="phone" label="Telefone:" />
-              <F k="email" label="E-mail:" />
+              <F k="contact_name" label="Nome do contacto:" edit={edit} setEdit={setEdit} lbl={lbl} />
+              <F k="phone" label="Telefone:" edit={edit} setEdit={setEdit} lbl={lbl} />
+              <F k="email" label="E-mail:" edit={edit} setEdit={setEdit} lbl={lbl} />
               <Sel k="event_type" label="Tipo de Evento:" list={tipos} edit={edit} setEdit={setEdit} lbl={lbl} />
-              <F k="start_at" label="Data (início):" type="datetime-local" />
-              <F k="end_at" label="Data (fim):" type="datetime-local" />
-              <F k="pax" label="Pax:" type="number" w="w-[100px]" />
+              <F k="start_at" label="Data (início):" type="datetime-local" edit={edit} setEdit={setEdit} lbl={lbl} />
+              <F k="end_at" label="Data (fim):" type="datetime-local" edit={edit} setEdit={setEdit} lbl={lbl} />
+              <F k="pax" label="Pax:" type="number" w="w-[100px]" edit={edit} setEdit={setEdit} lbl={lbl} />
               <Sel k="space" label="Espaço:" list={espacos} edit={edit} setEdit={setEdit} lbl={lbl} />
               <Sel k="layout" label="Disposição:" list={layouts} edit={edit} setEdit={setEdit} lbl={lbl} />
               <Sel k="state" label="Estado da reserva:" list={estados} edit={edit} setEdit={setEdit} lbl={lbl} />
               <Sel k="segment" label="Segmento:" list={segmentos} edit={edit} setEdit={setEdit} lbl={lbl} />
               <Sel k="channel" label="Canal:" list={canais} edit={edit} setEdit={setEdit} lbl={lbl} />
               <Sel k="package" label="Package:" list={packages} edit={edit} setEdit={setEdit} lbl={lbl} />
-              <F k="price_per_pax" label="Preço/pax:" type="number" w="w-[140px]" />
-              <F k="extra_total" label="Extras:" type="number" w="w-[140px]" />
+              <F k="price_per_pax" label="Preço/pax:" type="number" w="w-[140px]" edit={edit} setEdit={setEdit} lbl={lbl} />
+              <F k="extra_total" label="Extras:" type="number" w="w-[140px]" edit={edit} setEdit={setEdit} lbl={lbl} />
               <div className="flex items-center gap-2">
                 <label className="flex items-center gap-2 text-[12px] cursor-pointer">
                   <input type="checkbox" checked={!!edit.answered}

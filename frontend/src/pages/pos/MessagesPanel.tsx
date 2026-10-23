@@ -19,6 +19,26 @@ import TouchKeyboard from './TouchKeyboard';
  * Uma linha leva VÁRIAS mensagens (SEM GELO + PITAYA): as escolhidas ficam acesas e
  * empilham-se por baixo do artigo na comanda.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render e o React desmontaria a tecla sempre que algo mudasse. Só muda
+    de sítio — o JSX sai exactamente igual. */
+function Tecla({ texto, aceso, onClick, sub }: {
+    texto: string; aceso?: boolean; onClick: () => void; sub?: string;
+}) {
+  return (
+    <button onClick={onClick}
+      className={`h-[130px] rounded-[3px] px-2 text-center leading-tight border-2 border-black
+        flex flex-col items-center justify-center gap-1
+        shadow-[inset_0_2px_0_rgba(255,255,255,0.16),inset_0_-2px_0_rgba(0,0,0,0.5)]
+        active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
+        ${aceso ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white ring-[3px] ring-white/80 ring-inset'
+          : 'bg-gradient-to-b from-[#4a4a4a] to-[#262626] text-white'}`}>
+      <span className="text-[16px] font-semibold">{texto}</span>
+      {sub && <span className="text-[11px] font-normal text-white/55">{sub}</span>}
+    </button>
+  );
+}
+
 export default function MessagesPanel({ linha, onGravar, onClose }: {
   /** a linha da comanda a que as mensagens se colam */
   linha: any;
@@ -45,20 +65,6 @@ export default function MessagesPanel({ linha, onGravar, onClose }: {
 
   const opcoes = (grupo?.options || []).filter((o: any) => o.is_active !== false);
 
-  const Tecla = ({ texto, aceso, onClick, sub }: {
-    texto: string; aceso?: boolean; onClick: () => void; sub?: string;
-  }) => (
-    <button onClick={onClick}
-      className={`h-[130px] rounded-[3px] px-2 text-center leading-tight border-2 border-black
-        flex flex-col items-center justify-center gap-1
-        shadow-[inset_0_2px_0_rgba(255,255,255,0.16),inset_0_-2px_0_rgba(0,0,0,0.5)]
-        active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.6)]
-        ${aceso ? 'bg-gradient-to-b from-[#d4ac00] to-[#8a6f00] text-white ring-[3px] ring-white/80 ring-inset'
-          : 'bg-gradient-to-b from-[#4a4a4a] to-[#262626] text-white'}`}>
-      <span className="text-[16px] font-semibold">{texto}</span>
-      {sub && <span className="text-[11px] font-normal text-white/55">{sub}</span>}
-    </button>
-  );
 
   return (
     <div className="absolute inset-0 bg-[#2b2b2b] z-30 flex flex-col">

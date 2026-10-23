@@ -22,6 +22,43 @@ function Row({ label, children, w = 'w-[110px]' }: any) {
  * Identificação técnica, contactos, aparência nos terminais, e quatro áreas em baixo:
  * Dados da Licença · Membro de · Textos dos documentos · Informação bancária.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function BTab({ id, label, bottom, setBottom }: any) {
+  return (
+  <button onClick={() => setBottom(id)}
+    className={`px-6 py-2 text-[12px] font-semibold ${bottom === id ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'bg-[#EEF1F5] text-[#111827] hover:bg-[#EEF1F5]'}`}>
+    {label}
+  </button>
+);
+}
+
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function RO({ label, value, w = 'w-[130px]' }: any) {
+  return (
+  <Row label={label} w={w}><input value={value ?? '—'} readOnly className={`${inp} flex-1 bg-[#EEF1F5] text-[#111827]`} /></Row>
+);
+}
+
+/** Uma célula editável da tabela de contas bancárias.
+
+    Estava declarada DENTRO do `.map()` das linhas: um tipo novo por linha e por
+    render, o que fazia o React desmontar a célula sempre que qualquer coisa
+    mudava. Num campo `defaultValue`+`onBlur` como este, isso é pior do que
+    perder o foco — o que estava escrito e ainda não tinha saído do campo
+    desaparecia. */
+function CelulaBanco({ k, mono, b, updBank }: any) {
+  return (
+    <td className="p-0.5 border border-[#F1F2F4]">
+      <input defaultValue={b[k] || ''} onBlur={(e) => e.target.value !== (b[k] || '') && updBank.mutate({ id: b.id, data: { [k]: e.target.value } })}
+        className={`${cell} ${mono ? 'font-mono text-[11px]' : ''}`} />
+    </td>
+  );
+}
+
 export default function CompanyEditor({ row, onClose }: { row: any; onClose: () => void }) {
   const qc = useQueryClient();
   const [tab, setTab] = useState<'main' | 'sec'>('main');
@@ -145,12 +182,6 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
     setPopup(null);
   };
 
-  const BTab = ({ id, label }: any) => (
-    <button onClick={() => setBottom(id)}
-      className={`px-6 py-2 text-[12px] font-semibold ${bottom === id ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'bg-[#EEF1F5] text-[#111827] hover:bg-[#EEF1F5]'}`}>
-      {label}
-    </button>
-  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
@@ -315,10 +346,10 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
 
         {/* --------- Abas de baixo --------- */}
         <div className="flex mt-3">
-          <BTab id="license" label="Dados da Licença" />
-          <BTab id="member" label="Membro de" />
-          <BTab id="texts" label="Custom texts" />
-          <BTab id="bank" label="Informação bancária" />
+          <BTab id="license" label="Dados da Licença" bottom={bottom} setBottom={setBottom} />
+          <BTab id="member" label="Membro de" bottom={bottom} setBottom={setBottom} />
+          <BTab id="texts" label="Custom texts" bottom={bottom} setBottom={setBottom} />
+          <BTab id="bank" label="Informação bancária" bottom={bottom} setBottom={setBottom} />
         </div>
 
         <div className="p-3 min-h-[220px]" style={{ border: '1px solid #E6E8EC', borderRadius: '10px', boxShadow: '0 1px 2px rgba(6,42,49,0.06), 0 2px 8px rgba(6,42,49,0.06)' }}>
@@ -326,9 +357,6 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
             // Os campos cinzentos vêm do ficheiro de licença ASSINADO — não se escrevem
             // aqui de propósito: se bastasse escrever "Máx. Terminais = 99", a licença
             // não valia nada. Editáveis: Contacto e POS Location Name (são do cliente).
-            const RO = ({ label, value, w = 'w-[130px]' }: any) => (
-              <Row label={label} w={w}><input value={value ?? '—'} readOnly className={`${inp} flex-1 bg-[#EEF1F5] text-[#111827]`} /></Row>
-            );
             return (
               <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-[12px]">
                 <div className="space-y-2">
@@ -454,16 +482,10 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                 </tr></thead>
                 <tbody>
                   {banks.map((b) => {
-                    const F = ({ k, mono }: any) => (
-                      <td className="p-0.5 border border-[#F1F2F4]">
-                        <input defaultValue={b[k] || ''} onBlur={(e) => e.target.value !== (b[k] || '') && updBank.mutate({ id: b.id, data: { [k]: e.target.value } })}
-                          className={`${cell} ${mono ? 'font-mono text-[11px]' : ''}`} />
-                      </td>
-                    );
                     return (
                       <tr key={b.id} className="border-b border-[#F1F2F4]">
-                        <F k="bank_name" /><F k="branch" /><F k="account_number" mono /><F k="nib" mono />
-                        <F k="iban" mono /><F k="swift" /><F k="bic" />
+                        <CelulaBanco k="bank_name" b={b} updBank={updBank} /><CelulaBanco k="branch" b={b} updBank={updBank} /><CelulaBanco k="account_number" mono b={b} updBank={updBank} /><CelulaBanco k="nib" mono b={b} updBank={updBank} />
+                        <CelulaBanco k="iban" mono b={b} updBank={updBank} /><CelulaBanco k="swift" b={b} updBank={updBank} /><CelulaBanco k="bic" b={b} updBank={updBank} />
                         <td className="text-center border border-[#F1F2F4]">
                           <input type="checkbox" checked={!!b.sepa} onChange={(e) => updBank.mutate({ id: b.id, data: { sepa: e.target.checked } })} className="w-4 h-4" />
                         </td>

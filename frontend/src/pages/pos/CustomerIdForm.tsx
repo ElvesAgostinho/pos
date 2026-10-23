@@ -20,6 +20,27 @@ import { aviso } from '../../ui/dialogo';
  * O NIF é o campo que importa: sem ele, a fatura sai a Consumidor Final e a empresa do
  * cliente não a pode deduzir. É por isso que ele está em cima, destacado.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Campo({ k, label, largura = 'flex-1', campo, setCampo, d }: {
+  k: string; label: string; largura?: string;
+  campo: string; setCampo: (v: string) => void; d: any;
+}) {
+  return (
+  <div className={`flex items-stretch ${largura}`}>
+    <span className="w-[120px] flex-shrink-0 flex items-center px-3 text-white text-[15px] font-bold">
+      {label}
+    </span>
+    <button onClick={() => setCampo(k)}
+      className={`flex-1 min-w-0 text-left px-3 text-white text-[16px] truncate border-2
+        ${campo === k ? 'bg-[#6e6e6e] border-[#f0c000]' : 'bg-[#8a8a8a]/60 border-black'}`}>
+      {d[k] || <span className="text-white/35">—</span>}
+    </button>
+  </div>
+);
+}
+
 export default function CustomerIdForm({ onPick, onClose }: {
   onPick: (entidade: any) => void;
   onClose: () => void;
@@ -74,18 +95,6 @@ export default function CustomerIdForm({ onPick, onClose }: {
     } finally { setBusy(false); }
   };
 
-  const Campo = ({ k, label, largura = 'flex-1' }: { k: string; label: string; largura?: string }) => (
-    <div className={`flex items-stretch ${largura}`}>
-      <span className="w-[120px] flex-shrink-0 flex items-center px-3 text-white text-[15px] font-bold">
-        {label}
-      </span>
-      <button onClick={() => setCampo(k)}
-        className={`flex-1 min-w-0 text-left px-3 text-white text-[16px] truncate border-2
-          ${campo === k ? 'bg-[#6e6e6e] border-[#f0c000]' : 'bg-[#8a8a8a]/60 border-black'}`}>
-        {d[k] || <span className="text-white/35">—</span>}
-      </button>
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-start justify-center pt-4 z-[60]" onClick={onClose}>
@@ -122,15 +131,15 @@ export default function CustomerIdForm({ onPick, onClose }: {
         {/* a ficha */}
         <div className="px-1 space-y-1 flex-shrink-0">
           <div className="flex gap-1 h-[54px]">
-            <Campo k="last_name" label="Apelido" />
-            <Campo k="name" label="Nome" />
+            <Campo k="last_name" label="Apelido" campo={campo} setCampo={setCampo} d={d} />
+            <Campo k="name" label="Nome" campo={campo} setCampo={setCampo} d={d} />
           </div>
-          <div className="flex gap-1 h-[54px]"><Campo k="address" label="Morada" /></div>
+          <div className="flex gap-1 h-[54px]"><Campo k="address" label="Morada" campo={campo} setCampo={setCampo} d={d} /></div>
           <div className="flex gap-1 h-[54px]">
-            <Campo k="postal_code" label="Cód. postal" />
-            <Campo k="city" label="Cidade" />
+            <Campo k="postal_code" label="Cód. postal" campo={campo} setCampo={setCampo} d={d} />
+            <Campo k="city" label="Cidade" campo={campo} setCampo={setCampo} d={d} />
           </div>
-          <div className="flex gap-1 h-[54px]"><Campo k="email" label="E-mail" /></div>
+          <div className="flex gap-1 h-[54px]"><Campo k="email" label="E-mail" campo={campo} setCampo={setCampo} d={d} /></div>
         </div>
 
         {/* RESULTADOS da procura — antes de registar de novo, mostra-se quem já existe.

@@ -19,6 +19,39 @@ const uid = () => `t${SEQ++}`;
  * O teclado grava-se INTEIRO de uma vez: é uma árvore, e gravar tecla a tecla
  * deixaria pais sem filhos se um pedido falhasse a meio.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Side({ onClick, color, children, disabled }: any) {
+  return (
+  <button onClick={onClick} disabled={disabled}
+    className="w-full flex items-center gap-2 px-2 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-35">
+    <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px]" style={{ background: color }}>●</span>
+    {children}
+  </button>
+);
+}
+
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Key({ k, onOpen, sel, setSel, kb }: any) {
+  return (
+  <button onClick={() => { setSel(k.tmp_id); onOpen?.(); }}
+    className="h-[90px] flex flex-col items-center justify-center px-2 text-center font-bold text-[12px] leading-tight"
+    style={{
+      background: k.color, color: k.text_color,
+      gridColumn: `span ${k.span || 1}`,
+      outline: sel === k.tmp_id ? '3px solid #3B82F6' : 'none',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 3px rgba(0,0,0,0.3)',
+    }}>
+    <span>{k.label}</span>
+    {kb.show_codes && k.item_code && <span className="text-[10px] font-normal opacity-80">{k.item_code}</span>}
+    {kb.show_prices && k.item_price != null && <span className="text-[11px] font-normal opacity-90">{money(k.item_price)}</span>}
+  </button>
+);
+}
+
 export default function KeyboardEditor({ row, onClose }: { row: any; onClose: () => void }) {
   const qc = useQueryClient();
   const isNew = !row?.id;
@@ -138,28 +171,7 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
       : k.tmp_id === b.tmp_id ? { ...k, sort_order: a.sort_order } : k));
   };
 
-  const Side = ({ onClick, color, children, disabled }: any) => (
-    <button onClick={onClick} disabled={disabled}
-      className="w-full flex items-center gap-2 px-2 py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-35">
-      <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px]" style={{ background: color }}>●</span>
-      {children}
-    </button>
-  );
 
-  const Key = ({ k, onOpen }: any) => (
-    <button onClick={() => { setSel(k.tmp_id); onOpen?.(); }}
-      className="h-[90px] flex flex-col items-center justify-center px-2 text-center font-bold text-[12px] leading-tight"
-      style={{
-        background: k.color, color: k.text_color,
-        gridColumn: `span ${k.span || 1}`,
-        outline: sel === k.tmp_id ? '3px solid #3B82F6' : 'none',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 3px rgba(0,0,0,0.3)',
-      }}>
-      <span>{k.label}</span>
-      {kb.show_codes && k.item_code && <span className="text-[10px] font-normal opacity-80">{k.item_code}</span>}
-      {kb.show_prices && k.item_price != null && <span className="text-[11px] font-normal opacity-90">{money(k.item_price)}</span>}
-    </button>
-  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
@@ -250,7 +262,8 @@ export default function KeyboardEditor({ row, onClose }: { row: any; onClose: ()
           {/* Teclas */}
           <div className="grid gap-2 pt-3" style={{ gridTemplateColumns: `repeat(${kb.cols || 4}, minmax(0, 1fr))` }}>
             {visible.map((k) => (
-              <Key key={k.tmp_id} k={k} onOpen={() => k.kind === 'FOLDER' && setFolder(k.tmp_id)} />
+              <Key key={k.tmp_id} k={k} sel={sel} setSel={setSel} kb={kb}
+                onOpen={() => k.kind === 'FOLDER' && setFolder(k.tmp_id)} />
             ))}
           </div>
           {level && visible.length === 0 && (

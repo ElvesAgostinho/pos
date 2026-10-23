@@ -26,6 +26,29 @@ function useList(ep: string, key: string, params?: any) {
  * saldo pode ficar torto (uma anulação mal feita, uma migração): o botão volta a somar
  * TODOS os movimentos desde o início e repõe a verdade — e diz o que corrigiu.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Linha({ r, agrupar }: any) {
+  return (
+  <tr className={`border-b border-[#F1F2F4] ${r.below_min ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
+    <td className="px-2 py-1 font-mono text-[#6B7280]">{r.code}</td>
+    <td className="px-2 py-1 font-semibold">
+      {r.name}
+      {Number(r.quantity) < 0 && (
+        <span className="ml-2 text-[11px] text-[#DC2626] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
+      )}
+    </td>
+    {!agrupar && <td className="px-2 py-1">{r.warehouse}</td>}
+    <td className="px-2 py-1 text-right font-bold"
+      style={{ color: Number(r.quantity) < 0 ? '#DC2626' : undefined }}>{r.quantity}</td>
+    <td className="px-2 py-1 text-right text-[#6B7280]">{money(r.average_cost)}</td>
+    <td className="px-2 py-1 text-right font-bold">{money(r.value)}</td>
+    <td className="px-2 py-1 text-right text-[#6B7280]">{r.min_stock}</td>
+  </tr>
+);
+}
+
 export default function FnbStock() {
   const qc = useQueryClient();
   const [f, setF] = useState<any>({});
@@ -84,23 +107,6 @@ export default function FnbStock() {
   const grupos: Record<string, any[]> = {};
   if (agrupar) vista.forEach((r) => { (grupos[r.warehouse] ||= []).push(r); });
 
-  const Linha = ({ r }: any) => (
-    <tr className={`border-b border-[#F1F2F4] ${r.below_min ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}>
-      <td className="px-2 py-1 font-mono text-[#6B7280]">{r.code}</td>
-      <td className="px-2 py-1 font-semibold">
-        {r.name}
-        {Number(r.quantity) < 0 && (
-          <span className="ml-2 text-[11px] text-[#DC2626] inline-flex items-center gap-0.5" title="Stock negativo — é sempre um erro"><Glyph icon="⚠" size={11} /> negativo</span>
-        )}
-      </td>
-      {!agrupar && <td className="px-2 py-1">{r.warehouse}</td>}
-      <td className="px-2 py-1 text-right font-bold"
-        style={{ color: Number(r.quantity) < 0 ? '#DC2626' : undefined }}>{r.quantity}</td>
-      <td className="px-2 py-1 text-right text-[#6B7280]">{money(r.average_cost)}</td>
-      <td className="px-2 py-1 text-right font-bold">{money(r.value)}</td>
-      <td className="px-2 py-1 text-right text-[#6B7280]">{r.min_stock}</td>
-    </tr>
-  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
@@ -168,10 +174,10 @@ export default function FnbStock() {
                       {arm} — {money(lista.reduce((s, r) => s + Number(r.value), 0))} Kz
                     </td>
                   </tr>
-                  {lista.map((r) => <Linha key={r.id} r={r} />)}
+                  {lista.map((r) => <Linha key={r.id} r={r} agrupar={agrupar} />)}
                 </>
               ))
-              : vista.map((r) => <Linha key={r.id} r={r} />)}
+              : vista.map((r) => <Linha key={r.id} r={r} agrupar={agrupar} />)}
             {vista.length === 0 && (
               <tr><td colSpan={7} className="text-center text-[#6B7280] py-12">Não foram encontrados dados.</td></tr>
             )}

@@ -19,6 +19,18 @@ type Tab = 'map' | 'multi' | 'ext';
  *  · Ligações Multi Hotel — falar com o PMS de OUTRO hotel da rede;
  *  · Ligações externas  — cada setor pode ir buscar as contas a um servidor diferente.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Row({ label, children }: any) {
+  return (
+  <label className="flex items-center gap-3 text-[12px]">
+    <span className="w-[120px] flex-shrink-0 text-[#111827]">{label}</span>
+    {children}
+  </label>
+);
+}
+
 export default function PmsInterface() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>('map');
@@ -372,12 +384,6 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
   });
 
   const set = (k: string, v: any) => setD((o: any) => ({ ...o, [k]: v }));
-  const Row = ({ label, children }: any) => (
-    <label className="flex items-center gap-3 text-[12px]">
-      <span className="w-[120px] flex-shrink-0 text-[#111827]">{label}</span>
-      {children}
-    </label>
-  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">

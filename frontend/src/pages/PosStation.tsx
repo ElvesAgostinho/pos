@@ -32,6 +32,13 @@ type Modal = 'none' | 'pay' | 'cash' | 'split' | 'customer' | 'audit' | 'discoun
 // setor, caixa, Mesa/Quarto/Destino, menu+combos, KDS, pagamento com recibo
 // fiscal (AGT) automático, e board de entregas (room service / piscina / praia).
 // ==========================================================================
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Sep() {
+  return <div className="border-t border-dashed border-gray-400 my-1" />;
+}
+
 export default function PosStation() {
   const nav = useNavigate();
   const qc = useQueryClient();
@@ -649,7 +656,6 @@ function ThermalReceiptModal({ ticket, lines, mode, outletName, destLabel, onCan
   const sub = Number(ticket?.subtotal ?? 0);
   const tax = Number(ticket?.tax_total ?? 0);
   const total = Number(ticket?.grand_total ?? 0);
-  const Sep = () => <div className="border-t border-dashed border-gray-400 my-1" />;
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[70] p-4" onClick={onCancel}>
       <div className="flex flex-col items-center gap-3 max-h-[94vh]" onClick={(e) => e.stopPropagation()}>

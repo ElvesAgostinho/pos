@@ -38,6 +38,20 @@ function Panel({ title, children, right }: any) {
  * acessos recusados — capturado automaticamente, incluindo o que foi anulado na
  * cozinha, no bar e na pastelaria. Nada se apaga daqui.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Kpi({ label, value, color, onClick, active }: any) {
+  return (
+  <button onClick={onClick}
+    className={`flex-1 bg-white border px-3 py-2 text-left ${active ? 'border-[#E6E8EC] ring-1 ring-[#E6E8EC]' : 'border-[#E6E8EC]'}`}
+    style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
+    <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
+    <div className="text-[20px] font-black leading-tight" style={{ color: color || '#2563EB' }}>{value ?? 0}</div>
+  </button>
+);
+}
+
 export default function AuditTrailView() {
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<{ action?: string; module?: string; destructive?: boolean }>({});
@@ -59,14 +73,6 @@ export default function AuditTrailView() {
     },
   });
 
-  const Kpi = ({ label, value, color, onClick, active }: any) => (
-    <button onClick={onClick}
-      className={`flex-1 bg-white border px-3 py-2 text-left ${active ? 'border-[#E6E8EC] ring-1 ring-[#E6E8EC]' : 'border-[#E6E8EC]'}`}
-      style={{ boxShadow: 'inset 0 1px 0 #FFFFFF' }}>
-      <div className="text-[10px] uppercase text-gray-500 font-bold tracking-wide">{label}</div>
-      <div className="text-[20px] font-black leading-tight" style={{ color: color || '#2563EB' }}>{value ?? 0}</div>
-    </button>
-  );
 
   const c24 = ov?.last_24h || {};
 

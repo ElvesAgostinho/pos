@@ -18,6 +18,53 @@ const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
  */
 
 // ─────────────────────────────────────────────────────────── Fecho do Dia
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Painel({ titulo, aberto, onToggle, children }: any) {
+  return (
+  <div className="border-b border-[#F1F2F4]">
+    <button onClick={onToggle}
+      className="w-full flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4] text-left">
+      <span>{titulo}</span><span>{aberto ? '▲' : '▼'}</span>
+    </button>
+    {aberto && children}
+  </div>
+);
+}
+
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Card({ title, ok, children }: any) {
+  return (
+  <div className="bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
+    <div className="px-3 py-2 text-[12px] font-bold"
+      style={{
+        color: ok === false ? TOKENS.dangerSoft : TOKENS.selectedText,
+        background: ok === false
+          ? 'linear-gradient(to bottom, #EEF1F5 0%, #FEF2F2 100%)'
+          : 'linear-gradient(to bottom, #EEF1F5 0%, #EEF1F5 100%)',
+        borderBottom: `1px solid ${ok === false ? '#FEF2F2' : '#F1F2F4'}`,
+      }}>
+      {title}
+    </div>
+    <div className="p-3 text-[12px] space-y-1.5">{children}</div>
+  </div>
+);
+}
+
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function L({ k, v }: any) {
+  return (
+  <div className="flex justify-between gap-4">
+    <span className="text-[#6B7280]">{k}</span><span className="font-semibold text-right">{v}</span>
+  </div>
+);
+}
+
 export function PosDayClose() {
   const qc = useQueryClient();
   const [abrTerm, setAbrTerm] = useState(true);
@@ -54,15 +101,6 @@ export function PosDayClose() {
   const temMesasAbertas = (d.sectors || []).length > 0;
   const ultimo = d.last_close;
 
-  const Painel = ({ titulo, aberto, onToggle, children }: any) => (
-    <div className="border-b border-[#F1F2F4]">
-      <button onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] text-[12px] font-bold border-b border-[#F1F2F4] text-left">
-        <span>{titulo}</span><span>{aberto ? '▲' : '▼'}</span>
-      </button>
-      {aberto && children}
-    </div>
-  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
@@ -415,26 +453,6 @@ export function PosDiagnostics() {
   // Cartão de estado — moldura em relevo (a mesma receita da caixa clássica:
   // sombra a definir o painel contra o fundo, cabeçalho em gradiente, nunca
   // plano) em vez de um simples <div> com borda fina.
-  const Card = ({ title, ok, children }: any) => (
-    <div className="bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.12), inset 0 0 0 1px ' + TOKENS.lineSoft }}>
-      <div className="px-3 py-2 text-[12px] font-bold"
-        style={{
-          color: ok === false ? TOKENS.dangerSoft : TOKENS.selectedText,
-          background: ok === false
-            ? 'linear-gradient(to bottom, #EEF1F5 0%, #FEF2F2 100%)'
-            : 'linear-gradient(to bottom, #EEF1F5 0%, #EEF1F5 100%)',
-          borderBottom: `1px solid ${ok === false ? '#FEF2F2' : '#F1F2F4'}`,
-        }}>
-        {title}
-      </div>
-      <div className="p-3 text-[12px] space-y-1.5">{children}</div>
-    </div>
-  );
-  const L = ({ k, v }: any) => (
-    <div className="flex justify-between gap-4">
-      <span className="text-[#6B7280]">{k}</span><span className="font-semibold text-right">{v}</span>
-    </div>
-  );
 
   return (
     <div className="flex-1 overflow-auto bg-[#EEF1F5] p-4">

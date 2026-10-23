@@ -89,6 +89,13 @@ export const NtfEmailsView = () => <ChannelsView channel="EMAIL" title="Notifica
 export const NtfSmsView = () => <ChannelsView channel="SMS" title="Notificações — SMS" icon={<MessageSquare size={14} className="text-gray-300" />} />;
 export const NtfPushView = () => <ChannelsView channel="PUSH" title="Notificações — Push" icon={<Bell size={14} className="text-gray-300" />} />;
 
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Row({ k, v }: any) {
+  return <div className="flex justify-between border-b border-[#F1F2F4] py-1 text-[12px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
+}
+
 export function NtfAlertsView() {
   const { rows, create, update, remove } = useCrud('rules');
   const channels = useCrud('channels').rows;
@@ -216,7 +223,6 @@ function SysInfoView({ title, icon }: { title: string; icon: any }) {
   const qc = useQueryClient();
   const { data: d } = useQuery({ queryKey: ['platform', 'system'], queryFn: () => platformApi.systemInfo() });
   const clear = useMutation({ mutationFn: () => platformApi.clearCache(), onSuccess: () => { aviso('Cache limpa.'); qc.invalidateQueries({ queryKey: ['platform', 'system'] }); } });
-  const Row = ({ k, v }: any) => <div className="flex justify-between border-b border-[#F1F2F4] py-1 text-[12px]"><span className="text-gray-500">{k}</span><span className="font-mono">{v}</span></div>;
   return (
     <ClassicWindow title={title} icon={icon} footer={<div className="text-gray-600">Estado do sistema em tempo real</div>}>
       <div className="p-3 space-y-3">

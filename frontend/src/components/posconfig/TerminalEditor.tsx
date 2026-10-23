@@ -19,6 +19,18 @@ const HW_TYPES = [
  * Os PARÂMETROS têm número (8523, 8610…) de propósito: é por ele que o suporte fala
  * com o cliente ao telefone ("mude o 8610"). O número não muda, o nome pode mudar.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Tab({ id, label, tab, setTab }: any) {
+  return (
+  <button onClick={() => setTab(id)}
+    className={`px-5 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === id ? 'border-[#E6E8EC] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+    {label}
+  </button>
+);
+}
+
 export default function TerminalEditor({ row, onClose }: { row: any; onClose: () => void }) {
   const qc = useQueryClient();
   const isNew = !row?.id;
@@ -61,12 +73,6 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       !q || `${p.number} ${p.name}`.toLowerCase().includes(q.toLowerCase())) }))
     .filter((g: any) => g.params.length > 0);
 
-  const Tab = ({ id, label }: any) => (
-    <button onClick={() => setTab(id)}
-      className={`px-5 py-1.5 text-[12px] font-semibold border-b-[3px] ${tab === id ? 'border-[#E6E8EC] text-[#111827]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
-      {label}
-    </button>
-  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
@@ -107,7 +113,7 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
       </div>
 
       <div className="flex border-b-2 border-[#E6E8EC] bg-[#EEF1F5] px-2">
-        <Tab id="geral" label="Geral" /><Tab id="printers" label="Impressoras" /><Tab id="hardware" label="Hardware" />
+        <Tab id="geral" label="Geral" tab={tab} setTab={setTab} /><Tab id="printers" label="Impressoras" tab={tab} setTab={setTab} /><Tab id="hardware" label="Hardware" tab={tab} setTab={setTab} />
       </div>
 
       <div className="flex-1 overflow-auto p-3">

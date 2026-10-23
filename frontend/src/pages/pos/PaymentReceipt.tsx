@@ -18,6 +18,19 @@ import { IcoVisto, IcoCruz, IcoDocumento, IcoLista, IcoImpressora } from './Icon
  * REIMPRIMIR não emite nada de novo: manda o MESMO documento outra vez para a fila da
  * impressora. Um documento fiscal não se duplica porque o papel encravou.
  */
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Linha({ k, v, forte }: { k: string; v: string; forte?: boolean }) {
+  return (
+  <div className={`flex justify-between items-baseline px-5 py-3 border-b border-black/12
+    ${forte ? 'text-[26px] font-bold' : 'text-[19px]'}`}>
+    <span className={forte ? 'text-black' : 'text-black/70'}>{k}</span>
+    <span className="text-black font-semibold">{v}</span>
+  </div>
+);
+}
+
 export default function PaymentReceipt({ conta, documento, onFechar, onEmitir, onEscolherSerie }: {
   conta: any;
   /** número do documento fiscal já emitido (ex.: "FR A/82"), se houver */
@@ -49,13 +62,6 @@ export default function PaymentReceipt({ conta, documento, onFechar, onEmitir, o
     } finally { setAImprimir(false); }
   };
 
-  const Linha = ({ k, v, forte }: { k: string; v: string; forte?: boolean }) => (
-    <div className={`flex justify-between items-baseline px-5 py-3 border-b border-black/12
-      ${forte ? 'text-[26px] font-bold' : 'text-[19px]'}`}>
-      <span className={forte ? 'text-black' : 'text-black/70'}>{k}</span>
-      <span className="text-black font-semibold">{v}</span>
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-start justify-center pt-8 z-[70]">

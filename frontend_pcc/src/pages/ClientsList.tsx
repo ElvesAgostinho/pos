@@ -346,7 +346,7 @@ const ClientsList: React.FC = () => {
       {/* Provisioning Modal */}
       {showProvModal && selectedClient && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
-          <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[450px] shadow-md flex flex-col">
+          <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[450px] max-h-[92vh] shadow-md flex flex-col">
             <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
               <div className="flex items-center">
                 <Settings size={14} className="mr-2" />
@@ -422,8 +422,14 @@ const ClientsList: React.FC = () => {
       {/* Modal de ACESSOS — senha de instalação e senha do dono da licença ativa */}
       {showAccessModal && selectedClient && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
-          <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[460px] shadow-md flex flex-col">
-            <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
+          {/* ALTURA MÁXIMA E BARRA DE DESLOCAMENTO.
+              O painel tem três cartões empilhados — senha de instalação, senha do
+              dono e código de reposição — e não tinha limite de altura nenhum: o
+              conteúdo simplesmente crescia para fora do ecrã, sem barra, e o
+              TERCEIRO ficava inalcançável. Quem precisasse do código de reposição
+              não o encontrava, e concluía (com razão) que não existia. */}
+          <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[460px] max-h-[92vh] shadow-md flex flex-col">
+            <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center flex-shrink-0">
               <div className="flex items-center">
                 <Lock size={14} className="mr-2" />
                 <span className="font-bold text-[11px]">Acessos — {selectedClient.commercial_name}</span>
@@ -431,7 +437,7 @@ const ClientsList: React.FC = () => {
               <button onClick={() => setShowAccessModal(false)} className="hover:text-[#B0392B] font-bold">x</button>
             </div>
 
-            <div className="p-4 bg-[#F7FAFA] flex-1 space-y-3 text-[11px] font-sans">
+            <div className="p-4 bg-[#F7FAFA] flex-1 min-h-0 overflow-auto space-y-3 text-[11px] font-sans">
               {!activeLicense ? (
                 <div className="bg-white border border-[#7FA9B1] p-3 text-gray-600">
                   Este cliente ainda não tem nenhuma licença — crie uma pelo assistente "Novo Cliente" primeiro.
@@ -535,7 +541,7 @@ const ClientsList: React.FC = () => {
               )}
             </div>
 
-            <div className="bg-[#EEF4F5] border-t border-[#CFE3E6] p-2 flex justify-end space-x-2">
+            <div className="bg-[#EEF4F5] border-t border-[#CFE3E6] p-2 flex justify-end space-x-2 flex-shrink-0">
               <button onClick={() => setShowAccessModal(false)}
                 className="flex items-center space-x-1 hover:bg-[#EEF4F5] px-3 py-1 rounded border border-[#7FA9B1] bg-white">
                 <X size={12} className="text-gray-600" />
@@ -549,7 +555,7 @@ const ClientsList: React.FC = () => {
       {/* Modal: ver/recuperar o license.key de uma licença já existente */}
       {keyResult && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
-          <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[520px] shadow-md flex flex-col">
+          <div className="bg-[#F7FAFA] border border-[#7FA9B1] w-[520px] max-h-[92vh] shadow-md flex flex-col">
             <div className="bg-[#041F24] text-white px-2 py-1 flex justify-between items-center">
               <div className="flex items-center">
                 <Key size={14} className="mr-2" />
@@ -557,7 +563,7 @@ const ClientsList: React.FC = () => {
               </div>
               <button onClick={() => setKeyResult(null)} className="hover:text-[#B0392B] font-bold">x</button>
             </div>
-            <div className="p-4 bg-[#F7FAFA] flex-1 space-y-3 text-[11px] font-sans">
+            <div className="p-4 bg-[#F7FAFA] flex-1 min-h-0 overflow-auto space-y-3 text-[11px] font-sans">
               <div className="bg-white border border-[#7FA9B1] p-3">
                 <div className="text-gray-600 mb-2">
                   Copie o conteúdo abaixo (ou descarregue) e coloque-o, sem alterar nada, em{' '}

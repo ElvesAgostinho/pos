@@ -9,6 +9,21 @@ const ITEM_TYPE_LABEL: Record<string, string> = {
   RawMaterial: 'Matéria-Prima', Manufactured: 'Produzido', Retail: 'Revenda', Service: 'Serviço',
 };
 
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function StatCard({ title, value, subtitle }: any) {
+  return (
+  <div className="bg-[#EEF1F5] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4 flex flex-col justify-between">
+    <div className="mb-2">
+      <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
+      <div className="text-2xl font-bold text-[#6B7280]">{value}</div>
+    </div>
+    <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>
+  </div>
+);
+}
+
 export default function DashboardMDMView() {
   const { data: items = [] } = useMdItems();
   const { data: categories = [] } = useMdCategories();
@@ -25,15 +40,6 @@ export default function DashboardMDMView() {
     }, {})
   ).map(([k, v]) => ({ name: ITEM_TYPE_LABEL[k] || k, artigos: v as number }));
 
-  const StatCard = ({ title, value, subtitle }: any) => (
-    <div className="bg-[#EEF1F5] border-2 border-white border-b-[#E6E8EC] border-r-[#E6E8EC] p-4 flex flex-col justify-between">
-      <div className="mb-2">
-        <h3 className="text-xs font-bold text-black mb-1">{title}</h3>
-        <div className="text-2xl font-bold text-[#6B7280]">{value}</div>
-      </div>
-      <div className="text-[10px] text-gray-600 font-medium">{subtitle}</div>
-    </div>
-  );
 
   return (
     <ClassicWindow title="Dashboard — Master Data">

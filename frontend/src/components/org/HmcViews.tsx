@@ -31,11 +31,17 @@ function HotelSelect({ value, onChange }: { value: string; onChange: (v: string)
 }
 
 // -------- Dashboard --------
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function Card({ label, value }: any) {
+  return (
+  <div className="bg-white border border-[#E6E8EC] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div><div className="text-2xl font-bold text-[#6B7280]">{value ?? '—'}</div></div>
+);
+}
+
 export function HmcDashboardView() {
   const { data: d, isLoading } = useQuery({ queryKey: ['hmc', 'dashboard'], queryFn: () => hmcApi.dashboard() });
-  const Card = ({ label, value }: any) => (
-    <div className="bg-white border border-[#E6E8EC] p-3"><div className="text-[10px] text-gray-500 uppercase">{label}</div><div className="text-2xl font-bold text-[#6B7280]">{value ?? '—'}</div></div>
-  );
   return (
     <ClassicWindow title="Hotel Management — Dashboard" icon={<LayoutDashboard size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Centro 04 · estrutura física e dimensões de gestão</div>}>

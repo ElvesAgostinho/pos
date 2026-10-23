@@ -15,6 +15,20 @@ import { IcoCruz, IcoDocumento, IcoImpressora, IcoLupa, IcoVoltar } from './Icon
  */
 const hoje = () => new Date().toISOString().slice(0, 10);
 
+/** Fora do componente de propósito: declarado lá dentro, seria um tipo novo a
+    cada render — o React desmontaria a subárvore e qualquer campo aqui dentro
+    perderia o foco a cada tecla. */
+function BTN({ icon, label, on, cor }: any) {
+  return (
+  <button onClick={on}
+    className="w-full h-[62px] bg-[#1f1f1f] border-b border-black text-white
+      flex flex-col items-center justify-center gap-1 hover:bg-[#2f2f2f]">
+    <span className="text-[20px]" style={{ color: cor }}>{icon}</span>
+    <span className="text-[12px] text-center leading-tight px-2">{label}</span>
+  </button>
+);
+}
+
 export default function DocsPanel({ onClose }: { onClose: () => void }) {
   const [de, setDe] = useState(hoje());
   const [ate, setAte] = useState(hoje());
@@ -55,14 +69,6 @@ export default function DocsPanel({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const BTN = ({ icon, label, on, cor }: any) => (
-    <button onClick={on}
-      className="w-full h-[62px] bg-[#1f1f1f] border-b border-black text-white
-        flex flex-col items-center justify-center gap-1 hover:bg-[#2f2f2f]">
-      <span className="text-[20px]" style={{ color: cor }}>{icon}</span>
-      <span className="text-[12px] text-center leading-tight px-2">{label}</span>
-    </button>
-  );
 
   // pré-visualização do documento
   if (ver) {
