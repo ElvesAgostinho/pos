@@ -97,13 +97,51 @@ def _make_entry(journal, date, description, source, reference, lines, autopost=T
 
 
 # ------------------------- Geradores por documento -------------------------
+def _valores_a_lancar(ticket):
+    """(bruto, líquido, imposto) que a contabilidade tem de lançar por este ticket.
+
+    A CONTABILIDADE TEM DE DIZER O MESMO QUE A FACTURA. É a mesma venda: se o
+    razão e o documento fiscal discordarem, um dos dois está a mentir à AGT.
+
+    O cálculo directo — `líquido = grand_total − tax_total` — está errado sempre
+    que houver DESCONTO de mesa, porque os dois campos do ticket falam de bases
+    diferentes: o `tax_total` é o IVA do bruto ANTES do desconto, e o
+    `grand_total` já vem descontado. Numa conta de 11.400 Kz a 14% com 10% de
+    desconto, a factura cobra 10.260 (base 9.000 + IVA 1.260), mas a conta
+    directa dava base 8.860 e IVA 1.400: 140 Kz de imposto a mais creditados na
+    conta 2431 (IVA a pagar ao Estado) e 140 Kz de receita a menos no razão.
+
+    Por ordem de confiança:
+      1. O DOCUMENTO FISCAL já emitido para este ticket — é o que foi declarado.
+      2. Sem documento (emissão automática desligada), parte-se do ticket e
+         aplica-se ao IVA a mesma proporção do desconto.
+    """
+    grand = Decimal(str(ticket.grand_total or 0))
+    tax = Decimal(str(ticket.tax_total or 0))
+    try:
+        from fiscal.integration import existing_for
+        doc = existing_for('pos', ticket.id)
+    except Exception:
+        doc = None
+    if doc is not None:
+        liq, imp = Decimal(str(doc.net_total or 0)), Decimal(str(doc.tax_total or 0))
+        return liq + imp, liq, imp
+    bruto_linhas = Decimal('0')
+    try:
+        for l in ticket.lines.filter(is_void=False).select_related('item'):
+            bruto_linhas += Decimal(str(l.line_total or 0))
+    except Exception:
+        bruto_linhas = Decimal('0')
+    if bruto_linhas > 0 and grand > 0 and grand != bruto_linhas:
+        tax = (tax * grand / bruto_linhas).quantize(Decimal('0.01'))
+    return grand, grand - tax, tax
+
+
 def post_pos_ticket(ticket, autopost=True, by=None):
     if _exists('POS', ticket.ticket_number):
         return None
     mp = _mapping()
-    grand = Decimal(str(ticket.grand_total or 0))
-    tax = Decimal(str(ticket.tax_total or 0))
-    net = grand - tax
+    grand, net, tax = _valores_a_lancar(ticket)
     vendas = _acc('SALES_SERVICE', mp)
 
     # A receita reparte-se pelas CONTAS ANALÍTICAS dos artigos (centro de custo).
@@ -177,11 +215,48 @@ def post_payment(p, autopost=True, by=None):
 
 
 # ------------------------- Pendências e execução em lote -------------------------
+def rascunhos_por_lancar():
+    """Lançamentos AUTOMÁTICOS que ficaram em RASCUNHO — e que ninguém vê.
+
+    Quando o auto-posting não consegue lançar (período fechado, conta do mapa em
+    falta), `_make_entry` deixa o movimento em RASCUNHO em vez de o perder. Até
+    aqui ninguém o procurava: a lista de pendências dava o documento como "já
+    contabilizado" (porque existe um lançamento) e os relatórios ignoram-no
+    (porque não está LANÇADO). O documento desaparecia dos dois lados — receita
+    por contabilizar sem uma única linha errada à vista, que é o pior tipo de
+    erro: não se vê, só falta.
+    """
+    return [{'ref': e.reference, 'number': e.number, 'source': e.source,
+             'date': e.entry_date.isoformat(), 'amount': float(e.total_debit),
+             'description': e.description}
+            for e in (JournalEntry.objects.filter(status='DRAFT').exclude(source='MANUAL')
+                      .prefetch_related('lines').order_by('entry_date', 'id'))]
+
+
+def lancar_rascunhos(by=None):
+    """Tenta lançar os rascunhos que ficaram para trás. Devolve quantos lançou.
+
+    Corre-se depois de resolver o que os bloqueava (reabrir o período, corrigir o
+    mapa de contas). Nunca duplica: o lançamento já existe, só lhe falta ser lançado.
+    """
+    lancados = 0
+    for e in JournalEntry.objects.filter(status='DRAFT').exclude(source='MANUAL'):
+        try:
+            e.post(by=by)
+            lancados += 1
+        except Exception:
+            continue        # continua bloqueado; fica na lista para a próxima
+    return lancados
+
+
 def _pending():
     """Documentos ainda sem lançamento contabilístico, por origem."""
     posted_refs = set(JournalEntry.objects.exclude(status='REVERSED')
                       .exclude(reference__isnull=True).values_list('reference', flat=True))
-    out = {'pos': [], 'purchase': [], 'treasury': []}
+    # 'drafts' — os lançamentos que ficaram em rascunho. Não se somam às outras
+    # listas (o documento já tem lançamento, só não está lançado), mas têm de
+    # aparecer em algum sítio, senão ficam esquecidos para sempre.
+    out = {'pos': [], 'purchase': [], 'treasury': [], 'drafts': rascunhos_por_lancar()}
     try:
         from pos.models import POSTicket
         for t in POSTicket.objects.filter(status='PAID').order_by('-opened_at')[:500]:
@@ -209,7 +284,10 @@ def _pending():
 def run_autopost(sources=None, autopost=True, by=None):
     """Gera lançamentos para todos os documentos pendentes das origens indicadas."""
     sources = sources or ['pos', 'purchase', 'treasury']
-    created = 0
+    # Primeiro recupera o que ficou em rascunho de corridas anteriores (período
+    # que já reabriu, mapa de contas já corrigido) — senão esses documentos nunca
+    # mais eram lançados: `_exists` vê o rascunho e não gera nada de novo.
+    created = lancar_rascunhos(by) if autopost else 0
     if 'pos' in sources:
         try:
             from pos.models import POSTicket

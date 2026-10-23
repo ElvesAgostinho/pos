@@ -33,6 +33,39 @@ class JournalEntryLineSerializer(serializers.ModelSerializer):
         model = JournalEntryLine
         fields = ['id', 'account', 'account_code', 'account_name', 'description', 'debit', 'credit', 'cost_center']
 
+    def validate(self, data):
+        """As MESMAS regras do `clean()` do modelo — porque aqui ele não corre.
+
+        As linhas entram por este serializer encaixado, e o DRF não chama o
+        `clean()` do modelo nesse caminho. Sem esta validação, o ecrã gravava
+        duas linhas impossíveis:
+
+        - DÉBITO E CRÉDITO na mesma linha: as duas somas de controlo sobem o
+          mesmo valor, o lançamento PARECE saldar e não movimenta nada. É a
+          maneira mais simples de fazer passar um lançamento inventado.
+        - LINHA A ZERO: não é um movimento, é ruído no razão de uma conta.
+
+        A conta tem de ser DE MOVIMENTO: lançar num título (a "31" em vez da
+        "311") faz o balancete somar o mesmo valor duas vezes.
+        """
+        debito = data.get('debit') or 0
+        credito = data.get('credit') or 0
+        if debito and credito:
+            raise serializers.ValidationError(
+                'Uma linha não pode ter débito e crédito ao mesmo tempo — '
+                'são duas linhas.')
+        if not debito and not credito:
+            raise serializers.ValidationError('Indique um valor a débito ou a crédito.')
+        if debito < 0 or credito < 0:
+            raise serializers.ValidationError(
+                'Não se lançam valores negativos: troca-se o lado (débito ↔ crédito).')
+        conta = data.get('account')
+        if conta is not None and not conta.is_movement:
+            raise serializers.ValidationError(
+                f'A conta {conta.code} é agregadora (título) — escolha uma conta '
+                f'de movimento.')
+        return data
+
 
 class JournalEntrySerializer(serializers.ModelSerializer):
     number = serializers.CharField(required=False)

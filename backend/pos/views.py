@@ -494,6 +494,103 @@ def _resolve_destination(kind, ref):
     return None, None
 
 
+def _encosta_centimos(linhas, falta):
+    """Faz o total das linhas bater AO CÊNTIMO com o preço pedido (combos).
+
+    Um preço unitário só tem 2 decimais: uma linha de 3 unidades não consegue
+    repartir 0,01 Kz pelas três. Por isso o cêntimo que falta encosta-se onde CABE:
+      · numa linha cuja quantidade divida o que falta (uma unidade divide sempre);
+      · se nenhuma dividir, reparte-se por DUAS linhas — ex.: −1 cêntimo numa linha
+        de 2 unidades e +1 numa de 3 dá exatamente +1 cêntimo no total.
+      · se nem assim (quantidades todas pares e um cêntimo ímpar a repartir), é
+        aritmeticamente impossível com 2 decimais: fica a faltar o cêntimo, NUNCA a
+        sobrar — entre enganar-se a favor da casa e a favor do cliente, é a favor
+        do cliente, que é quem tem o cartaz à frente dos olhos.
+    """
+    CENT = Decimal('0.01')
+    if not falta:
+        return
+    quantidades = [Decimal(str(l.quantity)) for l in linhas]
+    if any(q != q.to_integral_value() or q <= 0 for q in quantidades):
+        return                      # quantidades ao peso: não há cêntimos a encostar
+    qs = [int(q) for q in quantidades]
+    cent = int((falta / CENT).to_integral_value())
+
+    def aplica(pares):
+        for linha, delta in pares:
+            linha.unit_price = (Decimal(str(linha.unit_price)) + CENT * delta).quantize(CENT)
+            linha.save()
+
+    for linha, q in zip(linhas, qs):
+        if cent % q == 0:
+            aplica([(linha, cent // q)])
+            return
+    for i, (l1, q1) in enumerate(zip(linhas, qs)):
+        for j, (l2, q2) in enumerate(zip(linhas, qs)):
+            if i == j:
+                continue
+            for d1 in range(-9, 10):
+                resto = cent - d1 * q1
+                if resto % q2 == 0 and abs(resto // q2) <= 9:
+                    aplica([(l1, d1), (l2, resto // q2)])
+                    return
+    # impossível repartir: desconta-se o cêntimo a mais (a favor do cliente)
+    if cent > 0:
+        return
+    maior = max(zip(linhas, qs), key=lambda p: p[1])
+    aplica([(maior[0], -1)])
+
+
+def _folio_para_lancar(ticket, request):
+    """A CONTA DO QUARTO onde este consumo vai cair. Devolve (folio, nº do quarto, erro).
+
+    O empregado chega aqui por três caminhos, e os três têm de dar no mesmo folio:
+      · escreveu (ou escolheu na lista de hóspedes) o NÚMERO DO QUARTO — `room`;
+      · o ecrã mandou o FOLIO que já tinha na mão da lista de hóspedes — `folio`;
+      · a conta JÁ NASCEU com destino "Quarto 101" (serviço de quartos): o quarto
+        está na própria conta e não há nada para escrever outra vez.
+
+    O terceiro caminho era aceito à entrada do `pay()` (a verificação do "indique o
+    quarto" dá-se por satisfeita com o destino da conta) e depois IGNORADO aqui: só
+    se olhava para `room`. O serviço de quartos cobrava-se com um aviso a falar de um
+    quarto `""` que o empregado nunca escreveu — e a saída dele era escrever o número
+    à mão, que é precisamente o erro de dedo que manda o jantar para o quarto errado.
+    """
+    from pms.models import Folio, Room
+    room_number = (str(request.data.get('room') or '')).strip()
+    folio = None
+
+    folio_id = request.data.get('folio')
+    if folio_id:
+        folio = Folio.objects.filter(pk=folio_id, status='OPEN').first()
+        if not folio:
+            return None, room_number, Response(
+                {'detail': 'Essa conta de hóspede (folio) não existe ou já está fechada.',
+                 'requires_room': True}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not folio:
+        # O destino da conta identifica o quarto tão bem como o número escrito à mão.
+        if not room_number and getattr(ticket, 'dest_kind', '') == 'ROOM' and ticket.dest_ref:
+            do_destino = Room.objects.filter(pk=ticket.dest_ref).first()
+            room_number = do_destino.number if do_destino else ''
+        if not room_number:
+            return None, room_number, Response(
+                {'detail': 'Indique o quarto onde o consumo vai ser lançado.',
+                 'requires_room': True}, status=status.HTTP_400_BAD_REQUEST)
+        room = Room.objects.filter(number=room_number).first()
+        folio = (Folio.objects.filter(reservation__room=room, status='OPEN').first()
+                 if room else None)
+
+    if not folio:
+        return None, room_number, Response(
+            {'detail': f'Sem folio aberto para o quarto "{room_number}" — '
+                       f'não se lança consumo num quarto sem conta.',
+             'requires_room': True}, status=status.HTTP_400_BAD_REQUEST)
+    if not room_number:
+        room_number = getattr(getattr(folio.reservation, 'room', None), 'number', '') or ''
+    return folio, room_number, None
+
+
 def _enforce_table_ticket_cap(table):
     """Bloqueia a mesa e verifica o limite de contas abertas em simultâneo (parâmetro 8520).
 
@@ -1030,8 +1127,29 @@ class POSTicketViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def add_combo(self, request, pk=None):
-        """Adiciona um combo (Commercial Center): lança os componentes (para routing KDS) e
-        aplica um desconto ao ticket para atingir o preço do combo."""
+        """Adiciona um combo (Commercial Center): lança os componentes (para routing KDS)
+        e distribui o PREÇO DO COMBO por eles.
+
+        O COMBO É UM PREÇO, não uma soma de preços. O cartaz à porta diz "Menu do
+        dia 9000"; os componentes somados dão 9700. O que o cliente paga tem de ser
+        o que está escrito no cartaz — é com o cartaz na mão que ele discute, e essa
+        é a discussão que o empregado não tem como ganhar.
+
+        Isto guardava a diferença em `ticket.discount_total` e chamava logo a seguir
+        `recompute()` — que RECOMEÇA SEMPRE o desconto de zero (e tem de o fazer: é o
+        que impede um desconto antigo de ficar congelado numa conta). Ou seja, o
+        desconto do combo era gravado e apagado na linha seguinte, sem erro nenhum:
+        a conta cobrava a soma dos componentes e o combo era um nome na comanda.
+
+        Agora o preço do combo entra onde PERTENCE — nos preços das linhas, à
+        proporção do que cada componente vale. Assim:
+          · o total da conta é o preço do cartaz, venha o `recompute` quando vier;
+          · a FATURA declara à AGT os mesmos valores que o cliente pagou (um desconto
+            de conta espalhava-se por todas as linhas, inclusive as de outros pedidos);
+          · cada componente continua a ir à sua estação, com a sua quantidade.
+        """
+        from decimal import ROUND_HALF_UP
+        CENT = Decimal('0.01')
         ticket = self.get_object()
         if ticket.status != 'OPEN':
             return Response({'detail': 'Ticket não está aberto.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -1043,19 +1161,43 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if not combo:
             return Response({'detail': 'Combo inválido.'}, status=404)
         components_sum = Decimal('0')
+        componentes = []
         for ci in combo.items.all():
             cfg = POSProductConfig.objects.filter(outlet=ticket.outlet, item=ci.item).first()
             price = Decimal(str(cfg.effective_price if cfg else (ci.item.sale_price or 0)))
-            POSTicketLine.objects.create(
+            linha = POSTicketLine.objects.create(
                 ticket=ticket, item=ci.item, description=f"{ci.item.name} · Combo {combo.name}",
                 quantity=ci.quantity, unit_price=price, tax_percentage=_tax_for(ci.item.tax_percentage or 0),
                 kds_station=(cfg.kds_station if cfg else ci.item.kds_station), note=f"Combo {combo.name}")
+            componentes.append(linha)
             components_sum += price * Decimal(str(ci.quantity))
-        ticket = POSTicket.objects.get(pk=ticket.pk)
-        disc = components_sum - combo.price
-        if disc > 0:
-            ticket.discount_total = (ticket.discount_total or Decimal('0')) + disc
-            ticket.save(update_fields=['discount_total'])
+
+        preco_combo = Decimal(str(combo.price or 0))
+        if componentes and components_sum > 0 and preco_combo > 0 and preco_combo != components_sum:
+            # 1) quanto é que cada componente vale DENTRO do preço do combo (à
+            #    proporção do seu peso) — o último fica com o que sobra, para não se
+            #    perder nem ganhar um cêntimo no arredondamento.
+            restante = preco_combo
+            alvos = []
+            for i, linha in enumerate(componentes):
+                if i == len(componentes) - 1:
+                    alvos.append(restante)
+                else:
+                    bruto = Decimal(str(linha.quantity)) * Decimal(str(linha.unit_price))
+                    parte = (bruto * preco_combo / components_sum).quantize(CENT, rounding=ROUND_HALF_UP)
+                    alvos.append(parte)
+                    restante -= parte
+            for linha, alvo in zip(componentes, alvos):
+                qtd = Decimal(str(linha.quantity)) or Decimal('1')
+                linha.unit_price = (alvo / qtd).quantize(CENT, rounding=ROUND_HALF_UP)
+                linha.save()
+            # 2) OS CÊNTIMOS QUE A DIVISÃO NÃO DEU. Um componente de 3 unidades não
+            #    consegue repartir 0,01 Kz pelas três — e o total ficava a um cêntimo
+            #    do preço do cartaz, que é o género de diferença que ninguém explica
+            #    ao cliente. Encostam-se onde CABEM (ver `_encosta_centimos`).
+            somado = sum(((Decimal(str(l.quantity)) * Decimal(str(l.unit_price))).quantize(CENT)
+                          for l in componentes), Decimal('0'))
+            _encosta_centimos(componentes, preco_combo - somado)
         POSTicket.objects.get(pk=ticket.pk).recompute(save=True)
         log_event(request, 'LINE_ADD', f'Combo {combo.name} @ {combo.price}',
                   operator_name=ticket.operator_name, outlet=ticket.outlet,
@@ -1418,14 +1560,9 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                 from pms.models import Room, Folio, FolioCharge
             except Exception:
                 return Response({'detail': 'Módulo PMS não está ativo nesta licença.'}, status=409)
-            room_number = (request.data.get('room') or '').strip()
-            room = Room.objects.filter(number=room_number).first()
-            folio = (Folio.objects.filter(reservation__room=room, status='OPEN').first()
-                     if room else None)
-            if not folio:
-                return Response({'detail': f'Sem folio aberto para o quarto "{room_number}" — '
-                                           f'não se lança consumo num quarto sem conta.',
-                                 'requires_room': True}, status=status.HTTP_400_BAD_REQUEST)
+            folio, room_number, erro = _folio_para_lancar(ticket, request)
+            if erro:
+                return erro
             FolioCharge.objects.create(
                 folio=folio, charge_type='FNB',
                 description=f'POS {ticket.ticket_number} ({ticket.outlet.name})',
@@ -2212,13 +2349,13 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'A ligação ao PMS não está marcada como fidedigna '
                                        '(Interface PMS › caixa "Fidedigno"). Não se lança '
                                        'no folio por uma ligação de testes.'}, status=409)
-        room_number = request.data.get('room')
-        room = Room.objects.filter(number=room_number).first()
-        folio = None
-        if room:
-            folio = Folio.objects.filter(reservation__room=room, status='OPEN').first()
-        if not folio:
-            return Response({'detail': f'Sem folio aberto para o quarto {room_number}.'}, status=404)
+        # O MESMO resolvedor do `pay()`: o quarto vem do que o empregado escreveu, do
+        # folio que o ecrã já tinha, ou do DESTINO da conta (serviço de quartos). Dois
+        # botões que fazem a mesma coisa não podem ter duas regras para encontrar o
+        # folio — era por aqui que um funcionava e o outro recusava.
+        folio, room_number, erro = _folio_para_lancar(ticket, request)
+        if erro:
+            return erro
         ticket = POSTicket.objects.get(pk=ticket.pk)
         amount = ticket.balance_due
         FolioCharge.objects.create(
@@ -2259,11 +2396,29 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         if card.balance <= 0:
             return Response({'detail': 'Gift card sem saldo.'}, status=409)
         applied = min(card.balance, ticket.balance_due)
-        pm = (PaymentMethod.objects.filter(name__icontains='gift').first()
-              or PaymentMethod.objects.filter(method_type='VOUCHER').first()
-              or PaymentMethod.objects.first())
+        # O MEIO DE PAGAMENTO TEM DE SER O DO GIFT CARD — e nenhum outro.
+        #
+        # Em último recurso isto usava `PaymentMethod.objects.first()`: QUALQUER meio
+        # de pagamento da casa, o primeiro por ordem alfabética. Numa casa que não
+        # tenha criado o meio "Gift Card", o cartão-presente era registado como
+        # DINHEIRO — e o dinheiro em dinheiro entra no esperado do fecho de caixa.
+        # Resultado: a gaveta acusava uma SOBRA pelo valor exacto dos cartões do dia,
+        # ninguém a conseguia explicar, e a suspeita caía em quem estava ao balcão.
+        # (Com sorte caía num meio de "Conta Quarto" e lançava-se dívida a ninguém.)
+        #
+        # Um cartão-presente é dinheiro que JÁ FOI PAGO à casa: não volta a entrar na
+        # gaveta. Sem o meio próprio configurado, recusa-se e diz-se o que falta — é
+        # melhor um "não" que se resolve numa ficha do que uma caixa que mente.
+        pm = (PaymentMethod.objects.filter(method_type='GIFTCARD', is_active=True).first()
+              or PaymentMethod.objects.filter(name__icontains='gift', is_active=True).first()
+              or PaymentMethod.objects.filter(method_type='VOUCHER', is_active=True).first())
         if not pm:
-            return Response({'detail': 'Sem método de pagamento configurado.'}, status=400)
+            return Response({'detail': 'Não há meio de pagamento de Gift Card/Voucher '
+                                       'configurado. Crie-o em Configuração POS › '
+                                       'Financeiro › Modos de Pagamento (tipo "Gift Card") — '
+                                       'sem ele, o valor do cartão entraria no fecho de caixa '
+                                       'como se fosse dinheiro na gaveta.',
+                             'requires_payment_method': True}, status=400)
         POSTicketPayment.objects.create(ticket=ticket, payment_method=pm, amount=applied)
         card.balance -= applied
         card.save(update_fields=['balance'])

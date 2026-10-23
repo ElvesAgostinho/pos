@@ -22,6 +22,27 @@ class FinanceAccountSerializer(serializers.ModelSerializer):
         validators = []  # evita o UniqueTogetherValidator que exigiria 'hotel' (default no viewset)
 
 
+def _valor_tem_de_ser_positivo(valor):
+    """Um movimento de tesouraria é dinheiro a mexer — zero ou negativo não é.
+
+    O ZERO é um documento sem conteúdo: suja o extrato e a conta corrente do
+    cliente sem mexer num kwanza.
+
+    O NEGATIVO é pior, e foi encontrado a passar: um RECEBIMENTO de −50.000
+    TIRAVA dinheiro da caixa (o saldo é «fundo + recebido − pago»), mas entrava
+    pela porta dos recebimentos, que não tem controlo de saldo nenhum. Era a
+    maneira de fazer sair dinheiro da caixa sem deixar um pagamento no extrato.
+    Do outro lado, um PAGAMENTO negativo criava dinheiro do nada e passava ao
+    lado do controlo de saldo — «−50.000 > saldo» nunca é verdade.
+    """
+    if valor is None:
+        return
+    if valor <= 0:
+        raise serializers.ValidationError(
+            'O valor tem de ser maior que zero. Para corrigir um movimento errado, '
+            'anule-o (botão "Anular") em vez de lançar um valor negativo.')
+
+
 class ReceiptSerializer(serializers.ModelSerializer):
     number = serializers.CharField(required=False)
     account_name = serializers.CharField(source='account.name', read_only=True)
@@ -30,6 +51,10 @@ class ReceiptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
         fields = '__all__'
+
+    def validate_amount(self, value):
+        _valor_tem_de_ser_positivo(value)
+        return value
 
 
 class PaymentVoucherSerializer(serializers.ModelSerializer):
@@ -40,6 +65,10 @@ class PaymentVoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentVoucher
         fields = '__all__'
+
+    def validate_amount(self, value):
+        _valor_tem_de_ser_positivo(value)
+        return value
 
 
 class SupplierInvoiceSerializer(serializers.ModelSerializer):

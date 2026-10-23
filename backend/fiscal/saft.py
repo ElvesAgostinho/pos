@@ -134,7 +134,14 @@ def _lines_xml(doc):
             + _e('Quantity', ln.quantity)
             + _e('UnitOfMeasure', 'UN')
             + _e('UnitPrice', ln.unit_price)
-            + _e('CreditAmount', ln.line_total)
+            # UMA NOTA DE CRÉDITO LANÇA-SE A DÉBITO. O montante da linha de uma NC
+            # vai em <DebitAmount>; o de uma factura (ou de uma Nota de Débito, que
+            # aumenta o que o cliente deve) vai em <CreditAmount>. Com tudo em
+            # CreditAmount, a soma de controlo <TotalDebit> do ficheiro não
+            # correspondia a nenhum valor lá dentro — e o validador da AGT rejeita
+            # um ficheiro cujas somas não fecham com as linhas.
+            + _e('DebitAmount' if doc.doc_type.code == 'NC' else 'CreditAmount',
+                 ln.line_total)
             + "<Tax>" + _e('TaxType', 'IVA') + _e('TaxCountryRegion', 'AO')
             + _e('TaxPercentage', ln.tax_percentage) + "</Tax>"
             + (('' if ln.tax_percentage else _e('TaxExemptionReason', ln.exemption_reason or 'Isento')))
@@ -162,6 +169,35 @@ def _doc_xml(doc, wrapper, no_tag):
     )
 
 
+def _montante_das_linhas(doc):
+    """Soma dos montantes das linhas do documento, SEM IMPOSTO.
+
+    É isto — e não o total com IVA — que as somas de controlo do SAF-T medem:
+    <TotalCredit> é a soma de controlo do campo <CreditAmount> das linhas, e
+    <CreditAmount> é o valor da linha sem imposto. Declarar lá o total com IVA
+    inflacionava as vendas do período pelo valor do próprio imposto, e deixava o
+    ficheiro a contradizer-se: a soma anunciada não batia com a soma das linhas
+    que iam dentro dele.
+    """
+    return sum((Decimal(str(l.line_total or 0)) for l in doc.lines.all()), Decimal('0'))
+
+
+def _soma(valores):
+    return f"{sum(valores, Decimal('0')):.2f}"
+
+
+def _nao_anulados(docs):
+    """Os documentos que CONTAM para as somas de controlo.
+
+    Um documento ANULADO continua no ficheiro — é o que prova à AGT que o número
+    foi usado e não saltado (numeração sem buracos) — mas NÃO é receita: o campo
+    <DocumentStatus> diz 'A' e as somas de controlo deixam-no de fora. Antes
+    somava como qualquer outro: um mês com anulações declarava mais vendas do que
+    a casa tinha feito, e era o total declarado que ficava a mais.
+    """
+    return [d for d in docs if d.status != 'A']
+
+
 def _sales_invoices(docs):
     inv = [d for d in docs if d.doc_type.saft_type == 'SalesInvoice']
     if not inv:
@@ -172,10 +208,9 @@ def _sales_invoices(docs):
     # venda. O resto (faturas normais + Nota de Débito, que aumenta o que se deve) é
     # CRÉDITO. Antes, TUDO ia para TotalCredit e TotalDebit ficava sempre "0.00" —
     # um período com estornos inflacionava o total de vendas declarado à AGT.
-    debito = [d for d in inv if d.doc_type.code == 'NC']
-    credito = [d for d in inv if d.doc_type.code != 'NC']
-    total_debit = sum((d.gross_total for d in debito), Decimal('0'))
-    total_credit = sum((d.gross_total for d in credito), Decimal('0'))
+    vivos = _nao_anulados(inv)
+    total_debit = _soma(_montante_das_linhas(d) for d in vivos if d.doc_type.code == 'NC')
+    total_credit = _soma(_montante_das_linhas(d) for d in vivos if d.doc_type.code != 'NC')
     return ("<SalesInvoices>" + _e('NumberOfEntries', len(inv))
             + _e('TotalDebit', total_debit) + _e('TotalCredit', total_credit) + body + "</SalesInvoices>")
 
@@ -185,7 +220,7 @@ def _working_documents(docs):
     if not wd:
         return ''
     body = ''.join(_doc_xml(d, 'WorkDocument', 'DocumentNumber') for d in wd)
-    total = sum((d.gross_total for d in wd), Decimal('0'))
+    total = _soma(_montante_das_linhas(d) for d in _nao_anulados(wd))
     return ("<WorkingDocuments>" + _e('NumberOfEntries', len(wd))
             + _e('TotalDebit', '0.00') + _e('TotalCredit', total) + body + "</WorkingDocuments>")
 
@@ -196,8 +231,10 @@ def document_xml(doc):
     wrapper, no_tag = ('Invoice', 'InvoiceNo') if doc.doc_type.saft_type != 'WorkingDocument' else ('WorkDocument', 'DocumentNumber')
     section = 'SalesInvoices' if wrapper == 'Invoice' else 'WorkingDocuments'
     # Mesma convenção de _sales_invoices: uma Nota de Crédito sozinha vai para
-    # TotalDebit, não TotalCredit.
+    # TotalDebit, não TotalCredit; as somas são do montante das linhas (sem imposto)
+    # e um documento anulado não conta como receita.
     e_debito = doc.doc_type.code == 'NC'
+    montante = Decimal('0') if doc.status == 'A' else _montante_das_linhas(doc)
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         f'<AuditFile xmlns="{NS}">'
@@ -205,8 +242,8 @@ def document_xml(doc):
         + "<MasterFiles>" + _customers([doc]) + "</MasterFiles>"
         + "<SourceDocuments>"
         + f"<{section}>" + _e('NumberOfEntries', 1)
-        + _e('TotalDebit', doc.gross_total if e_debito else '0.00')
-        + _e('TotalCredit', '0.00' if e_debito else doc.gross_total)
+        + _e('TotalDebit', f'{montante:.2f}' if e_debito else '0.00')
+        + _e('TotalCredit', '0.00' if e_debito else f'{montante:.2f}')
         + _doc_xml(doc, wrapper, no_tag) + f"</{section}>"
         + "</SourceDocuments>"
         + "</AuditFile>"

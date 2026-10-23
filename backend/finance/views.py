@@ -17,6 +17,36 @@ def _next_number(model, field, prefix):
     return f"{prefix}-{n:06d}"
 
 
+def _valor_a_liquidar(pedido, em_divida):
+    """O valor a receber/pagar de um documento — nunca mais do que o que falta.
+
+    Sem este limite, dois pagamentos parciais «cada um dentro do saldo da conta»
+    somavam MAIS do que a fatura vale: o fornecedor ficava com o excesso, a conta
+    corrente ia a saldo negativo e o estado passava a PAGA de qualquer maneira,
+    sem nada assinalar. Do lado do cliente o efeito é o mesmo ao contrário —
+    entra dinheiro na caixa que não pertence a documento nenhum e ninguém sabe
+    se é adiantamento ou erro de contagem.
+
+    Devolve (valor, erro). `erro` já é a resposta pronta a devolver.
+    """
+    from decimal import Decimal, InvalidOperation
+    bruto = pedido.data.get('amount')
+    if bruto in (None, ''):
+        return em_divida, None          # omitir o valor = liquidar tudo o que falta
+    try:
+        valor = Decimal(str(bruto))
+    except (InvalidOperation, TypeError, ValueError):
+        return None, Response({'detail': 'Valor inválido.'}, status=400)
+    if valor <= 0:
+        return None, Response({'detail': 'O valor tem de ser maior que zero.'}, status=400)
+    if valor > em_divida:
+        return None, Response({'detail':
+            f'O valor ({valor}) é superior ao que falta liquidar neste documento '
+            f'({em_divida}). Corrija o valor ou trate o excesso como adiantamento.'},
+            status=400)
+    return valor, None
+
+
 class HotelDefaultMixin:
     """Preenche o hotel ao criar — e diz o que falta quando não há nenhum.
 
@@ -131,8 +161,9 @@ class SupplierInvoiceViewSet(viewsets.ModelViewSet):
         account = FinanceAccount.objects.filter(pk=request.data.get('account')).first()
         if not account:
             return Response({'detail': 'Conta de tesouraria obrigatória.'}, status=400)
-        from decimal import Decimal
-        amount = Decimal(str(request.data.get('amount') or inv.balance))
+        amount, erro = _valor_a_liquidar(request, inv.balance)
+        if erro:
+            return erro
         if amount > account.balance:
             return Response({'detail': f'Saldo insuficiente na conta ({account.balance}).'}, status=409)
         from django.utils import timezone
@@ -214,9 +245,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         account = FinanceAccount.objects.filter(pk=request.data.get('account')).first()
         if not account:
             return Response({'detail': 'Conta de tesouraria obrigatória.'}, status=400)
-        from decimal import Decimal
         from django.utils import timezone
-        amount = Decimal(str(request.data.get('amount') or inv.balance))
+        amount, erro = _valor_a_liquidar(request, inv.balance)
+        if erro:
+            return erro
         rec = Receipt.objects.create(
             number=_next_number(Receipt, 'number', 'REC'), account=account,
             party_name=inv.customer_name, description=f'Recebimento fatura {inv.number}',
@@ -242,7 +274,22 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
+        """Anula a fatura — mas não por cima de dinheiro já recebido.
+
+        A conta corrente do cliente (`customers`) ignora as faturas anuladas. Se
+        a fatura fosse anulada com os recebimentos confirmados por baixo, o
+        dinheiro continuava na caixa mas deixava de estar ligado a cliente nenhum:
+        a caixa fecha com dinheiro a mais, e o cliente volta a aparecer a dever o
+        que já pagou. Primeiro anula-se o recebimento, depois a fatura.
+        """
         inv = self.get_object()
+        recebidos = inv.receipts.filter(status='CONFIRMED')
+        if recebidos.exists():
+            numeros = ', '.join(recebidos.values_list('number', flat=True))
+            return Response({'detail':
+                f'Esta fatura já tem dinheiro recebido ({inv.paid_amount}) nos recibos '
+                f'{numeros}. Anule primeiro o(s) recebimento(s) — senão o dinheiro fica '
+                f'na caixa sem fatura que o explique.'}, status=400)
         inv.status = 'CANCELLED'
         inv.save(update_fields=['status'])
         return Response(self.get_serializer(inv).data)

@@ -54,9 +54,16 @@ def existing_for(source_module, source_ref):
     apagado, mas deixa de valer como "já emitido" — senão uma venda cujo documento foi
     corrigido por anulação ficava PARA SEMPRE impossível de voltar a faturar (todos os
     pontos de emissão tratam "já existe" como definitivo e devolvem o mesmo documento).
+
+    EXCLUI também os REGULARIZADOS POR NOTA DE CRÉDITO (`credited`): pela mesma razão.
+    O original deixou de ficar com status='A' quando se lhe emite uma NC (anular e
+    creditar descontava a receita duas vezes no SAF-T — ver fiscal/models.py), e sem
+    esta segunda condição uma venda corrigida por NC voltava a ser impossível de
+    refaturar.
     """
-    return FiscalDocument.objects.filter(source_module=source_module,
-                                         source_ref=str(source_ref)).exclude(status='A').first()
+    return (FiscalDocument.objects
+            .filter(source_module=source_module, source_ref=str(source_ref))
+            .exclude(status='A').exclude(credited=True).first())
 
 
 def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None):

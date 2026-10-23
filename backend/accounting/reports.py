@@ -7,11 +7,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Account, JournalEntry, JournalEntryLine, Journal
+from .models import (Account, JournalEntry, JournalEntryLine, Journal,
+                     ESTADOS_QUE_CONTAM)
 
 
 def _posted_lines(period=None, date_from=None, date_to=None):
-    qs = JournalEntryLine.objects.filter(entry__status='POSTED').select_related('account', 'entry')
+    # Lançados E estornados: o estorno e o original são um par que soma zero.
+    # Contar só um dos lados deixava o razão com receita NEGATIVA (ver
+    # ESTADOS_QUE_CONTAM em accounting/models.py).
+    qs = (JournalEntryLine.objects.filter(entry__status__in=ESTADOS_QUE_CONTAM)
+          .select_related('account', 'entry'))
     if period:
         qs = qs.filter(entry__period_id=period)
     if date_from:

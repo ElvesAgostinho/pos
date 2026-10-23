@@ -76,6 +76,25 @@ class PurchaseReturnViewSet(viewsets.ModelViewSet):
         if not r.lines.exists():
             return Response({'detail': 'Sem linhas para devolver.'}, status=400)
         from inventory import stock as se
+        from inventory.models import StockLevel
+
+        # NÃO SE DEVOLVE O QUE NÃO ESTÁ NO ARMAZÉM. O motor de stock subtrai o que
+        # lhe mandarem e deixa o saldo ir a negativo sem dizer nada — devolver 150
+        # de um armazém com 100 punha o artigo a −50. E um saldo negativo não fica
+        # só errado nele próprio: o cálculo do custo médio da compra seguinte passa
+        # a ponderar com uma quantidade que não existe, e o custo do artigo sai de
+        # qualquer maneira. Na prática, isto é quase sempre o mesmo artigo devolvido
+        # duas vezes, ou uma devolução lançada no armazém errado.
+        for ln in r.lines.select_related('item').all():
+            lvl = StockLevel.objects.filter(warehouse=r.warehouse, item=ln.item).first()
+            em_casa = (lvl.quantity_on_hand if lvl else Decimal('0')) or Decimal('0')
+            if ln.quantity > em_casa:
+                return Response({'detail':
+                    f'{ln.item.name}: quer devolver {ln.quantity} mas em '
+                    f'{r.warehouse.name} só há {em_casa}. Confirme a quantidade e o '
+                    f'armazém — devolver mais do que existe deixa o stock negativo e '
+                    f'estraga o custo médio do artigo.'}, status=409)
+
         with transaction.atomic():
             for ln in r.lines.select_related('item').all():
                 se.move_out(r.warehouse, ln.item, ln.quantity, reference=r.number,

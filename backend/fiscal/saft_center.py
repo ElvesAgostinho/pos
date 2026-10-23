@@ -110,7 +110,19 @@ class SaftValidateView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, profile):
+    def get(self, request, profile=None):
+        # A MESMA rota serve dois pedidos: COM perfil valida o que o sistema
+        # exportaria; SEM perfil é a rota do POST, para validar um XML colado.
+        # Um GET sem perfil rebentava com TypeError — a assinatura exigia um
+        # argumento que a rota não lhe dava — e o ecrã mostrava "erro interno" a
+        # quem só queria saber que perfis existem.
+        if not profile:
+            return Response({
+                'detail': 'Indique o perfil a validar (ex.: '
+                          '/api/fiscal/saft/validate/<perfil>/), ou envie um XML '
+                          'por POST nesta mesma rota.',
+                'profiles': sorted(saft_profiles.PROFILES.keys()),
+            }, status=400)
         start, end = _period(request)
         try:
             xml = saft_profiles.generate(profile, start, end)

@@ -75,11 +75,21 @@ def recalculate_supplier_performance(supplier):
                 ratio = min(Decimal("1"), total_received / total_ordered)
                 completeness_ratios.append(ratio)
 
+    # SEM HISTÓRICO NÃO HÁ CASTIGO. Quando não há nada a avaliar, as percentagens
+    # voltam ao valor de partida (100%) em vez de ficarem com o número antigo.
+    # Senão, anular a única receção de um fornecedor (lançada por erro) deixava a
+    # penalização dessa entrega colada à ficha para sempre: o fornecedor ficava
+    # com 0% de pontualidade por causa de uma entrega que o sistema já diz que
+    # nunca aconteceu — e nada, nem o botão "Recalcular", o conseguia limpar.
     if punctuality_evaluable > 0:
         profile.punctuality_percentage = (Decimal(on_time) / Decimal(punctuality_evaluable)) * Decimal("100")
+    else:
+        profile.punctuality_percentage = Decimal("100.00")
     if completeness_ratios:
         avg = sum(completeness_ratios, Decimal("0")) / Decimal(len(completeness_ratios))
         profile.completeness_percentage = avg * Decimal("100")
+    else:
+        profile.completeness_percentage = Decimal("100.00")
 
     profile.overall_score = compute_overall_score(profile)
     profile.save()

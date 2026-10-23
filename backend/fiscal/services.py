@@ -266,6 +266,12 @@ def create_credit_note(original_doc_id, reason='', user=None, ip=None):
         raise ValueError('Uma nota de crédito/débito não se anula com outra NC.')
     if original.status == 'A':
         raise ValueError('Documento já anulado.')
+    # DUAS NOTAS DE CRÉDITO PARA A MESMA FACTURA reduzem a receita a dobro (e deixam
+    # o cliente com saldo a favor que nunca existiu). Antes, o que travava a segunda
+    # era o original ficar com status='A'; como o original passa a ficar NORMAL (é o
+    # que a AGT espera de uma factura regularizada), a guarda é esta marca.
+    if original.credited:
+        raise ValueError(f'{original.invoice_no} já foi anulado por nota de crédito.')
 
     from .models import FiscalDocType
     nc_type = FiscalDocType.objects.filter(code='NC', is_active=True).first()
@@ -288,9 +294,21 @@ def create_credit_note(original_doc_id, reason='', user=None, ip=None):
         lines=lines, reference_doc=original.invoice_no, user=user, ip=ip,
         source_module='void', source_ref=original.invoice_no,
         customer_address=original.customer_address, tax_inclusive=original.tax_inclusive,
+        # A LIGAÇÃO AO CLIENTE tem de vir com a NC. A conta corrente soma os
+        # documentos por `customer`: a dívida pelas facturas, o crédito pelas NC.
+        # Sem esta ligação, a NC não chegava à conta corrente — o cliente continuava
+        # a dever a factura inteira depois de ela ter sido anulada, e o limite de
+        # crédito dele ficava preso num valor que já não devia.
+        customer=original.customer,
+        # Uma NC de uma factura AINDA NÃO PAGA não devolveu dinheiro a ninguém:
+        # anulou uma dívida. Nasce com o mesmo estado de liquidação do original.
+        settled=original.settled,
     )
-    original.status = 'A'
-    original.save(update_fields=['status'])
+    # O ORIGINAL FICA NORMAL (status 'N'), marcado como regularizado por NC.
+    # Anulá-lo *e* emitir a NC descontava a venda duas vezes no SAF-T (ver o campo
+    # `credited` em fiscal/models.py).
+    original.credited = True
+    original.save(update_fields=['credited'])
     FiscalAuditLog.objects.create(event='CREDIT_NOTE', document_ref=nc.invoice_no, user=user,
                                   ip_address=ip, detail=f'NC de {original.invoice_no}. Motivo: {reason[:180]}')
     return nc
@@ -309,7 +327,9 @@ def verify_chain(series_id):
             msg = signing.build_message(doc.doc_date.isoformat(),
                                         doc.system_entry_date.strftime('%Y-%m-%dT%H:%M:%S'),
                                         doc.invoice_no, f"{doc.gross_total}", doc.previous_hash)
-            ok_sig = signing.verify_message(msg, doc.doc_hash)
+            # Com a versão da chave DO DOCUMENTO: uma factura assinada antes de
+            # uma renovação de chave continua a verificar-se com a chave dela.
+            ok_sig = signing.verify_message(msg, doc.doc_hash, key_version=doc.key_version)
         results.append({'invoice_no': doc.invoice_no, 'chain_ok': ok_chain, 'signature_ok': ok_sig})
         prev = doc.doc_hash
     return {'series': series_id, 'count': len(docs),

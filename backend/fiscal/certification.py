@@ -40,7 +40,7 @@ def vendor_authorized(request):
     return bool(expected) and hmac.compare_digest(expected, given)
 
 
-def _instalar_chaves(private_key, public_key):
+def _instalar_chaves(private_key, public_key, versao_em_vigor=1):
     """Troca o par de assinatura — só se o novo par REALMENTE assinar.
 
     A prova é feita numa pasta à parte: escreve-se lá, assina-se uma mensagem de
@@ -82,6 +82,10 @@ def _instalar_chaves(private_key, public_key):
 
     # Passou. Guarda-se o par antigo ao lado antes de o substituir.
     signing.ENGINE_DIR.mkdir(parents=True, exist_ok=True)
+    # E arquiva-se a PÚBLICA em vigor com o número da sua versão: as facturas já
+    # emitidas foram assinadas com ela e têm de continuar a verificar-se (ver
+    # signing.verify_message).
+    signing.arquivar_publica(versao_em_vigor)
     for caminho in (signing.PRIVATE_KEY_PATH, signing.PUBLIC_KEY_PATH):
         if caminho.exists():
             shutil.copyfile(str(caminho), str(caminho) + '.bak')
@@ -107,7 +111,7 @@ def apply_certification(cert=None, private_key=None, public_key=None):
     """
     cfg = FiscalConfig.get()
     if private_key and public_key:
-        _instalar_chaves(private_key, public_key)
+        _instalar_chaves(private_key, public_key, versao_em_vigor=(cfg.key_version or 1))
         cfg.key_version = (cfg.key_version or 1) + 1
     if cert:
         cfg.certificate_number = cert.strip()

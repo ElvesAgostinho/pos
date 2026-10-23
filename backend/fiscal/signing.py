@@ -93,14 +93,58 @@ def sign_message(message: str) -> str:
     return base64.b64encode(signature).decode('ascii')
 
 
-def verify_message(message: str, signature_b64: str) -> bool:
-    pub = serialization.load_pem_public_key(PUBLIC_KEY_PATH.read_bytes())
-    try:
-        pub.verify(base64.b64decode(signature_b64), message.encode('utf-8'),
-                   padding.PKCS1v15(), hashes.SHA1())
-        return True
-    except (InvalidSignature, ValueError):
-        return False
+def public_key_path(key_version):
+    """A chave PÚBLICA com que se assinou na versão `key_version`.
+
+    Cada documento guarda a versão da chave que o assinou (`key_version`). Quando
+    o fabricante renova o par (certificação nova, chave comprometida), a versão
+    sobe — mas as facturas antigas continuam assinadas com a chave antiga e TÊM
+    de continuar a poder ser verificadas: é isso que prova à AGT que não foram
+    tocadas. Por isso a pública de cada versão fica arquivada aqui ao lado.
+    """
+    return ENGINE_DIR / f'public.v{int(key_version)}.pem'
+
+
+def arquivar_publica(key_version):
+    """Guarda a pública ACTUAL como a da versão indicada, antes de a substituir."""
+    if not PUBLIC_KEY_PATH.exists():
+        return
+    destino = public_key_path(key_version)
+    if not destino.exists():
+        destino.write_bytes(PUBLIC_KEY_PATH.read_bytes())
+
+
+def _publicas_a_tentar(key_version=None):
+    """A pública da versão do documento primeiro; a actual como último recurso."""
+    caminhos = []
+    if key_version is not None:
+        arquivada = public_key_path(key_version)
+        if arquivada.exists():
+            caminhos.append(arquivada)
+    if PUBLIC_KEY_PATH.exists():
+        caminhos.append(PUBLIC_KEY_PATH)
+    return caminhos
+
+
+def verify_message(message: str, signature_b64: str, key_version=None) -> bool:
+    """Verifica a assinatura com a chave da VERSÃO do documento.
+
+    Verificava sempre com a chave actual. Bastava o fabricante renovar o par de
+    assinatura (`apply_certification`) para a auditoria da cadeia passar a dar
+    "assinatura inválida" em TODAS as facturas anteriores — e uma assinatura
+    inválida, numa inspecção, lê-se como documento adulterado. O sistema
+    acusava-se a si próprio de uma falsificação que nunca houve.
+    """
+    assinatura = base64.b64decode(signature_b64)
+    for caminho in _publicas_a_tentar(key_version):
+        try:
+            pub = serialization.load_pem_public_key(caminho.read_bytes())
+            pub.verify(assinatura, message.encode('utf-8'),
+                       padding.PKCS1v15(), hashes.SHA1())
+            return True
+        except (InvalidSignature, ValueError):
+            continue
+    return False
 
 
 def print_mention(doc_hash: str, certificate_number: str, signable: bool = True) -> str:

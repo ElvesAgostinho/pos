@@ -20,40 +20,39 @@ except Exception:
 
 
 def update_performance_on_grn(sender, instance, **kwargs):
-    """Atualiza a performance do fornecedor quando uma GRN é validada."""
-    if instance.status == 'Validated':
-        profile, _ = SupplierPerformanceProfile.objects.get_or_create(supplier=instance.supplier)
-        profile.total_grns += 1
+    """Atualiza o desempenho do fornecedor a cada gravação de uma receção.
 
-        if instance.purchase_order and instance.purchase_order.expected_delivery_date:
-            expected_date = instance.purchase_order.expected_delivery_date
-            actual_date = instance.receipt_date.date()
-            if actual_date <= expected_date:
-                new_punctuality = min(100.00, float(profile.punctuality_percentage) * 0.9 + 10.0)
-            else:
-                delay_days = (actual_date - expected_date).days
-                penalty = min(50, delay_days * 5)  # 5% de penalidade por dia
-                new_punctuality = max(0.00, float(profile.punctuality_percentage) * 0.9 + ((100 - penalty) * 0.1))
-            profile.punctuality_percentage = new_punctuality
+    HAVIA DUAS CONTAS DIFERENTES PARA A MESMA COISA, e davam números muito
+    diferentes. Esta função ia somando por cima do valor anterior (uma média
+    alisada: 90% do número antigo + 10% do novo), enquanto o botão "Recalcular"
+    (`services.recalculate_supplier_performance`) refaz a conta a partir do
+    histórico real. Para o MESMO fornecedor com UMA entrega, atrasada uma semana
+    e incompleta a 60%, o automático dava nota 97 e o "Recalcular" dava 44.
 
-        if instance.purchase_order:
-            total_ordered = sum(line.quantity_requested for line in instance.purchase_order.lines.all())
-            total_received = sum(line.quantity_received for line in instance.lines.all())
-            if total_ordered > 0:
-                completeness_ratio = float(total_received) / float(total_ordered)
-                completeness_score = min(100.0, completeness_ratio * 100)
-                profile.completeness_percentage = (float(profile.completeness_percentage) * 0.9) + (completeness_score * 0.1)
+    Um índice de desempenho que muda de 97 para 44 por se premir um botão não
+    serve para decidir compras — e o número que o dono vê no quadro é o
+    automático, isto é, o errado: pela média alisada, a PRIMEIRA entrega atrasada
+    quase não se nota.
 
-        from .services import compute_overall_score
-        profile.overall_score = compute_overall_score(profile)
-        profile.save()
+    Havia dois defeitos a mais, do mesmo desenho incremental:
+      · `total_grns += 1` corria a CADA gravação da receção. Acrescentar depois o
+        nº da fatura do fornecedor somava outra entrega que não existiu;
+      · uma receção ANULADA continuava contada — e a penalização de uma entrega
+        que não aconteceu ficava na nota do fornecedor para sempre.
+
+    A correção é deixar de haver duas contas: passa a existir UMA, a que já
+    estava escrita e testada no serviço. É recalculada a partir dos factos, pelo
+    que é exacta, não acumula e trata a anulação sozinha (só conta receções
+    validadas).
+    """
+    from .services import recalculate_supplier_performance
+    recalculate_supplier_performance(instance.supplier)
 
 
 def update_performance_on_po(sender, instance, created, **kwargs):
-    if created:
-        profile, _ = SupplierPerformanceProfile.objects.get_or_create(supplier=instance.supplier)
-        profile.total_orders += 1
-        profile.save()
+    """Mesma razão da função acima: uma só conta, a partir do histórico real."""
+    from .services import recalculate_supplier_performance
+    recalculate_supplier_performance(instance.supplier)
 
 
 if _HAS_PROCUREMENT:

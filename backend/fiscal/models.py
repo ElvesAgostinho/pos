@@ -292,6 +292,21 @@ class FiscalDocument(models.Model):
     source_ref = models.CharField(max_length=60, blank=True, null=True)     # id do doc de origem
     reference_doc = models.CharField(max_length=60, blank=True, null=True)  # NC/ND: doc retificado
     status = models.CharField(max_length=1, choices=STATUS, default='N')
+    # REGULARIZADO POR NOTA DE CRÉDITO — e porque NÃO é a mesma coisa que ANULADO.
+    #
+    # Anular (status='A') é dizer à AGT que o documento não teve efeito nenhum. Uma
+    # factura que o cliente levou, com IVA liquidado, TEVE efeito: corrige-se com uma
+    # Nota de Crédito, que é um documento novo a reverter o primeiro. Os dois ficam
+    # válidos e somados dão zero.
+    #
+    # Marcar o original como ANULADO *e* emitir a NC reduzia a receita DUAS VEZES
+    # (o anulado sai das somas de controlo do SAF-T e a NC entra a débito): a casa
+    # declarava à AGT menos vendas do que fez. É a mesma família do defeito do
+    # consumo do hóspede declarado a dobrar, ao contrário.
+    #
+    # Este campo guarda o que o utilizador precisa de ver ("esta factura já foi
+    # anulada por NC") sem mentir no campo `status`, que é o que vai no ficheiro.
+    credited = models.BooleanField(default=False)
     # Ciclo de vida (Documents Center): estados após emissão/assinatura.
     agt_status = models.CharField(max_length=10, default='PENDING')  # PENDING/SENT/ACCEPTED/REJECTED
     # LIQUIDADO — uma Fatura-Recibo (FR) nasce PAGA; uma Fatura (FT) nasce POR RECEBER.
@@ -312,7 +327,10 @@ class FiscalDocument(models.Model):
     @property
     def lifecycle_state(self):
         """Estado consolidado do documento no ciclo Documents Center."""
-        if self.status == 'A':
+        # ANULADO ou REGULARIZADO POR NC: para quem olha para o ecrã, a factura
+        # deixou de valer nos dois casos. (No ficheiro para a AGT são coisas
+        # diferentes — ver o campo `credited`.)
+        if self.status == 'A' or self.credited:
             return 'VOID'
         if self.is_archived:
             return 'ARCHIVED'

@@ -2889,6 +2889,7 @@ class PosStockSaftView(APIView):
 
     def get(self, request):
         from django.http import HttpResponse
+        from django.utils import timezone        # faltava: o ecrã rebentava SEMPRE
         from fiscal.models import FiscalConfig
         from inventory.models import StockLevel
         from decimal import Decimal

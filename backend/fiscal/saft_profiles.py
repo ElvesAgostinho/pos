@@ -69,7 +69,12 @@ def generate_contabilidade(start, end):
         + "</Account>" for a in accs)
 
     # Lançamentos LANÇADOS do período
-    entries = (JournalEntry.objects.filter(status='POSTED', entry_date__gte=start, entry_date__lte=end)
+    # Lançados E estornados: o estorno é o par do original e os dois somam zero.
+    # Mandar à AGT só o lado do estorno declarava receita negativa (ver
+    # ESTADOS_QUE_CONTAM em accounting/models.py).
+    from accounting.models import ESTADOS_QUE_CONTAM
+    entries = (JournalEntry.objects.filter(status__in=ESTADOS_QUE_CONTAM,
+                                           entry_date__gte=start, entry_date__lte=end)
                .select_related('journal').prefetch_related('lines__account').order_by('entry_date', 'id'))
     total_d = total_c = Decimal('0')
     journals = {}

@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from django.db import models
 from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import viewsets, status
@@ -423,7 +424,10 @@ class FiscalDashboardView(APIView):
             'certificate_number': cfg.certificate_number,
             'issued_today': docs_today.count(),
             'issued_total': FiscalDocument.objects.count(),
-            'voided': FiscalDocument.objects.filter(status='A').count(),
+            # Anulados = anulação directa + regularizados por nota de crédito
+            # (os dois aparecem como "Anulado" na lista de documentos).
+            'voided': FiscalDocument.objects.filter(
+                models.Q(status='A') | models.Q(credited=True)).count(),
             'queue_pending': q.filter(status__in=['QUEUED', 'RETRY']).count(),
             'queue_sent': q.filter(status__in=['SENT', 'ACK']).count(),
             'queue_rejected': q.filter(status='REJECTED').count(),

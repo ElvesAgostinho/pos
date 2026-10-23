@@ -26,6 +26,16 @@ ACCOUNT_CLASSES = [
     ('8', 'Classe 8 — Resultados'),
 ]
 
+# ESTADOS QUE CONTAM NOS SALDOS E NOS RELATÓRIOS.
+#
+# Estornar não é apagar: é lançar o CONTRÁRIO. O original fica como estava (marcado
+# ESTORNADO, para se saber que foi corrigido) e o lançamento de estorno anula-o —
+# somados, dão zero. Se os relatórios contassem só os LANÇADOS, ficavam com o lado
+# negativo do par e sem o positivo: uma venda de 10.000 Kz estornada passava a
+# −10.000 Kz de receita no razão e na Demonstração de Resultados. Prejuízo
+# inventado, e IVA negativo a entregar ao Estado.
+ESTADOS_QUE_CONTAM = ['POSTED', 'REVERSED']
+
 ACCOUNT_TYPES = [
     ('ASSET', 'Ativo'),
     ('LIABILITY', 'Passivo'),
@@ -57,8 +67,11 @@ class Account(models.Model):
         return f"{self.code} · {self.name}"
 
     def balance(self, period=None, up_to=None):
-        """Saldo da conta (e das filhas) a partir das linhas de lançamentos LANÇADOS."""
-        lines = JournalEntryLine.objects.filter(entry__status='POSTED')
+        """Saldo da conta (e das filhas) a partir das linhas dos lançamentos que CONTAM.
+
+        Contam os LANÇADOS e também os ESTORNADOS — ver `ESTADOS_QUE_CONTAM`.
+        """
+        lines = JournalEntryLine.objects.filter(entry__status__in=ESTADOS_QUE_CONTAM)
         # inclui a própria conta e a subárvore por prefixo de código
         lines = lines.filter(account__code__startswith=self.code)
         if period is not None:
