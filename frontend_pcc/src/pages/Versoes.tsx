@@ -81,9 +81,21 @@ export default function Versoes() {
                 className="w-full border border-[#7FA9B1] px-2 py-1" placeholder="1.1.0" />
             </div>
             <div>
-              <label className="block text-[11px] text-gray-600 mb-0.5">Link de descarga do instalador (.exe)</label>
+              {/* O RÓTULO DIZIA SÓ ".exe" — e era precisamente o .exe que DESLIGAVA a
+                  actualização de um clique. Quem publicasse uma versão a seguir à
+                  letra do ecrã deixava todos os clientes a ter de correr o
+                  instalador completo à mão, sem perceber porquê. O campo é o
+                  mesmo; o que muda é dizer o que cada escolha faz. */}
+              <label className="block text-[11px] text-gray-600 mb-0.5">
+                Link de descarga — <b>.zip</b> (atualização de um clique) ou <b>.exe</b> (instalação completa, manual)
+              </label>
               <input value={downloadUrl} onChange={(e) => setDownloadUrl(e.target.value)}
-                className="w-full border border-[#7FA9B1] px-2 py-1" placeholder="https://.../MwanaLodge-Setup-1.1.0.exe" />
+                className="w-full border border-[#7FA9B1] px-2 py-1" placeholder="https://.../MwanaLodge-Update-1.1.0.zip" />
+              <div className="text-[10px] text-gray-500 mt-0.5">
+                Com um <b>.zip</b> (gerado por build_atualizacao.ps1), o cliente carrega em
+                "Atualizar agora" e o sistema trata de tudo — sem reinstalar e sem perder
+                configuração. Com um <b>.exe</b>, ele tem de descarregar e correr o instalador à mão.
+              </div>
             </div>
             <div>
               <label className="block text-[11px] text-gray-600 mb-0.5">O que mudou (aparece no aviso do cliente)</label>
