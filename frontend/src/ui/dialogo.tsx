@@ -121,6 +121,37 @@ export default function DialogoHost() {
     if (fila.length) { setPendentes((v) => [...v, ...fila]); fila.length = 0; }
 
     /**
+     * O QUE NÃO É NOSSO NÃO LEVA O NOME DA CASA.
+     *
+     * Um cliente acabado de instalar viu, logo ao entrar, uma caixa vermelha a
+     * dizer "Erro no terminal — Window message "chrome: call method" timed out".
+     * Essa mensagem não existe em nenhum ficheiro deste sistema: vem do browser,
+     * de uma extensão instalada na máquina, que faz uma pergunta à página e
+     * desiste de esperar. O apanhador de erros aqui em baixo é bom (um erro
+     * silencioso num botão deixa quem serve sem saber o que falhou) — mas é
+     * indiscriminado: apanhava TAMBÉM o que não é nosso, e punha-lhe o nosso
+     * nome em cima, à frente do dono, no primeiro minuto de uso.
+     *
+     * Estas assinaturas são de fora e não há nada a fazer-lhes do nosso lado.
+     * Não se escondem — vão para a consola, onde quem assiste à distância as vê;
+     * só não interrompem quem está a trabalhar com um alarme que não é dele.
+     */
+    const DE_FORA = [
+      'chrome:', 'chrome-extension://', 'moz-extension://', 'safari-extension://',
+      'Window message',                       // a ponte das extensões com a página
+      'Extension context invalidated',
+      'The message port closed before a response was received',
+      'ResizeObserver loop',                  // ruído do próprio motor de layout
+    ];
+    const deFora = (m: unknown) => {
+      const texto = String(m ?? '');
+      if (!texto) return false;
+      const alheio = DE_FORA.some((x) => texto.includes(x));
+      if (alheio) console.warn('[ignorado — não é do sistema]', texto);
+      return alheio;
+    };
+
+    /**
      * ERROS QUE NINGUÉM VÊ. Um erro dentro de um botão (um `undefined` ao tocar em
      * "Pagar") morre na consola do browser: o ecrã não muda, o botão não responde, e
      * quem está a servir só sabe dizer "não dá para fazer nada". Sem a mensagem, não há
@@ -131,6 +162,7 @@ export default function DialogoHost() {
     const naErro = (e: ErrorEvent) => {
       // erros de recursos (imagens, scripts) não trazem mensagem útil ao operador
       if (!e?.message) return;
+      if (deFora(e.message) || deFora((e as any)?.error?.message)) return;
       // O browser às vezes dá só "Uncaught" em `message` e guarda a razão a
       // sério em `error.message` — mostrar "Uncaught" e um número de linha não
       // diz nada a quem está ao balcão, nem a quem assiste à distância.
@@ -147,6 +179,7 @@ export default function DialogoHost() {
       // os erros de API já são mostrados pelo próprio ecrã — não se repetem aqui
       if (r?.isAxiosError || r?.response) return;
       if (!r) return;
+      if (deFora(r?.message || r)) return;
       aviso(String(r?.message || r), 'Erro no terminal');
     };
     window.addEventListener('error', naErro);

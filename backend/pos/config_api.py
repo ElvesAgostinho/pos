@@ -4067,7 +4067,14 @@ class StockDocViewSet(viewsets.ModelViewSet):
     def post_stock(self, request, pk=None):
         """LANÇAR no stock. É aqui que a mercadoria entra (ou sai) a sério."""
         self._exige_fnb(request)
-        doc = self.get_queryset().select_for_update().get(pk=pk)
+        # Tranca a LINHA do documento, e só depois o carrega com as relações.
+        # `select_for_update()` sobre um queryset com `select_related` de
+        # relações anuláveis (estado, entidade, armazém de origem) gera LEFT
+        # OUTER JOIN, e o PostgreSQL recusa trancar o lado anulável de um outer
+        # join: o lançamento rebentava em produção e passava no SQLite.
+        from .models import StockDoc as _SD
+        _SD.objects.select_for_update().filter(pk=pk).values_list('pk', flat=True).first()
+        doc = self.get_queryset().get(pk=pk)
         if doc.voided:
             return Response({'detail': 'Documento anulado.'}, status=400)
         if doc.posted:
@@ -4127,7 +4134,14 @@ class StockDocViewSet(viewsets.ModelViewSet):
         Anular sem devolver o stock era a maneira mais silenciosa de ter 200 garrafas
         no sistema e 0 no armazém.
         """
-        doc = self.get_queryset().select_for_update().get(pk=pk)
+        # Tranca a LINHA do documento, e só depois o carrega com as relações.
+        # `select_for_update()` sobre um queryset com `select_related` de
+        # relações anuláveis (estado, entidade, armazém de origem) gera LEFT
+        # OUTER JOIN, e o PostgreSQL recusa trancar o lado anulável de um outer
+        # join: o lançamento rebentava em produção e passava no SQLite.
+        from .models import StockDoc as _SD
+        _SD.objects.select_for_update().filter(pk=pk).values_list('pk', flat=True).first()
+        doc = self.get_queryset().get(pk=pk)
         if doc.voided:
             return Response({'detail': 'Já estava anulado.'}, status=400)
         quem = request.user.username if request.user.is_authenticated else None

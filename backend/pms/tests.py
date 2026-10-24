@@ -3317,3 +3317,492 @@ class PmsFechoDaEstadiaTests(PmsBase):
                              format='json')
         self.assertEqual(r.status_code, 400, r.content)
         self.assertIn('detail', r.data)
+
+
+# ==========================================================================
+# GRUPOS HOTELEIROS — os relatórios de uma unidade só contam essa unidade
+# ==========================================================================
+from datetime import datetime                                   # noqa: E402
+from django.utils import timezone as _tz                         # noqa: E402
+
+from identity.models import UserHotelAccess                      # noqa: E402
+from .models import RoomType, FolioCharge, BookingPayment         # noqa: E402
+
+
+class RelatoriosDeUmGrupoHoteleiroTests(PmsBase):
+    """O relatório do Hotel A não pode trazer uma única noite do Hotel B.
+
+    Este sistema vende-se a GRUPOS com várias propriedades, e as funções de
+    relatório do alojamento recebiam só `params` — sem hotel — e consultavam
+    `Reservation.objects` / `Folio.objects` / `FolioCharge.objects` sem filtro
+    de propriedade. Com dois hotéis na mesma instalação, o director do Hotel A
+    abria "Ocupação por dia" e via as noites do Hotel B; a ocupação dividia as
+    noites das duas casas pelos quartos de uma (e passava dos 100%); e quando a
+    sede somava as unidades para ter o grupo, contava tudo duas vezes.
+
+    O cenário abaixo é propositadamente assimétrico (3 quartos a 30.000 contra
+    2 quartos a 50.000) para que NENHUM total do Hotel A seja igual ao do Hotel
+    B nem a metade do consolidado: se o filtro falhar, falha com um número
+    visivelmente errado e não por coincidência aritmética.
+
+        Hotel A "Hotel Teste"  3 quartos · 30.000/noite
+            A1  quarto 101  hoje -> hoje+2   2 noites   60.000
+            A2  quarto 102  hoje -> hoje+2   2 noites   60.000
+            conta FA-001 (A1): Alojamento 30.000 + F&B 5.000 = 35.000
+            depósito online: 10.000 pendente
+        Hotel B "Hotel Praia"  2 quartos · 50.000/noite
+            B1  quarto 201  hoje -> hoje+2   2 noites  100.000
+            conta FB-001 (B1): Alojamento 50.000 + Minibar 2.000 = 52.000
+            depósito online: 20.000 pendente
+
+    Período de todos os relatórios: [hoje, hoje+1] — 2 dias.
+    """
+
+    def setUp(self):
+        super().setUp()                       # Hotel A: 3 quartos, STD 30.000
+
+        # SEGUNDA PROPRIEDADE DO MESMO GRUPO (mesma empresa, mesma instalação).
+        # Cria-se pelo ORM e não pela API de propósito: ao criar um quarto, o
+        # `HotelScopedMixin` força o hotel com `default_hotel_id`, que sem
+        # cabeçalho X-Hotel-Id devolve o PRIMEIRO hotel do sistema — os quartos
+        # do Hotel B nasceriam no Hotel A e o cenário do teste era falso.
+        self.hotel_b = Hotel.objects.create(company=self.hotel.company, name='Hotel Praia')
+        self.rt_b = RoomType.objects.create(
+            hotel=self.hotel_b, code='SUP', name='Superior',
+            base_rate=Decimal('50000'), capacity_adults=2)
+        self.quartos_b = [Room.objects.create(
+            hotel=self.hotel_b, room_type=self.rt_b, number=n, status='VACANT_CLEAN')
+            for n in ('201', '202')]
+
+        self.rt_a = RoomType.objects.get(pk=self.rt)
+        self.a1 = self._reserva(self.hotel, self.rt_a, self.quartos[0], 'GRP-A1', '30000')
+        self.a2 = self._reserva(self.hotel, self.rt_a, self.quartos[1], 'GRP-A2', '30000')
+        self.b1 = self._reserva(self.hotel_b, self.rt_b, self.quartos_b[0].id, 'GRP-B1', '50000')
+
+        self.fa = self._conta(self.a1, 'FA-001', [('ROOM', 'Diaria', '30000'),
+                                                  ('FNB', 'Jantar', '5000')])
+        self.fb = self._conta(self.b1, 'FB-001', [('ROOM', 'Diaria', '50000'),
+                                                  ('MINIBAR', 'Agua', '2000')])
+        BookingPayment.objects.create(reservation=self.a1, amount=Decimal('10000'))
+        BookingPayment.objects.create(reservation=self.b1, amount=Decimal('20000'))
+
+        self.p = {'from': str(self.hoje), 'to': str(self.hoje + timedelta(days=1))}
+
+    # ------------------------------------------------------------ utilitários
+    def _reserva(self, hotel, room_type, quarto_id, confirmacao, tarifa,
+                 dias=0, noites=2, estado='BOOKED'):
+        return Reservation.objects.create(
+            hotel=hotel, confirmation=confirmacao, guest=self.guest,
+            room_type=room_type, room_id=quarto_id,
+            check_in=self.hoje + timedelta(days=dias),
+            check_out=self.hoje + timedelta(days=dias + noites),
+            adults=2, rate=Decimal(tarifa), status=estado)
+
+    def _conta(self, reserva, numero, lancamentos):
+        folio = Folio.objects.create(reservation=reserva, number=numero)
+        for tipo, descricao, valor in lancamentos:
+            FolioCharge.objects.create(folio=folio, charge_type=tipo,
+                                       description=descricao, amount=Decimal(valor))
+        return folio
+
+    def _correr(self, code, unidade='OMITIR', **extra):
+        """Corre um relatório do catálogo partilhado, como o ecrã o corre.
+
+        `unidade` omitida = o formulário não escolheu nenhuma (consolidado);
+        um id = o relatório daquela casa; None explícito = 'all' (consolidado
+        pedido de propósito, mesmo havendo hotel activo no ecrã).
+        """
+        p = dict(self.p, detailed='S')
+        if unidade != 'OMITIR':
+            p['hotel'] = 'all' if unidade is None else unidade
+        r = self.client.post('/api/pos/reports/run/',
+                             {'code': code, 'params': p}, format='json', **extra)
+        self.assertEqual(r.status_code, 200, '%s: %s' % (code, r.content))
+        return r.data
+
+    # ------------------------------------------------------------------ provas
+    def test_as_reservas_do_hotel_a_nao_incluem_nenhuma_reserva_do_hotel_b(self):
+        a = self._correr('pms_reservas', self.hotel.id)
+        b = self._correr('pms_reservas', self.hotel_b.id)
+
+        self.assertEqual(sorted(l['confirmation'] for l in a['rows']), ['GRP-A1', 'GRP-A2'],
+                         'o relatório do Hotel A trouxe reservas que não são dele: %s'
+                         % [l['confirmation'] for l in a['rows']])
+        self.assertEqual([l['confirmation'] for l in b['rows']], ['GRP-B1'],
+                         'o relatório do Hotel B trouxe reservas que não são dele: %s'
+                         % [l['confirmation'] for l in b['rows']])
+        # 2 reservas x 2 noites x 30.000 = 120.000 (e NÃO 220.000, que é o grupo).
+        self.assertEqual(a['totals']['total'], 120000.0,
+                         'receita do Hotel A: esperado 120.000 (2x2 noites x30.000), '
+                         'veio %s — 220.000 significa que somou as 2 noites a 50.000 do Hotel B'
+                         % a['totals']['total'])
+        self.assertEqual(a['totals']['nights'], 4,
+                         'noites do Hotel A: esperado 4 (2 reservas x 2 noites), veio %s — '
+                         '6 significa que contou também as 2 noites do Hotel B'
+                         % a['totals']['nights'])
+        self.assertEqual(b['totals']['total'], 100000.0,
+                         'receita do Hotel B: esperado 100.000 (2 noites x 50.000), veio %s'
+                         % b['totals']['total'])
+        self.assertEqual(b['totals']['nights'], 2,
+                         'noites do Hotel B: esperado 2, veio %s' % b['totals']['nights'])
+
+    def test_a_ocupacao_do_hotel_b_usa_os_dois_quartos_do_hotel_b_e_nao_passa_dos_100(self):
+        """6 noites vendidas no grupo em 2 quartos do Hotel B dariam 150%.
+
+        É o sintoma mais visível do defeito: a ocupação contava as noites das
+        duas casas e dividia-as pelos quartos de uma só. Uma ocupação acima dos
+        100% não é um arredondamento — é o relatório a dizer que se venderam
+        mais quartos do que o hotel tem.
+        """
+        b = self._correr('pms_ocupacao', self.hotel_b.id)
+        for linha in b['rows']:
+            self.assertEqual(linha['rooms'], 2,
+                             'o dia %s do Hotel B diz %s quartos; o Hotel B tem 2 (o grupo '
+                             'tem 5)' % (linha['day'], linha['rooms']))
+            self.assertEqual(linha['occupied'], 1,
+                             'o dia %s do Hotel B diz %s quartos ocupados; só a reserva B1 '
+                             'lá está — 3 é o grupo inteiro' % (linha['day'], linha['occupied']))
+            self.assertEqual(linha['occupancy'], 50.0,
+                             'ocupação do Hotel B em %s: esperado 50,0%% (1 de 2 quartos), '
+                             'veio %s%% — 150%% é o grupo (3 noites) sobre 2 quartos'
+                             % (linha['day'], linha['occupancy']))
+            self.assertLessEqual(linha['occupancy'], 100.0,
+                                 'ocupação de %s%% no Hotel B: vendeu-se mais quartos do que '
+                                 'o hotel tem' % linha['occupancy'])
+
+        a = self._correr('pms_ocupacao', self.hotel.id)
+        for linha in a['rows']:
+            self.assertEqual(linha['rooms'], 3,
+                             'o dia %s do Hotel A diz %s quartos; o Hotel A tem 3'
+                             % (linha['day'], linha['rooms']))
+            self.assertEqual(linha['occupancy'], 66.7,
+                             'ocupação do Hotel A em %s: esperado 66,7%% (2 de 3 quartos), '
+                             'veio %s%% — 60,0%% é o grupo (3 de 5)'
+                             % (linha['day'], linha['occupancy']))
+
+    def test_o_adr_e_o_revpar_de_cada_unidade_sao_os_dessa_unidade(self):
+        """ADR e RevPAR são as duas medidas por que um hotel se julga.
+
+        Hotel A: 120.000 em 4 noites vendidas = ADR 30.000; em 6 noites-quarto
+        disponíveis (3 quartos x 2 dias) = RevPAR 20.000.
+        Hotel B: 100.000 em 2 noites = ADR 50.000; em 4 disponíveis = RevPAR
+        25.000. Misturados, dariam ADR 36.666,67 e RevPAR 22.000 — que não é o
+        ADR de nenhuma das duas casas e por isso não serve para decidir nada
+        em nenhuma delas.
+        """
+        a = self._correr('pms_ocupacao', self.hotel.id)['totals']
+        b = self._correr('pms_ocupacao', self.hotel_b.id)['totals']
+
+        self.assertEqual(a['adr'], 30000.0,
+                         'ADR do Hotel A: esperado 30.000 (120.000 / 4 noites), veio %s — '
+                         '36.666,67 é o ADR do grupo' % a['adr'])
+        self.assertEqual(a['revpar'], 20000.0,
+                         'RevPAR do Hotel A: esperado 20.000 (120.000 / 3 quartos x 2 dias), '
+                         'veio %s — 22.000 é o do grupo' % a['revpar'])
+        self.assertEqual(b['adr'], 50000.0,
+                         'ADR do Hotel B: esperado 50.000 (100.000 / 2 noites), veio %s'
+                         % b['adr'])
+        self.assertEqual(b['revpar'], 25000.0,
+                         'RevPAR do Hotel B: esperado 25.000 (100.000 / 2 quartos x 2 dias), '
+                         'veio %s' % b['revpar'])
+        self.assertNotEqual(a['adr'], b['adr'],
+                            'as duas casas vendem a preços diferentes; se o ADR é igual, '
+                            'os dois relatórios estão a ler os mesmos dados')
+
+    def test_o_consolidado_do_grupo_e_exactamente_a_soma_das_duas_unidades(self):
+        """O filtro não pode esconder nada: A + B tem de dar o grupo.
+
+        Um filtro mal feito resolve-se a si mesmo deixando linhas de fora —
+        e aí o dono do grupo deixa de ver receita que existe. Esta é a metade
+        que falta à prova do isolamento.
+        """
+        a = self._correr('pms_reservas', self.hotel.id)['totals']
+        b = self._correr('pms_reservas', self.hotel_b.id)['totals']
+        grupo = self._correr('pms_reservas', None)
+
+        self.assertEqual(grupo['totals']['total'], a['total'] + b['total'],
+                         'consolidado %s != Hotel A %s + Hotel B %s — o filtro por '
+                         'propriedade perdeu receita pelo caminho'
+                         % (grupo['totals']['total'], a['total'], b['total']))
+        self.assertEqual(grupo['totals']['total'], 220000.0,
+                         'consolidado do grupo: esperado 220.000 (120.000 + 100.000), veio %s'
+                         % grupo['totals']['total'])
+        self.assertEqual(grupo['totals']['nights'], 6,
+                         'noites do grupo: esperado 6 (4 do Hotel A + 2 do Hotel B), veio %s'
+                         % grupo['totals']['nights'])
+        self.assertEqual(len(grupo['rows']), 3,
+                         'o grupo tem 3 reservas (2+1) e o relatório trouxe %s'
+                         % len(grupo['rows']))
+
+        oa = self._correr('pms_ocupacao', self.hotel.id)['totals']
+        ob = self._correr('pms_ocupacao', self.hotel_b.id)['totals']
+        og = self._correr('pms_ocupacao', None)['totals']
+        self.assertEqual(og['occupied'], oa['occupied'] + ob['occupied'],
+                         'noites ocupadas do grupo %s != %s + %s'
+                         % (og['occupied'], oa['occupied'], ob['occupied']))
+        self.assertEqual(og['revenue'], oa['revenue'] + ob['revenue'],
+                         'receita do grupo %s != %s + %s'
+                         % (og['revenue'], oa['revenue'], ob['revenue']))
+        self.assertEqual(og['revenue'], 220000.0, 'receita do grupo: veio %s' % og['revenue'])
+
+        ca = self._correr('pms_consumos', self.hotel.id)['totals']
+        cb = self._correr('pms_consumos', self.hotel_b.id)['totals']
+        cg = self._correr('pms_consumos', None)['totals']
+        self.assertEqual(cg['amount'], ca['amount'] + cb['amount'],
+                         'consumos do grupo %s != %s + %s'
+                         % (cg['amount'], ca['amount'], cb['amount']))
+        self.assertEqual(cg['amount'], 87000.0,
+                         'consumos do grupo: esperado 87.000 (35.000 + 52.000), veio %s'
+                         % cg['amount'])
+
+    def test_as_contas_e_os_consumos_de_uma_unidade_sao_so_dessa_unidade(self):
+        """A conta do hóspede não tem hotel — tem-no a reserva dela.
+
+        É o sítio onde o filtro é mais fácil de esquecer: `Folio.objects` e
+        `FolioCharge.objects` não têm campo `hotel` nenhum, e por isso ficaram
+        sem filtro mais tempo do que as reservas. O chefe de recepção do Hotel
+        A levava para o turno da noite uma lista com as dívidas do Hotel B.
+        """
+        a = self._correr('pms_contas_abertas', self.hotel.id)
+        b = self._correr('pms_contas_abertas', self.hotel_b.id)
+
+        self.assertEqual([l['folio'] for l in a['rows']], ['FA-001'],
+                         'contas em aberto do Hotel A: esperado só FA-001, veio %s'
+                         % [l['folio'] for l in a['rows']])
+        self.assertEqual(a['totals']['balance'], 35000.0,
+                         'saldo em aberto do Hotel A: esperado 35.000 (30.000 + 5.000), '
+                         'veio %s — 87.000 é o grupo' % a['totals']['balance'])
+        self.assertEqual([l['folio'] for l in b['rows']], ['FB-001'],
+                         'contas em aberto do Hotel B: esperado só FB-001, veio %s'
+                         % [l['folio'] for l in b['rows']])
+        self.assertEqual(b['totals']['balance'], 52000.0,
+                         'saldo em aberto do Hotel B: esperado 52.000 (50.000 + 2.000), veio %s'
+                         % b['totals']['balance'])
+
+        ca = self._correr('pms_consumos', self.hotel.id)
+        self.assertEqual(ca['totals']['amount'], 35000.0,
+                         'consumos do Hotel A: esperado 35.000, veio %s' % ca['totals']['amount'])
+        self.assertEqual(ca['totals']['count'], 2,
+                         'o Hotel A tem 2 lançamentos; vieram %s (4 é o grupo)'
+                         % ca['totals']['count'])
+        self.assertNotIn('Minibar', [l['kind'] for l in ca['rows']],
+                         'a água do minibar foi lançada na conta de um hóspede do Hotel B '
+                         'e apareceu nos consumos do Hotel A')
+
+    def test_a_lista_da_recepcao_a_governanta_a_previsao_e_os_depositos_sao_por_unidade(self):
+        """Os restantes relatórios da pasta, pela mesma régua.
+
+        Não é zelo a mais: cada um destes consultava um modelo diferente
+        (`Reservation`, `Room`, `BookingPayment`) e bastava um ficar de fora
+        para o ecrã de Relatórios continuar a misturar as casas num sítio.
+        """
+        hoje = self.hoje.strftime('%d/%m/%Y')
+
+        ea = self._correr('pms_entradas_saidas', self.hotel.id)['rows']
+        eb = self._correr('pms_entradas_saidas', self.hotel_b.id)['rows']
+        self.assertEqual([l['arrivals'] for l in ea if l['day'] == hoje], [2],
+                         'entradas de hoje no Hotel A: esperado 2 (A1 e A2), veio %s'
+                         % [l['arrivals'] for l in ea if l['day'] == hoje])
+        self.assertEqual([l['arrivals'] for l in eb if l['day'] == hoje], [1],
+                         'entradas de hoje no Hotel B: esperado 1 (B1), veio %s — 3 é o grupo'
+                         % [l['arrivals'] for l in eb if l['day'] == hoje])
+
+        ga = self._correr('pms_governanta', self.hotel.id)['rows']
+        gb = self._correr('pms_governanta', self.hotel_b.id)['rows']
+        self.assertEqual([l['room'] for l in ga], ['101', '102', '103'],
+                         'a governanta do Hotel A recebeu os quartos %s — 201/202 são do '
+                         'Hotel B, noutra cidade' % [l['room'] for l in ga])
+        self.assertEqual([l['room'] for l in gb], ['201', '202'],
+                         'a governanta do Hotel B recebeu os quartos %s'
+                         % [l['room'] for l in gb])
+
+        pa = self._correr('pms_previsao', self.hotel.id)['rows'][0]
+        pb = self._correr('pms_previsao', self.hotel_b.id)['rows'][0]
+        self.assertEqual((pa['sold'], pa['free']), (2, 1),
+                         'previsão de hoje no Hotel A: esperado 2 vendidos e 1 por vender '
+                         '(3 quartos), veio %s vendidos e %s por vender'
+                         % (pa['sold'], pa['free']))
+        self.assertEqual((pb['sold'], pb['free']), (1, 1),
+                         'previsão de hoje no Hotel B: esperado 1 vendido e 1 por vender '
+                         '(2 quartos), veio %s e %s' % (pb['sold'], pb['free']))
+
+        da = self._correr('pms_depositos', self.hotel.id)['totals']
+        db = self._correr('pms_depositos', self.hotel_b.id)['totals']
+        self.assertEqual(da['amount'], 10000.0,
+                         'depósitos do Hotel A: esperado 10.000, veio %s (30.000 é o grupo)'
+                         % da['amount'])
+        self.assertEqual(db['amount'], 20000.0,
+                         'depósitos do Hotel B: esperado 20.000, veio %s' % db['amount'])
+
+    def test_o_relatorio_diz_de_que_casa_sao_os_numeros(self):
+        """Um relatório de grupo e um relatório de uma casa saíam da impressora
+        iguais: quem o lesse três meses depois não tinha como saber qual era
+        qual — e um total de grupo lido como total de uma unidade é uma decisão
+        tomada com o dobro da receita."""
+        a = self._correr('pms_reservas', self.hotel.id)
+        self.assertEqual(a['hotel'], self.hotel.id)
+        self.assertEqual(a['hotel_scope'], 'Hotel Teste',
+                         'o relatório de uma unidade tem de a identificar; veio "%s"'
+                         % a['hotel_scope'])
+
+        grupo = self._correr('pms_reservas', None)
+        self.assertIsNone(grupo['hotel'])
+        self.assertIn('Consolidado', grupo['hotel_scope'],
+                      'o consolidado do grupo tem de se anunciar como tal; veio "%s"'
+                      % grupo['hotel_scope'])
+        self.assertIn('2 unidades', grupo['hotel_scope'],
+                      'o consolidado devia dizer quantas casas somou; veio "%s"'
+                      % grupo['hotel_scope'])
+
+    def test_sem_unidade_no_formulario_vale_o_hotel_aberto_no_ecra(self):
+        """A rede de segurança: o ecrã do Hotel B nunca mostra o Hotel A.
+
+        O formulário de um relatório pode não repetir a unidade (há relatórios
+        sem parâmetros nenhuns), e nesse caso a escolha certa não é "o grupo
+        todo" — é a casa onde o utilizador está. É o mesmo X-Hotel-Id que o
+        `core.tenancy` usa em todos os outros ecrãs.
+        """
+        d = self._correr('pms_reservas', HTTP_X_HOTEL_ID=str(self.hotel_b.id))
+        self.assertEqual([l['confirmation'] for l in d['rows']], ['GRP-B1'],
+                         'com o Hotel B aberto no ecrã, o relatório trouxe %s'
+                         % [l['confirmation'] for l in d['rows']])
+        self.assertEqual(d['hotel'], self.hotel_b.id)
+
+        # E o consolidado continua a ser pedível de propósito, mesmo lá dentro.
+        g = self._correr('pms_reservas', None, HTTP_X_HOTEL_ID=str(self.hotel_b.id))
+        self.assertEqual(len(g['rows']), 3,
+                         'pedir "todas as unidades" com o Hotel B aberto devia dar as 3 '
+                         'reservas do grupo; deu %s' % len(g['rows']))
+
+    def test_quem_so_tem_acesso_a_uma_unidade_nao_consolida_o_grupo_inteiro(self):
+        """Um director de unidade não tem o grupo para consolidar.
+
+        Sem isto, bastava não escolher unidade nenhuma para o relatório passar
+        a mostrar as casas que essa pessoa não pode ver — a mesma fuga que o
+        `core.tenancy` já fechara nos viewsets, aberta outra vez pelo caminho
+        dos relatórios.
+        """
+        from rest_framework_simplejwt.tokens import RefreshToken
+        director = User.objects.create_user('dir_hotel_a', 'dir@teste.ao', 'x')
+        UserHotelAccess.objects.create(user=director, hotel=self.hotel, is_default=True)
+
+        # Token verdadeiro: é a autenticação que o middleware resolve, e sem ela
+        # o pedido não tem autor nenhum a quem aplicar os acessos.
+        self.client.force_authenticate(None)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer %s' % (
+            RefreshToken.for_user(director).access_token,))
+
+        d = self._correr('pms_reservas')
+        self.assertEqual(sorted(l['confirmation'] for l in d['rows']), ['GRP-A1', 'GRP-A2'],
+                         'o director do Hotel A consolidou e viu %s — GRP-B1 é de uma casa '
+                         'a que ele não tem acesso' % [l['confirmation'] for l in d['rows']])
+        self.assertEqual(d['totals']['total'], 120000.0,
+                         'consolidado de quem só tem o Hotel A: esperado 120.000, veio %s'
+                         % d['totals']['total'])
+
+        negado = self.client.post('/api/pos/reports/run/', {
+            'code': 'pms_reservas',
+            'params': dict(self.p, detailed='S', hotel=self.hotel_b.id)}, format='json')
+        self.assertEqual(negado.status_code, 403,
+                         'pedir o relatório de um hotel sem acesso devia dar 403 e deu %s'
+                         % negado.status_code)
+
+
+class RevenueRecortadoAoPeriodoTests(PmsBase):
+    """A coluna "Consumos" do relatório de receita só conta o período pedido.
+
+    `reports/revenue/` somava, na linha de cada reserva, os lançamentos TODOS
+    da conta — a conta inteira da estadia. Numa estadia que atravessa o mês
+    (28/01 a 03/02, que é o caso normal de quem passa o Ano Novo no hotel), o
+    relatório de Janeiro trazia na coluna "Consumos" as diárias e os extras de
+    Fevereiro: dinheiro que em Janeiro ainda não tinha sido lançado. Janeiro
+    mais Fevereiro davam mais do que o ano, e a coluna nunca batia com o
+    relatório de Encargos do mesmo período, que sempre recortou pela data do
+    lançamento.
+
+    Usam-se datas de 2020 de propósito: ficam longe de `hoje` e por isso o
+    teste dá o mesmo resultado em qualquer dia do ano em que corra.
+    """
+
+    JAN = {'date_from': '2020-01-01', 'date_to': '2020-01-31'}
+    FEV = {'date_from': '2020-02-01', 'date_to': '2020-02-29'}
+
+    def setUp(self):
+        super().setUp()
+        self.hotel_b = Hotel.objects.create(company=self.hotel.company, name='Hotel Praia')
+        rt_b = RoomType.objects.create(hotel=self.hotel_b, code='SUP', name='Superior',
+                                       base_rate=Decimal('50000'), capacity_adults=2)
+
+        # A estadia que atravessa o mês, no Hotel A: 6 noites a 40.000.
+        self.estadia = Reservation.objects.create(
+            hotel=self.hotel, confirmation='ANO-NOVO', guest=self.guest,
+            room_type=RoomType.objects.get(pk=self.rt), room_id=self.quartos[2],
+            check_in=date(2020, 1, 28), check_out=date(2020, 2, 3),
+            adults=2, rate=Decimal('40000'), status='CHECKED_OUT')
+        folio = Folio.objects.create(reservation=self.estadia, number='ANO-NOVO-A')
+        self._lancar(folio, 'ROOM', 'Diarias de Janeiro', '100000', date(2020, 1, 30))
+        self._lancar(folio, 'ROOM', 'Diarias de Fevereiro', '70000', date(2020, 2, 2))
+
+        # E uma estadia do Hotel B no mesmo Janeiro, com um valor impossível de
+        # confundir: se aparecer no relatório do Hotel A, vê-se logo.
+        outra = Reservation.objects.create(
+            hotel=self.hotel_b, confirmation='PRAIA-JAN', guest=self.guest,
+            room_type=rt_b, check_in=date(2020, 1, 29), check_out=date(2020, 1, 31),
+            adults=2, rate=Decimal('50000'), status='CHECKED_OUT')
+        self._lancar(Folio.objects.create(reservation=outra, number='PRAIA-JAN-A'),
+                     'ROOM', 'Diarias', '999999', date(2020, 1, 30))
+
+    @staticmethod
+    def _lancar(folio, tipo, descricao, valor, dia):
+        """`created_at` é auto_now_add: a data do lançamento só se acerta depois,
+        pelo queryset (o `save()` voltaria a pôr a de hoje)."""
+        c = FolioCharge.objects.create(folio=folio, charge_type=tipo,
+                                       description=descricao, amount=Decimal(valor))
+        FolioCharge.objects.filter(pk=c.pk).update(
+            created_at=_tz.make_aware(datetime(dia.year, dia.month, dia.day, 12, 0)))
+        return c
+
+    def _revenue(self, periodo):
+        r = self.client.get('/api/pms/reports/revenue/',
+                            dict(periodo, hotel=self.hotel.id))
+        self.assertEqual(r.status_code, 200, r.content)
+        return r.data
+
+    def test_a_coluna_consumos_de_janeiro_nao_traz_lancamentos_de_fevereiro(self):
+        d = self._revenue(self.JAN)
+        linha = next(l for l in d['rows'] if l['reservation'] == 'ANO-NOVO')
+        self.assertEqual(linha['room_charges'], 100000.0,
+                         'Consumos de Janeiro da estadia ANO-NOVO: esperado 100.000 (o que '
+                         'foi lançado em 30/01), veio %s — 170.000 significa que trouxe '
+                         'também os 70.000 lançados em 02/02' % linha['room_charges'])
+        self.assertEqual(d['grand_total']['room_charges'], 100000.0,
+                         'total de Consumos de Janeiro no Hotel A: esperado 100.000, veio %s '
+                         '(170.000 = Fevereiro a entrar; 1.099.999 = o Hotel B a entrar)'
+                         % d['grand_total']['room_charges'])
+
+    def test_a_coluna_consumos_de_fevereiro_nao_traz_lancamentos_de_janeiro(self):
+        d = self._revenue(self.FEV)
+        linha = next(l for l in d['rows'] if l['reservation'] == 'ANO-NOVO')
+        self.assertEqual(linha['room_charges'], 70000.0,
+                         'Consumos de Fevereiro da estadia ANO-NOVO: esperado 70.000 (o '
+                         'lançamento de 02/02), veio %s' % linha['room_charges'])
+
+    def test_janeiro_mais_fevereiro_dao_a_conta_inteira_e_nao_mais(self):
+        """O recorte não pode perder lançamentos: a soma dos dois meses tem de
+        dar os 170.000 que estão na conta, uma vez cada."""
+        jan = self._revenue(self.JAN)['grand_total']['room_charges']
+        fev = self._revenue(self.FEV)['grand_total']['room_charges']
+        self.assertEqual(jan + fev, 170000.0,
+                         'Janeiro (%s) + Fevereiro (%s) = %s; a conta da estadia tem '
+                         '170.000 — a mais é duplicação, a menos é um lançamento perdido'
+                         % (jan, fev, jan + fev))
+
+    def test_a_receita_de_janeiro_do_hotel_a_nao_tem_nada_do_hotel_b(self):
+        d = self._revenue(self.JAN)
+        self.assertEqual([l['reservation'] for l in d['rows']], ['ANO-NOVO'],
+                         'a receita de Janeiro do Hotel A trouxe %s'
+                         % [l['reservation'] for l in d['rows']])
+        # 4 noites de Janeiro (28, 29, 30, 31) x 40.000 — e não as 6 da estadia.
+        self.assertEqual(d['grand_total']['revenue'], 160000.0,
+                         'receita de alojamento de Janeiro: esperado 160.000 (4 noites x '
+                         '40.000), veio %s' % d['grand_total']['revenue'])

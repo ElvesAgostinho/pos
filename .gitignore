@@ -67,3 +67,8 @@ instalador/Output*.zip
 instalador/*.zip
 instalador/senhas.txt
 instalador/pcc_url.txt
+
+# Playwright: resultados e capturas de ecrã das corridas (não são código)
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/

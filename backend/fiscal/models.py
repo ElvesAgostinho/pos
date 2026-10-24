@@ -320,6 +320,46 @@ class FiscalDocument(models.Model):
     class Meta:
         db_table = 'fis_document'
         ordering = ['-created_at']
+        constraints = [
+            # ── DOIS NÚMEROS IGUAIS NA MESMA SÉRIE ───────────────────────────
+            # A numeração é `series.current_number + 1`, lida e gravada em
+            # passos separados. Em produção o `select_for_update` da série
+            # serializa-a; no SQLite não tranca linha nenhuma e o que resta é o
+            # cadeado de processo (`services._EMISSAO`), que não vale entre
+            # processos nem entre máquinas. Esta constraint vale sempre e nos
+            # dois motores: duas facturas com o mesmo número na mesma série
+            # partem a sequência contínua que a AGT olha primeiro numa inspeção.
+            models.UniqueConstraint(fields=['series', 'number'],
+                                    name='fis_numero_unico_na_serie'),
+            # ── A MESMA VENDA DECLARADA DUAS VEZES À AGT ─────────────────────
+            # A emissão é idempotente em código (`integration.existing_for`):
+            # antes de emitir, pergunta-se se já existe documento para esta
+            # origem. Duas emissões em PARALELO passam ambas por esse `if`
+            # antes de qualquer uma ter gravado — e saem duas facturas reais,
+            # numeradas, assinadas e irreversíveis para a MESMA venda. O IVA é
+            # liquidado duas vezes, o SAF-T declara receita que não existiu, e
+            # nada no ecrã dá por isso porque cada factura, vista sozinha, está
+            # correcta. Corrigir é emitir nota de crédito de uma delas — o que
+            # alguém tem primeiro de descobrir.
+            #
+            # O que o índice ignora, e porquê:
+            # · ANULADOS (status='A') e REGULARIZADOS POR NC (`credited`) — é a
+            #   mesma condição do `existing_for`: uma venda corrigida por
+            #   anulação ou por NC TEM de poder voltar a ser facturada, senão
+            #   fica sem documento para sempre;
+            # · origens sem referência (`source_ref` nulo) — a emissão manual
+            #   não tem origem nenhuma para comparar;
+            # · módulos fora dos caminhos do dinheiro — um ensaio ou um
+            #   documento de configuração não precisa de ser único por origem.
+            models.UniqueConstraint(
+                fields=['source_module', 'source_ref'],
+                condition=(models.Q(status='N') & models.Q(credited=False)
+                           & models.Q(source_ref__isnull=False)
+                           & models.Q(source_module__in=['pos', 'pms', 'finance',
+                                                         'commercial', 'void'])),
+                name='fis_um_documento_por_origem',
+            ),
+        ]
 
     def __str__(self):
         return self.invoice_no

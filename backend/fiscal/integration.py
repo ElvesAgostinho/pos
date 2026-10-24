@@ -6,8 +6,29 @@ que resolve a série certa (por FiscalConfig), constrói as linhas e delega em
 services.issue_document (validação + numeração + assinatura + hash + QR). Idempotente:
 não reemite se já existir documento fiscal para a mesma origem.
 """
+from django.db import IntegrityError, transaction
+
 from .models import FiscalConfig, FiscalSeries, FiscalDocument
 from . import services
+
+
+def _ja_emitido_por_outro(source_module, source_ref):
+    """A segunda emissão em paralelo da MESMA origem não é um erro — é um empate.
+
+    A constraint `fis_um_documento_por_origem` recusa o segundo documento fiscal
+    da mesma venda (ver `FiscalDocument.Meta`). Quem perde o empate não tem de
+    levar com um erro: o que ele queria — um documento para aquela venda — já
+    existe, e é o do outro. Devolve-se esse, que é exactamente o que o `if já
+    existe` faria se tivesse chegado meio segundo mais tarde.
+
+    (A base de dados só devolve a violação depois de o vencedor ter gravado de
+    verdade — uma inserção que colide numa chave única ESPERA pela transação que
+    a detém. Por isso, quando se chega aqui, o documento do outro já se lê.)
+    """
+    ja = existing_for(source_module, source_ref)
+    if ja:
+        return ja
+    raise
 
 
 def _resolve_series(doc_type_code, outlet=None):
@@ -104,22 +125,27 @@ def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None
         pay = getattr(getattr(p, 'payment_method', None), 'name', None) or getattr(p, 'method_name', None)
     except Exception:
         pass
-    return services.issue_document(
-        series_id=series.id,
-        # Se o operador associou um cliente à mesa, a fatura leva nome/NIF; senão Consumidor Final.
-        customer_name=getattr(ticket, 'customer_name', None) or getattr(ticket, 'company_name', None),
-        customer_tax_id=getattr(ticket, 'customer_tax_id', None),
-        lines=lines, user=user, ip=ip,
-        source_module='pos', source_ref=ticket.id,
-        operator_name=ticket.operator_name, place_ref=place, room_ref=room,
-        payment_method=pay, discount_total=ticket.discount_total,
-        # A ENTIDADE vem de quem chama (o botão de cobrar) OU da própria conta.
-        # Sem o `or`, uma reemissão pela fila — que não recebe `customer` nenhum —
-        # emitia o documento sem entidade e a dívida da empresa não aparecia na
-        # conta corrente dela.
-        customer=customer or getattr(ticket, 'customer', None),
-        settled=(not credito),
-    )
+    try:
+        return services.issue_document(
+            series_id=series.id,
+            # Se o operador associou um cliente à mesa, a fatura leva nome/NIF; senão Consumidor Final.
+            customer_name=getattr(ticket, 'customer_name', None) or getattr(ticket, 'company_name', None),
+            customer_tax_id=getattr(ticket, 'customer_tax_id', None),
+            lines=lines, user=user, ip=ip,
+            source_module='pos', source_ref=ticket.id,
+            operator_name=ticket.operator_name, place_ref=place, room_ref=room,
+            payment_method=pay, discount_total=ticket.discount_total,
+            # A ENTIDADE vem de quem chama (o botão de cobrar) OU da própria conta.
+            # Sem o `or`, uma reemissão pela fila — que não recebe `customer` nenhum —
+            # emitia o documento sem entidade e a dívida da empresa não aparecia na
+            # conta corrente dela.
+            customer=customer or getattr(ticket, 'customer', None),
+            settled=(not credito),
+        )
+    except IntegrityError:
+        # Duas cobranças da mesma conta ao mesmo tempo: a segunda leva o documento
+        # da primeira em vez de emitir um segundo para a mesma venda.
+        return _ja_emitido_por_outro('pos', ticket.id)
 
 
 def emit_table_consult(ticket, user=None, ip=None):
@@ -132,7 +158,18 @@ def emit_table_consult(ticket, user=None, ip=None):
 
     Ao contrário da fatura, a MESMA mesa pode pedir várias consultas (o cliente pergunta
     duas vezes) — por isso não é idempotente por ticket.
+
+    E é PRECISAMENTE por isso que a referência de origem tem de ser única em cada
+    consulta. A origem era `CM-<conta>-<nº de linhas>`: duas consultas da mesma conta
+    com o mesmo número de linhas (pedir a conta, o cliente mudar de ideias, pedir
+    outra vez) davam a MESMA referência. Como a factura e a consulta partilham o
+    módulo de origem ('pos'), isso colidia com a constraint que impede declarar a
+    mesma venda duas vezes à AGT (ver `FiscalDocument.Meta.constraints`) — e a
+    consulta, que é um documento de trabalho legítimo e repetível, levava com um erro
+    de duplicação que não era dela. O instante da emissão (ao microssegundo) separa-as
+    sem lhes tirar o rasto à conta.
     """
+    from django.utils import timezone as _tz
     series = _resolve_series('CM', outlet=ticket.outlet)
     if not series:
         return None            # sem série CM configurada -> a consulta mostra-se sem documento
@@ -151,12 +188,19 @@ def emit_table_consult(ticket, user=None, ip=None):
         customer_name=getattr(ticket, 'customer_name', None),
         customer_tax_id=getattr(ticket, 'customer_tax_id', None),
         lines=lines, user=user, ip=ip,
-        source_module='pos', source_ref=f'CM-{ticket.id}-{ticket.lines.count()}',
+        source_module='pos',
+        source_ref=f'CM-{ticket.id}-{_tz.now().strftime("%Y%m%d%H%M%S%f")}',
         operator_name=ticket.operator_name, place_ref=place,
         discount_total=ticket.discount_total,
     )
 
 
+# @transaction.atomic: a tranca de linha abaixo NÃO EXISTE fora de uma transação —
+# em PostgreSQL o Django levanta TransactionManagementError e o ecrã rebenta; no
+# SQLite é ignorada em silêncio, que é pior, porque parece estar a proteger. Quem
+# chama já abre transação; aninhada, esta é um savepoint (não custa nada) e garante
+# que a função é segura por si, venha de onde vier.
+@transaction.atomic
 def emit_for_pms_folio(folio, charges, user=None, ip=None):
     """Emite a Factura fiscal (AGT) do folio do PMS ao check-out/faturação.
 
@@ -201,17 +245,27 @@ def emit_for_pms_folio(folio, charges, user=None, ip=None):
         'unit_price': c.amount,
         'tax_percentage': 0 if c.charge_type == 'TAX' else tax_pct,
     } for c in charges]
-    return services.issue_document(
-        series_id=series.id,
-        customer_name=folio.payer_name or guest.name,
-        customer_tax_id=folio.payer_nif or guest.tax_id,
-        lines=lines, user=user, ip=ip,
-        source_module='pms', source_ref=folio.id,
-        room_ref=res.room.number if res.room else None,
-        customer=guest, settled=settled,
-    )
+    try:
+        return services.issue_document(
+            series_id=series.id,
+            customer_name=folio.payer_name or guest.name,
+            customer_tax_id=folio.payer_nif or guest.tax_id,
+            lines=lines, user=user, ip=ip,
+            source_module='pms', source_ref=folio.id,
+            room_ref=res.room.number if res.room else None,
+            customer=guest, settled=settled,
+        )
+    except IntegrityError:
+        # Dois "Gerar Fatura" sobre o mesmo folio: o segundo leva a factura do primeiro.
+        return _ja_emitido_por_outro('pms', folio.id)
 
 
+# @transaction.atomic: a tranca de linha abaixo NÃO EXISTE fora de uma transação —
+# em PostgreSQL o Django levanta TransactionManagementError e o ecrã rebenta; no
+# SQLite é ignorada em silêncio, que é pior, porque parece estar a proteger. Quem
+# chama já abre transação; aninhada, esta é um savepoint (não custa nada) e garante
+# que a função é segura por si, venha de onde vier.
+@transaction.atomic
 def emit_for_finance_invoice(invoice, user=None, ip=None):
     """Emite uma Factura fiscal a partir de uma fatura do Financeiro (AR).
 

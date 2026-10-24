@@ -130,6 +130,33 @@ class CashSession(models.Model):
     class Meta:
         db_table = 'pos_cash_session'
         ordering = ['-opened_at']
+        constraints = [
+            # DUAS CAIXAS ABERTAS PELO MESMO OPERADOR NO MESMO PONTO DE VENDA.
+            #
+            # Nada travava isto — nem um `if ... exists()`. E não é preciso má
+            # intenção nenhuma: o ecrã de abertura demora, o operador carrega
+            # outra vez, e ficam duas sessões abertas no mesmo restaurante com o
+            # mesmo nome. Daí para a frente, o `pay()` escolhe UMA
+            # (`filter(outlet=..., status='OPEN').order_by('-opened_at').first()`)
+            # e as vendas repartem-se entre as duas ao sabor da hora a que cada
+            # conta nasceu: o fecho de cada caixa dá uma diferença, nenhuma das
+            # duas bate, e a falta de uma é a sobra da outra — que é o pior
+            # género de erro de caixa, porque parece roubo e não é.
+            #
+            # A trava é uma CONSTRAINT e não um `if`: dois pedidos de abertura em
+            # paralelo (dois terminais, duplo toque) liam ambos "não há nenhuma
+            # aberta" e criavam ambos a sua. Um índice único parcial comporta-se
+            # da mesma maneira no SQLite do portátil e no PostgreSQL do servidor —
+            # a segunda gravação não passa, venha de onde vier.
+            #
+            # Só conta o estado ABERTA: o histórico de sessões fechadas do mesmo
+            # operador é precisamente o que se quer guardar.
+            models.UniqueConstraint(
+                fields=['outlet', 'operator_name'],
+                condition=models.Q(status='OPEN'),
+                name='cx_uma_sessao_aberta_por_operador',
+            ),
+        ]
 
     def __str__(self):
         return f"Caixa {self.terminal_name or '-'} · {self.operator_name} ({self.get_status_display()})"
@@ -2885,6 +2912,26 @@ class StockDoc(models.Model):
     class Meta:
         db_table = 'fnb_stock_doc'
         ordering = ['-doc_date', '-id']
+        constraints = [
+            # DOIS DOCUMENTOS COM O MESMO NÚMERO NA MESMA SÉRIE.
+            #
+            # A numeração faz-se no `save()` (lê `series.current_number`, soma 1,
+            # grava). Duas gravações em paralelo — duas pessoas a registar
+            # facturas de fornecedor ao mesmo tempo, que é o normal numa manhã de
+            # recepção de mercadoria — liam o MESMO `current_number` e saíam as
+            # duas com o número "ARM/41". A partir daí o economato tem duas
+            # facturas diferentes com o mesmo número: a conferência com o
+            # fornecedor não fecha, e o "lançar o ARM/41" do ecrã passa a ser
+            # ambíguo.
+            #
+            # O `number` nasce em branco e só o `save()` o preenche; o índice
+            # ignora os vazios para não travar esse instante.
+            models.UniqueConstraint(
+                fields=['series', 'number'],
+                condition=~models.Q(number=''),
+                name='stockdoc_numero_unico_na_serie',
+            ),
+        ]
 
     def __str__(self):
         return f'{self.number} · {self.series.name}'
@@ -2930,11 +2977,23 @@ class StockDoc(models.Model):
         return self.series.nature == 'PAYABLE'
 
     def save(self, *args, **kwargs):
+        # A NUMERAÇÃO TRANCA A SÉRIE. Ler `current_number`, somar 1 e gravar é
+        # uma operação em três passos: duas gravações em paralelo liam o mesmo
+        # número e saíam as duas com ele (ver a constraint acima, que é a rede
+        # que apanha isto mesmo quando a tranca não vale — no SQLite não vale).
+        # `select_for_update` exige transação: a transação é esta, e abraça a
+        # numeração E a gravação, para não ficar um número gasto sem documento.
+        from django.db import transaction
         if not self.number:
-            n = self.series.current_number + 1
-            self.series.current_number = n
-            self.series.save(update_fields=['current_number'])
-            self.number = f'{self.series.code}/{n}'
+            with transaction.atomic():
+                serie = (type(self.series).objects.select_for_update()
+                         .get(pk=self.series_id))
+                n = serie.current_number + 1
+                serie.current_number = n
+                serie.save(update_fields=['current_number'])
+                self.series.current_number = n
+                self.number = f'{serie.code}/{n}'
+                return super().save(*args, **kwargs)
         super().save(*args, **kwargs)
 
     def post(self, user=None):
@@ -2942,6 +3001,22 @@ class StockDoc(models.Model):
 
         Lançar duas vezes o mesmo documento duplicava as entradas, e o custo médio
         ficava errado para sempre.
+
+        A MARCA `posted` VIRA-SE PRIMEIRO, E NUMA SÓ INSTRUÇÃO. O `if self.posted`
+        sozinho não travava nada em paralelo: dois pedidos de "Lançar" (duplo
+        toque, ou o economato e o chefe ao mesmo tempo) liam ambos `posted=False`
+        em memória e ambos mexiam no stock — a mercadoria entrava a dobro e o
+        CUSTO MÉDIO PONDERADO ficava errado para sempre, porque ele é cumulativo
+        e não há como reconstituir o valor certo depois. A margem de cada prato
+        que leve o artigo passa a ser uma invenção.
+
+        O `UPDATE ... WHERE posted=False` decide quem lança: a base de dados
+        aplica-o a uma linha de cada vez e só UM dos dois vê `1 linha alterada`.
+        Isto vale IGUAL no SQLite e no PostgreSQL — ao contrário do
+        `select_for_update()` de quem chama, que no SQLite não tranca linha
+        nenhuma. Quem chama continua a ter de abrir transação (`post_stock`
+        abre): se o motor de stock recusar uma saída a meio, a marca volta atrás
+        com o resto.
         """
         from decimal import Decimal
         from django.utils import timezone
@@ -2950,11 +3025,18 @@ class StockDoc(models.Model):
 
         if self.posted or self.voided:
             return 0
+        tomado = (type(self).objects.filter(pk=self.pk, posted=False, voided=False)
+                  .update(posted=True, posted_at=timezone.now()))
+        if not tomado:
+            # Outro pedido chegou primeiro (ou o documento foi anulado entretanto).
+            self.refresh_from_db(fields=['posted', 'posted_at', 'voided'])
+            return 0
+        # A marca já está gravada (foi o UPDATE acima) — aqui só se põe o objeto
+        # em memória de acordo com o que está na base de dados.
+        self.posted = True
+        self.refresh_from_db(fields=['posted_at'])
         if not self.series.links_stock:
             # A série diz que este documento NÃO mexe no stock (ex.: uma encomenda).
-            self.posted = True
-            self.posted_at = timezone.now()
-            self.save(update_fields=['posted', 'posted_at'])
             return 0
 
         kind = self.series.kind
@@ -2992,9 +3074,6 @@ class StockDoc(models.Model):
                 self._move(l, destino, 'GRN', l.quantity, user)
                 n += 1
 
-        self.posted = True
-        self.posted_at = timezone.now()
-        self.save(update_fields=['posted', 'posted_at'])
         return n
 
     def _move(self, line, warehouse, tipo, delta, user):

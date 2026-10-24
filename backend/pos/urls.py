@@ -5,6 +5,7 @@ from .views import (
     CashSessionViewSet, CashMovementViewSet,
     POSTableViewSet, POSTicketViewSet, POSTicketLineViewSet, KDSViewSet, POSDocumentViewSet, POSAuditLogViewSet, PrintJobViewSet,
     POSReservationViewSet, GiftCardViewSet, ServiceDestinationViewSet, POSTableGroupViewSet,
+    PosTerminalSectorsView,
 )
 
 from .config_api import (PosModuleViewSet, PosTerminalViewSet, PosParameterViewSet,
@@ -135,6 +136,9 @@ urlpatterns = [
     path('reports/online/', PosOnlineInfoView.as_view()),
     path('reports/alerts/', PosAlertsView.as_view()),
     path('cards/account/<int:pk>/', MemberCardAccountView.as_view()),
+    # Pública (ver PosTerminalSectorsView): é o ecrã de ENTRADA do terminal,
+    # onde ainda não há sessão para autenticar o pedido.
+    path('terminal/sectors/', PosTerminalSectorsView.as_view()),
     path('terminal/keyboard/', PosTerminalKeyboardView.as_view()),
     path('terminal/config/', PosTerminalConfigView.as_view()),
     path('terminal/bootstrap/', PosBootstrapView.as_view()),

@@ -321,6 +321,32 @@ class Folio(models.Model):
     class Meta:
         db_table = 'pms_folio'
         ordering = ['-is_primary', 'opened_at']
+        constraints = [
+            # DOIS CHECK-INS DA MESMA RESERVA ABREM DUAS CONTAS PRINCIPAIS.
+            #
+            # O check-in lia o estado da reserva FORA da transação e só trancava
+            # o QUARTO. Com a reserva já com quarto atribuído (o caminho normal
+            # da manhã: o quarto foi dado na véspera), não havia tranca nenhuma:
+            # dois rececionistas a instalar o mesmo hóspede — ou o mesmo
+            # rececionista a carregar duas vezes porque o ecrã demorou —
+            # passavam ambos e criavam-se DUAS contas principais.
+            #
+            # O que isso custa: `Reservation.folio` devolve a primeira que
+            # encontra, e a partir daí metade dos consumos cai numa conta e
+            # metade na outra. O POS lança o jantar numa, a Auditoria da Noite
+            # lança a diária na outra, e o check-out fecha a que vê — a factura
+            # sai sem o que ficou na conta esquecida. É alojamento e consumo
+            # dados de graça, e ninguém dá por falta porque as duas contas estão
+            # certas vistas uma a uma.
+            #
+            # Uma reserva PODE ter várias contas (a empresa paga o alojamento, o
+            # hóspede paga os extras) — o que não pode é ter duas PRINCIPAIS.
+            models.UniqueConstraint(
+                fields=['reservation'],
+                condition=models.Q(is_primary=True),
+                name='folio_uma_conta_principal_por_reserva',
+            ),
+        ]
 
     def __str__(self):
         return f"Folio {self.number} ({self.label})"
@@ -369,6 +395,44 @@ class FolioCharge(models.Model):
     class Meta:
         db_table = 'pms_folio_charge'
         ordering = ['created_at']
+        constraints = [
+            # O MESMO LANÇAMENTO DUAS VEZES NA CONTA DO HÓSPEDE.
+            #
+            # Todo o sistema já evita isto com a mesma receita: dá-se uma
+            # REFERÊNCIA DE ORIGEM ao lançamento e pergunta-se, antes de lançar,
+            # se já existe uma linha com ela. A diária da noite é
+            # `ROOM-<data>` (lançada pelo check-in OU pela Auditoria da Noite —
+            # dois caminhos para a mesma noite), o encargo fixo é
+            # `FIX-<id>[-<data>]`, o depósito pago no site é
+            # `BOOKING-PAY-<id>`.
+            #
+            # Esse `if` não resiste a duas transações em paralelo: as duas leem
+            # "ainda não existe" antes de qualquer uma gravar, e as duas gravam.
+            # O hóspede paga a noite duas vezes no check-out — ou, no caso do
+            # depósito, o hotel dá-lhe crédito a dobrar do dinheiro que ele
+            # pagou uma vez. O índice único parcial fecha-o na base de dados, e
+            # fecha-o igual no SQLite e no PostgreSQL.
+            #
+            # O QUE FICA DE FORA, E PORQUÊ:
+            # · `FNB` (consumo do POS) — a MESMA conta do bar pode cair duas
+            #   vezes no folio de propósito: uma conta paga em duas partes
+            #   (metade agora, metade depois) lança duas linhas com a referência
+            #   do mesmo ticket, e as duas são dinheiro a sério. Quem trava o
+            #   duplicado aí é a SOMA (ver `_lancar_no_folio` em pos/views.py:
+            #   o já lançado mais este nunca pode passar o que a conta vale);
+            # · lançamentos sem referência (manuais, pagamentos na recepção) —
+            #   não têm origem para comparar;
+            # · estornados (`is_void`) — já não são dívida de ninguém, e a linha
+            #   que os substitui tem o direito de levar a mesma referência.
+            models.UniqueConstraint(
+                fields=['folio', 'source_reference'],
+                condition=(models.Q(is_void=False)
+                           & ~models.Q(charge_type='FNB')
+                           & models.Q(source_reference__isnull=False)
+                           & ~models.Q(source_reference='')),
+                name='folio_um_lancamento_por_origem',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.get_charge_type_display()}: {self.amount}"

@@ -168,7 +168,18 @@ class RevenueReportView(APIView):
         # As reservas já vêm filtradas por hotel (_active_reservations); os
         # folios que se buscam a seguir são só os DESSAS reservas, por isso
         # já não é preciso voltar a filtrar por hotel aqui.
-        charge_qs = FolioCharge.objects.filter(is_void=False).select_related('folio')
+        #
+        # OS LANÇAMENTOS TAMBÉM SÃO DO PERÍODO PEDIDO. A linha somava a conta
+        # INTEIRA da estadia: num relatório de Janeiro, uma estadia de 28/01 a
+        # 03/02 trazia na coluna "Consumos" as diárias e os extras de Fevereiro
+        # — dinheiro que em Janeiro ainda não tinha sido lançado. O total de
+        # Janeiro mais o de Fevereiro davam mais do que o ano, e a coluna
+        # "Consumos" nunca batia com o relatório de Encargos do mesmo período,
+        # que sempre recortou pela data do lançamento.
+        charge_qs = FolioCharge.objects.filter(
+            is_void=False,
+            created_at__date__gte=date_from, created_at__date__lte=date_to,
+        ).select_related('folio')
 
         rows = []
         grand = {'room_charges': 0, 'payments': 0, 'revenue': 0}

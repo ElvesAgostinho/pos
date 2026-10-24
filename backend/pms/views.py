@@ -1,7 +1,7 @@
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -105,9 +105,28 @@ def lancar_depositos_no_folio(reservation, folio, posted_by='reserva online'):
     """
     if folio is None:
         return 0
-    pendentes = reservation.booking_payments.filter(status='PAID', posted_to_folio=False)
+    pendentes = list(reservation.booking_payments.filter(status='PAID', posted_to_folio=False))
     lancados = 0
     for pagamento in pendentes:
+        # A MARCA VIRA-SE PRIMEIRO, E NUMA SÓ INSTRUÇÃO.
+        #
+        # Isto corre por DOIS caminhos que podem acontecer ao mesmo tempo: o
+        # check-in do hóspede e a confirmação do depósito no motor de reservas
+        # (pms/booking_engine.py, que também chama esta função). Lendo
+        # `posted_to_folio=False` e gravando só depois, os dois liam "ainda não
+        # foi lançado" e lançavam ambos — o hóspede ficava com crédito a dobrar
+        # do dinheiro que pagou uma vez, e saía do hotel a dever menos do que
+        # devia.
+        #
+        # O `UPDATE ... WHERE posted_to_folio=False` é decidido pela base de
+        # dados: só um dos dois vê "1 linha alterada" e só esse lança. Vale igual
+        # no SQLite e no PostgreSQL (ao contrário de uma tranca de linha), e a
+        # constraint de `FolioCharge` fica atrás como rede.
+        tomado = (type(pagamento).objects
+                  .filter(pk=pagamento.pk, posted_to_folio=False)
+                  .update(posted_to_folio=True))
+        if not tomado:
+            continue
         FolioCharge.objects.create(
             folio=folio, charge_type='PAYMENT',
             description=f'Depósito da reserva online ({pagamento.get_method_display()}'
@@ -117,7 +136,6 @@ def lancar_depositos_no_folio(reservation, folio, posted_by='reserva online'):
             posted_by=posted_by,
         )
         pagamento.posted_to_folio = True
-        pagamento.save(update_fields=['posted_to_folio'])
         lancados += 1
     return lancados
 
@@ -397,12 +415,37 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
                           | Q(guest__tax_id__icontains=p['q']))
         return qs
 
+    # @transaction.atomic: a tranca de linha abaixo NÃO EXISTE fora de uma transação —
+    # em PostgreSQL o Django levanta TransactionManagementError e o ecrã rebenta; no
+    # SQLite é ignorada em silêncio, que é pior, porque parece estar a proteger. Quem
+    # chama já abre transação; aninhada, esta é um savepoint (não custa nada) e garante
+    # que a função é segura por si, venha de onde vier.
+    @transaction.atomic
     def _guard_overbooking(self, data, instance=None):
+        """Duas reservas no mesmo quarto nas mesmas noites — e porque é que a
+        verificação tem de estar DENTRO da transação que grava.
+
+        `room_conflict` pergunta à base se já há outra reserva viva naquelas
+        noites. Entre a pergunta e a gravação não havia nada: duas reservas
+        criadas ao mesmo tempo para o mesmo quarto (a recepção e o motor de
+        reservas online, ou dois rececionistas) liam ambas "o quarto está livre"
+        e gravavam ambas. O overbooking só aparece no dia da chegada, com os dois
+        hóspedes no átrio — e aí custa um quarto noutro hotel, pago pela casa, e
+        o cliente perdido.
+
+        Não há constraint de base de dados que cubra isto: proibir INTERVALOS que
+        se sobrepõem exige uma EXCLUDE constraint com btree_gist, que o
+        PostgreSQL tem e o SQLite não — e uma defesa que só existe em produção
+        não se consegue testar aqui. O que vale nos dois é trancar a LINHA DO
+        QUARTO antes de perguntar: quem chegar em segundo espera, e quando ler já
+        vê a reserva do primeiro. CHAMAR DENTRO de `transaction.atomic`.
+        """
         room = data.get('room') or (instance.room if instance else None)
         ci = data.get('check_in') or (instance.check_in if instance else None)
         co = data.get('check_out') or (instance.check_out if instance else None)
         if not (room and ci and co):
             return None
+        Room.objects.select_for_update().filter(pk=room.pk).first()
         clash = room_conflict(room, ci, co, exclude_id=instance.pk if instance else None)
         if clash:
             return Response({'detail': f'OVERBOOKING: o quarto {room.number} já está reservado de '
@@ -414,28 +457,55 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         ser = self.get_serializer(data=request.data)
         ser.is_valid(raise_exception=True)
-        err = self._guard_overbooking(ser.validated_data)
-        if err:
-            return err
-        self.perform_create(ser)
+        # A MESMA transação para verificar e para gravar — ver `_guard_overbooking`.
+        with transaction.atomic():
+            err = self._guard_overbooking(ser.validated_data)
+            if err:
+                return err
+            self.perform_create(ser)
         return Response(ser.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         ser = self.get_serializer(instance, data=request.data, partial=kwargs.pop('partial', False))
         ser.is_valid(raise_exception=True)
-        err = self._guard_overbooking(ser.validated_data, instance)
-        if err:
-            return err
-        self.perform_update(ser)
+        with transaction.atomic():
+            err = self._guard_overbooking(ser.validated_data, instance)
+            if err:
+                return err
+            self.perform_update(ser)
         return Response(ser.data)
 
     def perform_create(self, serializer):
-        if not serializer.validated_data.get('confirmation'):
-            serializer.validated_data['confirmation'] = _next_number(Reservation.objects, 'confirmation', 'RES')
         from identity.models import Hotel
         hid = default_hotel_id(self.request)
-        serializer.save(hotel=Hotel.objects.get(pk=hid) if hid else None)
+        hotel = Hotel.objects.get(pk=hid) if hid else None
+        if serializer.validated_data.get('confirmation'):
+            serializer.save(hotel=hotel)
+            return
+        # DUAS RESERVAS COM O MESMO CÓDIGO DE CONFIRMAÇÃO.
+        #
+        # `_next_number` conta o que já existe e soma 1. Duas reservas criadas no
+        # mesmo instante (a recepção e o motor de reservas online) recebiam o
+        # MESMO "RES-000041". O campo é único, por isso a base recusa a segunda —
+        # e isso está certo: o código de confirmação é o que o hóspede traz na
+        # mão, dois iguais são duas pessoas a reclamar a mesma reserva.
+        #
+        # O que estava errado era a segunda pessoa levar com "erro interno" e
+        # perder a reserva que acabou de escrever. Aqui tenta-se outra vez com o
+        # número seguinte. O `atomic` interior é um savepoint: sem ele, a
+        # transação fica envenenada pelo IntegrityError e a tentativa seguinte
+        # rebenta de outra maneira (é assim no PostgreSQL).
+        for tentativa in range(6):
+            serializer.validated_data['confirmation'] = _next_number(
+                Reservation.objects, 'confirmation', 'RES')
+            try:
+                with transaction.atomic():
+                    serializer.save(hotel=hotel)
+                return
+            except IntegrityError:
+                if tentativa == 5:
+                    raise
 
     @action(detail=True, methods=['post'])
     def check_in(self, request, pk=None):
@@ -447,6 +517,24 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
                                        f'{res.get_status_display()}).'}, status=400)
         room_id = request.data.get('room')
         with transaction.atomic():
+            # A RESERVA TAMBÉM SE TRANCA, não só o quarto.
+            #
+            # O estado lia-se aqui em cima, fora da transação, e só o QUARTO
+            # levava `select_for_update`. Num check-in sem quarto novo (o caminho
+            # normal: o quarto foi atribuído na véspera e o pedido vem sem
+            # `room`), não havia tranca nenhuma — dois rececionistas a instalar o
+            # mesmo hóspede, ou um duplo toque no botão, passavam ambos pelo `if`
+            # acima e abriam DUAS contas, cada uma com a sua primeira diária.
+            # Metade dos consumos caía numa e metade na outra, e o check-out
+            # facturava só a que viu (ver a constraint em `Folio.Meta`).
+            #
+            # Trancada a linha, a segunda espera; e relê-se o estado JÁ DENTRO da
+            # tranca, porque o que se leu antes dela pode já não ser verdade.
+            res = Reservation.objects.select_for_update().get(pk=res.pk)
+            if res.status not in ('OPTION', 'BOOKED'):
+                return Response({'detail': f'Esta reserva já não está por instalar (atual: '
+                                           f'{res.get_status_display()}) — o check-in pode ter '
+                                           f'sido feito noutro posto.'}, status=409)
             if room_id:
                 try:
                     room = Room.objects.select_for_update().get(pk=room_id, hotel=res.hotel)
@@ -936,12 +1024,23 @@ class FolioViewSet(HotelScopedMixin, viewsets.ModelViewSet):
         if amount <= 0:
             return Response({'detail': 'amount tem de ser positivo — para estornar um '
                              'lançamento use "reverse-charge".'}, status=400)
-        charge = FolioCharge.objects.create(
-            folio=folio, charge_type=request.data.get('charge_type', 'MISC'),
-            description=request.data.get('description', 'Encargo'), amount=amount,
-            source_reference=request.data.get('source_reference'),
-            posted_by=request.data.get('posted_by', 'reception'),
-        )
+        try:
+            charge = FolioCharge.objects.create(
+                folio=folio, charge_type=request.data.get('charge_type', 'MISC'),
+                description=request.data.get('description', 'Encargo'), amount=amount,
+                source_reference=request.data.get('source_reference'),
+                posted_by=request.data.get('posted_by', 'reception'),
+            )
+        except IntegrityError:
+            # A constraint `folio_um_lancamento_por_origem` recusou: já existe
+            # nesta conta um lançamento vivo com esta REFERÊNCIA DE ORIGEM. É o
+            # que evita a diária da noite (ou o depósito, ou o encargo fixo) cair
+            # duas vezes na conta do hóspede. Dizer isto é melhor do que um 500 —
+            # quem está na recepção precisa de saber que o lançamento já lá está.
+            return Response({'detail': f'Já existe um lançamento nesta conta com a origem '
+                                       f'"{request.data.get("source_reference")}". Lançá-lo '
+                                       f'outra vez punha o hóspede a pagar o mesmo duas vezes '
+                                       f'no check-out.'}, status=status.HTTP_409_CONFLICT)
         return Response(FolioChargeSerializer(charge).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
@@ -1035,7 +1134,18 @@ class FolioViewSet(HotelScopedMixin, viewsets.ModelViewSet):
         charge.folio = target
         charge.transferred_from = origin
         charge.transferred_at = timezone.now()
-        charge.save(update_fields=['folio', 'transferred_from', 'transferred_at'])
+        try:
+            charge.save(update_fields=['folio', 'transferred_from', 'transferred_at'])
+        except IntegrityError:
+            # A conta de destino já tem um lançamento vivo com a MESMA origem
+            # (ex.: as duas contas da reserva receberam a diária da mesma noite).
+            # Transferir mais um para lá punha o hóspede a pagar a noite duas
+            # vezes nessa conta — a constraint `folio_um_lancamento_por_origem`
+            # recusa, e aqui diz-se porquê em vez de um "erro interno".
+            return Response({'detail': f'A conta {target.number} já tem um lançamento com a '
+                                       f'origem "{charge.source_reference}". Estorne um dos dois '
+                                       f'em vez de os juntar na mesma conta.'},
+                            status=status.HTTP_409_CONFLICT)
         return Response({'detail': f'"{charge.description}" transferido de {origin} para '
                                    f'{target.number} ({target.label}).',
                          'charge': FolioChargeSerializer(charge).data})

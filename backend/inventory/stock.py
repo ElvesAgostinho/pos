@@ -24,22 +24,70 @@ from django.utils import timezone
 from .models import StockLevel, StockLot, StockMovement
 
 
+# @transaction.atomic: a tranca de linha abaixo NÃO EXISTE fora de uma transação —
+# em PostgreSQL o Django levanta TransactionManagementError e o ecrã rebenta; no
+# SQLite é ignorada em silêncio, que é pior, porque parece estar a proteger. Quem
+# chama já abre transação; aninhada, esta é um savepoint (não custa nada) e garante
+# que a função é segura por si, venha de onde vier.
+@transaction.atomic
 def _level(warehouse, item):
+    """O saldo deste artigo neste armazém — TRANCADO para quem o vai mudar.
+
+    Todas as entradas e saídas fazem a mesma coisa: leem o saldo, somam ou
+    subtraem, e gravam o resultado. Três passos. Duas saídas ao mesmo tempo (duas
+    contas a sair no POS, uma requisição da cozinha enquanto se recebe
+    mercadoria) liam AMBAS 100, e gravavam ambas 90 — a segunda escrevia por cima
+    da primeira e dez unidades desapareciam do papel sem sair do armazém. É a
+    "actualização perdida", e não deixa rasto nenhum: o movimento fica no livro,
+    o saldo é que não bate. Descobre-se meses depois, numa contagem, como "quebra".
+
+    `select_for_update` põe a segunda à espera. Todos os caminhos que passam por
+    aqui (`move_in`, `move_out`, `adjust`) correm dentro de `transaction.atomic`,
+    que é o que a tranca exige. No SQLite não tranca linha nenhuma — mas aí a
+    base inteira só deixa um escritor de cada vez (ver as OPTIONS do SQLite em
+    erp_server/settings.py), que dá no mesmo pelas piores razões.
+    """
     lvl, _ = StockLevel.objects.get_or_create(warehouse=warehouse, item=item)
-    return lvl
+    # A tranca é sobre a LINHA já existente: o get_or_create não a pode trancar
+    # (não se tranca o que ainda não existe) e a corrida de duas criações em
+    # simultâneo está fechada pelo unique_together ('warehouse', 'item'), que o
+    # próprio get_or_create reconhece e volta a ler.
+    return StockLevel.objects.select_for_update().get(pk=lvl.pk)
 
 
+# @transaction.atomic: a tranca de linha abaixo NÃO EXISTE fora de uma transação —
+# em PostgreSQL o Django levanta TransactionManagementError e o ecrã rebenta; no
+# SQLite é ignorada em silêncio, que é pior, porque parece estar a proteger. Quem
+# chama já abre transação; aninhada, esta é um savepoint (não custa nada) e garante
+# que a função é segura por si, venha de onde vier.
+@transaction.atomic
 def _recompute_avg_cost(item, qty_in, unit_cost):
-    """Custo médio móvel ponderado sobre o total do artigo (todos os armazéns)."""
+    """Custo médio móvel ponderado sobre o total do artigo (todos os armazéns).
+
+    A FICHA DO ARTIGO TRANCA-SE ANTES DE SE LHE MEXER NO CUSTO. A conta é
+    cumulativa: parte do custo que lá está, pondera com a entrada nova, grava o
+    resultado. Duas entradas do mesmo artigo em armazéns diferentes, ao mesmo
+    tempo (duas recepções de mercadoria numa manhã de entregas), liam ambas o
+    custo ANTIGO e a segunda gravava por cima — a entrada da primeira deixava de
+    pesar no custo médio. E este erro NÃO se corrige: o custo médio não se
+    reconstrói a partir dos movimentos, só se vai arrastando. A margem de cada
+    prato que leve o artigo passa a ser uma invenção, e nenhum relatório diz
+    porquê.
+    """
+    ficha = type(item).objects.select_for_update().get(pk=item.pk)
     total_qty = StockLevel.objects.filter(item=item).aggregate(s=Sum('quantity_on_hand'))['s'] or Decimal('0')
     qty_in = Decimal(str(qty_in)); unit_cost = Decimal(str(unit_cost))
     old_qty = total_qty - qty_in                       # quantidade antes desta entrada
-    old_cost = item.current_average_cost or Decimal('0')
+    # O custo DE ONDE ESTÁ TRANCADO, não o do objeto que veio de fora (que pode
+    # ter sido lido antes de outra entrada o ter mudado).
+    old_cost = ficha.current_average_cost or Decimal('0')
     denom = old_qty + qty_in
     if denom > 0:
         new_cost = ((old_qty * old_cost) + (qty_in * unit_cost)) / denom
-        item.current_average_cost = new_cost.quantize(Decimal('0.0001'))
-        item.save(update_fields=['current_average_cost', 'updated_at'])
+        ficha.current_average_cost = new_cost.quantize(Decimal('0.0001'))
+        ficha.save(update_fields=['current_average_cost', 'updated_at'])
+        # Quem chamou continua a trabalhar com o SEU objeto — fica com o valor novo.
+        item.current_average_cost = ficha.current_average_cost
 
 
 # --------------------------------------------------------------------------
@@ -129,6 +177,35 @@ def _abater_lotes(warehouse, item, qty, lote=None):
     return abatidos, restante
 
 
+def _somar_ao_saldo(nivel, delta):
+    """Soma `delta` ao saldo — A CONTA É FEITA PELA BASE DE DADOS, não em Python.
+
+    Isto lia o saldo para uma variável, somava, e gravava o resultado: três
+    passos com uma janela aberta no meio. Duas saídas ao mesmo tempo — duas
+    contas a fechar no POS, uma requisição da cozinha enquanto se recebe
+    mercadoria — liam AMBAS 100 e gravavam AMBAS 90. Dez unidades desapareciam do
+    papel sem sair do armazém, sem erro e sem rasto: o movimento fica no livro, o
+    saldo é que não bate. Descobre-se meses depois, numa contagem, e chama-se-lhe
+    "quebra".
+
+    `select_for_update` (ver `_level`) fecha isto em PostgreSQL. Não fecha em
+    SQLite, onde a tranca de linha não existe — e o desenvolvimento é em SQLite,
+    logo o defeito voltaria a passar por aqui sem ninguém dar por ele.
+
+    `F('quantity_on_hand') - 10` é outra coisa: a soma passa a ser feita DENTRO
+    do UPDATE, pela própria base. Deixa de haver leitura em Python, e por isso
+    deixa de haver janela — nas duas bases, com tranca ou sem ela. A tranca
+    continua a servir, e é por isso que fica: é ela que torna fiável a pergunta
+    "há stock suficiente?" que o `move_out` faz ANTES de tirar.
+    """
+    StockLevel.objects.filter(pk=nivel.pk).update(
+        quantity_on_hand=F('quantity_on_hand') + delta, last_updated=timezone.now())
+    # O objecto em memória ficou velho no instante do UPDATE. Quem o usa a seguir
+    # (o custo médio, os lotes, a nota do movimento) tem de ver o valor real.
+    nivel.refresh_from_db(fields=['quantity_on_hand', 'last_updated'])
+    return nivel.quantity_on_hand
+
+
 @transaction.atomic
 def move_in(warehouse, item, quantity, unit_cost, reference='', note='', by=None, mtype='IN',
             lote=None, validade=None, criar_lote=True, atualizar_custo=True):
@@ -145,8 +222,7 @@ def move_in(warehouse, item, quantity, unit_cost, reference='', note='', by=None
     """
     qty = Decimal(str(quantity))
     lvl = _level(warehouse, item)
-    lvl.quantity_on_hand = (lvl.quantity_on_hand or Decimal('0')) + qty
-    lvl.save(update_fields=['quantity_on_hand', 'last_updated'])
+    _somar_ao_saldo(lvl, qty)
     if atualizar_custo:
         # `atualizar_custo` existe para as séries de documento que entram
         # mercadoria mas NÃO mandam recalcular o custo médio (a caixa "Atualiza
@@ -207,8 +283,7 @@ def move_out(warehouse, item, quantity, reference='', note='', by=None, mtype='O
     existente = lvl.quantity_on_hand or Decimal('0')
     if not permitir_negativo and qty > existente:
         raise StockInsuficiente(item, warehouse, qty, existente)
-    lvl.quantity_on_hand = existente - qty
-    lvl.save(update_fields=['quantity_on_hand', 'last_updated'])
+    _somar_ao_saldo(lvl, -qty)
 
     abatidos, sem_lote = [], qty
     if abater_lotes and qty > 0:

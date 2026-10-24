@@ -1581,11 +1581,124 @@ def preset_period(preset):
     return None, None
 
 
-def run(code, params):
+# ══════════════════════════════════════════════════ A UNIDADE DO RELATÓRIO
+"""
+DE QUE CASA SÃO ESTES NÚMEROS.
+
+Este motor é partilhado, e os relatórios do alojamento (`pms/reports_catalog.py`)
+recebem apenas `params`: não têm `request`, e por isso não tinham maneira de
+saber de que hotel é o relatório. Resultado, num grupo com duas unidades: o
+relatório de ocupação, de receita e o ADR/RevPAR do Hotel A vinham com as
+noites do Hotel B. Cada director recebia números que não eram da sua casa e,
+pior, o grupo somava as unidades e contava tudo duas vezes.
+
+A unidade resolve-se AQUI, uma vez, e segue nos `params` para a função do
+relatório (e para a comparação de períodos, que corre a mesma função outra vez
+com os mesmos `params`). As regras de quem pode ver o quê são as do
+`core.tenancy` — não há aqui uma segunda definição delas:
+
+  · `params['hotel']` → a unidade pedida. É a escolha EXPLÍCITA, e é a que manda.
+  · sem `hotel` nos params → o hotel activo do pedido (cabeçalho `X-Hotel-Id`),
+    porque um relatório aberto dentro da unidade A nunca pode mostrar a B só
+    porque o ecrã se esqueceu de repetir o hotel no formulário;
+  · `hotel` vazio ou 'all' → CONSOLIDADO do grupo, de propósito e assumido:
+    `dados['hotel_scope']` passa a dizer "Consolidado", para o total do grupo
+    não ser lido como o total de uma casa.
+
+O `X-Hotel-Id` vem do contexto que o middleware da auditoria já guarda para o
+pedido em curso (`core.audit_trail`), e é por isso que nenhuma view precisou de
+mudar: o cabeçalho é o mesmo que `core.tenancy` documenta como hotel activo e
+que o cliente web já envia em todos os pedidos.
+"""
+
+
+def _quem_pede(request=None):
+    """O utilizador em nome de quem o relatório corre (None = ninguém/sistema)."""
+    if request is not None:
+        return getattr(request, 'user', None)
+    # Sem pedido HTTP à mão (o motor também corre a partir de exportações e da
+    # comparação de períodos): o autor do pedido em curso é o que o middleware
+    # da auditoria registou.
+    try:
+        from core.audit_trail import get_context
+        nome = get_context().get('user')
+        if not nome:
+            return None
+        from django.contrib.auth.models import User
+        return User.objects.filter(username=nome).first()
+    except Exception:
+        return None
+
+
+def _hotel_activo(request=None):
+    """O hotel activo do pedido em curso, ou None."""
+    if request is not None:
+        from core.tenancy import current_hotel_id
+        return current_hotel_id(request)
+    try:
+        from core.audit_trail import get_context
+        return get_context().get('hotel_id')
+    except Exception:
+        return None
+
+
+def escopo_hotel(params, request=None):
+    """(unidade, hotéis permitidos, etiqueta) — ver o texto acima.
+
+    A etiqueta existe para o cabeçalho impresso: um relatório de grupo e um
+    relatório de uma casa saíam da impressora iguais, e quem o lia três meses
+    depois não tinha como saber qual era qual.
+    """
+    from core.tenancy import allowed_hotel_ids
+    permitidos = allowed_hotel_ids(_quem_pede(request))
+
+    bruto = params.get('hotel')
+    explicito = bruto not in (None, '', 0, '0', 'all', 'ALL', 'todos', 'TODOS')
+    hid = None
+    if explicito:
+        try:
+            hid = int(bruto)
+        except (TypeError, ValueError):
+            hid = None
+    elif bruto is None:
+        hid = _hotel_activo(request)        # o hotel do ecrã, se o houver
+
+    if hid and permitidos is not None and hid not in permitidos:
+        from rest_framework.exceptions import PermissionDenied
+        raise PermissionDenied('Não tem acesso aos relatórios deste hotel.')
+
+    if hid:
+        try:
+            from identity.models import Hotel
+            nome = Hotel.objects.filter(pk=hid).values_list('name', flat=True).first()
+        except Exception:
+            nome = None
+        return hid, permitidos, (nome or f'Unidade {hid}')
+
+    # CONSOLIDADO — dito por palavras, não deixado em branco.
+    try:
+        from identity.models import Hotel
+        qs = Hotel.objects.all()
+        if permitidos is not None:
+            qs = qs.filter(pk__in=permitidos)
+        n = qs.count()
+    except Exception:
+        n = 0
+    return None, permitidos, ('Consolidado — %d unidades' % n if n != 1 else 'Consolidado')
+
+
+def run(code, params, request=None):
     if code not in BY_CODE:
         raise KeyError(code)
     pasta, rep = BY_CODE[code]
     params = dict(params or {})
+
+    # A UNIDADE antes de tudo: é o que separa "a receita do Hotel A" de "a
+    # receita das duas casas somadas". Fica nos params para a função do
+    # relatório a ver e para a comparação de períodos a levar consigo.
+    hid, permitidos, etiqueta = escopo_hotel(params, request)
+    params['hotel'] = hid
+    params['hotels'] = permitidos
 
     # Atalho de período (Hoje, Esta semana, Mês passado…) antes de correr o relatório.
     if params.get('preset'):
@@ -1607,5 +1720,7 @@ def run(code, params):
     dados['title'] = rep['name']
     dados['folder'] = f"{pasta['code']} {pasta['name']}"
     dados['params'] = params
+    dados['hotel'] = hid
+    dados['hotel_scope'] = etiqueta
     dados['generated_at'] = timezone.now()
     return dados

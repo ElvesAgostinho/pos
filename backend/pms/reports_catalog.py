@@ -19,9 +19,75 @@ empresa.
 Independência dos módulos: estas pastas só entram no catálogo quando a app `pms`
 está instalada (ver o fim de `pos/reports.py`). Um cliente que comprou só o POS
 não vê pastas de alojamento, e um que comprou só o PMS vê as suas.
+
+
+QUE UNIDADE É QUE CADA RELATÓRIO CONTA  (regra desta ficha, lê-se uma vez)
+─────────────────────────────────────────────────────────────────────────
+Estas funções recebem só `params` — não há `request` aqui dentro. Enquanto o
+hotel não vinha nos `params`, consultavam `Reservation.objects` / `Folio.objects`
+sem filtro nenhum: num grupo com dois hotéis, o relatório de ocupação, de
+receita e o ADR/RevPAR do Hotel A traziam as noites do Hotel B. O director de
+unidade recebia números que não eram da sua unidade, a ocupação do Hotel A
+passava dos 100% (porque dividia as noites dos dois pelo número de quartos de
+um) e o consolidado do grupo contava tudo em dobro quando se somavam as
+unidades. Para quem vende a grupos hoteleiros isto não é um detalhe.
+
+A unidade passou a viajar NOS PARÂMETROS, resolvida uma única vez por
+`pos/reports.run` com `core.tenancy` (`allowed_hotel_ids` / `current_hotel_id`):
+
+  · `params['hotel'] = <id>`  → o relatório é DESTA unidade e só desta;
+  · `params['hotel'] = None`  → CONSOLIDADO do grupo (soma das unidades), e o
+    motor marca-o como tal em `dados['hotel_scope']`, para ninguém confundir o
+    total do grupo com o total de uma casa;
+  · `params['hotels'] = [ids]` → os hotéis a que quem pede tem acesso; aplica-se
+    SEMPRE, mesmo no consolidado, senão o consolidado de um director de duas
+    unidades mostrava as cinco do grupo.
+
+Porque não se usa `core.tenancy.scope_qs` directamente: `scope_qs` precisa do
+`request`, e um relatório também corre sem pedido HTTP nenhum — na comparação
+de períodos (`pos/reports.compare` corre a mesma função outra vez), na sondagem
+de colunas e em tarefas agendadas. A DECISÃO de qual é o hotel continua a ser a
+do `core.tenancy`; o que muda é só o transporte. E não se usa
+`default_hotel_id`: esse serve para CRIAR registos e, em último recurso, escolhe
+"o primeiro hotel do sistema" — num relatório isso seria apresentar os números
+do Hotel B sob o cabeçalho do Hotel A, que é pior do que não filtrar nada.
 """
 from datetime import date, timedelta
 from decimal import Decimal
+
+
+def hotel_do_relatorio(p):
+    """A unidade que este relatório conta, ou None = consolidado do grupo.
+
+    Vazio/ausente é consolidado de propósito: é assim que o dono do grupo pede o
+    total das suas casas. Um valor que não seja um número é um erro de quem
+    chama (o motor normaliza isto antes de chegar aqui), e nesse caso vale mais
+    assumir o consolidado assumido do que adivinhar uma unidade errada.
+    """
+    v = p.get('hotel')
+    if v in (None, '', 0, '0', 'all', 'ALL', 'todos', 'TODOS'):
+        return None
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _so_do_hotel(qs, p, caminho='hotel'):
+    """Recorta um queryset à unidade pedida e aos hotéis permitidos.
+
+    É a mesma regra de `core.tenancy.scope_qs` (primeiro os permitidos, depois a
+    unidade activa); só a origem do hotel é diferente — ver o cabeçalho.
+    `caminho` é o percurso ORM até ao hotel, porque nem tudo o tem directamente:
+    o folio é 'reservation__hotel' e o lançamento é 'folio__reservation__hotel'.
+    """
+    permitidos = p.get('hotels')
+    if permitidos:
+        qs = qs.filter(**{f'{caminho}__in': list(permitidos)})
+    hid = hotel_do_relatorio(p)
+    if hid:
+        qs = qs.filter(**{caminho: hid})
+    return qs
 
 
 def _periodo(p):
@@ -54,7 +120,7 @@ def r_reservas(p):
     """
     from .models import Reservation
     ini, fim = _periodo(p)
-    qs = (Reservation.objects
+    qs = (_so_do_hotel(Reservation.objects, p)
           .filter(check_in__lte=fim, check_out__gte=ini)
           .select_related('guest', 'room', 'room_type', 'rate_plan', 'block')
           .order_by('check_in'))
@@ -105,8 +171,13 @@ def r_ocupacao(p):
     """
     from .models import Reservation, Room
     ini, fim = _periodo(p)
-    total_quartos = Room.objects.filter(is_active=True).count()
-    reservas = list(Reservation.objects.filter(
+    # OS QUARTOS TÊM DE SER OS DA MESMA UNIDADE QUE AS NOITES. Quando os
+    # quartos eram contados sem filtro e as noites também, a conta até "batia"
+    # por acidente; mas pedir o Hotel A (noites só de A) contra os quartos dos
+    # dois hotéis dava ocupação a metade do real, e o contrário — noites dos
+    # dois sobre os quartos de um — dava ocupação acima dos 100%.
+    total_quartos = _so_do_hotel(Room.objects.filter(is_active=True), p).count()
+    reservas = list(_so_do_hotel(Reservation.objects, p).filter(
         status__in=VIVAS, check_in__lte=fim, check_out__gt=ini)
         .select_related('room_type', 'rate_plan'))
 
@@ -146,14 +217,15 @@ def r_entradas_saidas(p):
     """ENTRADAS E SAÍDAS — a lista de trabalho da recepção, dia a dia."""
     from .models import Reservation
     ini, fim = _periodo(p)
+    daUnidade = _so_do_hotel(Reservation.objects, p)
     linhas = []
     for d in _dias(ini, fim):
-        entram = Reservation.objects.filter(check_in=d, status__in=VIVAS).count()
-        saem = Reservation.objects.filter(check_out=d, status__in=VIVAS).count()
-        ficam = Reservation.objects.filter(
+        entram = daUnidade.filter(check_in=d, status__in=VIVAS).count()
+        saem = daUnidade.filter(check_out=d, status__in=VIVAS).count()
+        ficam = daUnidade.filter(
             status__in=VIVAS, check_in__lt=d, check_out__gt=d).count()
-        noshow = Reservation.objects.filter(check_in=d, status='NO_SHOW').count()
-        cancel = Reservation.objects.filter(check_in=d, status='CANCELLED').count()
+        noshow = daUnidade.filter(check_in=d, status='NO_SHOW').count()
+        cancel = daUnidade.filter(check_in=d, status='CANCELLED').count()
         linhas.append({'day': d.strftime('%d/%m/%Y'), 'arrivals': entram, 'departures': saem,
                        'stayovers': ficam, 'noshow': noshow, 'cancelled': cancel})
     return {
@@ -170,7 +242,7 @@ def r_receita_categoria(p):
     from .models import Reservation
     ini, fim = _periodo(p)
     porCategoria = {}
-    for r in Reservation.objects.filter(
+    for r in _so_do_hotel(Reservation.objects, p).filter(
             status__in=VIVAS, check_in__lte=fim, check_out__gt=ini).select_related('room_type'):
         noites = sum(1 for d in _dias(ini, fim) if r.check_in <= d < r.check_out)
         if not noites:
@@ -207,7 +279,7 @@ def r_origem(p):
     from .models import Reservation
     ini, fim = _periodo(p)
     porOrigem = {}
-    for r in Reservation.objects.filter(
+    for r in _so_do_hotel(Reservation.objects, p).filter(
             status__in=VIVAS, check_in__lte=fim, check_out__gt=ini):
         # SÓ AS NOITES QUE CAEM NESTE PERÍODO — a mesma conta de
         # `r_receita_categoria`. Somavam-se as noites TODAS da estadia, por isso
@@ -245,7 +317,8 @@ def r_contas_abertas(p):
     """
     from .models import Folio
     linhas = []
-    for f in (Folio.objects.filter(status='OPEN')
+    # A conta não tem hotel: pertence à reserva, e é a reserva que o tem.
+    for f in (_so_do_hotel(Folio.objects, p, 'reservation__hotel').filter(status='OPEN')
               .select_related('reservation', 'reservation__guest', 'reservation__room')
               .prefetch_related('charges')):
         r = f.reservation
@@ -281,7 +354,7 @@ def r_consumos(p):
     from .models import FolioCharge
     ini, fim = _periodo(p)
     porTipo = {}
-    qs = FolioCharge.objects.filter(
+    qs = _so_do_hotel(FolioCharge.objects, p, 'folio__reservation__hotel').filter(
         is_void=False, created_at__date__gte=ini, created_at__date__lte=fim)
     for c in qs:
         nome = c.get_charge_type_display()
@@ -303,7 +376,9 @@ def r_governanta(p):
     """GOVERNANTA — estado dos quartos e tarefas por fazer."""
     from .models import Room, HousekeepingTask
     linhas = []
-    for q in Room.objects.filter(is_active=True).select_related('room_type', 'floor'):
+    for q in _so_do_hotel(Room.objects.filter(is_active=True), p).select_related('room_type', 'floor'):
+        # As tarefas vêm pelo quarto, e o quarto já é desta unidade — não é
+        # preciso repetir o filtro de hotel (um quarto não existe em dois).
         pendentes = HousekeepingTask.objects.filter(room=q).exclude(status='DONE')
         linhas.append({
             'room': q.number,
@@ -327,7 +402,8 @@ def r_depositos(p):
     from .models import BookingPayment
     ini, fim = _periodo(p)
     linhas = []
-    for d in (BookingPayment.objects.filter(created_at__date__gte=ini, created_at__date__lte=fim)
+    for d in (_so_do_hotel(BookingPayment.objects, p, 'reservation__hotel')
+              .filter(created_at__date__gte=ini, created_at__date__lte=fim)
               .select_related('reservation', 'reservation__guest')):
         r = d.reservation
         linhas.append({
@@ -363,8 +439,8 @@ def r_previsao(p):
         dias = max(1, min(int(p.get('days') or 30), 180))
     except (TypeError, ValueError):
         dias = 30
-    total = Room.objects.filter(is_active=True).count()
-    reservas = list(Reservation.objects.filter(
+    total = _so_do_hotel(Room.objects.filter(is_active=True), p).count()
+    reservas = list(_so_do_hotel(Reservation.objects, p).filter(
         status__in=('OPTION', 'BOOKED', 'CHECKED_IN'), check_out__gt=hoje))
     linhas = []
     for d in _dias(hoje, hoje + timedelta(days=dias - 1)):
@@ -390,6 +466,14 @@ P_PERIODO = [
     {'key': 'from', 'label': 'De data', 'type': 'date'},
     {'key': 'to', 'label': 'A data', 'type': 'date'},
 ]
+
+# A UNIDADE pergunta-se em TODOS os relatórios do alojamento, mesmo nos que não
+# têm período (contas em aberto, governanta): num grupo hoteleiro, "quem deve
+# agora" e "que quartos estão sujos" são perguntas de UMA casa, não do grupo.
+# Acrescenta-se no fim, uma vez, em vez de em cada entrada — um relatório novo
+# já nasce com a pergunta sem ninguém se lembrar de a escrever (é o mesmo que o
+# motor faz com o "Incluir detalhes?").
+P_UNIDADE = {'key': 'hotel', 'label': 'Unidade (vazio = grupo consolidado)', 'type': 'number'}
 
 # As pastas que o PMS acrescenta ao catálogo. Os códigos começam por 'PM' para
 # não chocarem com os numerados do POS e para o dono perceber, pela pasta, de
@@ -423,3 +507,8 @@ PASTAS = [
          'params': P_PERIODO, 'fn': r_depositos},
     ]},
 ]
+
+for _pasta in PASTAS:
+    for _rep in _pasta['reports']:
+        if not any(x.get('key') == 'hotel' for x in _rep['params']):
+            _rep['params'] = [*_rep['params'], P_UNIDADE]

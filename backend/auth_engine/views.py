@@ -132,6 +132,19 @@ class BackofficeLoginView(APIView):
         })
 
 
+def _ha_algum_pin_configurado():
+    """Existe ALGUÉM nesta casa com PIN de terminal? (ver PosLoginView)"""
+    try:
+        from pos.models import PosUser
+        if PosUser.objects.filter(is_active=True, is_blocked=False,
+                                  pos_pin__isnull=False).exclude(pos_pin='').exists():
+            return True
+    except Exception:
+        pass
+    return (PosOperator.objects.filter(is_active=True, pin_code__isnull=False)
+            .exclude(pin_code='').exists())
+
+
 class PosLoginView(APIView):
     """Login de operador POS por PIN. Devolve um token de terminal e a identidade do operador."""
     permission_classes = [AllowAny]
@@ -187,6 +200,25 @@ class PosLoginView(APIView):
                 event_type='LOGIN_FAILED_PIN', identity_attempt='PIN', ip_address=ip,
                 workstation_id=workstation_id or None,
             )
+            # "PIN INVÁLIDO" NUMA CASA ONDE NINGUÉM TEM PIN é uma resposta que não
+            # ajuda ninguém. Foi o que aconteceu a um cliente acabado de instalar:
+            # tentou entrar com a senha do DONO (a única que lhe tinham dado), o
+            # terminal disse "PIN inválido", e não havia no ecrã nada que
+            # explicasse que o terminal não se abre com a senha do backoffice —
+            # abre-se com o PIN de um OPERADOR, que alguém tem de criar primeiro.
+            #
+            # A distinção é barata de fazer e muda tudo: se não existe UM ÚNICO
+            # operador com PIN, o problema não é o que ele escreveu, é que ainda
+            # não há com que entrar. E diz-se-lhe onde o criar.
+            if not _ha_algum_pin_configurado():
+                return Response(
+                    {'detail': 'Ainda não há nenhum operador com PIN neste sistema — o '
+                               'terminal não se abre com a senha do backoffice. Crie o '
+                               'operador em Configuração POS → Gestão de Utilizadores → '
+                               'Utilizadores, e defina-lhe o PIN na ficha.',
+                     'no_operators': True},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
             return Response(
                 {'detail': 'PIN inválido.', 'attempts_left': _attempts_left('pin', ip)},
                 status=status.HTTP_401_UNAUTHORIZED,

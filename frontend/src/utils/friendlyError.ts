@@ -17,6 +17,26 @@ const FIELD_PT: Record<string, string> = {
   start_date: 'Data de início', check_in: 'Entrada', check_out: 'Saída',
   username: 'Utilizador', password: 'Palavra-passe', email: 'Email',
   lines: 'Linhas', profile: 'Perfil', status: 'Estado',
+  // OS CAMPOS DA FICHA DO ARTIGO. Um cliente viu "tax percentage tem de ser um
+  // número" ao escolher o IVA: o nome cru do campo, em inglês, num sistema que
+  // ele comprou em português. Quem lê isto não sabe sequer em que caixa do ecrã
+  // tocar — e são precisamente as caixas que ele estava a usar.
+  tax_percentage: 'IVA 1', tax_2_percentage: 'IVA 2',
+  purchase_tax_percentage: 'IVA de compra',
+  exemption_code_1: 'Isenção do IVA 1', exemption_code_2: 'Isenção do IVA 2',
+  purchase_exemption_code: 'Isenção do IVA de compra',
+  purchase_price: 'Preço de compra', current_average_cost: 'Custo médio',
+  item_type: 'Tipo de artigo', subfamily: 'Sub-família', family: 'Família',
+  group: 'Grupo', barcode: 'Código de barras', plu_code: 'Código PLU',
+  shelf_life_days: 'Validade (dias)', min_stock: 'Stock mínimo',
+  max_stock: 'Stock máximo', sale_uom: 'Unidade de venda',
+  purchase_uom: 'Unidade de compra', stock_uom: 'Unidade de stock',
+  lot_number: 'Lote', expiry_date: 'Validade',
+  payment_method: 'Modo de pagamento', cash_session: 'Sessão de caixa',
+  operator_name: 'Operador', guest_type: 'Tipo de cliente', room: 'Quarto',
+  folio: 'Conta do quarto', confirmation: 'Confirmação', guest: 'Hóspede',
+  doc_type: 'Tipo de documento', doc_date: 'Data do documento',
+  unit_cost: 'Custo unitário', quantity_received: 'Quantidade recebida',
 };
 const label = (f: string) => FIELD_PT[f] || f.replace(/_/g, ' ');
 

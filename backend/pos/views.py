@@ -1,11 +1,13 @@
 from decimal import Decimal
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import Http404
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import (
     Outlet, POSProductConfig, OutletPaymentMethod, CashSession, CashMovement,
@@ -268,6 +270,32 @@ def preco_do_servidor(outlet, item, cfg=None):
     return Decimal(str(unit_price))
 
 
+class PosTerminalSectorsView(APIView):
+    """OS SETORES, PARA O ECRÃ DE LOGIN DO TERMINAL — e porque é que é público.
+
+    O ecrã de entrada do terminal pede a lista de setores para o operador
+    escolher onde vai servir. Pedia-a a `pos/outlets/`, que exige autenticação —
+    e no ecrã de login ainda NÃO HÁ sessão nenhuma. A chamada respondia 401, o
+    erro era engolido por um `catch` vazio, e a lista ficava vazia: o terminal
+    mostrava "Sem setores configurados" numa casa com os setores todos
+    configurados. Um cliente acabado de instalar ficava sem forma de entrar, e o
+    ecrã dizia-lhe que a culpa era da configuração dele.
+
+    Por isso esta vista é pública, e é pública de propósito — mas dá o MÍNIMO:
+    o id e o nome dos pontos de venda activos, que é o que o operador precisa de
+    ver para escolher. Nada de preços, de hotel, de configuração ou de contagens.
+    É a mesma decisão que qualquer POS toma: o ecrã onde se entra tem de poder
+    dizer ONDE se está a entrar, senão não há como entrar.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []        # um token velho não pode barrar este ecrã
+
+    def get(self, request):
+        setores = (Outlet.objects.filter(is_active=True)
+                   .order_by('name').values('id', 'name'))
+        return Response(list(setores))
+
+
 class OutletViewSet(viewsets.ModelViewSet):
     serializer_class = OutletSerializer
 
@@ -334,7 +362,37 @@ class CashSessionViewSet(viewsets.ModelViewSet):
                   terminal_name=session.terminal_name, reference=f'CX-{session.id}', amount=session.opening_float)
 
     def create(self, request, *args, **kwargs):
-        resp = super().create(request, *args, **kwargs)
+        # UMA CAIXA ABERTA POR OPERADOR E POR PONTO DE VENDA.
+        #
+        # Nada verificava isto. Com duas sessões abertas no mesmo restaurante em
+        # nome da mesma pessoa, as vendas repartem-se entre as duas (o `pay()`
+        # escolhe a mais recente) e NENHUM dos dois fechos bate: a falta de uma é
+        # a sobra da outra. Parece roubo e é um duplo toque no botão de abrir.
+        #
+        # Este `if` é só a MENSAGEM. O que garante é a constraint da base de dados
+        # (ver `CashSession.Meta`), porque duas aberturas em paralelo passam as
+        # duas por aqui antes de qualquer uma gravar — e é por isso que o
+        # IntegrityError se apanha logo abaixo, para a segunda pessoa ver a razão
+        # em vez de "erro interno".
+        operador = (request.data.get('operator_name') or '').strip()
+        saida = request.data.get('outlet')
+        if saida:
+            ja = CashSession.objects.filter(outlet_id=saida, operator_name=operador,
+                                            status='OPEN').first()
+            if ja:
+                return Response({'detail': f'Já há uma caixa aberta neste ponto de venda em nome '
+                                           f'de "{operador or "(sem operador)"}" (aberta em '
+                                           f'{timezone.localtime(ja.opened_at).strftime("%d/%m %H:%M")}). '
+                                           f'Feche-a antes de abrir outra — com duas abertas, as '
+                                           f'vendas repartem-se e nenhum dos fechos bate.',
+                                 'open_session': ja.id}, status=status.HTTP_409_CONFLICT)
+        try:
+            resp = super().create(request, *args, **kwargs)
+        except IntegrityError:
+            return Response({'detail': 'Outra abertura de caixa para este operador e ponto de '
+                                       'venda entrou primeiro (pedidos em simultâneo). Recarregue '
+                                       'o ecrã: a caixa já está aberta.'},
+                            status=status.HTTP_409_CONFLICT)
         # (Abrir Gaveta 8543/8591) O fundo de caixa entra fisicamente na gaveta —
         # o terminal abre-a já na abertura, para o operador lá pôr o dinheiro.
         abre = P.bool(8543, True) and not P.bool(8591, False)
@@ -599,14 +657,24 @@ def _encosta_centimos(linhas, falta):
     aplica([(maior[0], -1)])
 
 
+# @transaction.atomic: a tranca de linha abaixo NÃO EXISTE fora de uma transação —
+# em PostgreSQL o Django levanta TransactionManagementError e o ecrã rebenta; no
+# SQLite é ignorada em silêncio, que é pior, porque parece estar a proteger. Quem
+# chama já abre transação; aninhada, esta é um savepoint (não custa nada) e garante
+# que a função é segura por si, venha de onde vier.
+@transaction.atomic
 def _lancar_no_folio(folio, ticket, amount, por=None):
     """Lança este consumo no folio — e NUNCA mais do que o consumo vale.
 
-    Isto criava o `FolioCharge` sem olhar para o que já lá estava. Não há
-    constraint única em `(folio, source_reference)`, e há DOIS botões que fazem
-    isto (o `pay()` com um meio de pagamento "Lançar em Quarto", e a ação
-    `charge_to_room`): um duplo-clique, um retry de rede ou usar os dois botões
-    sobre a mesma conta lançavam o MESMO jantar duas vezes na conta do hóspede.
+    Isto criava o `FolioCharge` sem olhar para o que já lá estava, e há DOIS
+    botões que fazem isto (o `pay()` com um meio de pagamento "Lançar em Quarto",
+    e a ação `charge_to_room`): um duplo-clique, um retry de rede ou usar os dois
+    botões sobre a mesma conta lançavam o MESMO jantar duas vezes na conta do
+    hóspede.
+
+    A constraint `folio_um_lancamento_por_origem` (ver `FolioCharge.Meta`) deixa
+    o consumo do POS (`FNB`) DE FORA de propósito — ali a mesma referência pode
+    repetir-se de boa-fé, por isso a trava tem de ser esta soma.
 
     Ele pagava-o duas vezes no check-out, e a fatura do folio estava "certa" —
     porque as duas linhas eram legítimas vistas uma a uma. É o primo directo do
@@ -619,14 +687,24 @@ def _lancar_no_folio(folio, ticket, amount, por=None):
     deste ticket mais este lançamento nunca pode passar o que a conta vale.
     Os estornos (`is_void`) não contam, porque já não são dívida de ninguém.
 
+    E A SOMA TEM DE SER FEITA DENTRO DE UMA TRANCA. Somar não chega se as duas
+    somas acontecerem ao mesmo tempo: as duas leem "já lançados 0 Kz", as duas
+    concluem que cabe, e as duas lançam. É o mesmo defeito que o `if já existe`
+    tinha, só com uma conta pelo meio. Trancar a LINHA DA CONTA DO HÓSPEDE
+    (`select_for_update` no folio) serializa-as: a segunda só lê depois de a
+    primeira ter gravado, e aí a soma já a trava. Os dois caminhos que chamam
+    isto (`pay()` e `charge_to_room`) correm dentro de `transaction.atomic`, que
+    é o que o `select_for_update` exige.
+
     Devolve (encargo, erro) — o erro já é a resposta a devolver ao ecrã.
     """
     from decimal import Decimal
 
     from django.db.models import Sum
-    from pms.models import FolioCharge
+    from pms.models import Folio, FolioCharge
 
     valor = Decimal(str(amount or 0))
+    Folio.objects.select_for_update().filter(pk=folio.pk).first()
     ja = (FolioCharge.objects
           .filter(source_reference=ticket.ticket_number, is_void=False)
           .aggregate(s=Sum('amount'))['s'] or Decimal('0'))
@@ -700,6 +778,12 @@ def _folio_para_lancar(ticket, request):
     return folio, room_number, None
 
 
+# @transaction.atomic: a tranca de linha abaixo NÃO EXISTE fora de uma transação —
+# em PostgreSQL o Django levanta TransactionManagementError e o ecrã rebenta; no
+# SQLite é ignorada em silêncio, que é pior, porque parece estar a proteger. Quem
+# chama já abre transação; aninhada, esta é um savepoint (não custa nada) e garante
+# que a função é segura por si, venha de onde vier.
+@transaction.atomic
 def _enforce_table_ticket_cap(table):
     """Bloqueia a mesa e verifica o limite de contas abertas em simultâneo (parâmetro 8520).
 
@@ -1306,7 +1390,16 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         primeiro e vê a conta já saldada.
         """
         # A tranca é sobre a LINHA do ticket na base de dados, não sobre o objeto.
-        ticket = (POSTicket.objects.select_for_update()
+        # A TRANCA E A LEITURA SÃO DUAS CONSULTAS, e tem de ser assim.
+        # `select_for_update().select_related(...)` por relações que podem ser
+        # nulas (mesa, caixa) gera um LEFT OUTER JOIN, e o PostgreSQL RECUSA
+        # trancar o lado anulável de um outer join ("FOR UPDATE cannot be applied
+        # to the nullable side of an outer join"): o pedido rebentava em
+        # produção, em TODAS as cobranças — e no SQLite do portátil passava, por
+        # isso nunca se via aqui. Tranca-se a LINHA do ticket sozinha, e só
+        # depois se carrega o que falta.
+        POSTicket.objects.select_for_update().get(pk=pk)
+        ticket = (POSTicket.objects
                   .select_related('outlet', 'table', 'cash_session').get(pk=pk))
         if ticket.status != 'OPEN':
             return Response({'detail': 'Esta conta já não está aberta (pode ter sido paga noutro terminal).'},
@@ -1508,7 +1601,11 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             # qualquer uma escrever o seu movimento — e as duas passavam o limite ao mesmo
             # tempo (corrida TOCTOU). @transaction.atomic sozinho não chega: sem lock, uma
             # leitura concorrente não espera pela escrita da outra.
-            cartao_dono = _C.objects.select_for_update().select_related('member_card').get(pk=cartao_dono.pk)
+            # Tranca primeiro, carrega depois: `select_related` de uma relação
+            # anulável (o cartão pode não existir) com `select_for_update` faz o
+            # PostgreSQL recusar a tranca — ver a nota em `pay()`.
+            _C.objects.select_for_update().get(pk=cartao_dono.pk)
+            cartao_dono = _C.objects.select_related('member_card').get(pk=cartao_dono.pk)
             cartao = cartao_dono.member_card
             if not cartao.is_active:
                 return Response({'detail': f'O cartão "{cartao.name}" está inativo.'},
@@ -1985,7 +2082,16 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         chamadas imprimiam a MESMA comanda, duplicada, na cozinha. O segundo pedido espera
         aqui pelo primeiro e já não encontra nada por enviar.
         """
-        ticket = POSTicket.objects.select_for_update().select_related('outlet', 'table').get(pk=pk)
+        # A TRANCA E A LEITURA SÃO DUAS CONSULTAS, e tem de ser assim.
+        # `select_for_update().select_related(...)` por relações que podem ser
+        # nulas (mesa, caixa) gera um LEFT OUTER JOIN, e o PostgreSQL RECUSA
+        # trancar o lado anulável de um outer join ("FOR UPDATE cannot be applied
+        # to the nullable side of an outer join"): o pedido rebentava em
+        # produção, em TODAS as cobranças — e no SQLite do portátil passava, por
+        # isso nunca se via aqui. Tranca-se a LINHA do ticket sozinha, e só
+        # depois se carrega o que falta.
+        POSTicket.objects.select_for_update().get(pk=pk)
+        ticket = POSTicket.objects.select_related('outlet', 'table').get(pk=pk)
         from collections import defaultdict
         from .models import PrintJob
         new_lines = list(ticket.lines.filter(kds_status='NEW').exclude(kds_station='NONE'))
@@ -2149,7 +2255,16 @@ class POSTicketViewSet(viewsets.ModelViewSet):
           · ATUALIZA O DESTINO — sem isso, a comanda da cozinha e a fatura continuavam
             a dizer "Mesa 4" depois de o cliente se mudar para a 9.
         """
-        ticket = POSTicket.objects.select_for_update().select_related('table', 'outlet').get(pk=pk)
+        # A TRANCA E A LEITURA SÃO DUAS CONSULTAS, e tem de ser assim.
+        # `select_for_update().select_related(...)` por relações que podem ser
+        # nulas (mesa, caixa) gera um LEFT OUTER JOIN, e o PostgreSQL RECUSA
+        # trancar o lado anulável de um outer join ("FOR UPDATE cannot be applied
+        # to the nullable side of an outer join"): o pedido rebentava em
+        # produção, em TODAS as cobranças — e no SQLite do portátil passava, por
+        # isso nunca se via aqui. Tranca-se a LINHA do ticket sozinha, e só
+        # depois se carrega o que falta.
+        POSTicket.objects.select_for_update().get(pk=pk)
+        ticket = POSTicket.objects.select_related('table', 'outlet').get(pk=pk)
         if ticket.status not in ('OPEN', 'SUSPENDED'):
             return Response({'detail': 'Só contas abertas ou suspensas podem mudar de mesa.'}, status=400)
         try:
@@ -2412,11 +2527,25 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def charge_to_room(self, request, pk=None):
-        """Cobra o saldo do ticket num folio PMS aberto (integração Motor 8 com o PMS)."""
-        ticket = self.get_object()
+        """Cobra o saldo do ticket num folio PMS aberto (integração Motor 8 com o PMS).
+
+        TRANCA O TICKET, e corre tudo numa só transação — a mesma defesa que o
+        `pay()` já tinha e que faltava aqui, no botão que faz exactamente a mesma
+        coisa por outro caminho. Sem ela, dois pedidos ao mesmo tempo (duplo
+        toque no "Lançar no Quarto", ou este botão e o `pay()` com um meio
+        "Conta Quarto" sobre a mesma conta) liam ambos "o ticket está aberto",
+        lançavam ambos o encargo no folio e fechavam ambos a conta: o hóspede
+        pagava o MESMO jantar duas vezes no check-out, e a factura do folio
+        estava "certa", porque as duas linhas eram legítimas vistas uma a uma.
+        A soma de `_lancar_no_folio` só trava o duplicado se as duas somas não
+        acontecerem ao mesmo tempo — e é a tranca que garante isso.
+        """
+        ticket = POSTicket.objects.select_for_update().get(pk=pk)
         if ticket.status != 'OPEN':
-            return Response({'detail': 'Ticket não está aberto.'}, status=400)
+            return Response({'detail': 'Ticket não está aberto (pode ter sido cobrado '
+                                       'noutro terminal).'}, status=400)
         # (8035) Interface com PMS desligada: NADA se lança no quarto — nem por engano.
         if not P.bool(8035, True):
             return Response({'detail': 'A interface com o PMS está desligada nos parâmetros (8035).'},

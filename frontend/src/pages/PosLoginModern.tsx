@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, Monitor, User, ChevronDown, Check, XCircle, Keyboard, RotateCcw, Power, Delete } from 'lucide-react';
 import { authApi } from '../api/auth';
-import { posMgmtApi } from '../api/posmgmt';
+
 import { apiClient } from '../api/client';
 
 // ---------------------------------------------------------------------------
@@ -53,10 +53,17 @@ const PosLoginModern: React.FC = () => {
     return () => clearInterval(t);
   }, []);
 
+  // OS SETORES VÊM DE UMA ROTA PÚBLICA, e é por isso que esta lista voltou a
+  // ter nomes. Pedia-se a `pos/outlets/`, que exige autenticação — e este é o
+  // ecrã de ENTRADA: ainda não há sessão nenhuma. A resposta era 401, o erro
+  // caía num `catch` vazio, e o terminal mostrava "Sem setores configurados"
+  // numa casa com os setores todos configurados. O cliente ficava sem forma de
+  // entrar e com um ecrã a dizer-lhe que a culpa era da configuração dele.
   useEffect(() => {
-    posMgmtApi.getOutlets()
-      .then((os) => {
-        if (os?.length) {
+    apiClient.get('pos/terminal/sectors/')
+      .then((r) => {
+        const os = r.data || [];
+        if (os.length) {
           setAreas(os.map((o: any) => ({ id: String(o.id), name: o.name })));
           setArea(String(os[0].id));
           setAreasReais(true);
@@ -160,7 +167,13 @@ const PosLoginModern: React.FC = () => {
           {error && <div className="text-red-400 text-center text-sm font-bold">{error}</div>}
 
           {/* Botão ✓ verde (largura toda) */}
-          <button onClick={doLogin} disabled={loading}
+          {/* O botão de entrar tinha só o visto verde e mais NADA: nem texto, nem
+              `type`, nem nome acessível. Um botão sem nome não existe para quem
+              usa leitor de ecrã, e também não existe para quem o queira testar —
+              foi por isto que o teste do terminal não conseguia carregar nele. O
+              visual fica igual; o que se acrescenta é o nome. */}
+          <button onClick={doLogin} disabled={loading} type="submit"
+            aria-label="Entrar" title="Entrar"
             className="w-full h-12 rounded flex justify-center items-center border border-[#5c9e1f] bg-gradient-to-b from-[#8ccf3a] to-[#5f9a1e] shadow-[inset_0_2px_6px_rgba(255,255,255,0.35)] hover:from-[#98d84a] active:from-[#7ab52f] disabled:opacity-60">
             <Check className="text-white w-8 h-8" strokeWidth={4} />
           </button>

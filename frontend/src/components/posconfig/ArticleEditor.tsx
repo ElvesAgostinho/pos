@@ -239,11 +239,28 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
                 ].map(([label, taxKey, exKey]) => (
                   <div key={taxKey} className="grid grid-cols-[92px_1fr_66px_1fr] items-center gap-2 py-[3px] text-[12px]">
                     <span className="text-[#111827]">{label}</span>
-                    <select value={d[taxKey] ?? ''} onChange={(e) => set(taxKey, e.target.value)}
+                    {/* A TAXA CHAMA-SE `percentage`, e não `rate`.
+                        Com `value={t.rate}` — um campo que a API não devolve — o
+                        atributo saía `undefined`, e nesse caso o browser usa o
+                        TEXTO da opção como valor: o artigo era gravado com
+                        "IVA 7% — NaN%" no campo da percentagem e o servidor
+                        recusava com "tax percentage tem de ser um número". O
+                        cliente não conseguia pôr IVA em artigo nenhum, e o nome
+                        da opção dizia-o à frente de toda a gente ("— NaN%"). */}
+                    {/* "(nenhum)": o IVA 1 é obrigatório na ficha (sem taxa, a
+                        linha de venda não tem como ser tributada) e vai a ZERO;
+                        o IVA 2 e o de compra admitem "sem taxa" e vão a nulo.
+                        Mandar "" em qualquer deles era outra via para o mesmo
+                        "tem de ser um número". */}
+                    <select value={d[taxKey] ?? ''}
+                      onChange={(e) => set(taxKey, e.target.value !== '' ? e.target.value
+                        : (taxKey === 'tax_percentage' ? '0' : null))}
                       className="border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white w-full" style={inputStyle}>
                       <option value="">(nenhum)</option>
                       {taxes.map((t: any) => (
-                        <option key={t.id} value={t.rate}>{t.name || t.code} — {Number(t.rate).toFixed(2)}%</option>
+                        <option key={t.id} value={String(t.percentage)}>
+                          {t.name || t.code} — {Number(t.percentage).toFixed(2)}%
+                        </option>
                       ))}
                     </select>
                     <span className="text-[#111827]">Isenção:</span>
