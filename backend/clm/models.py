@@ -227,9 +227,27 @@ class SystemRelease(models.Model):
     aplicar sozinho por cima de um serviço do Windows a correr é arriscado.
     """
     version = models.CharField(max_length=20, unique=True, help_text='Ex.: 1.1.0')
-    download_url = models.URLField(help_text='Onde o cliente descarrega esta versão — .exe '
+
+    # O FICHEIRO, CARREGADO AQUI — e porque é que isto passou a existir.
+    #
+    # Havia só o `download_url`, e o ecrã pedia "o link de descarga". Mas o link
+    # não existe até alguém pôr o ficheiro algures na internet: o PCC não o
+    # guardava, só guardava a morada. Quem publica a versão é quem faz o produto,
+    # não um administrador de sistemas — e ficava preso num campo que lhe pedia
+    # uma coisa que o próprio sistema não lhe dava maneira de produzir.
+    #
+    # O ficheiro vai para o volume persistente do PCC (DJANGO_MEDIA_ROOT, montado
+    # em `dados/media`), que sobrevive a um redeploy, e o `download_url` passa a
+    # ser preenchido sozinho. Continua a ser possível colar um link externo —
+    # quem já tem onde alojar não perde nada.
+    package = models.FileField(upload_to='releases/', blank=True, null=True,
+                               help_text='O .zip da atualização (ou o .exe do instalador). '
+                                         'Carregue-o aqui e o link é gerado sozinho.')
+    download_url = models.URLField(blank=True,
+                                   help_text='Onde o cliente descarrega esta versão — .exe '
                                     '(instalador completo, manual) ou .zip (pacote leve, ativa '
-                                    'o botão "Atualizar agora" de um clique).')
+                                    'o botão "Atualizar agora" de um clique). Preenchido '
+                                    'automaticamente quando se carrega o ficheiro acima.')
     release_notes = models.TextField(blank=True, help_text='O que mudou — aparece no aviso do cliente.')
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.CharField(max_length=80, blank=True)

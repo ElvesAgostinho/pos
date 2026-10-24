@@ -27,17 +27,43 @@ export default function Versoes() {
   };
   useEffect(() => { fetchReleases(); }, []);
 
+  // O FICHEIRO DA VERSÃO, carregado aqui.
+  //
+  // Este ecrã pedia "o link de descarga" e mais nada. Só que o link não existe
+  // até alguém pôr o ficheiro algures na internet — e quem publica a versão é
+  // quem faz o produto, não um administrador de sistemas. O campo pedia uma
+  // coisa que o próprio sistema não dava maneira de produzir, e a publicação
+  // ficava por aí.
+  //
+  // Agora escolhe-se o ficheiro e o PCC guarda-o no volume dele (sobrevive a um
+  // redeploy) e gera o endereço sozinho. Quem já tem onde alojar continua a
+  // poder colar o link — não se tirou nada a ninguém.
+  const [ficheiro, setFicheiro] = useState<File | null>(null);
+
   const publicar = async () => {
-    if (!version.trim() || !downloadUrl.trim()) {
-      alert('Indique a versão e o link de descarga do instalador.');
+    if (!version.trim()) { alert('Indique a versão (ex.: 1.1.0).'); return; }
+    if (!ficheiro && !downloadUrl.trim()) {
+      alert('Escolha o ficheiro da versão (o .zip da atualização), ou cole o link de '
+        + 'onde ele já está alojado.');
       return;
     }
     setBusy(true);
     try {
-      await axios.post('clm/releases/', {
-        version: version.trim(), download_url: downloadUrl.trim(), release_notes: notes,
-      });
-      setVersion(''); setDownloadUrl(''); setNotes('');
+      if (ficheiro) {
+        // Com ficheiro vai como formulário (multipart); o link é gerado no
+        // servidor a partir do ficheiro guardado.
+        const fd = new FormData();
+        fd.append('version', version.trim());
+        fd.append('package', ficheiro);
+        fd.append('release_notes', notes);
+        if (downloadUrl.trim()) fd.append('download_url', downloadUrl.trim());
+        await axios.post('clm/releases/', fd);
+      } else {
+        await axios.post('clm/releases/', {
+          version: version.trim(), download_url: downloadUrl.trim(), release_notes: notes,
+        });
+      }
+      setVersion(''); setDownloadUrl(''); setNotes(''); setFicheiro(null);
       await fetchReleases();
     } catch (err: any) {
       alert(err?.response?.data?.version?.[0] || err?.response?.data?.detail || 'Erro ao publicar.');
@@ -81,20 +107,32 @@ export default function Versoes() {
                 className="w-full border border-[#7FA9B1] px-2 py-1" placeholder="1.1.0" />
             </div>
             <div>
+              <label className="block text-[11px] text-gray-600 mb-0.5">
+                Ficheiro da versão — o <b>.zip</b> gerado por <code>build_atualizacao.ps1</code>
+              </label>
+              <input type="file" accept=".zip,.exe"
+                onChange={(e) => setFicheiro(e.target.files?.[0] || null)}
+                className="w-full border border-[#7FA9B1] px-2 py-1 bg-white" />
+              <div className="text-[10px] text-gray-500 mt-0.5 mb-2">
+                Está em <code>instalador\Output\</code>. O PCC guarda-o e cria o link de
+                descarga sozinho — não precisa de o alojar em lado nenhum.
+                {ficheiro && <b className="text-[#0B5B63]"> Escolhido: {ficheiro.name}</b>}
+              </div>
+
               {/* O RÓTULO DIZIA SÓ ".exe" — e era precisamente o .exe que DESLIGAVA a
                   actualização de um clique. Quem publicasse uma versão a seguir à
                   letra do ecrã deixava todos os clientes a ter de correr o
                   instalador completo à mão, sem perceber porquê. O campo é o
                   mesmo; o que muda é dizer o que cada escolha faz. */}
               <label className="block text-[11px] text-gray-600 mb-0.5">
-                Link de descarga — <b>.zip</b> (atualização de um clique) ou <b>.exe</b> (instalação completa, manual)
+                …ou cole um link, se já tiver o ficheiro alojado noutro sítio
               </label>
               <input value={downloadUrl} onChange={(e) => setDownloadUrl(e.target.value)}
                 className="w-full border border-[#7FA9B1] px-2 py-1" placeholder="https://.../MwanaLodge-Update-1.1.0.zip" />
               <div className="text-[10px] text-gray-500 mt-0.5">
-                Com um <b>.zip</b> (gerado por build_atualizacao.ps1), o cliente carrega em
-                "Atualizar agora" e o sistema trata de tudo — sem reinstalar e sem perder
-                configuração. Com um <b>.exe</b>, ele tem de descarregar e correr o instalador à mão.
+                Com um <b>.zip</b>, o cliente carrega em "Atualizar agora" e o sistema trata de
+                tudo — sem reinstalar e sem perder configuração. Com um <b>.exe</b>, ele tem de
+                descarregar e correr o instalador à mão.
               </div>
             </div>
             <div>

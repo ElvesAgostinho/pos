@@ -82,6 +82,40 @@ class SystemReleaseSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('created_at',)
 
+    def validate(self, attrs):
+        """Ou se carrega o ficheiro, ou se cola um link — mas tem de haver um."""
+        ficheiro = attrs.get('package') or getattr(self.instance, 'package', None)
+        link = attrs.get('download_url') or getattr(self.instance, 'download_url', '')
+        if not ficheiro and not link:
+            raise serializers.ValidationError({
+                'package': ['Carregue o ficheiro da versão (.zip da atualização ou .exe do '
+                            'instalador), ou cole o link de onde ele já está alojado. Sem um '
+                            'dos dois, o cliente não tem de onde descarregar.'],
+            })
+        return attrs
+
+    def _com_morada(self, instance):
+        """O LINK, feito a partir do ficheiro carregado.
+
+        Isto é o que faltava para o ecrã deixar de pedir uma coisa impossível:
+        quem publica a versão carrega o ficheiro e o endereço nasce dele. Tem de
+        ser ABSOLUTO (com o domínio do PCC), porque quem o vai abrir é a
+        instalação do cliente, noutra máquina e noutra rede — um caminho
+        relativo só funcionaria dentro do próprio PCC.
+        """
+        if instance.package and not instance.download_url:
+            pedido = self.context.get('request')
+            url = instance.package.url
+            instance.download_url = pedido.build_absolute_uri(url) if pedido else url
+            instance.save(update_fields=['download_url'])
+        return instance
+
+    def create(self, validated):
+        return self._com_morada(super().create(validated))
+
+    def update(self, instance, validated):
+        return self._com_morada(super().update(instance, validated))
+
 class ErrorReportSerializer(serializers.ModelSerializer):
     installation_name = serializers.CharField(source='installation.name', read_only=True)
 
