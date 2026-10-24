@@ -13,6 +13,25 @@ import { apiClient as axios } from '../api/client';
 export default function Versoes() {
   const [releases, setReleases] = useState<any[]>([]);
   const [version, setVersion] = useState('');
+
+  /**
+   * O NÚMERO DA VERSÃO, TIRADO DO QUE FOR COLADO.
+   *
+   * O número vive numa linha de código (`APP_VERSION = '1.1.0'`, em
+   * core/support.py) e o passo anterior é ir lá acima. É natural copiar a linha
+   * inteira — foi o que aconteceu. Ela tem 21 caracteres, o campo aceita 20, e
+   * o browser respondia com a sua própria mensagem: "Certifique-se de que este
+   * campo não tenha mais de 20 caracteres". Nem diz QUAL campo, nem o que devia
+   * lá estar. Quem a lê fica a saber que algo é comprido de mais e mais nada.
+   *
+   * Em vez de recusar, tira-se dali o número: é o que a pessoa queria dizer, e
+   * não há outra leitura possível. Colar `APP_VERSION = '1.1.0'`, `'1.1.0'`,
+   * `v1.1.0` ou `1.1.0 ` dá sempre 1.1.0.
+   */
+  const limparVersao = (bruto: string) => {
+    const m = bruto.match(/(\d+(?:\.\d+)+)/);        // o primeiro 1.2 / 1.2.3 que apareça
+    return (m ? m[1] : bruto.replace(/[^0-9.]/g, '')).slice(0, 20);
+  };
   const [downloadUrl, setDownloadUrl] = useState('');
   const [notes, setNotes] = useState('');
   const [busy, setBusy] = useState(false);
@@ -42,6 +61,11 @@ export default function Versoes() {
 
   const publicar = async () => {
     if (!version.trim()) { alert('Indique a versão (ex.: 1.1.0).'); return; }
+    if (!/^\d+(\.\d+)+$/.test(version.trim())) {
+      alert(`"${version}" não é um número de versão.\n\nEscreva só o número, como está `
+        + `em backend/core/support.py — por exemplo 1.1.0.`);
+      return;
+    }
     if (!ficheiro && !downloadUrl.trim()) {
       alert('Escolha o ficheiro da versão (o .zip da atualização), ou cole o link de '
         + 'onde ele já está alojado.');
@@ -103,8 +127,12 @@ export default function Versoes() {
           <div className="space-y-2">
             <div>
               <label className="block text-[11px] text-gray-600 mb-0.5">Versão (ex.: 1.1.0)</label>
-              <input value={version} onChange={(e) => setVersion(e.target.value)}
+              <input value={version} onChange={(e) => setVersion(limparVersao(e.target.value))}
                 className="w-full border border-[#7FA9B1] px-2 py-1" placeholder="1.1.0" />
+              <div className="text-[10px] text-gray-500 mt-0.5 mb-2">
+                Só o número, como está em <code>backend/core/support.py</code>. Se colar a
+                linha toda (<code>APP_VERSION = '1.1.0'</code>), fica só o <b>1.1.0</b>.
+              </div>
             </div>
             <div>
               <label className="block text-[11px] text-gray-600 mb-0.5">
