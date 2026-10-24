@@ -21,7 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 # VERSÃO INSTALADA — a ÚNICA fonte: sobe-se este número a cada build
 # (instalador/build_instalador.ps1) e publica-se a mesma versão no PCC
 # (CLM › Versões) para os clientes saberem que há uma nova.
-APP_VERSION = '1.0.0'
+APP_VERSION = '1.1.0'
 
 
 def _collect(request=None):

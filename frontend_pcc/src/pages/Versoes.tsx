@@ -28,10 +28,21 @@ export default function Versoes() {
    * não há outra leitura possível. Colar `APP_VERSION = '1.1.0'`, `'1.1.0'`,
    * `v1.1.0` ou `1.1.0 ` dá sempre 1.1.0.
    */
-  const limparVersao = (bruto: string) => {
-    const m = bruto.match(/(\d+(?:\.\d+)+)/);        // o primeiro 1.2 / 1.2.3 que apareça
-    return (m ? m[1] : bruto.replace(/[^0-9.]/g, '')).slice(0, 20);
-  };
+  const limparVersao = (bruto: string) =>
+    // DEITA FORA O QUE NÃO É NÚMERO NEM PONTO, e mais nada.
+    //
+    // A primeira versão disto procurava o primeiro "1.2.3" com uma expressão e
+    // devolvia-o. Lida sobre um valor COLADO, funcionava; lida a cada TECLA,
+    // estragava: ao escrever 1.1.0, no momento em que o campo tinha "1.1." a
+    // expressão encontrava "1.1" e deitava fora o ponto do fim — a tecla
+    // seguinte dava "1.10". Quem escrevesse a versão à mão publicava um número
+    // que nunca tinha escrito.
+    //
+    // Tirar só os caracteres que não servem resolve os dois casos sem inventar
+    // nada: `APP_VERSION = '1.1.0'` fica 1.1.0 (letras, espaços, = e aspas
+    // saem), e "1.1." continua "1.1." enquanto se escreve. O que não for um
+    // número de versão é apanhado ao publicar, com a mensagem a dizê-lo.
+    bruto.replace(/[^0-9.]/g, '').slice(0, 20);
   const [downloadUrl, setDownloadUrl] = useState('');
   const [notes, setNotes] = useState('');
   const [busy, setBusy] = useState(false);
