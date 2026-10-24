@@ -105,6 +105,44 @@ class DocumentCenterView(APIView):
 
         # ---------------- COMPRAS ----------------
         if want('COMPRAS'):
+            # A RECEÇÃO DE MERCADORIA É UM DOCUMENTO, e faltava aqui.
+            #
+            # Em "Compras" só aparecia a factura do fornecedor — o papel que chega
+            # no FIM. O que entrou em armazém (a guia, o GRN), a encomenda que a
+            # pediu e a requisição que a originou não se encontravam pelo número:
+            # quem precisava de responder "esta mercadoria, de que guia veio e quem
+            # a pediu?" tinha de ir ecrã a ecrã. Num arquivo documental, é
+            # precisamente essa a pergunta.
+            try:
+                from procurement.models import GoodsReceipt, PurchaseOrder, PurchaseRequisition
+                gr = GoodsReceipt.objects.select_related('supplier', 'delivery_warehouse')
+                if q:
+                    gr = gr.filter(Q(receipt_number__icontains=q)
+                                   | Q(supplier__commercial_name__icontains=q)
+                                   | Q(supplier_invoice_ref__icontains=q))
+                for d in gr.order_by('-receipt_date')[:limit]:
+                    rows.append(_row('COMPRAS', 'Receção de Mercadoria', d.receipt_number,
+                                     d.receipt_date.date() if hasattr(d.receipt_date, 'date') else d.receipt_date,
+                                     d.supplier.commercial_name if d.supplier_id else '—',
+                                     None, d.get_status_display(), 'procurement_grn', str(d.id)))
+                po = PurchaseOrder.objects.select_related('supplier')
+                if q:
+                    po = po.filter(Q(po_number__icontains=q)
+                                   | Q(supplier__commercial_name__icontains=q))
+                for d in po.order_by('-issue_date', '-id')[:limit]:
+                    rows.append(_row('COMPRAS', 'Ordem de Compra', d.po_number, d.issue_date,
+                                     d.supplier.commercial_name if d.supplier_id else '—',
+                                     d.total_amount, d.get_status_display(), 'procurement_po', str(d.id)))
+                pr = PurchaseRequisition.objects.all()
+                if q:
+                    pr = pr.filter(Q(number__icontains=q) | Q(requester__icontains=q))
+                for d in pr.order_by('-id')[:limit]:
+                    rows.append(_row('COMPRAS', 'Requisição de Compra', d.number,
+                                     getattr(d, 'created_at', None) and d.created_at.date(),
+                                     d.requester or '—', None, d.get_status_display(),
+                                     'procurement_req', str(d.id)))
+            except Exception:
+                pass
             try:
                 from finance.models import SupplierInvoice
                 si = SupplierInvoice.objects.all()
@@ -119,6 +157,66 @@ class DocumentCenterView(APIView):
 
         # ---------------- STOCK ----------------
         if want('STOCK'):
+            # OS MOVIMENTOS NÃO SÃO OS DOCUMENTOS.
+            #
+            # Aqui só havia `StockMovement` — as LINHAS do ledger. Procurar pelo
+            # número de um documento de stock encontrava os movimentos que ele
+            # gerou, mas não o documento: sem estado, sem total, sem saber se foi
+            # anulado, sem o poder abrir. E uma entrada anulada deixa movimentos
+            # dos dois lados, que sem o documento por trás parecem mercadoria a
+            # entrar e a sair sem razão.
+            try:
+                from pos.models import StockDoc
+                sd = StockDoc.objects.select_related('series', 'warehouse', 'entity')
+                if q:
+                    sd = sd.filter(Q(number__icontains=q) | Q(external_ref__icontains=q)
+                                   | Q(entity__name__icontains=q) | Q(series__name__icontains=q))
+                for d in sd.order_by('-doc_date', '-id')[:limit]:
+                    estado = ('Anulado' if d.voided else
+                              'Lançado' if d.posted else 'Por lançar')
+                    rows.append(_row('STOCK', d.series.name, d.number, d.doc_date,
+                                     (d.entity.name if d.entity_id else None) or d.warehouse.name,
+                                     d.total, estado, 'pos_stockdoc', str(d.id)))
+            except Exception:
+                pass
+            try:
+                # As ordens de produção: o que a cozinha transformou, com o custo
+                # que se formou. É um documento como os outros — tem número,
+                # estado e valor — e não estava em sítio nenhum do arquivo.
+                from inventory.models import ProductionOrder
+                op = ProductionOrder.objects.select_related('item', 'warehouse')
+                if q:
+                    op = op.filter(Q(number__icontains=q) | Q(item__code__icontains=q)
+                                   | Q(item__name__icontains=q) | Q(lot_number__icontains=q))
+                for d in op.order_by('-created_at')[:limit]:
+                    rows.append(_row('STOCK', 'Ordem de Produção', d.number,
+                                     d.created_at.date() if d.created_at else None,
+                                     f'{d.item.code} · {d.item.name}', d.total_cost,
+                                     d.get_status_display(), 'inventory_production', str(d.id)))
+            except Exception:
+                pass
+            try:
+                # Transferências e contagens do Centro de Armazém (Centro 09).
+                from inventory.models import InventoryCount, StockTransfer
+                tr = StockTransfer.objects.select_related('source', 'destination')
+                if q:
+                    tr = tr.filter(Q(number__icontains=q) | Q(source__name__icontains=q)
+                                   | Q(destination__name__icontains=q))
+                for d in tr.order_by('-created_at')[:limit]:
+                    rows.append(_row('STOCK', 'Transferência', d.number,
+                                     d.created_at.date() if d.created_at else None,
+                                     f'{d.source.name} → {d.destination.name}', None,
+                                     d.get_status_display(), 'inventory_transfer', str(d.id)))
+                ic = InventoryCount.objects.select_related('warehouse')
+                if q:
+                    ic = ic.filter(Q(number__icontains=q) | Q(warehouse__name__icontains=q))
+                for d in ic.order_by('-created_at')[:limit]:
+                    rows.append(_row('STOCK', 'Contagem de Inventário', d.number,
+                                     d.created_at.date() if d.created_at else None,
+                                     d.warehouse.name, None, d.get_status_display(),
+                                     'inventory_count', str(d.id)))
+            except Exception:
+                pass
             try:
                 from inventory.models import StockMovement
                 sm = StockMovement.objects.select_related('item')
@@ -234,6 +332,19 @@ class DocumentLinksView(APIView):
             except Exception:
                 pass
 
+        elif module in ('procurement_grn', 'procurement_po', 'procurement_req',
+                        'pos_stockdoc', 'inventory_production', 'inventory_transfer',
+                        'inventory_count', 'finance'):
+            # O SILÊNCIO QUE ISTO TIRA.
+            #
+            # O centro listava linhas marcadas como `inventory` e `finance`, e esta
+            # vista só conhecia quatro módulos (pos, fiscal, accounting, pms). Para
+            # os outros caía no fim e devolvia `{}` — o painel abria VAZIO. Como
+            # tudo aqui vive dentro de um try/except, não dava erro nenhum: dava
+            # silêncio, que é pior, porque parece que o documento não tem nada.
+            detalhe, ligados = _detalhe_de(module, did)
+            detail, links = detalhe, ligados
+
         elif module == 'pms':
             try:
                 from pms.models import Folio
@@ -254,6 +365,151 @@ class DocumentLinksView(APIView):
         return Response({'detail': detail, 'links': links})
 
 
+def _detalhe_de(module, did):
+    """O painel de um documento das famílias de COMPRAS e de STOCK.
+
+    Cada família responde às mesmas três perguntas — o que é, quanto vale, o que
+    tem dentro — e aponta para os documentos ligados: a receção aponta para a
+    encomenda e para os movimentos de stock que gerou, a ordem de produção para o
+    que consumiu, o documento de stock para o seu ledger.
+    """
+    detalhe, ligados = {}, []
+
+    def movimentos_de(referencia):
+        """Os movimentos de stock que este documento gerou — o seu rasto."""
+        try:
+            from inventory.models import StockMovement
+            for m in StockMovement.objects.select_related('item').filter(reference=referencia)[:50]:
+                ligados.append({'category': 'STOCK', 'label': m.get_movement_type_display(),
+                                'number': f'{m.item.code} · {m.quantity}', 'module': None,
+                                'id': None, 'amount': str(m.quantity)})
+        except Exception:
+            pass
+
+    try:
+        if module == 'procurement_grn':
+            from procurement.models import GoodsReceipt
+            d = (GoodsReceipt.objects.select_related('supplier', 'delivery_warehouse',
+                                                      'purchase_order')
+                 .prefetch_related('lines__item', 'lines__uom').get(pk=did))
+            detalhe = {'title': f'Receção {d.receipt_number}', 'fields': {
+                'Fornecedor': d.supplier.commercial_name if d.supplier_id else '—',
+                'Guia/Factura do fornecedor': d.supplier_invoice_ref or '—',
+                'Armazém de entrega': d.delivery_warehouse.name,
+                'Estado': d.get_status_display(),
+                'Data': d.receipt_date.strftime('%Y-%m-%d %H:%M') if d.receipt_date else '—'},
+                'items': [f'{l.quantity_received} {l.uom.code} de {l.item.name}'
+                          + (f' · lote {l.lot_number}' if l.lot_number else '')
+                          + (f' · validade {l.expiry_date}' if l.expiry_date else '')
+                          for l in d.lines.all()]}
+            if d.purchase_order_id:
+                ligados.append({'category': 'COMPRAS', 'label': 'Ordem de compra',
+                                'number': d.purchase_order.po_number, 'module': 'procurement_po',
+                                'id': str(d.purchase_order_id),
+                                'amount': str(d.purchase_order.total_amount)})
+            movimentos_de(d.receipt_number)
+
+        elif module == 'procurement_po':
+            from procurement.models import PurchaseOrder
+            d = (PurchaseOrder.objects.select_related('supplier')
+                 .prefetch_related('lines__item', 'receipts').get(pk=did))
+            detalhe = {'title': f'Ordem de compra {d.po_number}', 'fields': {
+                'Fornecedor': d.supplier.commercial_name if d.supplier_id else '—',
+                'Estado': d.get_status_display(), 'Total': str(d.total_amount),
+                'Emitida': d.issue_date.isoformat() if d.issue_date else '—',
+                'Entrega prevista': d.expected_delivery_date.isoformat()
+                                    if d.expected_delivery_date else '—'},
+                'items': [f'{l.quantity_requested} x {l.item.name} @ {l.unit_price}'
+                          for l in d.lines.all()]}
+            for r in d.receipts.all():
+                ligados.append({'category': 'COMPRAS', 'label': 'Receção', 'number': r.receipt_number,
+                                'module': 'procurement_grn', 'id': str(r.id), 'amount': None})
+
+        elif module == 'procurement_req':
+            from procurement.models import PurchaseRequisition
+            d = PurchaseRequisition.objects.prefetch_related('lines__item').get(pk=did)
+            detalhe = {'title': f'Requisição {d.number}', 'fields': {
+                'Requisitante': d.requester or '—', 'Aprovador': d.approver or '—',
+                'Estado': d.get_status_display(), 'Observações': d.notes or '—'},
+                'items': [f'{l.quantity} x {l.item.name}' for l in d.lines.all()]}
+
+        elif module == 'pos_stockdoc':
+            from pos.models import StockDoc
+            d = (StockDoc.objects.select_related('series', 'warehouse', 'warehouse_from', 'entity')
+                 .prefetch_related('lines__item').get(pk=did))
+            detalhe = {'title': f'{d.series.name} {d.number}', 'fields': {
+                'Série': f'{d.series.code} · {d.series.name}',
+                'Armazém': d.warehouse.name,
+                'Origem': d.warehouse_from.name if d.warehouse_from_id else '—',
+                'Entidade': d.entity.name if d.entity_id else '—',
+                'Total': str(d.total),
+                'Estado': 'Anulado' if d.voided else ('Lançado' if d.posted else 'Por lançar'),
+                'Data': d.doc_date.isoformat() if d.doc_date else '—'},
+                'items': [f'{l.quantity} x {l.item.name} @ {l.unit_cost}'
+                          + (f' · lote {l.lot}' if l.lot else '') for l in d.lines.all()]}
+            movimentos_de(d.number)
+
+        elif module == 'inventory_production':
+            from inventory.models import ProductionOrder
+            d = (ProductionOrder.objects.select_related('item', 'warehouse')
+                 .prefetch_related('consumptions__item').get(pk=did))
+            detalhe = {'title': f'Ordem de produção {d.number}', 'fields': {
+                'Produzido': f'{d.item.code} · {d.item.name}', 'Quantidade': str(d.quantity),
+                'Armazém': d.warehouse.name, 'Estado': d.get_status_display(),
+                'Lote': d.lot_number or d.number,
+                'Validade': d.expiry_date.isoformat() if d.expiry_date else '—',
+                'Custo unitário': str(d.unit_cost), 'Custo total': str(d.total_cost)},
+                'items': [f'{c.quantity} x {c.item.name} @ {c.unit_cost} = {c.total_cost}'
+                          for c in d.consumptions.all()]}
+            movimentos_de(d.number)
+
+        elif module == 'inventory_transfer':
+            from inventory.models import StockTransfer
+            d = (StockTransfer.objects.select_related('source', 'destination')
+                 .prefetch_related('lines__item').get(pk=did))
+            detalhe = {'title': f'Transferência {d.number}', 'fields': {
+                'Origem': d.source.name, 'Destino': d.destination.name,
+                'Estado': d.get_status_display(), 'Observações': d.note or '—'},
+                'items': [f'{l.quantity} x {l.item.name}' for l in d.lines.all()]}
+            movimentos_de(d.number)
+
+        elif module == 'inventory_count':
+            from inventory.models import InventoryCount
+            d = (InventoryCount.objects.select_related('warehouse')
+                 .prefetch_related('lines__item').get(pk=did))
+            detalhe = {'title': f'Contagem {d.number}', 'fields': {
+                'Armazém': d.warehouse.name, 'Estado': d.get_status_display(),
+                'Observações': d.note or '—',
+                'Confirmada': d.confirmed_at.strftime('%Y-%m-%d %H:%M') if d.confirmed_at else '—'},
+                'items': [f'{l.item.name}: sistema {l.system_qty} · contado {l.counted_qty}'
+                          for l in d.lines.all()]}
+            movimentos_de(d.number)
+
+        elif module == 'finance':
+            # Recebimentos, pagamentos e facturas de fornecedor — as três famílias
+            # que a Tesouraria e as Compras listam com este módulo.
+            from finance.models import PaymentVoucher, Receipt, SupplierInvoice
+            for modelo, titulo in ((Receipt, 'Recebimento'), (PaymentVoucher, 'Pagamento'),
+                                   (SupplierInvoice, 'Factura de fornecedor')):
+                d = modelo.objects.filter(pk=did).first()
+                if d is None:
+                    continue
+                campos = {'Nº': d.number,
+                          'Data': d.date.isoformat() if getattr(d, 'date', None) else '—',
+                          'Valor': str(getattr(d, 'amount', '') or '')}
+                for chave, atributo in (('Entidade', 'party_name'),
+                                        ('Fornecedor', 'supplier_name'),
+                                        ('Estado', 'status')):
+                    valor = getattr(d, atributo, None)
+                    if valor:
+                        campos[chave] = str(valor)
+                detalhe = {'title': f'{titulo} {d.number}', 'fields': campos, 'items': []}
+                break
+    except Exception:
+        pass
+    return detalhe, ligados
+
+
 class DocumentCenterDashboardView(APIView):
     """GET /api/documents/dashboard/ — indicadores do dia por área."""
     permission_classes = [IsAuthenticated]
@@ -261,7 +517,8 @@ class DocumentCenterDashboardView(APIView):
     def get(self, request):
         today = timezone.localdate()
         d = {'date': today.isoformat(), 'invoices': 0, 'commercial': 0, 'pos_sales': 0,
-             'checkins': 0, 'checkouts': 0, 'purchases': 0, 'stock_moves': 0, 'voided': 0, 'total_today': 0}
+             'checkins': 0, 'checkouts': 0, 'purchases': 0, 'stock_moves': 0, 'voided': 0,
+             'receipts': 0, 'production': 0, 'stock_docs': 0, 'total_today': 0}
         try:
             from fiscal.models import FiscalDocument, CommercialDocument
             d['invoices'] = FiscalDocument.objects.filter(doc_date=today).count()
@@ -290,5 +547,25 @@ class DocumentCenterDashboardView(APIView):
             d['stock_moves'] = StockMovement.objects.filter(created_at__date=today).count()
         except Exception:
             pass
-        d['total_today'] = d['invoices'] + d['commercial'] + d['pos_sales'] + d['purchases'] + d['stock_moves']
+        try:
+            # A mercadoria que ENTROU hoje e o que a cozinha produziu hoje: dois
+            # números que o dono procura no painel e que não estavam lá.
+            from procurement.models import GoodsReceipt
+            d['receipts'] = GoodsReceipt.objects.filter(receipt_date__date=today).count()
+        except Exception:
+            d['receipts'] = 0
+        try:
+            from inventory.models import ProductionOrder
+            d['production'] = ProductionOrder.objects.filter(status='DONE',
+                                                             produced_at__date=today).count()
+        except Exception:
+            d['production'] = 0
+        try:
+            from pos.models import StockDoc
+            d['stock_docs'] = StockDoc.objects.filter(doc_date=today, voided=False).count()
+        except Exception:
+            d['stock_docs'] = 0
+        d['total_today'] = (d['invoices'] + d['commercial'] + d['pos_sales'] + d['purchases']
+                            + d['stock_moves'] + d['receipts'] + d['production']
+                            + d['stock_docs'])
         return Response(d)

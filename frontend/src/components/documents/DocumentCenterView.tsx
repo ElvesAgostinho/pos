@@ -92,7 +92,10 @@ export default function DocumentCenterView() {
         </div>
         {/* Dashboard */}
         <div className="flex flex-wrap gap-2 p-3 border-b border-[#E6E8EC] bg-[#EEF1F5]">
-          {[['Emitidos hoje', dash?.total_today, '#3B82F6'], ['Faturas', dash?.invoices, '#DC2626'], ['Vendas POS', dash?.pos_sales, '#2563EB'], ['Check-ins', dash?.checkins, '#3B82F6'], ['Compras', dash?.purchases, '#3B82F6'], ['Mov. Stock', dash?.stock_moves, '#3B82F6'], ['Anulados', dash?.voided, '#3B82F6']].map(([l, v, c]: any) => (
+          {/* Recebido / Produzido: a mercadoria que ENTROU hoje e o que a cozinha
+              transformou. São dois números que o dono procura aqui e que o painel
+              não contava — e o "Emitidos hoje" também não os somava. */}
+          {[['Emitidos hoje', dash?.total_today, '#3B82F6'], ['Faturas', dash?.invoices, '#DC2626'], ['Vendas POS', dash?.pos_sales, '#2563EB'], ['Check-ins', dash?.checkins, '#3B82F6'], ['Compras', dash?.purchases, '#3B82F6'], ['Recebido', dash?.receipts, '#3B82F6'], ['Produzido', dash?.production, '#3B82F6'], ['Doc. Stock', dash?.stock_docs, '#3B82F6'], ['Mov. Stock', dash?.stock_moves, '#3B82F6'], ['Anulados', dash?.voided, '#3B82F6']].map(([l, v, c]: any) => (
             <div key={l} className="bg-white border border-[#E6E8EC] px-3 py-1"><div className="text-[9px] uppercase text-gray-500">{l}</div><div className="text-lg font-bold" style={{ color: c }}>{v ?? 0}</div></div>
           ))}
         </div>
