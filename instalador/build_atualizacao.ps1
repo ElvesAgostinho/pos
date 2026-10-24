@@ -10,8 +10,19 @@
 # só precisa dos ficheiros novos. É este .zip que se publica no PCC (CLM › Versões)
 # para o botão "Atualizar agora" (Configuração POS › Utilitários › Diagnóstico).
 #
-# Depois de gerar, publique o link no PCC (CLM › Versões › Publicar versão nova) —
-# é O MESMO ecrã de sempre, só que agora aponta para um .zip em vez de um .exe.
+# DEPOIS DE GERAR, é só carregar o .zip no PCC — não precisa de o alojar em lado
+# nenhum. O PCC guarda-o e cria o link de descarga sozinho:
+#
+#   PCC > Versoes > Publicar versao nova
+#     Versao:              o mesmo numero que esta no support.py
+#     Ficheiro da versao:  escolha o .zip que este script acabou de criar
+#     O que mudou:         o texto que o cliente vai ler no aviso
+#
+# (Este script dizia aqui para "subir o .zip ao GitHub Releases, S3, etc." e
+#  colar o URL. Era a unica forma possivel enquanto o PCC so guardava a morada
+#  do ficheiro e nao o ficheiro — e era o passo onde se encalhava, porque esse
+#  link nao existe ate alguem o criar. O PCC passou a receber o ficheiro; o
+#  campo do link continua la para quem ja tem onde o alojar.)
 # ============================================================================
 $ErrorActionPreference = 'Stop'
 $Raiz   = Split-Path $PSScriptRoot -Parent          # ...\POS
@@ -53,8 +64,17 @@ Remove-Item $Temp -Recurse -Force
 
 $TamanhoMB = [Math]::Round((Get-Item $ZipPath).Length / 1MB, 1)
 Write-Host "`nFEITO: $ZipPath ($TamanhoMB MB)"
-Write-Host "Publique agora no PCC: CLM > Versoes > Publicar versao nova."
-Write-Host "  Versao: $Versao"
-Write-Host "  Link de descarga: o URL publico deste .zip (suba-o a um sitio que o cliente alcance — GitHub Releases, S3, etc.)"
-Write-Host "`nLembrete: só clientes com este pacote .zip veem o botao 'Atualizar agora' de um so clique;"
-Write-Host "um link para um .exe continua a pedir o instalador completo, a correr a mao."
+Write-Host ""
+Write-Host "AGORA PUBLIQUE NO PCC (nao precisa de alojar o ficheiro em lado nenhum):"
+Write-Host "  1. PCC > Versoes > Publicar versao nova"
+Write-Host "  2. Versao:             $Versao"
+Write-Host "  3. Ficheiro da versao: escolha o .zip indicado acima"
+Write-Host "  4. O que mudou:        o texto que o cliente vai ler no aviso"
+Write-Host "  5. Publicar - o link de descarga preenche-se sozinho."
+Write-Host ""
+Write-Host "O CLIENTE: Configuracao POS > Utilitarios > Diagnostico > Atualizar agora."
+Write-Host "Nao reinstala nada; a configuracao, a licenca e a base de dados dele ficam intactas."
+Write-Host ""
+Write-Host "Publicar um .exe em vez deste .zip DESLIGA o botao de um clique: o cliente passa a"
+Write-Host "ter de descarregar e correr o instalador completo a mao. So faz sentido quando o que"
+Write-Host "muda esta FORA do app/ (Python novo, servico novo) - nesse caso use build_instalador.ps1."
