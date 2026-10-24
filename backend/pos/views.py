@@ -210,6 +210,64 @@ def _safe_fiscalize(ticket, request, credito=False, customer=None):
         pass  # fiscalização assíncrona/tolerante: fila e reemissão tratam falhas
 
 
+def preco_do_servidor(outlet, item, cfg=None):
+    """O PREÇO QUE A CASA COBRA por este artigo neste ponto de venda.
+
+    Isto vivia dentro do `add_line` e mais nenhum caminho o sabia. O resultado
+    estava na sincronização das vendas feitas OFFLINE: elas traziam o preço que o
+    terminal dissesse e o servidor gravava-o sem perguntar. Bastava um pedido
+    forjado — ou um terminal com a tabela de preços velha — para a cerveja entrar
+    a 1 Kz, e a fatura saía assinada com esse valor.
+
+    A regra é uma só e é esta: override do POS Product Config → NÍVEL DE PREÇO do
+    setor (8592) → nível do terminal (8524) → preço base do artigo.
+
+    (A HAPPY HOUR não entra aqui de propósito: depende da HORA da venda, e numa
+    venda sincronizada horas depois a hora do servidor já não é a da venda.)
+    """
+    from decimal import Decimal
+
+    unit_price = None
+    # Prioridade: override do POS Product Config → NÍVEL DE PREÇO do setor
+    # (8592) → Tabela de Preço da área → preço base.
+    #
+    # O nível do setor faltava aqui e o resultado era o pior possível: a TECLA
+    # mostrava o Preço 3 (o teclado respeita o 8592) e a CONTA cobrava o base —
+    # o cliente via 999 no ecrã e pagava 400. O que se mostra e o que se cobra
+    # têm de sair da mesma regra.
+    if cfg and cfg.pos_price is not None:
+        unit_price = cfg.pos_price
+    else:
+        nivel_setor = None
+        try:
+            from .models import PosSector
+            _s = PosSector.objects.filter(outlet=outlet).first()
+            p8592 = ((_s.params or {}).get('8592')
+                     or (_s.params or {}).get(8592)) if _s else None
+            if p8592:
+                import re as _re
+                _m = _re.search(r'(\d+)', str(p8592))
+                if _m:
+                    nivel_setor = int(_m.group(1))
+            elif _s and _s.price_level and _s.price_level > 1:
+                nivel_setor = _s.price_level
+        except Exception:
+            nivel_setor = None
+        # (8524) "Nível de Preço" do TERMINAL — só entra quando o setor não
+        # manda em nada (8592 vazio e ficha do setor no nível 1, o base).
+        if not nivel_setor:
+            nivel_terminal = P.int(8524, 1)
+            if nivel_terminal > 1:
+                nivel_setor = nivel_terminal
+        if nivel_setor and nivel_setor > 1:
+            from inventory.models import ItemPrice
+            _ip = ItemPrice.objects.filter(item=item, level=nivel_setor).first()
+            unit_price = _ip.price if _ip else outlet.price_for(item)
+        else:
+            unit_price = outlet.price_for(item)
+    return Decimal(str(unit_price))
+
+
 class OutletViewSet(viewsets.ModelViewSet):
     serializer_class = OutletSerializer
 
@@ -541,6 +599,57 @@ def _encosta_centimos(linhas, falta):
     aplica([(maior[0], -1)])
 
 
+def _lancar_no_folio(folio, ticket, amount, por=None):
+    """Lança este consumo no folio — e NUNCA mais do que o consumo vale.
+
+    Isto criava o `FolioCharge` sem olhar para o que já lá estava. Não há
+    constraint única em `(folio, source_reference)`, e há DOIS botões que fazem
+    isto (o `pay()` com um meio de pagamento "Lançar em Quarto", e a ação
+    `charge_to_room`): um duplo-clique, um retry de rede ou usar os dois botões
+    sobre a mesma conta lançavam o MESMO jantar duas vezes na conta do hóspede.
+
+    Ele pagava-o duas vezes no check-out, e a fatura do folio estava "certa" —
+    porque as duas linhas eram legítimas vistas uma a uma. É o primo directo do
+    defeito da declaração em duplicado à AGT, e descobre-se da mesma maneira:
+    somando.
+
+    A trava NÃO é "uma linha por conta": isso tirava dinheiro ao hotel na conta
+    que se divide (dois hóspedes, meio jantar cada, dois lançamentos legítimos
+    com a mesma referência). A trava é o TOTAL: a soma do que já está lançado
+    deste ticket mais este lançamento nunca pode passar o que a conta vale.
+    Os estornos (`is_void`) não contam, porque já não são dívida de ninguém.
+
+    Devolve (encargo, erro) — o erro já é a resposta a devolver ao ecrã.
+    """
+    from decimal import Decimal
+
+    from django.db.models import Sum
+    from pms.models import FolioCharge
+
+    valor = Decimal(str(amount or 0))
+    ja = (FolioCharge.objects
+          .filter(source_reference=ticket.ticket_number, is_void=False)
+          .aggregate(s=Sum('amount'))['s'] or Decimal('0'))
+    vale = Decimal(str(ticket.grand_total or 0))
+    # O cêntimo de tolerância é o arredondamento de um pagamento repartido, não
+    # um segundo lançamento: 2500,00 + 2500,01 de uma conta de 5000,00 passa.
+    if ja + valor > vale + Decimal('0.01'):
+        return None, Response(
+            {'detail': f'A conta {ticket.ticket_number} vale {vale} Kz e já tem '
+                       f'{ja} Kz lançados em conta de quarto. Lançar mais {valor} Kz '
+                       f'punha o hóspede a pagar o mesmo consumo duas vezes no '
+                       f'check-out. Verifique o folio antes de repetir.',
+             'already_charged': str(ja), 'ticket_total': str(vale)},
+            status=409)
+
+    encargo = FolioCharge.objects.create(
+        folio=folio, charge_type='FNB',
+        description=f'POS {ticket.ticket_number} ({ticket.outlet.name})',
+        amount=valor, source_reference=ticket.ticket_number,
+        posted_by=por or ticket.operator_name)
+    return encargo, None
+
+
 def _folio_para_lancar(ticket, request):
     """A CONTA DO QUARTO onde este consumo vai cair. Devolve (folio, nº do quarto, erro).
 
@@ -790,7 +899,22 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         total = ticket.adults + ticket.children
         if total:
             ticket.guests = total
-        ticket.save(update_fields=['customer_name', 'customer_tax_id', 'company_name', 'adults', 'children', 'guests'])
+        # A LIGAÇÃO AO CADASTRO, não só o nome. Os dois ecrãs mandam o mesmo id com
+        # nomes diferentes ("entity" no selector de clientes, "customer_id" no
+        # formulário) — guarda-se o que vier, e é esta ligação que leva a factura
+        # à conta corrente da empresa.
+        campos = ['customer_name', 'customer_tax_id', 'company_name', 'adults',
+                  'children', 'guests']
+        escolhida = d.get('customer_id') or d.get('entity')
+        if escolhida:
+            from mdm.models import Customer as _C
+            _ent = _C.objects.filter(pk=escolhida).first()
+            if _ent:
+                ticket.customer = _ent
+                ticket.customer_name = ticket.customer_name or _ent.name
+                ticket.customer_tax_id = ticket.customer_tax_id or _ent.tax_id
+                campos.append('customer')
+        ticket.save(update_fields=campos)
         # Cliente VIP do MDM -> desconto automático + info de limite de crédito.
         vip = None
         # "entity" (ClientPicker/CustomerIdForm) e "customer_id" (CustomerForm) são o
@@ -1013,43 +1137,7 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             return Response({'detail': f'"{item.name}" é de preço manual — indique o preço.',
                              'requires_price': True}, status=status.HTTP_400_BAD_REQUEST)
         if unit_price in (None, ''):
-            # Prioridade: override do POS Product Config → NÍVEL DE PREÇO do setor
-            # (8592) → Tabela de Preço da área → preço base.
-            #
-            # O nível do setor faltava aqui e o resultado era o pior possível: a TECLA
-            # mostrava o Preço 3 (o teclado respeita o 8592) e a CONTA cobrava o base —
-            # o cliente via 999 no ecrã e pagava 400. O que se mostra e o que se cobra
-            # têm de sair da mesma regra.
-            if cfg and cfg.pos_price is not None:
-                unit_price = cfg.pos_price
-            else:
-                nivel_setor = None
-                try:
-                    from .models import PosSector
-                    _s = PosSector.objects.filter(outlet=ticket.outlet).first()
-                    p8592 = ((_s.params or {}).get('8592')
-                             or (_s.params or {}).get(8592)) if _s else None
-                    if p8592:
-                        import re as _re
-                        _m = _re.search(r'(\d+)', str(p8592))
-                        if _m:
-                            nivel_setor = int(_m.group(1))
-                    elif _s and _s.price_level and _s.price_level > 1:
-                        nivel_setor = _s.price_level
-                except Exception:
-                    nivel_setor = None
-                # (8524) "Nível de Preço" do TERMINAL — só entra quando o setor não
-                # manda em nada (8592 vazio e ficha do setor no nível 1, o base).
-                if not nivel_setor:
-                    nivel_terminal = P.int(8524, 1)
-                    if nivel_terminal > 1:
-                        nivel_setor = nivel_terminal
-                if nivel_setor and nivel_setor > 1:
-                    from inventory.models import ItemPrice
-                    _ip = ItemPrice.objects.filter(item=item, level=nivel_setor).first()
-                    unit_price = _ip.price if _ip else ticket.outlet.price_for(item)
-                else:
-                    unit_price = ticket.outlet.price_for(item)
+            unit_price = preco_do_servidor(ticket.outlet, item, cfg)
         unit_price = Decimal(str(unit_price))
 
         # (Utilizador POS) "Usa preço de custo" — a caixa da FICHA DO OPERADOR (backoffice)
@@ -1563,11 +1651,9 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             folio, room_number, erro = _folio_para_lancar(ticket, request)
             if erro:
                 return erro
-            FolioCharge.objects.create(
-                folio=folio, charge_type='FNB',
-                description=f'POS {ticket.ticket_number} ({ticket.outlet.name})',
-                amount=applied, source_reference=ticket.ticket_number,
-                posted_by=ticket.operator_name)
+            _encargo, erro = _lancar_no_folio(folio, ticket, applied)
+            if erro:
+                return erro
 
         # GUARDAR O COMPROVATIVO. Estes dados foram exigidos ao empregado com o cliente
         # à frente (a ficha do meio de pagamento é que manda); guardá-los é o mínimo.
@@ -1600,9 +1686,10 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         # (Modo de Pagamento) "Conta corrente" — a conta fica em nome da entidade e o
         # documento nasce POR RECEBER (fatura, não fatura-recibo). É o crédito a sério.
         if pm.current_account and entidade:
+            ticket.customer = entidade          # a LIGAÇÃO, que é o que a cobrança segue
             ticket.customer_name = entidade.name
             ticket.customer_tax_id = entidade.tax_id
-            ticket.save(update_fields=['customer_name', 'customer_tax_id'])
+            ticket.save(update_fields=['customer', 'customer_name', 'customer_tax_id'])
 
         # (Modo de Pagamento) "Permite levantamento" (sangria no ato) — acima de um valor,
         # o dinheiro não fica na gaveta: avisa-se quem tem de o vir buscar. Uma gaveta com
@@ -2358,9 +2445,9 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             return erro
         ticket = POSTicket.objects.get(pk=ticket.pk)
         amount = ticket.balance_due
-        FolioCharge.objects.create(
-            folio=folio, charge_type='FNB', description=f"POS {ticket.ticket_number} ({ticket.outlet.name})",
-            amount=amount, source_reference=ticket.ticket_number, posted_by=ticket.operator_name)
+        _encargo, erro = _lancar_no_folio(folio, ticket, amount)
+        if erro:
+            return erro
         ticket.status = 'PAID'
         ticket.closed_at = timezone.now()
         if ticket.table:
@@ -2642,7 +2729,11 @@ class POSTicketViewSet(viewsets.ModelViewSet):
         desempenho por operador e produtos mais vendidos. Filtra por ?outlet= (opcional)."""
         outlet = request.query_params.get('outlet')
         today = timezone.localdate()
-        tq = POSTicket.objects.all()
+        # ISOLAMENTO POR HOTEL. Todos os vizinhos deste ficheiro usam `scope_qs`;
+        # este começava em `POSTicket.objects.all()`. Num grupo com vários hotéis,
+        # o resumo do dia somava as vendas de TODOS — o gerente de um hotel via o
+        # dinheiro do outro, e o número que ele usa para decidir não era o dele.
+        tq = scope_qs(request, POSTicket.objects.all(), 'outlet__hotel')
         if outlet:
             tq = tq.filter(outlet_id=outlet)
         paid = list(tq.filter(status='PAID', closed_at__date=today).prefetch_related('lines'))
@@ -2704,18 +2795,42 @@ class POSTicketViewSet(viewsets.ModelViewSet):
             if existing:
                 results.append({'client_uuid': cuid, 'id': existing.id, 'status': 'exists'})
                 continue
+            divergencias = []
             try:
                 with transaction.atomic():
                     ticket = POSTicket.objects.create(
                         ticket_number=tk.get('ticket_number') or f"TCK-{_uuid.uuid4().hex[:8].upper()}",
                         client_uuid=cuid, outlet_id=tk['outlet'], operator_name=tk.get('operator_name', 'offline'),
+                        # A venda offline foi feita numa CAIXA. Sem a sessão, o
+                        # dinheiro não entrava no fecho dessa caixa e o fecho dava
+                        # sempre diferença — a venda existia, a entrada não.
+                        cash_session_id=tk.get('cash_session') or None,
                     )
                     for ln in tk.get('lines', []):
                         item = Item.objects.get(pk=ln['item'])
+                        # O PREÇO É DO SERVIDOR, aqui como no balcão. Isto aceitava
+                        # `unit_price` tal como vinha do terminal: um pedido forjado
+                        # (ou um terminal com a tabela velha) vendia o whisky a 1 Kz
+                        # e a fatura saía assinada com esse valor. Só os artigos de
+                        # "Preço manual" — o peixe ao quilo, o vinho a copo do dia —
+                        # é que têm preço vindo de fora, porque não há outro.
+                        cfg = POSProductConfig.objects.filter(outlet_id=tk['outlet'],
+                                                              item=item).first()
+                        if getattr(item, 'manual_price', False) and ln.get('unit_price') not in (None, ''):
+                            preco = Decimal(str(ln['unit_price']))
+                        else:
+                            preco = preco_do_servidor(ticket.outlet, item, cfg)
+                            enviado = ln.get('unit_price')
+                            if enviado not in (None, '') and Decimal(str(enviado)) != preco:
+                                # Fica DITO na resposta: o terminal cobrou um preço e
+                                # a casa factura outro. Quem sincroniza tem de saber,
+                                # senão a diferença aparece só na caixa, no fecho.
+                                divergencias.append(
+                                    f'{item.code}: terminal {enviado}, tabela {preco}')
                         POSTicketLine.objects.create(
                             ticket=ticket, item=item, description=item.name,
                             quantity=Decimal(str(ln.get('quantity', 1))),
-                            unit_price=Decimal(str(ln.get('unit_price', item.sale_price or 0))),
+                            unit_price=preco,
                             tax_percentage=_tax_for(item.tax_percentage or 0))
                     POSTicket.objects.get(pk=ticket.pk).recompute(save=True)
                     for pm in tk.get('payments', []):
@@ -2727,9 +2842,28 @@ class POSTicketViewSet(viewsets.ModelViewSet):
                         ticket.status = 'PAID'
                         ticket.closed_at = timezone.now()
                         ticket.save(update_fields=['status', 'closed_at'])
+                        # ══ UMA VENDA OFFLINE É UMA VENDA ═══════════════════
+                        # Isto fechava o ticket como PAGO e ficava assim: sem
+                        # saída de stock e SEM DOCUMENTO FISCAL. O dinheiro
+                        # entrava na caixa, a mercadoria saía da prateleira, e à
+                        # AGT não era declarado nada — a venda não existia no
+                        # SAF-T. Uma noite inteira de serviço com a rede em baixo
+                        # era uma noite de receita não declarada, e o stock ficava
+                        # a dizer que a cerveja ainda lá estava.
+                        #
+                        # O documento sai agora, na sincronização, pelo MESMO
+                        # motor do balcão (série, assinatura, encadeamento de
+                        # hash, SAF-T). A data é a da emissão, que é o que a AGT
+                        # exige: o documento nasce quando é emitido.
+                        _safe_consume(ticket, request)
+                        _safe_fiscalize(ticket, request)
                 log_event(request, 'TICKET_OPEN', f'Ticket sincronizado (offline) {ticket.ticket_number}',
                           operator_name=ticket.operator_name, outlet=ticket.outlet, reference=ticket.ticket_number)
-                results.append({'client_uuid': cuid, 'id': ticket.id, 'status': 'created'})
+                resultado = {'client_uuid': cuid, 'id': ticket.id, 'status': 'created',
+                             'ticket_number': ticket.ticket_number}
+                if divergencias:
+                    resultado['price_adjusted'] = divergencias
+                results.append(resultado)
             except Exception as e:
                 results.append({'client_uuid': cuid, 'error': str(e), 'status': 'failed'})
         return Response({'synced': results})
@@ -3009,7 +3143,13 @@ class POSDocumentViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         from .models import POSDocument
         # (isolamento por hotel abaixo)
-        qs = POSDocument.objects.select_related('series', 'ticket').all()
+        # O comentário acima prometia "(isolamento por hotel abaixo)" e não havia
+        # nada abaixo: a lista de documentos emitidos mostrava os de todos os
+        # hotéis do grupo. Documentos fiscais de outra empresa à vista de quem
+        # não é dela.
+        qs = scope_qs(self.request,
+                      POSDocument.objects.select_related('series', 'ticket').all(),
+                      'ticket__outlet__hotel')
         for f in ('ticket', 'document_type', 'status'):
             v = self.request.query_params.get(f)
             if v:

@@ -59,8 +59,18 @@ def r_reservas(p):
           .select_related('guest', 'room', 'room_type', 'rate_plan', 'block')
           .order_by('check_in'))
     linhas = []
+    # OS TOTAIS SÓ SOMAM O QUE SE VENDEU. As linhas mostram tudo (uma reserva
+    # cancelada à vista é informação útil — mostra o que se perdeu), mas somar
+    # as canceladas e os no-shows no total em dinheiro era mostrar ao dono
+    # receita que nunca entrou: num mês com cancelamentos, o total deste
+    # relatório não batia com nenhum outro e ninguém sabia qual estava certo.
+    noites_vendidas = 0
+    receita_vendida = 0.0
     for r in qs:
         tarifa = r.effective_rate or Decimal('0')
+        if r.status in VIVAS:
+            noites_vendidas += r.nights
+            receita_vendida += float(tarifa * r.nights)
         linhas.append({
             'confirmation': r.confirmation,
             'guest': r.guest.name if r.guest_id else '',
@@ -81,8 +91,7 @@ def r_reservas(p):
                     ('nights', 'Noites'), ('pax', 'Pax'), ('source', 'Origem'),
                     ('status', 'Estado'), ('rate', 'Tarifa/noite', 'money'), ('total', 'Total', 'money')],
         'rows': linhas,
-        'totals': {'nights': sum(l['nights'] for l in linhas),
-                   'total': round(sum(l['total'] for l in linhas), 2)},
+        'totals': {'nights': noites_vendidas, 'total': round(receita_vendida, 2)},
     }
 
 
@@ -199,13 +208,21 @@ def r_origem(p):
     ini, fim = _periodo(p)
     porOrigem = {}
     for r in Reservation.objects.filter(
-            status__in=VIVAS, check_in__lte=fim, check_out__gte=ini):
+            status__in=VIVAS, check_in__lte=fim, check_out__gt=ini):
+        # SÓ AS NOITES QUE CAEM NESTE PERÍODO — a mesma conta de
+        # `r_receita_categoria`. Somavam-se as noites TODAS da estadia, por isso
+        # uma estadia de 28/01 a 03/02 era contada por inteiro no relatório de
+        # Janeiro E por inteiro no de Fevereiro: a mesma receita aparecia duas
+        # vezes e a soma dos meses não dava o ano.
+        noites = sum(1 for d in _dias(ini, fim) if r.check_in <= d < r.check_out)
+        if not noites:
+            continue
         nome = r.get_source_display()
         linha = porOrigem.setdefault(nome, {'source': nome, 'reservations': 0,
                                             'nights': 0, 'revenue': 0.0})
         linha['reservations'] += 1
-        linha['nights'] += r.nights
-        linha['revenue'] += float((r.effective_rate or Decimal('0')) * r.nights)
+        linha['nights'] += noites
+        linha['revenue'] += float((r.effective_rate or Decimal('0')) * noites)
     linhas = sorted(porOrigem.values(), key=lambda x: -x['revenue'])
     total = sum(l['revenue'] for l in linhas) or 1
     for l in linhas:

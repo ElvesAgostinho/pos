@@ -86,10 +86,19 @@ def _room_type_free_count(room_type, check_in, check_out):
 def _room_type_price(room_type, check_in, check_out):
     """A tarifa mais barata com um Rate Plan válido para estas datas; sem
     nenhum, cai para a tarifa base da categoria (mesma cadeia de fallback do
-    check-in em `views.py`: rate > rate_plan > room_type.base_rate)."""
+    check-in em `views.py`: rate > rate_plan > room_type.base_rate).
+
+    O QUE SE VENDE SÃO NOITES, e a última noite da estadia é a véspera da
+    saída: quem entra a 10 e sai a 11 dorme a noite de 10. A validade da tarifa
+    era comparada com a DATA DE SAÍDA, por isso uma tarifa válida até 10
+    recusava a estadia 10→11 e o site mostrava a tarifa base da categoria — o
+    hóspede via 30.000 em vez dos 10.000 da promoção na última noite do
+    período, e o hotel perdia a venda sem nunca saber porquê.
+    """
+    ultima_noite = check_out - timedelta(days=1)
     plan = (RatePlan.objects.filter(room_type=room_type, is_active=True)
             .filter(Q(valid_from__isnull=True) | Q(valid_from__lte=check_in))
-            .filter(Q(valid_to__isnull=True) | Q(valid_to__gte=check_out))
+            .filter(Q(valid_to__isnull=True) | Q(valid_to__gte=ultima_noite))
             .order_by('price_per_night').first())
     if plan:
         return plan.price_per_night, plan.board, plan
@@ -176,6 +185,14 @@ class BookingReserveView(APIView):
             return Response({'detail': 'Datas de entrada/saída inválidas.'}, status=400)
 
         today = date.today()
+        # UMA NOITE QUE JÁ PASSOU NÃO SE VENDE. Sem esta verificação, um pedido
+        # com datas no passado (engano de quem escreve à mão, ou um robô a
+        # tentar o endpoint público) criava uma reserva a sério: aparecia na
+        # lista da receção como se alguém fosse chegar num dia que já foi, e
+        # ocupava inventário retroactivamente nas contagens de disponibilidade.
+        if check_in < today:
+            return Response({'detail': f'A data de entrada ({check_in.isoformat()}) já passou. '
+                                       f'Escolha uma data a partir de hoje.'}, status=400)
         if settings_obj.min_advance_days and (check_in - today).days < settings_obj.min_advance_days:
             return Response({'detail': f'É preciso reservar com pelo menos {settings_obj.min_advance_days} dia(s) de antecedência.'}, status=400)
         if settings_obj.max_advance_days and (check_in - today).days > settings_obj.max_advance_days:

@@ -82,6 +82,22 @@ class BlockSerializer(serializers.ModelSerializer):
     def get_total_rooms(self, obj):
         return sum(rt.rooms_blocked for rt in obj.room_types.all())
 
+    def validate(self, attrs):
+        """O mesmo engano de teclado da reserva, no bloco do grupo.
+
+        Um período que acaba antes de começar dá um bloco de 0 noites: a grelha
+        não tem onde pôr quartos, a retenção (allotment) nunca aparece na
+        disponibilidade e as reservas do grupo não encontram o bloco — e
+        ninguém consegue perceber porquê, porque o bloco está lá, na lista,
+        aparentemente normal."""
+        inicio = attrs.get('valid_from', getattr(self.instance, 'valid_from', None))
+        fim = attrs.get('valid_to', getattr(self.instance, 'valid_to', None))
+        if inicio and fim and fim < inicio:
+            raise serializers.ValidationError({'valid_to':
+                f'O bloco não pode acabar ({fim.isoformat()}) antes de começar '
+                f'({inicio.isoformat()}).'})
+        return attrs
+
 
 class FolioChargeSerializer(serializers.ModelSerializer):
     charge_type_display = serializers.CharField(source='get_charge_type_display', read_only=True)
@@ -137,6 +153,26 @@ class ReservationSerializer(serializers.ModelSerializer):
         model = Reservation
         fields = '__all__'
         extra_kwargs = {'hotel': {'required': False}, 'confirmation': {'required': False}}
+
+    def validate(self, attrs):
+        """Uma estadia tem de ter pelo menos UMA noite.
+
+        Nada validava as datas: um engano de teclado na receção (saída antes da
+        entrada, ou entrada e saída no mesmo dia) gravava uma reserva fantasma
+        — `nights` dava 0, não aparecia na disponibilidade, não travava o
+        quarto contra outra reserva, o check-in não lançava diária nenhuma e a
+        Auditoria da Noite nunca a via. Ficava lá, invisível, até o hóspede
+        chegar e não haver quarto para ele. A mesma regra vale no PATCH, que era
+        por onde a reserva boa se transformava na fantasma.
+        """
+        entrada = attrs.get('check_in', getattr(self.instance, 'check_in', None))
+        saida = attrs.get('check_out', getattr(self.instance, 'check_out', None))
+        if entrada and saida and saida <= entrada:
+            raise serializers.ValidationError({'check_out':
+                f'A saída ({saida.isoformat()}) tem de ser DEPOIS da entrada '
+                f'({entrada.isoformat()}) — uma estadia tem pelo menos uma noite. Para uma '
+                f'utilização de algumas horas sem dormida, use um destino de serviço no POS.'})
+        return attrs
 
     def get_folio_id(self, obj):
         f = obj.folio

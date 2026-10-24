@@ -25,7 +25,7 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
   const validate = useValidateGRN();
 
   const [form, setForm] = useState<Partial<GoodsReceipt>>({ receipt_number: `GRN-${Date.now().toString().slice(-6)}`, status: 'Draft' });
-  const [line, setLine] = useState<any>({ item: '', quantity_received: '', uom: '', unit_cost: '' });
+  const [line, setLine] = useState<any>({ item: '', quantity_received: '', uom: '', unit_cost: '', lot_number: '', expiry_date: '' });
 
   useEffect(() => { if (grn) setForm(grn); }, [grn]);
   const isNew = !currentId;
@@ -35,8 +35,12 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
   const addComponent = () => {
     if (!line.item || !line.quantity_received || !line.uom || !line.unit_cost || !currentId) return;
     addLine.mutate(
-      { goods_receipt: currentId, item: Number(line.item), quantity_received: line.quantity_received, uom: Number(line.uom), unit_cost: line.unit_cost },
-      { onSuccess: () => setLine({ item: '', quantity_received: '', uom: '', unit_cost: '' }) }
+      // O LOTE E O PRAZO DA GUIA. Em branco, o motor de stock usa o nº da receção
+      // como lote e a validade da ficha do artigo — nada fica obrigatório.
+      { goods_receipt: currentId, item: Number(line.item), quantity_received: line.quantity_received,
+        uom: Number(line.uom), unit_cost: line.unit_cost,
+        lot_number: line.lot_number || null, expiry_date: line.expiry_date || null },
+      { onSuccess: () => setLine({ item: '', quantity_received: '', uom: '', unit_cost: '', lot_number: '', expiry_date: '' }) }
     );
   };
 
@@ -91,6 +95,10 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
                   {uoms.map((u: any) => <option key={u.id} value={u.id}>{u.code}</option>)}
                 </select>
                 <input placeholder="Custo unit." type="number" value={line.unit_cost} onChange={(e) => setLine({ ...line, unit_cost: e.target.value })} className="border border-[#E6E8EC] p-1 w-24" />
+                <input placeholder="Nº lote" title="O lote que vem na guia do fornecedor. Em branco, usa-se o nº desta receção."
+                  value={line.lot_number} onChange={(e) => setLine({ ...line, lot_number: e.target.value })} className="border border-[#E6E8EC] p-1 w-24" />
+                <input type="date" title="Validade da mercadoria desta linha. Em branco, usa-se a validade em dias da ficha do artigo."
+                  value={line.expiry_date} onChange={(e) => setLine({ ...line, expiry_date: e.target.value })} className="border border-[#E6E8EC] p-1" />
                 <ClassicButton icon={Plus} label="Adicionar" onClick={addComponent} />
               </div>
             )}
@@ -99,9 +107,11 @@ function GRNDetail({ grnId, onBack }: { grnId: number | null; onBack: () => void
               data={grn?.lines || []}
               columns={[
                 { header: 'Cód.', accessor: 'item_code', width: '14%' },
-                { header: 'Artigo', accessor: 'item_name', width: '40%' },
-                { header: 'Qtd Recebida', accessor: (r: any) => `${fmt(r.quantity_received)} ${r.uom_code || ''}`, width: '22%' },
-                { header: 'Custo', accessor: (r: any) => fmt(r.unit_cost), width: '18%' },
+                { header: 'Artigo', accessor: 'item_name', width: '28%' },
+                { header: 'Qtd Recebida', accessor: (r: any) => `${fmt(r.quantity_received)} ${r.uom_code || ''}`, width: '16%' },
+                { header: 'Custo', accessor: (r: any) => fmt(r.unit_cost), width: '12%' },
+                { header: 'Lote', accessor: (r: any) => r.lot_number || '—', width: '12%' },
+                { header: 'Validade', accessor: (r: any) => r.expiry_date || '—', width: '12%' },
                 { header: '', accessor: (r: any) => (!validated ? <button onClick={() => delLine.mutate(r.id)} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button> : null), width: '6%' },
               ]}
             />

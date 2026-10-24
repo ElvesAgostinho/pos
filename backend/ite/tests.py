@@ -6,15 +6,18 @@ Inventário") é uma CONCHA VAZIA — `ite/models.py` tem duas linhas de imports
 nenhum modelo; views, services, urls e serializers estão todos vazios. O que o
 módulo promete está espalhado por `inventory`:
 
-  · LOTES e VALIDADES → `inventory.models.StockLot` + os ecrãs em `inventory/wh.py`
+  · LOTES e VALIDADES → `inventory.models.StockLot`, abatidos pelo motor
+                        `inventory/stock.py` (FEFO a executar, não a informar)
   · FICHA TÉCNICA     → `inventory.models.Recipe` + o ecrã em `inventory/pos_config.py`
-  · PRODUÇÃO          → não existe em sítio nenhum (ver os testes do fim)
+  · PRODUÇÃO          → `inventory/production.py` (ordem de fabrico + consumo por ficha)
 
 É isso que estes testes testam: o comportamento prometido, onde ele vive.
 
-Os testes marcados `expectedFailure` falham DE PROPÓSITO. Descrevem o que a casa
-precisa e ainda não tem, e ficam visíveis em cada execução. A correção é em
-`inventory/` e em `pos/` — fora da área desta auditoria (ver relatório).
+O QUE AINDA FALTA, E É UM SÓ SÍTIO: a venda do POS continua a dar saída do artigo
+produzido em vez dos ingredientes, porque `pos.consumption._active_recipe` devolve
+`None` sempre. O motor que resolve isso já está feito e testado aqui
+(`inventory.production.consumir_por_ficha`); falta ligá-lo, e `pos/` está fora da
+área desta correção. É o último `expectedFailure` deste ficheiro.
 """
 import unittest
 from datetime import timedelta
@@ -27,7 +30,8 @@ from rest_framework.test import APITestCase
 from identity.models import Company, EnterpriseGroup, Hotel
 from inventory import stock as motor
 from inventory.models import (Item, ItemCategory, Recipe, RecipeIngredient,
-                              StockLocation, StockLot, UnitOfMeasure, Warehouse)
+                              StockLevel, StockLocation, StockLot, UnitOfMeasure,
+                              Warehouse)
 
 
 class CozinhaMontada(APITestCase):
@@ -57,6 +61,19 @@ class CozinhaMontada(APITestCase):
                                            item_type='Manufactured', category=cat,
                                            base_uom=self.un, sale_price=Decimal('8500.00'))
         self.hoje = timezone.localdate()
+
+    def _saldo(self, artigo, armazem=None):
+        """O saldo do artigo no armazém — o número que o ecrã de existências mostra."""
+        nivel = StockLevel.objects.filter(warehouse=armazem or self.armazem, item=artigo).first()
+        return nivel.quantity_on_hand if nivel else Decimal('0')
+
+    def _lotes(self, artigo, armazem=None):
+        """A soma dos lotes do artigo. Tem de bater com o saldo — é a conta que,
+        antes disto, deixava de bater à primeira saída."""
+        total = Decimal('0')
+        for lote in StockLot.objects.filter(warehouse=armazem or self.armazem, item=artigo):
+            total += lote.quantity or Decimal('0')
+        return total
 
     def _lote(self, numero, dias_para_validade, quantidade='10', artigo=None, armazem=None):
         return StockLot.objects.create(
@@ -133,16 +150,16 @@ class LotesEValidades(CozinhaMontada):
         self.assertEqual(lote.location_id, self.frio.id)
         self.assertEqual(lote.location.location_type, 'COLD')
 
-    @unittest.expectedFailure
     def test_lote_sem_validade_nao_devia_furar_a_fila_do_fefo(self):
-        """FALHA DE PROPÓSITO — defeito conhecido em `inventory.models.StockLot`.
+        """Um lote sem data não passa à frente de um que expira amanhã.
 
-        A ordenação é `['expiry_date', 'received_at']`. Em SQL, os valores vazios
-        vêm PRIMEIRO numa ordenação ascendente: um lote SEM data de validade
-        aparece à frente de um lote que expira amanhã. O empregado segue a lista
-        e gasta o lote sem data — o que expira amanhã fica para trás e vai ao lixo.
+        Em SQL, um valor vazio ordena ANTES de qualquer data: com a ordenação
+        `['expiry_date', ...]` o lote SEM validade aparecia no topo da lista de
+        trabalho do economato. O empregado segue a lista, gasta o lote sem data, e
+        o que expirava amanhã fica para trás e vai ao lixo inteiro.
 
-        Correção: ordenar com os vazios no fim (`F('expiry_date').asc(nulls_last=True)`).
+        Corrigido em `inventory.models.StockLot.Meta.ordering` com
+        `F('expiry_date').asc(nulls_last=True)` — o que não tem data sai no fim.
         """
         self._lote('L-AMANHA', 1)
         StockLot.objects.create(warehouse=self.armazem, item=self.carne, lot_number='L-SEM-DATA',
@@ -151,34 +168,35 @@ class LotesEValidades(CozinhaMontada):
         self.assertEqual(r.data[0]['lot_number'], 'L-AMANHA',
                          'Um lote sem validade está a passar à frente de um que expira amanhã.')
 
-    @unittest.expectedFailure
     def test_compra_devia_criar_o_lote_automaticamente(self):
-        """FALHA DE PROPÓSITO — em falta no motor (`inventory/stock.py`).
+        """Receber mercadoria cria o lote — ninguém o escreve à mão.
 
-        A entrada de mercadoria sobe o saldo e recalcula o custo, mas não cria
-        lote nenhum. Resultado: os lotes só existem se alguém os escrever à mão
-        num ecrã à parte, DEPOIS de receber. Numa cozinha, ninguém faz isso todos
-        os dias — e a validade da mercadoria passa a não estar em sítio nenhum.
+        A entrada subia o saldo e recalculava o custo, mas não criava lote nenhum:
+        os lotes só existiam se alguém os escrevesse num ecrã à parte DEPOIS de
+        receber. Numa cozinha isso não acontece todos os dias — e a validade da
+        mercadoria não estava em sítio nenhum.
+
+        O lote fica com o número do documento de entrada, que é o que permite
+        voltar atrás e descobrir de quem veio a mercadoria.
         """
         motor.move_in(self.armazem, self.carne, Decimal('20'), Decimal('4500'),
                       reference='GRN-TESTE')
         self.assertTrue(StockLot.objects.filter(item=self.carne).exists(),
                         'A entrada de mercadoria não criou lote com validade.')
 
-    @unittest.expectedFailure
     def test_saida_de_stock_devia_abater_o_lote_mais_antigo(self):
-        """FALHA DE PROPÓSITO — o FEFO é só INFORMATIVO (ver relatório).
+        """O FEFO deixou de ser uma lista informativa: a saída abate o lote.
 
-        Este é o mais importante dos três. O saldo do artigo (`StockLevel`) e as
-        quantidades dos lotes (`StockLot`) são dois números SEM LIGAÇÃO NENHUMA: o
-        motor de stock nunca toca nos lotes. Uma venda baixa o saldo do artigo e
-        deixa o lote intacto.
+        O saldo do artigo (`StockLevel`) e as quantidades dos lotes (`StockLot`)
+        eram dois números sem ligação nenhuma — o motor de stock nunca tocava nos
+        lotes. Uma venda baixava o saldo e deixava o lote intacto, e a soma dos
+        lotes deixava de bater com o stock do artigo ao primeiro consumo: os ecrãs
+        de validade mostravam mercadoria já consumida e a rastreabilidade do lote
+        — a que serve para responder a uma intoxicação alimentar ou a uma recolha
+        do fornecedor — não existia de facto.
 
-        Consequência prática: a soma dos lotes deixa de bater com o stock do
-        artigo logo ao primeiro consumo. Os ecrãs de validade passam a mostrar
-        mercadoria que já foi consumida, e a rastreabilidade do lote — a que serve
-        para responder a uma intoxicação alimentar ou a uma recolha do fornecedor
-        — não existe de facto.
+        Agora quem mexe no saldo mexe no lote, na mesma transação: saem 4 kg e é o
+        lote que expira primeiro que fica com 6.
         """
         self._lote('L-ANTIGO', 5, quantidade='10')
         motor.move_in(self.armazem, self.carne, Decimal('10'), Decimal('4500'), reference='ENT')
@@ -187,11 +205,85 @@ class LotesEValidades(CozinhaMontada):
         self.assertEqual(lote.quantity, Decimal('6.0000'),
                          'O consumo não abateu o lote mais perto da validade (FEFO não executa).')
 
+    def test_a_entrada_data_o_lote_pela_validade_do_artigo(self):
+        """O artigo diz quantos dias dura; a receção faz a conta.
+
+        É isto que faz a validade existir sem ninguém a escrever: recebeu-se
+        iogurte com 20 dias de validade, o lote fica datado para dentro de 20
+        dias e aparece na lista do economato no sítio certo.
+        """
+        self.carne.shelf_life_days = 20
+        self.carne.save(update_fields=['shelf_life_days'])
+        motor.move_in(self.armazem, self.carne, Decimal('5'), Decimal('4500'), reference='GRN-1')
+        lote = StockLot.objects.get(item=self.carne, lot_number='GRN-1')
+        self.assertEqual(lote.expiry_date, self.hoje + timedelta(days=20))
+
+    def test_receber_duas_vezes_o_mesmo_lote_nao_faz_dois_lotes(self):
+        """Soma ao que lá está — senão a lista de validades enchia-se de linhas
+        repetidas da mesma prateleira."""
+        motor.move_in(self.armazem, self.carne, Decimal('5'), Decimal('4500'), reference='GRN-2')
+        motor.move_in(self.armazem, self.carne, Decimal('3'), Decimal('4500'), reference='GRN-2')
+        lotes = StockLot.objects.filter(item=self.carne, lot_number='GRN-2')
+        self.assertEqual(lotes.count(), 1)
+        self.assertEqual(lotes.first().quantity, Decimal('8.0000'))
+
+    def test_a_soma_dos_lotes_bate_sempre_com_o_saldo_do_armazem(self):
+        """A conta que antes deixava de bater à primeira saída. Se estes dois
+        números divergirem, nada do que o módulo promete é verdade."""
+        motor.move_in(self.armazem, self.carne, Decimal('20'), Decimal('4500'), reference='GRN-3')
+        motor.move_out(self.armazem, self.carne, Decimal('7'), reference='CONSUMO')
+        motor.adjust(self.armazem, self.carne, Decimal('11'), reference='INV-1')
+        self.assertEqual(self._saldo(self.carne), Decimal('11.0000'))
+        self.assertEqual(self._lotes(self.carne), Decimal('11.0000'))
+
+    def test_o_lote_viaja_com_a_mercadoria_na_transferencia(self):
+        """A mesma caixa não muda de validade por ter mudado de armazém.
+
+        Sem isto, o destino recebia um lote novo sem data e a cadeia de frio da
+        HACCP deixava de se poder seguir de ponta a ponta.
+        """
+        self.carne.shelf_life_days = 7
+        self.carne.save(update_fields=['shelf_life_days'])
+        motor.move_in(self.armazem, self.carne, Decimal('10'), Decimal('4500'), reference='L-FORNEC')
+        motor.transfer(self.armazem, self.outro, self.carne, Decimal('4'), reference='TRF-1')
+        no_bar = StockLot.objects.get(warehouse=self.outro, item=self.carne)
+        self.assertEqual(no_bar.lot_number, 'L-FORNEC')
+        self.assertEqual(no_bar.expiry_date, self.hoje + timedelta(days=7))
+        self.assertEqual(no_bar.quantity, Decimal('4.0000'))
+
+    def test_lote_esgotado_sai_da_lista_de_trabalho_e_das_contagens(self):
+        """Mandar o empregado procurar mercadoria que já se gastou é pior do que
+        não ter lista — e o painel do dono deixava de dizer a verdade."""
+        self.carne.shelf_life_days = 2
+        self.carne.save(update_fields=['shelf_life_days'])
+        motor.move_in(self.armazem, self.carne, Decimal('5'), Decimal('4500'), reference='L-GASTO')
+        motor.move_out(self.armazem, self.carne, Decimal('5'), reference='CONSUMO')
+        r = self.client.get(f'/api/inventory/wh/lots/?warehouse={self.armazem.id}')
+        self.assertEqual([linha['lot_number'] for linha in r.data], [])
+        painel = self.client.get('/api/inventory/wh/dashboard/')
+        self.assertEqual(painel.data['lots_expiring_30d'], 0)
+        historico = self.client.get(f'/api/inventory/wh/lots/?warehouse={self.armazem.id}&all=1')
+        self.assertEqual([linha['lot_number'] for linha in historico.data], ['L-GASTO'])
+
+    def test_consumo_sem_lotes_nao_trava_a_venda_ao_balcao(self):
+        """REGRA DO BALCÃO: numa casa que ainda não registava lotes, metade do
+        stock não tem lote nenhum. Travar aqui era travar o serviço por causa de
+        registos que ninguém chegou a fazer — o movimento passa e diz na nota o
+        que ficou sem lote, para alguém corrigir."""
+        motor.move_in(self.armazem, self.carne, Decimal('2'), Decimal('4500'), reference='L-POUCO')
+        mov = motor.move_out(self.armazem, self.carne, Decimal('5'), reference='VENDA',
+                             permitir_negativo=True)
+        self.assertEqual(self._saldo(self.carne), Decimal('-3.0000'))
+        self.assertIn('sem lote identificado: 3', mov.note)
+
 
 # ==========================================================================
 # FICHA TÉCNICA — o custo do prato
 # ==========================================================================
-class FichaTecnicaEProducao(CozinhaMontada):
+class CozinhaComIngredientes(CozinhaMontada):
+    """Base das duas coisas que se fazem com uma ficha técnica: calcular o custo
+    (abaixo) e produzir de facto (mais abaixo). Sem testes próprios — só o cenário:
+    ingredientes em stock ao custo real, e a ficha do bitoque por gravar."""
 
     def setUp(self):
         super().setUp()
@@ -208,6 +300,9 @@ class FichaTecnicaEProducao(CozinhaMontada):
                 {'ingredient_item': self.batata.id, 'uom': self.kg.id, 'quantity': '0.150',
                  'waste_percentage': '0'},
             ]}, format='json')
+
+
+class FichaTecnicaEProducao(CozinhaComIngredientes):
 
     def test_custo_do_prato_sai_do_custo_medio_real_dos_ingredientes(self):
         """A conta que decide o preço da ementa.
@@ -287,25 +382,27 @@ class FichaTecnicaEProducao(CozinhaMontada):
         self.assertEqual(r.data['ingredients'], [])
         self.assertEqual(Decimal(r.data['total_cost']), Decimal('0'))
 
-    @unittest.expectedFailure
     def test_vender_um_produzido_devia_consumir_os_ingredientes(self):
-        """FALHA DE PROPÓSITO — a PRODUÇÃO POR FICHA TÉCNICA NÃO EXISTE.
+        """FALHA DE PROPÓSITO — falta LIGAR o motor à venda do POS (`pos/`).
 
-        A ficha técnica serve hoje só para CALCULAR o custo. Quem decide, na
-        venda, se se consomem os ingredientes é `pos.consumption._active_recipe`,
-        e essa função devolve `None` sempre — tem um `return None` antes de todo o
-        código, e o código a seguir procura uma app `production` que não existe no
-        sistema (e procura campos — `recipe.lines`, `component_item`,
-        `yield_quantity` — que não são os de `inventory.Recipe`: aqui chamam-se
-        `ingredients`, `ingredient_item`, `doses`).
+        Quem decide, na venda, se se consomem os ingredientes é
+        `pos.consumption._active_recipe`, e essa função devolve `None` sempre: tem
+        um `return None` antes de todo o código, e o código a seguir procura uma
+        app `production` que não existe e campos que não são os de
+        `inventory.Recipe` (`recipe.lines`, `component_item`, `yield_quantity`, em
+        vez de `ingredients`, `ingredient_item`, `doses`).
 
         O que isto faz na prática: vender um bitoque dá saída de UM BITOQUE do
         armazém — um artigo que nunca foi comprado e nunca lá entrou. O bife e as
-        batatas nunca saem do stock. O economato fica com stock fantasma de carne
-        e, no artigo produzido, um saldo negativo que cresce todos os dias.
+        batatas nunca saem do stock. O economato fica com carne fantasma e, no
+        artigo produzido, um saldo negativo que cresce todos os dias.
 
-        É a maior lacuna encontrada nesta auditoria (ver relatório). Está fora da
-        área que esta auditoria podia corrigir (`pos/`, `inventory/`).
+        O MOTOR QUE RESOLVE ISTO JÁ EXISTE E ESTÁ TESTADO neste ficheiro:
+        `inventory.production.consumir_por_ficha(armazem, artigo, quantidade,
+        permitir_negativo=True)` — dá saída dos ingredientes e devolve `None`
+        quando o artigo não tem ficha (revenda), que é exactamente o ramo que
+        `pos/consumption.py` já tem. Falta a ligação, e `pos/` é área de outra
+        pessoa. Este teste fica a falhar de propósito até ela ser feita.
         """
         self._gravar_ficha()
         from pos.consumption import _active_recipe
@@ -314,22 +411,178 @@ class FichaTecnicaEProducao(CozinhaMontada):
                              'A venda de um artigo produzido não encontra a ficha técnica: '
                              'os ingredientes nunca saem do stock.')
 
-    @unittest.expectedFailure
-    def test_devia_haver_uma_ordem_de_producao(self):
-        """FALHA DE PROPÓSITO — não há produção nenhuma no sistema.
+    def test_motor_de_consumo_por_ficha_tira_os_ingredientes_e_nao_o_prato(self):
+        """O que a venda do POS tem de chamar — já pronto e a funcionar.
 
-        Uma cozinha produz em lote: faz-se 20 litros de molho de manhã, consomem-se
-        os ingredientes de uma vez e fica stock de molho para o serviço. Isso é uma
-        ORDEM DE PRODUÇÃO: consome ingredientes, cria o produzido, e dá-lhe um
-        custo (a soma do que entrou). Não existe nenhum modelo, endpoint ou serviço
-        disto — nem em `ite` (vazia) nem em `inventory`.
-
-        Sem produção, o custo do produzido nunca se forma a partir dos
-        ingredientes: fica a zero, e tudo o que o use (margens, valorização do
-        stock de produzidos) está errado por omissão.
+        Vender 5 bitoques gasta 1 kg de bife (5 x 200 g) e 750 g de batata; o
+        bitoque não sai do armazém, porque nunca lá entrou nenhum.
         """
-        from django.urls import NoReverseMatch, reverse
-        try:
-            reverse('production-orders-list')
-        except NoReverseMatch:
-            self.fail('Não existe nenhum ecrã/endpoint de ordens de produção no sistema.')
+        from inventory.production import consumir_por_ficha
+        self._gravar_ficha()
+        movimentos = consumir_por_ficha(self.armazem, self.bitoque, Decimal('5'),
+                                        reference='TICKET-1', permitir_negativo=True)
+        self.assertEqual(len(movimentos), 2)
+        self.assertEqual(self._saldo(self.carne), Decimal('99.0000'))
+        self.assertEqual(self._saldo(self.batata), Decimal('99.2500'))
+        self.assertEqual(self._saldo(self.bitoque), Decimal('0'))
+
+    def test_consumo_por_ficha_de_um_artigo_de_revenda_devolve_nada(self):
+        """Uma cerveja não tem ficha: o motor diz "não é comigo" e quem chama dá
+        saída do próprio artigo. É o que mantém o POS a vender sem fichas."""
+        from inventory.production import consumir_por_ficha
+        self.assertIsNone(consumir_por_ficha(self.armazem, self.carne, Decimal('1')))
+
+    def test_consumo_na_venda_nao_trava_quando_falta_ingrediente(self):
+        """REGRA DO BALCÃO: a venda passa sempre.
+
+        Há 100 kg de bife; vender 1.000 bitoques precisa de 200 kg. Ao balcão não
+        se trava a venda com o cliente à frente — o saldo vai a negativo de
+        propósito e o ecrã de existências assinala-o a vermelho para alguém
+        corrigir. Travar é para as operações manuais, onde há uma pessoa ao ecrã.
+        """
+        from inventory.production import consumir_por_ficha
+        self._gravar_ficha()
+        consumir_por_ficha(self.armazem, self.bitoque, Decimal('1000'),
+                           reference='TICKET-2', permitir_negativo=True)
+        self.assertEqual(self._saldo(self.carne), Decimal('-100.0000'),
+                         'A venda ao balcão foi travada por falta de stock.')
+
+
+# ==========================================================================
+# ORDENS DE PRODUÇÃO — 20 litros de molho de manhã, de uma vez
+# ==========================================================================
+class OrdensDeProducao(CozinhaComIngredientes):
+
+    def _ordem(self, quantidade='10', artigo=None, lote='MOLHO-DIA', dias_validade=3):
+        r = self.client.post('/api/inventory/production/orders/', {
+            'warehouse': self.armazem.id, 'item': (artigo or self.bitoque).id,
+            'quantity': quantidade, 'lot_number': lote,
+            'expiry_date': str(self.hoje + timedelta(days=dias_validade)),
+        }, format='json')
+        self.assertEqual(r.status_code, 201, r.data)
+        return r.data
+
+    def _produzir(self, ordem):
+        return self.client.post('/api/inventory/production/orders/%s/produce/' % ordem['id'],
+                                {}, format='json')
+
+    def test_devia_haver_uma_ordem_de_producao(self):
+        """O ecrã existe: há um endpoint de ordens de produção.
+
+        Era este o buraco: nem modelo, nem endpoint, nem serviço — uma cozinha não
+        tinha como produzir em lote, e o custo do produzido nunca se formava a
+        partir dos ingredientes.
+        """
+        from django.urls import reverse
+        self.assertTrue(reverse('production-orders-list'))
+
+    def test_a_ordem_em_rascunho_ainda_nao_mexeu_em_stock(self):
+        """Criar a ordem é planear. Enquanto não se produz, o armazém está intacto
+        — senão ninguém podia preparar o trabalho do dia seguinte."""
+        self._ordem('10')
+        self.assertEqual(self._saldo(self.carne), Decimal('100.0000'))
+
+    def test_produzir_consome_os_ingredientes_da_ficha(self):
+        """Produzir 10 bitoques tira 2 kg de bife (10 x 200 g) e 1,5 kg de batata."""
+        self._gravar_ficha()
+        r = self._produzir(self._ordem('10'))
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertEqual(self._saldo(self.carne), Decimal('98.0000'))
+        self.assertEqual(self._saldo(self.batata), Decimal('98.5000'))
+
+    def test_o_produzido_entra_no_armazem_com_o_custo_do_que_se_gastou(self):
+        """O NÚMERO QUE FALTAVA À CASA.
+
+        10 bitoques: 2 kg de bife a 5.000 = 10.000, mais 1,5 kg de batata a 400 =
+        600. Custo total 10.600, custo de cada bitoque 1.060 — formado a partir do
+        que saiu do armazém, não estimado. Sem isto, o produzido entrava a custo
+        zero e a margem do prato era uma invenção.
+        """
+        self._gravar_ficha()
+        r = self._produzir(self._ordem('10'))
+        self.assertEqual(Decimal(r.data['total_cost']), Decimal('10600.0000'))
+        self.assertEqual(Decimal(r.data['unit_cost']), Decimal('1060.0000'))
+        self.assertEqual(self._saldo(self.bitoque), Decimal('10.0000'))
+        self.bitoque.refresh_from_db()
+        self.assertEqual(self.bitoque.current_average_cost, Decimal('1060.0000'),
+                         'O custo médio do produzido não se formou a partir dos ingredientes.')
+
+    def test_o_produzido_fica_com_lote_e_validade_para_o_rotulo(self):
+        """O molho feito hoje dura três dias: é a data que vai no rótulo do
+        tabuleiro e a que a HACCP pede. Sem lote, o produzido ficava no armazém
+        sem validade nenhuma."""
+        self._gravar_ficha()
+        self._produzir(self._ordem('10', dias_validade=3))
+        lote = StockLot.objects.get(item=self.bitoque)
+        self.assertEqual(lote.lot_number, 'MOLHO-DIA')
+        self.assertEqual(lote.expiry_date, self.hoje + timedelta(days=3))
+        self.assertEqual(lote.quantity, Decimal('10.0000'))
+
+    def test_a_ordem_guarda_o_que_consumiu_de_facto(self):
+        """A ficha técnica muda e o custo médio também: sem esta fotografia não
+        havia como explicar, em Novembro, o custo do molho de Maio."""
+        self._gravar_ficha()
+        r = self._produzir(self._ordem('10'))
+        consumos = {c['item_code']: c for c in r.data['consumptions']}
+        self.assertEqual(Decimal(consumos['C001']['quantity']), Decimal('2.0000'))
+        self.assertEqual(Decimal(consumos['C001']['total_cost']), Decimal('10000.0000'))
+
+    def test_o_desperdicio_da_ficha_sai_do_armazem(self):
+        """Para pôr 200 g no prato gastam-se 240 g: é esse quilo e meio a mais, ao
+        fim do mês, que explica porque é que o stock nunca bate."""
+        self._gravar_ficha(desperdicio_carne='20')
+        self._produzir(self._ordem('10'))
+        self.assertEqual(self._saldo(self.carne), Decimal('97.6000'))
+
+    def test_a_ficha_de_4_doses_rende_4_doses(self):
+        """A ficha dá para 4 doses: produzir 4 gasta a ficha UMA vez (200 g de
+        bife), não quatro. Trocar isto multiplica o consumo por quatro."""
+        self._gravar_ficha(doses=4)
+        self._produzir(self._ordem('4'))
+        self.assertEqual(self._saldo(self.carne), Decimal('99.8000'))
+
+    def test_produzir_sem_stock_e_recusado_e_nada_se_consome(self):
+        """AQUI TRAVA-SE, e é o contrário do balcão: há um chefe ao ecrã, que pode
+        receber a mercadoria ou corrigir a contagem. Produzir com saldo negativo
+        estragava o custo médio do ingrediente e, com ele, o custo de todos os
+        pratos que o levem."""
+        self._gravar_ficha()
+        r = self._produzir(self._ordem('1000'))   # precisava de 200 kg de bife; há 100
+        self.assertEqual(r.status_code, 409, r.data)
+        self.assertEqual(self._saldo(self.carne), Decimal('100.0000'),
+                         'A produção recusada deixou ingredientes consumidos pelo caminho.')
+        self.assertEqual(self._saldo(self.batata), Decimal('100.0000'))
+
+    def test_produzir_um_artigo_sem_ficha_tecnica_e_recusado(self):
+        """Sem ficha não há o que consumir nem como formar o custo: produzir às
+        cegas metia no armazém mercadoria a custo zero."""
+        r = self._produzir(self._ordem('5'))      # a ficha do bitoque não foi gravada
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('ficha técnica', r.data['detail'])
+
+    def test_nao_se_produz_a_mesma_ordem_duas_vezes(self):
+        """Dois cliques no botão não fazem 20 bitoques com 10 de ingredientes."""
+        self._gravar_ficha()
+        ordem = self._ordem('10')
+        self.assertEqual(self._produzir(ordem).status_code, 200)
+        self.assertEqual(self._produzir(ordem).status_code, 400)
+        self.assertEqual(self._saldo(self.bitoque), Decimal('10.0000'))
+
+    def test_a_conferencia_antes_de_produzir_diz_o_que_falta(self):
+        """O chefe vê o que a ordem vai gastar ANTES de começar — e não a meio."""
+        self._gravar_ficha()
+        ordem = self._ordem('1000')
+        r = self.client.get('/api/inventory/production/orders/%s/requirements/' % ordem['id'])
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(r.data['can_produce'])
+        carne = next(l for l in r.data['lines'] if l['item_code'] == 'C001')
+        self.assertEqual(Decimal(carne['needed']), Decimal('200.0000'))
+        self.assertTrue(carne['missing'])
+
+    def test_uma_ordem_ja_produzida_nao_se_apaga(self):
+        """Mexeu no stock: apagá-la deixava movimentos sem documento por trás."""
+        self._gravar_ficha()
+        ordem = self._ordem('10')
+        self._produzir(ordem)
+        r = self.client.delete('/api/inventory/production/orders/%s/' % ordem['id'])
+        self.assertEqual(r.status_code, 400)

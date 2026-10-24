@@ -688,6 +688,24 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
             <div className="pt-2">
               <Check checked={d.no_stock_movement} onChange={(v) => set('no_stock_movement', v)} label="Não movimenta stock" />
             </div>
+            <div className="pt-2">
+              <Row label="Validade (dias):" w="w-[130px]">
+                <input type="number" min={0} value={d.shelf_life_days ?? ''}
+                  onChange={(e) => set('shelf_life_days', e.target.value === '' ? null : Number(e.target.value))}
+                  placeholder="(sem prazo)" className={inputCls} style={inputStyle}
+                  title="Quantos dias dura este artigo depois de entrar no armazém." />
+              </Row>
+              {/* O PRAZO DO ARTIGO É O QUE DATA O LOTE SOZINHO. Quem recebe
+                  mercadoria não escreve a validade de cada caixa: escreve-se uma
+                  vez aqui, e cada entrada deste artigo nasce com o prazo a contar
+                  do dia em que chegou. Sem isto, só havia validade onde alguém a
+                  tivesse escrito à mão — e o FEFO mostrava meia prateleira. */}
+              <div className="text-[11px] text-[#6B7280]">
+                Cada entrada deste artigo fica com esta validade a contar do dia em que
+                entra. É o que põe o lote na lista de validades sem ninguém a escrever
+                datas à mão (a guia do fornecedor, quando a traz, manda sobre isto).
+              </div>
+            </div>
             <div className="text-[11px] text-[#6B7280] pt-2">
               Compra-se à <b>caixa</b>, guarda-se em <b>unidades</b>, vende-se à <b>unidade</b> — o sistema converte sozinho.
             </div>

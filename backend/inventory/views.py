@@ -145,9 +145,17 @@ class StockMovementViewSet(viewsets.ReadOnlyModelViewSet):
         wh, item = self._wh_item(request)
         if not wh or not item:
             return Response({'detail': 'Armazém e artigo obrigatórios.'}, status=400)
-        m = stock_engine.move_out(wh, item, request.data.get('quantity', 0),
-                                  reference=request.data.get('reference', 'SAIDA'), note=request.data.get('note'),
-                                  by=request.data.get('by'))
+        # O motor recusa tirar o que não existe (ver inventory/stock.py). Sem
+        # apanhar aqui, essa recusa chegava ao ecrã como "erro interno" — e
+        # quem está a dar a saída não ficava a saber que o problema era só
+        # não haver stock, nem quanto havia.
+        from inventory.stock import StockInsuficiente
+        try:
+            m = stock_engine.move_out(wh, item, request.data.get('quantity', 0),
+                                      reference=request.data.get('reference', 'SAIDA'), note=request.data.get('note'),
+                                      by=request.data.get('by'))
+        except StockInsuficiente as e:
+            return Response({'detail': str(e)}, status=409)
         return Response(StockMovementSerializer(m).data, status=201)
 
     @action(detail=False, methods=['post'])

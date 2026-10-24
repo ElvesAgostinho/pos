@@ -4107,7 +4107,15 @@ class StockDocViewSet(viewsets.ModelViewSet):
                 return Response({'detail': 'Stock insuficiente na origem (parâmetro 8277):\n'
                                            + '\n'.join(faltas)}, status=400)
 
-        n = doc.post(user=(request.user.username if request.user.is_authenticated else None))
+        # O motor de stock RECUSA tirar o que não existe (ver inventory/stock.py).
+        # Sem apanhar aqui, essa recusa chegava ao ecrã como "erro interno" e o
+        # documento ficava por lançar sem ninguém saber porquê — quando a razão é
+        # dizível: falta mercadoria, e sabe-se quanta.
+        from inventory.stock import StockInsuficiente
+        try:
+            n = doc.post(user=(request.user.username if request.user.is_authenticated else None))
+        except StockInsuficiente as e:
+            return Response({'detail': str(e)}, status=409)
         return Response({'detail': f'{doc.number} lançado — {n} movimento(s) de stock.',
                          'movements': n, 'document': self.get_serializer(doc).data})
 
@@ -4122,19 +4130,54 @@ class StockDocViewSet(viewsets.ModelViewSet):
         doc = self.get_queryset().select_for_update().get(pk=pk)
         if doc.voided:
             return Response({'detail': 'Já estava anulado.'}, status=400)
+        quem = request.user.username if request.user.is_authenticated else None
         revertidos = 0
         if doc.posted:
-            from inventory.models import StockMovement, StockLevel
-            for mv in StockMovement.objects.filter(reference=doc.number):
-                sinal = -1 if mv.movement_type in ('GRN', 'IN', 'TRANSFER_IN') else 1
-                if mv.movement_type == 'ADJUST':
-                    sinal = -1
-                nivel = StockLevel.objects.filter(item=mv.item, warehouse=mv.warehouse).first()
-                if nivel:
-                    nivel.quantity_on_hand = (nivel.quantity_on_hand or 0) + sinal * mv.quantity
-                    nivel.save(update_fields=['quantity_on_hand'])
-                revertidos += 1
-            StockMovement.objects.filter(reference=doc.number).delete()
+            from inventory import stock as motor
+            from inventory.models import StockMovement
+
+            # ANULAR DESFAZ TAMBÉM O LOTE.
+            #
+            # Isto mexia no StockLevel à mão e não tocava nos lotes: anular uma
+            # compra devolvia o saldo, mas a mercadoria continuava em lote, com
+            # validade, à espera de ser consumida — e a soma dos lotes passava a ser
+            # maior do que o stock. A reversão passa pelo motor, que abate o lote que
+            # a entrada criou e repõe o que a saída tirou.
+            #
+            # E os movimentos NÃO se apagam: fica a entrada e fica a reversão, cada
+            # uma com a sua data. Um livro de movimentos de que se arrancam folhas
+            # não serve para explicar nada a ninguém — nem ao dono, nem à AGT.
+            if doc.series.kind == 'INVENTORY':
+                # UMA CONTAGEM REPÕE-SE COM O SALDO QUE HAVIA ANTES DELA, não com a
+                # magnitude do ajuste: o movimento de ajuste guarda |diferença| e
+                # perde o sinal. Isto tratava TODO o ajuste como se tivesse sido uma
+                # entrada e subtraía — anular uma contagem que encontrara 3 garrafas
+                # a menos tirava outras 3 em vez de as devolver.
+                for l in doc.lines.select_related('item'):
+                    if l.balance_before is None:
+                        continue
+                    motor.adjust(l.warehouse or doc.warehouse, l.item, l.balance_before,
+                                 reference=f'ANUL {doc.number}', by=quem)
+                    revertidos += 1
+            else:
+                for mv in (StockMovement.objects.filter(reference=doc.number)
+                           .select_related('item', 'warehouse')):
+                    if mv.movement_type in ('GRN', 'IN', 'TRANSFER_IN'):
+                        # Mercadoria que já foi consumida não volta: o saldo pode ir a
+                        # negativo e tem de ir, senão ficava stock no sistema que não
+                        # está no armazém. O ecrã de existências assinala-o a vermelho
+                        # para alguém o corrigir; travar aqui era deixar o documento
+                        # errado lançado para sempre.
+                        motor.move_out(mv.warehouse, mv.item, mv.quantity,
+                                       reference=f'ANUL {doc.number}',
+                                       note=f'Anulação de {doc.number}', by=quem,
+                                       permitir_negativo=True)
+                    else:
+                        motor.move_in(mv.warehouse, mv.item, mv.quantity, mv.unit_cost,
+                                      reference=f'ANUL {doc.number}',
+                                      note=f'Anulação de {doc.number}', by=quem,
+                                      atualizar_custo=False)
+                    revertidos += 1
         doc.voided = True
         doc.posted = False
         doc.save(update_fields=['voided', 'posted'])
@@ -5250,7 +5293,11 @@ class PosOpenDrawerView(APIView):
             if semAparelho:
                 detalhe += (f' Há {semAparelho} posto(s) de caixa criado(s) SEM aparelho — '
                             f'é preciso escolher-lhes o aparelho.')
-            return Response({'detail': detalhe}, status=status.HTTP_400_BAD_REQUEST)
+            # `status` não está importado neste módulo — é a ÚNICA utilização dele
+            # aqui, e dava NameError: 500. A ironia é o sítio: este ramo existe
+            # precisamente para EXPLICAR ao empregado o que falta configurar, e
+            # numa casa sem impressora de caixa o que ele via era "erro interno".
+            return Response({'detail': detalhe}, status=400)
 
         job = PrintJob.objects.create(
             job_type='DRAWER', outlet=outlet, target=posto.device.name,

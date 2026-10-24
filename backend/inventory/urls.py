@@ -9,6 +9,7 @@ from .pos_config import (
     ItemGroupViewSet, ItemFamilyViewSet, ItemSubFamilyViewSet, PrinterViewSet, PosItemViewSet,
     ReportDefinitionViewSet,
 )
+from .production import ProductionOrderViewSet
 from .wh import (
     StockLocationViewSet, StockLotViewSet, StockTransferViewSet, InventoryCountViewSet,
     WarehouseDashboardView, WarehouseCostingView,
@@ -38,6 +39,9 @@ router.register(r'wh/locations', StockLocationViewSet, basename='inv-location')
 router.register(r'wh/lots', StockLotViewSet, basename='inv-lot')
 router.register(r'wh/transfers', StockTransferViewSet, basename='inv-transfer')
 router.register(r'wh/counts', InventoryCountViewSet, basename='inv-count')
+# Produção — ordens de fabrico (consome ingredientes pela ficha técnica e forma o
+# custo do produzido). O nome 'production-orders' é o que o ecrã e os testes usam.
+router.register(r'production/orders', ProductionOrderViewSet, basename='production-orders')
 
 urlpatterns = [
     path('wh/dashboard/', WarehouseDashboardView.as_view(), name='wh-dashboard'),

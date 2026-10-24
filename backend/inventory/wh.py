@@ -75,6 +75,13 @@ class StockLotViewSet(viewsets.ModelViewSet):
         expiring = self.request.query_params.get('expiring')
         if wh:
             qs = qs.filter(warehouse_id=wh)
+        # LOTES ESGOTADOS FORA DA LISTA DE TRABALHO. Agora que cada saída abate os
+        # lotes, um armazém com meio ano de serviço tem centenas de lotes a zero.
+        # Esta lista é a que o empregado do economato segue para saber o que gastar
+        # primeiro: mandá-lo procurar mercadoria que já não existe era pior do que
+        # não ter lista. O histórico completo continua a um clique (?all=1).
+        if self.request.query_params.get('all') not in ('1', 'true'):
+            qs = qs.filter(quantity__gt=0)
         if expiring == '1':
             qs = qs.filter(expiry_date__isnull=False, expiry_date__lte=timezone.localdate() + timedelta(days=30))
         return qs
@@ -135,13 +142,27 @@ class StockTransferViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Transferência já confirmada.'}, status=400)
         if not t.lines.exists():
             return Response({'detail': 'Sem linhas para transferir.'}, status=400)
-        with transaction.atomic():
-            for ln in t.lines.select_related('item').all():
-                stock_engine.transfer(t.source, t.destination, ln.item, ln.quantity,
-                                       reference=t.number, by=request.user.get_username())
-            t.status = 'CONFIRMED'
-            t.confirmed_at = timezone.now()
-            t.save(update_fields=['status', 'confirmed_at'])
+        # UMA TRANSFERÊNCIA NÃO PODE INVENTAR INVENTÁRIO NOS DOIS SÍTIOS.
+        #
+        # Mover 200 de um armazém com 50 deixava a origem a −150 e o destino com
+        # 200 que nunca lá entraram. O motor passou a recusar; se não se apanhar
+        # a recusa aqui, ela chega ao ecrã como "erro interno" e quem está a
+        # confirmar não fica a saber que o problema é só não haver stock.
+        #
+        # A transacção é atómica de propósito: uma transferência de cinco linhas
+        # em que a terceira não tem stock não pode deixar as duas primeiras
+        # movidas e a guia por confirmar.
+        from inventory.stock import StockInsuficiente
+        try:
+            with transaction.atomic():
+                for ln in t.lines.select_related('item').all():
+                    stock_engine.transfer(t.source, t.destination, ln.item, ln.quantity,
+                                          reference=t.number, by=request.user.get_username())
+                t.status = 'CONFIRMED'
+                t.confirmed_at = timezone.now()
+                t.save(update_fields=['status', 'confirmed_at'])
+        except StockInsuficiente as e:
+            return Response({'detail': str(e)}, status=409)
         return Response(self.get_serializer(t).data)
 
 

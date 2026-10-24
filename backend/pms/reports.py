@@ -46,9 +46,19 @@ def _daterange(d1, d2):
 
 
 def _active_reservations(request, date_from, date_to):
-    """Reservas com pelo menos uma noite dentro do período — nunca canceladas/no-show."""
+    """Reservas com pelo menos uma noite dentro do período — nunca canceladas,
+    no-show nem LISTA DE ESPERA.
+
+    A lista de espera não é uma venda: é um pedido ALÉM da capacidade, à espera
+    de que alguém desista. A disponibilidade (`availability.py`) sempre a tratou
+    assim — não consome inventário —, mas estes relatórios contavam-na como
+    estadia: com três quartos e duas pessoas em espera, a ocupação dava mais de
+    100% e o dono via no ADR/RevPAR receita de noites que nunca foram vendidas.
+    O catálogo de relatórios (`reports_catalog.VIVAS`) já a excluía; era esta
+    cópia da regra que estava fora do sítio.
+    """
     qs = scope_qs(request, Reservation.objects.select_related('room_type', 'rate_plan', 'room'))
-    qs = qs.exclude(status__in=['CANCELLED', 'NO_SHOW'])
+    qs = qs.exclude(status__in=['CANCELLED', 'NO_SHOW', 'WAITLIST'])
     qs = qs.filter(check_in__lt=date_to + timedelta(days=1), check_out__gt=date_from)
     return list(qs)
 

@@ -1890,3 +1890,87 @@ class GiftCardSemMeioConfiguradoTests(CasaDoTerminal):
                          Decimal('10000'),
                          'O cartão-presente entrou no fecho de caixa como dinheiro na '
                          'gaveta — sobra fantasma, e a suspeita cai em quem está ao balcão.')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 12 · O STOCK NUNCA TRAVA O BALCÃO
+# ══════════════════════════════════════════════════════════════════════════════
+
+class StockNaVendaTests(CasaDoTerminal):
+    """VENDER COM O CLIENTE À FRENTE — e o armazém com o saldo errado.
+
+    O motor de stock RECUSA saídas que deixem o saldo negativo, e tem razão: o
+    custo médio é recalculado contra a quantidade total, e com saldo negativo a
+    compra seguinte pondera contra uma quantidade que não existe — a margem de
+    cada prato passa a ser uma invenção.
+
+    Mas o balcão é a exceção, e é uma exceção de ofício: ninguém pode ficar sem
+    conseguir vender uma cerveja porque a entrega de ontem não foi registada, com
+    o cliente à frente e a fila a crescer. Aqui o saldo vai a negativo de
+    propósito, o ecrã de existências marca-o a vermelho, e alguém corrige depois
+    — sem o serviço parar.
+    """
+
+    def setUp(self):
+        super().setUp()
+        from inventory.models import Warehouse
+        self.armazem = Warehouse.objects.create(name='Economato', code='ARM',
+                                                hotel=self.hotel, is_main=True)
+        self.outlet.warehouse = self.armazem
+        self.outlet.save(update_fields=['warehouse'])
+
+    def _saldo(self, item):
+        from inventory.models import StockLevel
+        lvl = StockLevel.objects.filter(warehouse=self.armazem, item=item).first()
+        return lvl.quantity_on_hand if lvl else Decimal('0')
+
+    def test_a_venda_da_saida_de_stock_no_armazem_do_ponto_de_venda(self):
+        """Fecha-se o ciclo: comprar → ter → vender → consumir. Sem esta saída, o
+        stock do economato nunca baixava e as encomendas eram feitas a olho."""
+        from inventory import stock as motor
+        motor.move_in(self.armazem, self.cerveja, Decimal('10'), unit_cost=Decimal('800'),
+                      reference='ENTRADA', note='teste')
+        conta = self.abrir_conta()
+        self.pedir(conta, self.cerveja, 3)
+        self.cobrar(conta)
+        self.assertEqual(self._saldo(self.cerveja), Decimal('7.000'),
+                         'Vendeu 3 cervejas de 10 e o armazém não desceu para 7.')
+
+    def test_vender_sem_stock_nao_trava_a_venda(self):
+        """O armazém diz zero (a entrega não foi lançada) e o cliente está à
+        frente a pagar. A venda faz-se; o saldo fica negativo, a assinalar que
+        falta lançar a entrada. Travar aqui era perder a venda por um erro de
+        escritório."""
+        conta = self.abrir_conta()
+        self.pedir(conta, self.cerveja, 2)
+        r = self.cobrar(conta)
+        self.assertEqual(r.status_code, 200, r.content[:400])
+        self.assertEqual(POSTicket.objects.get(pk=conta).status, 'PAID',
+                         'A falta de stock no armazém travou uma venda já paga.')
+        self.assertEqual(self._saldo(self.cerveja), Decimal('-2.000'),
+                         'A venda passou mas não deixou rasto no stock — a falta deixa '
+                         'de aparecer a vermelho e ninguém a vai corrigir.')
+
+    def test_o_stock_so_sai_uma_vez_por_conta(self):
+        """A segunda passagem (reimpressão, sincronização, duplo toque) não pode
+        abater o stock outra vez — era inventário a desaparecer sem venda."""
+        from inventory import stock as motor
+        motor.move_in(self.armazem, self.cerveja, Decimal('10'), unit_cost=Decimal('800'),
+                      reference='ENTRADA', note='teste')
+        conta = self.abrir_conta()
+        self.pedir(conta, self.cerveja, 1)
+        self.cobrar(conta)
+        from pos.consumption import consume_ticket_stock
+        consume_ticket_stock(POSTicket.objects.get(pk=conta))
+        self.assertEqual(self._saldo(self.cerveja), Decimal('9.000'),
+                         'O stock foi abatido duas vezes pela mesma venda.')
+
+    def test_artigo_sem_existencia_fisica_nao_mexe_no_stock(self):
+        """Couvert, taxa de serviço, "Diversos": vendem-se e não têm existência.
+        Sem esta caixa na ficha, o stock deles ficava negativo para sempre."""
+        taxa = self.artigo('A020', 'Taxa de serviço', '500', no_stock_movement=True)
+        conta = self.abrir_conta()
+        self.pedir(conta, taxa, 1)
+        self.cobrar(conta)
+        self.assertEqual(self._saldo(taxa), Decimal('0'),
+                         'Uma taxa de serviço mexeu no stock do economato.')

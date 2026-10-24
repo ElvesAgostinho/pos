@@ -282,7 +282,10 @@ class GoodsReceiptViewSet(viewsets.ModelViewSet):
                     grn.delivery_warehouse, line.item, line.quantity_received, line.unit_cost,
                     reference=grn.receipt_number, note=f'Receção {grn.receipt_number}',
                     by=(request.user.username if request.user.is_authenticated else None),
-                    mtype='GRN')
+                    mtype='GRN',
+                    # O lote e o prazo da GUIA DO FORNECEDOR. Em branco, o motor usa
+                    # o nº da receção como lote e a validade da ficha do artigo.
+                    lote=line.lot_number, validade=line.expiry_date)
             grn.status = 'Validated'
             grn.save()  # save completo dispara o post_save do SRM
             avisos = _fechar_ou_atualizar_encomenda(grn.purchase_order)
@@ -351,7 +354,14 @@ class GoodsReceiptViewSet(viewsets.ModelViewSet):
                         reference=grn.receipt_number,
                         note=f'Estorno da receção {grn.receipt_number} (anulada)',
                         by=(request.user.username if request.user.is_authenticated else None),
-                        mtype='OUT')
+                        mtype='OUT',
+                        # ANULAR UMA ENTRADA TIRA O LOTE QUE ELA CRIOU, não "o mais
+                        # antigo". Sem isto, o estorno saía por FEFO: devolvia-se ao
+                        # fornecedor a mercadoria errada no papel — o lote da guia
+                        # anulada ficava em armazém com a sua validade, e o lote que
+                        # estava mesmo a expirar desaparecia das contagens sem
+                        # ninguém o ter consumido.
+                        lote=(line.lot_number or grn.receipt_number))
                 if divida is not None:
                     divida.status = 'CANCELLED'
                     divida.save(update_fields=['status'])

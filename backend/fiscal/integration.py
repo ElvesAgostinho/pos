@@ -113,7 +113,12 @@ def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None
         source_module='pos', source_ref=ticket.id,
         operator_name=ticket.operator_name, place_ref=place, room_ref=room,
         payment_method=pay, discount_total=ticket.discount_total,
-        customer=customer, settled=(not credito),
+        # A ENTIDADE vem de quem chama (o botão de cobrar) OU da própria conta.
+        # Sem o `or`, uma reemissão pela fila — que não recebe `customer` nenhum —
+        # emitia o documento sem entidade e a dívida da empresa não aparecia na
+        # conta corrente dela.
+        customer=customer or getattr(ticket, 'customer', None),
+        settled=(not credito),
     )
 
 

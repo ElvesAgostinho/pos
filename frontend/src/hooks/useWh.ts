@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { whApi } from '../api/wh';
-import type { StockLocation, StockLot, StockTransfer, InventoryCount } from '../api/wh';
+import type { StockLocation, StockLot, StockTransfer, InventoryCount,
+  ProductionOrder, ProductionRequirements } from '../api/wh';
 
-type Resource = 'locations' | 'lots' | 'transfers' | 'counts';
+type Resource = 'locations' | 'lots' | 'transfers' | 'counts' | 'orders';
 
 function useResource<T>(resource: Resource, params?: Record<string, any>) {
   const qc = useQueryClient();
@@ -20,6 +21,26 @@ export const useWhLocations = (params?: Record<string, any>) => useResource<Stoc
 export const useWhLots = (params?: Record<string, any>) => useResource<StockLot>('lots', params);
 export const useWhTransfers = () => useResource<StockTransfer>('transfers');
 export const useWhCounts = () => useResource<InventoryCount>('counts');
+
+export const useWhProductionOrders = (params?: Record<string, any>) => useResource<ProductionOrder>('orders', params);
+
+/** O que a ordem vai gastar. Só se pergunta quando há uma ordem escolhida. */
+export const useWhRequirements = (id?: number) => useQuery<ProductionRequirements>({
+  queryKey: ['wh', 'requirements', id],
+  queryFn: () => whApi.requirements(id as number),
+  enabled: !!id,
+});
+
+export const useProduce = () => {
+  const qc = useQueryClient();
+  // Produzir mexe no stock, nos lotes e no custo médio do artigo: o que está em
+  // ecrã depois disto é outro — por isso invalida-se tudo, não só as ordens.
+  return useMutation({ mutationFn: (id: number) => whApi.produce(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['wh'] }) });
+};
+export const useCancelOrder = () => {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (id: number) => whApi.cancelOrder(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['wh'] }) });
+};
 
 export const useConfirmTransfer = () => {
   const qc = useQueryClient();

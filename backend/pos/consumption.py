@@ -9,23 +9,23 @@ from decimal import Decimal
 
 
 def _active_recipe(item):   # noqa: mantido por compatibilidade de chamadas
-    # O POS vende-se SOZINHO. Um cliente que só compra o POS não tem o motor de
-    # Produção — e, sem ficha técnica, um hambúrguer sai do stock como hambúrguer
-    # (revenda), não como pão+carne. O que não pode é a venda rebentar por causa
-    # de um módulo que ele não comprou.
-    # O POS é AUTOSSUFICIENTE: sem módulo de fichas técnicas, um hambúrguer sai do
-    # stock como hambúrguer (revenda) — que é exatamente o que o POS vende.
-    return None
-    # (código morto abaixo, mantido para quem ligar um motor de receitas próprio)
+    """A ficha técnica do artigo, se o sistema a tiver.
+
+    Isto devolvia `None` sempre, com um comentário a dizer que o POS se vende
+    sozinho e que sem módulo de produção um hambúrguer sai do stock como
+    hambúrguer. A intenção estava certa; a implementação é que procurava a ficha
+    numa app `production` que NÃO EXISTE neste sistema — por isso nunca a
+    encontrava, mesmo quando ela lá estava.
+
+    A ficha vive em `inventory` (Recipe), que faz parte do stock e vem com o POS.
+    Agora procura-se onde ela está. Quem não tiver ficha nenhuma continua a sair
+    como revenda, que é o comportamento certo para quem só comprou o POS.
+    """
     try:
-        from production.models import Recipe   # pragma: no cover
+        from inventory.production import ficha_ativa
     except Exception:
         return None
-    # A ficha técnica em vigor: prioriza a Aprovada, depois a versão mais recente.
-    return (Recipe.objects.filter(final_item=item, is_active=True)
-            .prefetch_related('lines__component_item')
-            .order_by('-status', '-version', '-id').first())
-
+    return ficha_ativa(item)
 
 def _stock_control_on(outlet):
     """(Interface Stock) "Controlo de stock" — desmarcada, a venda NÃO consome stock.
@@ -86,16 +86,26 @@ def consume_ticket_stock(ticket, by=None):
         if not wh:
             continue  # sem armazém configurado, não há stock a mover
         sold = Decimal(str(line.quantity))
-        recipe = _active_recipe(item)
-        if recipe and recipe.lines.exists():
-            yield_q = recipe.yield_quantity or Decimal('1')
-            for comp in recipe.lines.select_related('component_item').all():
-                per_unit = comp.effective_quantity / yield_q
-                stock_engine.move_out(wh, comp.component_item, per_unit * sold,
-                                      reference=ticket.ticket_number, note=f'Consumo p/ {item.code}',
-                                      by=by, mtype='CONSUMPTION')
-        else:
-            stock_engine.move_out(wh, item, sold, reference=ticket.ticket_number,
+
+        # UM BIFE VENDIDO TIRA DO STOCK A CARNE, NÃO O BIFE.
+        #
+        # Vender um produzido abatia o PRÓPRIO produzido — um artigo que nunca
+        # entrou em armazém nenhum, porque não se compra: faz-se. O stock do
+        # bife ia a negativo para sempre e os ingredientes que saíram mesmo da
+        # arca ficavam lá, no papel, até a contagem os desmentir. A margem do
+        # prato era calculada contra um custo que não tinha nada a ver.
+        #
+        # `consumir_por_ficha` desconta pela ficha técnica (com desperdício e
+        # doses) e devolve None quando o artigo não tem ficha — a revenda, que
+        # sai como ela própria. `permitir_negativo` mantém a regra do balcão:
+        # falte o que faltar no armazém, a venda não se trava.
+        from inventory.production import consumir_por_ficha
+        movidos = consumir_por_ficha(wh, item, sold, reference=ticket.ticket_number,
+                                     note=f'Consumo p/ {item.code}', by=by,
+                                     permitir_negativo=True, mtype='CONSUMPTION')
+        if movidos is None:
+            stock_engine.move_out(wh, item, sold, permitir_negativo=True,
+                                  reference=ticket.ticket_number,
                                   note='Venda POS', by=by, mtype='CONSUMPTION')
 
     ticket.stock_consumed = True

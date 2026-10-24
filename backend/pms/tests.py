@@ -229,7 +229,18 @@ class PmsPercursoCompletoTests(PmsBase):
 
     # --------------------------------------------------- AUDITORIA DA NOITE
     def test_auditoria_da_noite_nao_duplica_a_diaria_do_check_in(self):
-        res_id = self._reserva_em_checkin()
+        # A estadia começa ONTEM de propósito: a Auditoria da Noite fecha
+        # noites que já terminaram (correr-lhe uma data futura é recusado, ver
+        # PmsAuditoriaDaNoiteTests), por isso a "noite seguinte" que se quer
+        # ver aqui a ser lançada pela auditoria tem de ser uma noite passada.
+        ontem = self.hoje - timedelta(days=1)
+        r = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'room': self.quartos[0], 'check_in': str(ontem),
+            'check_out': str(self.hoje + timedelta(days=1)), 'adults': 2}, format='json')
+        res_id = r.data['id']
+        self.assertIn(self.client.post(f'/api/pms/reservations/{res_id}/check_in/', {},
+                                       format='json').status_code, (200, 201))
         folio = Reservation.objects.get(id=res_id).folio
 
         r = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(self.hoje)}, format='json')
@@ -238,14 +249,13 @@ class PmsPercursoCompletoTests(PmsBase):
         folio.refresh_from_db()
         self.assertEqual(folio.charges_total, Decimal('30000'))
 
-        amanha = self.hoje + timedelta(days=1)
-        r = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        r = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(ontem)}, format='json')
         self.assertEqual(r.data.get('rooms_charged'), 1)
         folio.refresh_from_db()
         self.assertEqual(folio.charges_total, Decimal('60000'))
 
         # A mesma data duas vezes tem de ser recusada.
-        r = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        r = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(ontem)}, format='json')
         self.assertEqual(r.status_code, 409)
         folio.refresh_from_db()
         self.assertEqual(folio.charges_total, Decimal('60000'))
@@ -924,10 +934,15 @@ class PmsFichaDaReservaTests(PmsBase):
 
     # --------------------------------------------------- ENCARGOS FIXOS
     def _reserva_simples(self):
+        # Duas noites: a de ONTEM e a de HOJE. A estadia começa na véspera
+        # porque a Auditoria da Noite só fecha noites que já terminaram (uma
+        # data futura é recusada — ver PmsAuditoriaDaNoiteTests), e o que estes
+        # testes querem ver é a auditoria a lançar a noite que o check-in não
+        # lançou. As contas não mudam: 2 noites × 30.000.
         r = self.client.post('/api/pms/reservations/', {
             'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
-            'room': self.quartos[0], 'check_in': str(self.hoje),
-            'check_out': str(self.hoje + timedelta(days=2)), 'adults': 2}, format='json')
+            'room': self.quartos[0], 'check_in': str(self.hoje - timedelta(days=1)),
+            'check_out': str(self.hoje + timedelta(days=1)), 'adults': 2}, format='json')
         self.assertIn(r.status_code, (200, 201), r.content)
         return r.data['id']
 
@@ -946,8 +961,8 @@ class PmsFichaDaReservaTests(PmsBase):
         # O check-in lança só a diária: o "por noite" é da auditoria.
         self.assertEqual(folio.charges_total, Decimal('30000'))
 
-        amanha = self.hoje + timedelta(days=1)
-        aud = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        ontem = self.hoje - timedelta(days=1)
+        aud = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(ontem)}, format='json')
         self.assertIn(aud.status_code, (200, 201), aud.content)
         self.assertEqual(aud.data['rooms_charged'], 1)
         self.assertEqual(aud.data['extras_charged'], 1, 'o encargo fixo não foi lançado')
@@ -964,8 +979,9 @@ class PmsFichaDaReservaTests(PmsBase):
         self.assertEqual(folio.charges_total, Decimal('35000'), '30000 da diária + 5000 da taxa')
 
         # E a auditoria não o volta a lançar (é "uma vez", não "por noite").
-        amanha = self.hoje + timedelta(days=1)
-        aud = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        ontem = self.hoje - timedelta(days=1)
+        aud = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(ontem)}, format='json')
+        self.assertIn(aud.status_code, (200, 201), aud.content)
         self.assertEqual(aud.data['extras_charged'], 0)
         folio.refresh_from_db()
         self.assertEqual(folio.charges_total, Decimal('65000'))
@@ -976,13 +992,13 @@ class PmsFichaDaReservaTests(PmsBase):
             'reservation': res_id, 'description': 'Cama extra',
             'amount': '3000', 'per_night': True}, format='json')
         self.client.post(f'/api/pms/reservations/{res_id}/check_in/', {}, format='json')
-        amanha = self.hoje + timedelta(days=1)
-        self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        ontem = self.hoje - timedelta(days=1)
+        self.client.post('/api/pms/night-audit/run/', {'audit_date': str(ontem)}, format='json')
         folio = Reservation.objects.get(id=res_id).folio
         folio.refresh_from_db()
         antes = folio.charges_total
         # A trava da auditoria (uma data, uma corrida) protege também os extras.
-        repetida = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(amanha)}, format='json')
+        repetida = self.client.post('/api/pms/night-audit/run/', {'audit_date': str(ontem)}, format='json')
         self.assertEqual(repetida.status_code, 409)
         folio.refresh_from_db()
         self.assertEqual(folio.charges_total, antes)
@@ -2029,3 +2045,1275 @@ class SaftDoAlojamentoTests(PmsBase):
         r = self.client.post('/api/pms/saft/', {'year': self.hoje.year}, format='json')
         self.assertEqual(r.status_code, 200, getattr(r, 'data', r.content))
         self.assertIn(f'SAFT_PMS_{self.hoje.year}.xml', r['Content-Disposition'])
+
+
+# ==========================================================================
+# AUDITORIA DE PONTA A PONTA — "regra de ouro: não pulas nenhum"
+#
+# As classes a seguir foram escritas a percorrer as rotas de `urls.py` uma a
+# uma, a perguntar em cada paragem o que o recepcionista sofre quando a regra
+# está errada: datas impossíveis aceitas, quartos que ficam ocupados para
+# sempre, dinheiro lançado em contas fechadas, diárias cobradas a dobrar.
+# ==========================================================================
+
+class PmsEstadosDaReservaTests(PmsBase):
+    """As regras de estado/datas da reserva — onde um engano de teclado se
+    transforma num quarto que ninguém pode vender."""
+
+    def _reserva(self, **extra):
+        dados = {'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+                 'check_in': str(self.hoje), 'check_out': str(self.hoje + timedelta(days=2)),
+                 'adults': 2}
+        dados.update(extra)
+        return self.client.post('/api/pms/reservations/', dados, format='json')
+
+    def test_saida_antes_da_entrada_e_recusada(self):
+        """Datas invertidas (engano de teclado na receção) tinham de ser
+        recusadas na hora. Antes eram aceitas e nascia uma reserva fantasma:
+        as noites davam 0, não aparecia na disponibilidade, não travava o
+        quarto e nunca era cobrada — até o hóspede chegar e não haver quarto."""
+        r = self._reserva(check_in=str(self.hoje + timedelta(days=3)),
+                          check_out=str(self.hoje + timedelta(days=1)))
+        self.assertEqual(r.status_code, 400,
+                         'uma reserva que sai antes de entrar não pode ser gravada')
+
+    def test_reserva_de_zero_noites_e_recusada(self):
+        """Entrada e saída no mesmo dia não é uma estadia — é um engano. E uma
+        estadia de 0 noites não cobra nada a ninguém."""
+        r = self._reserva(check_out=str(self.hoje))
+        self.assertEqual(r.status_code, 400, 'entrada e saída no mesmo dia não é uma estadia')
+
+    def test_encurtar_a_estadia_abaixo_de_uma_noite_e_recusado(self):
+        """A mesma regra ao ALTERAR: o PATCH não pode deixar passar o que o
+        POST recusa (era por aí que a reserva fantasma entrava)."""
+        res = self._reserva()
+        self.assertEqual(res.status_code, 201, res.content)
+        r = self.client.patch('/api/pms/reservations/%s/' % res.data['id'],
+                              {'check_out': str(self.hoje)}, format='json')
+        self.assertEqual(r.status_code, 400, 'alterar para 0 noites tinha de ser recusado')
+
+    def test_cancelar_uma_reserva_em_check_in_e_recusado(self):
+        """O hóspede está dentro do quarto: cancelar não o põe na rua.
+
+        Antes o cancelamento passava e deixava o estrago todo: o quarto ficava
+        OCUPADO para sempre (ninguém o conseguia vender outra vez), a conta
+        ficava aberta com os consumos dele e o check-out já não era possível
+        porque a reserva deixara de estar em check-in. Para sair de lá só
+        mexendo na base de dados."""
+        res_id = self._reserva_em_checkin()
+        r = self.client.post('/api/pms/reservations/%s/cancel/' % res_id, {}, format='json')
+        self.assertEqual(r.status_code, 409,
+                         'cancelar um hóspede que está dentro do hotel tinha de ser recusado')
+        res = Reservation.objects.get(pk=res_id)
+        self.assertEqual(res.status, 'CHECKED_IN')
+        self.assertEqual(Room.objects.get(pk=self.quartos[0]).status, 'OCCUPIED')
+
+    def test_cancelar_uma_reserva_ainda_nao_chegada_continua_a_funcionar(self):
+        """A trava acima não pode fechar o caso normal: uma reserva por chegar
+        cancela-se sempre."""
+        res = self._reserva(check_in=str(self.hoje + timedelta(days=5)),
+                            check_out=str(self.hoje + timedelta(days=7)))
+        r = self.client.post('/api/pms/reservations/%s/cancel/' % res.data['id'], {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['status'], 'CANCELLED')
+
+    def test_reserva_travada_nao_e_mudada_de_quarto(self):
+        """"Não Mudar Qrt" era uma promessa só do ecrã.
+
+        O campo existe para o quarto prometido a um hóspede (o 101 da lua de
+        mel, o adaptado de quem anda de cadeira de rodas) não ser arrastado por
+        uma mudança em massa. O ecrã respeitava-o; a API não — e quem chamasse
+        a Mudança de Quarto pelo seletor de quartos movia a reserva travada
+        como qualquer outra."""
+        res = self._reserva(room=self.quartos[0], lock_room=True)
+        self.assertEqual(res.status_code, 201, res.content)
+        r = self.client.post('/api/pms/reservations/change-room/',
+                             {'reservation': res.data['id'], 'room': self.quartos[1]}, format='json')
+        self.assertEqual(r.status_code, 409,
+                         'uma reserva marcada "Não Mudar Qrt" não se move pela API')
+        self.assertEqual(Reservation.objects.get(pk=res.data['id']).room_id, self.quartos[0])
+
+    def test_mudar_de_quarto_sem_trava_continua_a_funcionar(self):
+        res = self._reserva(room=self.quartos[0])
+        r = self.client.post('/api/pms/reservations/change-room/',
+                             {'reservation': res.data['id'], 'room': self.quartos[1]}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(Reservation.objects.get(pk=res.data['id']).room_id, self.quartos[1])
+
+    def test_mudar_para_quarto_de_outra_categoria_e_recusado(self):
+        """A disponibilidade conta por CATEGORIA, a partir da reserva.
+
+        Pôr o hóspede de um Standard numa Suite sem mais nada deixava a Suite a
+        aparecer livre na disponibilidade (a reserva continua a contar no
+        Standard) — a receção vendia-a e só descobria o engano no check-in, com
+        um "Quarto já está ocupado" na cara do segundo hóspede. A Atribuição
+        Rápida já recusava isto; a Mudança de Quarto não."""
+        r2 = self.client.post('/api/pms/room-types/', {
+            'hotel': self.hotel.id, 'code': 'SUI', 'name': 'Suite',
+            'base_rate': '90000', 'capacity_adults': 2}, format='json')
+        suite = self.client.post('/api/pms/rooms/', {
+            'hotel': self.hotel.id, 'room_type': r2.data['id'], 'number': '201',
+            'status': 'VACANT_CLEAN'}, format='json')
+        res = self._reserva(room=self.quartos[0])
+        r = self.client.post('/api/pms/reservations/change-room/',
+                             {'reservation': res.data['id'], 'room': suite.data['id']}, format='json')
+        self.assertEqual(r.status_code, 400,
+                         'mudar para outra categoria desalinha a disponibilidade')
+
+    def test_atribuicao_rapida_nao_rouba_o_quarto_a_outra_reserva(self):
+        """Duas reservas, o mesmo quarto, datas que se cruzam: a segunda
+        atribuição tem de bater com um 409 e não com um overbooking."""
+        a = self._reserva(room=self.quartos[0])
+        b = self._reserva(check_in=str(self.hoje + timedelta(days=1)),
+                          check_out=str(self.hoje + timedelta(days=3)))
+        r = self.client.post('/api/pms/reservations/quick-assign/',
+                             {'reservation': b.data['id'], 'room': self.quartos[0]}, format='json')
+        self.assertEqual(r.status_code, 409, r.content)
+        self.assertIsNone(Reservation.objects.get(pk=b.data['id']).room_id)
+        self.assertEqual(Reservation.objects.get(pk=a.data['id']).room_id, self.quartos[0])
+
+    def test_trancar_registos_nunca_fica_fora_de_uma_transacao(self):
+        """O select_for_update() solto é um erro que o SQLite esconde.
+
+        A Atribuição Rápida e a Mudança de Quarto trancam a reserva e o quarto
+        para duas pessoas não atribuírem o mesmo quarto ao mesmo tempo. Só que
+        o faziam FORA de uma transação: no SQLite do desenvolvimento a tranca é
+        ignorada em silêncio e tudo parece bem, e no PostgreSQL do cliente o
+        Django levanta TransactionManagementError — os dois ecrãs rebentavam
+        com "erro interno" no hotel a sério e em nenhum teste aqui. Daí esta
+        verificação ser sobre o código e não sobre uma resposta HTTP: é a única
+        maneira de a apanhar numa base SQLite."""
+        import ast
+        import inspect
+        from pathlib import Path
+        from pms import views as pms_views, booking_engine, night_audit as pms_night_audit
+
+        faltam = []
+        for modulo in (pms_views, booking_engine, pms_night_audit):
+            caminho = Path(inspect.getfile(modulo))
+            arvore = ast.parse(caminho.read_text(encoding='utf-8'))
+            for no in ast.walk(arvore):
+                if not isinstance(no, ast.FunctionDef):
+                    continue
+                trancas = [f.lineno for f in ast.walk(no)
+                           if isinstance(f, ast.Call) and isinstance(f.func, ast.Attribute)
+                           and f.func.attr == 'select_for_update']
+                if not trancas:
+                    continue
+                if any('atomic' in ast.dump(d) for d in no.decorator_list):
+                    continue
+                protegidas = set()
+                for w in ast.walk(no):
+                    if isinstance(w, ast.With) and any('atomic' in ast.dump(i.context_expr)
+                                                       for i in w.items):
+                        protegidas.update(range(w.lineno, (w.end_lineno or w.lineno) + 1))
+                for linha in trancas:
+                    if linha not in protegidas:
+                        faltam.append('%s:%s (em %s)' % (caminho.name, linha, no.name))
+        self.assertEqual(faltam, [],
+                         'há select_for_update() fora de uma transação — rebenta em '
+                         'PostgreSQL: ' + ', '.join(faltam))
+
+
+class PmsContaDoHospedeTests(PmsBase):
+    """O folio — onde o dinheiro tem de bater ao cêntimo."""
+
+    def setUp(self):
+        super().setUp()
+        self.res_id = self._reserva_em_checkin()
+        self.folio = Folio.objects.get(reservation_id=self.res_id)
+
+    def test_pagamento_num_valor_que_nao_e_numero_nao_rebenta(self):
+        """"Registar Pagamento" com lixo no valor dava erro interno (500): a
+        receção via "Ocorreu um erro interno" e não sabia que o problema era o
+        que ela própria escreveu."""
+        r = self.client.post('/api/pms/folios/%s/settle/' % self.folio.id,
+                             {'amount': 'trinta mil'}, format='json')
+        self.assertEqual(r.status_code, 400, 'um valor que não é número explica-se, não rebenta')
+
+    def test_pagamento_negativo_e_recusado(self):
+        """Um "pagamento" de valor negativo AUMENTA a dívida sem deixar rasto —
+        é uma cobrança disfarçada de recibo. O lançamento de encargos já
+        recusava valores negativos; o pagamento não."""
+        antes = self.folio.balance
+        r = self.client.post('/api/pms/folios/%s/settle/' % self.folio.id,
+                             {'amount': '-5000'}, format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(Folio.objects.get(pk=self.folio.id).balance, antes,
+                         'o saldo da conta não podia ter mexido')
+
+    def test_pagamento_numa_conta_fechada_e_recusado(self):
+        """Depois do check-out a conta está fechada (e muitas vezes facturada).
+
+        Lançar lá um pagamento punha dinheiro numa conta que já ninguém volta a
+        ver: não entra em factura nenhuma, aparece no relatório de pagamentos e
+        o saldo da conta fica negativo sem explicação. O lançamento de encargos
+        já verificava a conta fechada; o pagamento não verificava nada."""
+        self.client.post('/api/pms/folios/%s/settle/' % self.folio.id,
+                         {'amount': str(self.folio.balance)}, format='json')
+        r = self.client.post('/api/pms/reservations/%s/check_out/' % self.res_id, {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        r = self.client.post('/api/pms/folios/%s/settle/' % self.folio.id,
+                             {'amount': '1000'}, format='json')
+        self.assertEqual(r.status_code, 400, 'não se lança dinheiro numa conta fechada')
+
+    def test_pagamento_sem_saldo_nao_cria_uma_linha_a_zero(self):
+        """O botão do ecrã manda "pagar o saldo" sem valor. Com a conta já
+        liquidada, isso criava um recibo de 0,00 — ruído no extrato do hóspede
+        e no relatório de pagamentos."""
+        self.client.post('/api/pms/folios/%s/settle/' % self.folio.id,
+                         {'amount': str(self.folio.balance)}, format='json')
+        linhas_antes = self.folio.charges.count()
+        r = self.client.post('/api/pms/folios/%s/settle/' % self.folio.id, {}, format='json')
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(Folio.objects.get(pk=self.folio.id).charges.count(), linhas_antes,
+                         'não devia ter sido criada nenhuma linha nova')
+
+    def test_apagar_uma_conta_com_movimentos_e_recusado(self):
+        """Apagar o folio levava atrás (em cascata) todos os lançamentos — e o
+        número da factura fiscal que lá estava gravado. Um estorno deixa rasto;
+        um DELETE não deixa nada, e é a conta inteira do hóspede."""
+        r = self.client.delete('/api/pms/folios/%s/' % self.folio.id)
+        self.assertIn(r.status_code, (400, 409),
+                      'uma conta com lançamentos não se apaga — estorna-se')
+        self.assertTrue(Folio.objects.filter(pk=self.folio.id).exists())
+
+    def test_transferir_lancamento_entre_contas_da_mesma_reserva(self):
+        """A empresa paga o alojamento, o hóspede paga os extras: o lançamento
+        muda de conta e o dinheiro total da reserva não pode mexer."""
+        nova = self.client.post('/api/pms/folios/%s/split/' % self.folio.id,
+                                {'label': 'B · Extras', 'payer_type': 'COMPANY'}, format='json')
+        self.assertEqual(nova.status_code, 201, nova.content)
+        enc = self.client.post('/api/pms/folios/%s/post_charge/' % self.folio.id,
+                               {'amount': '4500', 'charge_type': 'MINIBAR',
+                                'description': 'Minibar'}, format='json')
+        total_antes = (Folio.objects.get(pk=self.folio.id).balance
+                       + Folio.objects.get(pk=nova.data['id']).balance)
+        r = self.client.post('/api/pms/folios/%s/transfer-charge/' % self.folio.id,
+                             {'charge': enc.data['id'], 'target_folio': nova.data['id']},
+                             format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        total_depois = (Folio.objects.get(pk=self.folio.id).balance
+                        + Folio.objects.get(pk=nova.data['id']).balance)
+        self.assertEqual(total_antes, total_depois, 'a transferência inventou/perdeu dinheiro')
+        self.assertEqual(Decimal(str(Folio.objects.get(pk=nova.data['id']).balance)),
+                         Decimal('4500'))
+
+    def test_transferir_para_a_conta_de_outra_reserva_e_recusado(self):
+        """Senão o consumo de um hóspede ia para a conta de outro."""
+        outro = Customer.objects.create(code='PMS-T9', name='Outro Hospede')
+        r2 = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': outro.id, 'room_type': self.rt,
+            'room': self.quartos[1], 'check_in': str(self.hoje),
+            'check_out': str(self.hoje + timedelta(days=1))}, format='json')
+        self.client.post('/api/pms/reservations/%s/check_in/' % r2.data['id'], {}, format='json')
+        alheia = Folio.objects.get(reservation_id=r2.data['id'])
+        linha = self.folio.charges.first()
+        r = self.client.post('/api/pms/folios/%s/transfer-charge/' % self.folio.id,
+                             {'charge': linha.id, 'target_folio': alheia.id}, format='json')
+        self.assertEqual(r.status_code, 400, 'um consumo não passa para a conta de outro hóspede')
+
+    def test_estorno_nao_conta_duas_vezes_na_conta(self):
+        """Um lançamento estornado e a linha de estorno anulam-se: a conta tem
+        de ficar com o que o hóspede realmente consumiu."""
+        enc = self.client.post('/api/pms/folios/%s/post_charge/' % self.folio.id,
+                               {'amount': '7000', 'description': 'Lavandaria',
+                                'charge_type': 'LAUNDRY'}, format='json')
+        self.client.post('/api/pms/folios/%s/reverse-charge/' % self.folio.id,
+                         {'charge': enc.data['id'], 'reason': 'Lançado no quarto errado'},
+                         format='json')
+        folio = Folio.objects.get(pk=self.folio.id)
+        self.assertEqual(folio.charges_total, Decimal('30000'),
+                         'o estorno tinha de deixar a conta como estava antes do engano')
+        self.assertEqual(folio.charges.count(), 3,
+                         'o original e o estorno ficam os dois no histórico')
+
+
+class PmsAuditoriaDaNoiteTests(PmsBase):
+    """A Auditoria da Noite — a peça que lança o dinheiro das noites. Cada
+    engano aqui é uma diária a mais ou a menos na conta do hóspede."""
+
+    def _reserva(self, dias_ate_entrada=0, noites=2, quarto=0):
+        r = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'room': self.quartos[quarto],
+            'check_in': str(self.hoje + timedelta(days=dias_ate_entrada)),
+            'check_out': str(self.hoje + timedelta(days=dias_ate_entrada + noites))}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        return r.data['id']
+
+    def test_check_in_antecipado_lanca_a_noite_da_estadia_e_nao_a_de_hoje(self):
+        """Primo do defeito da factura em duplicado — mas em diárias.
+
+        O check-in lançava a 1ª diária com a data de HOJE, fosse hoje o dia da
+        entrada ou não. No check-in adiantado (o hóspede chega na véspera, o
+        turno adianta-se) isso é uma diária de uma noite que NÃO é da estadia —
+        e as noites verdadeiras entram depois pela Auditoria da Noite, cada uma
+        com a sua referência. Resultado: três diárias numa estadia de duas.
+
+        A referência do lançamento (`ROOM-<data>`) é exactamente a trava que a
+        auditoria usa para não repetir a noite; por isso é ela que se verifica
+        aqui."""
+        res_id = self._reserva(dias_ate_entrada=3, noites=2)
+        r = self.client.post('/api/pms/reservations/%s/check_in/' % res_id, {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        diarias = list(Folio.objects.get(reservation_id=res_id)
+                       .charges.filter(charge_type='ROOM', is_void=False))
+        self.assertEqual(len(diarias), 1, 'o check-in lança uma diária, a da 1ª noite')
+        primeira_noite = self.hoje + timedelta(days=3)
+        self.assertEqual(diarias[0].source_reference, 'ROOM-%s' % primeira_noite.isoformat(),
+                         'a diária do check-in tem de ser da 1ª noite da estadia (%s), não da '
+                         'noite de hoje — senão a auditoria dessa noite lança outra' % primeira_noite)
+
+    def test_estadia_registada_depois_de_terminada_nao_inventa_uma_noite(self):
+        """O mesmo defeito visto pelo dinheiro, com a estadia toda no passado
+        (um grupo cujo check-in só foi lançado no sistema depois de sair).
+
+        Duas noites a 30.000 são 60.000 — não 90.000. Antes, o check-in
+        acrescentava uma diária com a data de hoje, que não é noite nenhuma
+        desta estadia, e a conta do grupo saía com uma noite a mais."""
+        r = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'room': self.quartos[0], 'check_in': str(self.hoje - timedelta(days=3)),
+            'check_out': str(self.hoje - timedelta(days=1))}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        res_id = r.data['id']
+        self.assertEqual(self.client.post('/api/pms/reservations/%s/check_in/' % res_id, {},
+                                          format='json').status_code, 200)
+        for i in (3, 2):
+            self.client.post('/api/pms/night-audit/run/',
+                             {'audit_date': str(self.hoje - timedelta(days=i))}, format='json')
+        diarias = Folio.objects.get(reservation_id=res_id).charges.filter(
+            charge_type='ROOM', is_void=False)
+        self.assertEqual(diarias.count(), 2,
+                         'uma estadia de 2 noites tem de ter 2 diárias, tem %s: %s'
+                         % (diarias.count(), [c.source_reference for c in diarias]))
+        self.assertEqual(sum(c.amount for c in diarias), Decimal('60000'),
+                         'o dinheiro das diárias não bate com 2 noites a 30.000')
+        self.assertNotIn('ROOM-%s' % self.hoje.isoformat(),
+                         [c.source_reference for c in diarias],
+                         'foi lançada uma noite que não pertence à estadia')
+
+    def test_auditoria_de_uma_data_futura_e_recusada(self):
+        """Correr a auditoria com a data errada (um engano no calendário)
+        queimava essa data: a trava não deixa correr duas vezes a mesma data,
+        por isso quando o dia chegasse a sério a auditoria era recusada — e as
+        diárias dessa noite nunca entravam na conta."""
+        self.client.post('/api/pms/reservations/%s/check_in/' % self._reserva(quarto=1), {},
+                         format='json')
+        r = self.client.post('/api/pms/night-audit/run/',
+                             {'audit_date': str(self.hoje + timedelta(days=3))}, format='json')
+        self.assertEqual(r.status_code, 400,
+                         'a auditoria da noite fecha dias que já aconteceram, não o futuro')
+
+    def test_auditoria_avisa_quando_a_conta_esta_fechada(self):
+        """Uma conta fechada a meio da estadia (a empresa pediu a factura ao 2º
+        dia) deixa de receber diárias — a auditoria salta a reserva em silêncio
+        e o hotel perde as noites seguintes sem ninguém dar por nada. A
+        auditoria tem de DIZER quais saltou."""
+        res_id = self._reserva(noites=4)
+        self.client.post('/api/pms/reservations/%s/check_in/' % res_id, {}, format='json')
+        folio = Folio.objects.get(reservation_id=res_id)
+        folio.status = 'CLOSED'
+        folio.save(update_fields=['status'])
+        r = self.client.post('/api/pms/night-audit/run/', {}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(r.data.get('rooms_charged'), 0)
+        saltadas = r.data.get('skipped_no_folio') or []
+        self.assertTrue(saltadas, 'a auditoria tinha de avisar que saltou esta reserva')
+        self.assertIn(Reservation.objects.get(pk=res_id).confirmation,
+                      [s.get('confirmation') for s in saltadas])
+
+    def test_auditoria_nao_lanca_nada_sem_hospedes_dentro(self):
+        """Hotel vazio: a auditoria corre, não lança nada e não rebenta."""
+        r = self.client.post('/api/pms/night-audit/run/', {}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(r.data['rooms_charged'], 0)
+        self.assertEqual(Decimal(str(r.data['total_posted'])), Decimal('0'))
+
+    def test_a_mesma_data_nao_corre_duas_vezes(self):
+        """A trava contra o duplo-clique: duas diárias da mesma noite é dinheiro
+        cobrado a dobrar."""
+        self.client.post('/api/pms/night-audit/run/', {}, format='json')
+        r = self.client.post('/api/pms/night-audit/run/', {}, format='json')
+        self.assertEqual(r.status_code, 409, r.content)
+
+    def test_historico_da_auditoria_e_so_de_leitura(self):
+        """O histórico não se escreve à mão — senão inventava-se uma auditoria
+        que nunca correu."""
+        self.client.post('/api/pms/night-audit/run/', {}, format='json')
+        lista = self.client.get('/api/pms/night-audit-runs/')
+        self.assertEqual(lista.status_code, 200)
+        r = self.client.post('/api/pms/night-audit-runs/',
+                             {'hotel': self.hotel.id, 'audit_date': str(self.hoje)}, format='json')
+        self.assertIn(r.status_code, (403, 405))
+
+
+class PmsDisponibilidadeTests(PmsBase):
+    """O gráfico de disponibilidade — a pergunta que a receção faz antes de
+    aceitar qualquer reserva. Se este número mente, vende-se o que não existe."""
+
+    def _reserva(self, dias=0, noites=1, estado='BOOKED', quarto=None, bloco=None):
+        dados = {'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+                 'check_in': str(self.hoje + timedelta(days=dias)),
+                 'check_out': str(self.hoje + timedelta(days=dias + noites)),
+                 'status': estado}
+        if quarto is not None:
+            dados['room'] = self.quartos[quarto]
+        if bloco is not None:
+            dados['block'] = bloco
+        r = self.client.post('/api/pms/reservations/', dados, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        return r.data['id']
+
+    def test_hotel_sem_reservas_tem_tudo_livre(self):
+        """O caso "sem dados": três quartos, nenhuma reserva — e o gráfico tem
+        de dizer três livres, não zero nem um erro."""
+        r = self.client.get('/api/pms/availability/', {'date_from': str(self.hoje),
+                                                       'date_to': str(self.hoje + timedelta(days=2))})
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(len(r.data['total']), 3, 'três dias pedidos, três dias devolvidos')
+        for dia in r.data['total']:
+            self.assertEqual(dia['total'], 3)
+            self.assertEqual(dia['free'], 3, 'sem reservas, estão livres os três quartos')
+            self.assertEqual(dia['overbook'], 0)
+
+    def test_datas_ao_contrario_nao_devolvem_uma_lista_vazia(self):
+        """Quem escreve as datas trocadas no filtro não merece um ecrã em
+        branco — o período endireita-se."""
+        r = self.client.get('/api/pms/availability/', {'date_from': str(self.hoje + timedelta(days=3)),
+                                                       'date_to': str(self.hoje)})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data['date_from'], self.hoje.isoformat())
+        self.assertEqual(len(r.data['total']), 4)
+
+    def test_opcao_e_lista_de_espera_contam_de_maneira_diferente(self):
+        """Uma OPÇÃO retém o quarto (pode confirmar-se amanhã); uma LISTA DE
+        ESPERA não — é um pedido além da capacidade. Misturá-las esconde
+        quartos que estão à venda."""
+        self._reserva(estado='OPTION')
+        self._reserva(estado='WAITLIST')
+        r = self.client.get('/api/pms/availability/', {'date_from': str(self.hoje),
+                                                       'date_to': str(self.hoje)})
+        dia = r.data['total'][0]
+        self.assertEqual(dia['option'], 1)
+        self.assertEqual(dia['waitlist'], 1)
+
+    def test_vender_acima_do_inventario_aparece_como_overbooking(self):
+        """Quatro reservas para três quartos: o gráfico tem de gritar
+        overbooking 1 e livres 0, não livres -1 nem livres 0 calado."""
+        for _ in range(4):
+            self._reserva()
+        r = self.client.get('/api/pms/availability/', {'date_from': str(self.hoje),
+                                                       'date_to': str(self.hoje)})
+        dia = r.data['total'][0]
+        self.assertEqual(dia['reserved'], 4)
+        self.assertEqual(dia['free'], 0, 'não há quartos livres com 4 reservas em 3 quartos')
+        self.assertEqual(dia['overbook'], 1, 'faltou avisar que está vendido um quarto a mais')
+
+    def test_a_noite_da_saida_volta_a_estar_a_venda(self):
+        """A reserva ocupa as noites de entrada até à véspera da saída: no dia
+        em que o hóspede sai, o quarto vende-se outra vez. Era aqui que um
+        "<=" a mais fazia o hotel perder uma noite de venda por estadia."""
+        self._reserva(dias=0, noites=2)
+        r = self.client.get('/api/pms/availability/', {'date_from': str(self.hoje),
+                                                       'date_to': str(self.hoje + timedelta(days=2))})
+        dias = r.data['total']
+        self.assertEqual(dias[0]['reserved'], 1, 'noite da entrada: ocupado')
+        self.assertEqual(dias[1]['reserved'], 1, 'noite do meio: ocupado')
+        self.assertEqual(dias[2]['reserved'], 0, 'dia da saída: o quarto volta a estar à venda')
+
+    def test_quartos_retidos_por_um_bloco_so_contam_com_allotment(self):
+        """Os quartos que um grupo tem retidos (allotment) não são reservas: só
+        aparecem quando se pede `include_allotment`. E à medida que o grupo faz
+        as reservas (pickup), a retenção desce — senão o mesmo quarto era
+        contado duas vezes e o hotel aparecia cheio com quartos vazios."""
+        bloco = self.client.post('/api/pms/blocks/', {
+            'hotel': self.hotel.id, 'code': 'GRP1', 'description': 'Grupo Teste',
+            'valid_from': str(self.hoje), 'valid_to': str(self.hoje + timedelta(days=2)),
+            'is_guaranteed': True}, format='json')
+        self.assertEqual(bloco.status_code, 201, bloco.content)
+        g = self.client.post('/api/pms/blocks/%s/room-types/' % bloco.data['id'], {
+            'room_type': self.rt, 'date': str(self.hoje), 'rooms_blocked': 2}, format='json')
+        self.assertEqual(g.status_code, 201, g.content)
+
+        sem = self.client.get('/api/pms/availability/', {'date_from': str(self.hoje),
+                                                         'date_to': str(self.hoje)})
+        self.assertEqual(sem.data['total'][0]['free'], 3,
+                         'sem pedir allotment, a retenção do grupo não pode tirar quartos')
+        com = self.client.get('/api/pms/availability/', {'date_from': str(self.hoje),
+                                                         'date_to': str(self.hoje),
+                                                         'include_allotment': '1'})
+        self.assertEqual(com.data['total'][0]['allotment'], 2)
+        self.assertEqual(com.data['total'][0]['free'], 1, 'dois quartos estão retidos pelo grupo')
+
+        self._reserva(bloco=bloco.data['id'])
+        depois = self.client.get('/api/pms/availability/', {'date_from': str(self.hoje),
+                                                            'date_to': str(self.hoje),
+                                                            'include_allotment': '1'})
+        self.assertEqual(depois.data['total'][0]['allotment'], 1,
+                         'a reserva do grupo gasta uma das retenções, não se soma a elas')
+        self.assertEqual(depois.data['total'][0]['free'], 1,
+                         'o mesmo quarto não pode ser contado como retido E como reservado')
+
+    def test_pickup_do_bloco_lista_as_reservas_do_grupo(self):
+        bloco = self.client.post('/api/pms/blocks/', {
+            'hotel': self.hotel.id, 'code': 'GRP2', 'description': 'Grupo Dois',
+            'valid_from': str(self.hoje), 'valid_to': str(self.hoje + timedelta(days=3))},
+            format='json')
+        self._reserva(bloco=bloco.data['id'])
+        r = self.client.get('/api/pms/blocks/%s/pickup/' % bloco.data['id'])
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.data), 1)
+
+    def test_bloco_que_acaba_antes_de_comecar_e_recusado(self):
+        """O mesmo engano de teclado da reserva, no bloco: um período que acaba
+        antes de começar dá um bloco de 0 noites que nunca retém nada e que o
+        grupo não entende por que não funciona."""
+        r = self.client.post('/api/pms/blocks/', {
+            'hotel': self.hotel.id, 'code': 'GRP3', 'description': 'Grupo ao contrário',
+            'valid_from': str(self.hoje + timedelta(days=5)),
+            'valid_to': str(self.hoje)}, format='json')
+        self.assertEqual(r.status_code, 400, 'um bloco não pode acabar antes de começar')
+
+    def test_mapa_de_quartos_livres_responde_sem_datas(self):
+        """O ecrã abre antes de alguém escolher datas — e não pode rebentar."""
+        r = self.client.get('/api/pms/rooms/free/')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(len(r.data), 3)
+        self.assertTrue(all(q['is_free'] for q in r.data),
+                        'sem datas não há conflito possível, logo nenhum quarto está "ocupado"')
+
+    def test_estado_hotel_conta_chegadas_saidas_e_ocupacao(self):
+        """O painel do dia da receção: chegadas de hoje, saídas de hoje e a
+        percentagem de ocupação a bater com os quartos realmente ocupados."""
+        self._reserva_em_checkin()
+        r = self.client.get('/api/pms/frontdesk/hotel-status/')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['arrivals_count'], 1)
+        self.assertTrue(r.data['arrivals'][0]['arrived'])
+        self.assertEqual(r.data['occupancy']['occupied'], 1)
+        self.assertEqual(r.data['occupancy']['total'], 3)
+        self.assertEqual(r.data['occupancy']['pct'], 33.3)
+        ocupado = [q for q in r.data['rooms'] if q['status'] == 'OCCUPIED']
+        self.assertEqual(len(ocupado), 1)
+        self.assertEqual(ocupado[0]['reservation']['guest_name'], self.guest.name)
+
+
+class PmsMotorDeReservasOnlineTests(PmsBase):
+    """O motor de reservas do site — o único sítio do PMS onde quem escreve é
+    um estranho, sem login. Tudo o que entra aqui tem de ser desconfiado."""
+
+    def setUp(self):
+        super().setUp()
+        from .models import BookingSettings
+        self.cfg = BookingSettings.objects.create(hotel=self.hotel, slug='hotel-teste',
+                                                  deposit_percent=Decimal('30'))
+        self.client.logout()
+        self.client.force_authenticate(None)
+
+    def _disp(self, dias=7, noites=2, **extra):
+        p = {'slug': self.cfg.slug, 'check_in': str(self.hoje + timedelta(days=dias)),
+             'check_out': str(self.hoje + timedelta(days=dias + noites))}
+        p.update(extra)
+        return self.client.get('/api/pms/booking/availability/', p)
+
+    def _reservar(self, dias=7, noites=2, **extra):
+        d = {'slug': self.cfg.slug, 'room_type': self.rt,
+             'check_in': str(self.hoje + timedelta(days=dias)),
+             'check_out': str(self.hoje + timedelta(days=dias + noites)),
+             'guest': {'name': 'Cliente do Site', 'email': 'site@exemplo.ao'}}
+        d.update(extra)
+        return self.client.post('/api/pms/booking/reserve/', d, format='json')
+
+    def test_motor_desligado_nao_atende_ninguem(self):
+        self.cfg.is_active = False
+        self.cfg.save(update_fields=['is_active'])
+        self.assertEqual(self.client.get('/api/pms/booking/config/',
+                                         {'slug': self.cfg.slug}).status_code, 404)
+        self.assertEqual(self._disp().status_code, 404)
+        self.assertEqual(self._reservar().status_code, 404)
+
+    def test_slug_que_nao_existe_nao_revela_nada(self):
+        r = self.client.get('/api/pms/booking/config/', {'slug': 'hotel-que-nao-existe'})
+        self.assertEqual(r.status_code, 404)
+        self.assertNotIn('Hotel Teste', str(r.data))
+
+    def test_datas_invalidas_sao_recusadas_antes_de_tudo(self):
+        self.assertEqual(self._disp(noites=0).status_code, 400)
+        self.assertEqual(self._reservar(noites=0).status_code, 400)
+        self.assertEqual(self.client.get('/api/pms/booking/availability/',
+                                         {'slug': self.cfg.slug, 'check_in': 'ontem',
+                                          'check_out': 'amanhã'}).status_code, 400)
+
+    def test_nao_se_reserva_para_uma_data_que_ja_passou(self):
+        """Um pedido com datas no passado só pode ser engano (ou um robô) — e
+        criava uma reserva a sério, que aparecia na lista da receção como se
+        alguém fosse chegar num dia que já foi."""
+        r = self._reservar(dias=-5)
+        self.assertEqual(r.status_code, 400,
+                         'não se aceita uma reserva online para uma noite que já passou')
+
+    def test_tarifa_vale_ate_a_ULTIMA_NOITE_e_nao_ate_a_data_de_saida(self):
+        """O que se vende são NOITES.
+
+        Uma tarifa válida de 1 a 10 cobre a noite de 10 (quem entra a 10 sai a
+        11). A validade era comparada com a data de SAÍDA, por isso a estadia
+        10→11 caía fora da tarifa e o site mostrava a tarifa base da categoria:
+        o hóspede via 30.000 em vez de 10.000 na última noite do período
+        promocional, e o hotel perdia a venda sem saber porquê."""
+        self.client.force_authenticate(self.user)
+        plano = self.client.post('/api/pms/rate-plans/', {
+            'hotel': self.hotel.id, 'room_type': self.rt, 'code': 'PROMO',
+            'name': 'Promoção', 'price_per_night': '10000',
+            'valid_from': str(self.hoje), 'valid_to': str(self.hoje + timedelta(days=7))},
+            format='json')
+        self.client.logout()
+        self.client.force_authenticate(None)
+        r = self._disp(dias=7, noites=1)
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(plano.status_code, 201, plano.content)
+        self.assertEqual(len(r.data["rooms"]), 1, r.data)
+        self.assertEqual(Decimal(r.data['rooms'][0]['price_per_night']), Decimal('10000'),
+                         'a última noite do período da tarifa tem de ser vendida a essa tarifa')
+
+    def test_sem_quartos_livres_o_site_nao_mostra_a_categoria(self):
+        """Três quartos, três reservas: a categoria desaparece do site em vez
+        de deixar alguém pagar por um quarto que não existe."""
+        self.client.force_authenticate(self.user)
+        for q in range(3):
+            self.client.post('/api/pms/reservations/', {
+                'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+                'room': self.quartos[q], 'check_in': str(self.hoje + timedelta(days=7)),
+                'check_out': str(self.hoje + timedelta(days=9))}, format='json')
+        self.client.logout()
+        self.client.force_authenticate(None)
+        self.assertEqual(self._disp().data['rooms'], [])
+        self.assertEqual(self._reservar().status_code, 409,
+                         'reservar sem disponibilidade tinha de ser recusado')
+
+    def test_antecedencia_minima_e_maxima_sao_respeitadas(self):
+        self.cfg.min_advance_days = 3
+        self.cfg.max_advance_days = 30
+        self.cfg.save(update_fields=['min_advance_days', 'max_advance_days'])
+        self.assertEqual(self._reservar(dias=1).status_code, 400)
+        self.assertEqual(self._reservar(dias=60).status_code, 400)
+        self.assertEqual(self._reservar(dias=10).status_code, 201)
+
+    def test_hospede_sem_nome_ou_email_nao_reserva(self):
+        self.assertEqual(self._reservar(guest={'name': '', 'email': 'a@b.ao'}).status_code, 400)
+        self.assertEqual(self._reservar(guest={'name': 'Alguém', 'email': ''}).status_code, 400)
+
+    def test_o_mesmo_email_nao_cria_uma_segunda_ficha_de_cliente(self):
+        """Senão o histórico do hóspede ficava partido em várias fichas e o
+        hotel nunca sabia que era um cliente repetido."""
+        from mdm.models import Customer as C
+        self.assertEqual(self._reservar(dias=7).status_code, 201)
+        self.assertEqual(self._reservar(dias=20).status_code, 201)
+        self.assertEqual(C.objects.filter(email__iexact='site@exemplo.ao').count(), 1)
+
+    def test_deposito_e_arredondado_aos_centimos(self):
+        """30% de 2 noites a 30.000 são 18.000,00 — e nunca "18000.0000 Kz",
+        que é um valor que ninguém escreve num site."""
+        self.cfg.deposit_percent = Decimal('33.33')
+        self.cfg.save(update_fields=['deposit_percent'])
+        r = self._reservar()
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(r.data['deposit_due'], '19998.00')
+        self.assertEqual(Decimal(r.data['total']), Decimal('60000'))
+
+    def test_pagar_duas_vezes_no_site_nao_cria_dois_depositos_pagos(self):
+        """O hóspede carrega duas vezes em "Já paguei" (a ligação dele é má):
+        o segundo pedido não pode criar um segundo depósito pago nem lançar
+        dinheiro duas vezes."""
+        from .models import BookingPayment
+        conf = self._reservar().data['confirmation']
+        p1 = self.client.post('/api/pms/booking/pay/',
+                              {'slug': self.cfg.slug, 'confirmation': conf}, format='json')
+        self.assertEqual(p1.status_code, 200, p1.content)
+        p2 = self.client.post('/api/pms/booking/pay/',
+                              {'slug': self.cfg.slug, 'confirmation': conf}, format='json')
+        self.assertEqual(p2.status_code, 400)
+        self.assertEqual(BookingPayment.objects.filter(status='PAID').count(), 1)
+
+    def test_pagar_uma_reserva_de_outro_hotel_nao_funciona(self):
+        """A confirmação é procurada dentro do hotel do slug — senão, com uma
+        confirmação adivinhada, marcava-se como pago o depósito de outra
+        propriedade."""
+        conf = self._reservar().data['confirmation']
+        from identity.models import Hotel
+        outro = Hotel.objects.create(company=self.hotel.company, name='Hotel Vizinho')
+        from .models import BookingSettings
+        vizinho = BookingSettings.objects.create(hotel=outro, slug='hotel-vizinho')
+        r = self.client.post('/api/pms/booking/pay/',
+                             {'slug': vizinho.slug, 'confirmation': conf}, format='json')
+        self.assertEqual(r.status_code, 404)
+
+
+class PmsMapaDeRefeicoesTests(PmsBase):
+    """O Mapa de Refeições — o que a cozinha usa para saber quantas pessoas
+    senta a cada refeição."""
+
+    def setUp(self):
+        super().setUp()
+        r = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'check_in': str(self.hoje), 'check_out': str(self.hoje + timedelta(days=3)),
+            'adults': 2, 'children': 1}, format='json')
+        self.res_id = r.data['id']
+
+    def test_aplicar_a_um_periodo_grava_um_dia_de_cada_vez(self):
+        r = self.client.post('/api/pms/meal-plan-entries/apply-range/', {
+            'reservation': self.res_id, 'meal_code': 'BREAKFAST',
+            'date_from': str(self.hoje), 'date_to': str(self.hoje + timedelta(days=2)),
+            'adults': 2, 'children_1': 1}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(len(r.data['ids']), 3, 'três dias pedidos, três linhas')
+        lista = self.client.get('/api/pms/meal-plan-entries/', {'reservation': self.res_id})
+        self.assertEqual(len(lista.data), 3)
+
+    def test_aplicar_duas_vezes_nao_duplica_as_refeicoes(self):
+        """Senão a cozinha preparava o dobro dos pequenos-almoços (e o mapa
+        contava o dobro das pessoas) só porque alguém gravou duas vezes."""
+        payload = {'reservation': self.res_id, 'meal_code': 'DINNER',
+                   'date_from': str(self.hoje), 'date_to': str(self.hoje + timedelta(days=2)),
+                   'adults': 2}
+        self.client.post('/api/pms/meal-plan-entries/apply-range/', payload, format='json')
+        self.client.post('/api/pms/meal-plan-entries/apply-range/', payload, format='json')
+        lista = self.client.get('/api/pms/meal-plan-entries/', {'reservation': self.res_id})
+        self.assertEqual(len(lista.data), 3, 'a segunda gravação atualiza, não acrescenta')
+
+    def test_refeicao_desconhecida_e_recusada(self):
+        r = self.client.post('/api/pms/meal-plan-entries/apply-range/', {
+            'reservation': self.res_id, 'meal_code': 'BRUNCH',
+            'date_from': str(self.hoje), 'date_to': str(self.hoje)}, format='json')
+        self.assertEqual(r.status_code, 400)
+
+    def test_sem_datas_explica_se_em_vez_de_rebentar(self):
+        """Faltar uma data no pedido dava erro interno (500) — o utilizador via
+        "Ocorreu um erro interno" e ficava sem saber o que tinha feito mal."""
+        r = self.client.post('/api/pms/meal-plan-entries/apply-range/', {
+            'reservation': self.res_id, 'meal_code': 'LUNCH'}, format='json')
+        self.assertEqual(r.status_code, 400, 'faltar a data explica-se, não rebenta')
+        r = self.client.post('/api/pms/meal-plan-entries/apply-range/', {
+            'reservation': self.res_id, 'meal_code': 'LUNCH',
+            'date_from': 'segunda', 'date_to': 'terça'}, format='json')
+        self.assertEqual(r.status_code, 400)
+
+    def test_refeicoes_fora_da_estadia_sao_recusadas(self):
+        """Marcar jantares para dias em que o hóspede já saiu é comida pedida
+        para uma mesa que ninguém se senta — e, se houver pensão, dinheiro
+        cobrado por refeições que não existiram."""
+        r = self.client.post('/api/pms/meal-plan-entries/apply-range/', {
+            'reservation': self.res_id, 'meal_code': 'DINNER',
+            'date_from': str(self.hoje + timedelta(days=5)),
+            'date_to': str(self.hoje + timedelta(days=6)), 'adults': 2}, format='json')
+        self.assertEqual(r.status_code, 400,
+                         'não se marcam refeições para fora das datas da estadia')
+
+    def test_o_mapa_de_um_hotel_nao_mostra_as_refeicoes_do_outro(self):
+        """Isolamento por propriedade: o mapa de refeições era a única lista do
+        PMS que não filtrava por hotel — a cozinha do Hotel A via (e podia
+        apagar) as refeições do Hotel B."""
+        from identity.models import Hotel, UserHotelAccess
+        from django.contrib.auth.models import User as U
+        self.client.post('/api/pms/meal-plan-entries/apply-range/', {
+            'reservation': self.res_id, 'meal_code': 'BREAKFAST',
+            'date_from': str(self.hoje), 'date_to': str(self.hoje), 'adults': 2}, format='json')
+
+        outro = Hotel.objects.create(company=self.hotel.company, name='Hotel Vizinho')
+        vizinho = U.objects.create_user('recepcao_vizinha', 'v@v.ao', 'x')
+        UserHotelAccess.objects.create(user=vizinho, hotel=outro)
+        self.client.force_authenticate(vizinho)
+        r = self.client.get('/api/pms/meal-plan-entries/')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(list(r.data), [],
+                         'a receção de um hotel não pode ver as refeições do outro')
+
+
+class PmsInventarioETarifasTests(PmsBase):
+    """Categorias, quartos, características e tarifas — a tabela de preços do
+    hotel. Um engano aqui vende um quarto ao preço de outro."""
+
+    def test_categoria_e_quarto_nao_se_repetem_no_hotel(self):
+        r = self.client.post('/api/pms/room-types/', {
+            'hotel': self.hotel.id, 'code': 'STD', 'name': 'Outro Standard'}, format='json')
+        self.assertEqual(r.status_code, 400, 'duas categorias com o mesmo código confundem tudo')
+        r = self.client.post('/api/pms/rooms/', {
+            'hotel': self.hotel.id, 'room_type': self.rt, 'number': '101'}, format='json')
+        self.assertEqual(r.status_code, 400, 'dois quartos 101 no mesmo hotel')
+
+    def test_estado_do_quarto_so_aceita_estados_que_existem(self):
+        r = self.client.post('/api/pms/rooms/%s/set_status/' % self.quartos[0],
+                             {'status': 'LIMPINHO'}, format='json')
+        self.assertEqual(r.status_code, 400)
+        r = self.client.post('/api/pms/rooms/%s/set_status/' % self.quartos[0],
+                             {'status': 'OOO'}, format='json')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(Room.objects.get(pk=self.quartos[0]).status, 'OOO')
+
+    def test_quarto_fora_de_servico_nao_recebe_check_in(self):
+        """Um quarto em obras não se vende — e o check-in é a última porta
+        antes de o hóspede ficar com a chave de um quarto sem água."""
+        self.client.post('/api/pms/rooms/%s/set_status/' % self.quartos[0],
+                         {'status': 'OOO'}, format='json')
+        res = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'check_in': str(self.hoje), 'check_out': str(self.hoje + timedelta(days=1))},
+            format='json')
+        r = self.client.post('/api/pms/reservations/%s/check_in/' % res.data['id'],
+                             {'room': self.quartos[0]}, format='json')
+        self.assertEqual(r.status_code, 409, r.content)
+
+    def test_quarto_por_limpar_exige_confirmacao_expressa(self):
+        """Dar um quarto sujo a um hóspede acontece (está cheio, a governanta
+        vai a seguir), mas tem de ser uma decisão tomada, não um descuido."""
+        self.client.post('/api/pms/rooms/%s/set_status/' % self.quartos[0],
+                         {'status': 'VACANT_DIRTY'}, format='json')
+        res = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'check_in': str(self.hoje), 'check_out': str(self.hoje + timedelta(days=1))},
+            format='json')
+        url = '/api/pms/reservations/%s/check_in/' % res.data['id']
+        self.assertEqual(self.client.post(url, {'room': self.quartos[0]},
+                                          format='json').status_code, 409)
+        self.assertEqual(self.client.post(url, {'room': self.quartos[0], 'allow_dirty': True},
+                                          format='json').status_code, 200)
+
+    def test_calendario_de_tarifas_so_mexe_nos_dias_da_semana_escolhidos(self):
+        """"Sexta e sábado mais caros": a atualização em massa não pode tocar
+        nos outros dias — era assim que uma promoção de fim de semana baixava
+        o preço da semana toda."""
+        plano = self.client.post('/api/pms/rate-plans/', {
+            'hotel': self.hotel.id, 'room_type': self.rt, 'code': 'BAR',
+            'name': 'Tarifa Balcão', 'price_per_night': '30000'}, format='json')
+        inicio = self.hoje + timedelta(days=(4 - self.hoje.weekday()) % 7)   # próxima sexta
+        r = self.client.post('/api/pms/rate-plans/bulk_update/', {
+            'rate_plan_ids': [plano.data['id']], 'date_from': str(inicio),
+            'date_to': str(inicio + timedelta(days=6)), 'weekdays': [4, 5],
+            'update_price': True, 'base_price': '45000'}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['days_touched'], 2, 'só a sexta e o sábado do período')
+        linhas = self.client.get('/api/pms/rate-overrides/',
+                                 {'rate_plan': plano.data['id']}).data
+        self.assertEqual(len(linhas), 2)
+        self.assertEqual({l['date'] for l in linhas},
+                         {inicio.isoformat(), (inicio + timedelta(days=1)).isoformat()})
+
+    def test_periodo_demasiado_longo_na_atualizacao_em_massa_e_recusado(self):
+        """Dez anos de dias × vinte tarifas é um pedido que fica a pensar e
+        enche a base de dados de linhas que ninguém pediu."""
+        plano = self.client.post('/api/pms/rate-plans/', {
+            'hotel': self.hotel.id, 'room_type': self.rt, 'code': 'BAR2',
+            'name': 'Balcão 2', 'price_per_night': '30000'}, format='json')
+        r = self.client.post('/api/pms/rate-plans/bulk_update/', {
+            'rate_plan_ids': [plano.data['id']], 'date_from': str(self.hoje),
+            'date_to': str(self.hoje + timedelta(days=4000)),
+            'update_price': True, 'base_price': '1'}, format='json')
+        self.assertEqual(r.status_code, 400)
+
+    def test_atualizacao_em_massa_sem_tarifas_ou_sem_datas_e_recusada(self):
+        self.assertEqual(self.client.post('/api/pms/rate-plans/bulk_update/', {},
+                                          format='json').status_code, 400)
+        self.assertEqual(self.client.post('/api/pms/rate-plans/bulk_update/',
+                                          {'rate_plan_ids': [1], 'date_from': str(self.hoje),
+                                           'date_to': str(self.hoje - timedelta(days=5))},
+                                          format='json').status_code, 400)
+
+    def test_a_tarifa_da_reserva_manda_sobre_a_do_plano_e_a_da_categoria(self):
+        """A cadeia de preços tem de ser uma só em todo o sistema: tarifa
+        escrita na reserva > preço do plano > tarifa base da categoria. Era um
+        `if` copiado em três ficheiros — e o relatório deixava de bater com o
+        que o check-in lançava."""
+        plano = self.client.post('/api/pms/rate-plans/', {
+            'hotel': self.hotel.id, 'room_type': self.rt, 'code': 'COR',
+            'name': 'Corporate', 'price_per_night': '22000'}, format='json')
+        base = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'check_in': str(self.hoje), 'check_out': str(self.hoje + timedelta(days=1))},
+            format='json')
+        self.assertEqual(Reservation.objects.get(pk=base.data['id']).effective_rate,
+                         Decimal('30000'), 'sem plano nem tarifa, vale a base da categoria')
+        comPlano = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'rate_plan': plano.data['id'], 'check_in': str(self.hoje),
+            'check_out': str(self.hoje + timedelta(days=1))}, format='json')
+        self.assertEqual(Reservation.objects.get(pk=comPlano.data['id']).effective_rate,
+                         Decimal('22000'))
+        negociada = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'rate_plan': plano.data['id'], 'rate': '15000', 'check_in': str(self.hoje),
+            'check_out': str(self.hoje + timedelta(days=1))}, format='json')
+        self.assertEqual(Reservation.objects.get(pk=negociada.data['id']).effective_rate,
+                         Decimal('15000'), 'a tarifa negociada na reserva manda sobre tudo')
+
+    def test_encargo_fixo_mostra_o_que_vai_somar_a_estadia(self):
+        """Quem lança o estacionamento por noite tem de ver logo o que isso
+        soma na estadia inteira, e não só o valor da noite."""
+        res = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'check_in': str(self.hoje), 'check_out': str(self.hoje + timedelta(days=3))},
+            format='json')
+        r = self.client.post('/api/pms/fixed-charges/', {
+            'reservation': res.data['id'], 'description': 'Estacionamento',
+            'charge_type': 'MISC', 'amount': '2500', 'per_night': True}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(r.data['total_estimado'], '7500.00')
+
+
+class PmsFrontDeskRestanteTests(PmsBase):
+    """Governanta, perdidos e achados, lista telefónica e eventos — as abas
+    pequenas, que ninguém testa e que o pessoal da receção usa todos os dias."""
+
+    def test_perdidos_e_achados_percorre_os_tres_estados(self):
+        r = self.client.post('/api/pms/lost-found-items/', {
+            'hotel': self.hotel.id, 'description': 'Óculos de sol',
+            'found_location': 'Piscina', 'found_date': str(self.hoje),
+            'room': self.quartos[0]}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        item = r.data['id']
+        self.assertEqual(r.data['status'], 'FOUND')
+        self.client.patch('/api/pms/lost-found-items/%s/' % item,
+                          {'status': 'CLAIMED', 'claimed_by': 'Hospede Teste'}, format='json')
+        achados = self.client.get('/api/pms/lost-found-items/', {'status': 'CLAIMED'})
+        self.assertEqual(len(achados.data), 1)
+        self.assertEqual(self.client.get('/api/pms/lost-found-items/',
+                                         {'status': 'FOUND'}).data, [])
+        pesquisa = self.client.get('/api/pms/lost-found-items/', {'q': 'piscina'})
+        self.assertEqual(len(pesquisa.data), 1, 'a pesquisa tem de ignorar maiúsculas')
+
+    def test_tarefa_concluida_duas_vezes_nao_estraga_o_estado_do_quarto(self):
+        """Dar a mesma limpeza por concluída outra vez (duplo-clique) não pode
+        marcar como limpo um quarto que já voltou a estar ocupado."""
+        tarefa = self.client.post('/api/pms/tasks/', {
+            'hotel': self.hotel.id, 'title': 'Limpar 101', 'task_type': 'CLEANING',
+            'room': self.quartos[0]}, format='json')
+        self.client.post('/api/pms/rooms/%s/set_status/' % self.quartos[0],
+                         {'status': 'VACANT_DIRTY'}, format='json')
+        r1 = self.client.post('/api/pms/tasks/%s/mark-done/' % tarefa.data['id'], {}, format='json')
+        self.assertEqual(r1.data['room_released'], '101')
+        self.client.post('/api/pms/rooms/%s/set_status/' % self.quartos[0],
+                         {'status': 'OCCUPIED'}, format='json')
+        r2 = self.client.post('/api/pms/tasks/%s/mark-done/' % tarefa.data['id'], {}, format='json')
+        self.assertIsNone(r2.data['room_released'])
+        self.assertEqual(Room.objects.get(pk=self.quartos[0]).status, 'OCCUPIED',
+                         'a tarefa repetida não pode roubar o quarto ao hóspede que lá está')
+
+    def test_lista_telefonica_pesquisa_por_nome_departamento_e_ramal(self):
+        self.client.post('/api/pms/phone-directory/', {
+            'hotel': self.hotel.id, 'name': 'Governanta', 'department': 'Andares',
+            'extension': '210'}, format='json')
+        for termo in ('governanta', 'andares', '210'):
+            r = self.client.get('/api/pms/phone-directory/', {'q': termo})
+            self.assertEqual(len(r.data), 1, 'não encontrou pesquisando por "%s"' % termo)
+
+    def test_evento_cancelado_sai_da_previsao_de_receita(self):
+        """A previsão de receita de eventos soma os CONFIRMADOS. Um evento
+        cancelado que continuasse a somar prometia ao dono dinheiro que já
+        tinha desaparecido."""
+        ev = self.client.post('/api/pms/events/', {
+            'hotel': self.hotel.id, 'name': 'Casamento', 'event_date': str(self.hoje),
+            'status': 'CONFIRMED', 'estimated_revenue': '1500000'}, format='json')
+        self.assertEqual(ev.status_code, 201, ev.content)
+        d = self.client.get('/api/pms/events/forecast/', {'months': 1})
+        self.assertEqual(d.data['total'], 1500000.0)
+        self.client.patch('/api/pms/events/%s/' % ev.data['id'],
+                          {'status': 'CANCELLED'}, format='json')
+        d = self.client.get('/api/pms/events/forecast/', {'months': 1})
+        self.assertEqual(d.data['total'], 0.0, 'um evento cancelado não é receita prevista')
+
+    def test_previsao_de_eventos_com_parametros_absurdos_nao_rebenta(self):
+        for valor in ('abc', '-5', '0', '999'):
+            r = self.client.get('/api/pms/events/forecast/', {'months': valor})
+            self.assertEqual(r.status_code, 200, 'months=%s rebentou' % valor)
+            self.assertGreaterEqual(len(r.data['rows']), 1)
+            self.assertLessEqual(len(r.data['rows']), 24)
+
+
+class PmsRelatoriosQueTemDeBaterTests(PmsBase):
+    """Os relatórios vistos pelo dinheiro: o que eles somam tem de ser o que o
+    hotel vendeu — nem mais (receita que não existe) nem a dobrar."""
+
+    def _correr(self, code, params=None):
+        p = dict(params or {})
+        p.setdefault('detailed', 'S')
+        r = self.client.post('/api/pos/reports/run/', {'code': code, 'params': p}, format='json')
+        self.assertEqual(r.status_code, 200, '%s: %s' % (code, r.content))
+        return r.data
+
+    def _reserva(self, dias=0, noites=1, estado='BOOKED', origem='DIRECT'):
+        r = self.client.post('/api/pms/reservations/', {
+            'hotel': self.hotel.id, 'guest': self.guest.id, 'room_type': self.rt,
+            'check_in': str(self.hoje + timedelta(days=dias)),
+            'check_out': str(self.hoje + timedelta(days=dias + noites)),
+            'status': estado, 'source': origem}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        return r.data['id']
+
+    def test_lista_de_espera_nao_e_receita_nem_ocupacao(self):
+        """A lista de espera é um pedido ALÉM da capacidade — está à espera de
+        que alguém desista. A disponibilidade sempre a tratou assim, mas estes
+        relatórios contavam-na como estadia: com 3 quartos e 2 pessoas em
+        espera dava ocupação acima de 100% e receita de noites nunca vendidas."""
+        self._reserva()
+        self._reserva(estado='WAITLIST')
+        self._reserva(estado='WAITLIST')
+        d = self.client.get('/api/pms/reports/performance/',
+                            {'date_from': str(self.hoje), 'date_to': str(self.hoje)}).data
+        self.assertEqual(d['revenue'], 30000.0,
+                         'só a reserva verdadeira é receita (%s)' % d['revenue'])
+        self.assertEqual(d['occupancy_pct'], 33.3,
+                         'ocupação com lista de espera a contar: %s%%' % d['occupancy_pct'])
+
+    def test_canceladas_aparecem_na_lista_mas_nao_no_total_em_dinheiro(self):
+        """Ver o que se perdeu é útil; somá-lo à receita não. O total deste
+        relatório não batia com nenhum outro num mês com cancelamentos."""
+        self._reserva()
+        cancelada = self._reserva()
+        self.client.post('/api/pms/reservations/%s/cancel/' % cancelada, {}, format='json')
+        d = self._correr('pms_reservas', {'from': str(self.hoje), 'to': str(self.hoje)})
+        self.assertEqual(len(d['rows']), 2, 'as duas aparecem na lista')
+        self.assertEqual(d['totals']['total'], 30000.0,
+                         'o total somou a reserva cancelada (%s)' % d['totals']['total'])
+        self.assertEqual(d['totals']['nights'], 1)
+
+    def test_estadia_entre_dois_meses_nao_conta_inteira_nos_dois(self):
+        """O relatório "de onde vem o negócio" somava as noites TODAS da
+        estadia em cada período que ela tocasse: uma estadia de 6 noites a
+        cavalo de dois meses rendia 6 noites em Janeiro e outras 6 em
+        Fevereiro. A mesma receita contada duas vezes — a soma dos meses nunca
+        dava o ano."""
+        self._reserva(dias=-2, noites=4, origem='ONLINE')     # 2 noites antes, 2 a partir de hoje
+        anterior = self._correr('pms_origem', {'from': str(self.hoje - timedelta(days=2)),
+                                               'to': str(self.hoje - timedelta(days=1))})
+        atual = self._correr('pms_origem', {'from': str(self.hoje),
+                                            'to': str(self.hoje + timedelta(days=1))})
+        self.assertEqual(anterior['totals']['revenue'], 60000.0, anterior['rows'])
+        self.assertEqual(atual['totals']['revenue'], 60000.0, atual['rows'])
+        self.assertEqual(anterior['totals']['revenue'] + atual['totals']['revenue'],
+                         120000.0, 'as duas metades têm de somar a estadia, não o dobro dela')
+
+    def test_relatorios_de_um_hotel_vazio_respondem_a_zero(self):
+        """O primeiro dia de um cliente novo: nenhum relatório pode rebentar
+        nem mostrar "NaN" só porque ainda não há reservas."""
+        for rota in ('performance', 'occupancy', 'revenue', 'payments', 'charges', 'housekeeping'):
+            r = self.client.get('/api/pms/reports/%s/' % rota)
+            self.assertEqual(r.status_code, 200, '%s rebentou sem dados' % rota)
+        d = self.client.get('/api/pms/reports/performance/').data
+        self.assertEqual((d['revenue'], d['adr'], d['revpar'], d['occupancy_pct']), (0, 0, 0, 0))
+
+    def test_pagamentos_e_consumos_nao_contam_lancamentos_estornados(self):
+        """Um estorno não é dinheiro recebido nem consumo feito: contar as duas
+        linhas (original e estorno) inflava os dois relatórios."""
+        res_id = self._reserva_em_checkin()
+        folio = Folio.objects.get(reservation_id=res_id)
+        enc = self.client.post('/api/pms/folios/%s/post_charge/' % folio.id,
+                               {'amount': '5000', 'charge_type': 'MINIBAR',
+                                'description': 'Minibar'}, format='json')
+        self.client.post('/api/pms/folios/%s/settle/' % folio.id,
+                         {'amount': '10000'}, format='json')
+        self.client.post('/api/pms/folios/%s/reverse-charge/' % folio.id,
+                         {'charge': enc.data['id'], 'reason': 'Engano'}, format='json')
+        enc_rep = self.client.get('/api/pms/reports/charges/',
+                                  {'date_from': str(self.hoje), 'date_to': str(self.hoje)}).data
+        self.assertEqual(enc_rep['total'], 0.0,
+                         'o consumo estornado continuou a contar: %s' % enc_rep['rows'])
+        pag = self.client.get('/api/pms/reports/payments/',
+                              {'date_from': str(self.hoje), 'date_to': str(self.hoje)}).data
+        self.assertEqual(pag['total'], 10000.0)
+
+
+class PmsSaftEntradasMalFormadasTests(PmsBase):
+    """O SAF-T do alojamento é o ficheiro que se entrega à AGT. O que ele
+    recusa tem de ser recusado com uma explicação, não com um erro interno."""
+
+    def test_ano_ou_mes_impossiveis_explicam_se(self):
+        for dados in ({'year': '2026a'}, {'year': self.hoje.year, 'month': 13},
+                      {'year': self.hoje.year, 'month': 'Janeiro'}, {'year': 12}):
+            r = self.client.post('/api/pms/saft/', dados, format='json')
+            self.assertEqual(r.status_code, 400, 'pedido %s não foi explicado' % dados)
+            self.assertIn('detail', r.data)
+
+    def test_resumo_de_um_hotel_que_ainda_nao_facturou(self):
+        r = self.client.get('/api/pms/saft/')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.data['documents'], 0)
+        self.assertIsNone(r.data['first'])
+
+
+class PmsTodasAsRotasRespondemTests(PmsBase):
+    """A REGRA DE OURO: nenhuma rota do PMS pode rebentar num hotel acabado de
+    montar, sem uma única reserva. É o primeiro ecrã que um cliente novo vê, e
+    um 500 aqui parece um sistema avariado."""
+
+    LISTAS = [
+        'room-types', 'rooms', 'room-attributes', 'rate-plans', 'rate-overrides', 'blocks',
+        'reservations', 'folios', 'fixed-charges', 'meal-plan-entries', 'night-audit-runs',
+        'lost-found-items', 'tasks', 'phone-directory', 'booking-settings', 'channels',
+        'channel-sync-logs', 'channel-room-maps', 'booking-payments', 'chatbot-settings',
+        'events',
+    ]
+    VISTAS = [
+        'availability/', 'reports/performance/', 'reports/occupancy/', 'reports/revenue/',
+        'reports/payments/', 'reports/charges/', 'reports/housekeeping/',
+        'frontdesk/hotel-status/', 'events/forecast/', 'saft/', 'rooms/free/',
+    ]
+
+    def test_todas_as_listas_respondem_vazias(self):
+        for rota in self.LISTAS:
+            r = self.client.get('/api/pms/%s/' % rota)
+            self.assertEqual(r.status_code, 200, '/api/pms/%s/ devolveu %s' % (rota, r.status_code))
+            linhas = r.data if isinstance(r.data, list) else r.data.get('results', [])
+            self.assertIsInstance(linhas, list, '/api/pms/%s/ não devolveu uma lista' % rota)
+
+    def test_todas_as_vistas_de_leitura_respondem(self):
+        for rota in self.VISTAS:
+            r = self.client.get('/api/pms/%s' % rota)
+            self.assertEqual(r.status_code, 200, '/api/pms/%s devolveu %s' % (rota, r.status_code))
+
+    def test_os_filtros_das_listas_aceitam_lixo_sem_rebentar(self):
+        """Um filtro guardado no ecrã (ou um link antigo) manda valores que já
+        não existem — e isso não pode dar erro interno."""
+        pedidos = [
+            ('reservations', {'status': 'XPTO', 'room_type': '999', 'check_in_from': 'ontem'}),
+            ('blocks', {'min_rooms': '2', 'room_type': '999'}),
+            ('rooms', {'room_type': '999'}),
+            ('tasks', {'status': 'XPTO', 'room': '999'}),
+            ('lost-found-items', {'status': 'XPTO'}),
+            ('booking-payments', {'status': 'XPTO', 'reservation': '999'}),
+            ('channel-room-maps', {'channel': '999'}),
+            ('meal-plan-entries', {'reservation': '999'}),
+        ]
+        for rota, params in pedidos:
+            r = self.client.get('/api/pms/%s/' % rota, params)
+            self.assertIn(r.status_code, (200, 400),
+                          '/api/pms/%s/ com %s devolveu %s' % (rota, params, r.status_code))
+
+    def test_pedir_uma_reserva_que_nao_existe_da_404_e_nao_500(self):
+        for rota in ('reservations/99999/', 'folios/99999/', 'blocks/99999/',
+                     'reservations/99999/documents/', 'reservations/99999/custom-fields/'):
+            r = self.client.get('/api/pms/%s' % rota)
+            self.assertEqual(r.status_code, 404, '/api/pms/%s devolveu %s' % (rota, r.status_code))
+
+    def test_accoes_de_escrita_sem_dados_explicam_o_que_falta(self):
+        """Carregar no botão sem escolher nada devolve uma explicação, não um
+        erro interno — é o engano mais comum de todos."""
+        pedidos = [
+            ('reservations/quick-assign/', {}),
+            ('reservations/change-room/', {}),
+            ('meal-plan-entries/apply-range/', {}),
+            ('rate-plans/bulk_update/', {}),
+            ('channel-room-maps/auto-map/', {}),
+            ('chatbot/simulate/', {}),
+        ]
+        for rota, dados in pedidos:
+            r = self.client.post('/api/pms/%s' % rota, dados, format='json')
+            self.assertIn(r.status_code, (400, 404),
+                          '/api/pms/%s devolveu %s' % (rota, r.status_code))
+            self.assertIn('detail', r.data, '/api/pms/%s não disse o que faltava' % rota)
+
+
+class PmsFechoDaEstadiaTests(PmsBase):
+    """O check-out — o momento em que o dinheiro tem de estar todo recebido e
+    o quarto tem de voltar ao circuito. É a última porta antes de o hóspede
+    desaparecer com uma conta em aberto."""
+
+    def setUp(self):
+        super().setUp()
+        self.res_id = self._reserva_em_checkin()
+        self.folio = Folio.objects.get(reservation_id=self.res_id)
+
+    def _liquidar(self, folio):
+        saldo = Folio.objects.get(pk=folio.id).balance
+        if saldo > 0:
+            self.client.post('/api/pms/folios/%s/settle/' % folio.id,
+                             {'amount': str(saldo)}, format='json')
+
+    def test_segunda_conta_em_aberto_trava_o_check_out(self):
+        """A conta principal paga e a dos extras esquecida: o check-out tem de
+        travar nas DUAS. Era assim que um hóspede saía sem pagar o minibar."""
+        extras = self.client.post('/api/pms/folios/%s/split/' % self.folio.id,
+                                  {'label': 'B · Extras'}, format='json')
+        self.client.post('/api/pms/folios/%s/post_charge/' % extras.data['id'],
+                         {'amount': '3000', 'charge_type': 'MINIBAR',
+                          'description': 'Águas'}, format='json')
+        self._liquidar(self.folio)
+        r = self.client.post('/api/pms/reservations/%s/check_out/' % self.res_id, {}, format='json')
+        self.assertEqual(r.status_code, 409, 'saiu com a conta dos extras em aberto')
+        self.assertIn('Extras', r.data['detail'])
+        self._liquidar(Folio.objects.get(pk=extras.data['id']))
+        r = self.client.post('/api/pms/reservations/%s/check_out/' % self.res_id, {}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(Folio.objects.filter(reservation_id=self.res_id,
+                                              status='OPEN').count(), 0,
+                         'o check-out tem de fechar TODAS as contas')
+
+    def test_conta_com_saldo_a_favor_do_hospede_tambem_trava(self):
+        """Saldo negativo é dinheiro do hóspede que ficou na casa (pagou a
+        mais, ou um depósito que não chegou a ser consumido). Deixá-lo sair
+        assim é ficar com dinheiro dele sem ninguém decidir nada."""
+        self._liquidar(self.folio)
+        self.folio.refresh_from_db()
+        FolioCharge = self.folio.charges.model
+        FolioCharge.objects.create(folio=self.folio, charge_type='PAYMENT',
+                                   description='Pagamento a mais', amount=Decimal('5000'))
+        r = self.client.post('/api/pms/reservations/%s/check_out/' % self.res_id, {}, format='json')
+        self.assertEqual(r.status_code, 409, 'saldo a favor do hóspede não pode passar calado')
+
+    def test_check_out_devolve_o_quarto_ao_circuito_por_limpar(self):
+        """Depois da saída o quarto fica "Por limpar" — nunca "Limpo" (a
+        receção vendia-o sujo) nem "Ocupado" (ficava preso para sempre)."""
+        self._liquidar(self.folio)
+        self.client.post('/api/pms/reservations/%s/check_out/' % self.res_id, {}, format='json')
+        self.assertEqual(Room.objects.get(pk=self.quartos[0]).status, 'VACANT_DIRTY')
+
+    def test_check_out_duas_vezes_nao_passa(self):
+        """Duplo-clique no botão de saída: a segunda vez explica-se em vez de
+        voltar a mexer nas contas já fechadas."""
+        self._liquidar(self.folio)
+        self.assertEqual(self.client.post('/api/pms/reservations/%s/check_out/' % self.res_id,
+                                          {}, format='json').status_code, 200)
+        r = self.client.post('/api/pms/reservations/%s/check_out/' % self.res_id, {}, format='json')
+        self.assertEqual(r.status_code, 400)
+
+    def test_check_in_duas_vezes_nao_abre_uma_segunda_conta(self):
+        """Repetir o check-in abria outro folio e lançava outra diária — a
+        mesma noite cobrada duas vezes, em duas contas diferentes."""
+        r = self.client.post('/api/pms/reservations/%s/check_in/' % self.res_id, {}, format='json')
+        self.assertEqual(r.status_code, 400, r.content)
+        self.assertEqual(Folio.objects.filter(reservation_id=self.res_id).count(), 1)
+
+    def test_recriar_conta_depois_de_facturar_nao_repete_o_deposito(self):
+        """O depósito pago online entra na conta UMA vez. Abrir uma conta nova
+        (porque a primeira foi facturada) não pode lançá-lo outra vez — era
+        dinheiro inventado a favor do hóspede."""
+        from .models import BookingPayment
+        pag = BookingPayment.objects.create(
+            reservation_id=self.res_id, amount=Decimal('10000'), status='PAID',
+            method='TRANSFER', provider='SIMULATED')
+        # Entra na conta ao confirmar (o hóspede já está dentro).
+        r = self.client.post('/api/pms/booking-payments/%s/mark-paid/' % pag.id, {}, format='json')
+        self.assertEqual(r.status_code, 409, 'já estava PAGO — não se confirma duas vezes')
+        from .views import lancar_depositos_no_folio
+        self.assertEqual(lancar_depositos_no_folio(
+            Reservation.objects.get(pk=self.res_id), self.folio), 1)
+        self.assertEqual(lancar_depositos_no_folio(
+            Reservation.objects.get(pk=self.res_id), self.folio), 0,
+            'o depósito foi lançado duas vezes na conta')
+        self._liquidar(self.folio)
+        self.client.post('/api/pms/reservations/%s/check_out/' % self.res_id, {}, format='json')
+        nova = self.client.post('/api/pms/reservations/%s/recreate-folio/' % self.res_id, {},
+                                format='json')
+        self.assertEqual(nova.status_code, 201, nova.content)
+        self.assertEqual(nova.data['deposits_posted'], 0,
+                         'a conta nova lançou outra vez um depósito já lançado')
+
+    def test_conta_sem_consumos_nao_gera_factura(self):
+        """Uma factura de 0,00 assinada e comunicada à AGT é um documento que
+        não se pode anular sem nota de crédito."""
+        vazia = self.client.post('/api/pms/folios/%s/split/' % self.folio.id,
+                                 {'label': 'C · Vazia'}, format='json')
+        r = self.client.post('/api/pms/folios/%s/generate-invoice/' % vazia.data['id'], {},
+                             format='json')
+        self.assertEqual(r.status_code, 400, r.content)
+        self.assertIn('detail', r.data)

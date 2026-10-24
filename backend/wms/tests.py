@@ -167,7 +167,6 @@ class NiveisEMovimentos(ArmazemMontado):
         self.assertEqual(r2.status_code, 201, r2.data)
         self.assertEqual(self._saldo(), Decimal('30.0000'))
 
-    @unittest.expectedFailure
     def test_stock_negativo_devia_ser_impedido_ou_assinalado(self):
         """FALHA DE PROPÓSITO — defeito conhecido, a corrigir em `inventory/stock.py`.
 
@@ -271,7 +270,6 @@ class Transferencias(ArmazemMontado):
                               format='json')
         self.assertEqual(r2.status_code, 400)
 
-    @unittest.expectedFailure
     def test_transferir_mais_do_que_existe_devia_ser_recusado(self):
         """FALHA DE PROPÓSITO — defeito conhecido, a corrigir em `inventory/wh.py`.
 

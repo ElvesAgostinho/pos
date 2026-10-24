@@ -129,13 +129,14 @@ export default function MoveLines({ modo, ticket, setor, modoTransfer, onClose }
   // sozinha ao fechar — exatamente como uma subconta vazia se limpa ao sair.
   const criadaVazia = useRef<number | null>(null);
 
-  const contaQ = (id: number | null) => useQuery({
+  // Hook, e por isso declarado com o nome de um: ver a mesma nota no SectorEditor.
+  const useConta = (id: number | null) => useQuery({
     queryKey: ['ml-ticket', id],
     queryFn: async () => (await apiClient.get(`pos/tickets/${id}/`)).data,
     enabled: !!id,
   });
-  const { data: esq } = contaQ(esqId);
-  const { data: dir } = contaQ(dirId);
+  const { data: esq } = useConta(esqId);
+  const { data: dir } = useConta(dirId);
 
   // As contas abertas — para as subcontas (mesma mesa) e para as transferências (outras mesas).
   const { data: abertas = [] } = useQuery({

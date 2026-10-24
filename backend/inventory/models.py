@@ -76,6 +76,12 @@ class Item(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, blank=True, null=True, related_name='items')
     image_url = models.URLField(blank=True, null=True)
     min_stock = models.DecimalField(max_digits=14, decimal_places=3, default=0)
+    # (Validade) quantos dias dura este artigo DEPOIS de chegar ao armazém. É o que
+    # permite ao motor de stock datar sozinho o lote de cada receção: sem isto, a
+    # validade só existia se alguém a escrevesse à mão num ecrã à parte, depois de
+    # receber — e numa cozinha ninguém faz isso todos os dias. Em branco (serviços,
+    # material que não estraga) o lote fica sem data e sai no fim da fila do FEFO.
+    shelf_life_days = models.PositiveIntegerField(blank=True, null=True)
     max_stock = models.DecimalField(max_digits=14, decimal_places=3, blank=True, null=True)
     is_sold = models.BooleanField(default=True)          # disponível para venda
     is_purchased = models.BooleanField(default=True)     # comprável a fornecedor
@@ -417,7 +423,13 @@ class StockLot(models.Model):
 
     class Meta:
         db_table = 'inv_lot'
-        ordering = ['expiry_date', 'received_at']   # FEFO: valida primeiro
+        # FEFO — e os VAZIOS NO FIM. Em SQL, uma data em branco ordena ANTES de
+        # qualquer data: com `ordering = ['expiry_date', ...]` um lote sem validade
+        # aparecia no topo da lista de trabalho do economato, à frente de um que
+        # expira amanhã. O empregado segue a lista, gasta o lote sem data, e o que
+        # expirava amanhã vai ao lixo. `nulls_last` põe o que não tem data no fim,
+        # que é o seu lugar: primeiro gasta-se o que tem prazo a correr.
+        ordering = [models.F('expiry_date').asc(nulls_last=True), 'received_at', 'id']
 
     def __str__(self):
         return f"{self.item.code} · Lote {self.lot_number}"
@@ -675,3 +687,75 @@ class ReportDefinition(models.Model):
 
     def __str__(self):
         return f'{self.code} - {self.name}'
+
+
+# ==========================================================================
+# PRODUÇÃO — a ordem de fabrico. O que transforma ingredientes em produto.
+# ==========================================================================
+
+class ProductionOrder(models.Model):
+    """ORDEM DE PRODUÇÃO — 20 litros de molho de manhã, de uma vez.
+
+    Uma cozinha não produz à venda, produz em lote: faz-se o molho, o pão ou o
+    doce de manhã, gasta-se o que a ficha técnica manda, e fica stock do
+    produzido para o serviço do dia.
+
+    Antes disto, o custo de um artigo produzido NUNCA se formava: comprava-se
+    farinha e ovos, mas o bolo ficava a custo zero no armazém. Tudo o que lia
+    esse custo — a margem do prato, a valorização do stock, o custo das
+    existências no fim do mês — estava errado por omissão. Aqui o custo do
+    produzido é exactamente a soma do que saiu do armazém para o fazer.
+
+    O lote e a validade do produzido ficam na ordem: o molho feito hoje dura
+    três dias, e é essa data que a HACCP pede no rótulo do tabuleiro.
+    """
+    STATUS = [('DRAFT', 'Rascunho'), ('DONE', 'Produzida'), ('CANCELLED', 'Anulada')]
+
+    number = models.CharField(max_length=30, unique=True)
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT,
+                                  related_name='production_orders')
+    item = models.ForeignKey(Item, on_delete=models.PROTECT, related_name='production_orders')
+    quantity = models.DecimalField(max_digits=15, decimal_places=4,
+                                   help_text='Doses/unidades a produzir.')
+    status = models.CharField(max_length=10, choices=STATUS, default='DRAFT')
+
+    lot_number = models.CharField(max_length=60, blank=True, null=True)
+    expiry_date = models.DateField(blank=True, null=True)
+    note = models.CharField(max_length=255, blank=True, null=True)
+
+    # Preenchidos quando se produz — o custo que se formou de facto.
+    unit_cost = models.DecimalField(max_digits=14, decimal_places=4, default=0)
+    total_cost = models.DecimalField(max_digits=15, decimal_places=4, default=0)
+
+    created_by = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    produced_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'inv_production_order'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.number} · {self.quantity} × {self.item.code}'
+
+
+class ProductionOrderConsumption(models.Model):
+    """O que SAIU de facto do armazém para esta produção.
+
+    Guarda-se linha a linha, com o custo do dia, porque a ficha técnica muda e o
+    custo médio dos ingredientes também: sem esta fotografia, não havia como
+    explicar mais tarde porque é que o molho de Maio custou o que custou.
+    """
+    order = models.ForeignKey(ProductionOrder, on_delete=models.CASCADE,
+                              related_name='consumptions')
+    item = models.ForeignKey(Item, on_delete=models.PROTECT, related_name='+')
+    quantity = models.DecimalField(max_digits=15, decimal_places=4)
+    unit_cost = models.DecimalField(max_digits=14, decimal_places=4, default=0)
+    total_cost = models.DecimalField(max_digits=15, decimal_places=4, default=0)
+
+    class Meta:
+        db_table = 'inv_production_consumption'
+        ordering = ['id']
+
+    def __str__(self):
+        return f'{self.quantity} × {self.item.code} em {self.order.number}'

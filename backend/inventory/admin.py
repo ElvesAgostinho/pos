@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
-    UnitOfMeasure, ItemCategory, Item, Recipe, RecipeIngredient, Warehouse, StockLevel
+    UnitOfMeasure, ItemCategory, Item, Recipe, RecipeIngredient, Warehouse, StockLevel,
+    ProductionOrder, ProductionOrderConsumption
 )
 
 
@@ -48,3 +49,22 @@ class StockLevelAdmin(admin.ModelAdmin):
     list_display = ('item', 'warehouse', 'quantity_on_hand', 'quantity_reserved', 'min_stock_alert')
     list_filter = ('warehouse',)
     search_fields = ('item__name', 'item__code')
+
+
+class ProductionOrderConsumptionInline(admin.TabularInline):
+    model = ProductionOrderConsumption
+    extra = 0
+    # O que saiu de facto do armazém e a que custo: é a prova da produção, não se
+    # edita a posteriori — mexer aqui era mudar a história sem mexer no stock.
+    readonly_fields = ('item', 'quantity', 'unit_cost', 'total_cost')
+    can_delete = False
+
+
+@admin.register(ProductionOrder)
+class ProductionOrderAdmin(admin.ModelAdmin):
+    list_display = ('number', 'item', 'quantity', 'warehouse', 'status', 'unit_cost',
+                    'total_cost', 'produced_at')
+    list_filter = ('status', 'warehouse')
+    search_fields = ('number', 'item__code', 'item__name')
+    readonly_fields = ('unit_cost', 'total_cost', 'produced_at')
+    inlines = [ProductionOrderConsumptionInline]

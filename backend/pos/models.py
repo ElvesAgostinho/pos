@@ -338,6 +338,22 @@ class POSTicket(models.Model):
     GUEST_TYPES = [('PASSANTE', 'Passante'), ('HOTEL', 'Hotel'), ('INTERNO', 'Consumo Interno')]
     guest_type = models.CharField(max_length=10, choices=GUEST_TYPES, default='PASSANTE')
     # Associação de cliente/hóspede à mesa (aparece na comanda e na fatura).
+    # A ENTIDADE do cadastro — e não só o nome escrito à mão.
+    #
+    # A conta guardava NOME e NIF em texto e mais nada. Para uma venda a pronto
+    # chega; para uma venda A CRÉDITO não chega nada: a conta corrente do cliente
+    # é construída a partir dos documentos ligados à ENTIDADE
+    # (`FiscalDocument.customer`), e um nome escrito à mão não liga a entidade
+    # nenhuma. Se a emissão da factura falhasse e fosse reemitida depois pela fila
+    # (o caminho tolerante do `_safe_fiscalize`), a ligação perdia-se: a conta
+    # ficava fechada como "fiado", o documento saía sem entidade, e a dívida da
+    # empresa NUNCA aparecia na conta corrente dela. Ninguém a cobrava.
+    #
+    # `pos/views.py::issue_document` já lia este campo (`ticket.customer_id`)
+    # antes de ele existir — era sempre None, e por isso o botão de facturar à
+    # mão também perdia a entidade.
+    customer = models.ForeignKey('mdm.Customer', on_delete=models.SET_NULL, blank=True,
+                                 null=True, related_name='pos_tickets')
     customer_name = models.CharField(max_length=200, blank=True, null=True)
     customer_tax_id = models.CharField(max_length=30, blank=True, null=True)   # NIF -> fatura com contribuinte
     company_name = models.CharField(max_length=200, blank=True, null=True)
@@ -2929,6 +2945,7 @@ class StockDoc(models.Model):
         """
         from decimal import Decimal
         from django.utils import timezone
+        from inventory import stock as motor
         from inventory.models import StockLevel
 
         if self.posted or self.voided:
@@ -2945,17 +2962,28 @@ class StockDoc(models.Model):
         for l in self.lines.select_related('item'):
             destino = l.warehouse or self.warehouse
             if kind == 'TRANSFER' and self.warehouse_from_id:
-                self._move(l, self.warehouse_from, 'TRANSFER_OUT', -l.quantity, user)
-                self._move(l, destino, 'TRANSFER_IN', l.quantity, user)
+                # O MOTOR LEVA O LOTE CONSIGO. Feito à mão, a origem perdia
+                # quantidade e o destino recebia quantidade sem lote nenhum: a mesma
+                # caixa de iogurtes mudava de validade só por ter mudado de armazém.
+                motor.transfer(self.warehouse_from, destino, l.item, l.quantity,
+                               reference=self.number, by=user)
                 n += 2
             elif kind == 'INVENTORY':
                 # A quantidade da linha é a CONTAGEM real. O movimento é a DIFERENÇA para
                 # o que o sistema julgava ter — é aqui que se descobre o que desapareceu.
                 nivel = StockLevel.objects.filter(item=l.item, warehouse=destino).first()
                 atual = nivel.quantity_on_hand if nivel else Decimal('0')
-                dif = l.quantity - atual
-                if dif:
-                    self._move(l, destino, 'ADJUST', dif, user)
+                # O SALDO DE ANTES fica guardado na linha porque o movimento de ajuste
+                # só guarda a MAGNITUDE da diferença. Sem ele, anular uma contagem que
+                # tinha encontrado FALTA voltava a tirar a falta outra vez em vez de a
+                # devolver (ver `void`, em config_api.py).
+                l.balance_before = atual
+                l.save(update_fields=['balance_before'])
+                if l.quantity != atual:
+                    # `adjust` põe o saldo NA CONTAGEM e acerta os lotes com ela:
+                    # contou-se menos, abate por FEFO; contou-se mais, a sobra entra
+                    # como lote do documento de contagem.
+                    motor.adjust(destino, l.item, l.quantity, reference=self.number, by=user)
                     n += 1
             elif kind == 'REQUEST':
                 self._move(l, self.warehouse_from or destino, 'OUT', -l.quantity, user)
@@ -2970,54 +2998,50 @@ class StockDoc(models.Model):
         return n
 
     def _move(self, line, warehouse, tipo, delta, user):
-        """Um movimento + o saldo do armazém + o custo médio (se a série o mandar)."""
-        from decimal import Decimal
-        from inventory.models import StockMovement, StockLevel
+        """O movimento — feito pelo MOTOR DE STOCK, e não aqui à mão.
 
-        StockMovement.objects.create(
-            warehouse=warehouse, item=line.item, movement_type=tipo,
-            quantity=abs(delta), unit_cost=line.unit_cost,
-            reference=self.number, note=self.series.name, created_by=user)
+        Isto escrevia o StockMovement e o StockLevel directamente, com o seu próprio
+        cálculo de custo médio ponderado. Era um SEGUNDO motor de stock a viver ao
+        lado do verdadeiro (`inventory/stock.py`), e o que lhe faltava eram os LOTES:
+        uma entrada de mercadoria feita por um documento do POS subia o saldo sem
+        criar lote nenhum, e uma requisição baixava o saldo sem abater lote nenhum.
 
-        nivel, _ = StockLevel.objects.get_or_create(
-            item=line.item, warehouse=warehouse,
-            defaults={'quantity_on_hand': Decimal('0')})
+        À primeira compra ou à primeira requisição, a soma dos lotes deixava de bater
+        com o saldo do armazém — e com ela ia-se a validade (o FEFO passava a apontar
+        para mercadoria já consumida, e a esconder a que estava mesmo a expirar) e a
+        rastreabilidade, a que serve para responder a uma recolha do fornecedor ou a
+        uma intoxicação: "esta caixa, de que lote veio?".
 
-        antes = nivel.quantity_on_hand or Decimal('0')
-        depois = antes + delta
+        Era também o único sítio do sistema onde uma saída podia levar o saldo a
+        negativo sem ninguém dizer nada. O motor recusa-a (`StockInsuficiente`) e diz
+        quanto é que havia; quem lança o documento vê a razão no ecrã.
 
-        # CUSTO MÉDIO PONDERADO — vive no ARTIGO (Item.current_average_cost), que é onde o
-        # motor de stock já o guarda. Só se recalcula nas ENTRADAS e só se a série o mandar:
-        # uma saída não muda o custo do que ficou; uma entrada mais cara, sim.
-        if delta > 0 and self.series.updates_avg_cost and line.unit_cost:
-            it = line.item
-            total_antes = sum(
-                (x.quantity_on_hand or Decimal('0'))
-                for x in StockLevel.objects.filter(item=it))
-            custo_antes = it.current_average_cost or Decimal('0')
-            novo_total = total_antes + delta
-            if novo_total > 0:
-                it.current_average_cost = (
-                    (total_antes * custo_antes) + (delta * line.unit_cost)) / novo_total
-            else:
-                it.current_average_cost = line.unit_cost
-            it.save(update_fields=['current_average_cost'])
-
-        nivel.quantity_on_hand = depois
-        nivel.save()
+        As caixas da SÉRIE continuam a mandar, como antes: `updates_avg_cost` decide
+        se a entrada recalcula o custo médio, `updates_last_price` se atualiza o preço
+        de compra da ficha do artigo.
+        """
+        from inventory import stock as motor
 
         if delta > 0:
-            campos = []
+            motor.move_in(
+                warehouse, line.item, delta, line.unit_cost or 0,
+                reference=self.number, note=self.series.name, by=user, mtype=tipo,
+                # O lote do fornecedor vem na linha do documento (campos Lote e Data
+                # de validade); sem ele, o motor usa o número do documento, que é o
+                # que permite voltar atrás e descobrir de quem veio a mercadoria.
+                lote=line.lot, validade=line.expiry,
+                atualizar_custo=bool(self.series.updates_avg_cost and line.unit_cost))
             # (Série) "Atualiza último preço" — o preço de compra da ficha do artigo
             # passa a ser o desta entrada. É o que alimenta a margem.
             if self.series.updates_last_price and line.unit_cost:
                 line.item.purchase_price = line.unit_cost
-                campos.append('purchase_price')
-            if campos:
                 try:
-                    line.item.save(update_fields=campos)
+                    line.item.save(update_fields=['purchase_price'])
                 except Exception:
                     pass
+        elif delta < 0:
+            motor.move_out(warehouse, line.item, -delta, reference=self.number,
+                           note=self.series.name, by=user, mtype=tipo)
 
 
 class StockDocLine(models.Model):
@@ -3039,6 +3063,14 @@ class StockDocLine(models.Model):
     # com o stock de agora, uma venda feita durante a contagem falseava a diferença.
     theoretical_qty = models.DecimalField(max_digits=14, decimal_places=3, default=0)
     theoretical_cost = models.DecimalField(max_digits=14, decimal_places=4, default=0)
+
+    # O SALDO DO ARMAZÉM NO MOMENTO EM QUE O DOCUMENTO FOI LANÇADO. Difere do
+    # `theoretical_qty` de propósito: esse é o stock impresso na folha de contagem
+    # (que pode ter sido gerada ontem), este é o que estava lá no instante do
+    # lançamento — e é contra ele que o ajuste foi feito. Guarda-se porque é a única
+    # forma de ANULAR uma contagem com exactidão: o movimento de ajuste guarda a
+    # magnitude da diferença, nunca o sinal.
+    balance_before = models.DecimalField(max_digits=14, decimal_places=3, blank=True, null=True)
 
     class Meta:
         db_table = 'fnb_stock_doc_line'

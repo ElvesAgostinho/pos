@@ -81,6 +81,20 @@ class GoodsReceiptLine(models.Model):
     
     unit_cost = models.DecimalField(max_digits=12, decimal_places=4)
 
+    # O LOTE E O PRAZO QUE VÊM NA GUIA DO FORNECEDOR.
+    #
+    # A receção de compras é o caminho por onde entra a MAIOR PARTE da mercadoria
+    # da casa, e era o único que não tinha onde escrever o lote: quem recebia lia o
+    # prazo na caixa e não tinha campo para ele. O motor de stock criava então um
+    # lote com o número do documento e sem validade — e a lista de validades, o
+    # FEFO e a resposta a uma recolha do fornecedor ("este lote, de que guia
+    # veio?") ficavam sem a metade que conta.
+    #
+    # Em branco continua a funcionar como antes (lote = nº da receção, validade = a
+    # da ficha do artigo, se a tiver): nada se torna obrigatório.
+    lot_number = models.CharField(max_length=60, blank=True, null=True)
+    expiry_date = models.DateField(blank=True, null=True)
+
     def __str__(self):
         return f"Recebido {self.quantity_received} {self.uom.code} de {self.item.name}"
 

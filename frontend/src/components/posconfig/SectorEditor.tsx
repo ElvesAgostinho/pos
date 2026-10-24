@@ -43,25 +43,29 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
   const { data: promos = [] } = useQuery({ queryKey: ['posc', 'promos'], queryFn: async () => { try { const r = await apiClient.get('commercial/promotions/'); return r.data?.results || r.data || []; } catch { return []; } } });
   const { data: outlets = [] } = useQuery({ queryKey: ['posc', 'outlets'], queryFn: async () => (await apiClient.get('pos/outlets/')).data });
   // AS LISTAS REAIS do backoffice — é daqui que vêm as opções de cada linha.
-  const lista = (chave: string, url: string) => useQuery({
+  // `useLista` e um HOOK, e tem de se chamar assim: um `useQuery` dentro de uma
+  // funcao com outro nome escapa as regras dos hooks (o lint deixa de poder
+  // garantir a ordem) e funciona so enquanto ninguem lhe puser uma condicao a
+  // frente. No dia em que alguem o fizer, o ecra rebenta sem dizer onde.
+  const useLista = (chave: string, url: string) => useQuery({
     queryKey: ['posc', chave],
     queryFn: async () => { try { const r = await apiClient.get(url); return (r.data?.results || r.data || []) as any[]; } catch { return []; } },
   }).data || [];
   const FONTES: Record<string, { id: any; label: string; dt?: number }[]> = {
     // (8573) os TECLADOS criados — escolhe-se qual serve esta sala
-    keyboards: lista('keyboards', 'pos/config/keyboards/').map((k: any) => ({ id: k.id, label: `${k.number} · ${k.name}` })),
+    keyboards: useLista('keyboards', 'pos/config/keyboards/').map((k: any) => ({ id: k.id, label: `${k.number} · ${k.name}` })),
     // (8553-8589) as SÉRIES de documento (é a série que numera e assina).
     // O nome da série é opcional e quase nunca está preenchido — identificá-la só por
     // ele dava doze linhas iguais ("A — null") e nenhuma escolhível. Quem manda é o
     // TIPO (FR, NC, CM…); a letra da série vem a seguir, que é como se distinguem duas
     // séries do mesmo tipo.
-    series: lista('docseries', 'pos/config/documents/').map((x: any) => ({
+    series: useLista('docseries', 'pos/config/documents/').map((x: any) => ({
       id: x.id, dt: x.doc_type,
       label: `${x.type_code} — ${x.name || x.type_name}${x.code ? ` (série ${x.code}${x.year ? '/' + x.year : ''})` : ''}`,
     })),
-    customerTypes: lista('custtypes', 'pos/config/customer-types/').map((x: any) => ({ id: x.id, label: x.name })),
-    discounts: lista('descontos', 'pos/config/discounts/').map((x: any) => ({ id: x.id, label: `${x.code} — ${x.name}` })),
-    timeBands: lista('bands', 'pos/config/time-bands/').map((x: any) => ({ id: x.id, label: x.name })),
+    customerTypes: useLista('custtypes', 'pos/config/customer-types/').map((x: any) => ({ id: x.id, label: x.name })),
+    discounts: useLista('descontos', 'pos/config/discounts/').map((x: any) => ({ id: x.id, label: `${x.code} — ${x.name}` })),
+    timeBands: useLista('bands', 'pos/config/time-bands/').map((x: any) => ({ id: x.id, label: x.name })),
   };
 
   const save = useMutation({

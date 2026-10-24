@@ -63,6 +63,7 @@ import WhLotsView from '../components/warehouse/wh/WhLotsView';
 import WhTransfersView from '../components/warehouse/wh/WhTransfersView';
 import WhInventoryView from '../components/warehouse/wh/WhInventoryView';
 import WhCostingView from '../components/warehouse/wh/WhCostingView';
+import WhProductionView from '../components/warehouse/wh/WhProductionView';
 // SRM — Supplier Relationship (Centro 07)
 import { SrmContractsView, SrmDocumentsView, SrmCertificatesView, SrmSlaView, SrmEvaluationView } from '../components/esm/SrmViews';
 // Hotel Management (Centro 04)
@@ -191,6 +192,7 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   wh_inventory: WhInventoryView,
   wh_lots: WhLotsView,
   wh_costing: WhCostingView,
+  wh_production: WhProductionView,
 
   // 10 · F&B Operations Center — cérebro da restauração
 
@@ -457,6 +459,7 @@ export const MODULES: NavModule[] = [
       { id: 'wh_inventory', name: 'Inventários' },
       { id: 'wh_lots', name: 'Lotes & Validades' },
       { id: 'wh_costing', name: 'FIFO / FEFO' },
+      { id: 'wh_production', name: 'Ordens de Produção' },
     ],
   },
   {
@@ -654,7 +657,7 @@ export interface MenuGroup { label: string; items: string[]; }
 export const MODULE_MENUS: Record<string, MenuGroup[]> = {
   warehouse: [
     { label: 'Stock', items: ['wh_warehouses', 'wh_locations', 'wh_stock', 'wh_movements'] },
-    { label: 'Operações', items: ['wh_transfers', 'wh_inventory', 'wh_lots', 'wh_costing'] },
+    { label: 'Operações', items: ['wh_transfers', 'wh_inventory', 'wh_lots', 'wh_costing', 'wh_production'] },
     { label: 'Painel', items: ['wh_dashboard'] },
   ],
   procurement: [

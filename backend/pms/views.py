@@ -30,6 +30,39 @@ def _parse_date(d):
         return None
 
 
+def _filtro_data(p, chave):
+    """Uma DATA que vem de um filtro do ecrã.
+
+    Os filtros iam direitos ao ORM como texto: um valor que já não é uma data
+    (um filtro guardado no ecrã, um link antigo, uma colagem) fazia o Django
+    levantar ValidationError no meio da consulta e a lista inteira respondia
+    "Ocorreu um erro interno" — sem dizer que o problema era uma data escrita
+    à mão. Aqui o pedido é recusado a dizer qual o campo e o que se esperava.
+    """
+    bruto = p.get(chave)
+    if not bruto:
+        return None
+    d = _parse_date(bruto)
+    if not d:
+        from rest_framework.exceptions import ValidationError
+        raise ValidationError({'detail': f'O filtro "{chave}" tem de ser uma data no formato '
+                                         f'AAAA-MM-DD (recebi "{bruto}").'})
+    return d
+
+
+def _filtro_inteiro(p, chave):
+    """O mesmo para um filtro numérico (ex.: "blocos com pelo menos N quartos")."""
+    bruto = p.get(chave)
+    if not bruto:
+        return None
+    try:
+        return int(bruto)
+    except (TypeError, ValueError):
+        from rest_framework.exceptions import ValidationError
+        raise ValidationError({'detail': f'O filtro "{chave}" tem de ser um número '
+                                         f'(recebi "{bruto}").'})
+
+
 def _next_number(qs, field, prefix):
     n = qs.count() + 1
     while qs.filter(**{field: f"{prefix}-{n:06d}"}).exists():
@@ -249,14 +282,11 @@ class BlockViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
             t = p['q']
             qs = qs.filter(Q(code__icontains=t) | Q(description__icontains=t)
                           | Q(group_name__icontains=t) | Q(main_entity__name__icontains=t))
-        if p.get('check_in_from'):
-            qs = qs.filter(valid_from__gte=p['check_in_from'])
-        if p.get('check_in_to'):
-            qs = qs.filter(valid_from__lte=p['check_in_to'])
-        if p.get('check_out_from'):
-            qs = qs.filter(valid_to__gte=p['check_out_from'])
-        if p.get('check_out_to'):
-            qs = qs.filter(valid_to__lte=p['check_out_to'])
+        for chave, campo in (('check_in_from', 'valid_from__gte'), ('check_in_to', 'valid_from__lte'),
+                             ('check_out_from', 'valid_to__gte'), ('check_out_to', 'valid_to__lte')):
+            valor = _filtro_data(p, chave)
+            if valor:
+                qs = qs.filter(**{campo: valor})
         if p.get('room_type'):
             qs = qs.filter(room_types__room_type_id=p['room_type']).distinct()
         if p.get('segment'):
@@ -273,9 +303,10 @@ class BlockViewSet(HotelScopedMixin, HotelDefaultMixin, viewsets.ModelViewSet):
             qs = qs.filter(default_voucher__icontains=p['voucher'])
         if p.get('reservation_type'):
             qs = qs.filter(default_reservation_type=p['reservation_type'])
-        if p.get('min_rooms'):
+        minimo = _filtro_inteiro(p, 'min_rooms')
+        if minimo:
             qs = (qs.annotate(total_rooms=Sum('room_types__rooms_blocked'))
-                    .filter(total_rooms__gte=int(p['min_rooms'])))
+                    .filter(total_rooms__gte=minimo))
         return qs
 
     @action(detail=True, methods=['post'], url_path='room-types')
@@ -333,18 +364,13 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
             qs = qs.filter(block_id=p['block'])
         if p.get('guest'):
             qs = qs.filter(guest_id=p['guest'])
-        if p.get('check_in_from'):
-            qs = qs.filter(check_in__gte=p['check_in_from'])
-        if p.get('check_in_to'):
-            qs = qs.filter(check_in__lte=p['check_in_to'])
-        if p.get('check_out_from'):
-            qs = qs.filter(check_out__gte=p['check_out_from'])
-        if p.get('check_out_to'):
-            qs = qs.filter(check_out__lte=p['check_out_to'])
-        if p.get('created_from'):
-            qs = qs.filter(created_at__date__gte=p['created_from'])
-        if p.get('created_to'):
-            qs = qs.filter(created_at__date__lte=p['created_to'])
+        for chave, campo in (('check_in_from', 'check_in__gte'), ('check_in_to', 'check_in__lte'),
+                             ('check_out_from', 'check_out__gte'), ('check_out_to', 'check_out__lte'),
+                             ('created_from', 'created_at__date__gte'),
+                             ('created_to', 'created_at__date__lte')):
+            valor = _filtro_data(p, chave)
+            if valor:
+                qs = qs.filter(**{campo: valor})
         if p.get('voucher'):
             qs = qs.filter(voucher__icontains=p['voucher'])
         if p.get('room_type'):
@@ -455,11 +481,20 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
             folio = Folio.objects.create(reservation=res, number=_next_number(Folio.objects, 'number', 'FOL'))
             rate = res.effective_rate  # única definição da regra — ver Reservation.effective_rate
             today = timezone.localdate()
-            if rate and res.nights > 0:
+            # QUE NOITE É QUE ESTA DIÁRIA PAGA? A 1ª noite DA ESTADIA, não "a de
+            # hoje". Lançava-se sempre com a data de hoje, e num check-in
+            # adiantado (o hóspede chegou na véspera, o turno adiantou-se) isso
+            # era uma diária de uma noite que não é da estadia: a seguir a
+            # Auditoria da Noite lançava todas as noites verdadeiras, com as
+            # suas próprias referências, e o hóspede pagava TRÊS noites numa
+            # estadia de duas. Primo do defeito da factura emitida em
+            # duplicado: o mesmo serviço contado duas vezes por dois caminhos.
+            noite = max(today, res.check_in)
+            if rate and res.nights > 0 and noite < res.check_out:
                 FolioCharge.objects.create(
                     folio=folio, charge_type='ROOM',
-                    description=f"Alojamento {today.isoformat()} · Quarto {res.room.number if res.room else '?'}",
-                    amount=rate, source_reference=f'ROOM-{today.isoformat()}',
+                    description=f"Alojamento {noite.isoformat()} · Quarto {res.room.number if res.room else '?'}",
+                    amount=rate, source_reference=f'ROOM-{noite.isoformat()}',
                     posted_by=request.data.get('operator', 'reception'),
                 )
             # Encargos fixos de uma vez só (taxa de limpeza final, por ex.):
@@ -733,17 +768,57 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
+        """Cancela a reserva — só enquanto o hóspede ainda não entrou.
+
+        Cancelar uma reserva EM CHECK-IN deixava um rasto de estragos que só se
+        desfazia na base de dados: o quarto ficava OCUPADO para sempre (a
+        receção nunca mais o conseguia vender), a conta ficava aberta com os
+        consumos do hóspede que lá está, e o check-out deixava de ser possível
+        porque já não era uma reserva "em check-in". Quem está dentro do hotel
+        sai pelo check-out, não pelo cancelamento.
+        """
         res = self.get_object()
         if res.status == 'CHECKED_OUT':
             return Response({'detail': 'Reserva já concluída.'}, status=400)
+        if res.status == 'CHECKED_IN':
+            return Response({'detail': f'{res.guest.name} está em check-in no quarto '
+                                       f'{res.room.number if res.room_id else "—"}. Faça o '
+                                       f'check-out (ou saída antecipada) em vez de cancelar — '
+                                       f'cancelar deixaria o quarto ocupado e a conta aberta.'},
+                            status=status.HTTP_409_CONFLICT)
         res.status = 'CANCELLED'
         res.save(update_fields=['status'])
         return Response(self.get_serializer(res).data)
 
+    @staticmethod
+    def _guard_room_lock(res, new_room):
+        """"Não Mudar Qrt" tem de valer na API, não só no ecrã.
+
+        `lock_room` existe para o quarto PROMETIDO a um hóspede (o 101 da lua
+        de mel, o adaptado de quem anda de cadeira de rodas) não ser arrastado
+        por uma mudança em massa. O ecrã das mudanças em massa já o respeitava,
+        mas o seletor de quartos chamava a mesma API e esta não verificava
+        nada — a promessa ao hóspede dependia de por que botão se passava.
+        """
+        if res.lock_room and res.room_id and res.room_id != new_room.id:
+            return Response({'detail': f'A reserva {res.confirmation} está marcada como "Não '
+                                       f'Mudar Qrt" (quarto {res.room.number}). Retire essa '
+                                       f'marca na ficha da reserva antes de a mudar de quarto.'},
+                            status=status.HTTP_409_CONFLICT)
+        return None
+
     @action(detail=False, methods=['post'], url_path='quick-assign')
+    @transaction.atomic
     def quick_assign(self, request):
         """Atribuição Rápida de Quartos — associa um quarto livre a uma reserva
-        sem quarto ainda (não faz check-in, só atribui)."""
+        sem quarto ainda (não faz check-in, só atribui).
+
+        @transaction.atomic: o `select_for_update()` abaixo (dois rececionistas
+        a atribuir o mesmo quarto ao mesmo tempo) EXIGE uma transação aberta —
+        sem ela o PostgreSQL do cliente levanta TransactionManagementError e o
+        ecrã rebenta; no SQLite do desenvolvimento a tranca era simplesmente
+        ignorada em silêncio, e por isso nunca se via aqui.
+        """
         res_id = request.data.get('reservation')
         room_id = request.data.get('room')
         try:
@@ -754,6 +829,9 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
         if room.room_type_id != res.room_type_id:
             return Response({'detail': f'"{room.number}" não é da categoria reservada '
                                        f'({res.room_type.name}).'}, status=400)
+        travado = self._guard_room_lock(res, room)
+        if travado:
+            return travado
         clash = room_conflict(room, res.check_in, res.check_out, exclude_id=res.pk)
         if clash:
             return Response({'detail': f'"{room.number}" já está reservado nessas datas.'}, status=409)
@@ -762,9 +840,14 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
         return Response(self.get_serializer(res).data)
 
     @action(detail=False, methods=['post'], url_path='change-room')
+    @transaction.atomic
     def change_room(self, request):
         """Mudança de Quarto — troca o quarto de uma reserva já em check-in
-        (ou por atribuir), sem mexer no folio."""
+        (ou por atribuir), sem mexer no folio.
+
+        @transaction.atomic: pela mesma razão do `quick_assign` acima — a
+        tranca dos registos não pode ficar fora de uma transação.
+        """
         res_id = request.data.get('reservation')
         new_room_id = request.data.get('room')
         try:
@@ -772,21 +855,36 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
             new_room = Room.objects.select_for_update().get(pk=new_room_id, hotel=res.hotel)
         except (Reservation.DoesNotExist, Room.DoesNotExist):
             return Response({'detail': 'Reserva ou quarto não encontrado.'}, status=404)
+        # A DISPONIBILIDADE CONTA POR CATEGORIA, a partir da reserva (ver
+        # availability.py): mover o hóspede de um Standard para uma Suite sem
+        # mais nada deixava a Suite a aparecer LIVRE (a reserva continua a
+        # contar no Standard) — vendia-se a Suite e o engano só aparecia ao
+        # segundo hóspede, no check-in, com um "Quarto já está ocupado". A
+        # Atribuição Rápida já recusava isto; esta não.
+        if new_room.room_type_id != res.room_type_id:
+            return Response({'detail': f'"{new_room.number}" é da categoria '
+                                       f'{new_room.room_type.name} e a reserva é de '
+                                       f'{res.room_type.name}. Para mudar de categoria '
+                                       f'(upgrade), altere a categoria na ficha da reserva '
+                                       f'primeiro — senão a disponibilidade da outra '
+                                       f'categoria fica errada.'}, status=400)
+        travado = self._guard_room_lock(res, new_room)
+        if travado:
+            return travado
         if new_room.status == 'OCCUPIED':
             return Response({'detail': f'"{new_room.number}" já está ocupado.'}, status=409)
         clash = room_conflict(new_room, res.check_in, res.check_out, exclude_id=res.pk)
         if clash:
             return Response({'detail': f'"{new_room.number}" já está reservado nessas datas.'}, status=409)
-        with transaction.atomic():
-            old_room = res.room
-            res.room = new_room
-            res.save(update_fields=['room'])
-            if res.status == 'CHECKED_IN':
-                new_room.status = 'OCCUPIED'
-                new_room.save(update_fields=['status'])
-                if old_room:
-                    old_room.status = 'VACANT_DIRTY'
-                    old_room.save(update_fields=['status'])
+        old_room = res.room
+        res.room = new_room
+        res.save(update_fields=['room'])
+        if res.status == 'CHECKED_IN':
+            new_room.status = 'OCCUPIED'
+            new_room.save(update_fields=['status'])
+            if old_room:
+                old_room.status = 'VACANT_DIRTY'
+                old_room.save(update_fields=['status'])
         return Response(self.get_serializer(res).data)
 
 
@@ -848,14 +946,64 @@ class FolioViewSet(HotelScopedMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def settle(self, request, pk=None):
+        """Registar Pagamento — recebe dinheiro do hóspede nesta conta.
+
+        O lançamento de encargos (`post_charge`) já se defendia de três coisas
+        que aqui passavam todas:
+        · CONTA FECHADA — depois do check-out a conta está fechada e muitas
+          vezes já facturada. O dinheiro lançado lá não entra em factura
+          nenhuma, aparece no relatório de pagamentos e deixa o saldo negativo
+          sem explicação possível;
+        · VALOR NEGATIVO — um "pagamento" negativo AUMENTA a dívida sem deixar
+          rasto de estorno: é uma cobrança disfarçada de recibo;
+        · VALOR QUE NÃO É UM NÚMERO — ia direto para a base de dados e o
+          utilizador levava com "Ocorreu um erro interno", sem saber que o
+          problema era o que ele próprio escreveu.
+        O ecrã manda este pedido sem valor ("liquidar o saldo"); com a conta já
+        liquidada isso dava um recibo de 0,00 — ruído no extrato do hóspede.
+        """
         folio = self.get_object()
-        amount = request.data.get('amount', folio.balance)
+        if folio.status != 'OPEN':
+            return Response({'detail': f'A conta {folio.number} está fechada'
+                                       + (f' (facturada em {folio.fiscal_document_number})'
+                                          if folio.fiscal_document_number else '')
+                                       + '. Não se lança dinheiro numa conta fechada.'}, status=400)
+        try:
+            amount = Decimal(str(request.data.get('amount', folio.balance)))
+        except (InvalidOperation, TypeError, ValueError):
+            return Response({'detail': 'O valor do pagamento tem de ser um número.'}, status=400)
+        if amount <= 0:
+            return Response({'detail': f'Esta conta não tem saldo a receber (saldo: '
+                                       f'{folio.balance}). Para devolver dinheiro ao hóspede '
+                                       f'use o estorno do pagamento.'}, status=400)
         FolioCharge.objects.create(
             folio=folio, charge_type='PAYMENT',
             description=request.data.get('description', 'Pagamento'),
             amount=amount, posted_by=request.data.get('posted_by', 'reception'),
         )
         return Response(self.get_serializer(folio).data)
+
+    def destroy(self, request, *args, **kwargs):
+        """Apagar uma conta com movimentos não é um engano reversível.
+
+        O DELETE levava atrás, em cascata, todos os lançamentos do hóspede e o
+        número da factura fiscal gravado na conta — a factura ficava no arquivo
+        fiscal a apontar para uma origem que já não existe. Um estorno deixa
+        rasto; um DELETE não deixa nada.
+        """
+        folio = self.get_object()
+        if folio.fiscal_document_number:
+            return Response({'detail': f'A conta {folio.number} já foi facturada '
+                                       f'({folio.fiscal_document_number}) — não se apaga. Uma '
+                                       f'factura emitida corrige-se com nota de crédito.'},
+                            status=status.HTTP_409_CONFLICT)
+        if folio.charges.exists():
+            return Response({'detail': f'A conta {folio.number} tem '
+                                       f'{folio.charges.count()} lançamento(s) e não se apaga. '
+                                       f'Estorne os lançamentos (o histórico fica) — é isso que '
+                                       f'permite explicar depois o que aconteceu.'},
+                            status=status.HTTP_409_CONFLICT)
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=['post'])
     def split(self, request, pk=None):
@@ -957,11 +1105,15 @@ class FolioViewSet(HotelScopedMixin, viewsets.ModelViewSet):
 # ==========================================================================
 
 class MealPlanEntryViewSet(viewsets.ModelViewSet):
-    queryset = MealPlanEntry.objects.all()
+    queryset = MealPlanEntry.objects.select_related('reservation').all()
     serializer_class = MealPlanEntrySerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        """ISOLAMENTO POR PROPRIEDADE. Este era o único queryset do PMS que
+        devolvia `objects.all()` sem filtrar pelo hotel: num grupo com dois
+        hotéis, a cozinha do Hotel A via — e podia apagar — as refeições
+        marcadas no Hotel B."""
+        qs = scope_qs(self.request, super().get_queryset(), hotel_path='reservation__hotel')
         reservation = self.request.query_params.get('reservation')
         if reservation:
             qs = qs.filter(reservation_id=reservation)
@@ -973,17 +1125,36 @@ class MealPlanEntryViewSet(viewsets.ModelViewSet):
         vez — é o que o popup "Editar" do Mapa de Refeições faz."""
         p = request.data
         try:
-            reservation = Reservation.objects.get(pk=p['reservation'])
-        except (Reservation.DoesNotExist, KeyError):
+            # A reserva é procurada DENTRO dos hotéis do utilizador: senão,
+            # bastava o número de uma reserva de outra propriedade para lhe
+            # escrever no mapa de refeições.
+            reservation = scope_qs(request, Reservation.objects.all(),
+                                   hotel_path='hotel').get(pk=p['reservation'])
+        except (Reservation.DoesNotExist, KeyError, ValueError, TypeError):
             return Response({'detail': 'Reserva não encontrada.'}, status=404)
         meal_code = p.get('meal_code')
         if meal_code not in dict(MealPlanEntry.MEALS):
             return Response({'detail': 'Refeição inválida.'}, status=400)
-        from datetime import date, timedelta
-        d_from = date.fromisoformat(p['date_from'])
-        d_to = date.fromisoformat(p['date_to'])
+        from datetime import timedelta
+        # Faltar (ou vir mal escrita) uma das datas dava erro interno: o
+        # utilizador via "Ocorreu um erro interno" e não ficava a saber que o
+        # que faltava era uma data que ele próprio não preencheu.
+        d_from, d_to = _parse_date(p.get('date_from')), _parse_date(p.get('date_to'))
+        if not d_from or not d_to:
+            return Response({'detail': 'Indique as datas De e Até (no formato AAAA-MM-DD).'},
+                            status=400)
         if d_to < d_from:
             d_from, d_to = d_to, d_from
+        # REFEIÇÕES SÓ DENTRO DA ESTADIA. O pequeno-almoço do dia da saída
+        # conta (o hóspede dormiu a última noite), por isso o limite é o
+        # próprio dia de check-out. Fora disso é comida pedida para uma mesa
+        # onde ninguém se senta — e, com pensão contratada, refeições cobradas
+        # que nunca existiram.
+        if d_from < reservation.check_in or d_to > reservation.check_out:
+            return Response({'detail': f'As refeições têm de ficar dentro da estadia '
+                                       f'({reservation.check_in.isoformat()} a '
+                                       f'{reservation.check_out.isoformat()}, incluindo o '
+                                       f'pequeno-almoço do dia da saída).'}, status=400)
         defaults = {
             'adults': int(p.get('adults') or 0), 'children_1': int(p.get('children_1') or 0),
             'children_2': int(p.get('children_2') or 0), 'children_3': int(p.get('children_3') or 0),

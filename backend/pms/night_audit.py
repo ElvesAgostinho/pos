@@ -57,6 +57,17 @@ class NightAuditRunView(APIView):
 
     def post(self, request):
         audit_date = _parse_date(request.data.get('audit_date')) or timezone.localdate()
+        # A AUDITORIA FECHA UM DIA QUE JÁ ACONTECEU. Com uma data futura (um
+        # engano no calendário do ecrã) lançavam-se diárias de noites que
+        # ninguém dormiu ainda e, pior, QUEIMAVA-SE essa data: o
+        # `unique_together` não deixa correr a mesma data duas vezes, por isso
+        # quando o dia chegasse a sério a auditoria era recusada e as diárias
+        # dessa noite nunca entravam na conta de ninguém.
+        if audit_date > timezone.localdate():
+            return Response({'detail': f'{audit_date.isoformat()} ainda não aconteceu. A '
+                                       f'Auditoria da Noite fecha o dia que terminou, não o '
+                                       f'futuro — se correr agora, essa data fica gasta e as '
+                                       f'diárias dessa noite nunca serão lançadas.'}, status=400)
         hid = default_hotel_id(request)
         if not hid:
             return Response({'detail': 'Hotel não identificado.'}, status=400)
@@ -73,6 +84,7 @@ class NightAuditRunView(APIView):
         ref = f'ROOM-{audit_date.isoformat()}'
         rooms_charged = 0
         extras_charged = 0
+        sem_conta = []
         total_posted = Decimal('0')
         try:
             with transaction.atomic():
@@ -84,6 +96,24 @@ class NightAuditRunView(APIView):
                 for res in reservations:
                     folio = res.folio
                     if not folio or folio.status != 'OPEN':
+                        # SALTAR UMA RESERVA EM SILÊNCIO É PERDER AS NOITES
+                        # DELA. Acontece a sério: a empresa pede a factura ao
+                        # 2º dia de uma estadia de cinco, a conta fecha, e as
+                        # noites seguintes deixam de ser lançadas sem que
+                        # ninguém dê por nada — o hotel dorme o hóspede de
+                        # graça. A auditoria não pode decidir abrir contas por
+                        # sua conta (a factura emitida tem de ficar onde está),
+                        # mas tem de DIZER quais saltou, para alguém abrir uma
+                        # conta nova ("Recriar conta") e lançar o que falta.
+                        sem_conta.append({
+                            'reservation': res.id, 'confirmation': res.confirmation,
+                            'guest': res.guest.name if res.guest_id else '',
+                            'room': res.room.number if res.room_id else '',
+                            'reason': ('Sem conta aberta nesta reserva.' if not folio
+                                       else f'A conta {folio.number} está fechada'
+                                            + (f' (facturada em {folio.fiscal_document_number})'
+                                               if folio.fiscal_document_number else '') + '.'),
+                        })
                         continue
                     if folio.charges.filter(charge_type='ROOM', source_reference=ref).exists():
                         continue
@@ -127,4 +157,10 @@ class NightAuditRunView(APIView):
                                        f'executada para este hotel.'}, status=409)
         dados = NightAuditRunSerializer(run).data
         dados['extras_charged'] = extras_charged
+        dados['skipped_no_folio'] = sem_conta
+        if sem_conta:
+            dados['detail'] = (f'{len(sem_conta)} reserva(s) em check-in ficaram SEM a diária '
+                               f'desta noite por não terem conta aberta. Abra uma conta nova na '
+                               f'ficha da reserva ("Recriar conta") e lance as noites que '
+                               f'faltam — senão é alojamento dado de graça.')
         return Response(dados, status=201)

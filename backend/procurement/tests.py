@@ -16,6 +16,7 @@ reabrir uma receção já lançada, devolver mais do que existe, anular uma comp
 Regra: cada teste CONTA o resultado (quantidade e custo), não se contenta com
 o pedido ter devolvido 200.
 """
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth.models import User
@@ -25,7 +26,7 @@ from rest_framework.test import APITestCase
 from esm.models import Supplier, SupplierProductCatalog
 from identity.models import Company, EnterpriseGroup, Hotel
 from inventory.models import (Item, ItemCategory, StockLevel, StockMovement,
-                              UnitOfMeasure, Warehouse)
+                              UnitOfMeasure, Warehouse, StockLot)
 from finance.models import SupplierInvoice
 
 from .models import (GoodsReceipt, GoodsReceiptLine, PurchaseOrder,
@@ -78,7 +79,7 @@ class ComprasMontadas(APITestCase):
         return po
 
     def _recepcao(self, po=None, artigo=None, quantidade='100', custo='800.00', validar=True,
-                  armazem=None):
+                  armazem=None, lote=None, validade=None):
         """Uma receção de mercadoria, opcionalmente ligada a uma encomenda."""
         corpo = {'supplier': self.fornecedor.id,
                  'delivery_warehouse': (armazem or self.armazem).id,
@@ -93,6 +94,7 @@ class ComprasMontadas(APITestCase):
             'goods_receipt': grn.id, 'po_line': po_line.id if po_line else None,
             'item': (artigo or self.cerveja).id, 'quantity_received': quantidade,
             'uom': self.un.id, 'unit_cost': custo,
+            'lot_number': lote, 'expiry_date': str(validade) if validade else None,
         }, format='json')
         self.assertEqual(rl.status_code, 201, f'não consegui criar a linha da receção: {rl.data}')
         if validar:
@@ -718,3 +720,95 @@ class PaineisDeCompras(ComprasMontadas):
         r = self.client.get('/api/procurement/planning/')
         self.assertEqual(r.data['count'], 0,
                          'Sugeriu repor um artigo que tem stock de sobra.')
+
+
+# ==========================================================================
+# LOTES E VALIDADES NA RECEÇÃO — a metade que faltava
+# ==========================================================================
+class LotesNaRecepcao(ComprasMontadas):
+    """A GUIA DO FORNECEDOR TRAZ UM LOTE E UM PRAZO, e a receção tinha-os perdido.
+
+    Este era o caminho por onde entrava a maior parte da mercadoria da casa, e o
+    único sem onde escrever o lote: quem recebia lia o prazo na caixa e não tinha
+    campo para ele. O motor de stock criava então um lote com o número do
+    documento e sem validade — e a lista de validades, o FEFO e a resposta a uma
+    recolha do fornecedor ("este lote, de que guia veio?") ficavam sem a metade
+    que conta.
+    """
+
+    def _lotes(self, artigo=None, armazem=None):
+        return StockLot.objects.filter(warehouse=armazem or self.armazem,
+                                       item=artigo or self.cerveja)
+
+    def test_a_rececao_cria_o_lote_com_o_numero_e_o_prazo_da_guia(self):
+        prazo = self.hoje + timedelta(days=60)
+        self._recepcao(quantidade='240', lote='L-RFG-7781', validade=prazo)
+        lote = self._lotes().get()
+        self.assertEqual(lote.lot_number, 'L-RFG-7781')
+        self.assertEqual(lote.expiry_date, prazo)
+        self.assertEqual(lote.quantity, Decimal('240.0000'))
+
+    def test_sem_lote_na_guia_o_rasto_e_o_numero_da_rececao(self):
+        """Ninguém escreve lotes todos os dias. Sem lote, o rasto tem de ser o
+        documento — é por ele que se descobre de quem veio."""
+        grn = self._recepcao(quantidade='100')
+        self.assertEqual(self._lotes().get().lot_number, grn.receipt_number)
+
+    def test_sem_prazo_na_guia_vale_a_validade_da_ficha_do_artigo(self):
+        self.arroz.shelf_life_days = 30
+        self.arroz.save(update_fields=['shelf_life_days'])
+        self._recepcao(artigo=self.arroz, quantidade='50')
+        lote = self._lotes(artigo=self.arroz).get()
+        self.assertEqual(lote.expiry_date, self.hoje + timedelta(days=30))
+
+    def test_a_soma_dos_lotes_bate_com_o_saldo_depois_de_receber(self):
+        self._recepcao(quantidade='240', lote='L-1')
+        self._recepcao(quantidade='120', lote='L-2')
+        self.assertEqual(sum(l.quantity for l in self._lotes()), self._saldo(),
+                         'A soma dos lotes deixou de bater com o saldo do armazém.')
+
+    def test_duas_entregas_do_mesmo_lote_nao_fazem_dois_lotes(self):
+        """A mesma guia em duas partes: soma-se ao que lá está. É o que o
+        empregado conta na prateleira."""
+        prazo = self.hoje + timedelta(days=45)
+        self._recepcao(quantidade='100', lote='L-IGUAL', validade=prazo)
+        self._recepcao(quantidade='60', lote='L-IGUAL', validade=prazo)
+        self.assertEqual(self._lotes().count(), 1)
+        self.assertEqual(self._lotes().get().quantity, Decimal('160.0000'))
+
+    def test_anular_a_rececao_tira_o_lote_que_ela_criou_e_nao_o_mais_antigo(self):
+        """O DEFEITO QUE ISTO FECHA. O estorno saía por FEFO: devolvia-se ao
+        fornecedor a mercadoria errada no papel — o lote da guia anulada ficava em
+        armazém com a sua validade, e o lote que estava mesmo a expirar
+        desaparecia das contagens sem ninguém o ter consumido."""
+        # Primeiro entra um lote QUASE A EXPIRAR (é o que o FEFO escolheria).
+        self._recepcao(quantidade='50', lote='L-VELHO',
+                       validade=self.hoje + timedelta(days=2))
+        # Depois a guia errada, com prazo longe.
+        errada = self._recepcao(quantidade='80', lote='L-ERRADA',
+                                validade=self.hoje + timedelta(days=200))
+
+        r = self.client.post(f'/api/procurement/goods-receipts/{errada.id}/cancel/',
+                             {}, format='json')
+        self.assertEqual(r.status_code, 200, f'a anulação falhou: {r.data}')
+
+        velho = self._lotes().filter(lot_number='L-VELHO').first()
+        self.assertEqual(velho.quantity, Decimal('50.0000'),
+                         'A anulação comeu o lote que estava a expirar — esse não '
+                         'foi consumido por ninguém, nem devolvido a ninguém.')
+        errado = self._lotes().filter(lot_number='L-ERRADA').first()
+        self.assertEqual((errado.quantity if errado else Decimal('0')), Decimal('0.0000'),
+                         'O lote da guia anulada continua em armazém.')
+        self.assertEqual(self._saldo(), Decimal('50.0000'))
+        self.assertEqual(sum(l.quantity for l in self._lotes()), self._saldo(),
+                         'Depois de anular, a soma dos lotes não bate com o saldo.')
+
+    def test_anular_uma_rececao_sem_lote_escrito_usa_o_numero_do_documento(self):
+        """Quem não escreveu lote nenhum tem de poder anular do mesmo jeito: o
+        lote chama-se como o documento."""
+        grn = self._recepcao(quantidade='100')
+        r = self.client.post(f'/api/procurement/goods-receipts/{grn.id}/cancel/',
+                             {}, format='json')
+        self.assertEqual(r.status_code, 200, f'a anulação falhou: {r.data}')
+        self.assertEqual(self._saldo(), Decimal('0.0000'))
+        self.assertEqual(sum(l.quantity for l in self._lotes()), Decimal('0'))

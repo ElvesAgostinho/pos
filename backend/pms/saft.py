@@ -65,8 +65,21 @@ class PmsSaftView(APIView):
         substância: entregue à AGT, declara que o hotel não facturou nada
         naquele mês. Vale mais recusar e dizer porquê.
         """
-        ano = int(request.data.get('year') or datetime.date.today().year)
-        inicio, fim = _periodo(ano, request.data.get('month'))
+        # O ano e o mês vêm do ecrã, mas um pedido à mão (ou um ecrã novo com um
+        # campo de texto) trazia "2026a" ou mês 13 e o utilizador levava com
+        # "Ocorreu um erro interno" em vez de saber o que escreveu mal. Um
+        # ficheiro para a AGT não se pede duas vezes às cegas.
+        try:
+            ano = int(request.data.get('year') or datetime.date.today().year)
+            mes = request.data.get('month')
+            mes = int(mes) if mes not in (None, '') else None
+        except (TypeError, ValueError):
+            return Response({'detail': 'Ano/mês inválidos — escreva o ano em quatro dígitos e o '
+                                       'mês de 1 a 12.'}, status=400)
+        if not (2000 <= ano <= 2100) or (mes is not None and not (1 <= mes <= 12)):
+            return Response({'detail': 'Ano/mês fora do intervalo — o mês vai de 1 a 12.'},
+                            status=400)
+        inicio, fim = _periodo(ano, mes)
 
         quantos = FiscalDocument.objects.filter(
             source_module=MODULO, doc_date__gte=inicio, doc_date__lte=fim).count()
@@ -76,8 +89,7 @@ class PmsSaftView(APIView):
 
         xml = generate_saft(inicio, fim, module=MODULO)
 
-        mes = request.data.get('month')
-        nome = f'SAFT_PMS_{ano}{f"{int(mes):02d}" if mes else ""}.xml'
+        nome = f'SAFT_PMS_{ano}{f"{mes:02d}" if mes else ""}.xml'
 
         # O REGISTO da exportação fica guardado com o resultado da validação — é
         # o histórico do que saiu para a AGT, e a marca "válido" é ESCRITA pelo

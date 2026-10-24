@@ -17,6 +17,9 @@ export interface PurchaseOrder {
 export interface GRNLine {
   id?: number; goods_receipt?: number; po_line?: number | null; item: number; item_name?: string; item_code?: string;
   quantity_received: string | number; uom: number; uom_code?: string; unit_cost: string | number;
+  // O lote e o prazo da guia do fornecedor (opcionais: em branco, o motor de
+  // stock usa o nº da receção e a validade da ficha do artigo).
+  lot_number?: string | null; expiry_date?: string | null;
 }
 export interface GoodsReceipt {
   id?: number; receipt_number: string; purchase_order?: number | null; po_number?: string | null;

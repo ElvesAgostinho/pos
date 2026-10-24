@@ -971,6 +971,85 @@ class PosFalaComOPmsTests(CasaMontada):
         self.assertIn('folio', str(r.data).lower(),
                       'Recusou sem dizer que o problema é não haver conta aberta nesse quarto.')
 
+    def test_o_mesmo_jantar_nao_se_lanca_duas_vezes_no_quarto(self):
+        """O DUPLO-CLIQUE. O empregado carrega duas vezes em "cobrar" — a rede
+        demorou, o ecrã não mudou — e o mesmo jantar ia duas vezes para a conta do
+        hóspede. Ele pagava-o a dobrar no check-out, e a fatura do folio parecia
+        certa: as duas linhas eram legítimas vistas uma a uma."""
+        quarto, folio = self._hospede_instalado()
+        conta = self.abrir_conta(guest_type='HOTEL')
+        self.pedir(conta, self.bife, 1)
+
+        pedido = {'payment_method': self.quarto.id, 'amount': '8500.00',
+                  'room': quarto.number}
+        r1 = self.client.post(f'/api/pos/tickets/{conta}/pay/', pedido, format='json')
+        self.assertEqual(r1.status_code, 200, r1.content[:300])
+        r2 = self.client.post(f'/api/pos/tickets/{conta}/pay/', pedido, format='json')
+
+        encargos = folio.charges.filter(is_void=False)
+        self.assertEqual(sum(c.amount for c in encargos), Decimal('8500.00'),
+                         f'O folio ficou com {sum(c.amount for c in encargos)} Kz de um '
+                         f'jantar de 8500 — o hóspede paga o mesmo consumo duas vezes.')
+        self.assertNotEqual(r2.status_code, 200,
+                            'A segunda tentativa passou como se fosse uma venda nova.')
+
+    def test_os_dois_botoes_de_lancar_no_quarto_nao_se_somam(self):
+        """Há DOIS caminhos para a mesma coisa: o botão de cobrar com o meio de
+        pagamento "Lançar em Quarto", e a ação "lançar no quarto". Usar os dois
+        sobre a mesma conta lançava o consumo duas vezes."""
+        quarto, folio = self._hospede_instalado()
+        conta = self.abrir_conta(guest_type='HOTEL')
+        self.pedir(conta, self.bife, 1)
+
+        r = self.client.post(f'/api/pos/tickets/{conta}/charge_to_room/',
+                             {'room': quarto.number}, format='json')
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                         {'payment_method': self.quarto.id, 'amount': '8500.00',
+                          'room': quarto.number}, format='json')
+
+        total = sum(c.amount for c in folio.charges.filter(is_void=False))
+        self.assertEqual(total, Decimal('8500.00'),
+                         f'A conta do quarto ficou com {total} Kz de um jantar de 8500.')
+
+    def test_conta_repartida_entre_dois_hospedes_continua_a_passar(self):
+        """A TRAVA NÃO PODE TIRAR DINHEIRO AO HOTEL. Dois hóspedes, meio jantar
+        cada: são dois lançamentos legítimos da mesma conta. Travar por "já existe
+        um lançamento desta conta" fazia o hotel perder metade do jantar."""
+        from pms.models import Folio, Reservation, Room, RoomType
+        from mdm.models import Customer
+        from datetime import timedelta
+
+        quarto_a, folio_a = self._hospede_instalado()
+        tipo = RoomType.objects.create(hotel=self.hotel, code='STD9', name='Standard',
+                                       base_rate=Decimal('25000'))
+        quarto_b = Room.objects.create(hotel=self.hotel, room_type=tipo, number='303',
+                                       status='OCCUPIED')
+        hospede_b = Customer.objects.create(code='C909', name='Joana Mendes')
+        hoje = timezone.localdate()
+        reserva_b = Reservation.objects.create(
+            hotel=self.hotel, confirmation='RES0909', guest=hospede_b, room=quarto_b,
+            room_type=tipo, check_in=hoje, check_out=hoje + timedelta(days=1),
+            status='CHECKED_IN', adults=1)
+        folio_b = Folio.objects.create(reservation=reserva_b, number='F0909', status='OPEN')
+
+        conta = self.abrir_conta(guest_type='HOTEL')
+        self.pedir(conta, self.bife, 1)                      # 8500
+
+        r1 = self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                              {'payment_method': self.quarto.id, 'amount': '4250.00',
+                               'room': quarto_a.number}, format='json')
+        self.assertEqual(r1.status_code, 200, r1.content[:300])
+        r2 = self.client.post(f'/api/pos/tickets/{conta}/pay/',
+                              {'payment_method': self.quarto.id, 'amount': '4250.00',
+                               'room': quarto_b.number}, format='json')
+        self.assertEqual(r2.status_code, 200, r2.content[:300])
+
+        self.assertEqual(sum(c.amount for c in folio_a.charges.filter(is_void=False)),
+                         Decimal('4250.00'))
+        self.assertEqual(sum(c.amount for c in folio_b.charges.filter(is_void=False)),
+                         Decimal('4250.00'))
+
     def test_conta_quarto_sem_indicar_quarto_pergunta_qual(self):
         conta = self.abrir_conta(guest_type='HOTEL')
         self.pedir(conta, self.bife, 1)
