@@ -16,6 +16,22 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('pcc_access');
   if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  // UM FICHEIRO NÃO VIAJA COMO JSON.
+  //
+  // Este cliente nasce com `Content-Type: application/json` por omissão, e essa
+  // omissão aplica-se a TODOS os pedidos. Ao enviar um ficheiro (FormData), o
+  // browser precisa de pôr lá o seu próprio tipo, com o separador que divide as
+  // partes do formulário — e esse separador é gerado na hora, não se pode
+  // escrever à mão. Com o nosso cabeçalho por cima, o separador nunca ia, o
+  // servidor não conseguia encontrar o anexo, e respondia "o dado submetido não
+  // é um arquivo: certifique-se do tipo de codificação no formulário".
+  //
+  // Apagá-lo aqui faz o axios deixar o browser preencher. Vale para qualquer
+  // envio de ficheiro do PCC, não só o desta página.
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    delete (config.headers as Record<string, unknown>)['Content-Type'];
+  }
   return config;
 });
 

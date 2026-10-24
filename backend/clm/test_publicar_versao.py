@@ -29,9 +29,23 @@ class PublicarUmaVersaoTests(APITestCase):
         self.user = User.objects.create_superuser('fornecedor', '', 'x')
         self.client.force_authenticate(self.user)
 
-    def _pacote(self, nome='MwanaLodge-Update-1.1.0.zip'):
-        return SimpleUploadedFile(nome, b'PK\x03\x04 conteudo do pacote',
-                                  content_type='application/zip')
+    def _pacote(self, nome='MwanaLodge-Update-1.1.0.zip', versao='1.1.0'):
+        """Um .zip com a forma que o build_atualizacao.ps1 produz.
+
+        Leva lá dentro o `app/core/support.py`, porque é de lá que o PCC lê a
+        versão para a conferir com a que está a ser publicada. Um ficheiro de
+        mentira (uns bytes quaisquer) deixou de servir — e é bom que assim seja:
+        o teste passou a exercer o que o sistema faz de facto.
+        """
+        import io as _io
+        import zipfile
+
+        buf = _io.BytesIO()
+        with zipfile.ZipFile(buf, 'w') as zf:
+            if versao:
+                zf.writestr('app/core/support.py', "APP_VERSION = '%s'\n" % versao)
+            zf.writestr('webapp/index.html', '<h1>site</h1>')
+        return SimpleUploadedFile(nome, buf.getvalue(), content_type='application/zip')
 
     def test_carregar_o_ficheiro_gera_o_link_sozinho(self):
         """O que destrava a publicação: quem tem o .zip na pasta Output já tem
@@ -51,7 +65,7 @@ class PublicarUmaVersaoTests(APITestCase):
         rede. Um caminho relativo (`/media/...`) só funcionaria dentro do
         próprio PCC — do lado do cliente dava um endereço que não existe."""
         self.client.post('/api/clm/releases/', {
-            'version': '1.2.0', 'package': self._pacote()}, format='multipart')
+            'version': '1.2.0', 'package': self._pacote(versao='1.2.0')}, format='multipart')
         url = SystemRelease.objects.get(version='1.2.0').download_url
         self.assertTrue(url.startswith('http'),
                         f'O link ficou relativo ({url}): a instalação do cliente não o '
@@ -60,13 +74,15 @@ class PublicarUmaVersaoTests(APITestCase):
     def test_o_ficheiro_fica_guardado_e_descarrega_se(self):
         """Não basta haver um link: tem de haver ficheiro do outro lado."""
         self.client.post('/api/clm/releases/', {
-            'version': '1.3.0', 'package': self._pacote()}, format='multipart')
+            'version': '1.3.0', 'package': self._pacote(versao='1.3.0')}, format='multipart')
         rel = SystemRelease.objects.get(version='1.3.0')
         self.assertTrue(rel.package.name.startswith('releases/'),
                         f'O pacote foi guardado fora da pasta das versões: {rel.package.name}')
+        import zipfile
         with rel.package.open('rb') as f:
-            self.assertEqual(f.read(), b'PK\x03\x04 conteudo do pacote',
-                             'O ficheiro guardado não é o que foi carregado.')
+            with zipfile.ZipFile(f) as zf:
+                self.assertIn('app/core/support.py', zf.namelist(),
+                              'O ficheiro guardado não é o pacote que foi carregado.')
 
     def test_quem_ja_tem_onde_alojar_continua_a_poder_colar_o_link(self):
         """A mudança não tira nada a quem já tinha o ficheiro noutro sítio."""
@@ -91,10 +107,50 @@ class PublicarUmaVersaoTests(APITestCase):
         """É esta consulta que o botão "Atualizar agora" do cliente usa."""
         for v in ('1.0.0', '1.1.0', '1.2.0'):
             self.client.post('/api/clm/releases/', {
-                'version': v, 'package': self._pacote(f'update-{v}.zip')}, format='multipart')
+                'version': v, 'package': self._pacote(f'update-{v}.zip', versao=v)}, format='multipart')
         ultima = SystemRelease.objects.first()      # ordering = ['-created_at']
         self.assertEqual(ultima.version, '1.2.0')
         self.assertTrue(ultima.download_url.endswith('.zip'))
+
+    def test_publicar_um_pacote_de_outra_versao_e_recusado(self):
+        """A ARMADILHA QUE ISTO FECHA — e que não parece um erro, parece um fantasma.
+
+        Publicar uma versão são dois passos: subir o número em `core/support.py`
+        e correr o build. Fazê-los por outra ordem é fácil, e o resultado é um
+        pacote que por dentro diz 1.0.0 publicado como sendo o 1.1.0.
+
+        O cliente atualiza, corre tudo bem do princípio ao fim — e no fim o
+        sistema dele continua a dizer que tem a 1.0.0. Por isso volta a ver a
+        mesma atualização disponível. E outra vez. Ninguém relaciona isso com a
+        ordem em que o pacote foi feito, semanas antes.
+        """
+        r = self.client.post('/api/clm/releases/', {
+            'version': '1.1.0',
+            'package': self._pacote('MwanaLodge-Update-1.0.0.zip', versao='1.0.0')},
+            format='multipart')
+        self.assertEqual(r.status_code, 400, r.content[:300])
+        texto = str(r.data)
+        self.assertIn('1.0.0', texto)
+        self.assertIn('1.1.0', texto)
+        self.assertIn('support.py', texto, 'Recusou sem dizer onde se corrige.')
+        self.assertFalse(SystemRelease.objects.filter(version='1.1.0').exists())
+
+    def test_um_zip_que_nao_e_do_sistema_e_recusado(self):
+        """Um .zip qualquer — as fotos do hotel, escolhidas por engano — não é
+        uma versão, e publicá-lo era mandar o cliente descarregar fotografias."""
+        import io as _io
+        import zipfile
+
+        buf = _io.BytesIO()
+        with zipfile.ZipFile(buf, 'w') as zf:
+            zf.writestr('foto.jpg', 'nao e um pacote')
+        r = self.client.post('/api/clm/releases/', {
+            'version': '3.0.0',
+            'package': SimpleUploadedFile('fotos.zip', buf.getvalue(),
+                                          content_type='application/zip')},
+            format='multipart')
+        self.assertEqual(r.status_code, 400, r.content[:300])
+        self.assertIn('build_atualizacao', str(r.data))
 
     def test_um_exe_publicado_continua_a_ser_aceite(self):
         """O instalador completo tem o seu lugar — quando o que muda está fora do

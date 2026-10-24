@@ -92,7 +92,73 @@ class SystemReleaseSerializer(serializers.ModelSerializer):
                             'instalador), ou cole o link de onde ele já está alojado. Sem um '
                             'dos dois, o cliente não tem de onde descarregar.'],
             })
+        versao = attrs.get('version') or getattr(self.instance, 'version', '')
+        if ficheiro and versao:
+            self._conferir_versao_do_pacote(ficheiro, versao)
         return attrs
+
+    @staticmethod
+    def _conferir_versao_do_pacote(ficheiro, versao_declarada):
+        """O PACOTE É MESMO DESTA VERSÃO? — a conferência que evita uma armadilha.
+
+        Os dois passos de publicar uma versão são subir o número em
+        `core/support.py` e correr o build. Fazê-los por outra ordem é fácil —
+        acontece a quem conhece bem o processo — e o resultado é um pacote que
+        por dentro diz 1.0.0 publicado como sendo o 1.1.0.
+
+        O que isso provoca não parece um erro, parece um fantasma: o cliente
+        atualiza, o processo corre bem do princípio ao fim, e no fim o sistema
+        dele continua a dizer que tem a 1.0.0 — por isso volta a ver a mesma
+        atualização disponível. E outra vez. E outra. Ninguém relaciona isso com
+        a ordem em que o pacote foi feito, semanas antes.
+
+        Lê-se a versão de dentro do .zip (`app/core/support.py`, a mesma fonte
+        única de onde o build a tirou) e compara-se. Um .exe não se abre assim e
+        passa sem conferência, como passava antes — é o preço de o instalador
+        completo ser um formato fechado.
+        """
+        import re
+        import zipfile
+
+        nome = (getattr(ficheiro, 'name', '') or '').lower()
+        if not nome.endswith('.zip'):
+            return
+        try:
+            ficheiro.seek(0)
+            with zipfile.ZipFile(ficheiro) as zf:
+                alvo = next((n for n in zf.namelist()
+                             if n.endswith('core/support.py')), None)
+                if not alvo:
+                    raise serializers.ValidationError({
+                        'package': ['Este .zip não parece um pacote do sistema: não traz o '
+                                    'backend lá dentro. Use o ficheiro que o '
+                                    'build_atualizacao.ps1 cria em instalador\\Output\\.'],
+                    })
+                texto = zf.read(alvo).decode('utf-8', errors='replace')
+        except zipfile.BadZipFile:
+            raise serializers.ValidationError({
+                'package': ['O ficheiro não é um .zip válido (pode ter ficado a meio ao ser '
+                            'copiado). Volte a correr o build_atualizacao.ps1.'],
+            })
+        finally:
+            try:
+                ficheiro.seek(0)
+            except Exception:
+                pass
+
+        m = re.search(r"APP_VERSION\s*=\s*['\"]([\d.]+)['\"]", texto)
+        if not m:
+            return
+        dentro = m.group(1)
+        if dentro != str(versao_declarada).strip():
+            raise serializers.ValidationError({
+                'package': [
+                    f'Está a publicar a versão {versao_declarada}, mas este pacote por dentro '
+                    f'é a {dentro}. O cliente ia atualizar e continuar a dizer que tem a '
+                    f'{dentro} — e via a mesma atualização disponível outra vez, sem fim. '
+                    f'Suba APP_VERSION para {versao_declarada} em backend/core/support.py e '
+                    f'volte a correr o build_atualizacao.ps1.'],
+            })
 
     def _com_morada(self, instance):
         """O LINK, feito a partir do ficheiro carregado.
