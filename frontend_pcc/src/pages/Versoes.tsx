@@ -59,6 +59,42 @@ export default function Versoes() {
   // poder colar o link — não se tirou nada a ninguém.
   const [ficheiro, setFicheiro] = useState<File | null>(null);
 
+  /**
+   * O QUE O SERVIDOR RESPONDEU — e não "Erro ao publicar.".
+   *
+   * O aviso desta página procurava a razão em dois sítios (`data.version[0]` e
+   * `data.detail`) e, não a encontrando em nenhum, dizia "Erro ao publicar." —
+   * que não é uma razão, é a constatação de que houve uma. Quando o servidor
+   * recusava por OUTRO campo (o link em falta, por exemplo) ou devolvia um 500,
+   * a explicação verdadeira vinha no corpo da resposta e era deitada fora
+   * exactamente no momento em que fazia falta: à frente de quem está a publicar,
+   * sem saber o que corrigir.
+   *
+   * Agora mostra-se tudo o que vier — campo a campo — e, quando não vier nada,
+   * ao menos o código de estado, que já diz se o problema é de validação (400)
+   * ou do servidor (500).
+   */
+  const porqueFalhou = (err: any): string => {
+    const r = err?.response;
+    const d = r?.data;
+    if (!r) return 'Não foi possível falar com o PCC. Confirme que o serviço está a correr.';
+    if (typeof d === 'string' && d.trim() && !d.trim().startsWith('<')) return d;
+    if (d && typeof d === 'object') {
+      const linhas: string[] = [];
+      for (const [campo, valor] of Object.entries(d)) {
+        const texto = Array.isArray(valor) ? valor.join(' ') : String(valor);
+        linhas.push(campo === 'detail' ? texto : `${campo}: ${texto}`);
+      }
+      if (linhas.length) return linhas.join('\n');
+    }
+    if (r.status === 500) {
+      return 'O PCC respondeu com um erro interno (500).\n\nA causa mais comum é a base de '
+        + 'dados do PCC estar por migrar depois de uma atualização: corra `python manage.py '
+        + 'migrate` no servidor do PCC e tente outra vez.';
+    }
+    return `O PCC recusou a publicação (código ${r.status}).`;
+  };
+
   const publicar = async () => {
     if (!version.trim()) { alert('Indique a versão (ex.: 1.1.0).'); return; }
     if (!/^\d+(\.\d+)+$/.test(version.trim())) {
@@ -90,7 +126,7 @@ export default function Versoes() {
       setVersion(''); setDownloadUrl(''); setNotes(''); setFicheiro(null);
       await fetchReleases();
     } catch (err: any) {
-      alert(err?.response?.data?.version?.[0] || err?.response?.data?.detail || 'Erro ao publicar.');
+      alert(porqueFalhou(err));
     } finally {
       setBusy(false);
     }

@@ -461,6 +461,36 @@ class SystemReleaseViewSet(viewsets.ModelViewSet):
     serializer_class = SystemReleaseSerializer
     permission_classes = [IsAdminUser]
 
+    def create(self, request, *args, **kwargs):
+        """Publicar — e, se falhar, DIZER PORQUÊ.
+
+        Uma falha a guardar o ficheiro (a pasta do volume sem permissão de
+        escrita, o disco cheio, a base por migrar depois de uma atualização)
+        saía daqui como um 500 sem corpo nenhum, e o ecrã do outro lado só
+        conseguia dizer "Erro ao publicar.". Quem está a publicar a versão fica
+        sem nada para corrigir — e quem assiste à distância também.
+
+        A causa fica no log do PCC e um resumo dela vai na resposta. Não é
+        informação sensível: quem chega aqui já é staff do PCC.
+        """
+        import logging
+
+        from rest_framework.exceptions import APIException
+        try:
+            return super().create(request, *args, **kwargs)
+        except APIException:
+            # As RECUSAS do serializer (campo em falta, versão repetida) já são
+            # respostas legíveis, com o campo e a razão — passam por aqui
+            # intactas. Apanhá-las também transformava um "falta o ficheiro" num
+            # erro interno, que é o oposto do que isto serve.
+            raise
+        except Exception as e:
+            logging.getLogger('clm').exception('Falha ao publicar versão')
+            from rest_framework.response import Response as _R
+            return _R({'detail': f'Não foi possível guardar a versão: '
+                                 f'{type(e).__name__}: {e}'.strip()[:400]},
+                      status=500)
+
     def perform_create(self, serializer):
         serializer.save(created_by=getattr(self.request.user, 'username', '') or 'PCC')
 
