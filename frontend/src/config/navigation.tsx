@@ -64,6 +64,7 @@ import WhTransfersView from '../components/warehouse/wh/WhTransfersView';
 import WhInventoryView from '../components/warehouse/wh/WhInventoryView';
 import WhCostingView from '../components/warehouse/wh/WhCostingView';
 import WhProductionView from '../components/warehouse/wh/WhProductionView';
+import ImportarDadosView from '../components/masterdata/ImportarDadosView';
 // SRM — Supplier Relationship (Centro 07)
 import { SrmContractsView, SrmDocumentsView, SrmCertificatesView, SrmSlaView, SrmEvaluationView } from '../components/esm/SrmViews';
 // Hotel Management (Centro 04)
@@ -193,6 +194,7 @@ export const VIEW_REGISTRY: Record<string, ComponentType<any>> = {
   wh_lots: WhLotsView,
   wh_costing: WhCostingView,
   wh_production: WhProductionView,
+  md_import: ImportarDadosView,
 
   // 10 · F&B Operations Center — cérebro da restauração
 
@@ -407,6 +409,7 @@ export const MODULES: NavModule[] = [
       { id: 'md_languages', name: 'Idiomas' },
       { id: 'md_banks', name: 'Bancos' },
       { id: 'md_doctypes', name: 'Tipos de Documento' },
+      { id: 'md_import', name: 'Importar de outro sistema' },
     ],
   },
   {

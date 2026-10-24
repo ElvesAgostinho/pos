@@ -2014,6 +2014,13 @@ class SaftDoAlojamentoTests(PmsBase):
         doc = FiscalDocument.objects.get(invoice_no=numero_pms)
         doc.pk, doc.id = None, None
         doc.invoice_no = 'FR A/999'
+        # O NÚMERO TAMBÉM MUDA, e tem de mudar: a série passou a ter uma
+        # constraint de unicidade em (série, número) — duas facturas com o mesmo
+        # número na mesma série é precisamente o que nunca pode existir, e é a
+        # primeira coisa que uma inspecção da AGT olha. Este teste clonava um
+        # documento para simular "uma factura do POS no mesmo arquivo" e deixava
+        # o número do original: deixou de ser um cenário possível.
+        doc.number = (doc.number or 0) + 999
         doc.source_module, doc.source_ref = 'pos', '1'
         doc.save()
 

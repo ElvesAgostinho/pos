@@ -167,6 +167,37 @@ class PosSectorSerializer(serializers.ModelSerializer):
         model = PosSector
         fields = '__all__'
 
+    def validate(self, attrs):
+        """O PONTO DE VENDA É OBRIGATÓRIO, e a razão é toda prática.
+
+        O campo era opcional e dava para gravar um setor sem ele. Um cliente
+        acabado de instalar fez exactamente isso — não por descuido: a lista de
+        pontos de venda aparecia-lhe VAZIA (o ecrã para os criar vivia noutro
+        centro), e ele gravou o setor à mesma, que era o que podia fazer.
+
+        O que acontecia a seguir não dizia nada a ninguém. No terminal, o setor
+        aparecia na lista como qualquer outro; escolhia-se; ABRIA-SE UMA SESSÃO
+        DE CAIXA — dinheiro registado num setor que não pertence a ponto de venda
+        nenhum — e o ecrã seguinte dizia "este setor não tem mesas", um beco sem
+        saída que culpa as mesas por um problema que é de outro sítio.
+
+        É do ponto de venda que o setor tira TUDO o que precisa para servir: as
+        mesas, o nível de preço, o armazém de onde sai o stock e a série que
+        numera os documentos. Sem ele, o setor não é meio-configurado: não
+        funciona de todo. Vale mais recusar aqui, com o caminho escrito, do que
+        deixar gravar e falhar três ecrãs à frente.
+        """
+        outlet = attrs.get('outlet', getattr(self.instance, 'outlet', None))
+        if not outlet:
+            raise serializers.ValidationError({
+                'outlet': ['Escolha o ponto de venda deste setor. É dele que vêm as mesas, '
+                           'o nível de preço, o armazém e a série dos documentos — sem ele o '
+                           'setor não consegue servir. Se a lista estiver vazia, crie o ponto '
+                           'de venda em Configuração POS › Parâmetros do Sistema › Pontos de '
+                           'Venda.'],
+            })
+        return attrs
+
 
 class PosSectorViewSet(viewsets.ModelViewSet):
     """Setores (salas de venda) e a planta das suas mesas."""
@@ -4120,7 +4151,22 @@ class StockDocViewSet(viewsets.ModelViewSet):
         # dizível: falta mercadoria, e sabe-se quanta.
         from inventory.stock import StockInsuficiente
         try:
-            n = doc.post(user=(request.user.username if request.user.is_authenticated else None))
+            # O `with transaction.atomic()` DENTRO do `try` não é estilo: é o que
+            # faz a recusa desfazer-se. Esta acção já corre dentro de uma
+            # transação, e o Django só desfaz quando a excepção ATRAVESSA a
+            # fronteira de um bloco atómico — apanhá-la aqui dentro deixava tudo
+            # gravado.
+            #
+            # O que ficava gravado era o pior possível: `post()` vira a marca
+            # `posted` PRIMEIRO, de propósito, numa só instrução, para que dois
+            # lançamentos em simultâneo não dupliquem o stock. Com a excepção
+            # apanhada sem desfazer, o documento ficava MARCADO COMO LANÇADO sem
+            # a mercadoria ter saído — e, como `post()` recusa lançar o que já
+            # está lançado, nunca mais podia ser lançado. O ecrã dizia "não há
+            # stock", a requisição ficava morta, e o economato não tinha como
+            # perceber porquê.
+            with transaction.atomic():
+                n = doc.post(user=(request.user.username if request.user.is_authenticated else None))
         except StockInsuficiente as e:
             return Response({'detail': str(e)}, status=409)
         return Response({'detail': f'{doc.number} lançado — {n} movimento(s) de stock.',

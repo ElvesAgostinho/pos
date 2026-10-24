@@ -41,7 +41,14 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
 
   const { data: warehouses = [] } = useQuery({ queryKey: ['posc', 'whs'], queryFn: async () => { const r = await apiClient.get('inventory/warehouses/'); return r.data?.results || r.data || []; } });
   const { data: promos = [] } = useQuery({ queryKey: ['posc', 'promos'], queryFn: async () => { try { const r = await apiClient.get('commercial/promotions/'); return r.data?.results || r.data || []; } catch { return []; } } });
-  const { data: outlets = [] } = useQuery({ queryKey: ['posc', 'outlets'], queryFn: async () => (await apiClient.get('pos/outlets/')).data });
+  // `r.data?.results || r.data`: a API pagina quando lhe pedem (?page) e devolve
+  // uma lista quando não. Ler só `.data` funcionava hoje e rebentava no dia em
+  // que alguém ligasse a paginação — com um `.map is not a function` e um ecrã
+  // em branco. Dois outros ecrãs desta pasta já liam assim; estes dois não.
+  const { data: outlets = [] } = useQuery({
+    queryKey: ['posc', 'outlets'],
+    queryFn: async () => { const r = await apiClient.get('pos/outlets/'); return r.data?.results || r.data || []; },
+  });
   // AS LISTAS REAIS do backoffice — é daqui que vêm as opções de cada linha.
   // `useLista` e um HOOK, e tem de se chamar assim: um `useQuery` dentro de uma
   // funcao com outro nome escapa as regras dos hooks (o lint deixa de poder
@@ -123,6 +130,15 @@ export default function SectorEditor({ row, onClose }: { row: any; onClose: () =
             <span className="w-[90px] text-[#111827]">Outlet:</span>
             <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)} className={`${inp} w-[280px]`} style={inputStyle}>
               <option value="">—</option>
+              {/* UMA LISTA VAZIA TEM DE DIZER PORQUÊ. Sem ponto de venda criado,
+                  esta lista ficava só com o travessão — e quem a via não tinha
+                  como saber se faltava configurar alguma coisa, se o ecrã estava
+                  avariado, ou onde se cria um. O caminho vai escrito. */}
+              {outlets.length === 0 && (
+                <option value="" disabled>
+                  (nenhum ponto de venda criado — crie-o em Parâmetros do Sistema › Pontos de Venda)
+                </option>
+              )}
               {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
             </select>
           </label>

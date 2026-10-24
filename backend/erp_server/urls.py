@@ -12,6 +12,11 @@ urlpatterns = [
     path('api/documents/center/', __import__('core.documents', fromlist=['DocumentCenterView']).DocumentCenterView.as_view()),
     path('api/documents/dashboard/', __import__('core.documents', fromlist=['DocumentCenterDashboardView']).DocumentCenterDashboardView.as_view()),
     path('api/documents/links/', __import__('core.documents', fromlist=['DocumentLinksView']).DocumentLinksView.as_view()),
+    # IMPORTAR DE OUTRO SISTEMA (ver core/importacao.py): quem muda de sistema já
+    # tem os artigos, os clientes e as mesas — escrevê-los à mão não é uma tarefa,
+    # é um motivo para não mudar.
+    path('api/data/import/targets/', __import__('core.documents', fromlist=['ImportarDestinosView']).ImportarDestinosView.as_view()),
+    path('api/data/import/', __import__('core.documents', fromlist=['ImportarView']).ImportarView.as_view()),
     path('api/support/diagnostics/', __import__('core.support', fromlist=['SupportDiagnosticsView']).SupportDiagnosticsView.as_view()),
     path('api/support/backup/', __import__('core.support', fromlist=['SupportBackupView']).SupportBackupView.as_view()),
     path('api/support/actions/', __import__('core.support', fromlist=['SupportActionsView']).SupportActionsView.as_view()),

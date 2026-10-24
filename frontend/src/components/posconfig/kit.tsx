@@ -148,6 +148,14 @@ export const SECTIONS = [
     { key: 'p_group', label: 'Grupo', icon: '🏢' },
     { key: 'p_company', label: 'Empresa', icon: '🏛' },
     { key: 'p_modules', label: 'Módulos' },
+    // O PONTO DE VENDA VIVE AQUI, antes dos Setores e dos Terminais — porque é
+    // deles que estes dependem. O ecrã existia, mas só no Centro de Gestão
+    // Hoteleira (04), outro módulo: quem estava a configurar o POS via o campo
+    // "Ponto de venda" em metade das fichas (setores, terminais, impressoras,
+    // modos de pagamento, happy hour) e não tinha ali forma nenhuma de criar um,
+    // nem uma pista de onde ele se criava. Ficava com as listas todas vazias e
+    // sem saber porquê. É o MESMO ecrã, não uma cópia: aparece nos dois sítios.
+    { key: 'p_outlets', label: 'Pontos de Venda (Outlets)', icon: '🏪' },
     { key: 'p_terminals', label: 'Terminais' },
     { key: 'p_sectors', label: 'Setores' },
     { key: 'p_params', label: 'Parâmetros' },

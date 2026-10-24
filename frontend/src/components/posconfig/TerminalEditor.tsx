@@ -43,7 +43,12 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
   // nunca o campo `value` do catálogo (esse é só para os globais).
   const { data: groups = [] } = useQuery({ queryKey: ['posc', 'tparams'], queryFn: async () => (await apiClient.get('pos/config/params/?scope=TERMINAL')).data });
   const { data: printers = [] } = useQuery({ queryKey: ['posc', 'printers'], queryFn: async () => (await apiClient.get('inventory/pos/printers/')).data });
-  const { data: outlets = [] } = useQuery({ queryKey: ['posc', 'outlets'], queryFn: async () => (await apiClient.get('pos/outlets/')).data });
+  // Ver a nota em SectorEditor: a API pagina quando lhe pedem, e ler só `.data`
+  // rebentava o ecrã nesse dia.
+  const { data: outlets = [] } = useQuery({
+    queryKey: ['posc', 'outlets'],
+    queryFn: async () => { const r = await apiClient.get('pos/outlets/'); return r.data?.results || r.data || []; },
+  });
 
   const save = useMutation({
     mutationFn: () => isNew
@@ -105,6 +110,11 @@ export default function TerminalEditor({ row, onClose }: { row: any; onClose: ()
           <span className="w-[70px] text-[#111827]">Outlet:</span>
           <select value={d.outlet || ''} onChange={(e) => set('outlet', Number(e.target.value) || null)} className={`${inp} w-[240px]`} style={inputStyle}>
             <option value="">—</option>
+            {outlets.length === 0 && (
+              <option value="" disabled>
+                (nenhum ponto de venda criado — crie-o em Parâmetros do Sistema › Pontos de Venda)
+              </option>
+            )}
             {outlets.map((o: any) => <option key={o.id} value={o.id}>{o.name}</option>)}
           </select>
         </label>

@@ -57,6 +57,37 @@ test.describe('O terminal POS', () => {
       .toBeGreaterThan(40);
   });
 
+  test('um setor sem ponto de venda não se oferece como se servisse', async ({ page }) => {
+    // O BECO QUE O CLIENTE APANHOU. Ele gravou um setor sem ponto de venda — não
+    // por descuido: a lista aparecia-lhe vazia, porque o ecrã para criar pontos
+    // de venda vivia noutro centro. O terminal mostrava esse setor como qualquer
+    // outro: escolhia-se, ABRIA-SE UMA SESSÃO DE CAIXA (dinheiro registado num
+    // setor que não pertence a lado nenhum) e o ecrã seguinte dizia "este setor
+    // não tem mesas" — a culpar as mesas por um problema de outro sítio.
+    await page.goto(`${BASE}/pos/login`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const campo = page.locator('input[type="password"]').first();
+    await campo.waitFor({ state: 'visible', timeout: 20000 });
+    await campo.pressSequentially(PIN, { delay: 50 });
+    await page.getByRole('button', { name: 'Entrar' }).click();
+    await page.waitForURL('**/pos/terminal', { timeout: 25000 });
+    await page.waitForTimeout(3000);
+
+    // Volta ao passo do setor (o terminal salta-o quando só há um utilizável).
+    const voltar = page.getByRole('button', { name: /Setor/ }).first();
+    if (await voltar.count()) { await voltar.click(); await page.waitForTimeout(1500); }
+
+    const semPdv = page.getByRole('button', { name: /Esplanada/ }).first();
+    if (!(await semPdv.count())) {
+      test.skip(true, 'não há setor sem ponto de venda nesta base de ensaio');
+    }
+    await expect(semPdv, 'O terminal oferece um setor sem ponto de venda como se ele '
+      + 'servisse — e abre caixa nele.').toBeDisabled();
+    const corpo = await page.locator('body').innerText();
+    expect(corpo, 'O setor está desactivado mas não diz porquê nem onde se resolve.')
+      .toContain('Sem ponto de venda');
+  });
+
   test('um PIN errado não entra e explica-se', async ({ page }) => {
     await page.goto(`${BASE}/pos/login`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);

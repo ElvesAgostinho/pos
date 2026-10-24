@@ -569,3 +569,69 @@ class DocumentCenterDashboardView(APIView):
                             + d['stock_moves'] + d['receipts'] + d['production']
                             + d['stock_docs'])
         return Response(d)
+
+
+# ==========================================================================
+# IMPORTAR DE OUTRO SISTEMA — ver core/importacao.py
+# ==========================================================================
+class ImportarDestinosView(APIView):
+    """O que se pode importar, e que colunas cada destino aceita."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .importacao import DESTINOS
+        return Response([
+            {'key': k, 'name': cfg['nome'],
+             'key_field': cfg['chave'],
+             'fields': [{'key': campo, 'label': etiqueta,
+                         'required': campo in cfg['obrigatorios']}
+                        for campo, (etiqueta, _) in cfg['campos'].items()]}
+            for k, cfg in DESTINOS.items()])
+
+
+class ImportarView(APIView):
+    """Simula (por omissão) ou aplica a importação de um ficheiro CSV.
+
+    `?apply=1` grava. Sem isso, devolve só o que IA acontecer — é o passo que
+    quem importa o cadastro de um hotel a sério precisa de ver antes de carregar
+    no botão.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from .importacao import ErroDeImportacao, importar, simular
+
+        destino = request.data.get('target') or request.query_params.get('target')
+        ficheiro = request.FILES.get('file')
+        conteudo = ficheiro.read() if ficheiro else (request.data.get('content') or '')
+        if not destino:
+            return Response({'detail': 'Indique o que está a importar (artigos, entidades, mesas).'},
+                            status=400)
+        if not conteudo:
+            return Response({'detail': 'Escolha o ficheiro CSV a importar.'}, status=400)
+
+        colunas = request.data.get('columns') or None
+        if isinstance(colunas, str):
+            import json
+            try:
+                colunas = json.loads(colunas)
+            except ValueError:
+                colunas = None
+        extras = request.data.get('extras') or {}
+        if isinstance(extras, str):
+            import json
+            try:
+                extras = json.loads(extras)
+            except ValueError:
+                extras = {}
+
+        aplicar = str(request.data.get('apply') or request.query_params.get('apply') or '') \
+            in ('1', 'true', 'True')
+        try:
+            fn = importar if aplicar else simular
+            return Response(fn(destino, conteudo, colunas, extras))
+        except ErroDeImportacao as e:
+            return Response({'detail': str(e)}, status=400)
+        except KeyError:
+            return Response({'detail': f'"{destino}" não é algo que se possa importar.'},
+                            status=400)
