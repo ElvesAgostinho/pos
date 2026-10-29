@@ -115,10 +115,37 @@ class HotelScopedMixin:
         return qs
 
     def perform_create(self, serializer):
-        if self.hotel_write_field and self.hotel_write_field in serializer.fields:
-            hid = default_hotel_id(self.request)
-            if hid:
-                from identity.models import Hotel
-                serializer.save(**{self.hotel_write_field: Hotel.objects.get(pk=hid)})
-                return
+        """O HOTEL QUE FOI PEDIDO GANHA — e não o activo.
+
+        Isto forçava SEMPRE o hotel activo, deitando fora o que viesse no
+        pedido. Num grupo, criar um quarto com `hotel: B` criava-o no Hotel A,
+        em silêncio: o registo nascia na propriedade errada e só se descobria
+        quando alguém fosse procurá-lo onde o tinha posto e não estivesse lá.
+        Pior do que recusar, porque não há erro nenhum a investigar.
+
+        A intenção original estava certa e mantém-se: NÃO se confia no cliente
+        para decidir sozinho. O que muda é a ordem — quando o hotel vem
+        indicado, confere-se o ACESSO e respeita-se; quando não vem, usa-se o
+        activo, como antes. É a diferença entre não confiar e não ouvir.
+        """
+        campo = self.hotel_write_field
+        if not campo or campo not in serializer.fields:
+            serializer.save()
+            return
+
+        pedido = serializer.validated_data.get(campo)
+        if pedido is not None:
+            hid = getattr(pedido, 'pk', pedido)
+            permitidos = allowed_hotel_ids(self.request.user)
+            if permitidos is not None and hid not in permitidos:
+                raise PermissionDenied(
+                    'Não tem acesso ao hotel onde está a tentar criar este registo.')
+            serializer.save()
+            return
+
+        hid = default_hotel_id(self.request)
+        if hid:
+            from identity.models import Hotel
+            serializer.save(**{campo: Hotel.objects.get(pk=hid)})
+            return
         serializer.save()

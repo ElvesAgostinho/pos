@@ -22,6 +22,58 @@ def _hoje():
     return timezone.localdate()
 
 
+def _do_hotel_fiscal(p, caminho='hotel'):
+    """O filtro de propriedade nos DOCUMENTOS FISCAIS — com uma diferença.
+
+    Um documento emitido antes de o campo `hotel` existir não tem casa, e não se
+    inventa uma. Se o filtro os excluísse, o relatório de uma unidade passava a
+    esconder todo o histórico anterior — e um mapa de IVA que perde meses não
+    serve para declarar nada.
+
+    Por isso: os documentos DESTA casa mais os que não têm casa nenhuma. É a
+    escolha que mantém o histórico visível enquanto as unidades se separam. Com
+    uma casa só, não muda nada; num grupo, os documentos novos já ficam
+    separados e os antigos aparecem em ambos, uma vez.
+    """
+    from django.db.models import Q
+    hid = p.get('hotel')
+    permitidos = p.get('hotels')
+    q = Q()
+    if permitidos:
+        q &= (Q(**{f'{caminho}__in': permitidos}) | Q(**{f'{caminho}__isnull': True}))
+    if hid:
+        q &= (Q(**{caminho: hid}) | Q(**{f'{caminho}__isnull': True}))
+    return q
+
+
+def _do_hotel(p, caminho):
+    """OS FILTROS DE PROPRIEDADE deste relatório, prontos a entrar num `filter`.
+
+    Os 41 relatórios do POS consultavam as vendas, o IVA, a caixa e o stock sem
+    olhar à propriedade. Num grupo com duas unidades, o director do Hotel A via
+    números que não eram dele e o consolidado contava tudo a dobrar — sem erro
+    nenhum, só um total que ninguém conseguia explicar.
+
+    O motor já resolve a unidade antes de correr o relatório (ver `escopo_hotel`)
+    e deixa-a em `params['hotel']` (a unidade escolhida) e `params['hotels']` (as
+    que este utilizador pode ver). O que faltava era aplicá-la. Devolve-se um
+    dicionário de condições em vez de um queryset para isto poder entrar no
+    PRIMEIRO `filter` de cada relatório: filtrar depois de um `.values().
+    annotate()` incidiria sobre o agregado, não sobre as linhas.
+
+    `caminho` é o caminho ORM até ao hotel a partir do modelo do relatório —
+    'outlet__hotel' numa venda, 'ticket__outlet__hotel' numa linha, e assim.
+    """
+    f = {}
+    permitidos = p.get('hotels')
+    if permitidos:
+        f[f'{caminho}__in'] = permitidos
+    hid = p.get('hotel')
+    if hid:
+        f[caminho] = hid
+    return f
+
+
 def _periodo(p):
     """Todo o relatório tem um período. Sem ele, um relatório de vendas é o total
     da vida da empresa — que não serve para decidir nada."""
@@ -41,7 +93,7 @@ def r_reservas(p):
     from .models import POSReservation
     ini, fim = _periodo(p)
     qs = (POSReservation.objects
-          .filter(reserved_for__date__gte=ini, reserved_for__date__lte=fim)
+          .filter(**_do_hotel(p, 'outlet__hotel'), reserved_for__date__gte=ini, reserved_for__date__lte=fim)
           .select_related('outlet', 'table').order_by('reserved_for'))
     rows = [{
         'when': timezone.localtime(r.reserved_for).strftime('%d/%m %H:%M'),
@@ -64,7 +116,7 @@ def r_reservas(p):
 def r_documentos(p):
     from fiscal.models import FiscalDocument
     ini, fim = _periodo(p)
-    qs = (FiscalDocument.objects.filter(source_module='pos', doc_date__gte=ini, doc_date__lte=fim)
+    qs = (FiscalDocument.objects.filter(_do_hotel_fiscal(p, 'hotel'), source_module='pos', doc_date__gte=ini, doc_date__lte=fim)
           .select_related('doc_type', 'series').order_by('doc_date', 'number'))
     if p.get('doc_type'):
         qs = qs.filter(doc_type__code=p['doc_type'])
@@ -93,7 +145,7 @@ def r_iva(p):
     from fiscal.models import FiscalDocumentLine
     ini, fim = _periodo(p)
     linhas = (FiscalDocumentLine.objects
-              .filter(document__source_module='pos', document__doc_date__gte=ini,
+              .filter(_do_hotel_fiscal(p, 'document__hotel'), document__source_module='pos', document__doc_date__gte=ini,
                       document__doc_date__lte=fim, document__status='N')
               .values('tax_percentage')
               .annotate(base=Sum('line_total'), imposto=Sum('tax_amount'), n=Count('id'))
@@ -118,7 +170,7 @@ def r_anulacoes(p):
     from fiscal.models import FiscalDocument
     ini, fim = _periodo(p)
     qs = (FiscalDocument.objects
-          .filter(source_module='pos', doc_date__gte=ini, doc_date__lte=fim)
+          .filter(_do_hotel_fiscal(p, 'hotel'), source_module='pos', doc_date__gte=ini, doc_date__lte=fim)
           .filter(Q(status='A') | Q(doc_type__is_rectifying=True))
           .select_related('doc_type').order_by('-doc_date'))
     rows = [{
@@ -139,7 +191,7 @@ def r_anulacoes(p):
 def r_vendas_dia(p):
     from .models import POSTicket
     ini, fim = _periodo(p)
-    qs = (POSTicket.objects.filter(status='PAID', closed_at__date__gte=ini, closed_at__date__lte=fim)
+    qs = (POSTicket.objects.filter(**_do_hotel(p, 'outlet__hotel'), status='PAID', closed_at__date__gte=ini, closed_at__date__lte=fim)
           .values('closed_at__date')
           .annotate(contas=Count('id'), total=Sum('grand_total'), pax=Sum('guests'))
           .order_by('closed_at__date'))
@@ -161,7 +213,7 @@ def r_vendas_artigo(p):
     from .models import POSTicketLine
     ini, fim = _periodo(p)
     qs = (POSTicketLine.objects
-          .filter(ticket__status='PAID', is_void=False,
+          .filter(**_do_hotel(p, 'ticket__outlet__hotel'), ticket__status='PAID', is_void=False,
                   ticket__closed_at__date__gte=ini, ticket__closed_at__date__lte=fim)
           .values('item__code', 'item__name', 'item__subfamily__name')
           .annotate(qtd=Sum('quantity'), total=Sum('line_total'))
@@ -183,7 +235,7 @@ def r_vendas_familia(p):
     from .models import POSTicketLine
     ini, fim = _periodo(p)
     qs = (POSTicketLine.objects
-          .filter(ticket__status='PAID', is_void=False,
+          .filter(**_do_hotel(p, 'ticket__outlet__hotel'), ticket__status='PAID', is_void=False,
                   ticket__closed_at__date__gte=ini, ticket__closed_at__date__lte=fim)
           .values('item__subfamily__family__group__name', 'item__subfamily__family__name')
           .annotate(qtd=Sum('quantity'), total=Sum('line_total'))
@@ -206,7 +258,7 @@ def r_vendas_familia(p):
 def r_vendas_operador(p):
     from .models import POSTicket
     ini, fim = _periodo(p)
-    qs = (POSTicket.objects.filter(status='PAID', closed_at__date__gte=ini, closed_at__date__lte=fim)
+    qs = (POSTicket.objects.filter(**_do_hotel(p, 'outlet__hotel'), status='PAID', closed_at__date__gte=ini, closed_at__date__lte=fim)
           .values('operator_name')
           .annotate(contas=Count('id'), total=Sum('grand_total'), desconto=Sum('discount_total'))
           .order_by('-total'))
@@ -228,7 +280,7 @@ def r_vendas_operador(p):
 def r_vendas_sector(p):
     from .models import POSTicket
     ini, fim = _periodo(p)
-    qs = (POSTicket.objects.filter(status='PAID', closed_at__date__gte=ini, closed_at__date__lte=fim)
+    qs = (POSTicket.objects.filter(**_do_hotel(p, 'outlet__hotel'), status='PAID', closed_at__date__gte=ini, closed_at__date__lte=fim)
           .values('outlet__name')
           .annotate(contas=Count('id'), total=Sum('grand_total'))
           .order_by('-total'))
@@ -245,7 +297,7 @@ def r_vendas_sector(p):
 def r_caixas(p):
     from .models import CashSession
     ini, fim = _periodo(p)
-    qs = (CashSession.objects.filter(opened_at__date__gte=ini, opened_at__date__lte=fim)
+    qs = (CashSession.objects.filter(**_do_hotel(p, 'outlet__hotel'), opened_at__date__gte=ini, opened_at__date__lte=fim)
           .select_related('outlet').order_by('-opened_at'))
     rows = []
     for s in qs:
@@ -271,7 +323,7 @@ def r_movimentos_caixa(p):
     """SANGRIAS E REFORÇOS — o dinheiro que entra e sai da gaveta fora das vendas."""
     from .models import CashMovement
     ini, fim = _periodo(p)
-    qs = (CashMovement.objects.filter(created_at__date__gte=ini, created_at__date__lte=fim)
+    qs = (CashMovement.objects.filter(**_do_hotel(p, 'session__outlet__hotel'), created_at__date__gte=ini, created_at__date__lte=fim)
           .select_related('session__outlet').order_by('-created_at'))
     rows = [{
         'date': m.created_at.strftime('%d/%m %H:%M'),
@@ -383,7 +435,7 @@ def r_pagamentos(p):
     from .models import POSTicketPayment
     ini, fim = _periodo(p)
     qs = (POSTicketPayment.objects
-          .filter(ticket__status='PAID', ticket__closed_at__date__gte=ini,
+          .filter(**_do_hotel(p, 'ticket__outlet__hotel'), ticket__status='PAID', ticket__closed_at__date__gte=ini,
                   ticket__closed_at__date__lte=fim)
           .values('payment_method__name')
           .annotate(n=Count('id'), total=Sum('amount'))
@@ -427,7 +479,7 @@ def r_transferencias_dia(p):
     from .models import POSTicketPayment
     ini, fim = _periodo(p)
     qs = (POSTicketPayment.objects
-          .filter(payment_method__bank_transfer=True,
+          .filter(**_do_hotel(p, 'ticket__outlet__hotel'), payment_method__bank_transfer=True,
                   ticket__closed_at__date__gte=ini, ticket__closed_at__date__lte=fim)
           .values('ticket__closed_at__date')
           .annotate(n=Count('id'), total=Sum('amount'))
@@ -554,7 +606,7 @@ def r_horas_pico(p):
     """HORAS DE PICO — a que horas se vende. É o que decide as escalas do pessoal."""
     from .models import POSTicket
     ini, fim = _periodo(p)
-    qs = POSTicket.objects.filter(status='PAID', closed_at__date__gte=ini, closed_at__date__lte=fim)
+    qs = POSTicket.objects.filter(**_do_hotel(p, 'outlet__hotel'), status='PAID', closed_at__date__gte=ini, closed_at__date__lte=fim)
     balde = {}
     for t in qs:
         h = timezone.localtime(t.closed_at).hour if t.closed_at else 0
@@ -583,7 +635,7 @@ def r_anulacoes_linha(p):
     from .models import POSTicketLine
     ini, fim = _periodo(p)
     # A linha não guarda data própria — a data é a da conta onde foi lançada.
-    qs = (POSTicketLine.objects.filter(is_void=True, ticket__opened_at__date__gte=ini,
+    qs = (POSTicketLine.objects.filter(**_do_hotel(p, 'ticket__outlet__hotel'), is_void=True, ticket__opened_at__date__gte=ini,
                                        ticket__opened_at__date__lte=fim)
           .select_related('item', 'ticket').order_by('-ticket__opened_at'))
     rows = [{
@@ -608,7 +660,7 @@ def r_ofertas(p):
     é o PREÇO DE TABELA que a casa deixou de cobrar, não o valor da linha (esse já é 0)."""
     from .models import POSTicketLine
     ini, fim = _periodo(p)
-    qs = (POSTicketLine.objects.filter(is_gift=True, is_void=False,
+    qs = (POSTicketLine.objects.filter(**_do_hotel(p, 'ticket__outlet__hotel'), is_gift=True, is_void=False,
                                         ticket__opened_at__date__gte=ini,
                                         ticket__opened_at__date__lte=fim)
           .select_related('ticket').order_by('-ticket__opened_at'))
@@ -759,7 +811,7 @@ def r_comissoes_rh(p):
 def r_compras(p):
     from .models import StockDoc
     ini, fim = _periodo(p)
-    qs = (StockDoc.objects.filter(series__nature='PAYABLE', voided=False,
+    qs = (StockDoc.objects.filter(**_do_hotel(p, 'warehouse__hotel'), series__nature='PAYABLE', voided=False,
                                   doc_date__gte=ini, doc_date__lte=fim)
           .select_related('entity', 'series', 'warehouse'))
     rows = [{
@@ -780,7 +832,10 @@ def r_compras(p):
 
 def r_stock_valorizado(p):
     from inventory.models import StockLevel
-    qs = StockLevel.objects.select_related('item', 'warehouse')
+    # As existências são do ARMAZÉM, e o armazém é de uma unidade: num grupo,
+    # este relatório somava o stock das duas casas na mesma folha.
+    qs = (StockLevel.objects.select_related('item', 'warehouse')
+          .filter(**_do_hotel(p, 'warehouse__hotel')))
     if p.get('warehouse'):
         qs = qs.filter(warehouse_id=p['warehouse'])
     rows = []

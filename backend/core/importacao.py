@@ -130,6 +130,32 @@ DESTINOS = {
         },
         'preencher': 'mesa_preenche',
     },
+    # AS EXISTÊNCIAS NÃO SÃO UM REGISTO: SÃO UM SALDO.
+    #
+    # Os outros destinos criam ou actualizam uma linha. O stock não: é uma
+    # quantidade que existe numa prateleira, e o que se importa é o que lá está
+    # HOJE. Por isso este destino não passa pelo caminho normal — tem o seu
+    # (`aplicar_existencias`), e passa pelo motor de stock em vez de escrever o
+    # saldo à mão, para o lote e o custo médio nascerem certos.
+    #
+    # E por isso trata-se como uma CONTAGEM e não como uma entrada: importar o
+    # mesmo ficheiro outra vez põe o saldo no valor do ficheiro, em vez de o
+    # somar outra vez. Quem importa existências corrige o ficheiro e repete —
+    # e um sistema que duplicasse o armazém a cada tentativa era inutilizável.
+    'existencias': {
+        'nome': 'Existências (stock inicial)',
+        'modelo': ('inventory.models', 'Item'),
+        'chave': 'code',
+        'obrigatorios': ['code', 'quantity'],
+        'campos': {
+            'code': ('Código do artigo', _texto),
+            'quantity': ('Quantidade', _decimal),
+            'unit_cost': ('Custo unitário', _decimal),
+            'lot_number': ('Lote', _texto),
+            'expiry_date': ('Validade (AAAA-MM-DD)', _texto),
+        },
+        'aplicar': 'aplicar_existencias',
+    },
 }
 
 # Nomes de coluna que os sistemas de onde se vem costumam usar. Serve para o
@@ -151,6 +177,10 @@ SINONIMOS = {
     'credit_limit': ['limite', 'limite de credito', 'limite de crédito', 'credit limit'],
     'shelf_life_days': ['validade', 'validade (dias)', 'dias', 'shelf life'],
     'item_type': ['tipo', 'tipo de artigo', 'type'],
+    'quantity': ['quantidade', 'qtd', 'stock', 'existencia', 'existência', 'saldo',
+                 'quantity', 'qty'],
+    'unit_cost': ['custo', 'custo unitario', 'custo unitário', 'preco de custo',
+                  'unit cost', 'cost'],
 }
 
 
@@ -190,6 +220,87 @@ def mesa_preenche(dados, extras):
             'Crie-o em Configuração POS › Parâmetros do Sistema › Pontos de Venda.')
     dados.setdefault('outlet', outlet)
     return dados
+
+
+def aplicar_existencias(linhas, colunas, extras, gravar):
+    """Põe o armazém com as existências do ficheiro — pelo motor de stock.
+
+    Trata cada linha como uma CONTAGEM: o saldo fica no valor do ficheiro, não
+    somado ao que já lá está. É o que torna seguro repetir a importação, e é
+    também o que descreve a realidade — "tenho 40 garrafas" é uma afirmação
+    sobre o total, não sobre uma entrada.
+
+    O custo só se escreve quando o artigo ainda não tem nenhum: quem já vendeu
+    neste sistema tem um custo médio ganho a sério, e um número vindo de um
+    ficheiro não o deve apagar.
+    """
+    from decimal import Decimal
+
+    from inventory import stock as motor
+    from inventory.models import Item, StockLevel, Warehouse
+
+    armazem = (Warehouse.objects.filter(pk=extras.get('warehouse')).first()
+               if extras.get('warehouse')
+               else Warehouse.objects.filter(is_main=True).first() or Warehouse.objects.first())
+    if armazem is None:
+        raise ErroDeImportacao(
+            'Não há nenhum armazém criado, e as existências têm de entrar num. '
+            'Crie-o em Centro de Armazém › Armazéns antes de importar.')
+
+    criados = actualizados = 0
+    recusados, detalhe = [], []
+    vistos = set()
+
+    for i, linha in enumerate(linhas, start=2):
+        try:
+            dados = _preparar('existencias', linha, colunas)
+        except ValueError as e:
+            recusados.append({'linha': i, 'motivo': str(e),
+                              'valor': _texto(linha.get(colunas.get('code', ''), ''))})
+            continue
+
+        codigo = dados['code']
+        if codigo in vistos:
+            recusados.append({'linha': i, 'valor': codigo,
+                              'motivo': f'O artigo "{codigo}" aparece mais do que uma vez '
+                                        f'neste ficheiro'})
+            continue
+        vistos.add(codigo)
+
+        artigo = Item.objects.filter(code=codigo).first()
+        if artigo is None:
+            # NÃO SE CRIA O ARTIGO A PARTIR DAQUI. Um artigo nasce com unidade,
+            # IVA, família e preço; inventá-lo com um código e uma quantidade
+            # dava um catálogo cheio de fantasmas. Importe primeiro os artigos.
+            recusados.append({'linha': i, 'valor': codigo,
+                              'motivo': f'Não existe nenhum artigo com o código "{codigo}". '
+                                        f'Importe primeiro os Artigos.'})
+            continue
+
+        quantidade = dados['quantity']
+        nivel = StockLevel.objects.filter(warehouse=armazem, item=artigo).first()
+        tinha = (nivel.quantity_on_hand if nivel else Decimal('0')) or Decimal('0')
+        if nivel is None or tinha == 0:
+            criados += 1
+            accao = 'entra'
+        else:
+            actualizados += 1
+            accao = 'acerta'
+        if len(detalhe) < 50:
+            detalhe.append({'linha': i, 'valor': codigo, 'accao': accao,
+                            'nome': f'{artigo.name} — {tinha} → {quantidade}'})
+
+        if gravar:
+            motor.adjust(armazem, artigo, quantidade, reference='EXISTENCIAS-INICIAIS',
+                         by='importação')
+            custo = dados.get('unit_cost')
+            if custo and not (artigo.current_average_cost or Decimal('0')):
+                artigo.current_average_cost = custo
+                artigo.save(update_fields=['current_average_cost'])
+
+    return {'destino': 'existencias', 'nome': DESTINOS['existencias']['nome'],
+            'total': len(linhas), 'criar': criados, 'actualizar': actualizados,
+            'recusadas': recusados, 'amostra': detalhe}
 
 
 def ler_csv(conteudo):
@@ -269,6 +380,11 @@ def _preparar(destino, linha, colunas):
 
 def _correr(destino, linhas, colunas, extras=None, gravar=False):
     cfg = DESTINOS[destino]
+    # Há destinos que não são "criar ou actualizar uma linha" — as existências
+    # são um saldo, e passam pelo motor de stock. Esses trazem o seu caminho.
+    proprio = globals().get(cfg.get('aplicar') or '', None)
+    if proprio:
+        return proprio(linhas, colunas, extras or {}, gravar)
     Modelo = _modelo(destino)
     chave = cfg['chave']
     preencher = globals().get(cfg.get('preencher') or '', None)

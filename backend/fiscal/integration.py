@@ -141,6 +141,10 @@ def emit_for_pos_ticket(ticket, user=None, ip=None, credito=False, customer=None
             # conta corrente dela.
             customer=customer or getattr(ticket, 'customer', None),
             settled=(not credito),
+            # A casa é a do ponto de venda onde a venda foi feita. Sem ela, os
+            # relatórios de facturação e de IVA de um grupo somam as unidades
+            # todas e não há como separá-las (ver `hotel` em FiscalDocument).
+            hotel=getattr(ticket.outlet, 'hotel', None),
         )
     except IntegrityError:
         # Duas cobranças da mesma conta ao mesmo tempo: a segunda leva o documento
@@ -254,6 +258,7 @@ def emit_for_pms_folio(folio, charges, user=None, ip=None):
             source_module='pms', source_ref=folio.id,
             room_ref=res.room.number if res.room else None,
             customer=guest, settled=settled,
+            hotel=getattr(getattr(folio, 'reservation', None), 'hotel', None),
         )
     except IntegrityError:
         # Dois "Gerar Fatura" sobre o mesmo folio: o segundo leva a factura do primeiro.

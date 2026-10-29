@@ -253,6 +253,22 @@ class DocPrintModel(models.Model):
 class FiscalDocument(models.Model):
     """Documento fiscal assinado e encadeado por hash — IMUTÁVEL após emissão."""
     STATUS = [('N', 'Normal'), ('A', 'Anulado')]
+    # A CASA QUE EMITIU — e porque é que isto faltava.
+    #
+    # Um documento fiscal não tinha ligação nenhuma a um hotel: nem directa, nem
+    # pela série. Num grupo com duas unidades, era impossível dizer qual delas
+    # tinha emitido uma factura — e por isso os relatórios de facturação, de IVA
+    # e de anulações somavam as duas casas na mesma folha, sem nenhuma maneira de
+    # as separar. O director de uma unidade via o IVA da outra; o mapa que
+    # acompanha a declaração não era de ninguém.
+    #
+    # Fica anulável de propósito: os documentos já emitidos não têm como saber a
+    # casa deles e não se inventa uma. Os relatórios de uma unidade mostram os
+    # dela MAIS os antigos (que de outro modo desapareciam do histórico); o
+    # consolidado continua a mostrar tudo. Quem instalar de novo nasce com o
+    # campo preenchido desde a primeira factura.
+    hotel = models.ForeignKey('identity.Hotel', on_delete=models.PROTECT, blank=True,
+                              null=True, related_name='fiscal_documents')
     series = models.ForeignKey(FiscalSeries, on_delete=models.PROTECT, related_name='documents')
     doc_type = models.ForeignKey(FiscalDocType, on_delete=models.PROTECT, related_name='documents')
     number = models.PositiveIntegerField()

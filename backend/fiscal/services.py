@@ -147,7 +147,7 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
                    source_module='manual', source_ref=None, customer_address=None,
                    operator_name=None, place_ref=None, room_ref=None,
                    payment_method=None, discount_total=0, tax_inclusive=None,
-                   customer=None, settled=None):
+                   customer=None, settled=None, hotel=None):
     """Emite um documento fiscal assinado e encadeado. Ponto único de emissão."""
     from .num2words_pt import amount_to_words
     cfg = FiscalConfig.get()
@@ -189,6 +189,11 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
 
     disc = _q(discount_total)
     doc = FiscalDocument.objects.create(
+        # A CASA QUE EMITE. Sem ela, os relatórios de facturação e de IVA de um
+        # grupo somam as unidades todas e não há como separá-las (ver o campo
+        # `hotel` em FiscalDocument). Quem chama sabe-o — o POS pelo ponto de
+        # venda, o PMS pela reserva — e passa-o; quem não souber deixa a nulo.
+        hotel=hotel,
         series=series, doc_type=doc_type, number=number, invoice_no=invoice_no,
         doc_date=d, system_entry_date=system_entry,
         customer=customer,

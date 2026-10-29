@@ -176,6 +176,99 @@ class EntidadesEMesasTests(CasaQueVemDeOutroSistema):
         self.assertIn('Pontos de Venda', str(e.exception))
 
 
+class ExistenciasDeOutroSistemaTests(CasaQueVemDeOutroSistema):
+    """O stock que já está na prateleira no dia em que se muda de sistema.
+
+    É a última coisa que falta a quem vem de outro lado — e a que mais custa
+    contar à mão. Note-se que NÃO é "criar registos": é pôr o armazém com o
+    saldo que ele tem.
+    """
+
+    def setUp(self):
+        super().setUp()
+        from inventory.models import Warehouse
+        self.armazem = Warehouse.objects.create(hotel=self.hotel, code='ECO',
+                                                name='Economato', is_main=True)
+        importar('artigos', 'Codigo;Descricao;Preco\nB001;Cerveja;1200\nB002;Água;600\n')
+
+    def _nivel(self, codigo):
+        from inventory.models import Item, StockLevel
+        n = StockLevel.objects.filter(warehouse=self.armazem,
+                                      item=Item.objects.get(code=codigo)).first()
+        return (n.quantity_on_hand if n else Decimal('0')) or Decimal('0')
+
+    def test_as_existencias_entram_no_armazem(self):
+        r = importar('existencias', 'Codigo;Quantidade;Custo\nB001;240;800\nB002;48;300\n')
+        self.assertEqual(r['criar'], 2)
+        self.assertEqual(self._nivel('B001'), Decimal('240.0000'))
+        self.assertEqual(self._nivel('B002'), Decimal('48.0000'))
+
+    def test_importar_duas_vezes_nao_duplica_o_armazem(self):
+        """A diferença de todos os outros destinos: isto é um SALDO. Somar outra
+        vez dava 480 garrafas numa prateleira que tem 240 — e quem importa
+        existências repete sempre, porque o ficheiro vem quase sempre errado à
+        primeira."""
+        importar('existencias', 'Codigo;Quantidade\nB001;240\n')
+        importar('existencias', 'Codigo;Quantidade\nB001;240\n')
+        self.assertEqual(self._nivel('B001'), Decimal('240.0000'),
+                         'A segunda importação somou em vez de acertar.')
+
+    def test_a_segunda_importacao_corrige_a_contagem(self):
+        importar('existencias', 'Codigo;Quantidade\nB001;240\n')
+        importar('existencias', 'Codigo;Quantidade\nB001;200\n')
+        self.assertEqual(self._nivel('B001'), Decimal('200.0000'))
+
+    def test_a_soma_dos_lotes_bate_com_o_saldo(self):
+        """Passa pelo motor de stock, e não escreve o saldo à mão — senão a
+        lista de validades ficava vazia sobre um armazém cheio."""
+        from inventory.models import Item, StockLot
+        importar('existencias', 'Codigo;Quantidade\nB001;240\n')
+        lotes = StockLot.objects.filter(warehouse=self.armazem,
+                                        item=Item.objects.get(code='B001'))
+        self.assertEqual(sum((l.quantity or Decimal('0')) for l in lotes),
+                         self._nivel('B001'),
+                         'A soma dos lotes não bate com o saldo importado.')
+
+    def test_o_custo_entra_quando_o_artigo_ainda_nao_tem_nenhum(self):
+        from inventory.models import Item
+        importar('existencias', 'Codigo;Quantidade;Custo\nB001;240;800\n')
+        self.assertEqual(Item.objects.get(code='B001').current_average_cost,
+                         Decimal('800.0000'))
+
+    def test_o_custo_ja_ganho_no_sistema_nao_se_apaga(self):
+        """Quem já comprou e vendeu aqui tem um custo médio ganho a sério. Um
+        número vindo de um ficheiro não o deve substituir."""
+        from inventory.models import Item
+        importar('existencias', 'Codigo;Quantidade;Custo\nB001;100;800\n')
+        importar('existencias', 'Codigo;Quantidade;Custo\nB001;240;9999\n')
+        self.assertEqual(Item.objects.get(code='B001').current_average_cost,
+                         Decimal('800.0000'),
+                         'Uma reimportação apagou o custo médio real do artigo.')
+
+    def test_um_artigo_que_nao_existe_e_recusado_e_explicado(self):
+        """Não se inventa o artigo a partir de um código e uma quantidade: um
+        artigo nasce com unidade, IVA, família e preço. Inventá-lo dava um
+        catálogo cheio de fantasmas."""
+        r = importar('existencias', 'Codigo;Quantidade\nB001;240\nZZZ;10\n')
+        self.assertEqual(r['criar'], 1)
+        self.assertEqual(len(r['recusadas']), 1)
+        self.assertIn('ZZZ', r['recusadas'][0]['valor'])
+        self.assertIn('Artigos', r['recusadas'][0]['motivo'])
+
+    def test_sem_armazem_recusa_e_diz_onde_criar(self):
+        from inventory.models import Warehouse
+        Warehouse.objects.all().delete()
+        with self.assertRaises(ErroDeImportacao) as e:
+            importar('existencias', 'Codigo;Quantidade\nB001;240\n')
+        self.assertIn('Armazéns', str(e.exception))
+
+    def test_primeiro_ve_se_sem_mexer_no_armazem(self):
+        r = simular('existencias', 'Codigo;Quantidade\nB001;240\n')
+        self.assertEqual(r['criar'], 1)
+        self.assertEqual(self._nivel('B001'), Decimal('0'),
+                         'A simulação mexeu no stock.')
+
+
 class ImportarPelaApiTests(CasaQueVemDeOutroSistema):
     """O mesmo motor, pela porta que o ecrã usa."""
 
@@ -183,7 +276,7 @@ class ImportarPelaApiTests(CasaQueVemDeOutroSistema):
         r = self.client.get('/api/data/import/targets/')
         self.assertEqual(r.status_code, 200, r.content[:300])
         chaves = {d['key'] for d in r.data}
-        self.assertEqual(chaves, {'artigos', 'entidades', 'mesas'})
+        self.assertEqual(chaves, {'artigos', 'entidades', 'mesas', 'existencias'})
         artigos = [d for d in r.data if d['key'] == 'artigos'][0]
         obrig = {f['key'] for f in artigos['fields'] if f['required']}
         self.assertEqual(obrig, {'code', 'name'})
