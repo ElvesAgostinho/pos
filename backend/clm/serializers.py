@@ -126,14 +126,30 @@ class SystemReleaseSerializer(serializers.ModelSerializer):
         try:
             ficheiro.seek(0)
             with zipfile.ZipFile(ficheiro) as zf:
-                alvo = next((n for n in zf.namelist()
-                             if n.endswith('core/support.py')), None)
-                if not alvo:
+                nomes = zf.namelist()
+                # O MESMO CONTRATO QUE O ATUALIZADOR EXIGE, e nem mais um grão.
+                #
+                # Isto exigia `core/support.py` lá dentro e recusava tudo o resto
+                # — um controlo MAIS APERTADO do que o do próprio `atualizar.py`,
+                # que só precisa de `app/` ou `webapp/`. O resultado foi rejeitar
+                # pacotes que teriam funcionado, com uma mensagem a dizer que não
+                # traziam o backend quando traziam. Uma verificação que recusa o
+                # que o sistema aceitaria não protege nada: só tranca a porta.
+                if not any(n.startswith('app/') or n.startswith('webapp/') for n in nomes):
+                    amostra = ', '.join(nomes[:6]) or '(vazio)'
                     raise serializers.ValidationError({
-                        'package': ['Este .zip não parece um pacote do sistema: não traz o '
-                                    'backend lá dentro. Use o ficheiro que o '
-                                    'build_atualizacao.ps1 cria em instalador\\Output\\.'],
+                        'package': [
+                            f'Este .zip não tem a forma de um pacote do sistema: lá dentro '
+                            f'deviam estar as pastas "app/" e "webapp/", e o que está é: '
+                            f'{amostra}. Se o compactou à mão, apanhou uma pasta a mais — '
+                            f'use o ficheiro que o build_atualizacao.ps1 cria em '
+                            f'instalador\\Output\\, tal como ele sai.'],
                     })
+                alvo = next((n for n in nomes if n.endswith('core/support.py')), None)
+                if not alvo:
+                    # Tem a forma certa mas não traz o support.py (um pacote só do
+                    # site, por exemplo). Não se inventa versão nenhuma: passa.
+                    return
                 texto = zf.read(alvo).decode('utf-8', errors='replace')
         except zipfile.BadZipFile:
             raise serializers.ValidationError({
