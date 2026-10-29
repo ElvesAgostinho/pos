@@ -75,10 +75,17 @@ class InstalacaoDoZeroTests(unittest.TestCase):
                                                       'staticfiles', '*.sqlite3',
                                                       'media', 'logs'))
         shutil.copy2(CONFIGURADOR, cls.pasta / 'configurar.py')
-        # O Python embutido: o configurador chama `python/python.exe`. Aponta-se
-        # para o desta máquina, que faz o mesmo papel que o embutido no pacote.
-        (cls.pasta / 'python').symlink_to(Path(sys.executable).parent,
-                                          target_is_directory=True)
+        # O Python embutido: aponta-se para o desta máquina, que faz o mesmo
+        # papel que o embutido no pacote. Em Linux não há `python.exe` nenhum
+        # para apontar, e o configurador cai no interpretador que o está a
+        # correr — é esse o caminho que se exercita lá. E o symlink pode faltar
+        # de todo (precisa de privilégios em algumas máquinas Windows), por isso
+        # a falta dele não pode derrubar o teste.
+        try:
+            (cls.pasta / 'python').symlink_to(Path(sys.executable).parent,
+                                              target_is_directory=True)
+        except (OSError, NotImplementedError):
+            pass
 
         cls.ini = cls.pasta / 'instalacao.ini'
         cls.base = cls.pasta / 'dados' / 'erp.sqlite3'
@@ -91,7 +98,13 @@ class InstalacaoDoZeroTests(unittest.TestCase):
 
         ambiente = dict(os.environ)
         # O configurador usa o Python embutido do pacote quando existe e cai no
-        # do sistema quando não — é esse caminho que corre aqui.
+        # que está a correr o próprio configurador quando não (`_python()` em
+        # instalador/configurar.py). ESSA ALTERNATIVA NÃO EXISTIA: o caminho era
+        # sempre `python/python.exe`, e este comentário descrevia um
+        # comportamento que o código não tinha. Em Windows passava, porque o
+        # symlink acima põe lá um `python.exe`; em Linux — que é onde os testes
+        # correm no GitHub — o configurador estourava com um FileNotFoundError e
+        # as quinze provas de instalação caíam todas de uma vez.
         ambiente['SQLITE_PATH'] = str(cls.base)
         ambiente['DJANGO_DEBUG'] = 'True'
         ambiente.pop('DJANGO_SETTINGS_MODULE', None)
@@ -262,3 +275,45 @@ class PrimeiroDiaDoClienteTests(InstalacaoDoZeroTests):
                       'O .env foi REESCRITO numa atualização: a SECRET_KEY nova desloga '
                       'todos os utilizadores e invalida a licença já activada. '
                       f'Saída: {saida[-800:]}')
+
+@unittest.skipUnless(CONFIGURADOR.exists(), 'instalador/configurar.py não está presente')
+class OPythonComQueSeInstalaTests(unittest.TestCase):
+    """COM QUE PYTHON É QUE O CONFIGURADOR CORRE O `manage.py`.
+
+    O pacote traz um Python embutido (`python/python.exe`) porque o cliente não
+    instala Python. O configurador usava-o SEMPRE, sem alternativa: quando não
+    estava lá, o `subprocess.run` estourava com um `FileNotFoundError` cru — um
+    traceback a dizer "python.exe" no ecrã de quem está a instalar.
+
+    E tornava a instalação impossível de testar fora de Windows, que é onde os
+    testes correm (o GitHub): as quinze provas de instalação caíam todas, não
+    por a instalação estar mal, mas por não haver um ficheiro com aquele nome.
+    """
+
+    def _configurador(self):
+        """O módulo `configurar.py` carregado como módulo, sem o correr."""
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('configurador_em_teste',
+                                                      str(CONFIGURADOR))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def test_sem_o_python_embutido_usa_o_que_esta_a_correr(self):
+        mod = self._configurador()
+        # O embutido não existe nesta árvore (o módulo foi carregado do
+        # repositório, onde não há `python/python.exe`).
+        if mod._EMBUTIDO.exists():
+            self.skipTest('esta árvore tem um Python embutido — o caso a provar é o outro')
+        self.assertEqual(mod._python(), Path(sys.executable),
+                         'Sem o Python embutido, o configurador tem de usar o interpretador '
+                         'que o está a correr — e não estourar com FileNotFoundError.')
+
+    def test_o_python_que_se_escolhe_existe_sempre(self):
+        """Seja qual for o caminho, o que sai de `_python()` tem de ser um
+        ficheiro que existe: é o que vai para dentro de um `subprocess.run`."""
+        mod = self._configurador()
+        escolhido = mod._python()
+        self.assertTrue(Path(escolhido).exists(),
+                        f'O configurador ia correr "{escolhido}", que não existe.')
+

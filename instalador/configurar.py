@@ -21,7 +21,24 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent            # {app}
 APP = RAIZ / 'app'                                # o backend Django
-PYTHON = RAIZ / 'python' / 'python.exe'           # o Python embutido
+_EMBUTIDO = RAIZ / 'python' / 'python.exe'         # o Python embutido no pacote
+
+
+def _python():
+    """O Python com que correr o `manage.py`.
+
+    Normalmente é o EMBUTIDO no pacote (`python/python.exe`): o cliente não
+    instala Python, e é esse que tem as dependências todas.
+
+    Quando não está lá, usa-se o que está a correr este próprio ficheiro. Não é
+    um remendo: se este script está a correr, há um Python a funcionar, e é com
+    ele que o configurador foi lançado. Antes, sem o embutido, o
+    `subprocess.run` estourava com um `FileNotFoundError` cru — um traceback no
+    ecrã de quem está a instalar, a dizer "python.exe" e mais nada. E impedia
+    que a instalação se testasse em qualquer sítio que não fosse Windows, que é
+    exactamente onde os testes correm (o GitHub).
+    """
+    return _EMBUTIDO if _EMBUTIDO.exists() else Path(sys.executable)
 DADOS = RAIZ / 'dados'                            # base, media, logs — sobrevive a updates
 
 
@@ -114,7 +131,7 @@ def escrever_env(bd):
 
 def correr(*args):
     """manage.py com o Python embutido — o cliente não tem (nem precisa de) Python."""
-    r = subprocess.run([str(PYTHON), str(APP / 'manage.py'), *args],
+    r = subprocess.run([str(_python()), str(APP / 'manage.py'), *args],
                        cwd=str(APP), capture_output=True, text=True)
     # Sempre para o log (sucesso ou falha) — antes só se via a saída quando FALHAVA;
     # foi assim que "criar_dono correu mas não criou ninguém" ficou invisível.

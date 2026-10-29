@@ -23,7 +23,22 @@ from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parent          # {instalação}\app
 RAIZ = APP_DIR.parent                               # {instalação}
-PYTHON = RAIZ / 'python' / 'python.exe'
+_EMBUTIDO = RAIZ / 'python' / 'python.exe'
+
+
+def _python():
+    """O Python com que correr o `manage.py` durante a atualização.
+
+    O embutido no pacote, e — quando não está lá — o que está a correr este
+    ficheiro. O caminho era sempre `python/python.exe`: numa instalação onde ele
+    faltasse, a atualização morria com um `FileNotFoundError` cru A MEIO, depois
+    de já ter parado os serviços e substituído ficheiros. Repunha o backup (o
+    `_repor_backup` faz-no), mas o log do cliente ficava com um traceback a
+    dizer "python.exe" e nada que se percebesse.
+
+    O mesmo que `instalador/configurar.py` faz, pela mesma razão.
+    """
+    return _EMBUTIDO if _EMBUTIDO.exists() else Path(sys.executable)
 SERVICOS = RAIZ / 'servicos'
 DADOS = RAIZ / 'dados'
 BACKUP = RAIZ / 'app.bak'
@@ -62,7 +77,7 @@ def _servico(nome, acao, log):
 
 
 def _correr_manage(args, log):
-    r = subprocess.run([str(PYTHON), str(APP_DIR / 'manage.py'), *args],
+    r = subprocess.run([str(_python()), str(APP_DIR / 'manage.py'), *args],
                        cwd=str(APP_DIR), capture_output=True, text=True)
     log.write(f'manage.py {" ".join(args)} -> {r.returncode}')
     if r.stdout:
