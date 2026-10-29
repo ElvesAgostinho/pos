@@ -1,5 +1,9 @@
 # Instalador do System Mwana Lodge
 
+> **Vai gerar uma versão nova para os clientes?** O passo a passo está em
+> [COMO-GERAR-UMA-VERSAO.md](COMO-GERAR-UMA-VERSAO.md) — qual dos dois
+> scripts usar, por que ordem, e as duas armadilhas que já morderam.
+
 ## O que o CLIENTE vê (a experiência Primavera)
 
 1. Recebe **um ficheiro**: `MwanaLodge-Setup-1.0.0.exe`.

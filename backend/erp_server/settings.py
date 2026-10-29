@@ -137,6 +137,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # O `/admin/login/` do Django não é uma vista do DRF, por isso o throttle da
+    # API não lhe chega: sem isto, são tentativas de password sem limite nenhum
+    # numa porta pública. Usa o MESMO travão da API (ver core/admin_lockout.py).
+    "core.admin_lockout.AdminBruteForceMiddleware",
     "core.audit_middleware.AuditMiddleware",   # trilho de auditoria universal
 ]
 if RUN_MODE == 'PCC':

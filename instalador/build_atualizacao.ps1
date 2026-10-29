@@ -25,6 +25,44 @@
 #  campo do link continua la para quem ja tem onde o alojar.)
 # ============================================================================
 $ErrorActionPreference = 'Stop'
+
+# ----------------------------------------------------------------------------
+# CORRER UM PROGRAMA EXTERNO SEM QUE UM AVISO DERRUBE O SCRIPT.
+#
+# O `$ErrorActionPreference = 'Stop'` acima é o que se quer para os cmdlets do
+# PowerShell: um erro a meio de um build não pode passar em silêncio.
+#
+# Mas no PowerShell 5.1 ele faz uma coisa inesperada com programas externos:
+# QUALQUER linha que o programa escreva no stderr é convertida num erro
+# (NativeCommandError) e, com 'Stop', termina o script ali. Não é preciso o
+# programa falhar — basta escrever um aviso.
+#
+# E foi o que aconteceu: o `vite build` passou a imprimir um aviso
+# (INEFFECTIVE_DYNAMIC_IMPORT, sobre um módulo importado das duas formas), o
+# build do frontend correu BEM, e o script abortou antes de chegar à linha
+# seguinte — que é precisamente onde já verificava o código de saída. Resultado:
+# deixou de ser possível gerar um pacote, por causa de um aviso.
+#
+# Esta função corre o programa com o 'Stop' desligado só enquanto ele corre, e
+# decide pelo CÓDIGO DE SAÍDA, que é o único sinal que quer dizer "falhou".
+function Invoke-Externo {
+    param(
+        [Parameter(Mandatory = $true)][string]  $Descricao,
+        [Parameter(Mandatory = $true)][scriptblock] $Comando
+    )
+    $anterior = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        & $Comando
+        $codigo = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $anterior
+    }
+    if ($null -ne $codigo -and $codigo -ne 0) {
+        throw "$Descricao falhou (codigo $codigo)."
+    }
+}
+
 $Raiz   = Split-Path $PSScriptRoot -Parent          # ...\POS
 $Temp   = Join-Path $PSScriptRoot 'pacote_update'
 $OutDir = Join-Path $PSScriptRoot 'Output'
@@ -39,17 +77,40 @@ Write-Host "== Versão (de backend/core/support.py): $Versao =="
 
 Write-Host "== 1/4 Frontend (vite build) =="
 Push-Location (Join-Path $Raiz 'frontend')
-npm run build
-if ($LASTEXITCODE -ne 0) { throw 'vite build falhou' }
+Invoke-Externo 'vite build' { npm run build }
 Pop-Location
 
 Write-Host "== 2/4 Backend limpo (sem venv, sem .env, sem dados do cliente) =="
 if (Test-Path $Temp) { Remove-Item $Temp -Recurse -Force }
 New-Item -ItemType Directory -Force "$Temp\app" | Out-Null
+# EXCLUI-SE PELA PALAVRA QUE SIGNIFICA SEGREDO, nao pelo sufixo.
+#
+# `*.pem.bak` apanha os sufixos de copia; `*.sqlite3` apanha a base com
+# QUALQUER nome — excluia-se `db.sqlite3` (o nome em desenvolvimento) e a
+# do cliente chama-se `erp.sqlite3`.
+#
+# A lista excluia `private.pem` e `*.key.bak`, e o ficheiro chamava-se
+# `private.pem.bak`: nao batia com nenhum dos dois, e uma chave RSA de
+# assinatura ia em TODOS os pacotes, para TODOS os clientes.
+#
+# Acrescentar `*.pem.bak` resolvia aquele ficheiro e deixava o seguinte
+# (`private.pem.old`, `private.pem.2`...) — e a lista passa a ser um jogo de
+# apanhar sufixos. `private.*` apanha-os todos de uma vez.
+#
+# A lista excluia `private.pem` e `*.key.bak`, mas o ficheiro chama-se
+# `private.pem.bak` e nao bate com nenhum dos dois: ia em TODOS os pacotes de
+# atualizacao, para TODOS os clientes — uma chave RSA de assinatura, do
+# computador de quem desenvolve.
+#
+# NAO se excluem todos os `*.pem`: `licensing/engine/public.pem` TEM de ir, e e
+# com ele que a instalacao do cliente verifica a licenca. Excluir a pasta das
+# chaves ou todos os .pem deixava os clientes sem conseguir validar nada.
+# A exclusao e por isso cirurgica: as privadas e as copias, nunca as publicas.
+# Ver core/test_pacote_sem_segredos.py, que prova as duas metades.
 # MESMOS excludes do build_instalador.ps1 — um pacote de atualização NUNCA pode
 # levar a base de dev, a licença de teste, nem as chaves privadas.
 robocopy (Join-Path $Raiz 'backend') "$Temp\app" /E /NFL /NDL /NJH /NJS `
-  /XF db.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.pem license.key *.key.bak servidor.log `
+  /XF *.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.* *.pem.bak license.key* servidor.log `
   /XD __pycache__ .pytest_cache staticfiles venv .venv media | Out-Null
 Copy-Item (Join-Path $Raiz 'frontend\dist') "$Temp\webapp" -Recurse
 

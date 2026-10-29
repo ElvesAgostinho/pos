@@ -143,14 +143,16 @@ procedure InitializeWizard;
 begin
   TipoBD := CreateInputOptionPage(wpSelectDir,
     'Base de Dados', 'Onde ficam guardadas as vendas',
-    'Escolha a base de dados. Em caso de dúvida, deixe a opção recomendada.',
+    'Escolha a base de dados. Em caso de dúvida, deixe a opção recomendada.'#13#10 +
+    'A segunda opção serve apenas para um servidor PostgreSQL já existente.',
     True, False);
   TipoBD.Add('Base de dados local (SQLite) — recomendado');
-  TipoBD.Add('Servidor PostgreSQL existente (avançado)');
+  TipoBD.Add('Servidor PostgreSQL existente (avançado) — só PostgreSQL');
   TipoBD.SelectedValueIndex := 0;
 
   PgDados := CreateCustomPage(TipoBD.ID,
-    'Ligação ao PostgreSQL', 'Os dados de acesso ao servidor SQL do cliente');
+    'Ligação ao PostgreSQL',
+    'Só PostgreSQL — o SQL Server e o MySQL não são suportados. Em caso de dúvida, volte atrás e escolha a base local (SQLite).');
   EdHost  := Campo(PgDados, 8,   'Servidor:',   'localhost', False);
   EdPorta := Campo(PgDados, 40,  'Porta:',      '5432',      False);
   EdBase  := Campo(PgDados, 72,  'Base:',       'mwanalodge', False);

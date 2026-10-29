@@ -95,7 +95,20 @@ def build_payload(doc):
             'net_total': str(doc.net_total),
             'tax_total': str(doc.tax_total),
             'gross_total': str(doc.gross_total),
-            'reference_document': doc.reference_doc.invoice_no if getattr(doc, 'reference_doc_id', None) else None,
+            # A FACTURA QUE ESTE DOCUMENTO RETIFICA.
+            #
+            # Estava `doc.reference_doc.invoice_no if getattr(doc, 'reference_doc_id', None)`
+            # — e `reference_doc` é um CharField, não uma chave estrangeira. O
+            # Django só cria `<campo>_id` para chaves estrangeiras, por isso
+            # `reference_doc_id` nunca existe, a condição era sempre falsa, e
+            # TODA a nota de crédito ia para a AGT sem dizer que factura anula.
+            # Num documento retificativo essa referência é obrigatória.
+            #
+            # Nunca foi apanhado porque a transmissão corre em SIMULAÇÃO até
+            # haver credenciais, e o caminho simulado não olha para o conteúdo
+            # do payload — dá aceite a qualquer coisa. É por isso que o teste
+            # ao lado (fiscal/test_payload_agt.py) verifica o payload em si.
+            'reference_document': doc.reference_doc or None,
             'hash': doc.doc_hash,
             'previous_hash': doc.previous_hash,
             'print_mention': doc.print_mention,

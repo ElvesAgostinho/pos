@@ -12,6 +12,29 @@ def _real_license():
     Django. Fallback: license.key assinada (artefacto offline exportado pelo PCC para on-premises).
     """
     # 1) PCC — clm.License (registo no admin/BD do cliente)
+    #
+    # NO PRÓPRIO PCC ESTA CONSULTA É UMA FUGA DE DADOS, e tem de ser saltada.
+    #
+    # Na instalação de um cliente, `clm.License` tem UMA linha: a licença dessa
+    # casa. "A licença mais recente" é a dela, e está certo.
+    #
+    # No PCC, a mesma tabela tem as licenças de TODOS os clientes — é o registo
+    # central do fornecedor. `order_by('-created_at').first()` devolvia a do
+    # cliente registado mais recentemente, e `/api/licensing/status/` é
+    # `AllowAny`: qualquer pessoa na internet lia o NOME do cliente, o NÚMERO da
+    # licença, a validade, os módulos e os limites contratados. E a cada cliente
+    # novo a fuga passava a ser do seguinte.
+    #
+    # Estas vistas descrevem "a licença DESTA instalação" — uma pergunta que no
+    # PCC não tem significado: o fornecedor não se licencia a si próprio (é por
+    # isso que o PCC nunca passa pelo `resolve_active()`). Então no PCC não se
+    # responde a partir do registo central; cai-se no caminho offline, que não
+    # encontra `license.key` e devolve "sem licença" — que é a verdade.
+    if getattr(settings, 'RUN_MODE', 'ERP') == 'PCC':
+        return {'licensed': False, 'source': 'pcc',
+                'detail': 'O Platform Control Center não é uma instalação licenciada: '
+                          'é o registo das licenças. O estado de uma licença consulta-se '
+                          'na consola, com sessão iniciada.'}
     try:
         from clm.models import License
         from django.utils import timezone

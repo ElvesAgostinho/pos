@@ -187,6 +187,10 @@ Prioridade da cópia, da mais para a menos crítica:
 2. `dados/media/` — logótipos e imagens carregadas; recriável a incómodo.
 3. `dados/logs/` — descartável, só para diagnóstico.
 
+> **Perder a VPS é outro problema, e tem manual próprio:** [RECUPERAR.md](RECUPERAR.md)
+> — o que está guardado, o que NÃO está em cópia nenhuma, e a recuperação passo
+> a passo numa máquina nova.
+
 > **Se aparecer um `dados/pcc.sqlite3` no volume, o Postgres não está ligado.**
 > O Dockerfile aponta o SQLite para dentro do volume de propósito, como rede de
 > segurança: sem essa linha, uma base criada por engano nascia dentro da imagem

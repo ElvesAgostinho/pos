@@ -70,6 +70,19 @@ class ProvisioningRequestSerializer(serializers.Serializer):
     modules = serializers.ListField(child=serializers.CharField())
     feature_flags = serializers.DictField(required=False)
     limits = serializers.DictField(required=False)
+    # O NOME DA CONTA DO DONO DO CLIENTE.
+    #
+    # Faltava, e o DRF descarta tudo o que um serializer não declara: o Wizard
+    # enviava o nome que o fornecedor escreveu, a vista fazia
+    # `validated_data.get('owner_username')` — e recebia None, porque o campo
+    # tinha sido atirado fora pelo caminho. Caía no `or 'dono'`, e a conta do
+    # cliente chamava-se SEMPRE "dono", escrevesse-se lá o que se escrevesse.
+    #
+    # O ecrã de alterar a senha do dono não tinha este defeito porque lê de
+    # `request.data` directamente (clm/views.py: set_owner_password) — era por
+    # isso que o nome parecia funcionar num sítio e não no outro.
+    owner_username = serializers.CharField(required=False, allow_blank=True,
+                                           max_length=60)
 
 class TerminalLicenseSerializer(serializers.ModelSerializer):
     class Meta:

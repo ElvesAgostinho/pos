@@ -16,6 +16,44 @@
 # Precisa (só nesta máquina): node, python, Inno Setup 6, e internet no passo 3.
 # ============================================================================
 $ErrorActionPreference = 'Stop'
+
+# ----------------------------------------------------------------------------
+# CORRER UM PROGRAMA EXTERNO SEM QUE UM AVISO DERRUBE O SCRIPT.
+#
+# O `$ErrorActionPreference = 'Stop'` acima é o que se quer para os cmdlets do
+# PowerShell: um erro a meio de um build não pode passar em silêncio.
+#
+# Mas no PowerShell 5.1 ele faz uma coisa inesperada com programas externos:
+# QUALQUER linha que o programa escreva no stderr é convertida num erro
+# (NativeCommandError) e, com 'Stop', termina o script ali. Não é preciso o
+# programa falhar — basta escrever um aviso.
+#
+# E foi o que aconteceu: o `vite build` passou a imprimir um aviso
+# (INEFFECTIVE_DYNAMIC_IMPORT, sobre um módulo importado das duas formas), o
+# build do frontend correu BEM, e o script abortou antes de chegar à linha
+# seguinte — que é precisamente onde já verificava o código de saída. Resultado:
+# deixou de ser possível gerar um pacote, por causa de um aviso.
+#
+# Esta função corre o programa com o 'Stop' desligado só enquanto ele corre, e
+# decide pelo CÓDIGO DE SAÍDA, que é o único sinal que quer dizer "falhou".
+function Invoke-Externo {
+    param(
+        [Parameter(Mandatory = $true)][string]  $Descricao,
+        [Parameter(Mandatory = $true)][scriptblock] $Comando
+    )
+    $anterior = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        & $Comando
+        $codigo = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $anterior
+    }
+    if ($null -ne $codigo -and $codigo -ne 0) {
+        throw "$Descricao falhou (codigo $codigo)."
+    }
+}
+
 $Raiz    = Split-Path $PSScriptRoot -Parent          # ...\POS
 $Pacote  = Join-Path $PSScriptRoot 'pacote'
 $PyVer   = '3.12.8'
@@ -82,8 +120,32 @@ if (Test-Path $Pacote) { Remove-Item $Pacote -Recurse -Force }
 New-Item -ItemType Directory -Force "$Pacote\app" | Out-Null
 # robocopy: copia o backend SEM o que nunca pode sair desta máquina —
 # a base de dev, o .env, as chaves privadas e a licença de teste.
+# EXCLUI-SE PELA PALAVRA QUE SIGNIFICA SEGREDO, nao pelo sufixo.
+#
+# `*.pem.bak` apanha os sufixos de copia; `*.sqlite3` apanha a base com
+# QUALQUER nome — excluia-se `db.sqlite3` (o nome em desenvolvimento) e a
+# do cliente chama-se `erp.sqlite3`.
+#
+# A lista excluia `private.pem` e `*.key.bak`, e o ficheiro chamava-se
+# `private.pem.bak`: nao batia com nenhum dos dois, e uma chave RSA de
+# assinatura ia em TODOS os pacotes, para TODOS os clientes.
+#
+# Acrescentar `*.pem.bak` resolvia aquele ficheiro e deixava o seguinte
+# (`private.pem.old`, `private.pem.2`...) — e a lista passa a ser um jogo de
+# apanhar sufixos. `private.*` apanha-os todos de uma vez.
+#
+# A lista excluia `private.pem` e `*.key.bak`, mas o ficheiro chama-se
+# `private.pem.bak` e nao bate com nenhum dos dois: ia em TODOS os pacotes de
+# atualizacao, para TODOS os clientes — uma chave RSA de assinatura, do
+# computador de quem desenvolve.
+#
+# NAO se excluem todos os `*.pem`: `licensing/engine/public.pem` TEM de ir, e e
+# com ele que a instalacao do cliente verifica a licenca. Excluir a pasta das
+# chaves ou todos os .pem deixava os clientes sem conseguir validar nada.
+# A exclusao e por isso cirurgica: as privadas e as copias, nunca as publicas.
+# Ver core/test_pacote_sem_segredos.py, que prova as duas metades.
 robocopy (Join-Path $Raiz 'backend') "$Pacote\app" /E /NFL /NDL /NJH /NJS `
-  /XF db.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.pem license.key *.key.bak servidor.log `
+  /XF *.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.* *.pem.bak license.key* servidor.log `
   /XD __pycache__ .pytest_cache staticfiles venv .venv media | Out-Null
 # o site compilado vai DENTRO do backend: um serviço serve tudo
 Copy-Item (Join-Path $Raiz 'frontend\dist') "$Pacote\app\webapp" -Recurse
@@ -122,9 +184,10 @@ $pth = Get-ChildItem "$Pacote\python\python3*._pth" | Select-Object -First 1
 # esta linha, import erp_server falha sempre, nesse caso, em qualquer máquina.
 Add-Content -Path $pth.FullName -Value '..\app' -Encoding UTF8
 Invoke-WebRequest 'https://bootstrap.pypa.io/get-pip.py' -OutFile "$Pacote\python\get-pip.py"
-& "$Pacote\python\python.exe" "$Pacote\python\get-pip.py" --no-warn-script-location
-& "$Pacote\python\python.exe" -m pip install --no-warn-script-location -r (Join-Path $Raiz 'backend\requirements.txt')
-if ($LASTEXITCODE -ne 0) { throw 'pip install falhou' }
+# O pip escreve avisos no stderr com frequencia (uma versao nova disponivel,
+# um script fora do PATH) e qualquer um deles derrubava o build aqui.
+Invoke-Externo 'get-pip' { & "$Pacote\python\python.exe" "$Pacote\python\get-pip.py" --no-warn-script-location }
+Invoke-Externo 'pip install' { & "$Pacote\python\python.exe" -m pip install --no-warn-script-location -r (Join-Path $Raiz 'backend\requirements.txt') }
 
 Write-Host "== 5/6 Serviços (WinSW) =="
 New-Item -ItemType Directory -Force "$Pacote\servicos" | Out-Null
@@ -154,8 +217,13 @@ if (-not $iscc) {
 # PROJETO nem entra no histórico do git) — mas fica um registo LOCAL depois de
 # compilar, dentro de instalador\Output\ (pasta já no .gitignore): sem isto, uma
 # senha esquecida perdia-se para sempre e ninguém instalava mais aquela versão.
-& $iscc "/DInstallPassword=$senha1" (Join-Path $PSScriptRoot 'setup.iss')
-if ($LASTEXITCODE -ne 0) { $senha1 = $null; $senha2 = $null; throw 'Inno Setup falhou a compilar o instalador.' }
+try {
+    Invoke-Externo 'Inno Setup' { & $iscc "/DInstallPassword=$senha1" (Join-Path $PSScriptRoot 'setup.iss') }
+} catch {
+    # A senha nao fica em memoria se o instalador nao chegou a ser compilado.
+    $senha1 = $null; $senha2 = $null
+    throw 'Inno Setup falhou a compilar o instalador.'
+}
 
 $RegistoSenhas = Join-Path $PSScriptRoot 'Output\senhas.txt'
 $OutputDir = Join-Path $PSScriptRoot 'Output'
