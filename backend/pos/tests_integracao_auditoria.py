@@ -92,8 +92,11 @@ class TresModulosMontados(APITestCase):
         TaxRate.objects.create(code='IVA14', name='IVA 14%', percentage=D('14'),
                                is_default=True, is_active=True)
         ano = timezone.localdate().year
+        # `is_rectifying` como o `seed_fiscal` real o grava: é a marca que diz ao
+        # sistema que uma NC DESFAZ uma venda (ver fiscal/services.py).
         for codigo, nome in (('FR', 'Fatura-Recibo'), ('FT', 'Fatura'), ('NC', 'Nota de Crédito')):
-            tipo = FiscalDocType.objects.create(code=codigo, name=nome, invoice_type=codigo)
+            tipo = FiscalDocType.objects.create(code=codigo, name=nome, invoice_type=codigo,
+                                                is_rectifying=(codigo == 'NC'))
             FiscalSeries.objects.create(code='A', doc_type=tipo, year=ano, prefix=codigo,
                                         certified=True)
 
@@ -288,6 +291,82 @@ class AnularDesfazEmTodoLadoTests(TresModulosMontados):
         self.assertEqual(vendas - creditos, D('0'),
                          f'Vendeu {vendas} e creditou {creditos}: a devolução não anulou a '
                          f'venda na conta final.')
+
+
+    def test_a_nota_de_credito_pertence_ao_modulo_da_venda_que_anula(self):
+        """O DEFEITO DA RAIZ, e o mais caro que esta auditoria encontrou.
+
+        A nota de crédito nascia com `source_module='void'` — um valor que
+        NENHUM leitor do sistema procura. Tudo o que lê documentos fiscais
+        filtra por módulo: os relatórios de Facturação, IVA e Anulações do POS
+        (`source_module='pos'`), o SAF-T do POS (`generate_saft(..., module='pos')`),
+        o arquivo documental e a conta do hóspede. Resultado: as notas de
+        crédito existiam na base de dados e não existiam em sítio nenhum onde se
+        conta dinheiro — a casa declarava à AGT a venda e não a sua anulação.
+        """
+        conta, total = self._venda_paga()
+        r = self.client.post(f'/api/pos/tickets/{conta}/credit_note/',
+                             {'reason': 'Devolução'}, format='json')
+        if r.status_code not in (200, 201):
+            self.skipTest(f'nota de crédito indisponível nesta configuração: {r.data}')
+        nc = FiscalDocument.objects.filter(doc_type__code='NC').first()
+        self.assertIsNotNone(nc)
+        self.assertEqual(nc.source_module, 'pos',
+                         f'A nota de crédito ficou no módulo "{nc.source_module}" e a venda '
+                         f'que ela anula é do POS. Nenhum relatório do POS a vai encontrar.')
+        self.assertTrue(nc.reference_doc,
+                        'A nota de crédito tem de dizer QUE factura retifica — é por aí '
+                        'que se liga à venda (o `source_ref` é único por conta).')
+
+    def test_a_nota_de_credito_desconta_no_mapa_de_iva(self):
+        """O IVA que se paga ao Estado. Uma venda anulada por nota de crédito
+        não gera imposto: declarar o imposto da venda sem o da sua anulação é
+        pagar ao Estado por dinheiro que voltou ao cliente."""
+        conta, total = self._venda_paga()
+        antes = D(str(self.relatorio('fat_iva')['totals'].get('tax', '0')))
+        self.assertGreater(antes, D('0'), 'A venda não gerou IVA nenhum para declarar.')
+        r = self.client.post(f'/api/pos/tickets/{conta}/credit_note/',
+                             {'reason': 'Devolução'}, format='json')
+        if r.status_code not in (200, 201):
+            self.skipTest(f'nota de crédito indisponível nesta configuração: {r.data}')
+        depois = D(str(self.relatorio('fat_iva')['totals'].get('tax', '0')))
+        self.assertEqual(depois, D('0'),
+                         f'Depois da nota de crédito o mapa de IVA continua a declarar '
+                         f'{depois} Kz de imposto sobre uma venda que foi devolvida '
+                         f'(antes: {antes}).')
+
+    def test_a_nota_de_credito_aparece_no_arquivo_da_conta(self):
+        """Quem abre o arquivo de uma venda tem de ver os dois papéis: a factura
+        e a nota de crédito que a desfez. Ver só a factura é ver uma venda que
+        já não é venda."""
+        conta, _ = self._venda_paga()
+        r = self.client.post(f'/api/pos/tickets/{conta}/credit_note/',
+                             {'reason': 'Devolução'}, format='json')
+        if r.status_code not in (200, 201):
+            self.skipTest(f'nota de crédito indisponível nesta configuração: {r.data}')
+        nc = FiscalDocument.objects.filter(doc_type__code='NC').first()
+        resp = self.client.get(f'/api/documents/links/?module=pos&id={conta}')
+        self.assertEqual(resp.status_code, 200, resp.content[:300])
+        numeros = {l.get('number') for l in resp.data.get('links', [])}
+        self.assertIn(nc.invoice_no, numeros,
+                      f'O arquivo da conta mostra {sorted(n for n in numeros if n)} e não a '
+                      f'nota de crédito {nc.invoice_no}.')
+
+    def test_o_saft_do_pos_declara_a_anulacao_e_nao_so_a_venda(self):
+        """O ficheiro que se entrega à AGT. Saía com a factura e sem a nota de
+        crédito: receita (e imposto) declarados a mais do que o devido."""
+        from fiscal.saft import generate_saft
+        conta, _ = self._venda_paga()
+        r = self.client.post(f'/api/pos/tickets/{conta}/credit_note/',
+                             {'reason': 'Devolução'}, format='json')
+        if r.status_code not in (200, 201):
+            self.skipTest(f'nota de crédito indisponível nesta configuração: {r.data}')
+        nc = FiscalDocument.objects.filter(doc_type__code='NC').first()
+        hoje = timezone.localdate()
+        xml = generate_saft(hoje - timedelta(days=1), hoje, module='pos')
+        self.assertIn(nc.invoice_no, xml,
+                      'A nota de crédito não foi no SAF-T do POS — o ficheiro declara a '
+                      'venda e esconde a devolução.')
 
 
 # ══════════════════════════════════════════════════════════════════════════

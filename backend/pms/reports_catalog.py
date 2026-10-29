@@ -150,6 +150,11 @@ def r_reservas(p):
             'status': r.get_status_display(),
             'rate': float(tarifa),
             'total': float(tarifa * r.nights),
+            # O peso com que esta linha entra no rodapé do ECRÃ. A grelha
+            # recalcula os totais sobre as linhas filtradas, e sem isto voltava
+            # a somar as canceladas e os no-shows — exactamente a receita que o
+            # comentário acima explica que não pode entrar.
+            '_peso': (1 if r.status in VIVAS else 0),
         })
     return {
         'columns': [('confirmation', 'Reserva'), ('guest', 'Hóspede'), ('room', 'Quarto'),

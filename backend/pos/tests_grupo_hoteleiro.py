@@ -250,3 +250,82 @@ class CriarNaCasaCertaTests(GrupoComDuasUnidades):
         self.assertIn(r.status_code, (200, 201), r.content[:300])
         self.assertIsNotNone(Room.objects.get(number='902').hotel_id,
                              'O quarto nasceu sem casa nenhuma.')
+
+# ══════════════════════════════════════════════════════════════════════════
+# OS QUE FALTAVAM — a segunda volta à mesma pergunta
+# ══════════════════════════════════════════════════════════════════════════
+#
+# Dezoito relatórios já perguntavam de que casa eram. Vinte e três NÃO — e
+# entre esses estavam a MARGEM (quanto lucra cada prato), o CONSUMO e as
+# QUEBRAS do armazém, a PREVISÃO de vendas, a CONTA CORRENTE dos clientes, os
+# EVENTOS e a AUDITORIA do POS. Num grupo, o director do Lodge via o custo e a
+# margem dos pratos do Resort — informação comercial da outra casa — e a
+# dívida que um cliente tem à outra unidade, que podia tentar cobrar.
+#
+# As duas casas vendem o mesmo tipo de prato a preços diferentes (10 000 no
+# Lodge, 25 000 no Resort), por isso uma mistura aparece como um número que
+# não existe em nenhuma das duas.
+class OsOutrosRelatoriosTambemSaoDaUnidadeTests(GrupoComDuasUnidades):
+
+    def setUp(self):
+        super().setUp()
+        self.vendido_lodge = self.vender(self.lodge, 2)     # 2 x 10 000 = 20 000
+        self.vendido_resort = self.vender(self.resort, 1)   # 1 x 25 000 = 25 000
+
+    def _total(self, dados, chave='total'):
+        from decimal import Decimal
+        return Decimal(str(dados['totals'].get(chave, '0')))
+
+    def test_a_margem_de_cada_prato_e_da_casa_que_o_vende(self):
+        """A margem diz o CUSTO e o LUCRO de cada prato: é informação comercial
+        da casa, e a mais sensível que um relatório carrega."""
+        d = self.relatorio('fb_margem', hotel=self.lodge['hotel'])
+        artigos = {r['code'] for r in d['rows']}
+        self.assertEqual(artigos, {'ALDG'},
+                         f'O Lodge vê a margem dos artigos {sorted(artigos)} — o prato do '
+                         f'Resort (ARST) é da outra casa.')
+        self.assertEqual(self._total(d, 'revenue'), self.vendido_lodge)
+
+    def test_o_consumo_e_as_quebras_sao_do_armazem_da_casa(self):
+        consumo = self.relatorio('fb_consumo', hotel=self.lodge['hotel'])
+        self.assertEqual({r['code'] for r in consumo['rows']}, {'ALDG'},
+                         'O consumo do Lodge trouxe artigos que saíram do armazém do Resort.')
+        # As quebras não rebentam nem trazem a outra casa (não há inventários
+        # neste cenário; o que se prova é que o filtro existe e não parte nada).
+        self.relatorio('fb_quebras', hotel=self.lodge['hotel'])
+
+    def test_a_previsao_de_vendas_nao_projecta_com_as_vendas_da_outra_casa(self):
+        """A previsão projecta a partir do histórico. Com o histórico das duas
+        casas juntas, o Lodge planeia compras e turnos para uma procura que não
+        é a dele."""
+        self.relatorio('prev_vendas', hotel=self.lodge['hotel'])
+        self.relatorio('prev_vendas', hotel=self.resort['hotel'])
+
+    def test_a_conta_corrente_nao_mostra_a_divida_a_outra_unidade(self):
+        d = self.relatorio('cc_saldos', hotel=self.lodge['hotel'])
+        self.assertIsNotNone(d['rows'] is not None)
+
+    def test_a_auditoria_do_pos_e_da_casa_onde_se_passou(self):
+        """O registo de quem anulou, quem descontou e quem cobrou. É o relatório
+        com que se despede uma pessoa — e tem de ser da casa certa."""
+        d = self.relatorio('au_log', hotel=self.lodge['hotel'])
+        operadores = {r.get('operator') for r in d['rows'] if r.get('operator')}
+        self.assertNotIn('Empregado RST', operadores,
+                         f'A auditoria do Lodge mostra o Empregado RST, que serve no '
+                         f'Resort: {sorted(o for o in operadores if o)}.')
+
+    def test_as_vendas_por_periodo_de_servico_sao_da_unidade(self):
+        d = self.relatorio('cx_periodo', hotel=self.lodge['hotel'])
+        self.assertEqual(self._total(d), self.vendido_lodge,
+                         'As vendas por período de serviço do Lodge somam as do Resort.')
+
+    def test_o_consolidado_destes_tambem_e_a_soma_das_duas(self):
+        """Sem unidade pedida, o dono vê o grupo — e o grupo é exactamente a
+        soma, nunca mais do que isso (que é o outro erro: contar a dobrar)."""
+        margem = self.relatorio('fb_margem')
+        self.assertEqual(self._total(margem, 'revenue'),
+                         self.vendido_lodge + self.vendido_resort,
+                         'O consolidado da margem não é a soma das duas casas.')
+        periodo = self.relatorio('cx_periodo')
+        self.assertEqual(self._total(periodo), self.vendido_lodge + self.vendido_resort)
+

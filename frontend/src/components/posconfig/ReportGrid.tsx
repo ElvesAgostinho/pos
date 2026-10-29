@@ -143,18 +143,73 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
     onPageInfo?.({ page: paginaAtual, totalPages: totalPaginas, totalRows: capadas.length });
   }, [paginaAtual, totalPaginas, capadas.length]);
 
-  // Os totais são os das linhas FILTRADAS — o rodapé tem de falar do que está no ecrã.
+  const filtrado = linhas.length !== d.rows.length;
+
+  // ── O RODAPÉ ───────────────────────────────────────────────────────────────
+  //
+  // A grelha recalcula os totais sobre as linhas FILTRADAS, porque o rodapé tem
+  // de falar do que está no ecrã. Fazia-o somando as colunas à bruta, e isso
+  // DESFAZIA a conta que o servidor tinha feito. Em cinco relatórios o número
+  // que o contabilista lia estava errado:
+  //
+  //   · Documentos: somava a factura ANULADA e a NOTA DE CRÉDITO como vendas
+  //     (23 940 Kz num dia em que a casa facturou 15 960);
+  //   · Depósitos: somava a utilização ao adiantamento (70 000 onde há 30 000);
+  //   · Pontos: somava os resgatados aos ganhos;
+  //   · Reservas: somava as canceladas e os no-shows à receita;
+  //   · Ocupação: somava percentagens — 125% de ocupação, e um ADR que é a
+  //     soma de dois ADR.
+  //
+  // Duas regras resolvem os cinco, e qualquer relatório futuro:
+  //
+  //   1. `_peso` — o servidor diz quanto PESA cada linha no total (1 normal, 0
+  //      uma factura anulada ou uma reserva cancelada, −1 uma nota de crédito
+  //      ou uma utilização de depósito). Uma linha sem `_peso` vale 1.
+  //   2. UM TOTAL QUE NÃO É UMA SOMA NÃO SE RECALCULA. Percentagens, ADR e
+  //      RevPAR são rácios do período: não há soma de linhas que lhes dê o
+  //      valor. Verifica-se COM AS LINHAS TODAS se o total do servidor é a soma
+  //      pesada delas; quando não é, o número do servidor fica como está e o
+  //      rodapé diz que é do período, em vez de inventar um a somar.
+  const peso = (r: any) => (r._peso === undefined ? 1 : (num(r._peso) ?? 1));
+  const somaPesada = (rs: any[], k: string) =>
+    rs.reduce((s, r) => s + (num(r[k]) ?? 0) * peso(r), 0);
+
+  // Que totais do servidor SÃO uma soma das linhas (e por isso se podem
+  // recalcular sobre um subconjunto). Mede-se uma vez, com as linhas todas.
+  const somaveis = useMemo(() => {
+    const ok: Record<string, boolean> = {};
+    Object.keys(d.totals || {}).forEach((k) => {
+      const servidor = num(d.totals[k]);
+      if (servidor === null) { ok[k] = false; return; }
+      ok[k] = Math.abs(servidor - somaPesada(d.rows, k)) < 0.01;
+    });
+    return ok;
+  }, [d.rows, d.totals]);
+
   const totais = useMemo(() => {
-    const t: Record<string, number> = {};
+    const t: Record<string, number | string> = {};
     cols.forEach((c) => {
-      if (isMoney(c) || d.totals?.[c[0]] !== undefined) {
-        t[c[0]] = linhas.reduce((s, r) => s + (num(r[c[0]]) ?? 0), 0);
+      const k = c[0];
+      const temDoServidor = d.totals?.[k] !== undefined;
+      if (!isMoney(c) && !temDoServidor) return;
+      if (temDoServidor && (!filtrado || !somaveis[k])) {
+        t[k] = d.totals[k];           // o número do servidor, tal como veio
+        return;
       }
+      t[k] = somaPesada(linhas, k);
+    });
+    // Totais que o servidor manda e que não são colunas da grelha (derivados,
+    // como "pendente") não se recalculam — mostram-se como vieram.
+    Object.entries(d.totals || {}).forEach(([k, v]) => {
+      if (t[k] === undefined) t[k] = v as any;
     });
     return t;
-  }, [linhas, cols]);
+  }, [linhas, cols, filtrado, somaveis, d.totals]);
 
-  const filtrado = linhas.length !== d.rows.length;
+  // Um rodapé recalculado sobre um filtro diz-se "filtrado"; um que traz
+  // rácios do período inteiro tem de o dizer, senão quem filtra acredita que
+  // a percentagem é da selecção.
+  const rodapeDoPeriodo = filtrado && Object.keys(d.totals || {}).some((k) => !somaveis[k]);
 
   return (
     <>
@@ -300,7 +355,8 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
             {visiveis.map((c, i) => (
               <td key={c[0]} className={`px-2 py-1.5 border border-[#F1F2F4] ${isMoney(c) ? 'text-right' : ''}`}>
                 {i === 0
-                  ? (filtrado ? 'TOTAL (filtrado)' : 'TOTAL')
+                  ? (rodapeDoPeriodo ? 'TOTAL (do período)'
+                    : (filtrado ? 'TOTAL (filtrado)' : 'TOTAL'))
                   : (totais[c[0]] !== undefined
                     ? (isMoney(c) ? money(totais[c[0]]) : totais[c[0]])
                     : '')}

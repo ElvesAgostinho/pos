@@ -779,8 +779,20 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
         faturas = []
         if folio_ids:
             from fiscal.models import FiscalDocument
-            for d in (FiscalDocument.objects
-                      .filter(source_module='pms', source_ref__in=[str(i) for i in folio_ids])
+            from django.db.models import Q
+            dos_folios = (FiscalDocument.objects
+                          .filter(source_module='pms',
+                                  source_ref__in=[str(i) for i in folio_ids]))
+            # A NOTA DE CRÉDITO LIGA-SE À FACTURA, NÃO AO FOLIO. O `source_ref` de
+            # um documento do PMS é o folio, e é único por folio; uma NC traz o
+            # número da factura que retifica em `reference_doc`. Sem este segundo
+            # ramo, a conta do hóspede mostrava a factura e não a anulação dela —
+            # e quem a lia via uma dívida que já não existia.
+            numeros = [n for n in dos_folios.values_list('invoice_no', flat=True) if n]
+            condicao = Q(pk__in=[d.pk for d in dos_folios])
+            if numeros:
+                condicao |= Q(reference_doc__in=numeros, doc_type__is_rectifying=True)
+            for d in (FiscalDocument.objects.filter(condicao)
                       .select_related('doc_type').order_by('-system_entry_date')):
                 faturas.append({
                     'id': d.id, 'kind': 'FISCAL', 'number': d.invoice_no,

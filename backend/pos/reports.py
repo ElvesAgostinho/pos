@@ -113,6 +113,23 @@ def r_reservas(p):
 
 
 # ─────────────────────────────────────────────────── 06 · FACTURAÇÃO
+def _estado_do_documento(d):
+    """O estado que o contabilista precisa de ler na linha.
+
+    Faltava "Regularizado por NC": uma factura anulada por nota de crédito fica
+    com status NORMAL (é o que a AGT espera — ver `credited` em fiscal/models.py),
+    e por isso aparecia na lista como "Liquidado", indistinguível de uma venda
+    boa. Quem lia a lista via dinheiro que já tinha voltado ao cliente.
+    """
+    if d.status == 'A':
+        return 'Anulado'
+    if d.doc_type.is_rectifying:
+        return 'Nota de crédito'
+    if getattr(d, 'credited', False):
+        return 'Regularizado por NC'
+    return 'Liquidado' if d.settled else 'Por receber'
+
+
 def r_documentos(p):
     from fiscal.models import FiscalDocument
     ini, fim = _periodo(p)
@@ -124,7 +141,16 @@ def r_documentos(p):
         'invoice_no': d.invoice_no, 'date': str(d.doc_date), 'type': d.doc_type.code,
         'customer': d.customer_name, 'tax_id': d.customer_tax_id or '',
         'net': str(d.net_total), 'tax': str(d.tax_total), 'gross': str(d.gross_total),
-        'status': 'Anulado' if d.status == 'A' else ('Liquidado' if d.settled else 'Por receber'),
+        'status': _estado_do_documento(d),
+        # O RODAPÉ NÃO É A SOMA DOS PAPÉIS: É A RECEITA.
+        #
+        # Um documento anulado vale 0 e uma nota de crédito entra a menos. O
+        # `_peso` viaja NA LINHA (e não só no total) porque o ecrã recalcula os
+        # totais sobre as linhas filtradas — ver `_peso` em
+        # frontend/src/components/posconfig/ReportGrid.tsx. Sem ele, a grelha
+        # somava os valores à bruta e desfazia esta conta no rodapé que o
+        # contabilista lê.
+        '_peso': (0 if d.status == 'A' else (-1 if d.doc_type.is_rectifying else 1)),
     } for d in qs]
     return {
         'columns': [
@@ -134,27 +160,45 @@ def r_documentos(p):
             ('gross', 'Total', 'money'), ('status', 'Estado'),
         ],
         'rows': linhas,
-        'totals': {'gross': str(sum((_num(l['gross']) for l in linhas), Decimal('0'))),
-                   'tax': str(sum((_num(l['tax']) for l in linhas), Decimal('0'))),
-                   'net': str(sum((_num(l['net']) for l in linhas), Decimal('0')))},
+        'totals': {c: str(sum((l['_peso'] * _num(l[c]) for l in linhas), Decimal('0')))
+                   for c in ('gross', 'tax', 'net')},
     }
 
 
 def r_iva(p):
-    """IVA LIQUIDADO POR TAXA — é o mapa que se leva à contabilidade e à AGT."""
+    """IVA LIQUIDADO POR TAXA — é o mapa que se leva à contabilidade e à AGT.
+
+    UMA NOTA DE CRÉDITO SUBTRAI. É a única regra deste relatório, e era a que
+    faltava: as linhas de uma NC estão gravadas com valores POSITIVOS (uma NC
+    de 2 000 Kz tem uma linha de 2 000 Kz), porque o que lhes dá o sinal é o
+    tipo de documento ser retificativo. Somá-las como se fossem vendas fazia
+    pior do que ignorá-las — declarava à AGT a venda E a sua anulação como duas
+    receitas. Aqui entram a menos, que é o que a casa deve: a incidência do
+    período é o que se vendeu MENOS o que se regularizou.
+    """
     from fiscal.models import FiscalDocumentLine
     ini, fim = _periodo(p)
     linhas = (FiscalDocumentLine.objects
               .filter(_do_hotel_fiscal(p, 'document__hotel'), document__source_module='pos', document__doc_date__gte=ini,
                       document__doc_date__lte=fim, document__status='N')
-              .values('tax_percentage')
+              .values('tax_percentage', 'document__doc_type__is_rectifying')
               .annotate(base=Sum('line_total'), imposto=Sum('tax_amount'), n=Count('id'))
               .order_by('tax_percentage'))
+    # Uma taxa pode trazer duas linhas (vendas e retificações); juntam-se, com
+    # o sinal de cada uma, para o mapa sair com UMA linha por taxa.
+    por_taxa = {}
+    for l in linhas:
+        sinal = Decimal('-1') if l['document__doc_type__is_rectifying'] else Decimal('1')
+        acc = por_taxa.setdefault(l['tax_percentage'],
+                                  {'base': Decimal('0'), 'imposto': Decimal('0'), 'n': 0})
+        acc['base'] += sinal * _num(l['base'])
+        acc['imposto'] += sinal * _num(l['imposto'])
+        acc['n'] += l['n']
     rows = [{
-        'rate': f"{l['tax_percentage']}%", 'lines': l['n'],
-        'base': str(l['base'] or 0), 'tax': str(l['imposto'] or 0),
-        'total': str(_num(l['base']) + _num(l['imposto'])),
-    } for l in linhas]
+        'rate': f'{taxa}%', 'lines': v['n'],
+        'base': str(v['base']), 'tax': str(v['imposto']),
+        'total': str(v['base'] + v['imposto']),
+    } for taxa, v in sorted(por_taxa.items())]
     return {
         'columns': [('rate', 'Taxa'), ('lines', 'Linhas'), ('base', 'Incidência', 'money'),
                     ('tax', 'IVA liquidado', 'money'), ('total', 'Total', 'money')],
@@ -355,8 +399,8 @@ def r_periodo_setor(p):
         pr = (s_.params or {})
         porOutlet[s_.outlet_id] = (pr.get('8611') or pr.get(8611))
     grupos = {}
-    for t in (POSTicket.objects.filter(status='PAID', closed_at__date__gte=ini,
-                                       closed_at__date__lte=fim)
+    for t in (POSTicket.objects.filter(**_do_hotel(p, 'outlet__hotel'), status='PAID',
+                                       closed_at__date__gte=ini, closed_at__date__lte=fim)
               .select_related('outlet')):
         banda = porOutlet.get(t.outlet_id)
         try:
@@ -507,6 +551,11 @@ def r_depositos(p):
         'customer': d.customer.name, 'kind': d.get_kind_display(),
         'amount': str(d.amount), 'reason': d.reason or '',
         'document': d.document.invoice_no if d.document_id else '', 'by': d.created_by or '',
+        # Uma ENTRADA soma e uma UTILIZAÇÃO tira: o rodapé é o SALDO adiantado,
+        # não a soma dos movimentos. O `_peso` leva esse sinal até à grelha do
+        # ecrã, que recalcula os totais sobre as linhas filtradas — sem ele, o
+        # ecrã mostrava 70 000 Kz onde a entidade tem 30 000 adiantados.
+        '_peso': (1 if d.kind == 'IN' else -1),
     } for d in qs]
     entradas = sum((_num(r['amount']) for r in rows if r['kind'].startswith('Entrada')), Decimal('0'))
     saidas = sum((_num(r['amount']) for r in rows if not r['kind'].startswith('Entrada')), Decimal('0'))
@@ -537,7 +586,8 @@ def r_previsao(p):
     hist_fim = ini_d - _d.timedelta(days=1)
 
     balde = {}  # weekday -> {'n_dias': set(datas), 'total': soma, 'tickets': soma}
-    qs = (POSTicket.objects.filter(status='PAID', closed_at__date__gte=hist_ini,
+    qs = (POSTicket.objects.filter(**_do_hotel(p, 'outlet__hotel'), status='PAID',
+                                   closed_at__date__gte=hist_ini,
                                    closed_at__date__lte=hist_fim)
           .values('closed_at__date')
           .annotate(total=Sum('grand_total'), n=Count('id')))
@@ -669,7 +719,9 @@ def r_ofertas(p):
         'ticket': l.ticket.ticket_number if l.ticket_id else '',
         'operator': l.ticket.operator_name if l.ticket_id else '',
         'item': l.description, 'qty': str(l.quantity),
-        'value': str(l.quantity * l.unit_price),
+        # Sem quantizar, uma oferta de 1 x 1 000 Kz saía "1000.00000" (as casas
+        # da quantidade multiplicadas pelas do preço) no ecrã e no total.
+        'value': str((l.quantity * l.unit_price).quantize(Decimal('0.01'))),
     } for l in qs]
     return {
         'columns': [('date', 'Data'), ('ticket', 'Conta'), ('operator', 'Operador'),
@@ -686,7 +738,11 @@ def r_contas_correntes(p):
     from .models import EntityDeposit
     rows = []
     for c in Customer.objects.all():
-        docs = FiscalDocument.objects.filter(customer=c).select_related('doc_type')
+        # O SALDO VEM DOS DOCUMENTOS, e um documento já sabe de que casa é. Sem
+        # este filtro, num grupo o director do Hotel A via a dívida que um
+        # cliente tem ao Hotel B — e podia cobrá-la.
+        docs = (FiscalDocument.objects.filter(_do_hotel_fiscal(p, 'hotel'), customer=c)
+                .select_related('doc_type'))
         devido = sum((d.gross_total for d in docs
                       if not d.doc_type.is_rectifying and not d.settled), Decimal('0'))
         credito = sum((d.gross_total for d in docs if d.doc_type.is_rectifying), Decimal('0'))
@@ -720,6 +776,9 @@ def r_pontos_movimentos(p):
         'customer': m.customer.name, 'card': m.card.name if m.card_id else '',
         'kind': m.get_kind_display(), 'points': str(m.points),
         'ticket': m.ticket.ticket_number if m.ticket_id else '', 'reason': m.reason or '',
+        # Ganhar soma, usar tira — o saldo de pontos é a diferença (ver `_peso`
+        # em frontend/src/components/posconfig/ReportGrid.tsx).
+        '_peso': (1 if m.kind == 'EARN' else -1),
     } for m in qs]
     ganhos = sum((_num(r['points']) for r in rows if r['kind'].startswith('Pontos ganhos')), Decimal('0'))
     usados = sum((_num(r['points']) for r in rows if r['kind'].startswith('Pontos usados')), Decimal('0'))
@@ -860,7 +919,8 @@ def r_quebras(p):
     from .models import StockDoc
     ini, fim = _periodo(p)
     rows = []
-    for d in (StockDoc.objects.filter(series__kind='INVENTORY', posted=True, voided=False,
+    for d in (StockDoc.objects.filter(**_do_hotel(p, 'warehouse__hotel'),
+                                      series__kind='INVENTORY', posted=True, voided=False,
                                       doc_date__gte=ini, doc_date__lte=fim)
               .prefetch_related('lines__item').select_related('warehouse')):
         for l in d.lines.all():
@@ -869,10 +929,16 @@ def r_quebras(p):
                 rows.append({
                     'doc': d.number, 'date': str(d.doc_date),
                     'warehouse': d.warehouse.name if d.warehouse_id else '',
-                    'responsible': d.responsible or d.created_by or '',
+                    # `StockDoc` NÃO TEM `responsible` — e isto rebentava com
+                    # AttributeError (HTTP 500, "erro interno") dentro do `if
+                    # dif:`, ou seja SÓ quando havia uma quebra para mostrar.
+                    # Um inventário perfeito abria; o dia em que faltava algo,
+                    # o relatório das quebras morria.
+                    'responsible': d.created_by or '',
                     'item': l.item.name, 'theoretical': str(l.theoretical_qty),
                     'counted': str(l.quantity), 'diff': str(dif),
-                    'value': str(dif * (l.theoretical_cost or Decimal('0'))),
+                    'value': str((dif * (l.theoretical_cost or Decimal('0')))
+                                 .quantize(Decimal('0.01'))),
                 })
     rows.sort(key=lambda x: _num(x['value']))
     return {
@@ -889,7 +955,8 @@ def r_consumo(p):
     """CONSUMO POR ARTIGO — o que a venda tirou do armazém (fecha o ciclo)."""
     from inventory.models import StockMovement
     ini, fim = _periodo(p)
-    qs = (StockMovement.objects.filter(movement_type__in=['OUT', 'CONSUMPTION'],
+    qs = (StockMovement.objects.filter(**_do_hotel(p, 'warehouse__hotel'),
+                                       movement_type__in=['OUT', 'CONSUMPTION'],
                                        created_at__date__gte=ini, created_at__date__lte=fim)
           .values('item__code', 'item__name')
           .annotate(qtd=Sum('quantity'), custo=Sum(F('quantity') * F('unit_cost')))
@@ -920,7 +987,8 @@ def r_margem(p):
     ini, fim = _periodo(p)
 
     vendas = (POSTicketLine.objects
-              .filter(ticket__status='PAID', is_void=False,
+              .filter(**_do_hotel(p, 'ticket__outlet__hotel'),
+                      ticket__status='PAID', is_void=False,
                       ticket__closed_at__date__gte=ini, ticket__closed_at__date__lte=fim)
               .values('item_id')
               .annotate(qtd=Sum('quantity'), receita=Sum('line_total')))
@@ -964,7 +1032,8 @@ def r_margem(p):
 def r_eventos(p):
     from .models import EventRequest
     ini, fim = _periodo(p)
-    qs = (EventRequest.objects.filter(start_at__date__gte=ini, start_at__date__lte=fim)
+    qs = (EventRequest.objects.filter(**_do_hotel(p, 'space__outlet__hotel'),
+                                      start_at__date__gte=ini, start_at__date__lte=fim)
           .select_related('event_type', 'space', 'state', 'segment', 'channel', 'customer'))
     rows = [{
         'number': e.number, 'title': e.title,
@@ -991,7 +1060,8 @@ def r_eventos(p):
 def r_auditoria(p):
     from .models import POSAuditLog
     ini, fim = _periodo(p)
-    qs = (POSAuditLog.objects.filter(created_at__date__gte=ini, created_at__date__lte=fim)
+    qs = (POSAuditLog.objects.filter(**_do_hotel(p, 'outlet__hotel'),
+                                     created_at__date__gte=ini, created_at__date__lte=fim)
           .select_related('outlet').order_by('-created_at'))
     rows = [{
         'date': a.created_at.strftime('%d/%m %H:%M'),

@@ -289,6 +289,27 @@ def create_credit_note(original_doc_id, reason='', user=None, ip=None):
     nc_series = _resolve_series('NC')
     if not nc_series:
         raise ValueError('Não há série de Nota de Crédito ativa/certificada. Crie-a no Centro Fiscal.')
+    # UMA NOTA DE CRÉDITO É RETIFICATIVA POR DEFINIÇÃO, NÃO POR CONFIGURAÇÃO.
+    #
+    # `is_rectifying` é o que diz ao resto do sistema que este documento DESFAZ
+    # outro: é por essa marca que o mapa de IVA a subtrai, que o relatório de
+    # anulações a mostra, que o arquivo a liga à factura, e que a guarda logo
+    # acima recusa emitir uma NC de uma NC. O tipo de documento é editável no
+    # Centro Fiscal (é um catálogo AGT parametrizável), e um tipo "NC" gravado à
+    # mão sem esta marca fazia o mapa de IVA SOMAR a nota de crédito em vez de a
+    # subtrair — ou seja, anular uma venda DUPLICAVA o imposto a entregar ao
+    # Estado. Pior do que não a descontar.
+    #
+    # Não é uma preferência da casa que se possa respeitar: é o que a nota de
+    # crédito é. Corrige-se aqui, e fica no registo fiscal para quem auditar.
+    if not nc_type.is_rectifying:
+        nc_type.is_rectifying = True
+        nc_type.save(update_fields=['is_rectifying'])
+        FiscalAuditLog.objects.create(
+            event='DOCTYPE_FIX', document_ref=nc_type.code, user=user, ip_address=ip,
+            detail='O tipo "NC" não estava marcado como retificativo e foi corrigido: '
+                   'sem essa marca, uma nota de crédito somava no mapa de IVA em vez '
+                   'de subtrair.')
 
     lines = [{'description': l.description, 'quantity': l.quantity, 'unit_price': l.unit_price,
               'tax_percentage': l.tax_percentage, 'exemption_reason': l.exemption_reason}
@@ -297,7 +318,25 @@ def create_credit_note(original_doc_id, reason='', user=None, ip=None):
     nc = issue_document(
         nc_series.id, customer_name=original.customer_name, customer_tax_id=original.customer_tax_id,
         lines=lines, reference_doc=original.invoice_no, user=user, ip=ip,
-        source_module='void', source_ref=original.invoice_no,
+        # A NC PERTENCE AO MÓDULO DA FACTURA QUE ANULA.
+        #
+        # Nascia com source_module='void' — um valor que NINGUÉM lê. Todo o
+        # resto do sistema procura os documentos por módulo
+        # (source_module='pos' nos relatórios de Facturação/IVA/Anulações e no
+        # SAF-T do POS; 'pms' no folio), e por isso as notas de crédito caíam
+        # todas num buraco:
+        #
+        #   · o SAF-T do POS saía SEM ELAS — declarava a venda e não a sua
+        #     anulação, ou seja IVA a mais do que o devido;
+        #   · o mapa de IVA somava a factura regularizada pelo valor inteiro;
+        #   · o relatório de Anulações, cujo título diz "ANULAÇÕES E NOTAS DE
+        #     CRÉDITO", não mostrava uma única nota de crédito.
+        #
+        # O que identifica uma NC é `doc_type.is_rectifying` e o
+        # `reference_doc` — não o módulo. O módulo diz DE ONDE veio a venda, e
+        # a NC vem de onde veio o original.
+        source_module=original.source_module or 'void',
+        source_ref=original.invoice_no,
         customer_address=original.customer_address, tax_inclusive=original.tax_inclusive,
         # A LIGAÇÃO AO CLIENTE tem de vir com a NC. A conta corrente soma os
         # documentos por `customer`: a dívida pelas facturas, o crédito pelas NC.

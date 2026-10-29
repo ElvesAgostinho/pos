@@ -675,11 +675,12 @@ class InventarioDoCentroTests(CasaCheia):
         colunas. É o teste mais barato do Centro e o que apanha mais estragos:
         um campo que mudou de nome num modelo rebenta aqui, não em produção.
         """
-        # fb_quebras REBENTA de propósito — ver
-        # `test_DEFEITO_quebras_de_inventario_rebenta_quando_ha_quebras`. Está
-        # nomeado aqui para que este teste continue a apanhar o próximo que
-        # rebentar, em vez de ficar vermelho por um defeito já conhecido.
-        REBENTAM_HOJE = {'fb_quebras'}
+        # NENHUM. `fb_quebras` rebentava com AttributeError (`StockDoc` não tem
+        # `responsible`) e está corrigido — ver
+        # `test_as_quebras_de_inventario_abrem_quando_ha_quebras`. Este conjunto
+        # fica VAZIO de propósito: qualquer relatório que passe a rebentar torna
+        # este teste vermelho, que é o que se quer.
+        REBENTAM_HOJE = set()
         rebentaram, vazios = [], []
         for f in self.catalogo()['folders']:
             for r in f['reports']:
@@ -732,3 +733,643 @@ class InventarioDoCentroTests(CasaCheia):
                          'O relatório impresso tem de dizer QUEM o tirou.')
         self.assertTrue(d['title'] and d['folder'],
                         'Sem título e pasta, o papel que sai da impressora não se identifica.')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 2 · OS NÚMEROS — a pergunta que um relatório que "abre" não responde
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# O cenário, para se poder conferir à mão sem o reler todo:
+#
+#   T1  HOJE   Restaurante  Ana    PAGA        10 000  (2 bifes 4 000 + 2 cervejas 1 000)
+#   T2  HOJE   Lounge       Bruno  PAGA         5 000  (5 cervejas 1 000)
+#   T3  ONTEM  Restaurante  Ana    PAGA         4 000  (1 bife 4 000)
+#   T4  -40d   Restaurante  Ana    PAGA       100 000  ← FORA DO PERÍODO
+#   T5  HOJE   Restaurante  Ana    ABERTA       4 000  ← ainda não é receita
+#   T6  HOJE   Restaurante  Ana    PAGA         1 000  (1 cerveja + 1 bife ANULADO
+#                                                       + 1 cerveja OFERECIDA)
+#   T7  HOJE   Restaurante  Carla  ESTORNADA    8 000  ← o dinheiro voltou
+#
+# RECEITA DO PERÍODO (ONTEM..HOJE) = 10 000 + 5 000 + 4 000 + 1 000 = 20 000 Kz.
+#
+# Esse 20 000 é o número que TODOS os caminhos têm de dar: por dia, por artigo,
+# por família, por operador, por sector, por hora e por meio de pagamento. Um
+# relatório que dê outro número está a mentir a alguém — e cada uma das quatro
+# contas de fora (T4, T5, T6 anulada/oferta, T7) é uma maneira diferente de
+# mentir.
+class OsNumerosBatemTests(CasaCheia):
+
+    RECEITA = Decimal('20000')
+
+    def test_o_dia_soma_o_que_se_vendeu_e_so_isso(self):
+        d = self.periodo('rec_dia')
+        self.assertEqual(self.total(d, 'total'), self.RECEITA,
+                         'A receita do período não é 20 000 Kz. É a soma das quatro contas '
+                         'PAGAS do período (10 000 + 5 000 + 4 000 + 1 000) — e de mais '
+                         'nenhuma.')
+        self.assertEqual(d['totals']['tickets'], 4,
+                         'Quatro contas pagas no período. Cinco significa que a aberta, a '
+                         'estornada ou a de fora entrou na conta.')
+        hoje = self.linha(d, 'date', self.HOJE)
+        self.assertEqual(Decimal(hoje['total']), Decimal('16000'))
+        self.assertEqual(hoje['pax'], 5, 'Pax de hoje: 2 (T1) + 1 (T2) + 2 (T6) = 5.')
+        self.assertEqual(Decimal(hoje['avg']), Decimal('5333.33'),
+                         'Ticket médio de hoje: 16 000 / 3 contas.')
+        ontem = self.linha(d, 'date', self.ONTEM)
+        self.assertEqual(Decimal(ontem['total']), Decimal('4000'))
+
+    def test_a_conta_de_fora_do_periodo_nao_entra_em_relatorio_nenhum(self):
+        """T4 SÃO 100 000 Kz — cinco vezes a receita do período.
+
+        É o erro mais comum e o mais caro: um relatório que esquece o filtro de
+        datas não dá erro, dá um número enorme. Se algum destes falhar, o dono
+        está a ver (e a declarar) receita de outro mês.
+        """
+        for code in ['rec_dia', 'rec_artigo', 'rec_familia', 'rec_operador', 'rec_sector',
+                     'est_top', 'est_horas', 'cx_pagamentos']:
+            d = self.periodo(code)
+            total = self.total(d, 'total')
+            self.assertEqual(total, self.RECEITA,
+                             f'{code} deu {total} em vez de 20 000 Kz. Se deu 120 000, '
+                             f'somou a conta T4 que é de há 40 dias — o filtro de período '
+                             f'não está a ser aplicado.')
+
+    def test_uma_conta_ainda_aberta_nao_e_receita(self):
+        """T5 está ABERTA com 4 000 Kz. Contá-la é contar dinheiro que ainda
+        está na mesa — e no fecho do dia o caixa não bate."""
+        d = self.periodo('rec_dia')
+        self.assertEqual(self.total(d, 'total'), self.RECEITA,
+                         'A conta ABERTA (T5, 4 000 Kz) entrou na receita: se o total deu '
+                         '24 000, o relatório conta contas que ainda não foram cobradas.')
+        self.assertNotIn(Decimal('4000'), [Decimal(r['total']) for r in d['rows']
+                                           if r['date'] == str(self.HOJE)])
+
+    def test_uma_conta_estornada_nao_e_venda_nem_do_operador_que_a_fez(self):
+        """T7 foram 8 000 Kz cobrados e devolvidos. Não é venda da casa — e, em
+        particular, não é venda da Carla: quem estorna não ganha comissão."""
+        d = self.periodo('rec_operador')
+        operadores = {r['operator'] for r in d['rows']}
+        self.assertNotIn('Carla', operadores,
+                         'A Carla aparece nas vendas por operador, e a única conta dela '
+                         '(T7) foi ESTORNADA. Isto paga comissão sobre dinheiro devolvido.')
+        self.assertEqual(self.total(d, 'total'), self.RECEITA)
+        pagos = self.periodo('cx_pagamentos')
+        self.assertEqual(self.total(pagos, 'total'), self.RECEITA,
+                         'O pagamento de 8 000 Kz da conta estornada continua a contar '
+                         'como dinheiro recebido.')
+
+    def test_a_linha_anulada_sai_das_vendas_e_entra_nas_anulacoes(self):
+        """Um bife de 4 000 Kz anulado na conta T6: tem de sair das vendas do
+        artigo E aparecer, pelo nome de quem o anulou, no relatório de linhas
+        anuladas. Sair dos dois é esconder; ficar nos dois é somar a dobrar."""
+        art = self.periodo('rec_artigo')
+        bife = self.linha(art, 'code', 'A001')
+        self.assertEqual(Decimal(bife['total']), Decimal('12000'),
+                         'Bife: 2 em T1 (8 000) + 1 em T3 (4 000) = 12 000. Se deu 16 000, '
+                         'a linha ANULADA de T6 continua a contar como venda.')
+        self.assertEqual(Decimal(bife['qty']), Decimal('3'))
+
+        anul = self.periodo('est_anulados')
+        self.assertEqual(self.total(anul, 'value'), Decimal('4000'),
+                         'O relatório de anulações tem de mostrar os 4 000 Kz anulados — '
+                         'é onde se vê um empregado a anular vendas já cobradas.')
+        l = anul['rows'][0]
+        self.assertEqual(l['ticket'], 'T6')
+        self.assertEqual(l['operator'], 'Ana',
+                         'Uma anulação sem o nome de quem a fez não serve para nada.')
+        self.assertEqual(l['reason'], 'Cliente desistiu',
+                         'O motivo da anulação é o que o dono vai ler.')
+
+    def test_uma_oferta_vale_zero_na_receita_e_o_preco_de_tabela_nas_ofertas(self):
+        """A terceira cerveja de T6 foi oferecida (100% de desconto).
+
+        São dois números diferentes e os dois importam: na receita vale 0 (não
+        se cobrou), nas ofertas vale 1 000 Kz (é o que a casa deixou de cobrar,
+        e é por aí que se percebe quanto custam as ofertas ao fim do mês). A
+        QUANTIDADE conta nos dois: a garrafa saiu do bar.
+        """
+        art = self.periodo('rec_artigo')
+        cerveja = self.linha(art, 'code', 'A002')
+        self.assertEqual(Decimal(cerveja['total']), Decimal('8000'),
+                         'Cerveja: 2 (T1) + 5 (T2) + 1 (T6) = 8 000 Kz cobrados; a '
+                         'oferecida vale 0. Se deu 9 000, a oferta está a ser cobrada no '
+                         'relatório e não foi cobrada ao cliente.')
+        self.assertEqual(Decimal(cerveja['qty']), Decimal('9'),
+                         'Nove garrafas saíram do bar (a oferecida também). A quantidade '
+                         'é do armazém, não da caixa.')
+
+        of = self.periodo('est_ofertas')
+        self.assertEqual(self.total(of, 'value'), Decimal('1000.00'),
+                         'A oferta vale o PREÇO DE TABELA (1 000 Kz) no relatório de '
+                         'ofertas — se der 0, o dono nunca sabe quanto ofereceu.')
+        self.assertEqual(of['rows'][0]['value'], '1000.00',
+                         'O valor saía "1000.00000" (as casas da quantidade a multiplicar '
+                         'pelas do preço) — num papel de contabilidade.')
+
+    def test_cada_caminho_chega_ao_mesmo_total(self):
+        """O TESTE QUE APANHA O QUE NENHUM OUTRO APANHA.
+
+        A receita de um dia é UM número. Vista por dia, por artigo, por família,
+        por sector, por operador, por hora ou por meio de pagamento, tem de dar
+        sempre o mesmo. Quando dois caminhos divergem é porque um deles filtra
+        diferente — e o dono fica com dois relatórios a dizerem coisas
+        diferentes sobre o mesmo dia, sem saber em qual acreditar.
+        """
+        caminhos = {c: self.total(self.periodo(c), 'total')
+                    for c in ['rec_dia', 'rec_artigo', 'rec_familia', 'rec_sector',
+                              'rec_operador', 'est_top', 'est_horas', 'cx_pagamentos']}
+        self.assertEqual(set(caminhos.values()), {self.RECEITA},
+                         f'Os caminhos da receita divergem: {caminhos}. Todos têm de dar '
+                         f'20 000 Kz — é o mesmo dinheiro visto de ângulos diferentes.')
+
+    def test_as_vendas_repartem_se_certas_por_operador_sector_e_familia(self):
+        op = self.periodo('rec_operador')
+        self.assertEqual(Decimal(self.linha(op, 'operator', 'Ana')['total']), Decimal('15000'),
+                         'Ana: T1 (10 000) + T3 (4 000) + T6 (1 000) = 15 000.')
+        self.assertEqual(Decimal(self.linha(op, 'operator', 'Ana')['discount']), Decimal('500'),
+                         'O desconto de 500 Kz dado em T1 é da Ana — é o número que trava '
+                         'o empregado que desconta a amigos.')
+        self.assertEqual(Decimal(self.linha(op, 'operator', 'Bruno')['total']), Decimal('5000'))
+
+        sec = self.periodo('rec_sector')
+        self.assertEqual(Decimal(self.linha(sec, 'outlet', 'Restaurante')['total']),
+                         Decimal('15000'))
+        self.assertEqual(Decimal(self.linha(sec, 'outlet', 'Lounge')['total']), Decimal('5000'),
+                         'O Lounge vendeu as 5 cervejas de T2. Se vier 0, o relatório está '
+                         'a pôr tudo no sector principal.')
+
+        fam = self.periodo('rec_familia')
+        comida = self.linha(fam, 'family', 'Comida')
+        bebidas = self.linha(fam, 'family', 'Bebidas')
+        self.assertEqual(Decimal(comida['total']), Decimal('12000'))
+        self.assertEqual(Decimal(bebidas['total']), Decimal('8000'))
+        self.assertEqual(comida['pct'], '60.0%',
+                         '12 000 de 20 000 são 60% — a percentagem é do total do PERÍODO, '
+                         'e se a conta de fora entrasse no denominador dava 10%.')
+        self.assertEqual(bebidas['pct'], '40.0%')
+
+    def test_as_horas_agrupam_pela_hora_de_luanda(self):
+        """O relatório de horas de ponta decide turnos e escalas. Agrupar em UTC
+        punha o jantar de Luanda (20h) à meia-noite — e a casa punha gente a
+        trabalhar à hora errada."""
+        d = self.periodo('est_horas')
+        self.assertEqual(Decimal(self.linha(d, 'hour', '12:00')['total']), Decimal('10000'),
+                         'T1 fechou às 12:30 de Luanda. Se aparecer às 11:00, o relatório '
+                         'está a agrupar em UTC.')
+        self.assertEqual(Decimal(self.linha(d, 'hour', '20:00')['total']), Decimal('5000'))
+        self.assertEqual(Decimal(self.linha(d, 'hour', '21:00')['total']), Decimal('1000'))
+
+    def test_o_dinheiro_reparte_se_pelos_meios_de_pagamento_que_o_receberam(self):
+        d = self.periodo('cx_pagamentos')
+        din = self.linha(d, 'method', 'Dinheiro')
+        self.assertEqual(Decimal(din['total']), Decimal('11000'),
+                         'Dinheiro: T1 (10 000) + T6 (1 000). Os 8 000 de T7 foram '
+                         'devolvidos e não estão na gaveta.')
+        self.assertEqual(din['count'], 2)
+        self.assertEqual(din['pct'], '55.0%')
+        self.assertEqual(Decimal(self.linha(d, 'method', 'Multibanco')['total']),
+                         Decimal('5000'))
+        self.assertEqual(Decimal(self.linha(d, 'method', 'Transferência')['total']),
+                         Decimal('4000'))
+
+    def test_o_caixa_fecha_com_as_vendas_das_contas_que_lhe_pertencem(self):
+        """A sessão de caixa tem quatro contas: T1 (paga), T5 (aberta), T6
+        (paga) e T7 (estornada). Fecha com 11 000 Kz — e é por este número que
+        o operador responde ao entregar a gaveta."""
+        d = self.periodo('cx_sessoes')
+        self.assertEqual(self.total(d, 'sales'), Decimal('11000'),
+                         'O caixa tem de fechar com 11 000 Kz (T1 + T6). Se der 23 000, '
+                         'está a pedir contas ao operador por uma conta ainda aberta e por '
+                         'outra que foi devolvida.')
+        linha = d['rows'][0]
+        self.assertEqual(Decimal(linha['float']), Decimal('10000.00'),
+                         'O fundo de caixa com que a sessão abriu.')
+        self.assertEqual(linha['operator'], 'Ana')
+
+    def test_os_movimentos_de_caixa_do_periodo_e_so_do_periodo(self):
+        d = self.periodo('cx_movimentos')
+        self.assertEqual(len(d['rows']), 2,
+                         'Dois movimentos hoje (sangria de 3 000 e reforço de 1 000). Três '
+                         'significa que a sangria de 50 000 de há 40 dias entrou.')
+        self.assertEqual(self.total(d, 'amount'), Decimal('4000.00'))
+
+    def test_a_conta_corrente_mostra_a_divida_e_o_adiantamento_separados(self):
+        """São dois dinheiros em sentidos contrários e não se somam: a Empresa X
+        DEVE 4 560 Kz (a factura por receber) e TEM 30 000 Kz adiantados. Juntar
+        os dois dava um cliente com saldo a favor que ainda deve uma factura."""
+        d = self.periodo('cc_saldos')
+        x = self.linha(d, 'name', 'Empresa X')
+        self.assertEqual(Decimal(x['balance']), Decimal('4560.00'),
+                         'A dívida da Empresa X é a factura FT por receber (4 000 + IVA).')
+        self.assertEqual(Decimal(x['advance']), Decimal('30000'),
+                         'Adiantamento: 50 000 entrados menos 20 000 usados.')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3 · FACTURAÇÃO — o relatório que a AGT pode pedir
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Os documentos do cenário (todos emitidos pelo motor fiscal a sério):
+#
+#   FT A/1  ONTEM   4 000 + 560    Empresa X, POR RECEBER
+#   FR A/1  HOJE   10 000 + 1 400  liquidada
+#   FR A/2  HOJE    5 000 + 700    ANULADA
+#   FR A/3  HOJE    2 000 + 280    regularizada por nota de crédito
+#   NC A/1  HOJE    2 000 + 280    a nota de crédito de FR A/3
+#   FT      -40d   50 000          fora do período
+#
+# INCIDÊNCIA DO PERÍODO = 4 000 + 10 000 + 2 000 − 2 000 = 14 000 Kz
+# IVA LIQUIDADO         =   560 +  1 400 +   280 −   280 =  1 960 Kz
+#
+# A anulada não entra (não houve venda) e a regularizada entra com a sua nota de
+# crédito a subtrair (houve venda e desfez-se). É este 1 960 Kz que se paga ao
+# Estado: declarar 2 240 é pagar imposto sobre uma venda que voltou atrás.
+class OIvaQueSePagaTests(CasaCheia):
+
+    def test_o_mapa_de_iva_declara_o_que_se_vendeu_menos_o_que_se_regularizou(self):
+        d = self.periodo('fat_iva')
+        self.assertEqual(self.total(d, 'base'), Decimal('14000'),
+                         'A incidência do período é 14 000 Kz (4 000 + 10 000 + 2 000 − '
+                         '2 000 da nota de crédito). 16 000 significa que a nota de '
+                         'crédito não está a subtrair; 18 000, que está a somar.')
+        self.assertEqual(self.total(d, 'tax'), Decimal('1960'),
+                         'IVA a entregar: 1 960 Kz. Declarar 2 240 é pagar imposto sobre '
+                         'uma venda que foi anulada por nota de crédito.')
+        self.assertEqual(len(d['rows']), 1,
+                         'Uma linha por TAXA. Duas linhas a 14% (uma das vendas, outra das '
+                         'retificações) é um mapa que o contabilista não consegue copiar '
+                         'para a declaração.')
+
+    def test_a_nota_de_credito_existe_para_os_relatorios_do_pos(self):
+        """ERA O DEFEITO DA RAIZ: a nota de crédito nascia com
+        `source_module='void'` (fiscal/services.py) e TODOS os relatórios do POS
+        procuram `source_module='pos'`. Resultado: as notas de crédito não
+        existiam para o POS — nem na lista de documentos, nem no mapa de IVA,
+        nem no relatório de anulações, nem no SAF-T."""
+        self.assertEqual(self.nota_credito.source_module, 'pos',
+                         'A nota de crédito tem de pertencer ao módulo da factura que '
+                         'anula, senão desaparece de todos os relatórios desse módulo.')
+        d = self.periodo('fat_documentos')
+        nc = self.linha(d, 'type', 'NC')
+        self.assertEqual(nc['ref'] if 'ref' in nc else self.nota_credito.reference_doc,
+                         self.doc_creditado.invoice_no,
+                         'A nota de crédito tem de dizer QUE factura retifica.')
+
+    def test_a_lista_de_documentos_mostra_todos_e_soma_so_a_receita(self):
+        """A lista mostra TODOS os papéis emitidos — a AGT exige-o, inclusive os
+        anulados. Mas o rodapé é RECEITA: o anulado vale 0 e a nota de crédito
+        subtrai. Somar os papéis dava 23 940 Kz de vendas num dia em que a casa
+        facturou 15 960."""
+        d = self.periodo('fat_documentos')
+        numeros = {r['invoice_no'] for r in d['rows']}
+        self.assertEqual(len(d['rows']), 5,
+                         f'Cinco documentos no período (FT, FR x3, NC) e apareceram '
+                         f'{len(d["rows"])}: {sorted(numeros)}. Falta algum documento à '
+                         f'lista que se entrega a quem fiscaliza.')
+        self.assertIn(self.doc_antigo.invoice_no, [r['invoice_no'] for r in
+                                                   self.correr('fat_documentos',
+                                                               **{'from': str(self.FORA),
+                                                                  'to': str(self.HOJE)})['rows']],
+                      'O documento antigo tem de aparecer quando se pede o período dele.')
+        self.assertNotIn(self.doc_antigo.invoice_no, numeros,
+                         'O documento de há 40 dias apareceu no período de ontem e hoje.')
+        self.assertEqual(self.total(d, 'gross'), Decimal('15960.00'),
+                         'Facturação do período: 11 400 + 4 560 + 2 280 (regularizada) − '
+                         '2 280 (nota de crédito) + 0 (anulada) = 15 960 Kz.')
+        self.assertEqual(self.total(d, 'net'), Decimal('14000.00'),
+                         'A incidência no rodapé da lista tem de ser a MESMA do mapa de '
+                         'IVA (14 000 Kz) — são dois relatórios sobre os mesmos documentos.')
+        self.assertEqual(self.total(d, 'net'),
+                         self.total(self.periodo('fat_iva'), 'base'),
+                         'A lista de documentos e o mapa de IVA divergem na incidência do '
+                         'mesmo período.')
+
+    def test_cada_linha_diz_quanto_pesa_no_total_para_o_ecra_nao_desfazer_a_conta(self):
+        """O CONTRATO ENTRE O RELATÓRIO E A GRELHA.
+
+        A grelha do ecrã NÃO usa o `totals` que o servidor manda: recalcula os
+        totais sobre as linhas que passam nos filtros, porque o rodapé tem de
+        falar do que está à vista. Isso é bom — e desfazia esta conta: somava a
+        factura anulada e a nota de crédito como se fossem vendas, e o rodapé
+        que o contabilista lê voltava a mostrar 23 940 Kz num dia de 15 960.
+
+        Por isso o peso viaja NA LINHA (`_peso`: 1 normal, 0 anulada, −1
+        retificativa) e a grelha multiplica por ele
+        (frontend/src/components/posconfig/ReportGrid.tsx). Se alguém tirar este
+        campo, o ecrã volta a mentir sem que nenhum outro teste note.
+        """
+        d = self.periodo('fat_documentos')
+        pesos = {r['invoice_no']: r.get('_peso') for r in d['rows']}
+        self.assertEqual(pesos[self.doc_anulado.invoice_no], 0,
+                         'Uma factura ANULADA tem de pesar 0 no total do ecrã.')
+        self.assertEqual(pesos[self.nota_credito.invoice_no], -1,
+                         'Uma NOTA DE CRÉDITO tem de pesar −1: devolve dinheiro.')
+        self.assertEqual(pesos[self.doc_normal.invoice_no], 1)
+        self.assertEqual(pesos[self.doc_creditado.invoice_no], 1,
+                         'A factura regularizada pesa 1 (foi emitida); é a nota de crédito '
+                         'que a desconta. Pô-la a 0 descontava a venda duas vezes.')
+
+        # O total que o servidor manda tem de ser o mesmo que a grelha calcula
+        # ao multiplicar cada linha pelo seu peso — senão os dois divergem e o
+        # ecrã mostra um número diferente do relatório impresso.
+        for coluna in ('gross', 'net', 'tax'):
+            como_o_ecra_soma = sum((Decimal(str(r['_peso'])) * Decimal(r[coluna])
+                                    for r in d['rows']), Decimal('0'))
+            self.assertEqual(self.total(d, coluna), como_o_ecra_soma,
+                             f'O total de "{coluna}" que o servidor manda ({self.total(d, coluna)}) '
+                             f'não é o que a grelha vai calcular ({como_o_ecra_soma}).')
+
+    def test_o_estado_distingue_uma_venda_boa_de_uma_que_voltou_atras(self):
+        """Uma factura regularizada por nota de crédito fica com estado NORMAL
+        (é o que a AGT espera), e por isso aparecia na lista como "Liquidado" —
+        igual a uma venda boa. Quem lia a lista via dinheiro que já tinha
+        voltado ao cliente."""
+        d = self.periodo('fat_documentos')
+        estados = {r['invoice_no']: r['status'] for r in d['rows']}
+        self.assertEqual(estados[self.doc_anulado.invoice_no], 'Anulado')
+        self.assertEqual(estados[self.doc_creditado.invoice_no], 'Regularizado por NC',
+                         f'A factura anulada por nota de crédito aparece como '
+                         f'"{estados[self.doc_creditado.invoice_no]}" — indistinguível de '
+                         f'uma venda cobrada.')
+        self.assertEqual(estados[self.nota_credito.invoice_no], 'Nota de crédito')
+        self.assertEqual(estados[self.doc_normal.invoice_no], 'Liquidado')
+        self.assertEqual(estados[self.doc_por_receber.invoice_no], 'Por receber')
+
+    def test_as_anulacoes_mostram_as_duas_formas_de_desfazer_uma_venda(self):
+        """O relatório chama-se "Anulações e notas de crédito" e não mostrava
+        uma única nota de crédito. São as duas formas legais de desfazer uma
+        venda em Angola, e quem audita tem de ver as duas no mesmo papel."""
+        d = self.periodo('fat_anulacoes')
+        tipos = {r['invoice_no']: r['type'] for r in d['rows']}
+        self.assertIn(self.doc_anulado.invoice_no, tipos)
+        self.assertIn(self.nota_credito.invoice_no, tipos,
+                      'A nota de crédito não aparece no relatório de anulações.')
+        self.assertEqual(self.total(d, 'gross'), Decimal('7980.00'),
+                         'Desfez-se 5 700 (anulada) + 2 280 (nota de crédito) = 7 980 Kz.')
+        nc = self.linha(d, 'invoice_no', self.nota_credito.invoice_no)
+        self.assertEqual(nc['ref'], self.doc_creditado.invoice_no,
+                         'Uma nota de crédito sem a factura que retifica não se audita.')
+
+    def test_o_saft_do_pos_leva_as_notas_de_credito(self):
+        """O SAF-T é o ficheiro que se entrega à AGT. Saía com a venda e SEM a
+        nota de crédito que a desfez — declarava receita (e IVA) a mais do que o
+        devido. O gerador já sabia tratar uma NC (vai a TotalDebit, não a
+        TotalCredit); nunca lha chegava nenhuma, porque o filtro é por módulo.
+        """
+        from fiscal.saft import generate_saft
+        xml = generate_saft(self.ONTEM, self.HOJE, module='pos')
+        self.assertIn(self.nota_credito.invoice_no, xml,
+                      'A nota de crédito não está no SAF-T do POS. O ficheiro declara a '
+                      'venda e não a sua anulação.')
+        # O SAF-T soma pelo VALOR SEM IMPOSTO das linhas (é a convenção: o IVA
+        # vai no `TaxPayable` de cada documento, não nos totais da secção).
+        self.assertIn('<TotalDebit>2000.00</TotalDebit>', xml,
+                      'A nota de crédito tem de entrar no SAF-T como DÉBITO à receita '
+                      '(convenção SAF-T), não como mais uma venda. Se o TotalDebit for '
+                      '0.00, a NC está a ser declarada como receita.')
+        self.assertIn('<TotalCredit>16000.00</TotalCredit>', xml,
+                      'Crédito declarado: 10 000 + 4 000 + 2 000 (a anulada não conta). '
+                      'Menos o débito de 2 000 da nota de crédito, dá os mesmos 14 000 Kz '
+                      'de incidência do mapa de IVA — o SAF-T e o relatório têm de dizer '
+                      'o mesmo à AGT.')
+        self.assertIn('<DebitAmount>2000.00</DebitAmount>', xml,
+                      'A linha da nota de crédito tem de ser um DebitAmount; um '
+                      'CreditAmount fazia dela uma venda.')
+        self.assertIn(self.doc_anulado.invoice_no, xml,
+                      'Um documento anulado também vai no SAF-T — não se apaga, declara-se '
+                      'como anulado.')
+        self.assertNotIn(self.doc_antigo.invoice_no, xml,
+                         'O documento de fora do período entrou no SAF-T do período.')
+        self.assertNotIn(self.doc_pms.invoice_no, xml,
+                         'O SAF-T do POS levou um documento do alojamento.')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 4 · ARMAZÉM E COMPRAS — o dinheiro que não está na caixa
+# ══════════════════════════════════════════════════════════════════════════════
+class OArmazemContaCertoTests(CasaCheia):
+
+    def test_as_quebras_de_inventario_abrem_quando_ha_quebras(self):
+        """REBENTAVA EXATAMENTE QUANDO ERA ÚTIL.
+
+        O relatório lia `d.responsible`, um campo que `StockDoc` não tem. Mas a
+        leitura estava dentro do `if dif:` — só se chegava lá quando havia uma
+        diferença. Um inventário perfeito abria; o dia em que faltavam cinco
+        cervejas, o relatório das quebras dizia "erro interno".
+        """
+        d = self.periodo('fb_quebras')
+        self.assertEqual(len(d['rows']), 1,
+                         'Uma quebra no inventário de hoje: faltaram 5 cervejas (contaram-se '
+                         '95 onde deviam estar 100). O bife bateu certo e não é quebra.')
+        l = d['rows'][0]
+        self.assertEqual(Decimal(l['diff']), Decimal('-5.000'))
+        self.assertEqual(Decimal(l['value']), Decimal('-2000.00'),
+                         '5 cervejas a 400 Kz de custo = 2 000 Kz que desapareceram.')
+        self.assertEqual(l['responsible'], 'Ana',
+                         'Uma quebra sem responsável não serve para nada — e era este '
+                         'campo que rebentava.')
+        self.assertEqual(self.total(d, 'value'), Decimal('-2000.00'))
+
+    def test_as_compras_contam_as_do_periodo_e_nao_a_anulada(self):
+        """Quatro documentos de compra no cenário: 100 cervejas a 400 (hoje),
+        10 bifes a 1 500 (ontem), uma compra ANULADA de 99 000 Kz (hoje) e uma
+        de há 40 dias. O período só tem os dois primeiros: 40 000 + 15 000.
+
+        A compra anulada é a armadilha: são 99 000 Kz que, somados, fazem o
+        dono acreditar que gastou cinco vezes mais do que gastou — e o custo
+        das mercadorias vendidas vai todo atrás.
+        """
+        d = self.periodo('fb_compras')
+        total = self.total(d, 'total')
+        self.assertEqual(total, Decimal('55000'),
+                         f'As compras do período são 55 000 Kz (40 000 de cervejas + '
+                         f'15 000 de bifes) e deram {total}. Se deu 154 000, a compra '
+                         f'ANULADA de 99 000 Kz está a contar; se deu 132 000, entrou a '
+                         f'de há 40 dias.')
+
+    def test_o_stock_valorizado_e_a_quantidade_vezes_o_custo_de_cada_armazem(self):
+        """O "dinheiro parado no armazém" é o número que vai ao balanço.
+
+        O cenário tem 95 cervejas e 10 bifes no Central e 5 cervejas no Bar, com
+        custos médios de 400 e 1 500 Kz:
+          Central: 95 x 400 = 38 000  +  10 x 1 500 = 15 000
+          Bar:      5 x 400 =  2 000
+        Total: 55 000 Kz. Um armazém a mais ou a menos na soma é um balanço
+        errado, e um stock valorizado pelo PREÇO DE VENDA (em vez do custo)
+        inflaciona o activo da casa.
+        """
+        d = self.correr('fb_stock')
+        self.assertEqual(self.total(d, 'value'), Decimal('55000'),
+                         'Stock valorizado: 38 000 (cervejas no Central) + 15 000 (bifes) '
+                         '+ 2 000 (cervejas no Bar) = 55 000 Kz ao CUSTO. Se der muito '
+                         'mais, está valorizado ao preço de venda.')
+        linhas = {(r['warehouse'], r['code']): r for r in d['rows']}
+        central_cerveja = linhas[('Armazém Central', 'A002')]
+        self.assertEqual(Decimal(central_cerveja['qty']), Decimal('95'))
+        self.assertEqual(Decimal(central_cerveja['cost']), Decimal('400'),
+                         'O custo é o CUSTO MÉDIO do artigo, não o preço de venda (1 000).')
+        self.assertEqual(Decimal(central_cerveja['value']), Decimal('38000'))
+        self.assertEqual(Decimal(linhas[('Armazém do Bar', 'A002')]['value']),
+                         Decimal('2000'),
+                         'O mesmo artigo em dois armazéns são duas linhas — e as duas '
+                         'contam para o total.')
+
+    def test_o_consumo_fecha_o_ciclo_entre_a_venda_e_o_armazem(self):
+        """O que a venda tirou da prateleira. Venderam-se 9 cervejas e 3 bifes
+        no período; é esse o consumo, e é por aqui que se descobre o artigo que
+        sai do armazém sem passar pela caixa."""
+        d = self.periodo('fb_consumo')
+        cerveja = self.linha(d, 'code', 'A002')
+        self.assertEqual(Decimal(cerveja['qty']), Decimal('9'),
+                         'Nove cervejas consumidas (as mesmas 9 das vendas por artigo). '
+                         'Se vier 109, entrou o movimento de há 40 dias.')
+        self.assertEqual(Decimal(self.linha(d, 'code', 'A001')['qty']), Decimal('3'))
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 5 · O RODAPÉ — o número que o contabilista lê, e que o ecrã recalcula
+# ══════════════════════════════════════════════════════════════════════════════
+class ORodapeNaoMenteTests(CasaCheia):
+    """A GRELHA DO ECRÃ NÃO USA O `totals` QUE O SERVIDOR MANDA.
+
+    Recalcula-o sobre as linhas que passam nos filtros, porque o rodapé tem de
+    falar do que está à vista (ReportGrid.tsx). É a decisão certa — e, somando
+    as colunas à bruta, desfazia a conta do servidor em CINCO relatórios:
+
+      · Documentos: somava a factura ANULADA e a NOTA DE CRÉDITO como vendas;
+      · Depósitos: somava a utilização ao adiantamento;
+      · Pontos: somava os pontos resgatados aos ganhos;
+      · Reservas do PMS: somava as canceladas e os no-shows à receita;
+      · Ocupação: somava percentagens (125% de ocupação) e dois ADR.
+
+    O contrato que resolve os cinco tem duas peças, e são estas que se testam
+    aqui — uma de cada vez, para quem mexer saber qual quebrou:
+
+      1. `_peso` na linha: quanto ela pesa no total (1, 0 ou −1);
+      2. um total que NÃO é uma soma das linhas não se recalcula — e este teste
+         prova que ele existe e é diferente da soma, que é a única razão pela
+         qual a grelha tem de deixar o número do servidor em paz.
+    """
+
+    @staticmethod
+    def _numero(v):
+        """O MESMO `num()` da grelha (ReportGrid.tsx): tira espaços, aceita a
+        vírgula decimal, e o que não é número vale zero. Imitá-lo ao pormenor é
+        o que faz destes testes uma prova sobre o ecrã e não sobre uma ideia do
+        ecrã."""
+        try:
+            return Decimal(str(v if v is not None else '').replace(' ', '').replace(',', '.'))
+        except Exception:
+            return Decimal('0')
+
+    def _como_a_grelha_soma(self, dados, coluna):
+        """A conta que ReportGrid.tsx faz: soma a coluna, pesando cada linha."""
+        return sum((self._numero(r.get('_peso', 1)) * self._numero(r.get(coluna))
+                    for r in dados['rows']), Decimal('0'))
+
+    def test_os_depositos_mostram_o_saldo_e_nao_a_soma_dos_movimentos(self):
+        """50 000 entraram e 20 000 foram usados: o adiantamento é 30 000 Kz.
+        Somar os dois movimentos dava 70 000 — mais do dobro do que a entidade
+        tem a favor, e um crédito que ela não tem."""
+        d = self.periodo('dep_movimentos')
+        self.assertEqual(self.total(d, 'amount'), Decimal('30000.00'))
+        self.assertEqual(self._como_a_grelha_soma(d, 'amount'), Decimal('30000.00'),
+                         'O ecrã vai mostrar outro número: falta o `_peso` que diz que uma '
+                         'UTILIZAÇÃO tira em vez de somar.')
+        pesos = {r['kind']: r.get('_peso') for r in d['rows']}
+        self.assertEqual(pesos['Entrada (depósito)'], 1)
+        self.assertEqual(pesos['Utilização'], -1)
+
+    def test_os_pontos_mostram_o_saldo_e_nao_a_soma_dos_movimentos(self):
+        d = self.periodo('pts_movimentos')
+        self.assertEqual(self.total(d, 'points'), Decimal('70.00'),
+                         '100 pontos ganhos menos 30 usados = 70.')
+        self.assertEqual(self._como_a_grelha_soma(d, 'points'), Decimal('70.00'),
+                         'O ecrã vai somar 130 pontos — os usados a somar aos ganhos.')
+
+    def test_as_reservas_mostram_as_canceladas_e_nao_as_somam(self):
+        """Uma reserva cancelada à vista é informação útil (mostra o que se
+        perdeu). Somada ao total é receita que nunca entrou: no cenário são
+        75 000 Kz de uma cancelada e de um no-show."""
+        d = self.correr('pms_reservas', **{'from': str(self.ONTEM), 'to': str(self.HOJE)})
+        estados = {r['confirmation']: (r['status'], r.get('_peso')) for r in d['rows']}
+        self.assertIn('Cancelada', [e[0] for e in estados.values()],
+                      'A reserva cancelada tem de APARECER na lista.')
+        for conf, (estado, peso) in estados.items():
+            esperado = 0 if estado in ('Cancelada', 'No-show') else 1
+            self.assertEqual(peso, esperado,
+                             f'A reserva {conf} está "{estado}" e pesa {peso} no rodapé.')
+        self.assertEqual(self._como_a_grelha_soma(d, 'total'),
+                         Decimal(str(d['totals']['total'])),
+                         'O ecrã vai somar as canceladas e os no-shows à receita.')
+
+    def test_uma_percentagem_nao_se_soma(self):
+        """50% de ocupação num dia e 75% no outro não são 125% de ocupação — são
+        62,5%. O mesmo para o ADR e o RevPAR: são rácios do PERÍODO (receita a
+        dividir pelas noites), e não há soma de linhas que lhes dê o valor.
+
+        Este teste prova que o total do servidor é DIFERENTE da soma das linhas:
+        é precisamente por isso que a grelha tem de o deixar em paz (ver
+        `somaveis` em ReportGrid.tsx) em vez de o recalcular.
+        """
+        d = self.correr('pms_ocupacao', **{'from': str(self.ONTEM), 'to': str(self.HOJE)})
+        self.assertEqual(Decimal(str(d['totals']['occupancy'])), Decimal('62.5'),
+                         'A ocupação do período é as noites vendidas sobre as disponíveis '
+                         '(5 de 8 = 62,5%), não a soma das percentagens diárias.')
+        self.assertNotEqual(Decimal(str(d['totals']['occupancy'])),
+                            self._como_a_grelha_soma(d, 'occupancy'),
+                            'Se a soma das percentagens diárias der a ocupação do período, '
+                            'este cenário deixou de provar o que tem de provar.')
+        noites = Decimal(str(d['totals']['occupied']))
+        receita = Decimal(str(d['totals']['revenue']))
+        self.assertEqual(Decimal(str(d['totals']['adr'])),
+                         (receita / noites).quantize(Decimal('0.01')),
+                         'O ADR do período é a receita total sobre as noites vendidas.')
+
+    def test_nenhum_relatorio_do_catalogo_tem_um_rodape_que_o_ecra_desfaz(self):
+        """A VARREDURA — o teste que apanha o próximo.
+
+        Para cada um dos 51 relatórios: se o total do servidor não é a soma
+        pesada das linhas, então o ecrã TEM de o deixar em paz — e para isso o
+        contrato exige que a diferença seja intencional (um rácio, um derivado),
+        não um `_peso` que alguém se esqueceu de pôr.
+
+        Os que aqui aparecem estão na lista com o motivo. Um relatório novo que
+        apareça sem motivo torna este teste vermelho, que é o que se quer: é um
+        rodapé que o ecrã vai mostrar errado, e ninguém dava por isso.
+        """
+        # Total que NÃO é uma soma das linhas, por ser um rácio ou um derivado
+        # do período — a grelha mostra o número do servidor e diz "do período".
+        POR_MOTIVO = {
+            ('pms_ocupacao', 'occupancy'): 'percentagem do período',
+            ('pms_ocupacao', 'adr'): 'receita / noites do período',
+            ('pms_ocupacao', 'revpar'): 'receita / quartos-noite do período',
+            ('pms_depositos', 'pendente'): 'derivado: só os depósitos por receber',
+            # A coluna "Falhou" diz SIM/vazio (lê-se melhor assim), e o total é
+            # a CONTAGEM das que falharam. A grelha somava "SIM" como zero e o
+            # rodapé de um relatório de SEGURANÇA dizia 0 tentativas falhadas
+            # onde houve 2 — agora fica o número do servidor.
+            ('sy_acessos', 'failed'): 'contagem das linhas marcadas, não soma',
+        }
+        maus = []
+        for f in self.catalogo()['folders']:
+            for r in f['reports']:
+                resp = self.pedir(r['code'], **{'from': str(self.FORA), 'to': str(self.HOJE)})
+                if resp.status_code != 200:
+                    continue
+                d = resp.data
+                for coluna, total in (d.get('totals') or {}).items():
+                    try:
+                        servidor = Decimal(str(total))
+                    except Exception:
+                        continue
+                    if (r['code'], coluna) in POR_MOTIVO:
+                        continue
+                    grelha = self._como_a_grelha_soma(d, coluna)
+                    if abs(servidor - grelha) > Decimal('0.01'):
+                        maus.append(f'{r["code"]}.{coluna}: servidor={servidor} '
+                                    f'ecrã={grelha}')
+        self.assertEqual(maus, [],
+                         'Nestes relatórios o ecrã vai mostrar um total diferente do que o '
+                         f'servidor calculou: {maus}. Se a linha não deve contar, dá-lhe '
+                         f'`_peso` (0 ou −1); se o total é um rácio do período, acrescenta-o '
+                         f'a POR_MOTIVO com a razão.')

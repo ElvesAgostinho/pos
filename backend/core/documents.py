@@ -286,9 +286,25 @@ class DocumentLinksView(APIView):
                     'items': [f'{int(l.quantity)}x {l.description}' for l in t.lines.all()]}
                 # Recibo fiscal ligado
                 from fiscal.models import FiscalDocument
-                for fd in FiscalDocument.objects.filter(source_module='pos', source_ref=str(t.id)):
+                faturas = list(FiscalDocument.objects.filter(source_module='pos',
+                                                             source_ref=str(t.id)))
+                for fd in faturas:
                     links.append({'category': 'FATURACAO', 'label': 'Recibo fiscal', 'number': fd.invoice_no,
                                   'module': 'fiscal', 'id': str(fd.id), 'amount': str(fd.gross_total)})
+                # E A NOTA DE CRÉDITO QUE A DESFEZ.
+                #
+                # Uma NC não se liga à conta pelo `source_ref` (esse é único por
+                # conta — o constraint em fiscal/models.py existe justamente para
+                # não haver duas facturas da mesma venda): liga-se à FACTURA, pelo
+                # `reference_doc`. Sem isto, o arquivo da conta mostrava a factura
+                # e não o documento que lhe devolveu o dinheiro.
+                if faturas:
+                    for nc in FiscalDocument.objects.filter(
+                            reference_doc__in=[f.invoice_no for f in faturas],
+                            doc_type__is_rectifying=True).select_related('doc_type'):
+                        links.append({'category': 'FATURACAO', 'label': nc.doc_type.name,
+                                      'number': nc.invoice_no, 'module': 'fiscal',
+                                      'id': str(nc.id), 'amount': str(nc.gross_total)})
                 # Cobrança no quarto (folio)
                 from pms.models import FolioCharge
                 for ch in FolioCharge.objects.filter(source_reference=t.ticket_number):
