@@ -23,8 +23,8 @@ const PAGE_SIZE = 40;
  * existe em TODOS — "Incluir detalhes?" — e que é obrigatório escolher antes de
  * exibir. Sim mostra cada linha; Não mostra só o total (pos/reports.py:apply_detail).
  */
-function Campo({ x, params, setParams, armazens }: {
-  x: any; params: any; setParams: (v: any) => void; armazens: any[];
+function Campo({ x, params, setParams, armazens, hoteis }: {
+  x: any; params: any; setParams: (v: any) => void; armazens: any[]; hoteis: any[];
 }) {
   const val = params[x.key] ?? '';
   const cls = 'w-[240px] border border-[#E6E8EC] px-2 py-[5px] text-[12px] bg-white';
@@ -44,6 +44,17 @@ function Campo({ x, params, setParams, armazens }: {
         className={cls} style={inputStyle}>
         <option value="">Todos</option>
         {armazens.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
+      </select>
+    );
+  }
+  // A UNIDADE pelo NOME. Era um campo numérico: para ver o relatório do Resort
+  // havia que saber que o Resort é o 2 na base de dados.
+  if (x.type === 'hotel') {
+    return (
+      <select value={val} onChange={(e) => setParams({ ...params, [x.key]: e.target.value })}
+        className={cls} style={inputStyle}>
+        <option value="">Grupo (todas as unidades)</option>
+        {hoteis.map((h: any) => <option key={h.id} value={h.id}>{h.name}</option>)}
       </select>
     );
   }
@@ -75,6 +86,11 @@ export default function PosReports() {
   const { data: armazens = [] } = useQuery({
     queryKey: ['reports', 'wh'],
     queryFn: async () => (await apiClient.get('pos/config/warehouses/')).data,
+  });
+  // As unidades a que este utilizador tem acesso — para o campo "Unidade".
+  const { data: hoteis = [] } = useQuery({
+    queryKey: ['reports', 'hoteis'],
+    queryFn: async () => (await apiClient.get('org/hotels/')).data,
   });
 
   const correr = useMutation({
@@ -132,6 +148,7 @@ export default function PosReports() {
         </style></head><body>
         <h1>${d.title}</h1>
         <div class="meta">${d.company || ''} · NIF ${d.tax_id || ''}<br/>
+          ${d.hotel_scope ? `Unidade: ${d.hotel_scope}<br/>` : ''}
           ${d.folder} · ${d.params?.from ? `de ${d.params.from} a ${d.params.to}` : ''} ·
           Incluir detalhes? ${d.params?.detailed || 'Não'}<br/>
           Impresso por ${d.user || ''} em ${new Date(d.generated_at).toLocaleString('pt-PT')}</div>
@@ -258,6 +275,12 @@ export default function PosReports() {
                   )}
                 </div>
                 <div className="text-[12px] text-[#111827] mt-1"><b>{d.company}</b> · NIF {d.tax_id}</div>
+                {/* DE QUE CASA É ESTE RELATÓRIO. Num grupo, o relatório de uma
+                    unidade e o consolidado saíam da impressora iguais — e quem o
+                    lia três meses depois não tinha como saber qual era qual. */}
+                {d.hotel_scope && (
+                  <div className="text-[12px] text-[#111827]">Unidade: <b>{d.hotel_scope}</b></div>
+                )}
                 <div className="text-[12px] text-[#111827]">{d.folder}</div>
                 {d.params?.from && (
                   <div className="text-[12px] text-[#111827]">
@@ -318,7 +341,8 @@ export default function PosReports() {
                 {rep.params.map((x: any) => (
                   <div key={x.key} className="flex items-center gap-3">
                     <span className="w-[170px] flex-shrink-0 text-[12px] text-[#111827]">{x.label}:</span>
-                    <Campo x={x} params={params} setParams={setParams} armazens={armazens as any[]} />
+                    <Campo x={x} params={params} setParams={setParams}
+                      armazens={armazens as any[]} hoteis={hoteis as any[]} />
                   </div>
                 ))}
               </div>

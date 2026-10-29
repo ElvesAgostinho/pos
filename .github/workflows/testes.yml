@@ -85,9 +85,81 @@ jobs:
         working-directory: frontend
         run: npm run lint
 
+      - name: A aritmética do rodapé dos relatórios
+        working-directory: frontend
+        # Funções puras (unit/): não abrem browser nem precisam de servidores, e
+        # correm em segundos. É o teste que prova que o ECRÃ não estraga o número
+        # que o relatório manda — o servidor já tem os seus, mas a grelha
+        # recalcula os totais e era aí que o rodapé mentia.
+        run: npx playwright test --project=calculo
+
       - name: Build
         working-directory: frontend
         run: npx vite build
+
+  concorrencia:
+    name: As corridas, em PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # PORQUE É QUE ESTE TRABALHO EXISTE À PARTE.
+    #
+    # Os testes de concorrência (core/test_concorrencia.py) perguntam o que
+    # acontece quando duas pessoas fazem a mesma coisa ao mesmo tempo: dois
+    # empregados a cobrar a mesma conta, duas recepções a dar o mesmo quarto,
+    # dois armazéns a tirar a última garrafa. Em SQLite metade deles não se
+    # consegue correr — a base deixa UM escritor de cada vez e recusa a segunda
+    # escrita, e o teste salta a dizer isso em voz alta (skipTest) em vez de
+    # fingir que passou.
+    #
+    # Em produção o cliente corre PostgreSQL, que deixa as duas entrar e é onde
+    # a corrida existe de verdade. Instalar PostgreSQL na máquina de quem
+    # desenvolve custa mais de 1 GB num disco que já esteve a 99%; aqui é um
+    # contentor que o GitHub levanta e apaga, e não ocupa nada a ninguém.
+    #
+    # Corre a suite TODA em PostgreSQL, não só a concorrência: é a única vez em
+    # que o código vê a base de dados com que o cliente trabalha, e um
+    # comportamento diferente (uma ordenação, um tipo, uma transação) aparece
+    # aqui em vez de aparecer na casa do cliente.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: erp
+          POSTGRES_USER: erp
+          POSTGRES_PASSWORD: erp
+        ports: ['5432:5432']
+        # Sem isto o trabalho começa antes de a base aceitar ligações.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependências
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Correr a suite em PostgreSQL
+        working-directory: backend
+        env:
+          DJANGO_DEBUG: 'True'
+          DB_ENGINE: postgresql
+          DB_NAME: erp
+          DB_USER: erp
+          DB_PASSWORD: erp
+          DB_HOST: localhost
+          DB_PORT: '5432'
+        run: python manage.py test -v 1
 
   ecras:
     name: Os ecrãs, num browser a sério
@@ -149,7 +221,7 @@ jobs:
         working-directory: frontend
         env:
           NODE_OPTIONS: --max-old-space-size=3072
-        run: npx playwright test
+        run: npx playwright test --project=ecras
 
       - name: Guardar o que ficou no ecrã quando falhou
         if: failure()

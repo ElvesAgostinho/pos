@@ -1292,7 +1292,7 @@ CATALOG = [
          'params': P_PERIODO, 'fn': r_transferencias_dia},
     ]},
     {'code': '11', 'name': 'Depósitos', 'reports': [
-        {'code': 'dep_movimentos', 'name': '83/84. Depósitos Recebidos e Aplicados (Cash Advance)',
+        {'code': 'dep_movimentos', 'do_grupo': True, 'name': '83/84. Depósitos Recebidos e Aplicados (Cash Advance)',
          'params': P_PERIODO, 'fn': r_depositos},
     ]},
     {'code': '13', 'name': 'Previsão', 'reports': [
@@ -1320,13 +1320,13 @@ CATALOG = [
          'params': [], 'fn': r_contas_correntes},
     ]},
     {'code': '30', 'name': 'Gestão de Pontos', 'reports': [
-        {'code': 'pts_movimentos', 'name': 'Movimentos de pontos (ganhos e usados)',
+        {'code': 'pts_movimentos', 'do_grupo': True, 'name': 'Movimentos de pontos (ganhos e usados)',
          'params': P_PERIODO, 'fn': r_pontos_movimentos},
-        {'code': 'pts_saldos', 'name': 'Saldo de pontos por cliente',
+        {'code': 'pts_saldos', 'do_grupo': True, 'name': 'Saldo de pontos por cliente',
          'params': [], 'fn': r_pontos_saldos},
     ]},
     {'code': '99', 'name': 'Outros relatórios', 'reports': [
-        {'code': 'outros_giftcards', 'name': 'Cartões-prenda ativos (saldo por usar)',
+        {'code': 'outros_giftcards', 'do_grupo': True, 'name': 'Cartões-prenda ativos (saldo por usar)',
          'params': [], 'fn': r_gift_cards},
         {'code': 'outros_happyhour', 'name': '33. Happy Hour (configurados)',
          'params': [], 'fn': r_happy_hours},
@@ -1846,6 +1846,21 @@ def run(code, params, request=None):
     dados['folder'] = f"{pasta['code']} {pasta['name']}"
     dados['params'] = params
     dados['hotel'] = hid
-    dados['hotel_scope'] = etiqueta
+    # HÁ RELATÓRIOS QUE NÃO SE SEPARAM POR UNIDADE, e é melhor dizê-lo do que
+    # fingir um filtro.
+    #
+    # Um adiantamento de cliente, um cartão de fidelização e um cartão-prenda
+    # são do GRUPO: o `EntityDeposit` liga-se ao cliente (e, quando há, ao
+    # documento), o movimento de cartão liga-se ao cliente, e o cartão-prenda a
+    # nada — nenhum deles sabe de que casa é, e nem deve: um cartão-prenda
+    # comprado no Lodge tem de ser aceite no Resort, e um adiantamento é um
+    # crédito do cliente ao grupo, não a uma recepção.
+    #
+    # Filtrá-los pelo pouco que há (o documento, a conta) dava um relatório
+    # meio-filtrado — pior do que um relatório de grupo assumido, porque quem o
+    # lê acredita que está completo. Então assume-se, e o cabeçalho impresso
+    # passa a dizê-lo.
+    dados['hotel_scope'] = ('Grupo — este relatório não se separa por unidade'
+                            if rep.get('do_grupo') else etiqueta)
     dados['generated_at'] = timezone.now()
     return dados

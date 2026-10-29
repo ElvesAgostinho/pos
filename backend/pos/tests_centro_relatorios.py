@@ -1373,3 +1373,109 @@ class ORodapeNaoMenteTests(CasaCheia):
                          f'servidor calculou: {maus}. Se a linha não deve contar, dá-lhe '
                          f'`_peso` (0 ou −1); se o total é um rácio do período, acrescenta-o '
                          f'a POR_MOTIVO com a razão.')
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 6 · O ALOJAMENTO — o que é consumo, o que é pagamento, e o que não tem quarto
+# ══════════════════════════════════════════════════════════════════════════════
+class OAlojamentoContaCertoTests(CasaCheia):
+
+    def test_um_pagamento_nao_entra_nos_consumos(self):
+        """A conta do hóspede tem 25 000 Kz de alojamento, 8 000 de F&B e um
+        pagamento de 20 000.
+
+        Os consumos são 33 000 Kz. O total somava os três e dava 53 000 — nem o
+        que o hóspede consumiu, nem o que pagou, nem o que deve. Na conta do
+        hóspede um pagamento é um lançamento como os outros (gravado em
+        positivo; o que lhe dá o sinal é o tipo), e é por isso que escapava.
+        """
+        d = self.periodo('pms_consumos')
+        self.assertEqual(self.total(d, 'amount'), Decimal('33000'),
+                         'Os consumos do período são 33 000 Kz. Se der 53 000, o pagamento '
+                         'de 20 000 está a contar como consumo.')
+        tipos = {r['kind']: r for r in d['rows']}
+        self.assertIn('Pagamento', tipos,
+                      'A linha do pagamento tem de FICAR À VISTA — esconder lançamentos de '
+                      'uma conta é o que nunca se pode fazer.')
+        self.assertEqual(tipos['Pagamento']['_peso'], 0,
+                         'O pagamento aparece mas pesa zero no total dos consumos.')
+        self.assertEqual(tipos['Alojamento']['_peso'], 1)
+        self.assertEqual(d['totals']['count'], 2,
+                         'Dois consumos lançados (alojamento e F&B). Três é contar o '
+                         'pagamento como um consumo.')
+
+    def test_uma_tarefa_sem_quarto_nao_desaparece_da_governanta(self):
+        """O relatório percorre os QUARTOS, e por isso só via tarefas que têm um.
+
+        Mas `HousekeepingTask.room` é anulável: uma tarefa pode nascer sem
+        quarto (limpar a piscina, arranjar o elevador) e — pior — uma tarefa
+        cujo quarto foi apagado fica com `room=NULL` (`on_delete=SET_NULL`).
+        Essas desapareciam do único sítio onde as tarefas pendentes se contam:
+        ficavam por fazer e ninguém sabia que existiam.
+        """
+        from pms.models import HousekeepingTask
+        antes = self.total(self.correr('pms_governanta'), 'tasks')
+        HousekeepingTask.objects.create(hotel=self.hotel, title='Limpar a piscina',
+                                        task_type='CLEANING', status='PENDING')
+        d = self.correr('pms_governanta')
+        self.assertEqual(self.total(d, 'tasks'), antes + 1,
+                         'A tarefa sem quarto não entrou na contagem das tarefas por fazer.')
+        linha = self.linha(d, 'room', '(sem quarto)')
+        self.assertEqual(linha['tasks'], 1)
+        self.assertIn('piscina', linha['detail'],
+                      'A linha tem de dizer QUE tarefas são, senão conta-se um número que '
+                      'ninguém sabe o que é.')
+
+    def test_uma_tarefa_feita_nao_conta_mesmo_sem_quarto(self):
+        from pms.models import HousekeepingTask
+        antes = self.total(self.correr('pms_governanta'), 'tasks')
+        HousekeepingTask.objects.create(hotel=self.hotel, title='Já tratada',
+                                        task_type='CLEANING', status='DONE')
+        self.assertEqual(self.total(self.correr('pms_governanta'), 'tasks'), antes,
+                         'Uma tarefa FEITA entrou nas tarefas por fazer.')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 7 · O CABEÇALHO — de que casa é este papel
+# ══════════════════════════════════════════════════════════════════════════════
+class OPapelDizDeQuemETests(CasaCheia):
+
+    def test_o_relatorio_diz_a_unidade_a_que_pertence(self):
+        """Num grupo, o relatório de uma unidade e o consolidado saíam da
+        impressora iguais — e quem os lia três meses depois não tinha como
+        saber qual era qual."""
+        d = self.correr('rec_dia', hotel=self.hotel.id,
+                        **{'from': str(self.ONTEM), 'to': str(self.HOJE)})
+        self.assertEqual(d['hotel_scope'], self.hotel.name,
+                         'O cabeçalho tem de dizer o NOME da unidade.')
+
+    def test_o_consolidado_diz_por_palavras_que_e_consolidado(self):
+        d = self.periodo('rec_dia')
+        self.assertTrue(d['hotel_scope'],
+                        'Um relatório de grupo tem de o dizer, não ficar em branco — '
+                        'um cabeçalho vazio lê-se como se fosse de uma casa só.')
+
+    def test_um_relatorio_que_nao_se_separa_por_unidade_diz_isso(self):
+        """Um adiantamento de cliente, um cartão de fidelização e um
+        cartão-prenda são do GRUPO: nenhum deles sabe de que casa é, e nem
+        deve (um cartão-prenda comprado numa casa tem de ser aceite na outra).
+
+        Filtrá-los pelo pouco que há dava um relatório meio-filtrado — pior do
+        que um relatório de grupo assumido, porque quem o lê acredita que está
+        completo. Então assume-se, e o cabeçalho impresso di-lo.
+        """
+        for code in ('dep_movimentos', 'pts_movimentos', 'pts_saldos', 'outros_giftcards'):
+            d = self.correr(code, hotel=self.hotel.id,
+                            **{'from': str(self.ONTEM), 'to': str(self.HOJE)})
+            self.assertIn('Grupo', d['hotel_scope'],
+                          f'{code} aceitou uma unidade e não avisa que não a respeita: '
+                          f'"{d["hotel_scope"]}".')
+
+    def test_o_relatorio_de_uma_casa_continua_a_dizer_a_casa(self):
+        """A marca "do grupo" é só dos quatro — não pode ter contaminado o
+        resto do catálogo."""
+        for code in ('rec_dia', 'fat_iva', 'cx_sessoes', 'fb_margem'):
+            d = self.correr(code, hotel=self.hotel.id,
+                            **{'from': str(self.ONTEM), 'to': str(self.HOJE)})
+            self.assertEqual(d['hotel_scope'], self.hotel.name,
+                             f'{code} deixou de dizer de que unidade é.')
+

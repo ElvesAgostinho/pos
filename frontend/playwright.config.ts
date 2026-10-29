@@ -7,7 +7,19 @@ import { defineConfig } from '@playwright/test';
  * corre os testes, para poder ver o que ficou no ecrã se algo falhar.
  */
 export default defineConfig({
-  testDir: './e2e',
+  // DOIS CONJUNTOS, porque têm necessidades opostas:
+  //
+  //   · `calculo` (unit/) — a aritmética do rodapé dos relatórios. São funções
+  //     puras: não abrem browser nem precisam de servidor nenhum, e correm em
+  //     milissegundos. Ficam aqui, no runner que o projecto já tem, em vez de
+  //     se instalar um segundo runner só para elas.
+  //   · `ecras` (e2e/) — o sistema a correr, com backend e vite de pé.
+  //
+  // Correr só a aritmética:  npx playwright test --project=calculo
+  projects: [
+    { name: 'calculo', testDir: './unit' },
+    { name: 'ecras', testDir: './e2e' },
+  ],
   timeout: 90_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

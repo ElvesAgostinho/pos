@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { inputStyle, money, Glyph } from './kit';
+import {
+  calcularTotais, eDinheiro, num as numDoRodape, quaisSaoSomaveis, rodapeEDoPeriodo,
+  type Coluna,
+} from './rodape';
 
 const inp = 'border border-[#E6E8EC] px-2 py-[2px] text-[11px] bg-white';
 
@@ -35,10 +39,12 @@ const OPS: [string, string][] = [
   ['nempty', 'não está vazio'],
 ];
 
-const num = (v: any) => {
-  const n = Number(String(v ?? '').replace(/\s/g, '').replace(',', '.'));
-  return isNaN(n) ? null : n;
-};
+// `num` e `isMoney` vivem em rodape.ts: são a mesma leitura que o rodapé faz, e
+// duas cópias da mesma leitura é como o ecrã e o total passam a discordar.
+// Ficam no módulo (e não dentro do componente) para os `useMemo` não as terem
+// de declarar como dependência a cada render.
+const num = numDoRodape;
+const isMoney = eDinheiro;
 
 function bate(valor: any, c: Cond) {
   const s = String(valor ?? '').toLowerCase();
@@ -93,7 +99,6 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
   const [colsPainel, setColsPainel] = useState(false);
 
   const visiveis = cols.filter((c) => !ocultas.includes(c[0]));
-  const isMoney = (c: any) => c[2] === 'money';
   const fmt = (c: any, v: any) => (isMoney(c) ? money(v) : (v ?? ''));
 
   const linhas = useMemo(() => {
@@ -145,71 +150,16 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
 
   const filtrado = linhas.length !== d.rows.length;
 
-  // ── O RODAPÉ ───────────────────────────────────────────────────────────────
-  //
-  // A grelha recalcula os totais sobre as linhas FILTRADAS, porque o rodapé tem
-  // de falar do que está no ecrã. Fazia-o somando as colunas à bruta, e isso
-  // DESFAZIA a conta que o servidor tinha feito. Em cinco relatórios o número
-  // que o contabilista lia estava errado:
-  //
-  //   · Documentos: somava a factura ANULADA e a NOTA DE CRÉDITO como vendas
-  //     (23 940 Kz num dia em que a casa facturou 15 960);
-  //   · Depósitos: somava a utilização ao adiantamento (70 000 onde há 30 000);
-  //   · Pontos: somava os resgatados aos ganhos;
-  //   · Reservas: somava as canceladas e os no-shows à receita;
-  //   · Ocupação: somava percentagens — 125% de ocupação, e um ADR que é a
-  //     soma de dois ADR.
-  //
-  // Duas regras resolvem os cinco, e qualquer relatório futuro:
-  //
-  //   1. `_peso` — o servidor diz quanto PESA cada linha no total (1 normal, 0
-  //      uma factura anulada ou uma reserva cancelada, −1 uma nota de crédito
-  //      ou uma utilização de depósito). Uma linha sem `_peso` vale 1.
-  //   2. UM TOTAL QUE NÃO É UMA SOMA NÃO SE RECALCULA. Percentagens, ADR e
-  //      RevPAR são rácios do período: não há soma de linhas que lhes dê o
-  //      valor. Verifica-se COM AS LINHAS TODAS se o total do servidor é a soma
-  //      pesada delas; quando não é, o número do servidor fica como está e o
-  //      rodapé diz que é do período, em vez de inventar um a somar.
-  const peso = (r: any) => (r._peso === undefined ? 1 : (num(r._peso) ?? 1));
-  const somaPesada = (rs: any[], k: string) =>
-    rs.reduce((s, r) => s + (num(r[k]) ?? 0) * peso(r), 0);
-
-  // Que totais do servidor SÃO uma soma das linhas (e por isso se podem
-  // recalcular sobre um subconjunto). Mede-se uma vez, com as linhas todas.
-  const somaveis = useMemo(() => {
-    const ok: Record<string, boolean> = {};
-    Object.keys(d.totals || {}).forEach((k) => {
-      const servidor = num(d.totals[k]);
-      if (servidor === null) { ok[k] = false; return; }
-      ok[k] = Math.abs(servidor - somaPesada(d.rows, k)) < 0.01;
-    });
-    return ok;
-  }, [d.rows, d.totals]);
-
-  const totais = useMemo(() => {
-    const t: Record<string, number | string> = {};
-    cols.forEach((c) => {
-      const k = c[0];
-      const temDoServidor = d.totals?.[k] !== undefined;
-      if (!isMoney(c) && !temDoServidor) return;
-      if (temDoServidor && (!filtrado || !somaveis[k])) {
-        t[k] = d.totals[k];           // o número do servidor, tal como veio
-        return;
-      }
-      t[k] = somaPesada(linhas, k);
-    });
-    // Totais que o servidor manda e que não são colunas da grelha (derivados,
-    // como "pendente") não se recalculam — mostram-se como vieram.
-    Object.entries(d.totals || {}).forEach(([k, v]) => {
-      if (t[k] === undefined) t[k] = v as any;
-    });
-    return t;
-  }, [linhas, cols, filtrado, somaveis, d.totals]);
-
-  // Um rodapé recalculado sobre um filtro diz-se "filtrado"; um que traz
-  // rácios do período inteiro tem de o dizer, senão quem filtra acredita que
-  // a percentagem é da selecção.
-  const rodapeDoPeriodo = filtrado && Object.keys(d.totals || {}).some((k) => !somaveis[k]);
+  // O RODAPÉ vive em `rodape.ts` — a aritmética está lá, com a explicação do
+  // que corrige e porquê, e é lá que é TESTADA (unit/rodape.spec.ts). Ficava
+  // aqui dentro do componente, onde nenhum teste lhe chega: um rodapé que
+  // mostra ao contabilista um número errado não pode depender de alguém abrir
+  // o ecrã para dar por isso.
+  const somaveis = useMemo(() => quaisSaoSomaveis(d.rows, d.totals), [d.rows, d.totals]);
+  const totais = useMemo(
+    () => calcularTotais(cols as Coluna[], linhas, d.totals, filtrado, somaveis),
+    [linhas, cols, filtrado, somaveis, d.totals]);
+  const rodapeDoPeriodo = rodapeEDoPeriodo(filtrado, d.totals, somaveis);
 
   return (
     <>

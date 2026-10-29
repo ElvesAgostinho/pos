@@ -4472,7 +4472,12 @@ class PosReportRunView(APIView):
         code = request.data.get('code')
         params = request.data.get('params') or {}
         try:
-            dados = reports.run(code, params)
+            # O `request` VAI. Sem ele, `escopo_hotel` descobria o utilizador por
+            # um caminho indirecto (o nome que o middleware da auditoria deixou
+            # no contexto) — e era desse nome que dependia a verificação de que
+            # a pessoa tem acesso à unidade que está a pedir. Uma verificação de
+            # acesso não se apoia num middleware que alguém pode desligar.
+            dados = reports.run(code, params, request=request)
         except KeyError:
             return Response({'detail': f'Relatório desconhecido: {code}'}, status=404)
         cfg = FiscalConfig.get()

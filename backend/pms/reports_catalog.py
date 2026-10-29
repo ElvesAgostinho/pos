@@ -355,6 +355,20 @@ def r_consumos(p):
 
     Mostra de onde vem o dinheiro de uma estadia: é aqui que se vê se o
     restaurante está a puxar a conta do quarto ou se o hóspede só dorme.
+
+    UM PAGAMENTO NÃO É UM CONSUMO. Na conta do hóspede, um pagamento é um
+    lançamento como os outros (`FolioCharge` com `charge_type='PAYMENT'`,
+    gravado em positivo — o que lhe dá o sinal é o tipo, ver `balance` em
+    pms/models.py: consumos menos pagamentos). O total somava-o aos consumos, e
+    dava um número que não quer dizer nada: numa conta com 33 000 Kz de
+    consumos e 20 000 pagos, somava 53 000 — nem o que o hóspede consumiu, nem
+    o que deve, nem o que pagou.
+
+    A linha do pagamento FICA À VISTA (é informação da conta, e esconder
+    lançamentos de uma conta é o que nunca se pode fazer), mas pesa zero no
+    total: o rodapé deste relatório são os consumos. Quem quer o saldo tem o
+    relatório das contas em aberto, que mostra consumos, pago e saldo lado a
+    lado.
     """
     from .models import FolioCharge
     ini, fim = _periodo(p)
@@ -363,17 +377,21 @@ def r_consumos(p):
         is_void=False, created_at__date__gte=ini, created_at__date__lte=fim)
     for c in qs:
         nome = c.get_charge_type_display()
-        linha = porTipo.setdefault(nome, {'kind': nome, 'count': 0, 'amount': 0.0})
+        linha = porTipo.setdefault(nome, {'kind': nome, 'count': 0, 'amount': 0.0,
+                                          # O peso com que a linha entra no rodapé
+                                          # do ecrã (ver `_peso` em ReportGrid.tsx).
+                                          '_peso': (0 if c.charge_type == 'PAYMENT' else 1)})
         linha['count'] += 1
         linha['amount'] += float(c.amount)
     linhas = sorted(porTipo.values(), key=lambda x: -x['amount'])
     for l in linhas:
         l['amount'] = round(l['amount'], 2)
+    consumos = [l for l in linhas if l['_peso']]
     return {
         'columns': [('kind', 'Tipo'), ('count', 'Lançamentos'), ('amount', 'Valor', 'money')],
         'rows': linhas,
-        'totals': {'count': sum(l['count'] for l in linhas),
-                   'amount': round(sum(l['amount'] for l in linhas), 2)},
+        'totals': {'count': sum(l['count'] for l in consumos),
+                   'amount': round(sum(l['amount'] for l in consumos), 2)},
     }
 
 
@@ -394,6 +412,26 @@ def r_governanta(p):
             'detail': ' · '.join(t.title for t in pendentes[:3]),
         })
     linhas.sort(key=lambda x: x['room'])
+
+    # AS TAREFAS SEM QUARTO. Este relatório percorre os quartos, e por isso só
+    # via tarefas que têm um. Mas `HousekeepingTask.room` é anulável — uma
+    # tarefa pode nascer sem quarto (limpar a piscina, arranjar o elevador) e,
+    # pior, uma tarefa cujo quarto foi apagado fica com `room=NULL`
+    # (`on_delete=SET_NULL`). Essas desapareciam do único sítio onde as tarefas
+    # pendentes se contam: ficavam por fazer e ninguém sabia que existiam.
+    #
+    # A tarefa tem `hotel` próprio, que é o que permite trazê-las sem depender
+    # do quarto — e é por isso que esse campo existe no modelo.
+    soltas = _so_do_hotel(HousekeepingTask.objects.filter(room__isnull=True), p)
+    soltas = soltas.exclude(status='DONE')
+    n_soltas = soltas.count()
+    if n_soltas:
+        linhas.append({
+            'room': '(sem quarto)',
+            'category': '', 'floor': '', 'status': '—',
+            'tasks': n_soltas,
+            'detail': ' · '.join(t.title for t in soltas[:3]),
+        })
     return {
         'columns': [('room', 'Quarto'), ('category', 'Categoria'), ('floor', 'Piso'),
                     ('status', 'Estado'), ('tasks', 'Tarefas por fazer'), ('detail', 'Quais')],
@@ -478,7 +516,12 @@ P_PERIODO = [
 # Acrescenta-se no fim, uma vez, em vez de em cada entrada — um relatório novo
 # já nasce com a pergunta sem ninguém se lembrar de a escrever (é o mesmo que o
 # motor faz com o "Incluir detalhes?").
-P_UNIDADE = {'key': 'hotel', 'label': 'Unidade (vazio = grupo consolidado)', 'type': 'number'}
+# `type: 'hotel'` faz o ecrã mostrar a LISTA das unidades. Era `'number'`, e
+# um campo numérico obrigava o dono a saber de cabeça o id da casa na base de
+# dados — e a escrever 2 para ver o Resort. Quem não sabia o número deixava o
+# campo vazio e via o grupo consolidado sem perceber que era isso que estava a
+# ver.
+P_UNIDADE = {'key': 'hotel', 'label': 'Unidade (vazio = grupo consolidado)', 'type': 'hotel'}
 
 # As pastas que o PMS acrescenta ao catálogo. Os códigos começam por 'PM' para
 # não chocarem com os numerados do POS e para o dono perceber, pela pasta, de
