@@ -135,6 +135,35 @@ class PublicarUmaVersaoTests(APITestCase):
         self.assertIn('support.py', texto, 'Recusou sem dizer onde se corrige.')
         self.assertFalse(SystemRelease.objects.filter(version='1.1.0').exists())
 
+    def test_um_pacote_com_barras_invertidas_e_aceite(self):
+        """O MESMO SCRIPT, DUAS MÁQUINAS, DOIS PACOTES DIFERENTES POR DENTRO.
+
+        A norma do zip manda separar pastas com uma barra normal, e quase tudo o
+        faz assim. O `Compress-Archive` do Windows PowerShell 5.1 — o que está
+        instalado na maior parte das máquinas Windows — usa a barra invertida.
+        Procurar "app/" num pacote desses não encontra nada: o PCC recusava-o a
+        dizer que lhe faltava o backend, com o backend lá dentro, e o atualizador
+        do cliente teria feito exactamente o mesmo do outro lado.
+
+        Foi assim que um pacote bom ficou dias sem se conseguir publicar.
+        """
+        import io as _io
+        import zipfile
+
+        B = chr(92)
+        buf = _io.BytesIO()
+        with zipfile.ZipFile(buf, 'w') as zf:
+            zf.writestr(f'app{B}core{B}support.py', "APP_VERSION = '1.1.0'" + chr(10))
+            zf.writestr(f'app{B}manage.py', '# manage')
+            zf.writestr(f'webapp{B}index.html', '<h1>site</h1>')
+        r = self.client.post('/api/clm/releases/', {
+            'version': '1.1.0',
+            'package': SimpleUploadedFile('MwanaLodge-Update-1.1.0.zip', buf.getvalue(),
+                                          content_type='application/zip')},
+            format='multipart')
+        self.assertEqual(r.status_code, 201,
+                         f'Um pacote com barras invertidas foi recusado: {r.content[:300]}')
+
     def test_um_zip_que_nao_e_do_sistema_e_recusado(self):
         """Um .zip qualquer — as fotos do hotel, escolhidas por engano — não é
         uma versão, e publicá-lo era mandar o cliente descarregar fotografias."""

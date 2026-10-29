@@ -126,7 +126,13 @@ class SystemReleaseSerializer(serializers.ModelSerializer):
         try:
             ficheiro.seek(0)
             with zipfile.ZipFile(ficheiro) as zf:
-                nomes = zf.namelist()
+                # AS BARRAS: o Compress-Archive do Windows PowerShell 5.1 escreve
+                # "app\\core\\support.py" em vez de "app/core/support.py". O mesmo
+                # script, corrido em duas máquinas, produz pacotes que por fora são
+                # iguais e por dentro não — e procurar "app/" num desses não
+                # encontrava nada. Recusava-se o pacote a dizer que lhe faltava o
+                # que lá estava.
+                nomes = [n.replace('\\', '/') for n in zf.namelist()]
                 # O MESMO CONTRATO QUE O ATUALIZADOR EXIGE, e nem mais um grão.
                 #
                 # Isto exigia `core/support.py` lá dentro e recusava tudo o resto
@@ -145,7 +151,8 @@ class SystemReleaseSerializer(serializers.ModelSerializer):
                             f'use o ficheiro que o build_atualizacao.ps1 cria em '
                             f'instalador\\Output\\, tal como ele sai.'],
                     })
-                alvo = next((n for n in nomes if n.endswith('core/support.py')), None)
+                alvo = next((n for n in zf.namelist()
+                             if n.replace('\\', '/').endswith('core/support.py')), None)
                 if not alvo:
                     # Tem a forma certa mas não traz o support.py (um pacote só do
                     # site, por exemplo). Não se inventa versão nenhuma: passa.

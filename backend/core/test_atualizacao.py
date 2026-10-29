@@ -129,6 +129,30 @@ class AtualizacaoNaoDerrubaAConfiguracaoTests(unittest.TestCase):
         finally:
             sys.modules.pop('requests', None)
 
+    def test_um_pacote_com_barras_invertidas_aplica_se_na_mesma(self):
+        """O outro lado do mesmo defeito, e o mais caro dos dois.
+
+        Se o PCC aceitasse o pacote e o atualizador não o soubesse ler, o cliente
+        carregava em "Atualizar agora", via os serviços pararem, e a atualização
+        falhava a meio — com a instalação já tocada. Aqui a verificação é sobre o
+        resultado: os ficheiros do pacote chegaram ao sítio certo.
+        """
+        B = chr(92)
+        pacote = self._pacote({
+            f'app{B}core{B}support.py': "APP_VERSION = '1.1.0'" + chr(10),
+            f'app{B}core{B}novo.py': '# novo',
+            f'webapp{B}index.html': '<h1>versao nova</h1>',
+        })
+        self._aplicar(pacote)
+
+        self.assertIn('1.1.0', (self.app / 'core' / 'support.py').read_text(encoding='utf-8'),
+                      'Um pacote com barras invertidas não chegou a aplicar-se: o cliente '
+                      'via os serviços pararem e a atualização falhar.')
+        self.assertTrue((self.app / 'core' / 'novo.py').exists())
+        self.assertIn('nova', (self.app / 'webapp' / 'index.html').read_text(encoding='utf-8'))
+        self.assertEqual((self.app / '.env').read_text(encoding='utf-8'),
+                         'SECRET_KEY=a-chave-desta-casa' + chr(10))
+
     # ── o que NUNCA pode desaparecer ─────────────────────────────────────
     def test_a_chave_desta_casa_sobrevive_a_atualizacao(self):
         """O `.env` tem a SECRET_KEY que assina as sessões e a licença. Reescrevê-la

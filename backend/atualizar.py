@@ -80,6 +80,27 @@ def _repor_backup(log):
     log.write('Versão anterior reposta.')
 
 
+def _a_direito(nome):
+    """O nome de uma entrada do zip, sempre com "/".
+
+
+    A norma do formato zip manda separar pastas com "/", e quase todas as
+    ferramentas o fazem. O `Compress-Archive` do Windows PowerShell 5.1 — que é o
+    que está instalado na maior parte das máquinas Windows — escreve "\". O mesmo
+    script, corrido em duas máquinas diferentes, produz pacotes que por fora são
+    iguais e por dentro não.
+
+    Quem procurasse `app/` num pacote desses não encontrava nada: nem o PCC ao
+    conferir, nem este atualizador ao extrair. O pacote era recusado com "não tem
+    a forma esperada" — a dizer que lhe faltava o que lá estava.
+
+    Normaliza-se à entrada. Não se corrige a origem porque os pacotes já feitos
+    continuariam a falhar, e porque o lado que LÊ é o único que pode garantir que
+    lê tudo.
+    """
+    return nome.replace('\\', '/')
+
+
 def aplicar(url: str):
     log = Log(LOG_PATH)
     log.write(f'=== Atualização a começar — pacote: {url} ===')
@@ -95,7 +116,9 @@ def aplicar(url: str):
         log.write(f'Descarregado: {len(r.content)} bytes.')
 
         with zipfile.ZipFile(pacote) as zf:
-            nomes = zf.namelist()
+            # AS BARRAS DENTRO DO .ZIP — ver a nota em `_a_direito`.
+            nomes = [_a_direito(n) for n in zf.namelist()]
+            originais = dict(zip(nomes, zf.namelist()))
             if not any(n.startswith('app/') or n.startswith('webapp/') for n in nomes):
                 raise RuntimeError('O pacote não parece ter a forma esperada (sem app/ nem webapp/).')
 
@@ -126,7 +149,9 @@ def aplicar(url: str):
                     destino.mkdir(parents=True, exist_ok=True)
                     continue
                 destino.parent.mkdir(parents=True, exist_ok=True)
-                with zf.open(nome) as origem, open(destino, 'wb') as dest:
+                # Lê-se pelo nome ORIGINAL (é esse que o zip conhece) e escreve-se
+                # no caminho já endireitado.
+                with zf.open(originais[nome]) as origem, open(destino, 'wb') as dest:
                     shutil.copyfileobj(origem, dest)
 
         # 5) Base de dados + estáticos + catálogo — mesma sequência do configurar.py.
