@@ -45,8 +45,17 @@ COPY --from=frontend /src/frontend_pcc/dist ./webapp
 # licenciamento"). Sem ela no volume, cada redeploy destruiria a chave.
 RUN mkdir -p /app/dados/media /app/dados/staticfiles /app/dados/logs /app/dados/keys
 
+# SQLITE_PATH APONTA PARA O VOLUME, e é uma rede de segurança, não o plano.
+#
+# O plano é PostgreSQL (ver .env.example): o PCC é o registo central de TODOS os
+# clientes. Mas se o `DB_ENGINE` faltar na configuração do painel, o Django cai
+# em SQLite — e sem esta linha a base nascia em `/app/db.sqlite3`, dentro da
+# imagem. Arrancava, funcionava, e o PRIMEIRO REDEPLOY apagava as licenças, os
+# clientes e as chaves AGT todas, sem erro nenhum pelo caminho. Uma perda de
+# dados silenciosa não pode depender de alguém se lembrar de uma variável.
 ENV SYSTEM_MODE=PCC \
     MWANA_WEBAPP=/app/webapp \
+    SQLITE_PATH=/app/dados/pcc.sqlite3 \
     DJANGO_MEDIA_ROOT=/app/dados/media \
     DJANGO_STATIC_ROOT=/app/dados/staticfiles \
     LICENSING_KEYS_DIR=/app/dados/keys

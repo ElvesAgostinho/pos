@@ -187,6 +187,15 @@ Prioridade da cópia, da mais para a menos crítica:
 2. `dados/media/` — logótipos e imagens carregadas; recriável a incómodo.
 3. `dados/logs/` — descartável, só para diagnóstico.
 
+> **Se aparecer um `dados/pcc.sqlite3` no volume, o Postgres não está ligado.**
+> O Dockerfile aponta o SQLite para dentro do volume de propósito, como rede de
+> segurança: sem essa linha, uma base criada por engano nascia dentro da imagem
+> e o redeploy seguinte apagava as licenças e os clientes sem dizer nada. Mas o
+> ficheiro aparecer significa que o `DB_ENGINE=postgresql` (e as credenciais)
+> não chegaram ao serviço — o arranque também o diz no log. Corrija as
+> variáveis no painel; o que já estiver nesse ficheiro tem de ser passado para o
+> Postgres à mão, porque são duas bases diferentes.
+
 Forma simples de copiar o volume para fora da VPS de vez em quando (do seu
 computador, com acesso SSH à VPS):
 

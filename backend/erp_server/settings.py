@@ -73,6 +73,7 @@ INSTALLED_APPS = [
 import sys
 
 RUN_MODE = os.environ.get('SYSTEM_MODE', 'ERP')
+PCC = RUN_MODE == 'PCC'
 
 if RUN_MODE == 'PCC':
     # No Platform Control Center ativamos o CLM. Como o `clm` já consta da lista base
@@ -257,6 +258,28 @@ else:
             "OPTIONS": {"timeout": 20, "transaction_mode": "IMMEDIATE"},
         }
     }
+
+# O PCC EM SQLITE É UM AVISO, NÃO UM DETALHE.
+#
+# O PCC é o registo central de todos os clientes: licenças, chaves AGT, versões
+# publicadas. Em SQLite isso vive num ficheiro — e num contentor (EasyPanel), um
+# ficheiro fora do volume persistente desaparece no redeploy seguinte, sem erro
+# nenhum pelo caminho. O Dockerfile já põe o `SQLITE_PATH` dentro do volume por
+# precaução, mas quem configura merece saber que não está onde devia estar.
+#
+# Não se recusa o arranque: há razões legítimas para correr o PCC em SQLite (uma
+# demonstração, um ensaio local), e um sistema que se recusa a arrancar a meio de
+# um deploy é pior do que um que avisa. Avisa-se — no log do arranque, onde quem
+# está a fazer o deploy está a olhar.
+if PCC and DATABASES['default']['ENGINE'].endswith('sqlite3') and not DEBUG:
+    import warnings as _avisos
+    _avisos.warn(
+        'O PCC está a correr em SQLite ("%s") e não em PostgreSQL. O PCC guarda as '
+        'licenças, as chaves AGT e as versões de TODOS os clientes: ponha '
+        'DB_ENGINE=postgresql e as credenciais da base (ver deploy/pcc/.env.example). '
+        'Num contentor, uma base SQLite fora do volume persistente é apagada no '
+        'redeploy seguinte.' % DATABASES['default']['NAME'],
+        RuntimeWarning, stacklevel=2)
 
 # Cache partilhado (Redis em produção) — acelera e permite escalar horizontalmente
 # (várias instâncias da app partilham cache/sessões). Sem REDIS_URL, usa memória local.
