@@ -346,7 +346,12 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             <div key={grp.key}>
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
                 className="w-full flex items-center justify-between px-3 py-1.5 text-[12px] font-bold uppercase tracking-tight border-b-2 hover:brightness-[0.98]"
-                style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 55%, #F1F2F4 100%)', borderBottomColor: TOKENS.border, color: TOKENS.selectedText }}>
+                style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 55%, #F1F2F4 100%)', borderBottomColor: TOKENS.border, color: TOKENS.textOnLight }}>
+                {/* `textOnLight` e NAO `selectedText`: este titulo esta
+                    sobre um fundo claro, nao sobre uma linha seleccionada.
+                    Usava o segundo e funcionava por os dois serem escuros;
+                    no dia em que o texto da seleccao passou a branco (para
+                    se ler sobre o azul da linha), este titulo desapareceu. */}
                 <span>{grp.title}</span>
                 <span className="text-[16px] leading-none text-[#6B7280]">{open[grp.key] ? '−' : '+'}</span>
               </button>

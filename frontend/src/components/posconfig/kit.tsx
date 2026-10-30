@@ -253,13 +253,26 @@ export function Field({ label, children, wide, empilhado }: {
     );
   }
   return (
-    <label className="flex items-center gap-2 text-[12px] min-w-0">
-      {/* `min-w` em vez de `w`: a caixa tem uma largura MÍNIMA (para as etiquetas
-          curtas alinharem umas com as outras) mas cresce quando o texto é mais
-          comprido, em vez de o deixar transbordar por cima do campo ao lado —
-          era o que acontecia com "Sub Família:" e "Pesquisa por texto livre:". */}
-      <span className={`text-[#111827] whitespace-nowrap ${wide ? '' : 'min-w-[74px]'} flex-shrink-0`}>{label}</span>
-      {children}
+    <label className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] min-w-0">
+      {/* A ETIQUETA TEM DE PODER ENCOLHER.
+          `min-w` dá-lhe uma largura mínima para as etiquetas curtas alinharem
+          umas com as outras. Mas com `flex-shrink-0` e `whitespace-nowrap` ela
+          deixava de poder encolher OU quebrar: numa célula estreita transbordava
+          e caía por cima da coluna ao lado — era o "GrupoSub Família:" escrito um
+          por cima do outro, visível numa janela de 1030px e invisível numa de
+          1920.
+          Agora encolhe e quebra em duas linhas quando é preciso. Uma etiqueta em
+          duas linhas lê-se; duas etiquetas sobrepostas não. */}
+      <span className={`text-[#111827] ${wide ? '' : 'min-w-[74px]'} shrink`}>{label}</span>
+      {/* E o campo também: sem `min-w-0` um `select` recusa-se a encolher abaixo
+          do seu conteúdo e empurra tudo para fora da célula. */}
+      {/* `flex-wrap` no pai + uma largura MÍNIMA aqui: quando a etiqueta e o
+          campo não cabem lado a lado, o campo passa para baixo em vez de
+          encolher até desaparecer. Era o que acontecia neste bloco de filtros:
+          a coluna tem ~90px, a etiqueta ocupa 74, e o `select` ficava com 8px —
+          invisível, e a etiqueta seguinte parecia estar por cima desta.
+          Um campo numa segunda linha lê-se; um campo de 8px não. */}
+      <span className="min-w-[110px] flex-1 flex items-center">{children}</span>
     </label>
   );
 }
