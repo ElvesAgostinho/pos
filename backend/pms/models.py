@@ -426,10 +426,20 @@ class FolioCharge(models.Model):
             #   que os substitui tem o direito de levar a mesma referência.
             models.UniqueConstraint(
                 fields=['folio', 'source_reference'],
+                # ESCRITO SEM `NOT`, de propósito — ver core/lookups.py.
+                #
+                #   ~Q(charge_type='FNB')  dava  NOT ([charge_type] = 'FNB')
+                #   ~Q(source_reference='') dava  NOT ([source_reference] = '')
+                #
+                # e o SQL Server não aceita `NOT` no predicado de um índice
+                # filtrado — recusa-o no parser. Com `__ne` sai `<>`, e
+                # `__gt=''` substitui o par "não é nulo E não é vazio" por um
+                # `> ''`, que já exclui o nulo (NULL > '' é NULL). A regra é a
+                # mesma; o que muda é a forma, e a forma é a que os três
+                # motores aceitam.
                 condition=(models.Q(is_void=False)
-                           & ~models.Q(charge_type='FNB')
-                           & models.Q(source_reference__isnull=False)
-                           & ~models.Q(source_reference='')),
+                           & models.Q(charge_type__ne='FNB')
+                           & models.Q(source_reference__gt='')),
                 name='folio_um_lancamento_por_origem',
             ),
         ]

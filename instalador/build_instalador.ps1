@@ -151,6 +151,29 @@ robocopy (Join-Path $Raiz 'backend') "$Pacote\app" /E /NFL /NDL /NJH /NJS `
 Copy-Item (Join-Path $Raiz 'frontend\dist') "$Pacote\app\webapp" -Recurse
 # o configurador viaja na raiz do pacote
 Copy-Item (Join-Path $PSScriptRoot 'configurar.py') $Pacote
+# O `preparar_base.py` vai ao lado: e ele que cria a base e o utilizador do
+# cliente durante a instalacao, para o tecnico nao ter de colar SQL a mao.
+# Sem este ficheiro no pacote, o configurador falha a importa-lo e a
+# instalacao para logo no primeiro passo da base de dados.
+Copy-Item (Join-Path $PSScriptRoot 'preparar_base.py') $Pacote
+
+# O DRIVER ODBC DA MICROSOFT, que vai dentro do setup.exe.
+#
+# Descarrega-se AQUI, na maquina do fornecedor, e nao vive no repositorio:
+# um binario de 4,7 MB no historico do git fica la para sempre e
+# desactualiza-se — e este e um componente de seguranca, que a Microsoft
+# actualiza. Guarda-se ao lado para os builds seguintes nao o irem buscar
+# outra vez (esta no .gitignore).
+$Msi = Join-Path $PSScriptRoot 'msodbcsql.msi'
+if (-not (Test-Path $Msi)) {
+    Write-Host '   a descarregar o ODBC Driver 18 da Microsoft...'
+    Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/?linkid=2280794' `
+                      -OutFile $Msi -UseBasicParsing
+}
+if ((Get-Item $Msi).Length -lt 1MB) {
+    Remove-Item $Msi -Force
+    throw 'A descarga do ODBC Driver nao trouxe um MSI valido. Verifique a ligacao a Internet e repita.'
+}
 # o endereço do PCC viaja ao lado — configurar.py lê-o dali e escreve-o no .env
 if (Test-Path $PccUrlFile) { Copy-Item $PccUrlFile $Pacote }
 
@@ -188,6 +211,12 @@ Invoke-WebRequest 'https://bootstrap.pypa.io/get-pip.py' -OutFile "$Pacote\pytho
 # um script fora do PATH) e qualquer um deles derrubava o build aqui.
 Invoke-Externo 'get-pip' { & "$Pacote\python\python.exe" "$Pacote\python\get-pip.py" --no-warn-script-location }
 Invoke-Externo 'pip install' { & "$Pacote\python\python.exe" -m pip install --no-warn-script-location -r (Join-Path $Raiz 'backend\requirements.txt') }
+# O MOTOR DO SQL SERVER vai TAMBEM no pacote Windows, porque o wizard
+# oferece essa opcao e o cliente nao instala pacotes Python a mao.
+# Fica num requirements a parte para nao arrastar o pyodbc para o
+# contentor Linux do PCC, que nunca fala com SQL Server
+# (ver backend/requirements-sqlserver.txt).
+Invoke-Externo 'pip install (SQL Server)' { & "$Pacote\python\python.exe" -m pip install --no-warn-script-location -r (Join-Path $Raiz 'backend\requirements-sqlserver.txt') }
 
 Write-Host "== 5/6 Serviços (WinSW) =="
 New-Item -ItemType Directory -Force "$Pacote\servicos" | Out-Null

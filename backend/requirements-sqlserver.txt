@@ -1,0 +1,20 @@
+# ============================================================================
+# SQL SERVER — dependências SÓ para quem escolhe esse motor no instalador.
+#
+# PORQUE É QUE ESTÃO À PARTE e não no requirements.txt:
+#
+# O `requirements.txt` é instalado em todo o lado, incluindo no contentor Linux
+# do PCC (deploy/pcc/Dockerfile). O driver do SQL Server arrasta o `pyodbc`, que
+# em Linux precisa do unixODBC do sistema para sequer importar — e o PCC nunca
+# fala com SQL Server. Pôr isto no ficheiro comum era arriscar partir o build do
+# PCC por uma dependência que ele não usa.
+#
+# Quem as instala é o `build_instalador.ps1`, dentro do Python embutido do
+# pacote Windows. O cliente que escolher SQLite ou PostgreSQL tem-nas instaladas
+# e nunca as carrega: o `erp_server/settings.py` só importa o motor escolhido.
+#
+# AINDA É PRECISO, FORA DAQUI: o "ODBC Driver 18 for SQL Server" da Microsoft,
+# que é software do sistema (não um pacote Python). O instalador verifica se
+# está presente e recusa avançar sem ele, com o nome exacto do que falta.
+# ============================================================================
+mssql-django==2.0.0      # motor Django para SQL Server (suporta Django 6.0)

@@ -74,7 +74,11 @@ def escrever_env(bd):
     a licença ativada. Se já existe, respeita-se."""
     env = APP / '.env'
     if env.exists():
-        return 'mantido (instalação existente)'
+        # Numa REINSTALAÇÃO não se prepara base nenhuma nem se gera password: o
+        # `.env` que lá está é o que manda. Devolve-se o par (estado, nada) para
+        # quem chama não ter de distinguir os dois caminhos — era aqui que um
+        # `return` com um valor só rebentava a reinstalação com um ValueError.
+        return 'mantido (instalação existente)', None
     linhas = [
         'DJANGO_DEBUG=False',
         f'DJANGO_SECRET_KEY={secrets.token_urlsafe(48)}',
@@ -88,7 +92,68 @@ def escrever_env(bd):
         # com TLS à frente, isto muda para True.
         'DJANGO_SSL_REDIRECT=False',
     ]
-    if bd.get('tipo') == 'postgres':
+    tipo = (bd.get('tipo') or 'sqlite').lower()
+    feito = None          # o que a preparação da base criou (None em SQLite)
+
+    # A BASE É CRIADA AQUI, não por alguém a colar SQL no SSMS ou no pgAdmin.
+    #
+    # Pedia-se ao técnico que criasse a base, o utilizador e as permissões à
+    # mão. Um técnico que não saiba SQL não tem como fazer isso bem, e um
+    # comando mal colado estraga a instalação de uma maneira que ninguém
+    # percebe — e que é pior de desfazer do que de fazer.
+    #
+    # Agora ele dá as credenciais de ADMINISTRAÇÃO do servidor e carrega em
+    # Seguinte. O que corre aqui é idempotente: se a base já existir usa-se, se
+    # o utilizador já existir acerta-se a password. Repetir uma instalação que
+    # falhou a meio não estraga nada.
+    #
+    # As credenciais de administração NÃO vão para o .env: usam-se e esquecem-se.
+    # O que fica é o utilizador da aplicação, que só manda na base desta casa.
+    if tipo != 'sqlite':
+        from preparar_base import ErroDeBase, preparar
+        try:
+            feito = preparar(bd)
+        except ErroDeBase as e:
+            print()
+            print('NÃO FOI POSSÍVEL PREPARAR A BASE DE DADOS')
+            print('-' * 60)
+            print(str(e))
+            print('-' * 60)
+            sys.exit(2)
+        if feito:
+            # O que a aplicação vai usar é o que acabou de ser criado — e não o
+            # que estava no ini, que podia ter só o nome.
+            bd = dict(bd)
+            bd['base'] = feito['base']
+            bd['utilizador'] = feito['utilizador']
+            bd['password'] = feito['password']
+            if feito.get('driver'):
+                bd['driver'] = feito['driver']
+            print(f'Base "{feito["base"]}": '
+                  f'{"criada" if feito["criou_base"] else "já existia"}; '
+                  f'utilizador "{feito["utilizador"] or "(conta do Windows)"}": '
+                  f'{"criado" if feito["criou_utilizador"] else "já existia"}.')
+
+    if tipo in ('sqlserver', 'mssql'):
+        # SQL SERVER — o servidor que a casa já tem.
+        #
+        # O utilizador VAZIO quer dizer "entrar com a conta do Windows"
+        # (trusted connection): numa casa com domínio é o modo em que não fica
+        # nenhuma password guardada em ficheiro. As settings tratam disso.
+        #
+        # A PORTA fica vazia numa instância nomeada (SERVIDOR\\INSTANCIA), porque
+        # quem a resolve é o SQL Browser. Escrever lá a porta do PostgreSQL era
+        # o erro que fazia a ligação falhar sem dizer porquê.
+        linhas += [
+            'DB_ENGINE=mssql',
+            f'DB_HOST={bd.get("host", "localhost")}',
+            f'DB_PORT={bd.get("porta", "")}',
+            f'DB_NAME={bd.get("base", "mwanalodge")}',
+            f'DB_USER={bd.get("utilizador", "")}',
+            f'DB_PASSWORD={bd.get("password", "")}',
+            f'DB_ODBC_DRIVER={bd.get("driver") or _driver_odbc()}',
+        ]
+    elif tipo == 'postgres':
         linhas += [
             'DB_ENGINE=postgresql',
             f'DB_HOST={bd.get("host", "localhost")}',
@@ -126,7 +191,134 @@ def escrever_env(bd):
             linhas += [f'PCC_URL={pcc_url}']
 
     env.write_text('\n'.join(linhas) + '\n', encoding='utf-8')
-    return 'criado'
+    # Devolve também o que a preparação da base criou (nome final, utilizador e
+    # password gerada): é com isso que o `main` escreve a ficha para o dono da
+    # casa, e esses valores só existem aqui dentro.
+    return 'criado', feito
+
+
+def escrever_ficha_da_base(bd, feito):
+    """A FICHA DA BASE DE DADOS, para o dono da casa.
+
+    O sistema guarda as credenciais no `.env`, que é um ficheiro de
+    configuração à mistura com a chave de assinatura do Django — ninguém espera
+    que o dono de um hotel vá lá procurar a password para abrir o SSMS.
+
+    E ele vai precisar dela: para ver as tabelas, para o informático dele fazer
+    uma cópia de segurança, para ligar uma ferramenta de relatórios. Sem isto,
+    a resposta a "quais são as minhas credenciais?" é "ninguém sabe" — porque a
+    password é gerada na instalação e não é escrita em mais lado nenhum.
+
+    Fica na pasta de DADOS (e não na do programa) porque é lá que as coisas
+    sobrevivem a uma atualização.
+    """
+    tipo = (bd.get('tipo') or 'sqlite').lower()
+    DADOS.mkdir(parents=True, exist_ok=True)
+    ficha = DADOS / 'BASE-DE-DADOS.txt'
+
+    linhas = ['BASE DE DADOS DO SYSTEM MWANA LODGE',
+              '=' * 60, '']
+
+    if tipo == 'sqlite':
+        base = DADOS / 'mwanalodge.sqlite3'
+        linhas += [
+            'Motor      : SQLite (base local, nesta máquina)',
+            f'Ficheiro   : {base}',
+            '',
+            'Não há servidor, utilizador nem password: a base é um ficheiro.',
+            'Para a abrir e ver as tabelas, use o "DB Browser for SQLite"',
+            '(gratuito) e abra o ficheiro acima.',
+            '',
+            'PARA COPIAR A BASE, pare primeiro os serviços do Mwana Lodge —',
+            'copiar um ficheiro SQLite com o sistema a escrever nele dá uma',
+            'cópia que pode não abrir.',
+        ]
+    else:
+        nome = 'SQL Server' if tipo in ('sqlserver', 'mssql') else 'PostgreSQL'
+        servidor = bd.get('host', 'localhost')
+        porta = bd.get('porta') or ('(a instância resolve)' if nome == 'SQL Server' else '5432')
+        utilizador = (feito or {}).get('utilizador') or bd.get('utilizador') or ''
+        password = (feito or {}).get('password') or bd.get('password') or ''
+        linhas += [
+            f'Motor      : {nome}',
+            f'Servidor   : {servidor}',
+            f'Porta      : {porta}',
+            f'Base       : {(feito or {}).get("base") or bd.get("base", "")}',
+            '',
+        ]
+        if utilizador:
+            linhas += [
+                'CREDENCIAIS DO SISTEMA (é com estas que o Mwana Lodge se liga):',
+                f'  Utilizador : {utilizador}',
+                f'  Password   : {password}',
+                '',
+                'Com elas pode abrir a base e ver as tabelas:',
+                ('  · SQL Server: no SSMS, Autenticação do SQL Server'
+                 if nome == 'SQL Server' else
+                 '  · PostgreSQL: no pgAdmin, nova ligação ao servidor acima'),
+                '',
+                'NÃO MUDE ESTA PASSWORD sem mudar também o ficheiro',
+                f'{RAIZ / "app" / ".env"} — o sistema deixa de entrar na base e',
+                'as vendas param.',
+                '',
+                'SE SÓ QUER VER AS TABELAS, peça ao seu informático um',
+                'utilizador de LEITURA à parte. Este utilizador é o do sistema,',
+                'e tem permissões para alterar tudo.',
+            ]
+        else:
+            linhas += [
+                'O sistema liga-se com a CONTA DO WINDOWS do serviço — não há',
+                'utilizador nem password guardados em lado nenhum.',
+                '',
+                'Para ver as tabelas, abra o SSMS com a sua conta de Windows',
+                '(a mesma que administra este SQL Server).',
+            ]
+
+    linhas += [
+        '', '-' * 60,
+        'Este ficheiro tem credenciais. Guarde-o como guarda as do banco:',
+        'quem o ler consegue abrir a base de dados da casa.',
+        '',
+        'Gerado pela instalação. Se alguma coisa mudar, este ficheiro NÃO se',
+        'actualiza sozinho — a verdade está sempre no .env da aplicação.',
+    ]
+
+    ficha.write_text('\n'.join(linhas) + '\n', encoding='utf-8')
+    print(f'Ficha da base de dados: {ficha}')
+
+
+def _driver_odbc():
+    """O driver ODBC que ESTÁ instalado nesta máquina, e não o que se espera.
+
+    O Driver 18 é o actual, mas uma casa com um servidor mais antigo pode ter
+    só o 17 — e escrever no .env um driver que não existe dá um erro de ODBC
+    que não diz qual é o driver em falta. Pergunta-se ao Windows e escolhe-se o
+    mais recente que lá estiver; se não houver nenhum, escreve-se o 18 e o
+    instalador avisa (quem instala precisa de o saber ANTES de o sistema
+    arrancar, não quando o primeiro pedido falhar).
+    """
+    preferidos = ['ODBC Driver 18 for SQL Server', 'ODBC Driver 17 for SQL Server',
+                  'SQL Server Native Client 11.0', 'SQL Server']
+    try:
+        import pyodbc
+        instalados = set(pyodbc.drivers())
+    except Exception:
+        try:
+            import subprocess
+            r = subprocess.run(
+                ['powershell', '-NoProfile', '-Command',
+                 "Get-OdbcDriver | Select-Object -ExpandProperty Name"],
+                capture_output=True, text=True, timeout=30)
+            instalados = {l.strip() for l in (r.stdout or '').splitlines() if l.strip()}
+        except Exception:
+            instalados = set()
+    for d in preferidos:
+        if d in instalados:
+            return d
+    print('AVISO: não encontrei nenhum driver ODBC para SQL Server nesta máquina. '
+          'Instale o "ODBC Driver 18 for SQL Server" da Microsoft — sem ele o '
+          'sistema não consegue ligar-se ao servidor.')
+    return preferidos[0]
 
 
 def correr(*args):
@@ -220,8 +412,17 @@ def main():
     (DADOS / 'media').mkdir(exist_ok=True)
     (DADOS / 'logs').mkdir(exist_ok=True)
     bd = ler_escolha(ini)
-    estado = escrever_env(bd)
+    estado, feito = escrever_env(bd)
     print(f'.env {estado}; base = {bd.get("tipo", "sqlite")}')
+    # A ficha para o dono da casa — sem ela, a resposta a "quais são as minhas
+    # credenciais?" é "ninguém sabe": a password é gerada na instalação.
+    try:
+        escrever_ficha_da_base(bd, feito)
+    except Exception as e:
+        # Não é fatal: a instalação não pode parar por causa de um ficheiro de
+        # apoio. Mas diz-se, para quem instala poder escrever os dados à mão.
+        print(f'AVISO: não consegui escrever a ficha da base de dados ({e}). '
+              f'As credenciais estão no .env da aplicação.')
     correr('migrate', '--noinput')
     correr('collectstatic', '--noinput')
     # O CATÁLOGO DE PARÂMETROS (Configuração POS → Parâmetros) — sem isto, uma

@@ -72,3 +72,9 @@ instalador/pcc_url.txt
 frontend/test-results/
 frontend/playwright-report/
 frontend/blob-report/
+
+# O driver ODBC da Microsoft: e descarregado pelo build_instalador.ps1 e
+# guardado aqui para nao se repetir a descarga. Nao entra no repositorio —
+# um binario de 4,7 MB fica no historico para sempre, e este componente e
+# de seguranca e deve vir sempre actualizado da fonte.
+instalador/msodbcsql.msi

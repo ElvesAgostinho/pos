@@ -2928,7 +2928,10 @@ class StockDoc(models.Model):
             # ignora os vazios para não travar esse instante.
             models.UniqueConstraint(
                 fields=['series', 'number'],
-                condition=~models.Q(number=''),
+                # `__gt=''` em vez de `~Q(number='')`: o mesmo (um número
+                # vazio fica de fora), mas sai `> ''` em vez de `NOT (= '')`,
+                # que o SQL Server recusa num índice filtrado. Ver core/lookups.py.
+                condition=models.Q(number__gt=''),
                 name='stockdoc_numero_unico_na_serie',
             ),
         ]

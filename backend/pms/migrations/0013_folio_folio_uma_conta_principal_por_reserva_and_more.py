@@ -79,12 +79,20 @@ class Migration(migrations.Migration):
         migrations.RunPython(arrumar_lancamentos_repetidos, nao_fazer_nada),
         migrations.AddConstraint(
             model_name="foliocharge",
+            # ESCRITO SEM `NOT`, e isto nao e cosmetica.
+            #
+            # `~Q(...)` da `NOT ([coluna] = 'valor')`, e o SQL Server recusa
+            # `NOT` no predicado de um indice filtrado — no parser, antes de
+            # qualquer verificacao. Uma instalacao nova parava aqui.
+            #
+            # `__ne` da `<>` (ver core/lookups.py) e `__gt=''` da `> ''`, que
+            # ja exclui o nulo (NULL > '' e NULL). A regra e a mesma nos tres
+            # motores; a forma e a que os tres aceitam.
             constraint=models.UniqueConstraint(
                 condition=models.Q(
                     ("is_void", False),
-                    models.Q(("charge_type", "FNB"), _negated=True),
-                    ("source_reference__isnull", False),
-                    models.Q(("source_reference", ""), _negated=True),
+                    ("charge_type__ne", "FNB"),
+                    ("source_reference__gt", ""),
                 ),
                 fields=("folio", "source_reference"),
                 name="folio_um_lancamento_por_origem",

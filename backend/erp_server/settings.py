@@ -221,9 +221,61 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "erp_server.wsgi.application"
 
-# Base de dados por ambiente. Produção: DB_ENGINE=postgresql + credenciais.
-# Dev (default): SQLite. Assim o mesmo código serve dev e produção sem alterações.
-if os.environ.get("DB_ENGINE", "sqlite").lower() in ("postgres", "postgresql"):
+# Base de dados por ambiente. Produção: PostgreSQL ou SQL Server + credenciais.
+# Dev (default): SQLite. O mesmo código serve os três sem alterações.
+#
+# DB_ENGINE aceita: "sqlite" (omissão), "postgres"/"postgresql", "mssql"/"sqlserver".
+_MOTOR = os.environ.get("DB_ENGINE", "sqlite").lower()
+
+if _MOTOR in ("mssql", "sqlserver", "sql_server"):
+    # SQL SERVER — o motor que a casa que vem da Primavera já tem.
+    #
+    # É o caso mais comum em Angola: o cliente já corre SQL Server para outra
+    # coisa, tem quem o administre e quem lhe faça cópias. Obrigá-lo a montar um
+    # PostgreSQL ao lado, só para este sistema, é pedir-lhe um segundo servidor
+    # para administrar — e foi por isso que o passo da Base de Dados do
+    # instalador oferecia uma opção "avançada" que, na prática, não servia a
+    # quem mais precisava dela.
+    #
+    # DUAS AUTENTICAÇÕES, porque as duas se usam:
+    #   · SQL Server (utilizador e password) — o que o wizard pergunta, e o que
+    #     um técnico externo costuma receber;
+    #   · Windows (deixar o utilizador VAZIO) — numa casa com domínio, é o modo
+    #     em que ninguém tem de guardar uma password em lado nenhum.
+    _utilizador = os.environ.get("DB_USER", "")
+    _opcoes = {
+        # O driver é o da Microsoft. O 18 é o actual; o 17 fica como alternativa
+        # para máquinas mais antigas, e o instalador verifica qual existe.
+        "driver": os.environ.get("DB_ODBC_DRIVER", "ODBC Driver 18 for SQL Server"),
+        "connection_timeout": 5,
+        # O Driver 18 passou a EXIGIR ligação cifrada por omissão, e um SQL
+        # Server de uma casa usa quase sempre um certificado que ele próprio
+        # emitiu. Sem isto, a ligação falha com um erro de certificado que não
+        # diz o que está mal. Cifra-se à mesma; o que se dispensa é a validação
+        # da cadeia, que numa rede local da casa não acrescenta nada.
+        "extra_params": os.environ.get(
+            "DB_ODBC_EXTRA", "TrustServerCertificate=yes;Encrypt=yes"),
+    }
+    if not _utilizador:
+        _opcoes["trusted_connection"] = "yes"
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "mssql",
+            "NAME": os.environ.get("DB_NAME", "mwanalodge"),
+            "USER": _utilizador,
+            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+            # Uma instância nomeada escreve-se "SERVIDOR\\INSTANCIA" e NÃO leva
+            # porta — é o SQL Browser que a resolve. A porta fica vazia nesse
+            # caso, e é por isso que não tem valor por omissão aqui.
+            "HOST": os.environ.get("DB_HOST", "localhost"),
+            "PORT": os.environ.get("DB_PORT", ""),
+            "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", "60")),
+            "CONN_HEALTH_CHECKS": True,
+            "OPTIONS": _opcoes,
+        }
+    }
+elif _MOTOR in ("postgres", "postgresql"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

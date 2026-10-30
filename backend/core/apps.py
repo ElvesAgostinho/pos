@@ -10,6 +10,12 @@ class CoreConfig(AppConfig):
         # em TODOS os modelos). Um módulo novo fica auditado sem escrever uma linha.
         from . import audit_signals  # noqa: F401
 
+        # `__ne` ("é diferente de") — ver core/lookups.py. Sem ele, as restrições
+        # únicas parciais que excluem um valor escrevem-se com `NOT (...)`, que o
+        # SQL Server recusa no predicado de um índice filtrado: a mesma regra
+        # instalava-se em PostgreSQL e SQLite e não no SQL Server.
+        from . import lookups  # noqa: F401
+
         # ── SQLite em modo WAL ────────────────────────────────────────────────
         # Por omissão o SQLite bloqueia a base INTEIRA enquanto alguém escreve, e quem
         # lê fica à espera. Num POS isso é o pior caso possível: o mapa de mesas relê-se
