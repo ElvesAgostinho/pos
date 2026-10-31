@@ -95,7 +95,19 @@ test.describe('Varredura do backoffice num browser real', () => {
     const titulo = doModulo[0].moduleTitle;
 
     test(`${titulo}: nenhum ecrã rebenta nem abre em branco`, async ({ page }) => {
-      test.setTimeout(4 * 60 * 1000);
+      // O TEMPO TEM DE ACOMPANHAR O TAMANHO DO CENTRO.
+      //
+      // Eram 4 minutos fixos para todos. Só que os centros não têm todos o
+      // mesmo tamanho: o Workflow tem meia dúzia de ecrãs e o Master Data tem
+      // vinte. Os dois maiores — Master Data e Armazém — batiam no tecto a meio
+      // da lista e eram dados como falhados, com uma mensagem a dizer "tempo
+      // esgotado" e nem um ecrã acusado. Um teste que falha por ser grande não
+      // diz nada sobre o que está mau; diz só que é grande.
+      //
+      // Meio minuto por ecrã, mais um minuto para entrar e fazer login. É folga
+      // suficiente para um ecrã lento sem deixar uma varredura pendurada para
+      // sempre quando alguma coisa fica mesmo presa.
+      test.setTimeout(60_000 + doModulo.length * 30_000);
       const problemas: string[] = [];
       const erros: string[] = [];
       vigiar(page, erros);

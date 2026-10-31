@@ -93,7 +93,13 @@ class HotelResourceViewSet(_HotelDefault):
     serializer_class = HotelResourceSerializer
 
     def get_queryset(self):
-        qs = HotelResource.objects.select_related('cost_center').all()
+        # `select_related('hotel')` e NAO 'cost_center': o HotelResource nao tem
+        # centro de custo nenhum -- tem hotel. O Django so se queixa de um
+        # `select_related` invalido quando a consulta CORRE, por isso isto
+        # passava em tudo o que nao a chamasse e rebentava com 500 sempre que
+        # alguem abria o ecra de Recursos. Um nome errado dentro de uma string e
+        # a maneira mais facil de escrever codigo que nenhum compilador apanha.
+        qs = HotelResource.objects.select_related('hotel').all()
         rt = self.request.query_params.get('resource_type')
         return qs.filter(resource_type=rt) if rt else qs
 
