@@ -10,7 +10,7 @@ import {
 } from './PmsReservationFunctions';
 import { notifyError } from '../../utils/friendlyError';
 import { confirmar } from '../../ui/dialogo';
-import { RADIUS, SHADOW } from '../../config/theme';
+import { TOKENS, RADIUS, SHADOW } from '../../config/theme';
 import PmsFolioPanel from './PmsFolioPanel';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
 import PmsQuickAssignDialog from './PmsQuickAssignDialog';
@@ -22,70 +22,79 @@ import { STATUS_LABEL, STATUS_COLOR, SOURCE_LABEL } from './reservationStatus';
 
 const SAVED_KEY = 'pms_saved_searches';
 
-const fmtDT = (iso: string) => iso ? new Date(iso).toLocaleString('pt-PT', {
-  weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
-}) : '—';
-const fmtD = (iso: string) => iso ? new Date(iso).toLocaleDateString('pt-PT', {
-  weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
-}) : '—';
-const COLS = '8% 8% 24% 18% 24% 18%';
+// DATA CURTA. A longa ("seg., 03 nov. 2026") ocupa uma célula inteira e
+// repete-se em duas colunas por linha; numa grelha de vinte reservas são
+// quarenta datas por extenso a competir com os nomes dos hóspedes. O ano a dois
+// dígitos porque numa lista de reservas ninguém duvida do século.
+const fmtCurta = (iso: string) => iso
+  ? new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit' })
+  : '—';
 
-/** Uma reserva = um bloco rico (não uma linha fina de tabela clássica) — é
- * assim que o PMS de referência mostra, diferente do estilo de grelha do POS. */
-function ReservationRow({ r, hotelName, selected, onSelect, onCheckIn, onCheckOut, onCancel, onVerConta }: any) {
+/**
+ * UMA RESERVA = UMA LINHA.
+ *
+ * Era um bloco rico de cinco linhas de texto e quatro botões, com um comentário
+ * aqui a dizer que o PMS de referência mostra assim. O dono mandou clonar os
+ * ecrãs que enviou, e nesses uma reserva é uma linha de grelha — e a razão
+ * não é de gosto: no bloco rico cabiam nove reservas num ecrã de 900 pixéis;
+ * em linha cabem trinta e cinco. Quem trabalha na recepção vê a semana toda
+ * sem rolar, e comparar duas reservas deixa de obrigar a saltar o ecrã.
+ *
+ * O que estava no bloco e não cabe numa linha (NIF, segmento, canal, voucher,
+ * bloco) não se perdeu: está na ficha, que abre ao clicar na linha, e o que é
+ * curto o suficiente vai no `title` da célula.
+ */
+function ReservationRow({ r, n, hotelName, selected, onSelect, onCheckIn, onCheckOut, onCancel, onVerConta }: any) {
+  const parar = (e: any) => e.stopPropagation();
+  const cor = selected ? '#FFFFFF' : undefined;
   return (
-    <div onClick={onSelect}
-      className={`grid border-b border-[#F1F2F4] cursor-pointer text-[12px] ${selected ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}
-      style={{ gridTemplateColumns: COLS }}>
-      <div className="px-3 py-3 flex items-start gap-2 text-[#111827]">
-        <Building2 size={14} className="text-[#6B7280] flex-shrink-0 mt-0.5" />
-        <span className="truncate">{hotelName || '—'}</span>
-      </div>
-      <div className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-        <div className="grid grid-cols-2 gap-1 w-fit">
+    <tr onClick={onSelect} className="cursor-pointer"
+      style={selected ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection } : undefined}>
+      {/* O NÚMERO DE LINHA é o que permite dizer "a sétima" a quem está ao
+          telefone, e é por isso que todas as grelhas destes ERP o têm. */}
+      <td className="text-right" style={{ color: selected ? '#FFFFFF' : '#9CA3AF' }}>{n}</td>
+      <td className="font-bold" title={hotelName || ''}>{r.confirmation}</td>
+      <td>
+        <span className="text-[10px] text-white font-semibold px-1.5 rounded-full"
+          style={{ background: STATUS_COLOR[r.status] || '#3B82F6' }}>
+          {STATUS_LABEL[r.status] || r.status}
+        </span>
+      </td>
+      <td title={[r.guest_tax_id ? 'NIF ' + r.guest_tax_id : '', r.segment_name, r.channel_name].filter(Boolean).join(' · ')}>
+        {r.guest_name}
+      </td>
+      <td>{fmtCurta(r.check_in)}</td>
+      <td style={{ color: selected ? '#FFFFFF' : '#B91C1C' }}>{fmtCurta(r.check_out)}</td>
+      <td className="text-center">{r.adults}/{r.children}</td>
+      <td title={r.rate_plan_code || ''}>{r.room_type_name}</td>
+      <td>{r.room_number || (r.block_code ? 'Bloco ' + r.block_code : '—')}</td>
+      <td className="text-right">
+        {Number(r.rate) > 0 ? Number(r.rate).toLocaleString('pt-PT', { minimumFractionDigits: 2 }) : ''}
+      </td>
+      <td className="text-right font-bold"
+        style={{ color: selected ? '#FFFFFF' : (Number(r.folio_balance) > 0 ? '#B91C1C' : undefined) }}>
+        {r.folio_balance != null ? r.folio_balance : ''}
+      </td>
+      <td onClick={parar}>
+        {/* Os quatro comandos da linha, em botões de 18px. Em bloco eram
+            quadrados de 28 com fundo cinzento; o fundo só servia para os
+            encontrar no meio do texto, e numa grelha já estão na sua coluna. */}
+        <div className="flex items-center gap-0.5">
           <button title="Check-in" disabled={r.status !== 'OPTION' && r.status !== 'BOOKED'} onClick={() => onCheckIn(r)}
-            className="w-7 h-7 rounded flex items-center justify-center bg-[#EEF1F5] text-[#111827] disabled:opacity-30 disabled:bg-[#EEF1F5]"><LogIn size={14} /></button>
+            className="w-[18px] h-[18px] flex items-center justify-center disabled:opacity-25"
+            style={{ color: cor || '#2E7D32' }}><LogIn size={13} /></button>
           <button title="Check-out" disabled={r.status !== 'CHECKED_IN'} onClick={() => onCheckOut(r.id)}
-            className="w-7 h-7 rounded flex items-center justify-center bg-[#EEF1F5] text-[#111827] disabled:opacity-30 disabled:bg-[#EEF1F5]"><LogOut size={14} /></button>
+            className="w-[18px] h-[18px] flex items-center justify-center disabled:opacity-25"
+            style={{ color: cor || '#2F6FB5' }}><LogOut size={13} /></button>
           <button title="Cancelar" disabled={r.status === 'CHECKED_OUT' || r.status === 'CANCELLED'} onClick={() => onCancel(r.id)}
-            className="w-7 h-7 rounded flex items-center justify-center bg-[#EEF1F5] text-[#B91C1C] disabled:opacity-30 disabled:bg-[#EEF1F5]"><XCircle size={14} /></button>
+            className="w-[18px] h-[18px] flex items-center justify-center disabled:opacity-25"
+            style={{ color: cor || '#B91C1C' }}><XCircle size={13} /></button>
           <button title="Ver Conta" onClick={() => onVerConta(r)}
-            className="w-7 h-7 rounded flex items-center justify-center bg-[#EEF1F5] text-[#6B7280]"><Wallet size={14} /></button>
+            className="w-[18px] h-[18px] flex items-center justify-center"
+            style={{ color: cor || '#6B7280' }}><Wallet size={13} /></button>
         </div>
-      </div>
-      <div className="px-3 py-3 leading-tight">
-        <div className="text-[10px] text-gray-400">{fmtDT(r.created_at)}</div>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="font-bold text-[15px]">{r.confirmation}</span>
-          <span className="text-[10px] text-white font-semibold px-2 py-0.5 rounded" style={{ background: STATUS_COLOR[r.status] || '#3B82F6' }}>
-            {STATUS_LABEL[r.status] || r.status}
-          </span>
-        </div>
-        <div className="text-[11px] text-gray-600">{r.room_type_name}{r.rate_plan_code ? ` · ${r.rate_plan_code}` : ''} · Pax {r.adults}/{r.children}</div>
-        <div className="mt-0.5">
-          <span className="text-[#111827]">{fmtD(r.check_in)}</span> <span className="text-gray-400">→</span> <span className="text-[#B91C1C]">{fmtD(r.check_out)}</span>
-        </div>
-        {Number(r.rate) > 0 && <div className="font-bold text-[12px] mt-0.5">{Number(r.rate).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} Kz</div>}
-      </div>
-      <div className="px-3 py-3 leading-tight">
-        <div className="font-semibold">{r.guest_name}</div>
-        {r.guest_tax_id && <div className="text-[10px] text-gray-500">NIF {r.guest_tax_id}</div>}
-        {r.segment_name && <div className="text-[10px] text-gray-500">{r.segment_name}{r.channel_name ? ` · ${r.channel_name}` : ''}</div>}
-      </div>
-      <div className="px-3 py-3 leading-tight">
-        <div>{r.room_number ? `Quarto ${r.room_number}` : 'Sem quarto atribuído'}</div>
-        {r.block_code && <div className="text-[10px] text-gray-500">Bloco {r.block_code}</div>}
-        {r.voucher && <div className="text-[10px] text-gray-500">Voucher {r.voucher}</div>}
-        {r.is_guaranteed && <div className="text-[10px] text-[#111827]">Garantido</div>}
-      </div>
-      <div className="px-3 py-3 leading-tight" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => onVerConta(r)} className="text-[11px] px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5] rounded-[8px] transition-colors">Ver Conta</button>
-        <div className="text-[10px] text-gray-500 mt-1">{r.folios_count || 0} conta(s) ativa(s)</div>
-        {r.folio_balance != null && (
-          <div className={`font-bold ${Number(r.folio_balance) > 0 ? 'text-[#B91C1C]' : 'text-[#111827]'}`}>{r.folio_balance}</div>
-        )}
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }
 
@@ -93,12 +102,25 @@ function ReservationRow({ r, hotelName, selected, onSelect, onCheckIn, onCheckOu
 /** Botão da barra inferior — plano, sem moldura em relevo (esse era o estilo
  * clássico do ERP antigo; o PMS usa ícone em círculo colorido + texto). */
 function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#2563EB' }: any) {
+  // O ícone em disco branco sobre círculo colorido era uma medalha de 24px por
+  // botão: oito medalhas numa barra pesam mais do que a grelha que está por
+  // cima delas. Passa a ícone solto na sua cor, 13px, como em qualquer barra de
+  // ferramentas — a cor continua a distinguir a acção, que era o que a medalha
+  // fazia de útil.
   return (
     <button onClick={onClick} disabled={disabled}
-      className="flex items-center gap-2 px-2 py-1.5 text-[12px] font-semibold text-[#111827] disabled:opacity-40 disabled:cursor-default hover:bg-[#EEF1F5]">
-      <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: disabled ? '#E6E8EC' : color }}>
-        <Icon size={13} />
-      </span>
+      className="flex items-center gap-1 px-2 h-[22px] text-[11.5px] disabled:opacity-40 disabled:cursor-default"
+      style={{ color: TOKENS.textOnLight, border: '1px solid transparent' }}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = TOKENS.hoverGold;
+        e.currentTarget.style.borderColor = TOKENS.hoverGoldLine;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent';
+        e.currentTarget.style.borderColor = 'transparent';
+      }}>
+      <Icon size={13} style={{ color: disabled ? '#9CA3AF' : color }} />
       {label}
     </button>
   );
@@ -106,14 +128,14 @@ function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#2563EB' }: an
 
 function Field({ label, children }: { label: string; children: any }) {
   return (
-    <label className="flex flex-col gap-1 text-[11px] min-w-0">
+    <label className="flex flex-col gap-0 text-[11px] min-w-0">
       <span className="text-[#6B7280] whitespace-nowrap overflow-hidden text-ellipsis">{label}</span>
       {children}
     </label>
   );
 }
 const inputCls = 'border border-[#E6E8EC] px-1.5 py-1 text-[11px] bg-white rounded-[8px]';
-const selCls = 'border border-[#E6E8EC] px-1.5 py-1 text-[11px] bg-white min-w-[130px] rounded-[8px]';
+const selCls = 'border border-[#D0D5DD] px-1.5 py-[2px] text-[11.5px] bg-white min-w-[130px]';
 
 function loadSaved(): { name: string; filters: any }[] {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch { return []; }
@@ -386,9 +408,9 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
       </button>
 
       {avancadaAberta && (
-        <div className="flex gap-4 p-3 bg-[#EEF1F5] border-b border-[#F1F2F4]">
-          <div className="flex flex-col gap-2.5 flex-1 min-w-[190px]">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Pesquisa</div>
+        <div className="flex gap-3 p-1.5 border-b text-[11.5px]" style={{ background: TOKENS.chrome, borderColor: TOKENS.chromeLine }}>
+          <div className="flex flex-col gap-1 flex-1 min-w-[190px]">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Hóspede:"><input value={guestQuery} onChange={(e) => setGuestQuery(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Nº Reserva:"><input value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className={inputCls + ' w-full'} /></Field>
@@ -404,8 +426,8 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 flex-1 min-w-[200px]">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Datas</div>
+          <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Datas</div>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'fixed'} onChange={() => setDateMode('fixed')} /> Fixo</label>
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'period'} onChange={() => setDateMode('period')} /> Período</label>
@@ -443,8 +465,8 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             </label>
           </div>
 
-          <div className="flex flex-col gap-2.5 flex-1 min-w-[190px]">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Quarto / Tarifa</div>
+          <div className="flex flex-col gap-1 flex-1 min-w-[190px]">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Quarto / Tarifa</div>
             <Field label="Categoria:">
               <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -469,8 +491,8 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             </Field>
           </div>
 
-          <div className="flex flex-col gap-2.5 flex-1 min-w-[190px]">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Comercial</div>
+          <div className="flex flex-col gap-1 flex-1 min-w-[190px]">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Comercial</div>
             <Field label="Segmento:">
               <select value={segment} onChange={(e) => { setSegment(e.target.value); setSubSegment(''); }} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -493,8 +515,8 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
             <Field label="Voucher:"><input value={voucher} onChange={(e) => setVoucher(e.target.value)} className={inputCls + ' w-full'} /></Field>
           </div>
 
-          <div className="flex flex-col gap-2.5 flex-1 min-w-[200px]">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF] mb-1">Visualização</div>
+          <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Visualização</div>
             <Field label="Estado:">
               <select value={status} onChange={(e) => setStatus(e.target.value)} className={selCls + ' w-full'}>
                 <option value="">(Todos)</option>
@@ -502,50 +524,73 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
               </select>
             </Field>
             <div className="flex items-center gap-1.5">
-              <label className="flex items-center gap-1.5 cursor-pointer" title="Reservas com origem Online (channel/booking automático), sem intervenção da receção.">
+              <label className="flex items-center gap-1.5 cursor-pointer text-[11.5px] whitespace-nowrap" title="Reservas com origem Online (channel/booking automático), sem intervenção da receção.">
                 <input type="checkbox" checked={apenasAuto} onChange={(e) => setApenasAuto(e.target.checked)} /> Apenas reservas automáticas
               </label>
-              <button onClick={imprimir} className="flex items-center gap-1.5 px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5] rounded-[8px] transition-colors ml-auto"><Printer size={13} /> Imprimir</button>
+              <button onClick={imprimir} className="flex items-center gap-1 px-2 h-[20px] text-[11.5px] border border-[#D0D5DD] bg-white hover:bg-[#FDF4D9] ml-auto flex-shrink-0"><Printer size={12} style={{ color: '#2F6FB5' }} /> Imprimir</button>
             </div>
             <div className="flex items-center gap-1.5">
-              <label className="flex items-center gap-1.5 cursor-pointer">
+              <label className="flex items-center gap-1.5 cursor-pointer text-[11.5px] whitespace-nowrap">
                 <input type="checkbox" checked={autoUpdate} onChange={(e) => setAutoUpdate(e.target.checked)} /> Atualização automática
               </label>
               {!autoMode && (
-                <button onClick={() => setShowAutoDialog(true)}
-                  className="flex items-center gap-1.5 px-2 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5] rounded-[8px] transition-colors ml-auto">
-                  <RefreshCw size={13} /> Auto
+                <button onClick={() => setShowAutoDialog(true)} className="flex items-center gap-1 px-2 h-[20px] text-[11.5px] border border-[#D0D5DD] bg-white hover:bg-[#FDF4D9] ml-auto flex-shrink-0">
+                  <RefreshCw size={12} style={{ color: '#2F6FB5' }} /> Auto
                 </button>
               )}
             </div>
-            <label className="flex items-start gap-2 text-[12px] leading-snug"><input type="checkbox" checked={ocultarAposPesquisa} onChange={(e) => setOcultarAposPesquisa(e.target.checked)} /> Ocultar filtros após pesquisa</label>
+            <label className="flex items-center gap-1.5 text-[11.5px] whitespace-nowrap"><input type="checkbox" checked={ocultarAposPesquisa} onChange={(e) => setOcultarAposPesquisa(e.target.checked)} /> Ocultar filtros após pesquisa</label>
           </div>
 
+          {/* Botão de barra, não um bloco azul de 110 por 60: o comando mais
+              usado do ecrã pesa o que deve pesar e devolve o espaço à grelha. */}
           <button onClick={pesquisar}
-            className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px] hover:brightness-110 transition-[filter]"
-            style={{ background: '#2563EB', borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
-            <RefreshCw size={20} /> Pesquisar
+            className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 h-[22px] self-end text-[11.5px] font-semibold"
+            style={{
+              background: 'linear-gradient(to bottom, #FDFDFD, #EDEDED)',
+              border: `1px solid ${TOKENS.chromeLine}`, color: TOKENS.textOnLight,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = TOKENS.hoverGold; e.currentTarget.style.borderColor = TOKENS.hoverGoldLine; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(to bottom, #FDFDFD, #EDEDED)'; e.currentTarget.style.borderColor = TOKENS.chromeLine; }}>
+            <RefreshCw size={13} style={{ color: '#2F6FB5' }} /> Pesquisar
           </button>
         </div>
       )}
 
+      {/* A GRELHA. Uma tabela a sério, e não uma grelha de `div`s: as linhas, o
+          acolchoamento curto, a linha alternada e o realce âmbar vêm da folha
+          styles/erp-classico.css, que só sabe apanhar `table`. Escrito em `div`
+          ficava de fora e era preciso repetir tudo aqui à mão. */}
       <div className="flex-1 overflow-auto bg-white">
-        <div className="grid text-[11px] font-semibold text-[#111827] border-b border-[#F1F2F4] bg-[#EEF1F5] sticky top-0 z-10"
-          style={{ gridTemplateColumns: COLS }}>
-          <div className="px-3 py-2">Hotel</div>
-          <div className="px-3 py-2">Ações</div>
-          <div className="px-3 py-2">Resumo</div>
-          <div className="px-3 py-2">Entidades</div>
-          <div className="px-3 py-2">Informações</div>
-          <div className="px-3 py-2">Pagamento</div>
-        </div>
-        {isLoading ? <div className="p-4 text-gray-400 text-[12px]">A carregar…</div> : rows.length === 0 ? (
-          <div className="p-6 text-center text-gray-400 text-[12px]">Nenhum registo encontrado.</div>
-        ) : rows.map((r: any) => (
-          <ReservationRow key={r.id} r={r} hotelName={hotelName} selected={selId === r.id}
-            onSelect={() => { setSelId(r.id); setShowDetail(true); }} onCheckIn={setCheckInTarget} onCheckOut={doCheckOut} onCancel={doCancel}
-            onVerConta={(row: any) => { setSelId(row.id); setShowFolio(true); }} />
-        ))}
+        <table className="w-full">
+          <thead className="sticky top-0 z-10">
+            <tr style={{ background: 'linear-gradient(to bottom, #FDFDFD, #EFEFEF)' }}>
+              <th style={{ width: 34 }}>N.º</th>
+              <th>Confirmação</th>
+              <th>Estado</th>
+              <th>Hóspede</th>
+              <th>Entrada</th>
+              <th>Saída</th>
+              <th>Pax</th>
+              <th>Tipologia</th>
+              <th>Quarto</th>
+              <th className="text-right">Valor</th>
+              <th className="text-right">Saldo</th>
+              <th style={{ width: 86 }}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <tr><td colSpan={12} className="text-center text-gray-400 py-3">A carregar…</td></tr>
+            ) : rows.length === 0 ? (
+              <tr><td colSpan={12} className="text-center text-gray-400 py-3">Nenhum registo encontrado.</td></tr>
+            ) : rows.map((r: any, i: number) => (
+              <ReservationRow key={r.id} r={r} n={i + 1} hotelName={hotelName} selected={selId === r.id}
+                onSelect={() => { setSelId(r.id); setShowDetail(true); }} onCheckIn={setCheckInTarget} onCheckOut={doCheckOut} onCancel={doCancel}
+                onVerConta={(row: any) => { setSelId(row.id); setShowFolio(true); }} />
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="flex items-center gap-3 px-3 py-1 border-t border-[#E6E8EC] bg-[#EEF1F5] text-[11px] flex-wrap">

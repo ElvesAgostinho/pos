@@ -58,7 +58,8 @@ import PosReports from './PosReports';
 import PosOnline from './PosOnline';
 import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
-import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton } from './kit';
+import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton, corDoIcone } from './kit';
+import Pictograma from '../icons/Pictogramas';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
 import { TOKENS, RADIUS } from '../../config/theme';
 
@@ -236,7 +237,10 @@ export default function PosConfigView({ onDesktop, onOpen }: {
   };
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#EEF1F5', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+    /* `data-erp="classico"` liga a folha styles/erp-classico.css a tudo o que
+       está aqui dentro: linhas de grelha, acolchoamento curto, canto vivo. O
+       terminal do POS não leva este atributo e fica como está. */
+    <div data-erp="classico" className="h-full flex flex-col" style={{ background: TOKENS.chrome, fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* A MESMA BARRA DE MENUS do PMS (MenuTopo). Eram duas, escritas à
           parte — e foi por isso que esta ficou meses com a seta "▾" que já
           tinha sido removida do PMS, e com um `onMouseEnter` que fazia o menu
@@ -289,11 +293,17 @@ export default function PosConfigView({ onDesktop, onOpen }: {
           título, e uma linha fina a separar. Eram duas barras de cor empilhadas
           (a dos menus e esta), o que tira ar ao ecrã e não deixa perceber qual
           é a principal. E o ícone estava escuro sobre o azul, mal se lia. */}
-      <div className="flex items-center justify-between gap-2.5 px-5 py-3.5 text-[19px] font-semibold flex-shrink-0"
-        style={{ background: TOKENS.surface, color: TOKENS.textOnLight,
-                 borderBottom: `1px solid ${TOKENS.lineSoft}` }}>
-        <div className="flex items-center gap-2.5">
-          <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={17} chip />{' '}
+      {/* O NOME DO ECRÃ NUMA TIRA, NÃO NUM TÍTULO DE PÁGINA. Eram 19px e 56
+          pixéis de altura: num ecrã de 900, são 6% da janela gastos a repetir o
+          que a árvore ao lado já tem seleccionado. Nas imagens que o dono mandou
+          clonar isto é um separador de documento de 22px — e a altura que sobra
+          vai para as linhas da grelha, que é o que se vem aqui ver. */}
+      <div className="flex items-center justify-between gap-2 px-2 h-[24px] text-[12px] font-bold flex-shrink-0"
+        style={{ background: TOKENS.tabActive, color: TOKENS.textOnLight,
+                 borderBottom: `1px solid ${TOKENS.chromeLine}` }}>
+        <div className="flex items-center gap-1.5">
+          <Glyph icon={TITULOS[section] ? TITULOS[section][0] : '🔧'} size={13}
+            tom={corDoIcone(TITULOS[section] ? TITULOS[section][0] : '🔧')} />{' '}
           {TITULOS[section] ? TITULOS[section][1] : 'Configuração POS'}
         </div>
         <div className="flex items-center gap-0.5 text-[12px] font-normal">
@@ -316,15 +326,23 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             um relatório com uma lista de configurações ao lado não é um relatório —
             é um formulário espremido. */}
         {!SEM_ARVORE.includes(section) && (
-        <div className="w-[236px] flex-shrink-0 border-r border-[#E6E8EC] bg-white overflow-auto">
+        /* A ÁRVORE. 210px e não 236: a largura de uma árvore é ditada pelo nome
+           mais comprido que tem de caber, e os nomes aqui são curtos. Os 26 que
+           sobram vão para a grelha, que é onde estão os dados. */
+        <div className="w-[210px] flex-shrink-0 border-r bg-white overflow-auto"
+          style={{ borderColor: TOKENS.chromeLine }}>
           {favs.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[12px] font-semibold text-[#111827] bg-[#EEF1F5] border-b border-[#E6E8EC] flex items-center gap-1.5">
-                <Glyph icon="♥" size={13} /> Favoritos
+              <div className="px-2 py-[2px] text-[11px] font-bold border-b flex items-center gap-1.5"
+                style={{ background: TOKENS.chrome, borderColor: TOKENS.chromeLine, color: TOKENS.textOnLight }}>
+                <Glyph icon="♥" size={12} tom="#C0392B" /> Favoritos
               </div>
               {favs.map((f) => (
                 <div key={f.key}
-                  className={`group flex items-center pl-6 pr-2 py-1.5 text-[12px] border-b border-[#F1F2F4] cursor-pointer ${section === f.key ? 'bg-[#EEF1F5] text-[#111827] font-bold' : 'text-[#111827] hover:bg-[#FFFFFF]'}`}>
+                  className={`group flex items-center pl-5 pr-1 py-[2px] text-[11.5px] cursor-pointer ${section === f.key ? 'font-bold' : 'hover:bg-[#FDF4D9]'}`}
+                  style={section === f.key
+                    ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection }
+                    : { color: TOKENS.textOnLight }}>
                   <span className="flex-1" onClick={() => { setSection(f.key); setEditing(null); }}>{f.label}</span>
                   <button title="Tirar dos favoritos"
                     onClick={() => {
@@ -344,40 +362,60 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             const grp = g0;
             return (
             <div key={grp.key}>
+              {/* UM NÓ DE PASTA, NÃO UMA BARRA DE ACORDEÃO.
+                  Era uma barra cinzenta com o nome em MAIÚSCULAS e um `+`/`−`
+                  encostado à direita — o desenho de um menu de telemóvel. Na
+                  imagem que o dono mandou clonar, e em qualquer ERP desta
+                  família, isto é uma árvore: triângulo a abrir, pasta colorida,
+                  nome em caixa normal, e os filhos INDENTADOS por baixo.
+
+                  A diferença não é de gosto. Na árvore vê-se onde se está DENTRO
+                  da estrutura: o ecrã aceso está visivelmente dentro da sua
+                  pasta. No acordeão, assim que a secção de cima fecha, perde-se
+                  a noção de hierarquia e fica uma lista de cabeçalhos soltos.
+
+                  As maiúsculas também saíram: "PARÂMETROS DO SISTEMA" obriga a
+                  soletrar, "Parâmetros do Sistema" lê-se de uma vez — as formas
+                  altas e baixas das letras são metade do que se usa para ler. */}
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[12px] font-bold uppercase tracking-tight border-b-2 hover:brightness-[0.98]"
-                style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, #EEF1F5 55%, #F1F2F4 100%)', borderBottomColor: TOKENS.border, color: TOKENS.textOnLight }}>
-                {/* `textOnLight` e NAO `selectedText`: este titulo esta
-                    sobre um fundo claro, nao sobre uma linha seleccionada.
-                    Usava o segundo e funcionava por os dois serem escuros;
-                    no dia em que o texto da seleccao passou a branco (para
-                    se ler sobre o azul da linha), este titulo desapareceu. */}
-                <span>{grp.title}</span>
-                <span className="text-[16px] leading-none text-[#6B7280]">{open[grp.key] ? '−' : '+'}</span>
+                className="w-full flex items-center gap-1 px-1 py-[2px] text-[11.5px] font-bold hover:bg-[#FDF4D9]"
+                style={{ color: TOKENS.textOnLight }}>
+                <span className="w-[10px] text-[9px] leading-none" style={{ color: TOKENS.textMuted }}>
+                  {open[grp.key] ? '▾' : '▸'}
+                </span>
+                <Pictograma nome={open[grp.key] ? 'pastaAberta' : '🗂'} size={14} />
+                <span className="truncate">{grp.title}</span>
               </button>
               {open[grp.key] && (
-                <div className="max-h-[260px] overflow-y-auto">
+                <div className="max-h-[320px] overflow-y-auto">
                   {grp.items.map((it) => {
                     const ativo = section === it.key;
                     return (
                     <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
-                      className="w-full flex items-center gap-2 pl-3 pr-3 py-1.5 text-[12px] text-left border-b border-l-[3px]"
+                      className="w-full flex items-center gap-1.5 pl-[26px] pr-2 py-[2px] text-[11.5px] text-left"
                       style={{
-                        borderBottomColor: '#EEF1F5',
-                        borderLeftColor: ativo ? TOKENS.accent : 'transparent',
+                        // A LINHA ESCOLHIDA É UMA BARRA AZUL DE PONTA A PONTA, com
+                        // o texto branco por cima. Era um azul muito claro com um
+                        // traço de 3px à esquerda — que se perde numa lista de
+                        // quarenta linhas, sobretudo quando o ecrã está numa
+                        // recepção com luz a bater. A barra cheia não se perde.
+                        //
+                        // E é aqui que os dois tokens finalmente servem para o que
+                        // se chamam: `textOnSelection` em cima do azul,
+                        // `textOnLight` em cima do branco.
                         background: ativo ? TOKENS.selectedBg : 'transparent',
-                        // Item inactivo em CINZENTO-ESCURO, não na cor da marca: uma
-                        // árvore inteira a azul faz tudo parecer um link e tira o
-                        // destaque ao que está mesmo seleccionado.
-                        color: ativo ? TOKENS.selectedText : '#374151',
+                        color: ativo ? TOKENS.textOnSelection : '#374151',
                         fontWeight: ativo ? 700 : 400,
                       }}
-                      onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = TOKENS.hover; }}
+                      onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = '#FDF4D9'; }}
                       onMouseLeave={(e) => { if (!ativo) e.currentTarget.style.background = 'transparent'; }}>
                       {(it as any).icon
-                        ? <span className="w-5 flex items-center justify-center"><Glyph icon={(it as any).icon} size={15} /></span>
-                        : <span className="w-5 flex justify-center"><span className="w-1.5 h-1.5 rounded-full" style={{ background: ativo ? TOKENS.accent : '#3B82F6' }} /></span>}
-                      {it.label}
+                        ? <span className="w-4 flex items-center justify-center">
+                            <Glyph icon={(it as any).icon} size={13}
+                              tom={ativo ? '#FFFFFF' : corDoIcone((it as any).icon)} />
+                          </span>
+                        : <span className="w-4 flex justify-center"><span className="w-1.5 h-1.5" style={{ background: ativo ? '#FFFFFF' : '#7C93AB' }} /></span>}
+                      <span className="truncate">{it.label}</span>
                     </button>
                     );
                   })}
@@ -1351,7 +1389,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                         style={{
                           borderColor: '#EEF1F5',
                           background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#FFFFFF' : TOKENS.surface,
-                          color: sel === r.id ? TOKENS.selectedText : undefined,
+                          color: sel === r.id ? TOKENS.textOnSelection : undefined,
                         }}
                         onMouseEnter={(e) => { if (sel !== r.id) e.currentTarget.style.background = TOKENS.hover; }}
                         onMouseLeave={(e) => { if (sel !== r.id) e.currentTarget.style.background = i % 2 ? '#FFFFFF' : TOKENS.surface; }}>
@@ -1415,7 +1453,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel, onClick: () => confirm(`Apagar "${selRow?.name}"? Fica registado na auditoria.`) && del.mutate(sel!) },
                   { icon: '⧉', label: 'Copiar', color: '#111827', disabled: !sel, onClick: () => copy.mutate(sel!) },
                   { icon: '🖶', label: 'Imprimir', color: '#111827', onClick: () => window.print() },
-                  { icon: '⤓', label: 'Exportar para Excel', color: '#111827', onClick: exportExcel },
+                  { icon: 'excel', label: 'Exportar para Excel', onClick: exportExcel },
                   { icon: '⤒', label: 'Importar', color: '#111827', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
                 ]}
               />

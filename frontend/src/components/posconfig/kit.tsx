@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { TOKENS, RADIUS, SHADOW } from '../../config/theme';
+import { TOKENS } from '../../config/theme';
+import Pictograma, { temPictograma } from '../icons/Pictogramas';
 import {
   Check as CheckIcon, X, Pencil, Copy, Minus, Plus, CirclePlus, Download, Printer,
   RefreshCw, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, SquareCheck, Search,
@@ -103,12 +104,71 @@ export const ICON_MAP: Record<string, any> = {
  * não acompanham a cor do tema e, num ecrã com quarenta linhas, viram ruído.
  * Assim o relevo vem da LUZ, que é como se faz volume num símbolo.
  */
+/**
+ * A COR DE UM ÍCONE — sempre a mesma para o mesmo ícone.
+ *
+ * No ribbon há vinte comandos lado a lado. Pintados todos do mesmo azul, lêem-se
+ * como vinte manchas iguais e não se encontra nenhum sem ler as legendas uma a
+ * uma — que é exactamente o que se quer evitar pôr os ícones. Com cor, ao fim do
+ * primeiro dia procura-se "o verde do costume" e acerta-se de relance.
+ *
+ * A cor sai do NOME do ícone, por conta: o mesmo ícone dá sempre a mesma cor,
+ * em todos os ecrãs, sem ninguém ter de a escolher nem de a manter numa tabela
+ * de duzentas linhas que ninguém actualiza. Os poucos casos onde a cor TEM
+ * significado — dinheiro, apagar, avisar — estão escritos à mão em cima, porque
+ * nesses a cor é informação e não arrumação.
+ */
+const PALETA_ICONES = [
+  '#C8562B', '#2F6FB5', '#3C8C4E', '#8A6FB0', '#C9A227',
+  '#2D8C8C', '#B5476E', '#5A7A96', '#7A8C2D', '#B5651D',
+];
+const COR_FIXA: Record<string, string> = {
+  '🗑': '#C0392B',   // apagar — vermelho, e nunca outra coisa
+  '⚠': '#D97706',       // aviso — âmbar
+  '💰': '#2E7D32',   // dinheiro — verde
+  '💳': '#2E7D32',   // cartão
+  '🧾': '#4A6B8A',   // factura
+  '🔒': '#5A6B7A',   // segurança — cinzento de aço
+};
+export function corDoIcone(nome: string): string {
+  if (COR_FIXA[nome]) return COR_FIXA[nome];
+  let h = 0;
+  for (let i = 0; i < nome.length; i++) h = (h * 31 + nome.charCodeAt(i)) >>> 0;
+  return PALETA_ICONES[h % PALETA_ICONES.length];
+}
+
 export function Glyph({ icon, size = 15, chip, tom }: {
   icon: string; size?: number; chip?: boolean; tom?: string;
 }) {
+  // 1.º O PICTOGRAMA CHEIO, se existir para este nome. É o desenho a sério —
+  //    a folha do Excel, o envelope, a pasta — e é o que deve aparecer.
+  if (temPictograma(icon)) {
+    const p = <Pictograma nome={icon} size={size} />;
+    return chip ? <span className="inline-flex items-center justify-center flex-shrink-0">{p}</span> : p;
+  }
+
+  // 2.º O ícone de traço, para os símbolos de controlo (setas, visto, ×) onde o
+  //    traço é a forma certa e um desenho cheio ficaria pesado.
   const Cmp = ICON_MAP[icon];
-  const desenho = Cmp ? <Cmp size={size} strokeWidth={1.8} /> : <>{icon}</>;
-  if (!chip) return desenho;
+  // 3.º NUNCA O EMOJI EM CRU. Era isto que estava aqui: faltando desenho, escrevia
+  //    o caracter tal e qual, e saia um emoji colorido do sistema operativo no
+  //    meio de uma barra de ERP — diferente em cada máquina, infantil em todas.
+  //    Os emojis são a CHAVE com que o código pede o ícone, nunca o que se mostra.
+  //    Sem desenho, mostra-se uma forma neutra: vê-se que falta um ícone, e não
+  //    se enfeita o ecrã com um boneco.
+  const desenho = Cmp
+    ? <Cmp size={size} strokeWidth={1.8} />
+    : (
+      <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" style={{ display: 'block' }}>
+        <rect x="5" y="4" width="22" height="24" rx="2.5" fill="#E4EAF0" stroke="#B9C6D4" strokeWidth="1.4" />
+        <path d="M10 12h12M10 17h12M10 22h8" stroke="#B9C6D4" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  // SEM MOLDURA, A COR TEM DE CHEGAR À MESMA. O `tom` só era usado para pintar
+  // o quadradinho do `chip`; quem pedisse um ícone solto com cor levava com a
+  // cor herdada do pai e não percebia porquê. É o caso do ribbon, onde o chip a
+  // 22px ficaria do tamanho de um botão.
+  if (!chip) return tom ? <span style={{ color: tom, display: 'inline-flex' }}>{desenho}</span> : desenho;
 
   const cor = tom || TOKENS.brand;
   const lado = Math.round(size * 2);
@@ -298,13 +358,28 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
     bolha colorida à volta, moldura só aparece ao passar o rato por cima. */
 export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode }) {
   return (
-    <div className="flex items-center gap-1.5 px-3 py-2.5 border-t flex-shrink-0" style={{ background: TOKENS.toolbarBg, borderColor: TOKENS.lineSoft }}>
+    // A BARRA DE ACÇÕES DO RODAPÉ — uma barra de ferramentas, não uma fila de
+    // botões grandes. Eram 44px de altura a repetir, em texto de 12px, aquilo
+    // que o ícone já diz; ficam 26, e as 18 que sobram são mais uma linha de
+    // grelha visível em TODOS os ecrãs de lista do sistema.
+    <div className="flex items-center gap-0 px-1 py-[2px] border-t flex-shrink-0"
+      style={{ background: 'linear-gradient(to bottom, #FDFDFD, #F0F0F0)', borderColor: TOKENS.chromeLine }}>
       {actions.map((a) => (
         <button key={a.label} onClick={a.onClick} disabled={a.disabled} title={a.title}
-          className="flex items-center gap-2 px-3 py-1.5 text-[12px] font-medium text-[#111827] disabled:opacity-35 disabled:cursor-default hover:bg-[#F3F4F6] active:bg-[#E6E8EC] transition-colors"
-          style={{ borderRadius: RADIUS.sm }}>
-          <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0"
-            style={{ color: a.disabled ? '#3B82F6' : a.color }}><Glyph icon={a.icon} size={15} /></span>
+          className="flex items-center gap-1 px-2 h-[22px] text-[11.5px] disabled:opacity-35 disabled:cursor-default"
+          style={{ color: TOKENS.textOnLight, border: '1px solid transparent', borderRadius: 0 }}
+          onMouseEnter={(e) => {
+            if (a.disabled) return;
+            e.currentTarget.style.background = TOKENS.hoverGold;
+            e.currentTarget.style.borderColor = TOKENS.hoverGoldLine;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = 'transparent';
+          }}>
+          <span className="w-[15px] h-[15px] flex items-center justify-center flex-shrink-0">
+            <Glyph icon={a.icon} size={13} tom={a.disabled ? '#9CA3AF' : (a.color || corDoIcone(a.icon))} />
+          </span>
           {a.label}
         </button>
       ))}
@@ -316,10 +391,21 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
 /** Separador (aba) do editor de artigo. */
 export function Tab({ active, onClick, children }: any) {
   return (
+    // Separador de ficha: o aberto liga-se ao conteúdo de baixo (fundo branco,
+    // moldura em cima e dos lados, sem linha em baixo) — a mesma figura dos
+    // separadores de documento do topo. São a mesma ideia; devem ler-se igual.
     <button onClick={onClick}
-      className={`px-3.5 py-1.5 text-[12px] font-medium transition-colors ${active
-        ? 'bg-[#DBEAFE] text-[#1D4ED8]' : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]'}`}
-      style={{ borderRadius: RADIUS.sm }}>
+      className="px-3 h-[22px] text-[11.5px]"
+      style={{
+        background: active ? TOKENS.surface : 'transparent',
+        borderTop: `1px solid ${active ? TOKENS.chromeLine : 'transparent'}`,
+        borderLeft: `1px solid ${active ? TOKENS.chromeLine : 'transparent'}`,
+        borderRight: `1px solid ${active ? TOKENS.chromeLine : 'transparent'}`,
+        marginBottom: active ? '-1px' : 0,
+        fontWeight: active ? 700 : 400,
+        color: TOKENS.textOnLight,
+        borderRadius: 0,
+      }}>
       {children}
     </button>
   );
@@ -336,21 +422,34 @@ export function Tab({ active, onClick, children }: any) {
  * O título deixou de ser `legend` encavalitada na borda (um desenho que só
  * existe porque o HTML o permite) e passa a ser uma linha de texto própria,
  * acima do conteúdo, com espaço a seguir. */
+/**
+ * A CAIXA — um painel com título, do género "group box" de qualquer ERP.
+ *
+ * Era um cartão: canto redondo, sombra, 16px de folga por dentro e o título
+ * solto lá dentro. Passou a ser o que as imagens mostram: moldura de 1px, título
+ * numa tira cinzenta encostada ao topo, e 6px de folga. O que se ganha não é
+ * gosto — são cerca de 30 pixéis por caixa, e um ecrã de filtros tem três ou
+ * quatro: quase uma linha de grelha por caixa, que é o que se vem aqui ver.
+ */
 export function Box({ title, children, className = '' }: { title?: string; children: ReactNode; className?: string }) {
   return (
-    <section className={`p-4 min-w-0 overflow-hidden ${className}`}
+    <section className={`min-w-0 overflow-hidden ${className}`}
       style={{
-        border: `1px solid ${TOKENS.lineSoft}`,
+        border: `1px solid ${TOKENS.chromeLine}`,
         background: TOKENS.surface,
-        borderRadius: RADIUS.md,
-        boxShadow: SHADOW.soft,
+        borderRadius: 0,
       }}>
       {title && (
-        <h3 className="text-[12px] font-semibold mb-3" style={{ color: TOKENS.textOnLight }}>
+        <h3 className="text-[11px] font-bold px-2 py-[2px] border-b"
+          style={{
+            color: TOKENS.textOnLight,
+            background: 'linear-gradient(to bottom, #FDFDFD, #EFEFEF)',
+            borderColor: TOKENS.chromeLine,
+          }}>
           {title}
         </h3>
       )}
-      {children}
+      <div className="p-1.5">{children}</div>
     </section>
   );
 }
@@ -365,12 +464,30 @@ export function SearchButton({ onClick, label = 'Pesquisar', icon = '⟳', class
 }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className={`flex items-center justify-center gap-2 px-6 py-2.5 text-white font-semibold
-        hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-default
-        transition-[filter] ${className}`}
-      style={{ background: TOKENS.brand, borderRadius: RADIUS.sm, boxShadow: SHADOW.xs }}>
-      <Glyph icon={icon} size={16} />
-      <span className="text-[13.5px]">{label}</span>
+      // UM BOTÃO DE BARRA, NÃO UM BLOCO DE COR. Era um rectângulo azul de 190
+      // por 60 ao lado dos filtros — o objecto mais pesado do ecrã a dizer
+      // "Pesquisar", quando o que importa no ecrã é o resultado. Nas imagens o
+      // comando mais usado é uma linha de barra de ferramentas com um ícone
+      // pequeno; pesa o que deve pesar e deixa o espaço para a grelha.
+      className={`flex items-center justify-center gap-1.5 px-3 h-[22px]
+        disabled:opacity-40 disabled:cursor-default ${className}`}
+      style={{
+        background: 'linear-gradient(to bottom, #FDFDFD, #EDEDED)',
+        border: `1px solid ${TOKENS.chromeLine}`,
+        color: TOKENS.textOnLight,
+        borderRadius: 0,
+      }}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = TOKENS.hoverGold;
+        e.currentTarget.style.borderColor = TOKENS.hoverGoldLine;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'linear-gradient(to bottom, #FDFDFD, #EDEDED)';
+        e.currentTarget.style.borderColor = TOKENS.chromeLine;
+      }}>
+      <Glyph icon={icon} size={13} tom="#2F6FB5" />
+      <span className="text-[11.5px] font-semibold">{label}</span>
     </button>
   );
 }
@@ -382,15 +499,27 @@ export function Row({ label, children, w = 'w-[120px]' }: { label: string; child
     // praticamente encostadas — as caixas dos campos tocam-se e o formulário
     // lê-se como um bloco único em vez de uma lista de campos. O que separa
     // campos num formulário é o ESPAÇO entre eles, não uma linha a dividi-los.
-    <label className="flex items-center gap-3 text-[12px] py-2 min-w-0">
-      <span className={`text-[#6B7280] whitespace-nowrap ${w.replace('w-[', 'min-w-[')} flex-shrink-0`}>{label}</span>
+    // `py-[3px]` (era `py-2`): a folga de 8px em cima e em baixo de CADA linha
+    // deixava caber sete campos onde cabem quinze. Num formulário de ERP, rolar
+    // para ver o campo seguinte é o custo que se paga o dia inteiro; o ar entre
+    // campos é um luxo de ecrã de marketing.
+    //
+    // A etiqueta pode encolher e quebrar (`shrink`, sem `whitespace-nowrap`):
+    // foi por não poder que duas etiquetas se escreveram uma por cima da outra
+    // numa janela estreita — ver o mesmo cuidado no `Field` aqui ao lado.
+    <label className="flex items-center gap-2 text-[11.5px] py-[3px] min-w-0">
+      <span className={`text-[#6B7280] ${w.replace('w-[', 'min-w-[')} shrink`}>{label}</span>
       {children}
     </label>
   );
 }
 
-export const inputCls = 'border border-[#D0D5DD] px-3 py-1.5 text-[12px] bg-white flex-1 min-w-0 '
-  + 'rounded-[8px] outline-none focus:border-[#2563EB] transition-colors';
+// Canto vivo e 2px de folga vertical: é o campo de um ERP, não o de um
+// formulário de site. O contorno continua a ser `#D0D5DD` (TOKENS.field) — mais
+// escuro do que as divisórias de propósito, porque uma divisória deve
+// desaparecer e um campo tem de se ver.
+export const inputCls = 'border border-[#D0D5DD] px-1.5 py-[2px] text-[11.5px] bg-white flex-1 min-w-0 '
+  + 'rounded-none outline-none focus:border-[#2563EB] transition-colors';
 // Sombra interior discreta (substitui o "afundado" 3D de antes) — aplicada
 // inline (style={inputStyle}) para continuar a ganhar da regra global em
 // index.css em todos os formulários que já a usam.

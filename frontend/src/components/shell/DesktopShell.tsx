@@ -6,20 +6,22 @@ import {
   VIEW_REGISTRY, ITEM_TITLES, ITEM_MODULE_KEY, moduleEnabled, moduleKeyOf, featureAllowed,
 } from '../../config/navigation';
 import { getAppearance } from '../../config/appearance';
-import { classicTheme, RADIUS, SHADOW } from '../../config/theme';
+import { classicTheme, TOKENS, RADIUS, SHADOW } from '../../config/theme';
 import ErrorBoundary from './ErrorBoundary';
 import { exportDomTable } from '../../utils/exportData';
 import { WORKSPACES, MODULE_TREE } from '../../config/workspace';
+import { irParaModulo } from '../../config/navegar';
 import { tokenStore, authApi } from '../../api/auth';
 import { useActiveModules, useFeatures, useMyAccess } from '../../hooks/useActiveModules';
 import {
   FilePlus2, Pencil, Save, Trash2, Copy, Search, RefreshCw, Printer, Download,
   Paperclip, History, ClipboardList, ChevronRight, ChevronDown, Folder, FolderOpen,
   Power, Moon, Sun, Server, ShieldCheck, Monitor, Building2, Database, Wifi, Cpu,
-  Lock, LogOut,
+  Lock, LogOut, X, Star, Filter, FileText,
 } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
 import LockScreen from '../ui/LockScreen';
+import IconeRibbon, { TEM_ICONE } from '../desktop/IconeRibbon';
 
 // ==========================================================================
 // Enterprise Windows Desktop Shell — menu bar + ribbon + navigation tree +
@@ -37,6 +39,26 @@ import LockScreen from '../ui/LockScreen';
 const FULLSCREEN_VIEWS = ['posc_config', 'pms_home', 'adm_appearance'];
 
 const cmd = (name: string) => window.dispatchEvent(new CustomEvent('erp:cmd', { detail: name }));
+
+// A COR DA PASTA DIZ DE QUE FAMÍLIA É O ECRÃ. Numa árvore de quarenta nós todos
+// iguais, encontrar "Tesouraria" obriga a ler tudo de cima a baixo. Com a pasta
+// do dinheiro sempre verde e a do sistema sempre roxa, o olho salta direito à
+// zona certa e só depois lê — é por isso que estes ERP têm a árvore colorida, e
+// não por enfeite.
+const COR_DO_GRUPO: Record<string, string> = {
+  'OPERAÇÃO': '#D9A441',    // âmbar — o dia-a-dia
+  'FINANCEIRO': '#3C8C4E',  // verde — dinheiro
+  'ANÁLISE': '#2F6FB5',     // azul — números para ler
+  'SISTEMA': '#8A6FB0',     // roxo — o que o técnico mexe
+};
+
+// As cores da tira de módulos da extrema esquerda. Os módulos partilham todos o
+// mesmo azul institucional (config/workspace.ts) — o que serve no Ambiente de
+// Trabalho, onde cada um tem o seu ícone grande e o seu nome por baixo. Numa
+// tira de 26px não há nome nem ícone grande: resta a cor, e se for a mesma para
+// os dez, a tira não informa nada. Aqui, e só aqui, cada módulo tem a sua.
+const COR_DO_MODULO = ['#C8562B', '#2F6FB5', '#3C8C4E', '#8A6FB0', '#C9A227',
+                       '#2D8C8C', '#B5476E', '#6B7D8F', '#7A8C2D', '#B5651D'];
 
 interface Props { activeView: string; onOpen: (id: string) => void; onDesktop?: () => void; module?: string; }
 
@@ -61,6 +83,43 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   const [clock, setClock] = useState(new Date());
   const [exportOpen, setExportOpen] = useState(false);
   const [locked, setLocked] = useState(false);
+
+  // OS SEPARADORES DE DOCUMENTO. O shell abria um ecrã de cada vez: ir à ficha
+  // do cliente a meio de lançar uma factura obrigava a sair da factura e a
+  // voltar a encontrá-la na árvore. Aqui os ecrãs abertos ficam numa tira por
+  // cima da área de trabalho e alterna-se entre eles com um clique — é o que
+  // as imagens mostram ("Agenda | Produtos ×") e é como se trabalha mesmo.
+  const [abertos, setAbertos] = useState<string[]>([]);
+  useEffect(() => {
+    if (!VIEW_REGISTRY[activeView]) return;
+    setAbertos((a) => (a.includes(activeView) ? a : [...a, activeView]));
+  }, [activeView]);
+  const fecharAba = (id: string) => {
+    setAbertos((a) => {
+      const resto = a.filter((x) => x !== id);
+      // Fechar o separador ABERTO tem de deixar outro aberto, nunca o vazio:
+      // salta-se para o vizinho da esquerda, como em qualquer editor.
+      if (id === activeView && resto.length) {
+        const i = a.indexOf(id);
+        onOpen(resto[Math.max(0, i - 1)]);
+      }
+      return resto;
+    });
+  };
+
+  // FAVORITOS. O botão "Adicionar a Favoritos" existe nas imagens, e um botão
+  // que não leva a lado nenhum é pior do que não existir: os ecrãs marcados
+  // aparecem numa pasta no topo da árvore, que é onde se vão buscar. Fica no
+  // browser de quem marcou — cada pessoa tem os seus, e não há nada no servidor
+  // para gerir por causa disto.
+  const [favs, setFavs] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('erp_favs') || '[]'); } catch { return []; }
+  });
+  const alternarFav = (id: string) => setFavs((f) => {
+    const novo = f.includes(id) ? f.filter((x) => x !== id) : [...f, id];
+    localStorage.setItem('erp_favs', JSON.stringify(novo));
+    return novo;
+  });
   const shellRef = useRef<HTMLDivElement>(null);
 
   // Logótipo real do cliente (Administração → Empresa) — mesma fonte que o
@@ -101,6 +160,20 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
   useEffect(() => { document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'classic'); localStorage.setItem('ui_theme', dark ? 'dark' : 'classic'); }, [dark]);
 
   const bizModules = WORKSPACES.filter((w) => moduleEnabled(w.licenseModule, lic?.active || []));
+
+  // O PRIMEIRO ECRÃ DE UM MÓDULO — o destino de um clique na tira da esquerda.
+  // Não serve o primeiro da lista escrita: essa inclui ecrãs que podem não estar
+  // licenciados nem autorizados para quem está a usar o sistema, e aterrar num
+  // ecrã proibido mostra um módulo vazio como se estivesse avariado. Vai-se ao
+  // primeiro que EXISTE e que esta pessoa pode mesmo abrir.
+  const primeiroEcraDo = (moduleKey: string) => {
+    for (const pasta of MODULE_TREE[moduleKey] || []) {
+      for (const id of pasta.items) {
+        if (VIEW_REGISTRY[id] && screenAllowed(id)) return id;
+      }
+    }
+    return '';
+  };
 
   // ÁRVORE POR TAREFA — pastas que qualquer pessoa percebe (Receção, Quartos, Cozinha,
   // Caixa…) em vez dos "Centros" técnicos. Só entram ecrãs que EXISTEM, estão
@@ -207,11 +280,14 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
     'Ajuda': [{ label: 'Sobre a Plataforma', act: () => aviso('System Mwana Lodge · v1.0') }],
   };
 
-  const ribbonGroups: { title: string; btns: [any, string, string][] }[] = [
-    { title: 'Registo', btns: [[FilePlus2, 'Novo', 'new'], [Pencil, 'Editar', 'edit'], [Save, 'Guardar', 'save'], [Trash2, 'Eliminar', 'delete'], [Copy, 'Duplicar', 'duplicate']] },
-    { title: 'Dados', btns: [[Search, 'Pesquisar', 'search'], [RefreshCw, 'Atualizar', 'refresh']] },
-    { title: 'Saída', btns: [[Printer, 'Imprimir', 'print'], [Download, 'Exportar', 'export']] },
-    { title: 'Registo/Anexos', btns: [[Paperclip, 'Anexos', 'attach'], [History, 'Histórico', 'history'], [ClipboardList, 'Auditoria', 'audit']] },
+  // O QUARTO ELEMENTO é o nome do pictograma colorido (IconeRibbon). O ícone de
+  // traço (lucide) fica como alternativa, para um botão novo nunca aparecer
+  // vazio enquanto não se lhe desenha o seu.
+  const ribbonGroups: { title: string; btns: [any, string, string, string][] }[] = [
+    { title: 'Registo', btns: [[FilePlus2, 'Novo', 'new', 'novo'], [Pencil, 'Editar', 'edit', 'editar'], [Save, 'Guardar', 'save', 'gravar'], [Trash2, 'Eliminar', 'delete', 'eliminar'], [Copy, 'Duplicar', 'duplicate', 'duplicar']] },
+    { title: 'Dados', btns: [[Search, 'Pesquisar', 'search', 'pesquisar'], [RefreshCw, 'Atualizar', 'refresh', 'atualizar']] },
+    { title: 'Saída', btns: [[Printer, 'Imprimir', 'print', 'imprimir'], [Download, 'Exportar', 'export', 'exportar']] },
+    { title: 'Anexos e trilho', btns: [[Paperclip, 'Anexos', 'attach', 'anexos'], [History, 'Histórico', 'history', 'historico'], [ClipboardList, 'Auditoria', 'audit', 'auditoria']] },
   ];
   // Exporta a grelha visível do ecrã ativo no formato escolhido (todos os ecrãs).
   const exportAs = (format: 'pdf' | 'excel' | 'word' | 'csv' | 'json') => {
@@ -346,20 +422,40 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
       </div>
 
       {/* ================= RIBBON ================= */}
-      <div className="flex items-stretch gap-1 px-2 py-1.5 flex-shrink-0 border-b overflow-x-auto" style={{ background: t.ribbon, borderColor: t.line, boxShadow: dark ? 'none' : SHADOW.soft }}>
-        {ribbonGroups.map((g) => (
-          <div key={g.title} className="flex flex-col items-center px-2">
-            <div className="flex items-end gap-0.5">
-              {g.btns.map(([Icon, label, action]) => (
+      <div className="flex items-stretch flex-shrink-0 border-b overflow-x-auto"
+        style={{ background: t.ribbon, borderColor: TOKENS.chromeLine }}>
+        {ribbonGroups.map((g, gi) => (
+          /* UM GRUPO. A DIVISÓRIA à esquerda é o que faz o ribbon funcionar: sem
+             ela, catorze botões seguidos lêem-se como uma fila só e o olho
+             percorre tudo até encontrar. Com ela procura-se primeiro o grupo
+             ("isto é da Saída") e só depois o botão — duas decisões pequenas em
+             vez de uma grande. O nome do grupo vai por baixo, que é onde estes
+             ERP o põem. */
+          <div key={g.title} className="flex flex-col px-1.5 pt-1 pb-0.5"
+            style={{ borderLeft: gi ? `1px solid ${TOKENS.chromeLine}` : undefined }}>
+            <div className="flex items-end gap-0 flex-1">
+              {g.btns.map(([Icon, label, action, desenho]) => (
                 <button key={label} onClick={() => runRibbon(action)} title={label}
-                  className="flex flex-col items-center justify-center w-[54px] h-[46px] gap-0.5 hover:bg-black/[0.06] transition-colors"
-                  style={{ color: t.barText, borderRadius: RADIUS.sm }}>
-                  <Icon size={18} strokeWidth={1.6} />
+                  className="flex flex-col items-center justify-start w-[56px] pt-1 pb-0.5 gap-1"
+                  style={{ color: t.barText, borderRadius: 0, border: '1px solid transparent' }}
+                  onMouseEnter={(e) => {
+                    // O realce é MOLDURA + fundo âmbar, e não uma mancha cinzenta:
+                    // é o que diz qual dos catorze está debaixo do rato.
+                    e.currentTarget.style.background = TOKENS.hoverGold;
+                    e.currentTarget.style.borderColor = TOKENS.hoverGoldLine;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }}>
+                  {TEM_ICONE(desenho)
+                    ? <IconeRibbon nome={desenho} size={26} />
+                    : <Icon size={24} strokeWidth={1.6} />}
                   <span className="text-[10px] leading-none">{label}</span>
                 </button>
               ))}
             </div>
-            <div className="text-[9px] mt-0.5 opacity-50 uppercase tracking-wide">{g.title}</div>
+            <div className="text-[9px] mt-1 w-full text-center" style={{ color: TOKENS.textMuted }}>{g.title}</div>
           </div>
         ))}
       </div>
@@ -379,18 +475,89 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         </>
       )}
 
-      {/* ================= CORPO: ÁRVORE + ÁREA PRINCIPAL ================= */}
+      {/* ============ CORPO: TIRA + ÁRVORE + ÁREA PRINCIPAL ============ */}
       <div className="flex-1 flex overflow-hidden">
+        {/* --- A TIRA DA EXTREMA ESQUERDA -----------------------------------
+            26 pixels com os módulos empilhados e o nome do sistema na vertical.
+
+            Para que serve, e porque vale os 26 pixels: a árvore ao lado mostra
+            UM módulo de cada vez — o que está aberto. Saltar do Alojamento para
+            o Economato obrigava a subir ao menu, abrir, descer. Aqui estão todos
+            à vista, sempre, e a mudança é um clique. É a barra que se usa dezenas
+            de vezes por dia sem se dar por ela.
+
+            A etiqueta vertical em baixo não é enfeite: num computador de
+            recepção com três sistemas abertos, é o que diz de relance qual
+            destas janelas é esta. */}
+        <div className="w-[26px] flex-shrink-0 flex flex-col items-center justify-between border-r py-1"
+          style={{ background: 'linear-gradient(to right, #F6F6F6, #E9E9E9)', borderColor: TOKENS.chromeLine }}>
+          <div className="flex flex-col items-center gap-[2px]">
+            {bizModules.slice(0, 10).map((w, i) => {
+              const activo = w.key === module;
+              return (
+                <button key={w.key} title={w.name}
+                  onClick={() => { const e = primeiroEcraDo(w.key); if (e) irParaModulo(w.key, e); }}
+                  className="w-[21px] h-[21px] flex items-center justify-center"
+                  style={{
+                    border: `1px solid ${activo ? TOKENS.hoverGoldLine : 'transparent'}`,
+                    background: activo ? TOKENS.hoverGold : 'transparent',
+                  }}>
+                  {/* A inicial dentro do quadrado de cor. Só a cor não chega — dez
+                      quadrados coloridos obrigam a decorar a ordem; com a letra,
+                      lê-se à primeira e a cor serve para acertar depressa. */}
+                  <span className="w-[15px] h-[15px] flex items-center justify-center text-[9px] font-bold text-white"
+                    style={{ background: COR_DO_MODULO[i % COR_DO_MODULO.length], border: '1px solid rgba(0,0,0,0.30)' }}>
+                    {w.name.slice(0, 1)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="text-[9px] tracking-[0.18em] select-none pb-1"
+            style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: TOKENS.textMuted }}>
+            MWANA LODGE
+          </div>
+        </div>
+
         {/* Árvore de navegação (Windows Explorer) */}
-        <div className="w-[236px] flex-shrink-0 flex flex-col border-r overflow-hidden" style={{ background: t.tree, borderColor: t.line, color: t.treeText }}>
-          <div className="p-2 border-b" style={{ borderColor: t.line }}>
-            <div className="flex items-center gap-1.5 px-2 py-1.5 border" style={{ borderColor: t.line, background: dark ? '#2563EB' : '#FFFFFF', borderRadius: RADIUS.sm }}>
+        <div className="w-[228px] flex-shrink-0 flex flex-col border-r overflow-hidden" style={{ background: t.tree, borderColor: TOKENS.chromeLine, color: t.treeText }}>
+          {/* O cabeçalho da árvore diz em que módulo se está. Sem ele, a árvore
+              muda de conteúdo ao mudar de módulo e nada no ecrã diz porquê. */}
+          <div className="h-[20px] flex items-center px-2 text-[11px] font-bold border-b flex-shrink-0"
+            style={{ background: TOKENS.chrome, borderColor: TOKENS.chromeLine, color: TOKENS.textOnLight }}>
+            {bizModules.find((b) => b.key === module)?.name || 'Menu principal'}
+          </div>
+          <div className="p-1 border-b" style={{ borderColor: TOKENS.chromeLine }}>
+            <div className="flex items-center gap-1.5 px-1.5 py-[3px] border" style={{ borderColor: TOKENS.field, background: dark ? '#2563EB' : '#FFFFFF', borderRadius: 0 }}>
               <Search size={12} className="opacity-50" />
               <input value={treeQuery} onChange={(e) => setTreeQuery(e.target.value)} placeholder="Pesquisar ecrãs…"
-                className="bg-transparent outline-none text-[12px] w-full" style={{ color: t.treeText }} />
+                className="bg-transparent outline-none text-[11.5px] w-full" style={{ color: t.treeText }} />
             </div>
           </div>
-          <div className="flex-1 overflow-auto py-1 px-1.5">
+          <div className="flex-1 overflow-auto py-0.5 px-0.5">
+            {/* FAVORITOS — primeiro, porque é a pasta a que se volta todos os
+                dias. Só aparece quando alguém marcou alguma coisa: uma pasta
+                vazia permanente ensina a ignorá-la. */}
+            {favs.length > 0 && !treeQuery && (
+              <div className="mb-0.5">
+                <div className="w-full flex items-center gap-1.5 px-1.5 py-[3px] text-[11.5px] font-bold">
+                  <Star size={13} style={{ color: '#D9A441', fill: '#F3CE6A' }} />
+                  <span>Favoritos</span>
+                  <span className="ml-auto text-[10px] font-normal" style={{ color: TOKENS.textFaint }}>{favs.length}</span>
+                </div>
+                {favs.filter((id) => VIEW_REGISTRY[id] && screenAllowed(id)).map((id) => {
+                  const sel = id === activeView;
+                  return (
+                    <button key={'fav-' + id} onClick={() => onOpen(id)}
+                      className="w-full flex items-center gap-1.5 pl-7 pr-1.5 py-[2px] text-[11.5px] text-left"
+                      style={{ background: sel ? TOKENS.selectedBg : 'transparent', color: sel ? TOKENS.textOnSelection : t.treeText }}>
+                      <Star size={11} style={{ color: sel ? '#FFFFFF' : '#D9A441', fill: sel ? '#FFFFFF' : '#F3CE6A' }} />
+                      <span className="truncate">{ITEM_TITLES[id] || id}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {tree.map((f, idx) => {
               const its = q(f.items);
               if (treeQuery && its.length === 0) return null;
@@ -401,28 +568,51 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
                 <div key={f.key}>
                   {/* Separador de grupo (Operação / Financeiro / Análise / Sistema) */}
                   {newGroup && !treeQuery && (
-                    <div className="flex items-center gap-2 px-1.5 pt-3 pb-1.5 select-none">
-                      <span className="text-[9px] font-bold tracking-widest opacity-45">{grp}</span>
-                      <span className="flex-1 h-px" style={{ background: dark ? '#2563EB' : '#F1F2F4' }} />
+                    <div className="flex items-center gap-2 px-1.5 pt-2 pb-1 select-none">
+                      <span className="text-[9px] font-bold tracking-widest" style={{ color: TOKENS.textFaint }}>{grp}</span>
+                      <span className="flex-1 h-px" style={{ background: TOKENS.lineSoft }} />
                     </div>
                   )}
                   <button onClick={() => setExpanded((e) => ({ ...e, [f.key]: !open }))}
-                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[12px] font-bold hover:bg-black/5 transition-colors"
-                    style={{ background: f.key === activeFolder ? t.hover : 'transparent', borderRadius: RADIUS.sm }}>
-                    {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                    {open ? <FolderOpen size={14} style={{ color: '#3B82F6' }} /> : <Folder size={14} style={{ color: '#3B82F6' }} />}
+                    className="w-full flex items-center gap-1 px-1.5 py-[3px] text-[11.5px] font-bold hover:bg-black/5"
+                    style={{ background: f.key === activeFolder ? t.hover : 'transparent', borderRadius: 0 }}>
+                    {open ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+                    {/* A pasta leva a cor da família (COR_DO_GRUPO) — cheia por
+                        dentro e com o contorno mais escuro, como nas imagens:
+                        um ícone de traço fino desaparece a este tamanho. */}
+                    {open
+                      ? <FolderOpen size={13} style={{ color: COR_DO_GRUPO[grp] || '#D9A441', fill: (COR_DO_GRUPO[grp] || '#D9A441') + '55' }} />
+                      : <Folder size={13} style={{ color: COR_DO_GRUPO[grp] || '#D9A441', fill: (COR_DO_GRUPO[grp] || '#D9A441') + '55' }} />}
                     <span className="truncate">{f.title}</span>
-                    <span className="ml-auto text-[10px] font-normal opacity-40">{f.items.length}</span>
+                    <span className="ml-auto text-[10px] font-normal" style={{ color: TOKENS.textFaint }}>{f.items.length}</span>
                   </button>
                   {open && its.map((it) => {
                     const sel = it.id === activeView;
                     return (
-                      <button key={it.id} onClick={() => onOpen(it.id)}
-                        className="w-full flex items-center gap-1.5 pl-8 pr-2 py-[5px] my-[1px] text-[12px] hover:bg-black/[0.06] text-left transition-colors"
-                        style={{ background: sel ? t.accent : 'transparent', color: sel ? '#FFFFFF' : t.treeText, borderRadius: RADIUS.sm }}>
-                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: sel ? '#FFFFFF' : '#3B82F6' }} />
-                        <span className="truncate">{it.name}</span>
-                      </button>
+                      /* A LINHA SELECCIONADA É UMA BARRA AZUL DE PONTA A PONTA,
+                         com o texto branco por cima (`textOnSelection`, que é
+                         justamente o token que antes não existia). É assim que
+                         se vê onde se está sem procurar. */
+                      <div key={it.id} className="group relative flex items-center"
+                        style={{ background: sel ? TOKENS.selectedBg : 'transparent' }}>
+                        <button onClick={() => onOpen(it.id)}
+                          className="flex-1 min-w-0 flex items-center gap-1.5 pl-6 pr-1 py-[2px] text-[11.5px] text-left hover:bg-black/[0.05]"
+                          style={{ color: sel ? TOKENS.textOnSelection : t.treeText, borderRadius: 0 }}>
+                          <FileText size={11} className="flex-shrink-0" style={{ color: sel ? '#FFFFFF' : '#7C93AB' }} />
+                          <span className="truncate">{it.name}</span>
+                        </button>
+                        {/* A estrela só aparece com o rato em cima (ou já marcada):
+                            uma coluna de estrelas apagadas em quarenta linhas é
+                            ruído — o que se lê na árvore são os nomes. */}
+                        <button onClick={() => alternarFav(it.id)} title="Adicionar a Favoritos"
+                          className={favs.includes(it.id) ? 'px-1' : 'px-1 opacity-0 group-hover:opacity-100'}>
+                          <Star size={11}
+                            style={{
+                              color: favs.includes(it.id) ? '#D9A441' : (sel ? '#FFFFFF' : TOKENS.textFaint),
+                              fill: favs.includes(it.id) ? '#F3CE6A' : 'none',
+                            }} />
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -431,11 +621,68 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
           </div>
         </div>
 
-        {/* Área principal — renderiza o ecrã ativo (isolado por ErrorBoundary) */}
-        <div id="erp-active-view" className="flex-1 overflow-hidden" style={{ background: t.body }}>
-          <ErrorBoundary viewKey={activeView}>
-            {Active ? <Active /> : <WelcomePanel tree={tree} moduleName={bizModules.find((b) => b.key === module)?.name} onOpen={onOpen} dark={dark} />}
-          </ErrorBoundary>
+        {/* Área principal: separadores + barra do ecrã + o ecrã ativo */}
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: t.body }}>
+
+          {/* --- SEPARADORES DE DOCUMENTO --- */}
+          {abertos.length > 0 && (
+            <div className="h-[22px] flex items-end gap-[1px] px-1 flex-shrink-0 overflow-x-auto border-b"
+              style={{ background: TOKENS.tabBar, borderColor: TOKENS.chromeLine }}>
+              {abertos.map((id) => {
+                const sel = id === activeView;
+                return (
+                  <div key={id}
+                    className="h-[21px] flex items-center gap-1 pl-2 pr-1 text-[11.5px] flex-shrink-0 cursor-default"
+                    onClick={() => onOpen(id)}
+                    style={{
+                      // O separador ABERTO liga-se à área de baixo: fundo branco
+                      // igual ao dela e sem linha inferior. É o que o faz parecer
+                      // a frente de uma pasta e não mais um botão na fila.
+                      background: sel ? TOKENS.tabActive : 'transparent',
+                      borderTop: `1px solid ${sel ? TOKENS.chromeLine : 'transparent'}`,
+                      borderLeft: `1px solid ${sel ? TOKENS.chromeLine : 'transparent'}`,
+                      borderRight: `1px solid ${sel ? TOKENS.chromeLine : 'transparent'}`,
+                      marginBottom: sel ? '-1px' : 0,
+                      fontWeight: sel ? 700 : 400,
+                      color: TOKENS.textOnLight,
+                    }}>
+                    <span className="truncate max-w-[150px]">{ITEM_TITLES[id] || id}</span>
+                    <button onClick={(e) => { e.stopPropagation(); fecharAba(id); }} title="Fechar"
+                      className="w-[13px] h-[13px] flex items-center justify-center hover:bg-black/15">
+                      <X size={9} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* --- BARRA DE FERRAMENTAS DO ECRÃ ---
+              As acções que se usam DENTRO de um ecrã, à mão, sem subir ao ribbon.
+              São as mesmas acções (runRibbon) — não há aqui segunda implementação
+              nenhuma, só um segundo caminho para as mesmas. */}
+          <div className="h-[22px] flex items-center gap-0 px-1 flex-shrink-0 border-b"
+            style={{ background: t.bar, borderColor: TOKENS.chromeLine }}>
+            {([[Filter, 'Filtro', 'search'], [RefreshCw, 'Atualizar', 'refresh'],
+               [Star, 'Favoritos', 'fav'], [Printer, 'Imprimir', 'print'],
+               [Download, 'Exportar (Excel)', 'export']] as [any, string, string][]).map(([Ic, label, acc]) => (
+              <button key={label} title={label}
+                onClick={() => (acc === 'fav' ? alternarFav(activeView) : runRibbon(acc))}
+                className="flex items-center gap-1 px-1.5 h-[19px] text-[11px]"
+                style={{ color: TOKENS.textOnLight, border: '1px solid transparent' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = TOKENS.hoverGold; e.currentTarget.style.borderColor = TOKENS.hoverGoldLine; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}>
+                <Ic size={12} style={{ color: acc === 'fav' && favs.includes(activeView) ? '#D9A441' : '#4A6B8A' }} />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div id="erp-active-view" className="flex-1 overflow-hidden">
+            <ErrorBoundary viewKey={activeView}>
+              {Active ? <Active /> : <WelcomePanel tree={tree} moduleName={bizModules.find((b) => b.key === module)?.name} onOpen={onOpen} dark={dark} />}
+            </ErrorBoundary>
+          </div>
         </div>
       </div>
 

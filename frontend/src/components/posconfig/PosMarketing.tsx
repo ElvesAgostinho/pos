@@ -481,7 +481,7 @@ export function EventRequests() {
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
       <div className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] bg-[#EEF1F5] text-[12px]">
         <button onClick={exportar} className="flex items-center gap-2 px-2 py-1 hover:bg-[#EEF1F5]">
-          <span className="text-[#111827]"><Glyph icon="📊" size={15} /></span> Exportar para Excel
+          <Glyph icon="excel" size={15} /> Exportar para Excel
         </button>
         <span className="ml-2">Estado:</span>
         <select value={estado} onChange={(e) => { setEstado(e.target.value); setPage(1); }}

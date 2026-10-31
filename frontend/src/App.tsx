@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import DesktopShell from './components/shell/DesktopShell';
+import { lerPedido } from './config/navegar';
 import EnterpriseDesktop from './components/desktop/EnterpriseDesktop';
 import 'ag-grid-enterprise';
 
@@ -14,29 +15,11 @@ function ClassicBackofficeApp({ initial, initialModule, onDesktop }: { initial: 
   );
 }
 
-/**
- * TROCA DE MÓDULO a partir de um ecrã que ocupa a janela toda (como a Configuração
- * POS, que não tem a moldura da shell). O ecrã deixa aqui o destino e recarrega;
- * a aplicação arranca já no módulo pedido, em vez de obrigar a passar pelo
- * Ambiente de Trabalho.
- */
-const PEDIDO = 'ui_nav';
-export const irParaModulo = (module: string, screen: string) => {
-  localStorage.setItem(PEDIDO, JSON.stringify({ module, screen }));
-  window.location.reload();
-};
-
-function lerPedido(): { screen: string; module: string } | null {
-  try {
-    const raw = localStorage.getItem(PEDIDO);
-    if (!raw) return null;
-    localStorage.removeItem(PEDIDO);   // é um pedido, não uma preferência
-    const p = JSON.parse(raw);
-    return p?.module && p?.screen ? p : null;
-  } catch {
-    return null;
-  }
-}
+// A troca de módulo mudou-se para config/navegar.ts, porque o shell também
+// precisa dela (a tira de módulos da extrema esquerda) e dois ficheiros a
+// importarem-se um ao outro é um ciclo à espera de rebentar. Reexporta-se aqui
+// para quem já a conhecia por este nome continuar a encontrá-la.
+export { irParaModulo } from './config/navegar';
 
 // Entrada = Ambiente de Trabalho (lançador). Abrir um ecrã → clássico DESSE módulo.
 function App() {

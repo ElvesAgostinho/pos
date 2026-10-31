@@ -8,6 +8,7 @@ import { MENUS } from './pmsMenus';
 import { MenuTopo, MenuItem } from '../shared/MenuTopo';
 import { useActiveModules } from '../../hooks/useActiveModules';
 import { TOKENS, RADIUS } from '../../config/theme';
+import { corDoIcone } from '../posconfig/kit';
 import PmsPermissionsDialog from './PmsPermissionsDialog';
 import { useMyAccess } from '../../hooks/useActiveModules';
 import PmsAvailabilityView from './PmsAvailabilityView';
@@ -185,7 +186,8 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   const screenAllowed = (id: string) => accFull || accScreens.length === 0 || accScreens.includes(id);
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#EEF1F5', fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
+    /* Ver PosConfigView: o atributo liga a folha da grelha clássica. */
+    <div data-erp="classico" className="h-full flex flex-col" style={{ background: TOKENS.chrome, fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
       {/* A BARRA DE MENUS é partilhada com a Configuração POS (MenuTopo).
           Eram duas, escritas à parte, a fazer o mesmo — e mantê-las iguais era
           trabalho manual, que se esquece. O que fica aqui é só o que é MESMO
@@ -220,11 +222,13 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           barras escuras empilhadas (a dos menus e esta) tiram metade do ar ao
           ecrã e são o que mais o fazia parecer uma janela de aplicação antiga.
           Aqui o nome do ecrã é só um título, sobre o mesmo branco do conteúdo. */}
-      <div className="flex items-center gap-2.5 px-5 py-3.5 text-[19px] font-semibold flex-shrink-0"
-        style={{ background: TOKENS.surface, color: TOKENS.textOnLight,
-                 borderBottom: `1px solid ${TOKENS.lineSoft}` }}>
-        <Glyph icon={cur.icon} size={17} chip />
-        {cur.label}{hotelName && <span className="font-normal text-[15px] text-[#6B7280]"> — {hotelName}</span>}
+      {/* Uma tira de 24px com o nome do ecrã, não um título de página — ver o
+          mesmo sítio na Configuração POS. */}
+      <div className="flex items-center gap-1.5 px-2 h-[24px] text-[12px] font-bold flex-shrink-0"
+        style={{ background: TOKENS.tabActive, color: TOKENS.textOnLight,
+                 borderBottom: `1px solid ${TOKENS.chromeLine}` }}>
+        <Glyph icon={cur.icon} size={13} tom={corDoIcone(cur.icon)} />
+        {cur.label}{hotelName && <span className="font-normal text-[11.5px] text-[#6B7280]"> — {hotelName}</span>}
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
           className="ml-auto w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.pill }}>
           <Users size={15} />

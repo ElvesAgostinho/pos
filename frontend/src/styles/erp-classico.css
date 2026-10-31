@@ -1,0 +1,141 @@
+/**
+ * A GRELHA CLÁSSICA — as regras que dão à tabela o aspecto de um ERP de gestão.
+ *
+ * PORQUÊ EM CSS E NÃO NOS COMPONENTES: a tabela não está escrita num sítio. Há
+ * mais de sessenta ecrãs, cada um com o seu <table>, cada um com as suas classes
+ * — foram crescendo um a um. Passar a sessenta ficheiros a mudar o mesmo
+ * acolchoamento à mão dá sessenta oportunidades de os deixar diferentes, e a
+ * seguir cada ecrã novo nasce outra vez com o aspecto antigo. Uma folha de
+ * estilo apanha-os todos, inclusive os que ainda não existem.
+ *
+ * O ÂMBITO É DELIBERADO: só debaixo de `[data-erp="classico"]`, que é posto na
+ * raiz da Configuração POS e do PMS. O terminal do POS (o ecrã táctil do
+ * empregado) NÃO leva este atributo e não é tocado — o dono foi explícito:
+ * muda-se o PMS e o backoffice do POS, "menos o terminal do POS". Linhas de
+ * 16 pixéis num ecrã que se usa com o dedo seriam um erro.
+ *
+ * O que estas regras fazem, e o que não fazem: dão as LINHAS da grelha, o
+ * acolchoamento curto e o realce da linha sob o rato. Não mexem em cores de
+ * texto nem em larguras de coluna — isso é de cada ecrã, e um ficheiro de
+ * estilo que começa a adivinhar o conteúdo passa a ser impossível de prever.
+ */
+
+/* ── A GRELHA ──────────────────────────────────────────────────────────── */
+
+[data-erp='classico'] table {
+  border-collapse: collapse;
+}
+
+[data-erp='classico'] thead th {
+  /* A LINHA TEM DE SE VER. Sem ela, vinte colunas de números lêem-se como uma
+     mancha e é preciso o dedo no ecrã para seguir uma linha até ao fim — que é
+     exactamente o que uma grelha existe para evitar. */
+  border: 1px solid #d4d4d4;
+  border-top: 0;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+[data-erp='classico'] tbody td {
+  border: 1px solid #e4e4e4;
+  padding: 1px 6px;
+  font-size: 11.5px;
+}
+
+/* A LINHA ALTERNADA é o que permite seguir uma linha larga sem a perder. Muito
+   ténue de propósito: se se notar, passa a ser um padrão às riscas e cansa. */
+[data-erp='classico'] tbody tr:nth-child(even) > td {
+  background: #f7f9fc;
+}
+
+/* O realce de quem passa por cima é âmbar — a mesma convenção do ribbon: âmbar
+   é "o rato está aqui", azul é "isto está escolhido". Duas coisas diferentes,
+   duas cores diferentes. */
+[data-erp='classico'] tbody tr:hover > td {
+  background: #fdf4d9;
+}
+
+/* ── CAMPOS E BOTÕES ───────────────────────────────────────────────────── */
+
+/* Canto vivo. A `pill` sobrevive onde é mesmo uma pastilha (estados: Pago,
+   Anulado), que é o único sítio onde a forma arredondada quer dizer algo. */
+[data-erp='classico'] input,
+[data-erp='classico'] select,
+[data-erp='classico'] textarea {
+  border-radius: 0;
+}
+
+/* Campos mais baixos. Um formulário de ERP mostra vinte campos sem rolar; com
+   36 pixéis de altura cada um, mostra sete. */
+[data-erp='classico'] input:not([type='checkbox']):not([type='radio']),
+[data-erp='classico'] select {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  font-size: 11.5px;
+}
+
+/* ── CANTO VIVO EM TODA A PARTE ────────────────────────────────────────── */
+
+/*
+ * Os ecrãs foram escritos ao longo de meses com `rounded-[8px]`, `rounded-lg`,
+ * `rounded-md` escritos à mão em cada ficheiro — são dezenas de ficheiros, e
+ * passar por todos a tirar a classe daria dezenas de oportunidades de deixar um
+ * por fazer. Esta regra apanha-os todos de uma vez, inclusive os que ainda não
+ * existem.
+ *
+ * `border-radius` é a única propriedade que se pode varrer assim com segurança:
+ * não mexe em tamanhos nem em posições, por isso não há layout nenhum que possa
+ * partir por causa dela. Espaçamentos NÃO se varrem assim — um ecrã pode estar
+ * a contar com a folga que tem, e foi ao apertar tudo de uma vez que, da outra
+ * vez, duas etiquetas se escreveram uma por cima da outra.
+ *
+ * A pastilha (`rounded-full`) sobrevive: é a forma de um estado (Pago, Anulado)
+ * e de um avatar, onde o redondo quer mesmo dizer alguma coisa.
+ */
+[data-erp='classico'] [class*='rounded']:not([class*='rounded-full']) {
+  border-radius: 0;
+}
+
+/*
+ * A SOMBRA DE CARTÃO DESAPARECE; A DE COISA QUE PAIRA, NÃO.
+ *
+ * Num ERP o que separa duas áreas é uma linha de 1px, não uma caixa a flutuar
+ * sobre o fundo — por isso a sombra discreta dos painéis sai.
+ *
+ * Mas a primeira versão desta regra apanhava `[class*='shadow']` inteiro, e com
+ * isso apagava também a sombra dos DIÁLOGOS (`shadow-2xl`), que não usam portal
+ * e portanto vivem aqui dentro. Um diálogo é precisamente a coisa que tem de se
+ * ver por cima de tudo o resto: tirar-lhe a sombra deixa-o a flutuar sem peso,
+ * colado ao ecrã que está por baixo.
+ *
+ * A distinção já está escrita nos nomes das classes: `xs`/`sm`/`md` são sombras
+ * de superfície pousada, `lg`/`xl`/`2xl` são de coisa levantada. Saem as
+ * primeiras, ficam as segundas — sem precisar de marcar nada à mão em cada
+ * diálogo, que era um passo que se esqueceria no diálogo seguinte.
+ */
+[data-erp='classico'] [class~='shadow'],
+[data-erp='classico'] [class*='shadow-xs'],
+[data-erp='classico'] [class*='shadow-sm'],
+[data-erp='classico'] [class*='shadow-md'] {
+  box-shadow: none;
+}
+
+/*
+ * O TAMANHO DE TEXTO DE BASE DENTRO DA MOLDURA.
+ *
+ * Dezenas de `<label>` espalhados pelos ecrãs não dizem tamanho nenhum — herdam
+ * o do documento, que é 16px. Ao lado de campos a 11.5px, saem a parecer
+ * títulos, e os mais compridos partem-se em duas linhas: foi o que fazia
+ * "Check-In:" aparecer como "Check-" / "In:" e "Atualização automática" ocupar
+ * duas linhas num bloco onde tudo o resto ocupa uma.
+ *
+ * Isto dá-lhes o tamanho certo de uma vez, incluindo os que ainda não foram
+ * escritos. Quem tiver uma classe de tamanho própria continua a ganhar — é uma
+ * regra de BASE, não uma imposição: títulos, totais e números grandes mantêm-se
+ * como estão, porque dizem o seu tamanho.
+ */
+[data-erp='classico'] {
+  font-size: 11.5px;
+}

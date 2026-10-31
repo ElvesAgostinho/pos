@@ -67,8 +67,33 @@ export const TOKENS = {
   textFaint: '#9CA3AF',
 
   // ── SELECÇÃO ──────────────────────────────────────────────────────────────
-  selectedBg: '#DBEAFE',
-  selectedText: '#111827',
+  // DOIS TOKENS, PORQUE SÃO DOIS TRABALHOS. Havia um só, `selectedText`, e
+  // dezenas de ecrãs usavam-no a querer dizer "texto normal" — funcionava por
+  // acaso, por os dois serem escuros. No dia em que a linha seleccionada passou
+  // a azul cheio e este token passou a branco, todos esses títulos
+  // desapareceram: branco sobre branco. Um nome só pode querer dizer uma coisa.
+  selectedBg: '#316AC5',          // a barra azul cheia da linha escolhida (Windows)
+  selectedSoft: '#DBEAFE',        // realce leve (linha sob o rato, pré-selecção)
+  selectedText: '#111827',        // TEXTO SOBRE FUNDO CLARO (o significado antigo, mantido)
+  textOnSelection: '#FFFFFF',     // texto POR CIMA da barra azul — e só aí
+
+  // ── A MOLDURA CLÁSSICA (ERP de gestão) ────────────────────────────────────
+  // As cores da moldura — ribbon, separadores, cabeçalhos de grelha. São
+  // cinzentos quentes de poucos passos, como em qualquer ERP desta família: a
+  // moldura não tem de se ver, tem de desaparecer para o conteúdo aparecer.
+  chrome: '#F0F0F0',              // fundo do ribbon e das barras
+  chromeDeep: '#E4E4E4',          // o mesmo, carregado (limite inferior)
+  chromeLine: '#C8C8C8',          // divisórias da moldura — visíveis, 1px
+  tabBar: '#DCE4F0',              // tira onde assentam os separadores
+  tabActive: '#FFFFFF',           // separador aberto
+  gridHead: '#F3F3F3',            // cabeçalho de coluna
+  gridLine: '#D4D4D4',            // grelha interior — tem de SE VER
+  rowAlt: '#F7F9FC',              // linha alternada
+  // O REALCE DE QUEM PASSA POR CIMA é âmbar, não cinzento: é o que distingue
+  // "o rato está aqui" de "isto está seleccionado" (azul) sem usar duas vezes
+  // a mesma cor para coisas diferentes.
+  hoverGold: 'linear-gradient(to bottom, #FDF4D9, #F7E4A8)',
+  hoverGoldLine: '#D9B451',
 
   // ── ESTADOS ───────────────────────────────────────────────────────────────
   success: '#16A34A',
@@ -116,26 +141,34 @@ export function accentGradient(accent: string = TOKENS.accent): string {
 // imitar janelas do sistema operativo nem cair no extremo oposto (cartão SaaS
 // pastel/whitespace exagerado). A cor não muda — só a forma.
 export const RADIUS = {
-  // Cantos generosos. É o sinal mais imediato de "software desta década" — e o
-  // que mais distingue isto do registo anterior, onde quase tudo era rectângulo
-  // de canto vivo. A escala é curta de propósito: três valores e a pílula.
-  sm: '8px',     // inputs, botões, células, etiquetas
-  md: '12px',    // cartões, painéis, caixas de diálogo pequenas
-  lg: '16px',    // janelas, diálogos grandes
-  pill: '999px', // botões de acção, estados, filtros
+  // CANTO VIVO. Esta escala já foi o contrário — 8/12/16px, cantos generosos,
+  // na ideia de que isso lê como "software desta década". Lê; mas lê como uma
+  // aplicação web, e isto é um ERP de gestão, da família do Comarch, do PRODAT,
+  // do Primavera. Nesses, um canto redondo aparece em exactamente zero sítios:
+  // as caixas encostam umas às outras e o que as separa é uma linha de 1px.
+  // Mudar isto não é nostalgia — é o pedido do dono, e é o que faz com que a
+  // mesma grelha pareça "o programa da contabilidade" em vez de um site.
+  //
+  // Os nomes ficam todos, porque uns quarenta ecrãs os importam; o que muda é
+  // o valor. A pílula sobrevive para os estados (Pago/Anulado), onde continua
+  // a ser a forma certa.
+  sm: '0px',
+  md: '0px',
+  lg: '2px',     // só a moldura exterior de um diálogo
+  pill: '999px', // estados e etiquetas — e mais nada
 } as const;
 
 export const SHADOW = {
-  // A SOMBRA SUBSTITUI A BORDA. Era o contrário: tudo tinha um contorno, e o
-  // ecrã lia-se como uma grelha de caixas encaixadas. Aqui um cartão separa-se
-  // do fundo por estar ligeiramente acima dele — mais perto de papel pousado do
-  // que de uma moldura desenhada. Todas muito abertas e pouco opacas: uma
-  // sombra que se nota já é sombra a mais.
-  xs: '0 1px 2px rgba(16,24,40,0.04)',
-  soft: '0 1px 2px rgba(16,24,40,0.04), 0 2px 6px rgba(16,24,40,0.05)',
-  panel: '0 2px 6px rgba(16,24,40,0.06), 0 12px 32px rgba(16,24,40,0.10)',
-  pop: '0 8px 16px rgba(16,24,40,0.08), 0 24px 48px rgba(16,24,40,0.14)',
-  ring: '0 0 0 3px rgba(37,99,235,0.15)',   // foco — anel azul, não borda dura
+  // A BORDA VOLTA A SUBSTITUIR A SOMBRA — o inverso do que aqui estava escrito.
+  // Num ERP o que separa duas áreas é uma linha de 1px, não um cartão a flutuar:
+  // o ecrã é uma folha única dividida em regiões, e não uma pilha de cartões
+  // pousados. Sombra fica só onde alguma coisa está MESMO por cima do resto —
+  // um menu aberto, um diálogo. Nos painéis encostados, nenhuma.
+  xs: 'none',
+  soft: 'none',
+  panel: '0 2px 10px rgba(0,0,0,0.22)',     // menu suspenso / painel flutuante
+  pop: '0 4px 20px rgba(0,0,0,0.30)',       // diálogo modal
+  ring: '0 0 0 1px #316AC5',                // foco — moldura fina, não halo
 } as const;
 
 // ESPAÇO e TIPOGRAFIA — a outra metade do "suave". Cantos redondos num ecrã
@@ -166,11 +199,14 @@ export function classicTheme(dark: boolean) {
         hover: '#2563EB', accent: TOKENS.gold,
       }
     : {
-        bar: 'linear-gradient(to bottom, #EEF1F5 0%, #F1F2F4 55%, #F1F2F4 100%)',
+        // Cinzento de moldura, com a linha a ver-se. O gradiente de três passos
+        // que aqui estava não é relevo: é quase a mesma cor três vezes, e o que
+        // dava era uma mancha baça. Duas cores e um limite inferior chegam.
+        bar: 'linear-gradient(to bottom, #FBFBFB 0%, #F0F0F0 100%)',
         barText: TOKENS.textOnLight,
-        ribbon: 'linear-gradient(to bottom, #EEF1F5 0%, #F1F2F4 60%, #F1F2F4 100%)',
-        tree: TOKENS.surface, treeText: TOKENS.textOnLight, line: TOKENS.border,
-        body: '#F1F2F4', status: TOKENS.accent, hover: TOKENS.selectedBg,
+        ribbon: 'linear-gradient(to bottom, #FDFDFD 0%, #F0F0F0 92%, #E8E8E8 100%)',
+        tree: TOKENS.surface, treeText: TOKENS.textOnLight, line: TOKENS.chromeLine,
+        body: '#F0F0F0', status: TOKENS.accent, hover: TOKENS.selectedSoft,
         accent: TOKENS.accent,
       };
 }

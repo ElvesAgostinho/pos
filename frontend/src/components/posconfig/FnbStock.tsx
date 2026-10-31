@@ -205,7 +205,7 @@ export default function FnbStock() {
           label: recalcular.isPending ? 'A recalcular…' : 'Recalcular o stock', icon: '⟳', color: '#3B82F6',
           onClick: () => recalcular.mutate(),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#111827', onClick: exportar },
+        { label: 'Exportar para Excel', icon: 'excel', onClick: exportar },
       ]} right={
         <span className="text-[11px] text-[#6B7280]">
           O valor é a quantidade ao custo médio — é o dinheiro parado dentro do armazém.

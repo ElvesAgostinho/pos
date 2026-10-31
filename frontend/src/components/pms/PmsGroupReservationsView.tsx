@@ -5,7 +5,7 @@ import {
   ChevronsLeft, ChevronsRight, FileSpreadsheet, Eye, X, BedDouble,
 } from 'lucide-react';
 import { apiClient } from '../../api/client';
-import { RADIUS, SHADOW } from '../../config/theme';
+import { TOKENS } from '../../config/theme';
 import ClassicGrid from '../ui/ClassicGrid';
 import PmsBlockEditorDialog from './PmsBlockEditorDialog';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
@@ -21,14 +21,14 @@ function Field({ label, children }: { label: string; children: any }) {
     </label>
   );
 }
-const inputCls = 'border border-[#E6E8EC] px-1.5 py-1 text-[11px] bg-white rounded-[8px]';
-const selCls = 'border border-[#E6E8EC] px-1.5 py-1 text-[11px] bg-white rounded-[8px]';
+const inputCls = 'border border-[#D0D5DD] px-1.5 py-[2px] text-[11.5px] bg-white';
+const selCls = 'border border-[#D0D5DD] px-1.5 py-[2px] text-[11.5px] bg-white';
 
 function ToolBtn({ icon: Icon, label, onClick, disabled, color = '#2563EB' }: any) {
   return (
     <button onClick={onClick} disabled={disabled}
       className="flex items-center gap-2 px-2 py-1.5 text-[12px] font-semibold text-[#111827] disabled:opacity-40 disabled:cursor-default hover:bg-[#EEF1F5]">
-      <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: disabled ? '#E6E8EC' : color }}>
+      <span className="w-[15px] h-[15px] flex items-center justify-center flex-shrink-0" style={{ color: disabled ? '#9CA3AF' : color }}>
         <Icon size={13} />
       </span>
       {label}
@@ -232,15 +232,15 @@ export default function PmsGroupReservationsView() {
       </button>
 
       {avancadaAberta && (
-        <div className="flex gap-4 p-3 bg-[#EEF1F5] border-b border-[#F1F2F4]">
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+        <div className="flex gap-3 p-1.5 border-b text-[11.5px]" style={{ background: TOKENS.chrome, borderColor: TOKENS.chromeLine }}>
+          <div className="flex flex-col gap-1 flex-1 min-w-[170px]">
             <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Pesquisa</div>
             <Field label="Pesquisa livre:"><input value={q} onChange={(e) => setQ(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Hóspede:"><input value={guestQuery} onChange={(e) => setGuestQuery(e.target.value)} className={inputCls + ' w-full'} /></Field>
             <Field label="Código do Bloco:"><input value={codigo} onChange={(e) => setCodigo(e.target.value)} className={inputCls + ' w-full'} /></Field>
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
+          <div className="flex flex-col gap-1 flex-1 min-w-[190px]">
             <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Datas</div>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-1"><input type="radio" checked={dateMode === 'fixed'} onChange={() => setDateMode('fixed')} /> Fixo</label>
@@ -248,13 +248,13 @@ export default function PmsGroupReservationsView() {
             </div>
             <div className="flex items-center gap-1">
               <input type="checkbox" checked={ciOn} onChange={(e) => setCiOn(e.target.checked)} />
-              <span className="w-[62px]">Check-In:</span>
+              <span className="w-[62px] whitespace-nowrap">Check-In:</span>
               <input type="date" disabled={!ciOn} value={ciFrom} onChange={(e) => setCiFrom(e.target.value)} className={inputCls} />
               {dateMode === 'period' && <input type="date" disabled={!ciOn} value={ciTo} onChange={(e) => setCiTo(e.target.value)} className={inputCls} />}
             </div>
             <div className="flex items-center gap-1">
               <input type="checkbox" checked={coOn} onChange={(e) => setCoOn(e.target.checked)} />
-              <span className="w-[62px]">Check-Out:</span>
+              <span className="w-[62px] whitespace-nowrap">Check-Out:</span>
               <input type="date" disabled={!coOn} value={coFrom} onChange={(e) => setCoFrom(e.target.value)} className={inputCls} />
               {dateMode === 'period' && <input type="date" disabled={!coOn} value={coTo} onChange={(e) => setCoTo(e.target.value)} className={inputCls} />}
             </div>
@@ -268,7 +268,7 @@ export default function PmsGroupReservationsView() {
             </label>
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+          <div className="flex flex-col gap-1 flex-1 min-w-[170px]">
             <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Quarto / Tarifa</div>
             <Field label="Categoria:">
               <select value={roomType} onChange={(e) => setRoomType(e.target.value)} className={selCls + ' w-full'}>
@@ -284,7 +284,7 @@ export default function PmsGroupReservationsView() {
             </Field>
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[170px]">
+          <div className="flex flex-col gap-1 flex-1 min-w-[170px]">
             <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Comercial</div>
             <Field label="Segmento:">
               <select value={segment} onChange={(e) => { setSegment(e.target.value); setSubSegment(''); }} className={selCls + ' w-full'}>
@@ -304,84 +304,101 @@ export default function PmsGroupReservationsView() {
                 {chList.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </Field>
-            <label className="flex items-center gap-1.5"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
+            <label className="flex items-center gap-1.5 text-[11.5px] whitespace-nowrap"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
             <Field label="Voucher:"><input value={voucher} onChange={(e) => setVoucher(e.target.value)} className={inputCls + ' w-full'} /></Field>
           </div>
 
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[190px]">
+          <div className="flex flex-col gap-1 flex-1 min-w-[190px]">
             <div className="text-[10px] font-bold uppercase text-[#6B7280] mb-0.5">Visualização</div>
-            <button onClick={exportarExcel} className="flex items-center gap-1.5 px-2.5 py-1 border border-[#E6E8EC] bg-white hover:bg-[#EEF1F5] w-fit rounded-[8px] transition-colors"><FileSpreadsheet size={13} /> Excel</button>
+            <button onClick={exportarExcel} className="flex items-center gap-1 px-2 h-[20px] text-[11.5px] border border-[#D0D5DD] bg-white hover:bg-[#FDF4D9] w-fit flex-shrink-0"><FileSpreadsheet size={12} style={{ color: '#2E7D32' }} /> Excel</button>
             <div className="flex items-center gap-1.5">
-              <label className="flex items-center gap-1.5 cursor-pointer">
+              <label className="flex items-center gap-1.5 cursor-pointer text-[11.5px] whitespace-nowrap">
                 <input type="checkbox" checked={autoUpdate} onChange={(e) => setAutoUpdate(e.target.checked)} /> Atualização automática
               </label>
               <button onClick={() => setAutoUpdate((v) => !v)}
-                className={`flex items-center gap-1.5 px-2 py-1 border border-[#E6E8EC] ml-auto ${autoUpdate ? 'bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827]' : 'bg-white hover:bg-[#EEF1F5]'}`}>
-                <RefreshCw size={13} /> Auto
+                className="flex items-center gap-1 px-2 h-[20px] text-[11.5px] border border-[#D0D5DD] bg-white hover:bg-[#FDF4D9] ml-auto flex-shrink-0">
+                <RefreshCw size={12} style={{ color: '#2F6FB5' }} /> Auto
               </button>
             </div>
-            <label className="flex items-center gap-1.5"><input type="checkbox" checked={ocultarAposPesquisa} onChange={(e) => setOcultarAposPesquisa(e.target.checked)} /> Ocultar filtros após pesquisa</label>
+            <label className="flex items-center gap-1.5 text-[11.5px] whitespace-nowrap"><input type="checkbox" checked={ocultarAposPesquisa} onChange={(e) => setOcultarAposPesquisa(e.target.checked)} /> Ocultar filtros após pesquisa</label>
           </div>
 
           <button onClick={pesquisar}
-            className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px] hover:brightness-110 transition-[filter]"
-            style={{ background: '#2563EB', borderRadius: RADIUS.md, boxShadow: SHADOW.soft }}>
-            <RefreshCw size={20} /> Pesquisar
+            className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 h-[22px] self-end text-[11.5px] font-semibold"
+            style={{
+              background: 'linear-gradient(to bottom, #FDFDFD, #EDEDED)',
+              border: `1px solid ${TOKENS.chromeLine}`, color: TOKENS.textOnLight,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = TOKENS.hoverGold; e.currentTarget.style.borderColor = TOKENS.hoverGoldLine; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(to bottom, #FDFDFD, #EDEDED)'; e.currentTarget.style.borderColor = TOKENS.chromeLine; }}>
+            <RefreshCw size={13} style={{ color: '#2F6FB5' }} /> Pesquisar
           </button>
         </div>
       )}
 
+      {/* A GRELHA DOS BLOQUEIOS. Uma tabela a sério, como a lista de reservas:
+          as linhas, o acolchoamento curto e o realce vêm da folha
+          styles/erp-classico.css, que só sabe apanhar `table`. Em `div`s ficava
+          de fora e era preciso repetir tudo aqui à mão — e depois divergir. */}
       <div className="flex-1 overflow-auto bg-white">
-        <div className="grid text-[11px] font-semibold text-[#111827] border-b border-[#F1F2F4] bg-[#EEF1F5] sticky top-0 z-10"
-          style={{ gridTemplateColumns: '8% 8% 24% 20% 22% 18%' }}>
-          <div className="px-3 py-2">Hotel</div>
-          <div className="px-3 py-2">Ações</div>
-          <div className="px-3 py-2">Resumo</div>
-          <div className="px-3 py-2">Entidades</div>
-          <div className="px-3 py-2">Informações</div>
-          <div className="px-3 py-2">Pagamento</div>
-        </div>
-        {isLoading ? <div className="p-4 text-gray-400 text-[12px]">A carregar…</div> : pageRows.length === 0 ? (
-          <div className="p-6 text-center text-gray-400 text-[12px]">Nenhum registo encontrado.</div>
-        ) : pageRows.map((b: any) => (
-          <div key={b.id} onClick={() => setSelId(b.id)}
-            className={`grid border-b border-[#F1F2F4] cursor-pointer text-[12px] ${selId === b.id ? 'bg-[#EEF1F5]' : 'hover:bg-[#FFFFFF]'}`}
-            style={{ gridTemplateColumns: '8% 8% 24% 20% 22% 18%' }}>
-            <div className="px-3 py-3 flex items-start gap-2 text-[#111827]">
-              <Building2 size={14} className="text-[#6B7280] flex-shrink-0 mt-0.5" /><span className="truncate">{hotelName || '—'}</span>
-            </div>
-            <div className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-              <button title="Ver Pickup" onClick={() => setShowPickup(b)}
-                className="w-7 h-7 rounded flex items-center justify-center bg-[#EEF1F5] text-[#111827]"><Eye size={14} /></button>
-            </div>
-            <div className="px-3 py-3 leading-tight">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-[15px]">{b.code}</span>
-                {b.is_guaranteed && <span className="text-[10px] text-white font-semibold px-2 py-0.5 rounded bg-[#3B82F6]">Garantido</span>}
-              </div>
-              <div className="text-[11px] text-gray-600">{b.description}</div>
-              <div className="mt-0.5">
-                <span className="text-[#111827]">{b.valid_from}</span> <span className="text-gray-400">→</span> <span className="text-[#B91C1C]">{b.valid_to}</span>
-                <span className="text-gray-400"> · {b.nights} noite(s)</span>
-              </div>
-            </div>
-            <div className="px-3 py-3 leading-tight">
-              <div className="font-semibold">{b.main_entity_name || b.group_name || '—'}</div>
-              {b.contact_name && <div className="text-[10px] text-gray-500">{b.contact_name}</div>}
-              {b.default_voucher && <div className="text-[10px] text-gray-500">Voucher {b.default_voucher}</div>}
-            </div>
-            <div className="px-3 py-3 leading-tight">
-              <div>{b.total_rooms || 0} quarto(s) bloqueado(s)</div>
-              <div className="text-[10px] text-gray-500">{b.reservations_count || 0} reserva(s) pickup</div>
-              {b.default_rate_plan_code && <div className="text-[10px] text-gray-500">{b.default_rate_plan_code}</div>}
-            </div>
-            <div className="px-3 py-3 leading-tight">
-              {Number(b.contract_value) > 0
-                ? <div className="font-bold">{Number(b.contract_value).toLocaleString('pt-PT', { minimumFractionDigits: 2 })} Kz</div>
-                : <span className="text-gray-400">—</span>}
-            </div>
-          </div>
-        ))}
+        <table className="w-full">
+          <thead className="sticky top-0 z-10">
+            <tr style={{ background: 'linear-gradient(to bottom, #FDFDFD, #EFEFEF)' }}>
+              <th style={{ width: 34 }}>N.º</th>
+              <th>Código</th>
+              <th>Descrição</th>
+              <th>Entidade</th>
+              <th>De</th>
+              <th>Até</th>
+              <th>Noites</th>
+              <th className="text-right">Quartos</th>
+              <th className="text-right">Pickup</th>
+              <th>Tarifa</th>
+              <th className="text-right">Contrato</th>
+              <th style={{ width: 40 }}>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <tr><td colSpan={12} className="text-center text-gray-400 py-3">A carregar…</td></tr>
+            ) : pageRows.length === 0 ? (
+              <tr><td colSpan={12} className="text-center text-gray-400 py-3">Nenhum registo encontrado.</td></tr>
+            ) : pageRows.map((b: any, i: number) => {
+              const sel = selId === b.id;
+              return (
+                <tr key={b.id} onClick={() => setSelId(b.id)} className="cursor-pointer"
+                  style={sel ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection } : undefined}>
+                  <td className="text-right" style={{ color: sel ? '#FFFFFF' : '#9CA3AF' }}>{i + 1}</td>
+                  <td className="font-bold" title={hotelName || ''}>
+                    {b.code}
+                    {/* "Garantido" era uma pastilha azul numa linha à parte. Numa
+                        grelha não há linha à parte: fica um ponto a seguir ao
+                        código, que é onde o olho já está. */}
+                    {b.is_guaranteed && <span title="Garantido" className="ml-1" style={{ color: sel ? '#FFFFFF' : '#2E7D32' }}>●</span>}
+                  </td>
+                  <td>{b.description}</td>
+                  <td title={b.contact_name || ''}>{b.main_entity_name || b.group_name || '—'}</td>
+                  <td>{b.valid_from}</td>
+                  <td style={{ color: sel ? '#FFFFFF' : '#B91C1C' }}>{b.valid_to}</td>
+                  <td className="text-center">{b.nights}</td>
+                  <td className="text-right">{b.total_rooms || 0}</td>
+                  <td className="text-right">{b.reservations_count || 0}</td>
+                  <td>{b.default_rate_plan_code || ''}</td>
+                  <td className="text-right font-bold">
+                    {Number(b.contract_value) > 0
+                      ? Number(b.contract_value).toLocaleString('pt-PT', { minimumFractionDigits: 2 })
+                      : ''}
+                  </td>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <button title="Ver Pickup" onClick={() => setShowPickup(b)}
+                      className="w-[18px] h-[18px] flex items-center justify-center"
+                      style={{ color: sel ? '#FFFFFF' : '#2F6FB5' }}><Eye size={13} /></button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
       <div className="flex items-center gap-3 px-3 py-1 border-t border-[#E6E8EC] bg-[#EEF1F5] text-[11px] flex-wrap">

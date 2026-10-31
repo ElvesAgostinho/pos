@@ -826,16 +826,14 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
         right={
           <div className="flex items-center gap-1">
             <button onClick={() => save.mutate()} disabled={save.isPending}
-              className="flex items-center gap-2 px-3 py-1 text-[12px] text-[#111827] disabled:opacity-35 hover:bg-[#EEF1F5]">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center text-white"
-                style={{ background: '#2563EB' }}><Glyph icon="✔" size={15} /></span>
+              className="flex items-center gap-1 px-2 h-[22px] text-[11.5px] text-[#111827] disabled:opacity-35 hover:bg-[#FDF4D9] border border-transparent hover:border-[#D9B451]">
+              <Glyph icon="✔" size={13} tom="#2E7D32" />
               {save.isPending ? 'A gravar…' : 'Gravar'}
             </button>
-            <span className="w-px h-6 bg-[#EEF1F5]" />
+            <span className="w-px h-4 bg-[#D0D5DD]" />
             <button onClick={onClose}
-              className="flex items-center gap-2 px-3 py-1 text-[12px] text-[#111827] hover:bg-[#EEF1F5]">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center text-white"
-                style={{ background: '#DC2626' }}><Glyph icon="✖" size={15} /></span>
+              className="flex items-center gap-1 px-2 h-[22px] text-[11.5px] text-[#111827] hover:bg-[#FDF4D9] border border-transparent hover:border-[#D9B451]">
+              <Glyph icon="✖" size={13} tom="#C0392B" />
               Fechar
             </button>
           </div>

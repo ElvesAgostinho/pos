@@ -293,7 +293,7 @@ export default function FnbInventory() {
                 lancar.mutate(edit.id);
             },
           },
-          { label: 'Exportar para Excel', icon: '📊', onClick: () => {
+          { label: 'Exportar para Excel', icon: 'excel', onClick: () => {
             const head = ['Código', 'Descrição', 'Contagem', 'Teórico', 'Diferença'];
             const csv = [head.join(';'), ...linhas.map((l) =>
               [l.code, l.name, l.quantity, l.theoretical_qty,

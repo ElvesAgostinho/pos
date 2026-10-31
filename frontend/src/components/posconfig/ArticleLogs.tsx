@@ -99,7 +99,7 @@ export default function ArticleLogs({ id, nome, onClose }: {
         <div className="flex justify-between px-3 py-2 border-t border-[#F1F2F4]">
           <button onClick={exportar}
             className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-[#111827]" style={{ background: '#FFFFFF' }}>
-            <Glyph icon="⬇" size={13} /> Exportar para Excel
+            <Glyph icon="excel" size={14} /> Exportar para Excel
           </button>
           <button onClick={onClose}
             className="flex items-center gap-2 px-4 py-1.5 text-[12px] font-bold text-white" style={{ background: '#DC2626' }}>

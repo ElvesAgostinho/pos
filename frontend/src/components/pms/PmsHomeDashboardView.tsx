@@ -34,15 +34,15 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
   const go = (section: string) => onNavigate?.(section);
 
   return (
-    <div className="flex flex-col h-full bg-[#EEF1F5] overflow-auto p-4 gap-4 text-[12px]">
-      <div className="bg-white border border-[#E6E8EC]">
-        <div className="px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] font-bold text-[#111827]">
+    <div className="flex flex-col h-full bg-[#F0F0F0] overflow-auto p-2 gap-2 text-[11.5px]">
+      <div className="bg-white border border-[#C8C8C8]">
+        <div className="px-2 py-[2px] text-[11px] border-b border-[#C8C8C8] font-bold text-[#111827]" style={{ background: 'linear-gradient(to bottom, #FDFDFD, #EFEFEF)' }}>
           Primeiros Passos
         </div>
         <div className="p-3 space-y-1">
           {STEPS.map((s) => (
             <button key={s.section} onClick={() => go(s.section)}
-              className="w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-[#EEF1F5] disabled:opacity-60"
+              className="w-full flex items-center gap-2 px-2 py-[3px] text-left hover:bg-[#FDF4D9] disabled:opacity-60"
               disabled={!onNavigate}>
               <Circle size={15} className="text-[#6B7280] flex-shrink-0" />
               <span className="text-[#111827]">{s.label}</span>
@@ -54,15 +54,15 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white border border-[#E6E8EC]">
-          <div className="px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] font-bold text-[#111827] flex items-center gap-2">
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-white border border-[#C8C8C8]">
+          <div className="px-2 py-[2px] text-[11px] border-b border-[#C8C8C8] font-bold text-[#111827] flex items-center gap-1.5" style={{ background: 'linear-gradient(to bottom, #FDFDFD, #EFEFEF)' }}>
             <Glyph icon="🔍" size={14} /> Check-ins hoje ({arrivalRows.length})
           </div>
           <div className="max-h-[280px] overflow-auto">
             {arrivalRows.length === 0 && <div className="text-center text-[#6B7280] py-6">Sem chegadas hoje.</div>}
             {arrivalRows.map((r: any) => (
-              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#F1F2F4]">
+              <div key={r.id} className="flex items-center justify-between px-2 py-[2px] border-b border-[#EDEDED] hover:bg-[#FDF4D9]">
                 <div>
                   <div className="font-semibold text-[#111827]">{r.guest_name}</div>
                   <div className="text-[10px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>
@@ -73,14 +73,14 @@ export default function PmsHomeDashboardView({ onNavigate }: { onDesktop?: () =>
           </div>
         </div>
 
-        <div className="bg-white border border-[#E6E8EC]">
-          <div className="px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] font-bold text-[#111827] flex items-center gap-2">
+        <div className="bg-white border border-[#C8C8C8]">
+          <div className="px-2 py-[2px] text-[11px] border-b border-[#C8C8C8] font-bold text-[#111827] flex items-center gap-1.5" style={{ background: 'linear-gradient(to bottom, #FDFDFD, #EFEFEF)' }}>
             <Glyph icon="🚫" size={14} /> Check-outs hoje ({departureRows.length})
           </div>
           <div className="max-h-[280px] overflow-auto">
             {departureRows.length === 0 && <div className="text-center text-[#6B7280] py-6">Sem saídas hoje.</div>}
             {departureRows.map((r: any) => (
-              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 border-b border-[#F1F2F4]">
+              <div key={r.id} className="flex items-center justify-between px-2 py-[2px] border-b border-[#EDEDED] hover:bg-[#FDF4D9]">
                 <div>
                   <div className="font-semibold text-[#111827]">{r.guest_name}</div>
                   <div className="text-[10px] text-[#6B7280]">{r.confirmation} · {r.room_type_name}{r.room_number ? ` · Quarto ${r.room_number}` : ''}</div>

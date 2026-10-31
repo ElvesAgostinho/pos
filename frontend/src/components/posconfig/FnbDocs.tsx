@@ -574,7 +574,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
           },
         },
         { label: 'Copiar', icon: '⧉', color: '#111827', disabled: !sel, onClick: () => copiar.mutate(sel!) },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#111827', onClick: exportar },
+        { label: 'Exportar para Excel', icon: 'excel', onClick: exportar },
       ]} />
     </div>
   );

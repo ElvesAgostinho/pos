@@ -235,7 +235,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
                 style={{
                   borderColor: '#EEF1F5',
                   background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#FFFFFF' : TOKENS.surface,
-                  color: sel === r.id ? TOKENS.selectedText : undefined,
+                  color: sel === r.id ? TOKENS.textOnSelection : undefined,
                 }}
                 onMouseEnter={(e) => { if (sel !== r.id) e.currentTarget.style.background = TOKENS.hover; }}
                 onMouseLeave={(e) => { if (sel !== r.id) e.currentTarget.style.background = i % 2 ? '#FFFFFF' : TOKENS.surface; }}>
@@ -289,7 +289,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
         ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#111827', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
         { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },
         { icon: '🖶', label: 'Imprimir', color: '#111827', onClick: () => window.print() },
-        { icon: '⤓', label: 'Exportar para Excel', color: '#111827', onClick: exportCsv },
+        { icon: 'excel', label: 'Exportar para Excel', onClick: exportCsv },
       ]} />
     </div>
   );

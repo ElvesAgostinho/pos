@@ -442,7 +442,7 @@ export default function PosDocSearch() {
           label: 'Anular', icon: '🚫', disabled: !sel || selRow?.voided,
           onClick: () => setAnular({ id: sel, number: selRow.number }),
         },
-        { label: 'Exportar para Excel', icon: '⬇', color: '#111827', onClick: exportar },
+        { label: 'Exportar para Excel', icon: 'excel', onClick: exportar },
       ]} />
 
       {anular && <PopupAnular anular={anular} setAnular={setAnular} acao={acao} />}
