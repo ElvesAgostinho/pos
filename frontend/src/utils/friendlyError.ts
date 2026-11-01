@@ -43,14 +43,38 @@ const label = (f: string) => FIELD_PT[f] || f.replace(/_/g, ' ');
 // Mensagens do DRF/Django → português claro.
 function humanize(msg: string, field?: string): string {
   const m = String(msg);
-  const f = field ? label(field) : 'este campo';
+  // QUANDO NÃO SE SABE O CAMPO, A FRASE TEM DE SER OUTRA — e não a mesma com um
+  // substituto enfiado lá dentro. Era isso que dava "Já existe um registo com
+  // este ESTE CAMPO. Use outro." e "O ESTE CAMPO escolhido não existe": o
+  // substituto já trazia o "este", e a frase punha-lhe outro à frente.
+  //
+  // Uma mensagem de erro mal escrita custa mais do que parece: quem a lê está
+  // parado, a meio de uma coisa, e fica sem saber se o problema é dele ou do
+  // programa. E é a cara do produto à frente do cliente do nosso cliente.
+  // `non_field_errors` e `__all__` NÃO SÃO CAMPOS. É a gaveta onde o Django põe
+  // os erros que não pertencem a nenhum campo em particular — uma restrição de
+  // base de dados, um `unique_together`, uma regra do modelo. Tratados como
+  // nome de campo, saía "Já existe um registo com este non field errors".
+  const semCampo = !field || field === 'non_field_errors' || field === '__all__'
+    || field === 'detail';
+  const conhecido = !semCampo;
+  const f = conhecido ? label(field as string) : 'este campo';
   if (/required|obrigat/i.test(m)) return `Falta preencher: ${f}.`;
   if (/blank|em branco/i.test(m)) return `${f} não pode ficar vazio.`;
-  if (/already exists|unique|já existe/i.test(m)) return `Já existe um registo com este ${f.toLowerCase()}. Use outro.`;
+  if (/already exists|unique|já existe/i.test(m)) {
+    return conhecido
+      ? `Já existe um registo com este ${f.toLowerCase()}. Use outro.`
+      : 'Já existe um registo igual. Um dos campos não pode repetir-se — '
+        + 'normalmente o código ou o nome. Mude-o e tente outra vez.';
+  }
   if (/valid integer|número inteiro/i.test(m)) return `${f} tem de ser um número inteiro.`;
   if (/valid number|número válido/i.test(m)) return `${f} tem de ser um número.`;
   if (/valid date|data válida/i.test(m)) return `${f} tem de ser uma data válida.`;
-  if (/does not exist|não existe|invalid pk/i.test(m)) return `O ${f.toLowerCase()} escolhido não existe (foi apagado?). Escolha outro.`;
+  if (/does not exist|não existe|invalid pk/i.test(m)) {
+    return conhecido
+      ? `O ${f.toLowerCase()} escolhido não existe (foi apagado?). Escolha outro.`
+      : 'Uma das opções escolhidas já não existe (foi apagada?). Volte a escolher.';
+  }
   if (/protected|referenced|foreign key/i.test(m)) return `Não é possível eliminar: este registo está a ser usado noutro sítio.`;
   if (/null/i.test(m) && /not.*allow/i.test(m)) return `${f} é obrigatório.`;
   return m;
