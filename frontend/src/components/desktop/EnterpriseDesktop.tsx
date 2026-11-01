@@ -65,7 +65,7 @@ const TEXTO_FRACO = '#A0A0A0';    // legendas, estados
 
 export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string, module: string) => void }) {
   const nav = useNavigate();
-  const { data: lic } = useActiveModules();
+  const { data: lic, isError: licencaFalhou } = useActiveModules();
   const user = tokenStore.getUser();
   const erpName = getAppearance('erpName');
   // Logótipo real da empresa (Administração → Empresa) — mesma fonte que o login
@@ -328,6 +328,20 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           <JanelasIcone />
         </button>
 
+        {/* NÃO SE CONSEGUIU LER A LICENÇA.
+            Sem isto, a lista de módulos ficava vazia e o dono via o PMS
+            DESAPARECER da barra sem uma palavra — um módulo que ele comprou,
+            sumido, e nada no ecrã a dizer porquê. Uma lista curta desenhada
+            como se fosse a verdade é pior do que um aviso. */}
+        {licencaFalhou && (
+          <div className="flex items-center gap-2 px-3 text-[11.5px]"
+            style={{ color: '#F0B86E' }}
+            title="O servidor não respondeu ao pedido da licença. Os módulos que comprou continuam lá — só não se conseguiu confirmar quais são.">
+            <ShieldCheck size={14} strokeWidth={1.8} />
+            Não foi possível ler a licença
+          </div>
+        )}
+
         {/* OS MÓDULOS COMO SEPARADORES. É aqui que se troca de módulo — era um
             menu escondido atrás do logótipo, que ninguém encontrava (o dono
             escreveu "Não vejo o PMS" com o PMS licenciado e a funcionar).
@@ -571,8 +585,13 @@ function PainelDoAmbiente({ modulo, aberto, alternar, onAbrir }: {
   const mosaicos = modulo === 'pms' ? MOSAICOS_PMS : MOSAICOS_POS;
   const { visiveis, ligados, alternar: ligarMosaico } = useMosaicosLigados(modulo, mosaicos);
   const [aEscolher, setAEscolher] = useState(false);
-  const { data, isError } = usePainelRapido(aberto);
+  const { data, isError, isPending, dataUpdatedAt } = usePainelRapido(aberto);
   const alertas: any[] = data?.alerts || [];
+  // A HORA DA ÚLTIMA LEITURA BOA. Vem do próprio TanStack Query, que já a
+  // guarda — não se inventa um relógio paralelo que mais tarde discorde.
+  const lidoAs = dataUpdatedAt
+    ? new Date(dataUpdatedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+    : '';
 
   // FECHADO, fica só uma pega. Não desaparece de vez: quem o fechou sem querer
   // tem de ter onde carregar para o trazer de volta, e procurá-lo numa definição
@@ -609,10 +628,31 @@ function PainelDoAmbiente({ modulo, aberto, alternar, onAbrir }: {
           title="Esconder">×</button>
       </div>
 
+      {/* A LEITURA FALHOU.
+          Antes apagava os números todos e punha traços. Numa ligação fraca —
+          que é a regra, não a excepção — isso quer dizer que a recepção fica
+          sem ver nada de cada vez que um pedido se perde, mesmo tendo uma
+          leitura de há vinte segundos que ainda serve para tudo.
+          Agora os últimos números FICAM, com a hora a que foram lidos: quem
+          olha decide se ainda servem. O que não se faz é mostrá-los como se
+          fossem de agora — por isso a hora aparece, e o aviso com ela. */}
+      {/* ENQUANTO TENTA, DIZ QUE ESTÁ A TENTAR.
+          O TanStack repete um pedido falhado três vezes antes de desistir, e
+          durante esses segundos a consulta ainda não é um erro — é um "não
+          sei". O painel ficava com sete traços e NENHUMA palavra: quem olhava
+          via uma casa com zero de tudo e nenhuma pista de que os números
+          estavam a caminho. Um ecrã que não sabe tem de o dizer. */}
+      {isPending && !data && (
+        <div className="px-2.5 py-1.5 text-[10.5px]" style={{ color: '#9AA6B4' }}>
+          a consultar o servidor…
+        </div>
+      )}
+
       {isError && (
-        <div className="px-2.5 py-2.5 text-[11px]" style={{ color: '#E89A8E' }}>
-          Não foi possível ler o estado da casa. Os números seriam inventados — por
-          isso não se mostram.
+        <div className="px-2.5 py-1.5 text-[10.5px] leading-snug" style={{ color: '#F0B86E' }}>
+          {data
+            ? `Sem ligação ao servidor. Estes números são da última leitura${lidoAs ? ', às ' + lidoAs : ''}.`
+            : 'Não foi possível ler o estado da casa. Os números seriam inventados — por isso não se mostram.'}
         </div>
       )}
 

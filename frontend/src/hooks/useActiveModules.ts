@@ -32,11 +32,53 @@ export const useFeatures = () =>
 
 export interface ActiveModules { active: string[]; core: string[]; catalog: any[]; }
 
-// Módulos ativados pela licença (o dono ativa/desativa). Cai para "tudo" em caso de erro.
+/**
+ * MÓDULOS ACTIVADOS PELA LICENÇA.
+ *
+ * ─── O QUE ACONTECEU ──────────────────────────────────────────────────────
+ * O comentário dizia 'Cai para "tudo" em caso de erro'. A função NÃO fazia
+ * isso — não tinha try/catch nenhum. Falhava a leitura, `data` ficava
+ * indefinido, e quem a chamava escrevia `lic?.active || []`: uma lista vazia,
+ * que quer dizer "não tem módulo nenhum licenciado".
+ *
+ * O resultado foi o dono abrir o Ambiente de Trabalho e O PMS TER
+ * DESAPARECIDO da barra de tarefas. O PMS está licenciado, o servidor estava
+ * de pé e respondia — bastou um pedido que não chegou (a máquina estava a
+ * correr a suite de testes ao mesmo tempo) para um módulo pago sumir sem uma
+ * palavra de explicação.
+ *
+ * ─── PORQUE NÃO SE "CAI PARA TUDO" ────────────────────────────────────────
+ * Era o que o comentário prometia, e está errado: inventar uma licença é
+ * mostrar a um cliente módulos que ele não comprou. O que se faz é LEMBRAR a
+ * última resposta boa. É a única fonte honesta que existe — foi o servidor que
+ * a deu, e um soluço de rede não a torna falsa.
+ *
+ * Só na PRIMEIRA vez, num computador que nunca conseguiu ler a licença, é que
+ * não há nada para lembrar. Aí o erro sobe, e quem chama tem de o dizer em vez
+ * de desenhar uma lista curta como se fosse a verdade.
+ */
+const MEMORIA_MODULOS = 'ultimos_modulos_licenciados';
+
 export const useActiveModules = () =>
   useQuery({
     queryKey: ['licensing', 'active-modules'],
-    queryFn: async (): Promise<ActiveModules> => (await apiClient.get('licensing/active-modules/')).data,
+    queryFn: async (): Promise<ActiveModules> => {
+      try {
+        const d: ActiveModules = (await apiClient.get('licensing/active-modules/')).data;
+        if (Array.isArray(d?.active)) {
+          try { localStorage.setItem(MEMORIA_MODULOS, JSON.stringify(d.active)); } catch { /* sem espaço */ }
+        }
+        return d;
+      } catch (erro) {
+        try {
+          const ultimos = JSON.parse(localStorage.getItem(MEMORIA_MODULOS) || 'null');
+          if (Array.isArray(ultimos) && ultimos.length) {
+            return { active: ultimos, core: [], catalog: [] };
+          }
+        } catch { /* valor estragado: trata-se como se não houvesse */ }
+        throw erro;
+      }
+    },
     staleTime: 5 * 60 * 1000,
   });
 
