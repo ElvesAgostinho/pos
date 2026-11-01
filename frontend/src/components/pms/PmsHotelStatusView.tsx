@@ -114,7 +114,7 @@ export default function PmsHotelStatusView() {
           {rooms.length === 0 && !isLoading && <div className="col-span-8 text-center text-gray-400 py-6">Sem quartos criados.</div>}
         </div>
       </div>
-      <Toolbar actions={[{ label: 'Atualizar', icon: '⟳', color: '#111827', onClick: refresh }]} />
+      <Toolbar actions={[{ label: 'Atualizar', icon: '⟳', onClick: refresh }]} />
 
       {selId && selRes && (
         <PmsReservationDetailDialog reservation={selRes} hotelName={hotelName}

@@ -200,8 +200,8 @@ export default function CurrencyEditor({ row, onClose }: { row: any; onClose: ()
       {hist && <CurrencyHistory id={row.id} code={d.code} onClose={() => setHist(false)} />}
 
       <Toolbar actions={[
-        ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', color: '#111827', onClick: () => setHist(true) }]),
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
+        ...(isNew ? [] : [{ icon: '🕐', label: 'Histórico', onClick: () => setHist(true) }]),
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

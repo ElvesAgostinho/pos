@@ -119,7 +119,7 @@ export default function PmsDocumentScanView() {
         )}
       </div>
       <Toolbar actions={[
-        { label: 'Gravar Nº de Documento', icon: '💾', color: '#111827', onClick: saveNumber, disabled: !selected },
+        { label: 'Gravar Nº de Documento', icon: '💾', onClick: saveNumber, disabled: !selected },
       ]} />
     </div>
   );

@@ -163,8 +163,8 @@ export default function BarcodePrint() {
       </div>
 
       <Toolbar actions={[
-        { icon: '🖶', label: 'Imprimir', color: '#111827', disabled: !Object.keys(sel).length, onClick: print },
-        { icon: '⤓', label: 'Exportar', color: '#111827', disabled: !Object.keys(sel).length, onClick: exportCsv },
+        { icon: '🖶', label: 'Imprimir', disabled: !Object.keys(sel).length, onClick: print },
+        { icon: '⤓', label: 'Exportar', disabled: !Object.keys(sel).length, onClick: exportCsv },
       ]} />
     </div>
   );

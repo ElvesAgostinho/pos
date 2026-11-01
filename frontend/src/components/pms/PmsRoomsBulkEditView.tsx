@@ -181,12 +181,12 @@ export default function PmsRoomsBulkEditView({ onNavigate }: { onNavigate?: (s: 
         )}
       </div>
       <Toolbar actions={[
-        { label: 'Adicionar Linha', icon: '＋', color: '#111827', onClick: addRow,
+        { label: 'Adicionar Linha', icon: '＋', onClick: addRow,
           disabled: rtList.length === 0,
           title: rtList.length === 0
             ? 'Crie primeiro uma categoria de quarto — um quarto tem de pertencer a uma.'
             : 'Acrescenta uma linha para um quarto novo' },
-        { label: saving ? 'A gravar…' : 'Gravar Tudo', icon: '💾', color: '#111827', onClick: save, disabled: saving },
+        { label: saving ? 'A gravar…' : 'Gravar Tudo', icon: '💾', onClick: save, disabled: saving },
       ]} />
     </div>
   );

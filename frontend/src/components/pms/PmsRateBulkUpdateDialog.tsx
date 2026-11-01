@@ -118,7 +118,7 @@ export default function PmsRateBulkUpdateDialog({ ratePlans, preselectedIds, onC
         </div>
         <Toolbar actions={[
           { label: 'Cancelar', icon: '✕', color: '#3B82F6', onClick: onClose },
-          { label: sending ? 'A enviar…' : 'Enviar', icon: '✔', color: '#111827', onClick: send, disabled: sending },
+          { label: sending ? 'A enviar…' : 'Enviar', icon: '✔', onClick: send, disabled: sending },
         ]} />
       </div>
     </div>

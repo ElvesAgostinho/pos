@@ -72,8 +72,8 @@ export default function PmsPhoneDirectoryView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Novo', icon: '＋', color: '#111827', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#111827', onClick: save },
+        { label: 'Novo', icon: '＋', onClick: novo },
+        { label: 'Gravar', icon: '💾', onClick: save },
         { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#DC2626' },
       ]} />
     </div>

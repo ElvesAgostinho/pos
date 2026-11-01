@@ -186,7 +186,7 @@ export default function PmsFinanceView() {
       </div>
       <Toolbar actions={[
         { label: 'Limpar', icon: '✕', color: '#3B82F6', onClick: novo },
-        { label: 'Gravar Transação', icon: '💾', color: '#111827', onClick: save },
+        { label: 'Gravar Transação', icon: '💾', onClick: save },
       ]} />
     </div>
   );

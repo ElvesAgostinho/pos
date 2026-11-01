@@ -185,9 +185,9 @@ export default function StockErp() {
       </div>
 
       <Toolbar actions={[
-        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#111827',
+        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação',
           disabled: !d.id, onClick: () => test.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', onClick: () => save.mutate() },
       ]} />
     </div>
   );

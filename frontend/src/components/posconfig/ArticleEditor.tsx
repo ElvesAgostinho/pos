@@ -821,7 +821,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
       {/* Barra inferior — "Visualizar Logs" à esquerda (como na referência), Gravar/Fechar à direita. */}
       <Toolbar
         actions={isNew ? [] : [
-          { icon: '☰', label: 'Visualizar Logs', color: '#111827', onClick: () => setVerLogs(true) },
+          { icon: '☰', label: 'Visualizar Logs', onClick: () => setVerLogs(true) },
         ]}
         right={
           <div className="flex items-center gap-1">

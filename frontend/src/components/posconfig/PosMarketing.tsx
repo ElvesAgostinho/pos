@@ -337,7 +337,7 @@ export function EntitySearch() {
         { label: 'Adicionar', icon: '➕', onClick: () => setEdit({ is_blocked: false }) },
         { label: 'Editar', icon: '✏', disabled: !sel, onClick: () => setEdit({ ...rows.find((r) => r.id === sel) }) },
         { label: 'Campos obrigatórios', icon: '☑', color: '#3B82F6', onClick: () => setObrig(true) },
-        { label: 'Controlo de duplicação', icon: '⧉', color: '#111827', onClick: () => setDups(true) },
+        { label: 'Controlo de duplicação', icon: '⧉', onClick: () => setDups(true) },
       ]} />
     </div>
   );
@@ -477,7 +477,7 @@ export function EventRequests({ abrirId }: { abrirId?: number } = {}) {
           </Painel>
         </div>
         <Toolbar actions={[
-          { label: 'Gravar', icon: '✔', color: '#111827', onClick: () => gravar.mutate(edit) },
+          { label: 'Gravar', icon: '✔', onClick: () => gravar.mutate(edit) },
           {
             label: 'Cancelar evento', icon: '🚫', disabled: !edit.id,
             onClick: () => {

@@ -85,7 +85,7 @@ export function SubFamilyPicker({ exclude = [], onPick, onClose }:
           {sel.length} selecionada(s) de {rows.length}
         </div>
         <Toolbar actions={[
-          { icon: '✔', label: 'Selecionar', color: '#111827',
+          { icon: '✔', label: 'Selecionar',
             onClick: () => onPick(rows.filter((r) => sel.includes(r.id))) },
           { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
         ]} />

@@ -104,7 +104,7 @@ export default function PlanningOptions() {
       </div>
 
       <Toolbar actions={[
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', onClick: () => save.mutate() },
       ]} />
     </div>
   );

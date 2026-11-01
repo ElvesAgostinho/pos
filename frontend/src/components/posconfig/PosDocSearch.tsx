@@ -303,7 +303,7 @@ export default function PosDocSearch() {
 
         <Toolbar actions={[
           { label: 'Voltar', icon: '◀', color: '#3B82F6', onClick: () => setVer(null) },
-          { label: 'Imprimir', icon: '🖨', color: '#111827', onClick: imprimir },
+          { label: 'Imprimir', icon: '🖨', onClick: imprimir },
           {
             label: 'Anular (nota de crédito)', icon: '🚫', disabled: doc.voided,
             onClick: () => setAnular({ id: ver, number: doc.invoice_no }),
@@ -437,7 +437,7 @@ export default function PosDocSearch() {
 
       <Toolbar actions={[
         { label: 'Pré-visualizar', icon: '🔍', color: '#3B82F6', disabled: !sel, onClick: () => setVer(sel) },
-        { label: 'Imprimir', icon: '🖨', color: '#111827', disabled: !sel, onClick: () => setVer(sel) },
+        { label: 'Imprimir', icon: '🖨', disabled: !sel, onClick: () => setVer(sel) },
         {
           label: 'Anular', icon: '🚫', disabled: !sel || selRow?.voided,
           onClick: () => setAnular({ id: sel, number: selRow.number }),

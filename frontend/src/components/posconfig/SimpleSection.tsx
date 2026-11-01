@@ -184,7 +184,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
 
         <Toolbar actions={[
           {
-            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827',
+            icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar',
             onClick: () => missing.length
               ? notifyGuide({ title: 'Faltam campos', message: `Preencha: ${missing.map((m) => m.label).join(', ')}.` })
               : save.mutate(editing),
@@ -291,11 +291,11 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#111827', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
+        { icon: '＋', label: 'Adicionar', disabled: readOnly, onClick: () => setEditing({ ...novo, ...extraParams }) },
         { icon: '✎', label: 'Editar', color: '#3B82F6', disabled: !sel || readOnly, onClick: () => setEditing({ ...selRow }) },
-        ...(copyable ? [{ icon: '⧉', label: 'Copiar', color: '#111827', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
+        ...(copyable ? [{ icon: '⧉', label: 'Copiar', disabled: !sel || readOnly, onClick: () => copy.mutate(sel!) }] : []),
         { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel || readOnly, onClick: () => confirm(`Apagar "${selRow?.name}"?`) && del.mutate(sel!) },
-        { icon: '🖶', label: 'Imprimir', color: '#111827', onClick: () => window.print() },
+        { icon: '🖶', label: 'Imprimir', onClick: () => window.print() },
         { icon: 'excel', label: 'Exportar para Excel', onClick: exportCsv },
       ]} />
     </div>

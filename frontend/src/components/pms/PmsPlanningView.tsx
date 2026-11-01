@@ -72,7 +72,7 @@ export default function PmsPlanningView() {
         { label: '← 14 dias', icon: '◀', color: '#3B82F6', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
         { label: '14 dias →', icon: '▶', color: '#3B82F6', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
         { label: 'Hoje', icon: '🕐', color: '#3B82F6', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
-        { label: 'Atualizar', icon: '⟳', color: '#111827', onClick: () => refetch() },
+        { label: 'Atualizar', icon: '⟳', onClick: () => refetch() },
       ]} />
       <div className="flex-1 overflow-auto">
         <table className="border-collapse text-[11px] w-full">

@@ -408,7 +408,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
             }),
           },
           {
-            label: 'Lançar no stock', icon: '▶', color: '#111827', disabled: !edit.id || edit.posted,
+            label: 'Lançar no stock', icon: '▶', disabled: !edit.id || edit.posted,
             onClick: () => lancar.mutate(edit.id),
           },
           { label: 'Fechar', icon: '✖', color: '#3B82F6', onClick: () => setEdit(null) },
@@ -573,7 +573,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
               anular.mutate(sel!);
           },
         },
-        { label: 'Copiar', icon: '⧉', color: '#111827', disabled: !sel, onClick: () => copiar.mutate(sel!) },
+        { label: 'Copiar', icon: '⧉', disabled: !sel, onClick: () => copiar.mutate(sel!) },
         { label: 'Exportar para Excel', icon: 'excel', onClick: exportar },
       ]} />
     </div>

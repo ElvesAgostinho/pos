@@ -127,11 +127,11 @@ export default function PmsFolioPanel({ reservationId, onClose }: { reservationI
         </div>
 
         <Toolbar actions={[
-          { label: 'Lançar', icon: '＋', color: '#111827', onClick: addCharge },
+          { label: 'Lançar', icon: '＋', onClick: addCharge },
           { label: 'Dividir Conta', icon: '✂', color: '#3B82F6', onClick: split },
-          { label: 'Registar Pagamento', icon: '💳', color: '#111827', onClick: settle },
+          { label: 'Registar Pagamento', icon: '💳', onClick: settle },
           { label: folio?.fiscal_document_number ? `Ver Fatura (${folio.fiscal_document_number})` : 'Gerar Fatura (AGT)',
-            icon: '🧾', color: '#111827', onClick: generateInvoice },
+            icon: '🧾', onClick: generateInvoice },
         ]} right={
           <button onClick={onClose} className="px-2 py-1 text-[12px] text-[#111827] border border-transparent hover:border-[#E6E8EC] hover:bg-[#EEF1F5] rounded-[8px]">Fechar</button>
         } />

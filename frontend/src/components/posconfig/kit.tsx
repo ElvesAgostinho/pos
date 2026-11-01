@@ -122,13 +122,51 @@ const PALETA_ICONES = [
   '#C8562B', '#2F6FB5', '#3C8C4E', '#8A6FB0', '#C9A227',
   '#2D8C8C', '#B5476E', '#5A7A96', '#7A8C2D', '#B5651D',
 ];
+/**
+ * CORES QUE NÃO SE SORTEIAM.
+ *
+ * A cor dos outros ícones sai de um sorteio a partir do nome (ver abaixo) — é
+ * estável e chega para distinguir vinte comandos uns dos outros. Mas há
+ * símbolos em que a cor QUER DIZER alguma coisa, e esses não se podem sortear:
+ * um caixote do lixo azul e um "gravar" vermelho ensinam o contrário do que
+ * deviam, e numa barra que se usa mil vezes por dia isso custa caro.
+ *
+ * Os comandos de acção entraram aqui porque a barra de baixo saía toda
+ * cinzenta: estes símbolos não têm pictograma desenhado, caíam no sorteio, e o
+ * sorteio dava-lhes cinzentos. Lado a lado com o ribbon colorido logo por
+ * cima, parecia que a barra estava desligada.
+ *
+ * A convenção é a dos ERP de gestão, e é a que a mão já sabe:
+ * verde acrescenta, âmbar altera, vermelho destrói, azul copia ou move.
+ */
 const COR_FIXA: Record<string, string> = {
+  // ── o que a cor significa ──
   '🗑': '#C0392B',   // apagar — vermelho, e nunca outra coisa
-  '⚠': '#D97706',       // aviso — âmbar
-  '💰': '#2E7D32',   // dinheiro — verde
-  '💳': '#2E7D32',   // cartão
-  '🧾': '#4A6B8A',   // factura
-  '🔒': '#5A6B7A',   // segurança — cinzento de aço
+  '⚠': '#D97706',   // aviso — âmbar
+  '💰': '#2E7D32',  // dinheiro — verde
+  '💳': '#2E7D32',  // cartão
+  '🧾': '#4A6B8A',  // factura
+  '🔒': '#5A6B7A',  // segurança — cinzento de aço
+
+  // ── os comandos da barra de ferramentas ──
+  '＋': '#2E7D32',   // acrescentar — verde (o sinal de mais largo, usado nas barras)
+  '+': '#2E7D32',
+  '✎': '#B8860B',   // editar — âmbar escuro
+  '✏': '#B8860B',
+  '—': '#C0392B',   // apagar (o travessão)
+  '−': '#C0392B',   // apagar (o sinal de menos — é este que a barra do POS usa)
+  '⧉': '#2F6FB5',   // copiar (os dois quadrados sobrepostos)
+  '⤒': '#4A5461',   // importar (a seta para a barra)
+  '🗐': '#2F6FB5',  // copiar — azul
+  '📋': '#2F6FB5',  // área de transferência
+  '🖨': '#4A5461',  // imprimir — aço
+  '💾': '#2F6FB5',  // gravar — azul
+  '✔': '#2E7D32',   // confirmar
+  '✕': '#8A8A8A',   // fechar — cinzento: fechar não é destruir
+  '↻': '#2F6FB5',   // actualizar
+  '⟳': '#2F6FB5',
+  '⬆': '#4A5461',   // importar
+  '⬇': '#4A5461',   // exportar
 };
 export function corDoIcone(nome: string): string {
   if (COR_FIXA[nome]) return COR_FIXA[nome];
@@ -379,7 +417,7 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
       style={{ background: 'linear-gradient(to bottom, #FDFDFD, #F0F0F0)', borderColor: TOKENS.chromeLine }}>
       {actions.map((a) => (
         <button key={a.label} onClick={a.onClick} disabled={a.disabled} title={a.title}
-          className="flex items-center gap-1 px-2 h-[22px] text-[11.5px] disabled:opacity-35 disabled:cursor-default"
+          className="flex items-center gap-1.5 px-2.5 h-[26px] text-[12px] disabled:opacity-35 disabled:cursor-default"
           style={{ color: TOKENS.textOnLight, border: '1px solid transparent', borderRadius: 0 }}
           onMouseEnter={(e) => {
             if (a.disabled) return;
@@ -390,8 +428,8 @@ export function Toolbar({ actions, right }: { actions: any[]; right?: ReactNode 
             e.currentTarget.style.background = 'transparent';
             e.currentTarget.style.borderColor = 'transparent';
           }}>
-          <span className="w-[15px] h-[15px] flex items-center justify-center flex-shrink-0">
-            <Glyph icon={a.icon} size={13} tom={a.disabled ? '#9CA3AF' : (a.color || corDoIcone(a.icon))} />
+          <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0">
+            <Glyph icon={a.icon} size={17} tom={a.disabled ? '#9CA3AF' : (a.color || corDoIcone(a.icon))} />
           </span>
           {a.label}
         </button>

@@ -103,7 +103,7 @@ export default function ExemptionSection() {
               </div>
             </div>
             <Toolbar actions={[
-              { icon: '✔', label: check.isPending ? 'A confirmar…' : 'OK', color: '#111827',
+              { icon: '✔', label: check.isPending ? 'A confirmar…' : 'OK',
                 disabled: !pw, onClick: () => check.mutate() },
               { icon: '✖', label: 'Cancelar', color: '#DC2626', onClick: fechar },
             ]} />

@@ -282,7 +282,7 @@ function MultiHotel() {
       </div>
 
       <Toolbar actions={[
-        { icon: '＋', label: 'Adicionar', color: '#111827', onClick: () => setEdit({ is_active: true, hotel_id: '0', mode: 'SIMPLE' }) },
+        { icon: '＋', label: 'Adicionar', onClick: () => setEdit({ is_active: true, hotel_id: '0', mode: 'SIMPLE' }) },
         { icon: '✎', label: 'Editar', color: '#3B82F6', disabled: !sel, onClick: () => setEdit((links as any[]).find((l) => l.id === sel)) },
         { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel, onClick: () => confirm('Apagar esta ligação?') && del.mutate(sel!) },
       ]} />
@@ -486,9 +486,9 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
       </div>
 
       <Toolbar actions={[
-        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação', color: '#111827',
+        { icon: '⟳', label: test.isPending ? 'A testar…' : 'Testar Ligação',
           disabled: isNew, onClick: () => test.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

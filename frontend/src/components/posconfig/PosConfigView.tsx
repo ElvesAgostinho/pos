@@ -343,7 +343,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         /* A ÁRVORE. 210px e não 236: a largura de uma árvore é ditada pelo nome
            mais comprido que tem de caber, e os nomes aqui são curtos. Os 26 que
            sobram vão para a grelha, que é onde estão os dados. */
-        <div className="w-[210px] flex-shrink-0 border-r bg-white overflow-auto"
+        <div className="w-[238px] flex-shrink-0 border-r bg-white overflow-auto"
           style={{ borderColor: TOKENS.chromeLine }}>
           {favs.length > 0 && (
             <div>
@@ -353,7 +353,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               </div>
               {favs.map((f) => (
                 <div key={f.id}
-                  className={`group flex items-center pl-5 pr-1 py-[2px] text-[11.5px] cursor-pointer ${section === f.id ? 'font-bold' : 'hover:bg-[#FDF4D9]'}`}
+                  className={`group flex items-center pl-5 pr-1 py-[4px] text-[12.5px] cursor-pointer ${section === f.id ? 'font-bold' : 'hover:bg-[#FDF4D9]'}`}
                   style={section === f.id
                     ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection }
                     : { color: TOKENS.textOnLight }}>
@@ -387,7 +387,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   soletrar, "Parâmetros do Sistema" lê-se de uma vez — as formas
                   altas e baixas das letras são metade do que se usa para ler. */}
               <button onClick={() => setOpen((o) => ({ ...o, [grp.key]: !o[grp.key] }))}
-                className="w-full flex items-center gap-1 px-1 py-[2px] text-[11.5px] font-bold hover:bg-[#FDF4D9]"
+                className="w-full flex items-center gap-1.5 px-1 py-[4px] text-[12.5px] font-bold hover:bg-[#FDF4D9]"
                 style={{ color: TOKENS.textOnLight }}>
                 <span className="w-[10px] text-[9px] leading-none" style={{ color: TOKENS.textMuted }}>
                   {open[grp.key] ? '▾' : '▸'}
@@ -401,7 +401,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                     const ativo = section === it.key;
                     return (
                     <button key={it.key} onClick={() => { setSection(it.key); setSel(null); }}
-                      className="w-full flex items-center gap-1.5 pl-[26px] pr-2 py-[2px] text-[11.5px] text-left"
+                      className="w-full flex items-center gap-2 pl-[28px] pr-2 py-[4px] text-[12.5px] text-left"
                       style={{
                         // A LINHA ESCOLHIDA É UMA BARRA AZUL DE PONTA A PONTA, com
                         // o texto branco por cima. Era um azul muito claro com um
@@ -419,8 +419,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                       onMouseEnter={(e) => { if (!ativo) e.currentTarget.style.background = '#FDF4D9'; }}
                       onMouseLeave={(e) => { if (!ativo) e.currentTarget.style.background = 'transparent'; }}>
                       {(it as any).icon
-                        ? <span className="w-4 flex items-center justify-center">
-                            <Glyph icon={(it as any).icon} size={13}
+                        ? <span className="w-5 flex items-center justify-center">
+                            <Glyph icon={(it as any).icon} size={16}
                               tom={ativo ? '#FFFFFF' : corDoIcone((it as any).icon)} />
                           </span>
                         : <span className="w-4 flex justify-center"><span className="w-1.5 h-1.5" style={{ background: ativo ? '#FFFFFF' : '#7C93AB' }} /></span>}
@@ -1472,13 +1472,13 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               {/* BARRA DE FERRAMENTAS */}
               <Toolbar
                 actions={[
-                  { icon: '＋', label: 'Adicionar', color: '#111827', onClick: () => setEditing('new') },
+                  { icon: '＋', label: 'Adicionar', onClick: () => setEditing('new') },
                   { icon: '✎', label: 'Editar', color: '#3B82F6', disabled: !sel, onClick: () => setEditing(sel!) },
                   { icon: '−', label: 'Apagar', color: '#DC2626', disabled: !sel, onClick: () => confirm(`Apagar "${selRow?.name}"? Fica registado na auditoria.`) && del.mutate(sel!) },
-                  { icon: '⧉', label: 'Copiar', color: '#111827', disabled: !sel, onClick: () => copy.mutate(sel!) },
-                  { icon: '🖶', label: 'Imprimir', color: '#111827', onClick: () => window.print() },
+                  { icon: '⧉', label: 'Copiar', disabled: !sel, onClick: () => copy.mutate(sel!) },
+                  { icon: '🖶', label: 'Imprimir', onClick: () => window.print() },
                   { icon: 'excel', label: 'Exportar para Excel', onClick: exportExcel },
-                  { icon: '⤒', label: 'Importar', color: '#111827', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
+                  { icon: '⤒', label: 'Importar', onClick: () => notifyGuide({ title: 'Importar artigos', message: 'A importação em massa (CSV/Excel) entra na próxima fase da Configuração POS.' }) },
                 ]}
               />
             </>

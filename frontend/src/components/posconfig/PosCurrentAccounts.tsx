@@ -292,7 +292,7 @@ export default function PosCurrentAccounts() {
 
       <Toolbar actions={[
         { label: 'Contas Correntes', icon: '▸', color: '#3B82F6', disabled: !sel, onClick: () => setConta(sel) },
-        { label: 'Cash Advance', icon: '▸', color: '#111827', disabled: !sel, onClick: () => setConta(sel) },
+        { label: 'Cash Advance', icon: '▸', disabled: !sel, onClick: () => setConta(sel) },
       ]} right={
         <span className="flex items-center gap-2">
           <span className="text-[11px] text-[#6B7280]">

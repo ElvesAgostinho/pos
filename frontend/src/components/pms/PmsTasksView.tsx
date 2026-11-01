@@ -128,9 +128,9 @@ export default function PmsTasksView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Nova', icon: '＋', color: '#111827', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#111827', onClick: save },
-        { label: 'Marcar Concluída', icon: '✔', color: '#111827', onClick: markDone, disabled: !selId || form.status === 'DONE' },
+        { label: 'Nova', icon: '＋', onClick: novo },
+        { label: 'Gravar', icon: '💾', onClick: save },
+        { label: 'Marcar Concluída', icon: '✔', onClick: markDone, disabled: !selId || form.status === 'DONE' },
         { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#DC2626' },
       ]} />
     </div>

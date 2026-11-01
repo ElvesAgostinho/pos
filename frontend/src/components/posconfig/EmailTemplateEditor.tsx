@@ -249,7 +249,7 @@ export default function EmailTemplateEditor({ row, onClose }: { row: any; onClos
       <Toolbar actions={[
         { icon: '🔍', label: prever.isPending ? 'A gerar…' : 'Pré-visualizar', color: '#3B82F6',
           disabled: isNew, onClick: () => prever.mutate() },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
     </div>

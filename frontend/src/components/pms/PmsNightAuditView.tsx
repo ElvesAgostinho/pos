@@ -74,7 +74,7 @@ export default function PmsNightAuditView() {
           ]} />
         </div>
       </div>
-      <Toolbar actions={[{ label: 'Atualizar Histórico', icon: '⟳', color: '#111827', onClick: () => refetch() }]} />
+      <Toolbar actions={[{ label: 'Atualizar Histórico', icon: '⟳', onClick: () => refetch() }]} />
     </div>
   );
 }

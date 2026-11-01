@@ -53,7 +53,7 @@ export default function PmsRatesCalendarView() {
         { label: '← 14 dias', icon: '◀', color: '#3B82F6', onClick: () => setWeekStart((d) => addDays(d, -DAYS_VISIBLE)) },
         { label: '14 dias →', icon: '▶', color: '#3B82F6', onClick: () => setWeekStart((d) => addDays(d, DAYS_VISIBLE)) },
         { label: 'Hoje', icon: '🕐', color: '#3B82F6', onClick: () => setWeekStart(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }) },
-        { label: 'Atualização em Massa', icon: '✎', color: '#111827', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
+        { label: 'Atualização em Massa', icon: '✎', onClick: () => setShowBulk(true), disabled: ratePlans.length === 0 },
       ]} />
       <div className="flex-1 overflow-auto">
         <table className="border-collapse text-[11px] w-full">

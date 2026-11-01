@@ -535,7 +535,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
               <Row label="Ativo:"><input type="checkbox" checked={!!popup.is_active} onChange={(e) => setPopup({ ...popup, is_active: e.target.checked })} className="w-4 h-4" /></Row>
             </div>
             <Toolbar actions={[
-              { icon: '✔', label: 'Gravar', color: '#111827', onClick: () => saveMem({ group: popup.group, sort_order: popup.sort_order, is_active: popup.is_active, id: popup.id }) },
+              { icon: '✔', label: 'Gravar', onClick: () => saveMem({ group: popup.group, sort_order: popup.sort_order, is_active: popup.is_active, id: popup.id }) },
               { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: () => setPopup(null) },
             ]} />
           </div>
@@ -545,7 +545,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       <Toolbar actions={[
         { icon: '🔑', label: 'Gestor de Licenças', color: '#3B82F6', disabled: !lic,
           onClick: () => { setSyncMsg(null); setShowLicenseManager(true); } },
-        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', color: '#111827', onClick: () => save.mutate() },
+        { icon: '✔', label: save.isPending ? 'A gravar…' : 'Gravar', onClick: () => save.mutate() },
         { icon: '✖', label: 'Fechar', color: '#DC2626', onClick: onClose },
       ]} />
 

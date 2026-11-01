@@ -178,11 +178,11 @@ export default function PmsChatbotView() {
       )}
 
       {(tab === 'config' || tab === 'ligacao') && (
-        <Toolbar actions={[{ label: 'Guardar', icon: '💾', color: '#111827', onClick: () => save.mutate() }]} />
+        <Toolbar actions={[{ label: 'Guardar', icon: '💾', onClick: () => save.mutate() }]} />
       )}
       {tab === 'sim' && (
         <Toolbar actions={[
-          { label: 'Enviar', icon: '✔', color: '#111827', onClick: send, disabled: !draft.trim() || sending },
+          { label: 'Enviar', icon: '✔', onClick: send, disabled: !draft.trim() || sending },
           { label: 'Limpar conversa', icon: '✕', color: '#DC2626', onClick: () => setMsgs([]), disabled: msgs.length === 0 },
         ]} />
       )}
