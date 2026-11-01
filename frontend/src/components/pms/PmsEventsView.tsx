@@ -27,6 +27,9 @@ import { EventRequests } from '../posconfig/PosMarketing';
  * POS, porque é aqui que se explica porquê — e porque o menu do PMS continua a
  * ser quem decide o que o EMS mostra.
  */
-export default function PmsEventsView() {
-  return <EventRequests />;
+export default function PmsEventsView({ pedido }: { pedido?: { abrirId?: number } }) {
+  // `pedido` é o que o ecrã anterior pediu ao navegar para cá — por exemplo, o
+  // calendário a dizer em que evento se carregou. Sem isto, chegava-se ao EMS e
+  // era preciso procurar outra vez o evento que se acabou de ver.
+  return <EventRequests abrirId={pedido?.abrirId} />;
 }

@@ -160,6 +160,20 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
     return pedida || 'home_dashboard';
   });
   const [showPerms, setShowPerms] = useState(false);
+
+  /**
+   * O QUE SE PEDIU AO MUDAR DE ECRÃ.
+   *
+   * `onNavigate` levava só o nome da secção: dava para dizer "abre o EMS", não
+   * para dizer "abre o EMS NAQUELE evento". E é o segundo que um ecrã de lista
+   * precisa — o calendário mostra um evento, carrega-se nele, e o que se quer
+   * é chegar àquele e não a uma lista onde é preciso procurá-lo outra vez.
+   *
+   * Fica aqui, no shell, e não numa gaveta partilhada entre ecrãs: quem sabe
+   * que ecrã está aberto é quem o abre.
+   */
+  const [pedido, setPedido] = useState<any>(null);
+  const navegar = (sec: string, p?: any) => { setSection(sec); setPedido(p ?? null); };
   const cur = SECTIONS[section];
   const Comp = cur.Comp;
   const [clock] = useState(() => new Date());
@@ -249,7 +263,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
           diferentes em dois sítios, e dentro da aplicação, onde se lêem números,
           um fundo fotográfico é só ruído. */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        <Comp onDesktop={onDesktop} onNavigate={setSection} />
+        <Comp onDesktop={onDesktop} onNavigate={navegar} pedido={pedido} />
       </div>
 
       {/* Rodapé — um bar só (era dois empilhados: ação do ecrã + hora, e depois

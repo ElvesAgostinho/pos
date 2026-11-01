@@ -8,7 +8,9 @@ import { apiClient } from '../../api/client';
 const STATUS_COLOR: Record<string, string> = { INQUIRY: '#D97706', CONFIRMED: '#16A34A', CANCELLED: '#DC2626', COMPLETED: '#6B7280' };
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-export default function PmsEventsCalendarView() {
+export default function PmsEventsCalendarView({ onNavigate }: {
+  onNavigate?: (sec: string, pedido?: any) => void;
+}) {
   const { data } = useQuery({ queryKey: ['pms', 'events'], queryFn: async () => (await apiClient.get('pms/events/')).data });
   const all: any[] = data?.results || data || [];
   const sorted = [...all].sort((a, b) => String(a.event_date).localeCompare(String(b.event_date)));
@@ -21,17 +23,23 @@ export default function PmsEventsCalendarView() {
   }
 
   return (
-    <div className="h-full overflow-auto bg-white p-3">
+    <div className="h-full overflow-auto bg-white p-2">
       {Object.keys(groups).length === 0 && <div className="text-gray-400 text-[12px] p-6 text-center">Sem eventos registados.</div>}
       {Object.entries(groups).map(([key, evs]) => {
         const [y, m] = key.split('-');
         const label = key === 'sem-data' ? 'Sem data' : `${MESES[Number(m) - 1]} ${y}`;
         return (
           <div key={key} className="mb-4">
-            <div className="text-[12px] font-bold text-[#111827] bg-[#EEF1F5] border border-[#E6E8EC] px-3 py-1.5">{label} <span className="text-gray-500 font-normal">({evs.length})</span></div>
-            <div className="border border-t-0 border-[#E6E8EC]">
+            <div className="text-[11px] font-bold text-[#111827] border border-[#C8C8C8] px-2 py-[2px]" style={{ background: 'linear-gradient(to bottom, #FDFDFD, #EFEFEF)' }}>{label} <span className="text-gray-500 font-normal">({evs.length})</span></div>
+            <div className="border border-t-0 border-[#C8C8C8]">
               {evs.map((ev) => (
-                <div key={ev.id} className="flex items-center gap-3 px-3 py-2 border-b border-[#F1F2F4] text-[12px] hover:bg-[#EEF1F5]">
+                /* CARREGAR NUM EVENTO ABRE-O. Era uma lista morta: mostrava o
+                   evento e não levava a lado nenhum — quem o queria ver tinha
+                   de ir ao EMS e procurá-lo outra vez pelo nome. Um calendário
+                   existe para se chegar àquele dia e àquele evento. */
+                <div key={ev.id} onClick={() => onNavigate?.('events', { abrirId: ev.id })}
+                  title={onNavigate ? `Abrir o pedido de evento · ${ev.name}` : undefined}
+                  className={`flex items-center gap-3 px-2 py-[3px] border-b border-[#EDEDED] text-[11.5px] hover:bg-[#FDF4D9] ${onNavigate ? 'cursor-pointer' : ''}`}>
                   <span className="w-16 font-mono text-gray-500">{ev.event_date?.slice(8, 10)}/{ev.event_date?.slice(5, 7)}</span>
                   <span className="w-16 text-gray-400">{ev.start_time ? ev.start_time.slice(0, 5) : '—'}</span>
                   <span className="flex-1 font-semibold text-[#111827]">{ev.name}</span>

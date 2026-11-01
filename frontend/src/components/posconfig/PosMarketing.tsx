@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, money, Glyph, SearchButton } from './kit';
 import EntityEditor from './EntityEditor';
+import { aviso } from '../../ui/dialogo';
 
 const inp = 'border border-[#E6E8EC] px-2 py-[3px] text-[12px] bg-white';
 const lbl = 'text-[12px] text-[#111827] w-[120px] flex-shrink-0';
@@ -359,7 +360,7 @@ function Sel({ k, label, list, edit, setEdit, lbl }: any) {
   );
 }
 
-export function EventRequests() {
+export function EventRequests({ abrirId }: { abrirId?: number } = {}) {
   const qc = useQueryClient();
   const [estado, setEstado] = useState('0');       // por omissão: Não Respondido
   const [sel, setSel] = useState<number | null>(null);
@@ -376,6 +377,21 @@ export function EventRequests() {
   const { data: packages = [] } = useList('pos/config/packages/', 'packages');
   const { data: motivos = [] } = useList('pos/config/cancel-reasons/', 'reasons');
   const { data: entidades = [] } = useList('pos/marketing/entities/', 'ents');
+
+  // ABRIR UM PEDIDO CONCRETO, vindo de outro ecrã (o calendário do EMS).
+  //
+  // Vai-se buscar o registo DIRECTAMENTE e não à lista: a lista começa filtrada
+  // por "Não Respondido", e um pedido já respondido não estaria lá — carregar
+  // nele no calendário não abriria nada, que é exactamente o defeito que isto
+  // vem fechar.
+  useEffect(() => {
+    if (!abrirId) return;
+    let vivo = true;
+    apiClient.get(`pos/events/requests/${abrirId}/`)
+      .then((r) => { if (vivo) setEdit(r.data); })
+      .catch(() => { if (vivo) aviso('Este pedido de evento já não existe.'); });
+    return () => { vivo = false; };
+  }, [abrirId]);
 
   const { data: rows = [] } = useQuery({
     queryKey: ['posmkt', 'events', estado],
