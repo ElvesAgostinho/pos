@@ -4,6 +4,7 @@ import ClassicGrid from '../ui/ClassicGrid';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso, confirmar } from '../../ui/dialogo';
 import { useMdItems, useMdCreateItem, useMdUpdateItem, useMdDeleteItem, useMdUoms } from '../../hooks/useMasterData';
+import ArticleEditor from '../posconfig/ArticleEditor';
 import type { MdItem } from '../../api/masterdata';
 
 /** Produtos & Serviços do hotel — minibar, spa, lavandaria, late check-out…
@@ -28,6 +29,18 @@ export default function PmsProductsServicesView() {
 
   const [selId, setSelId] = useState<number | null>(null);
   const [form, setForm] = useState<any>(blank);
+  // A FICHA COMPLETA, quando o formulário curto não chega.
+  //
+  // O formulário ao lado continua a ser o caminho rápido, e isso não muda: um
+  // late check-out ou uma massagem precisam de nome, preço e IVA, e mais nada.
+  // Mas é o MESMO artigo do POS (inventory.Item) — e há coisas que só a ficha
+  // completa tem: isenções de IVA, preço por nível (o mesmo extra custa mais no
+  // rooftop), conta analítica para a contabilidade, unidades e armazém.
+  //
+  // Sem esta porta, quem precisasse de um desses campos tinha de sair do PMS,
+  // entrar na Configuração POS e procurar o artigo pelo nome — e metade das
+  // vezes criava um segundo artigo por engano.
+  const [fichaCompleta, setFichaCompleta] = useState<number | 'new' | null>(null);
 
   const select = (r: MdItem) => { setSelId(r.id!); setForm({ ...r, track_stock: !(r as any).no_stock_movement }); };
   const novo = () => { setSelId(null); setForm(blank); };
@@ -95,10 +108,21 @@ export default function PmsProductsServicesView() {
         </div>
       </div>
       <Toolbar actions={[
-        { label: 'Novo', icon: '＋', color: '#111827', onClick: novo },
-        { label: 'Gravar', icon: '💾', color: '#111827', onClick: save },
-        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#DC2626' },
-      ]} />
+        { label: 'Novo', icon: '＋', onClick: novo },
+        { label: 'Gravar', icon: '💾', onClick: save },
+        { label: 'Ficha completa', icon: '✎', onClick: () => selId && setFichaCompleta(selId),
+          disabled: !selId },
+        { label: 'Eliminar', icon: '✕', onClick: remove, disabled: !selId, color: '#C0392B' },
+      ]}
+        right={<span style={{ color: '#6B7280' }}>
+          A ficha completa é a mesma do POS — é o mesmo artigo.
+        </span>} />
+
+      {fichaCompleta !== null && (
+        <ArticleEditor id={fichaCompleta}
+          onClose={() => setFichaCompleta(null)}
+          onSaved={() => { setFichaCompleta(null); novo(); }} />
+      )}
     </div>
   );
 }
