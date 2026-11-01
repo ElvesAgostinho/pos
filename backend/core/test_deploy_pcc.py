@@ -176,3 +176,55 @@ class OExemploDeConfiguracaoTests(unittest.TestCase):
             if linha.startswith(('DJANGO_SECRET_KEY=', 'DB_PASSWORD=', 'EMAIL_HOST_PASSWORD=')):
                 self.assertIn('TROQUE', linha.upper(),
                               f'Há um valor a sério no exemplo: "{linha.split("=")[0]}".')
+
+
+class OPccTemDeArrancarComOEsquemaValidoTests(unittest.TestCase):
+    """O `manage.py check` do PCC tem de passar. É O TESTE QUE FALTAVA.
+
+    O PCC esteve em baixo a reiniciar de doze em doze segundos. A causa foi uma
+    chave estrangeira nova em `mdm.PaymentMethod` a apontar para
+    `finance.FinanceAccount` — e no PCC a app `finance` não está instalada,
+    porque é um módulo licenciado e o PCC não vende licenças a si próprio.
+
+    O Django recusa-se a arrancar nessas condições (fields.E300 / E307). Como o
+    arranque do contentor é `migrate && ... && gunicorn`, o processo morria na
+    primeira instrução e o Docker voltava a levantá-lo, para sempre.
+
+    NADA DISTO APARECIA NOS TESTES: eles correm em modo ERP, onde a licença de
+    desenvolvimento activa quase tudo. O esquema estava válido no portátil e
+    inválido no servidor — e só se soube quando o cliente ficou sem serviço.
+
+    Este teste corre o `check` COM SYSTEM_MODE=PCC, num subprocesso, que é a
+    única forma de o fazer: `INSTALLED_APPS` é construída no momento em que o
+    settings é importado, e já está fixada quando os testes arrancam.
+
+    Vale para qualquer app, não só para `finance`: no dia em que alguém puser
+    um campo do core a apontar para outro módulo opcional, este teste fica
+    vermelho aqui, e não na VPS do cliente.
+    """
+
+    def _check(self, **ambiente):
+        amb = dict(os.environ)
+        amb.pop('DJANGO_SETTINGS_MODULE', None)
+        amb.update({k: str(v) for k, v in {**BASE, **ambiente}.items()})
+        return subprocess.run(
+            [sys.executable, 'manage.py', 'check'],
+            cwd=str(RAIZ_PROJETO), env=amb, capture_output=True,
+            text=True, encoding='utf-8', errors='replace', timeout=300)
+
+    def test_o_esquema_do_pcc_e_valido(self):
+        r = self._check(SYSTEM_MODE='PCC', DB_ENGINE='sqlite')
+
+        self.assertEqual(
+            r.returncode, 0,
+            'O PCC não arranca — e um PCC que não arranca é um ciclo de '
+            'reinícios na VPS do cliente.\n' + (r.stdout or '') + (r.stderr or ''))
+
+    def test_o_esquema_de_uma_instalacao_nova_e_valido(self):
+        """Sem licença no disco, um cliente novo fica com poucas apps activas —
+        e o primeiro `migrate` do instalador tem de passar à mesma."""
+        r = self._check(SYSTEM_MODE='ERP', DB_ENGINE='sqlite')
+
+        self.assertEqual(r.returncode, 0,
+                         'uma instalação acabada de fazer não passa no check\n'
+                         + (r.stdout or '') + (r.stderr or ''))

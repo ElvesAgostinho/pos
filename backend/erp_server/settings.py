@@ -88,7 +88,13 @@ if RUN_MODE == 'PCC':
     # próprio um módulo), por isso ficava sem 'pos'/'inventory' instalados e o
     # `manage.py check`/`migrate` rebentava logo ao arrancar (fields.E307). O PCC
     # nunca USA estas tabelas — só precisa delas para o Django validar o esquema.
-    for _app in ('inventory', 'pos', 'commercial'):
+    # 'finance' entra pela MESMA razão, um nível acima: mdm.PaymentMethod tem
+    # `treasury_account` a apontar para finance.FinanceAccount (a conta de
+    # tesouraria onde o dinheiro daquele modo de pagamento entra). Sem a app,
+    # o Django recusa-se a arrancar com fields.E300/E307 — e foi exactamente
+    # isso que pôs o PCC a reiniciar em ciclo: o contentor morria no `migrate`,
+    # de doze em doze segundos, sem ninguém conseguir ver porquê.
+    for _app in ('inventory', 'pos', 'commercial', 'finance'):
         if _app not in INSTALLED_APPS:
             INSTALLED_APPS.append(_app)
 else:
@@ -104,7 +110,10 @@ else:
     # 'commercial' entra por causa do mesmo problema um nível abaixo: inventory.Item
     # e pos.PosSector apontam para commercial.Promotion (Happy Hour/Combos) — exatamente
     # o motivo que já tinha obrigado a incluí-lo no modo PCC, acima.
-    for _app in ('inventory', 'pos', 'commercial'):
+    # 'finance' pela mesma razão (mdm.PaymentMethod.treasury_account aponta para
+    # finance.FinanceAccount): numa instalação acabada de fazer, sem licença no
+    # disco, a app não entrava e o primeiro `migrate` do instalador rebentava.
+    for _app in ('inventory', 'pos', 'commercial', 'finance'):
         if _app not in INSTALLED_APPS:
             INSTALLED_APPS.append(_app)
 
