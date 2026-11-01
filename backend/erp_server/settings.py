@@ -192,11 +192,18 @@ REST_FRAMEWORK = {
     # Rate limiting (protege a API pública/booking sob carga alta e abuso).
     'DEFAULT_THROTTLE_CLASSES': (
         'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
+        # O travão das PESSOAS, com uma excepção para a conta de serviço do
+        # terminal — ver core/throttling.py. Todos os terminais da casa
+        # partilham essa conta, por isso os 1200/min não eram de um posto:
+        # eram de todos somados, e num serviço cheio o POS começava a devolver
+        # 429 a meio do jantar.
+        'core.throttling.TravaoPorUtilizador',
     ),
     'DEFAULT_THROTTLE_RATES': {
         'anon': os.environ.get('THROTTLE_ANON', '60/min'),
         'user': os.environ.get('THROTTLE_USER', '1200/min'),
+        # O terminal não é uma pessoa: é o restaurante inteiro numa conta só.
+        'terminal': os.environ.get('THROTTLE_TERMINAL', '20000/min'),
     },
 }
 # Em produção, só JSON (mais rápido, menos memória; sem a Browsable API).
