@@ -2770,15 +2770,24 @@ class PosDayCloseView(APIView):
                                        f'por cobrar — é comida servida sem dinheiro a entrar.',
                              'open_tickets': abertas}, status=409)
 
+        from .tesouraria import lancar_fecho_de_caixa
+        quem = request.user.username if request.user.is_authenticated else 'POS'
+        tesouraria = {'posted': 0, 'unconfigured': []}
+
         sessoes = list(CashSession.objects.select_for_update().filter(status='OPEN'))
         for s in sessoes:
             s.status = 'CLOSED'
             s.closed_at = timezone.now()
-            s.closed_by = request.user.username if request.user.is_authenticated else 'POS'
+            s.closed_by = quem
             s.save(update_fields=['status', 'closed_at', 'closed_by'])
             log_event(request, 'CASH_CLOSE',
                       f'Fecho do dia — caixa {s.id} ({s.outlet.name if s.outlet_id else "—"})',
                       outlet=s.outlet, operator_name=s.operator_name)
+            # O dinheiro desta caixa entra na tesouraria — ver pos/tesouraria.py.
+            lancados, por_configurar = lancar_fecho_de_caixa(s, by=quem)
+            tesouraria['posted'] += len(lancados)
+            for nome, v in por_configurar:
+                tesouraria['unconfigured'].append({'method': nome, 'amount': str(v)})
 
         # "Fechar Terminais" do original — só fecha as caixas abertas, sem correr o
         # resto do fecho do dia (limpeza de logs, backup). Serve para desligar os
@@ -2830,10 +2839,21 @@ class PosDayCloseView(APIView):
         if abre_gaveta_dia:
             for outlet in outlets_fechados.values():
                 queue_drawer_job(outlet, 'Fecho do dia', 'DAY_CLOSE')
+        # O QUE FICOU POR LANÇAR APARECE NO RESULTADO. Um meio de pagamento sem
+        # conta de tesouraria configurada não inventa conta nenhuma — mas também
+        # não desaparece em silêncio: o fecho di-lo, com o valor, para alguém ir
+        # configurar e não ficar dinheiro fora da tesouraria sem ninguém dar conta.
+        detalhe = f'{len(sessoes)} caixa(s) fechada(s). O dia de vendas do POS está fechado.'
+        if tesouraria['unconfigured']:
+            faltam = ', '.join(sorted({u['method'] for u in tesouraria['unconfigured']}))
+            detalhe += (f' ATENÇÃO: {faltam} não têm conta de tesouraria configurada — '
+                        f'esse dinheiro NÃO entrou em caixa nenhuma. Configure em '
+                        f'Configuração POS › Modos de Pagamento.')
         return Response({'closed_sessions': len(sessoes),
                          'log_cleaned': limpos, 'backup': backup,
                          'open_drawer': abre_gaveta_dia,
-                         'detail': f'{len(sessoes)} caixa(s) fechada(s). O dia de vendas do POS está fechado.'})
+                         'treasury': tesouraria,
+                         'detail': detalhe})
 
 
 class PosSaftView(APIView):

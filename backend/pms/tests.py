@@ -559,6 +559,40 @@ class PmsMenusRestantesTests(PmsBase):
         r = self.client.post('/api/pms/events/', {'name': 'Pela porta errada'}, format='json')
         self.assertEqual(r.status_code, 405, r.content)
 
+    def test_a_previsao_diz_de_onde_vem_a_receita(self):
+        """Um total sozinho não se pode accionar.
+
+        "Em Março esperam-se X kwanzas" não diz onde pôr o esforço comercial.
+        Saber se vem de casamentos ou de empresas, e se chega por venda directa
+        ou por uma agência que leva comissão, é o que torna a previséo útil — e
+        a informação já cá estava desde que os eventos se unificaram com o
+        motor do comercial.
+        """
+        from pos.models import Segment, DistributionChannel
+        espaco, sala_a, tipo, confirmado, _opcao = self._config_de_eventos()
+        empresas = Segment.objects.create(code='EMP', name='Empresas')
+        agencia = DistributionChannel.objects.create(code='AG', name='Agência')
+
+        a = self._pedido('Congresso', 10, espaco, tipo, confirmado, pax=200, por_pax=5000)
+        a.segment = empresas
+        a.channel = agencia
+        a.save(update_fields=['segment', 'channel'])
+        self._pedido('Casamento', 12, sala_a, tipo, confirmado, pax=100, por_pax=3000)
+
+        d = self.client.get('/api/pms/events/forecast/', {'months': 3}).data
+
+        self.assertEqual(d['total'], 1300000.0)
+        por_seg = {x['label']: x['revenue'] for x in d['by_segment']}
+        self.assertEqual(por_seg['Empresas'], 1000000.0)
+        # O que NÃO está classificado aparece por inteiro: um eixo onde metade
+        # da receita não tem segmento é uma coisa que o dono tem de ver, e não
+        # de adivinhar por as parcelas não somarem o total.
+        self.assertEqual(por_seg['(Sem segmento)'], 300000.0)
+
+        por_canal = {x['label']: x['revenue'] for x in d['by_channel']}
+        self.assertEqual(por_canal['Agência'], 1000000.0)
+        self.assertEqual(por_canal['(Venda directa)'], 300000.0)
+
     def test_previsao_ems_ignora_eventos_fora_da_janela(self):
         espaco, _sala, tipo, confirmado, _opcao = self._config_de_eventos()
         self._pedido('Evento daqui a dois anos', 730, espaco, tipo, confirmado,

@@ -27,15 +27,27 @@ export default function PmsFinanceView() {
   // A conta de tesouraria que recebe estes lançamentos — criada sozinha na
   // primeira utilização (mesmo princípio do tipo de entidade "Empresa" acima).
   // O operador do PMS nunca escolhe conta bancária: só vê Receita/Despesa.
+  //
+  // A CONTA DEIXOU DE SER UMA "CAIXA PMS" SÓ DESTE ECRÃ.
+  //
+  // Este ecrã criava uma conta própria e escrevia só nela: ficava um livro de
+  // caixa à parte, e o "Saldo" que mostrava com ar de resumo financeiro do hotel
+  // era o saldo de um caderno. Numa base com 340 vendas do POS, mostrava um
+  // saldo negativo de treze mil kwanzas.
+  //
+  // Agora as contas são as da casa, e esta lista mostra o que lá entrou venha de
+  // onde vier: do fecho de caixa do POS, do pagamento de um hóspede, ou escrito
+  // à mão aqui. Escolhe-se a conta onde o lançamento manual cai; por omissão, a
+  // primeira de caixa, que é o que a recepção usa.
+  const [contas, setContas] = useState<any[]>([]);
   useEffect(() => {
     (async () => {
       try {
         const r = await apiClient.get('finance/accounts/');
-        const list = Array.isArray(r.data) ? r.data : r.data?.results || [];
-        const found = list.find((a: any) => (a.code || '').toUpperCase() === 'PMS');
-        if (found) { setAccountId(found.id); return; }
-        const created = await apiClient.post('finance/accounts/', { code: 'PMS', name: 'Caixa PMS', account_type: 'CASH', currency: 'AOA', opening_balance: 0 });
-        setAccountId(created.data.id);
+        const list: any[] = Array.isArray(r.data) ? r.data : r.data?.results || [];
+        setContas(list);
+        const caixa = list.find((a: any) => a.account_type === 'CASH') || list[0];
+        if (caixa) setAccountId(caixa.id);
       } catch (e) { notifyError(e); }
     })();
   }, []);
@@ -115,7 +127,13 @@ export default function PmsFinanceView() {
       <div className="flex flex-1 overflow-hidden">
         <div className="w-3/5 border-r border-[#E6E8EC]">
           <ClassicGrid rowKey="uid" data={rows} columns={[
-            { header: 'Nome / Origem', accessor: 'party_name', width: '30%' },
+            { header: 'Nome / Origem', accessor: 'party_name', width: '24%' },
+            // DE ONDE VEIO O DINHEIRO. Sem esta coluna, um recebimento do fecho
+            // de caixa do POS e um escrito à mão lêem-se como a mesma coisa — e
+            // só um deles se pode corrigir aqui.
+            { header: 'Origem', width: '10%', accessor: (r: any) => (
+              { pos: 'Fecho de caixa POS', pms: 'Conta de hóspede' } as any
+            )[r.source_module] || 'Manual' },
             { header: 'Categoria', accessor: (r: any) => categories.find((c) => c.id === r.cost_center)?.name || '—', width: '20%' },
             { header: 'Método', accessor: (r: any) => METHOD_LABEL[r.method] || r.method, width: '18%' },
             { header: 'Data', accessor: 'date', width: '14%' },
@@ -124,6 +142,18 @@ export default function PmsFinanceView() {
         </div>
         <div className="w-2/5 p-3 space-y-2 text-[11px] overflow-auto">
           <div className="font-bold text-[#111827]">Nova Transação</div>
+          {/* EM QUE CONTA CAI. Este ecrã escrevia sempre numa "Caixa PMS" só dele;
+              agora as contas são as da casa, e quem lança diz em qual entra o
+              dinheiro — a mesma pergunta que o banco faz. */}
+          <label className="flex flex-col">Conta
+            <select value={accountId ?? ''} onChange={(e) => setAccountId(Number(e.target.value))} className={inp}>
+              {contas.map((c: any) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.account_type === 'BANK' ? 'banco' : 'caixa'})
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="flex flex-col">Tipo
             <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} className={inp}>
               <option value="income">Receita</option>

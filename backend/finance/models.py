@@ -64,11 +64,50 @@ class Receipt(models.Model):
     status = models.CharField(max_length=10, choices=STATUS, default='DRAFT')
     # Liga o recebimento a uma fatura de cliente (liquida a conta corrente do cliente).
     invoice = models.ForeignKey('Invoice', on_delete=models.SET_NULL, blank=True, null=True, related_name='receipts')
+
+    # DE ONDE VEIO ESTE DINHEIRO — e porque é que isso muda o lançamento.
+    #
+    # Um recebimento escrito à mão liquida a conta corrente de um cliente: entra
+    # dinheiro, baixa a dívida dele. Um recebimento vindo do FECHO DE CAIXA DO POS
+    # não é isso: a venda já foi lançada quando o talão fechou, e o dinheiro já
+    # está na conta "Caixa POS" do razão. O que o fecho faz é TRANSFERIR da Caixa
+    # POS para o caixa físico ou o banco.
+    #
+    # Lançar os dois da mesma maneira contaria a mesma venda duas vezes. Por isso
+    # a origem vem com o dinheiro, e a contabilidade escolhe a contrapartida.
+    #
+    # `source_ref` é também o que impede repetir: fechar a mesma caixa duas vezes
+    # (duplo clique, retry de rede) não pode dar entrada ao mesmo dinheiro duas
+    # vezes.
+    #
+    # `default=''` E NÃO `null=True`, e a razão não é de gosto.
+    #
+    # A restrição de unicidade aqui em baixo faz o DRF gerar sozinho um
+    # `UniqueTogetherValidator` — e esse EXIGE que todos os campos da restrição
+    # sejam enviados no pedido. Com o campo sem valor por omissão, criar um
+    # recibo à mão passava a devolver "source_ref: Este campo é obrigatório",
+    # e um lançamento manual nunca tem origem nenhuma. Partia o ecrã Financeiro
+    # por inteiro — em todas as casas.
+    #
+    # Com um valor por omissão, o validador deixa-o ser omitido; e a restrição
+    # continua a valer onde interessa, porque só se aplica quando o campo tem
+    # alguma coisa escrita.
+    source_module = models.CharField(max_length=20, default='manual')
+    source_ref = models.CharField(max_length=60, blank=True, default='')
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'fin_receipt'
         ordering = ['-date', '-created_at']
+        constraints = [
+            # `source_ref__gt=''` e não `~Q(source_ref='')`: o SQL Server recusa
+            # NOT no predicado de um índice filtrado (ver core/lookups.py).
+            models.UniqueConstraint(
+                fields=['source_module', 'source_ref'],
+                condition=models.Q(source_ref__gt=''),
+                name='fin_recebimento_unico_por_origem'),
+        ]
 
     def __str__(self):
         return f"{self.number} · {self.amount}"

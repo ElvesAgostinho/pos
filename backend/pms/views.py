@@ -1087,12 +1087,31 @@ class FolioViewSet(HotelScopedMixin, viewsets.ModelViewSet):
             return Response({'detail': f'Esta conta não tem saldo a receber (saldo: '
                                        f'{folio.balance}). Para devolver dinheiro ao hóspede '
                                        f'use o estorno do pagamento.'}, status=400)
-        FolioCharge.objects.create(
+        # COMO FOI PAGO. Sem isto, a conta fecha a zero e ninguém sabe se o
+        # dinheiro foi para a gaveta ou para o banco — e a tesouraria não tem
+        # como saber em que conta dar entrada.
+        metodo = None
+        mid = request.data.get('payment_method')
+        if mid:
+            from mdm.models import PaymentMethod
+            metodo = PaymentMethod.objects.filter(pk=mid).first()
+
+        encargo = FolioCharge.objects.create(
             folio=folio, charge_type='PAYMENT',
             description=request.data.get('description', 'Pagamento'),
             amount=amount, posted_by=request.data.get('posted_by', 'reception'),
+            payment_method=metodo,
         )
-        return Response(self.get_serializer(folio).data)
+
+        # O dinheiro dá entrada na tesouraria — ver pms/tesouraria.py.
+        from .tesouraria import lancar_pagamento_de_folio
+        recebimento, motivo = lancar_pagamento_de_folio(
+            encargo, by=request.user.username if request.user.is_authenticated else None)
+
+        data = self.get_serializer(folio).data
+        data['treasury'] = ({'posted': True, 'receipt': recebimento.number}
+                            if recebimento else {'posted': False, 'reason': motivo})
+        return Response(data)
 
     def destroy(self, request, *args, **kwargs):
         """Apagar uma conta com movimentos não é um engano reversível.

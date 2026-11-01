@@ -73,6 +73,22 @@ class PaymentMethod(models.Model):
     allows_mixed = models.BooleanField(default=True)         # permite pagamento misto
     allows_multicurrency = models.BooleanField(default=False)
 
+    # ONDE CAI O DINHEIRO DESTE MEIO DE PAGAMENTO.
+    #
+    # Sem isto, o fecho de caixa do POS não tinha para onde levar o dinheiro: a
+    # venda ficava lançada na contabilidade (conta "Caixa POS") e a TESOURARIA
+    # — as contas de caixa e banco que o dono olha para saber quanto tem — nunca
+    # via nada. O numerário vai para o caixa físico; o TPA vai para a conta do
+    # banco onde a operação aterra. São contas diferentes e só a casa sabe quais.
+    #
+    # Por preencher, o fecho NÃO inventa uma conta: não cria movimento nenhum para
+    # esse meio e di-lo no resultado do fecho. Dinheiro posto na conta errada é
+    # pior do que dinheiro por lançar — o segundo vê-se, o primeiro não.
+    treasury_account = models.ForeignKey(
+        'finance.FinanceAccount', on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='payment_methods',
+        help_text='Conta de tesouraria onde este meio de pagamento dá entrada no fecho de caixa.')
+
     fee_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # comissão/taxa
     sort_order = models.PositiveIntegerField(default=0)
     icon = models.CharField(max_length=50, blank=True, null=True)

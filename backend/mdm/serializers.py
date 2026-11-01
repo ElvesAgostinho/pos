@@ -50,6 +50,11 @@ class BrandSerializer(serializers.ModelSerializer):
 
 class PaymentMethodSerializer(serializers.ModelSerializer):
     method_type_display = serializers.CharField(source='get_method_type_display', read_only=True)
+    # O NOME DA CONTA, e não só o número dela. Um ecrã que mostra "conta 7" obriga
+    # a ir a outro ecrã descobrir que conta é — e esta escolha decide para onde
+    # vai o dinheiro do fecho de caixa.
+    treasury_account_name = serializers.CharField(
+        source='treasury_account.name', read_only=True, default=None)
 
     class Meta:
         model = PaymentMethod

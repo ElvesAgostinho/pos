@@ -53,6 +53,15 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
     queryKey: ['posc', 'currencies'],
     queryFn: async () => (await apiClient.get('pos/config/currencies/')).data,
   });
+  // AS CONTAS DE TESOURARIA da casa — caixas físicos e contas bancárias. É entre
+  // estas que se escolhe onde cai o dinheiro deste meio de pagamento.
+  const { data: contas = [] } = useQuery({
+    queryKey: ['finance', 'accounts'],
+    queryFn: async () => {
+      const r = await apiClient.get('finance/accounts/');
+      return r.data?.results || r.data || [];
+    },
+  });
   const { data: articles = [] } = useQuery({
     queryKey: ['posc', 'articles-all'],
     queryFn: async () => {
@@ -135,6 +144,23 @@ export default function PaymentMethodEditor({ row, onClose }: { row: any; onClos
                 {[['CASH', 'Dinheiro'], ['CARD', 'Cartão'], ['ROOM', 'Conta Quarto'], ['COMPANY', 'Conta Empresa'],
                   ['VOUCHER', 'Voucher'], ['GIFTCARD', 'Gift Card'], ['CREDIT', 'Crédito Cliente'], ['OTHER', 'Outro']]
                   .map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </Row>
+            {/* ONDE CAI O DINHEIRO DESTE MEIO DE PAGAMENTO.
+                É esta escolha que faz o fecho de caixa do POS dar entrada na
+                tesouraria — o numerário no caixa físico, o TPA na conta do banco
+                onde a operação aterra. Por preencher, o fecho não inventa conta
+                nenhuma: esse dinheiro fica fora da tesouraria e o fecho di-lo. */}
+            <Row label="Entra na conta:" w="w-[120px]">
+              <select value={d.treasury_account ?? ''}
+                onChange={(e) => set('treasury_account', e.target.value ? Number(e.target.value) : null)}
+                className={`${inp} w-[240px]`} style={inputStyle}>
+                <option value="">— nenhuma (fica fora da tesouraria) —</option>
+                {(contas as any[]).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.account_type === 'BANK' ? 'banco' : 'caixa'})
+                  </option>
+                ))}
               </select>
             </Row>
             <Row label="Ordem:" w="w-[120px]">

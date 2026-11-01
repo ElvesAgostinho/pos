@@ -379,6 +379,17 @@ class FolioCharge(models.Model):
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     source_reference = models.CharField(max_length=60, blank=True, null=True)
     posted_by = models.CharField(max_length=100, blank=True, null=True)
+
+    # COMO O HÓSPEDE PAGOU — só faz sentido num lançamento de PAGAMENTO.
+    #
+    # Sem isto, a conta fechava a zero e ninguém sabia se o dinheiro tinha ido
+    # para a gaveta ou para a conta do banco — e a tesouraria não tinha como
+    # saber em que conta dar entrada. É o mesmo cadastro de meios de pagamento
+    # que o POS usa (mdm.PaymentMethod): o hotel configura uma vez, vale nos dois.
+    payment_method = models.ForeignKey(
+        'mdm.PaymentMethod', on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='folio_charges')
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Estorno — nunca se apaga um lançamento, anula-se com um de sinal contrário.

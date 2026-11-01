@@ -190,13 +190,74 @@ def post_supplier_invoice(inv, autopost=True, by=None):
     return entry
 
 
+def post_pms_invoice(doc, autopost=True, by=None):
+    """A FACTURA DO HOTEL — alojamento e consumos — chega ao razão.
+
+    NÃO CHEGAVA. O lote automático conhecia três origens (POS, compras,
+    tesouraria) e o PMS não era nenhuma delas: a receita de ALOJAMENTO, que num
+    hotel é a maior de todas, nunca era lançada. O balancete e a demonstração de
+    resultados mostravam a casa como se ela só vendesse comida e bebida.
+
+    Lança-se a partir do documento FISCAL (o que foi assinado e comunicado à
+    AGT), e não do folio: o que a contabilidade tem de dizer é o mesmo que foi
+    declarado ao Estado. Se os dois discordarem, um deles está a mentir.
+
+    A débito, CLIENTES pelo total: a factura nasce como dívida do hóspede, e é o
+    recebimento (o pagamento lançado no folio) que a liquida. São dois momentos
+    e dois lançamentos — o hóspede pode pagar no dia seguinte, ou a empresa dele
+    ao fim do mês.
+
+    Uma NOTA DE CRÉDITO inverte tudo: era a mesma factura ao contrário, e some
+    com a dívida e com a receita que não chegou a existir.
+    """
+    if _exists('PMS', doc.invoice_no):
+        return None
+    mp = _mapping()
+    bruto = Decimal(str(doc.gross_total or 0))
+    liquido = Decimal(str(doc.net_total or 0))
+    imposto = Decimal(str(doc.tax_total or 0))
+    if bruto <= 0:
+        return None
+
+    rectifica = bool(getattr(getattr(doc, 'doc_type', None), 'is_rectifying', False))
+    if rectifica:
+        lines = [(_acc('SALES_SERVICE', mp), liquido, 0),
+                 (_acc('VAT_PAYABLE', mp), imposto, 0),
+                 (_acc('CLIENTS', mp), 0, bruto)]
+    else:
+        lines = [(_acc('CLIENTS', mp), bruto, 0),
+                 (_acc('SALES_SERVICE', mp), 0, liquido),
+                 (_acc('VAT_PAYABLE', mp), 0, imposto)]
+
+    quem = doc.customer_name or 'Hóspede'
+    entry, _ = _make_entry(_journal('SALES'), doc.doc_date,
+                           f'{"Nota de crédito" if rectifica else "Factura"} PMS {doc.invoice_no} · {quem}',
+                           'PMS', doc.invoice_no, lines, autopost, by)
+    return entry
+
+
 def post_receipt(r, autopost=True, by=None):
+    """A CONTRAPARTIDA DEPENDE DE ONDE VEIO O DINHEIRO.
+
+    Um recebimento escrito à mão liquida a conta corrente de um cliente: entra
+    dinheiro, baixa a dívida dele (CLIENTES a crédito).
+
+    Um recebimento vindo do FECHO DE CAIXA DO POS não é isso. A venda já foi
+    lançada quando o talão fechou (`post_pos_ticket`), e o dinheiro já está na
+    conta "Caixa POS". O fecho apenas o TRANSFERE para o caixa físico ou para o
+    banco — a contrapartida é a Caixa POS, não os clientes.
+
+    Lançar os dois da mesma maneira creditava CLIENTES por uma dívida que nunca
+    existiu (a venda foi a pronto) e deixava a Caixa POS a crescer para sempre:
+    o balancete batia no total e mentia em duas contas.
+    """
     if _exists('TREASURY', f'REC-{r.number}'):
         return None
     mp = _mapping()
     amt = Decimal(str(r.amount or 0))
     money = _acc('BANK', mp) if getattr(r.account, 'account_type', 'CASH') == 'BANK' else _acc('CASH', mp)
-    lines = [(money, amt, 0), (_acc('CLIENTS', mp), 0, amt)]
+    contrapartida = _acc('POS_CASH', mp) if getattr(r, 'source_module', '') == 'pos' else _acc('CLIENTS', mp)
+    lines = [(money, amt, 0), (contrapartida, 0, amt)]
     entry, _ = _make_entry(_journal('CASH'), r.date, f'Recebimento {r.party_name} {r.number}',
                            'TREASURY', f'REC-{r.number}', lines, autopost, by)
     return entry
@@ -256,7 +317,16 @@ def _pending():
     # 'drafts' — os lançamentos que ficaram em rascunho. Não se somam às outras
     # listas (o documento já tem lançamento, só não está lançado), mas têm de
     # aparecer em algum sítio, senão ficam esquecidos para sempre.
-    out = {'pos': [], 'purchase': [], 'treasury': [], 'drafts': rascunhos_por_lancar()}
+    out = {'pos': [], 'pms': [], 'purchase': [], 'treasury': [], 'drafts': rascunhos_por_lancar()}
+    try:
+        from fiscal.models import FiscalDocument
+        for doc in (FiscalDocument.objects.filter(source_module='pms', status='N')
+                    .order_by('-doc_date')[:500]):
+            if doc.invoice_no not in posted_refs:
+                out['pms'].append({'ref': doc.invoice_no, 'date': doc.doc_date.isoformat(),
+                                   'amount': float(doc.gross_total or 0)})
+    except Exception:
+        pass
     try:
         from pos.models import POSTicket
         for t in POSTicket.objects.filter(status='PAID').order_by('-opened_at')[:500]:
@@ -283,7 +353,7 @@ def _pending():
 
 def run_autopost(sources=None, autopost=True, by=None):
     """Gera lançamentos para todos os documentos pendentes das origens indicadas."""
-    sources = sources or ['pos', 'purchase', 'treasury']
+    sources = sources or ['pos', 'pms', 'purchase', 'treasury']
     # Primeiro recupera o que ficou em rascunho de corridas anteriores (período
     # que já reabriu, mapa de contas já corrigido) — senão esses documentos nunca
     # mais eram lançados: `_exists` vê o rascunho e não gera nada de novo.
@@ -293,6 +363,15 @@ def run_autopost(sources=None, autopost=True, by=None):
             from pos.models import POSTicket
             for t in POSTicket.objects.filter(status='PAID'):
                 if post_pos_ticket(t, autopost, by):
+                    created += 1
+        except Exception:
+            pass
+    if 'pms' in sources:
+        try:
+            from fiscal.models import FiscalDocument
+            # Só os documentos VÁLIDOS (status 'N'): um anulado não é receita.
+            for doc in FiscalDocument.objects.filter(source_module='pms', status='N'):
+                if post_pms_invoice(doc, autopost, by):
                     created += 1
         except Exception:
             pass

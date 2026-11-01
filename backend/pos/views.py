@@ -451,7 +451,20 @@ class CashSessionViewSet(viewsets.ModelViewSet):
         log_event(request, 'CASH_CLOSE', f'Fecho de caixa (diferença {session.difference})',
                   operator_name=session.operator_name, outlet=session.outlet, reference=f'CX-{session.id}',
                   old_value=str(expected), new_value=str(counted), amount=session.difference)
+        # O DINHEIRO DÁ ENTRADA NA TESOURARIA. Até aqui a venda ficava lançada na
+        # contabilidade e as contas de caixa e banco — as que o dono olha para
+        # saber quanto tem — nunca viam nada. Ver pos/tesouraria.py.
+        from .tesouraria import lancar_fecho_de_caixa
+        lancados, por_configurar = lancar_fecho_de_caixa(
+            session, by=request.user.username if request.user.is_authenticated else None)
+
         data = self.get_serializer(session).data
+        data['treasury'] = {
+            'posted': len(lancados),
+            'total': str(sum((r.amount for r in lancados), Decimal('0'))),
+            # O que ficou de fora, e porquê — em vez de desaparecer em silêncio.
+            'unconfigured': [{'method': nome, 'amount': str(v)} for nome, v in por_configurar],
+        }
         # (Abrir Gaveta 8544/8591) A gaveta abre para o operador guardar a contagem.
         abre = P.bool(8544, True) and not P.bool(8591, False)
         data['open_drawer'] = abre
