@@ -54,8 +54,25 @@ export default function PmsFinanceView() {
     queryKey: ['finance', 'payments', 'pms'],
     queryFn: async () => (await apiClient.get('finance/payments/')).data,
   });
-  const receiptRows: any[] = (Array.isArray(receipts) ? receipts : receipts?.results || []).map((r: any) => ({ ...r, kind: 'income' }));
-  const paymentRows: any[] = (Array.isArray(payments) ? payments : payments?.results || []).map((p: any) => ({ ...p, kind: 'expense' }));
+  // `uid` E NAO `id`.
+  //
+  // Esta lista junta DUAS tabelas diferentes -- recibos e pagamentos --, e cada
+  // uma tem a sua propria sequencia de identificadores. O recibo n.o 3 e o
+  // pagamento n.o 3 tem ambos `id === 3`.
+  //
+  // Com a grelha a identificar as linhas por `id`, isso dava duas coisas, as
+  // duas visiveis: escolher UMA linha acendia DUAS (a grelha compara o id da
+  // linha com o escolhido, e dois registos diferentes respondiam ao mesmo), e o
+  // React recebia chaves repetidas -- que o autoriza a reaproveitar a linha
+  // errada ao redesenhar e a mostrar o valor de um registo ao lado do nome de
+  // outro. Numa lista de dinheiro, isso nao e um incomodo visual.
+  //
+  // O `uid` prefixa a origem, por isso nao pode colidir. O `id` fica intacto
+  // para quem precise de falar com o servidor sobre aquele registo.
+  const receiptRows: any[] = (Array.isArray(receipts) ? receipts : receipts?.results || [])
+    .map((r: any) => ({ ...r, kind: 'income', uid: `receita-${r.id}` }));
+  const paymentRows: any[] = (Array.isArray(payments) ? payments : payments?.results || [])
+    .map((p: any) => ({ ...p, kind: 'expense', uid: `despesa-${p.id}` }));
   const rows = [...receiptRows, ...paymentRows].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const totalIncome = receiptRows.reduce((s, r) => s + Number(r.amount || 0), 0);
@@ -97,7 +114,7 @@ export default function PmsFinanceView() {
       </div>
       <div className="flex flex-1 overflow-hidden">
         <div className="w-3/5 border-r border-[#E6E8EC]">
-          <ClassicGrid rowKey="id" data={rows} columns={[
+          <ClassicGrid rowKey="uid" data={rows} columns={[
             { header: 'Nome / Origem', accessor: 'party_name', width: '30%' },
             { header: 'Categoria', accessor: (r: any) => categories.find((c) => c.id === r.cost_center)?.name || '—', width: '20%' },
             { header: 'Método', accessor: (r: any) => METHOD_LABEL[r.method] || r.method, width: '18%' },
