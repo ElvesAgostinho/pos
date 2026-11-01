@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { X, Pencil } from 'lucide-react';
+import { X, Pencil, Check } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso } from '../../ui/dialogo';
@@ -114,7 +114,7 @@ export default function PmsMealPlanDialog({ reservation: r, onClose }: { reserva
             </div>
             <div className="px-2 py-1.5 border-t border-[#E6E8EC] bg-[#EEF1F5] flex-shrink-0">
               <button onClick={() => setShowEdit(true)} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:underline">
-                <span className="w-5 h-5 rounded-full flex items-center justify-center text-white" style={{ background: '#3B82F6' }}><Pencil size={11} /></span>
+                <Pencil size={12} style={{ color: '#2F6FB5' }} />
                 Editar
               </button>
             </div>
@@ -230,7 +230,7 @@ function MealEditDialog({ reservation: r, onClose, onSaved }: { reservation: any
         </div>
         <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC]">
           <button onClick={gravar} disabled={saving} className="flex items-center gap-2 text-[12px] font-semibold text-[#111827] disabled:opacity-50">
-            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: '#3B82F6' }}>✓</span>
+            <Check size={14} style={{ color: '#2E7D32' }} />
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
           <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black ml-auto">

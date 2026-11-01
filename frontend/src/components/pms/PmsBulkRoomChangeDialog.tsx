@@ -112,8 +112,7 @@ export default function PmsBulkRoomChangeDialog({ onClose }: { onClose: () => vo
         <div className="flex items-center justify-between px-3 py-1.5 bg-[#EEF1F5] border-t border-[#E6E8EC]">
           <button onClick={aplicar} disabled={applying || ![...checked].some((id) => target[id])}
             className="flex items-center gap-2 text-[12px] font-semibold text-[#111827] disabled:opacity-40 disabled:cursor-default hover:text-black">
-            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0"
-              style={{ background: applying ? '#93C5FD' : '#2563EB' }}><Check size={13} /></span>
+            <Check size={14} className="flex-shrink-0" style={{ color: applying ? '#9FB3C6' : '#2E7D32' }} />
             {applying ? 'A aplicar…' : 'Efetuar a Mudança de Quarto para Reservas Selecionadas'}
           </button>
           <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black flex-shrink-0">

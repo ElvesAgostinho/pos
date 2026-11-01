@@ -89,9 +89,7 @@ export default function PmsPermissionsDialog({ screenId, screenLabel, hotelName,
         <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF1F5] border-t border-[#E6E8EC] flex-shrink-0">
           <button onClick={gravar} disabled={saving}
             className="flex items-center gap-2 text-[12px] font-semibold text-[#111827] disabled:opacity-50 hover:text-black">
-            <span className="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ background: '#3B82F6' }}>
-              <Check size={13} />
-            </span>
+            <Check size={14} className="flex-shrink-0" style={{ color: '#2E7D32' }} />
             {saving ? 'A gravar…' : 'Gravar'}
           </button>
           <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] font-semibold text-[#111827] hover:text-black ml-auto">

@@ -61,7 +61,7 @@ export default function PmsDuplicateCheckDialog({ onClose }: { onClose: () => vo
           {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A verificar…</div> : groups.length === 0 ? (
             <div className="p-6 text-center text-gray-400 text-[12px]">Sem entidades duplicadas encontradas.</div>
           ) : (
-            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined}
+            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId}
               onRowClick={(r: any) => setSelId(r.id)} onRowDoubleClick={() => abrirDetalhes()}
               filterable={false}
               columns={[

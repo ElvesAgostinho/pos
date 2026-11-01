@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { apiClient } from '../../api/client';
+import { TOKENS } from '../../config/theme';
 import ClassicGrid from '../ui/ClassicGrid';
 import PmsBlockPickerDialog from './PmsBlockPickerDialog';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
@@ -22,15 +23,54 @@ const MODOS: string[] = ['Gráfico', 'Lista'];
 // reserva própria). "FdS" e "Day Use" ficam na legenda por fidelidade visual,
 // mas não têm dados nesta fase — nunca aparecem coloridos no gráfico porque
 // nenhum lançamento real os produz (não é gaveta vazia disfarçada de dado).
+/**
+ * AS CORES DAS SÉRIES — e porque não podiam continuar como estavam.
+ *
+ * Seis séries empilhadas e TRÊS com o mesmo azul (`#3B82F6`): Livres, Opção e
+ * Allotment. Numa barra empilhada isso não é feio — é ERRADO: os três segmentos
+ * encostam-se e lêem-se como um só bloco, e o gráfico passa a dizer menos do que
+ * a tabela que está ao lado dele. O "Reservado" era quase branco (`#FEF2F2`), que
+ * sobre fundo branco não se vê de todo.
+ *
+ * Estas são as cinco primeiras ranhuras de uma paleta categórica validada, pela
+ * ordem fixa dela (azul, laranja, água, amarelo, magenta). A ordem não se escolhe
+ * por gosto: fixa-se, para a mesma série ter sempre a mesma cor e um filtro que
+ * tire séries não repintar as que ficam.
+ *
+ * O "Overbook" NÃO é uma série — é um ESTADO MAU (vendeu-se mais do que há).
+ * Leva a cor reservada aos estados críticos e nunca uma cor de série: se um dia
+ * se acrescentar uma sétima categoria, ela não pode calhar vermelha e parecer um
+ * alarme.
+ *
+ * Verificado com o validador da paleta (contraste, banda de luminosidade e
+ * separação para daltónicos): passa todas as verificações. Três das cores ficam
+ * abaixo de 3:1 contra o branco — por isso o gráfico traz rótulos visíveis nos
+ * segmentos e existe o modo "Lista", que é a mesma informação em tabela. A cor
+ * nunca é o único canal.
+ */
+const COR_SERIE = {
+  livres: '#2a78d6',        // 1 · azul
+  reservado: '#eb6834',     // 2 · laranja
+  opcao: '#1baf7a',         // 3 · água
+  listaEspera: '#eda100',   // 4 · amarelo
+  allotment: '#e87ba4',     // 5 · magenta
+  overbook: '#d03b3b',      // estado crítico — reservado, nunca uma série
+} as const;
+
+// O vazio entre segmentos empilhados é feito com um traço da COR DO FUNDO: dois
+// pixéis de branco a separar as cores, que é o que deixa contar os segmentos sem
+// os confundir uns com os outros.
+const FUNDO = '#FFFFFF';
+
 const LEGEND: { key: string; label: string; color: string }[] = [
-  { key: 'free', label: 'Livres', color: '#3B82F6' },
-  { key: 'booked', label: 'Reservado', color: '#FEF2F2' },
-  { key: 'fds', label: 'FdS', color: '#3B82F6' },
-  { key: 'option', label: 'Opção', color: '#3B82F6' },
-  { key: 'waitlist', label: 'Lista Espera', color: '#111827' },
-  { key: 'dayuse', label: 'Day Use', color: '#3B82F6' },
-  { key: 'overbook', label: 'Overbook', color: '#DC2626' },
-  { key: 'allotment', label: 'Allotment', color: '#3B82F6' },
+  { key: 'free', label: 'Livres', color: COR_SERIE.livres },
+  { key: 'booked', label: 'Reservado', color: COR_SERIE.reservado },
+  { key: 'fds', label: 'FdS', color: '#C3D2E0' },
+  { key: 'option', label: 'Opção', color: COR_SERIE.opcao },
+  { key: 'waitlist', label: 'Lista Espera', color: COR_SERIE.listaEspera },
+  { key: 'dayuse', label: 'Day Use', color: '#C3D2E0' },
+  { key: 'overbook', label: 'Overbook', color: COR_SERIE.overbook },
+  { key: 'allotment', label: 'Allotment', color: COR_SERIE.allotment },
 ];
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -40,7 +80,14 @@ const plusDays = (iso: string, n: number) => {
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short' });
 
 function PanelHead({ children }: { children: any }) {
-  return <div className="px-2 py-1 font-bold text-[11px] border-b border-[#E6E8EC] bg-[#EEF1F5]">{children}</div>;
+  // O mesmo cabeçalho de caixa do resto do sistema (ver `Box` em posconfig/kit):
+  // tira cinzenta com uma linha por baixo, e não um bloco de fundo chapado.
+  return (
+    <div className="px-2 py-[2px] font-bold text-[11px] border-b"
+      style={{ background: 'linear-gradient(to bottom, #FDFDFD, #EFEFEF)', borderColor: TOKENS.chromeLine }}>
+      {children}
+    </div>
+  );
 }
 
 export default function PmsAvailabilityView() {
@@ -150,9 +197,10 @@ export default function PmsAvailabilityView() {
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex gap-3 p-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-[11px] items-stretch">
+        <div className="flex gap-2 p-1.5 border-b text-[11.5px] items-stretch"
+          style={{ background: TOKENS.chrome, borderColor: TOKENS.chromeLine }}>
           {/* Modo */}
-          <div className="border border-[#E6E8EC] bg-white flex-shrink-0">
+          <div className="border bg-white flex-shrink-0" style={{ borderColor: TOKENS.chromeLine }}>
             <PanelHead>Modo</PanelHead>
             <div className="p-2 flex flex-col gap-1">
               {MODOS.map((m) => (
@@ -165,7 +213,7 @@ export default function PmsAvailabilityView() {
           </div>
 
           {/* Critérios */}
-          <div className="border border-[#E6E8EC] bg-white flex-1 flex">
+          <div className="border bg-white flex-1 flex" style={{ borderColor: TOKENS.chromeLine }}>
             <div className="flex-1">
               <PanelHead>Critérios</PanelHead>
               <div className="p-2 grid grid-cols-2 gap-x-6 gap-y-1.5">
@@ -223,10 +271,18 @@ export default function PmsAvailabilityView() {
               </div>
             </div>
 
+            {/* Botão de barra, não um bloco azul de 110 por 170: era o objecto
+                mais pesado do ecrã a dizer "Pesquisar", quando o que importa aqui
+                é o gráfico que está por baixo. */}
             <button onClick={() => refetch()}
-              className="w-[110px] flex-shrink-0 flex flex-col items-center justify-center gap-1 text-white font-bold text-[12px] m-2"
-              style={{ background: '#2563EB' }}>
-              <RefreshCw size={20} /> Pesquisar
+              className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 h-[22px] self-start m-1.5 text-[11.5px] font-semibold"
+              style={{
+                background: 'linear-gradient(to bottom, #FDFDFD, #EDEDED)',
+                border: `1px solid ${TOKENS.chromeLine}`, color: TOKENS.textOnLight,
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = TOKENS.hoverGold; e.currentTarget.style.borderColor = TOKENS.hoverGoldLine; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(to bottom, #FDFDFD, #EDEDED)'; e.currentTarget.style.borderColor = TOKENS.chromeLine; }}>
+              <RefreshCw size={13} style={{ color: '#2F6FB5' }} /> Pesquisar
             </button>
           </div>
         </div>
@@ -238,22 +294,30 @@ export default function PmsAvailabilityView() {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={420}>
-              <BarChart data={chartData} barCategoryGap="8%" barGap={0}>
-                <XAxis dataKey="dia" tick={{ fontSize: 11 }} axisLine={{ stroke: '#2563EB' }} />
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={{ stroke: '#2563EB' }} />
+              {/* `barCategoryGap` a 28%: as barras eram quase do tamanho do
+                  espaço entre elas e o gráfico lia-se como uma parede. Os eixos
+                  passam a cinzento — uma linha de eixo azul-forte compete com os
+                  dados, e o eixo existe para se poder ignorar. */}
+              <BarChart data={chartData} barCategoryGap="28%" barGap={0}>
+                <XAxis dataKey="dia" tick={{ fontSize: 11, fill: '#52514e' }} axisLine={{ stroke: '#c3c2b7' }} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#52514e' }} allowDecimals={false} axisLine={{ stroke: '#c3c2b7' }} tickLine={false} />
                 <Tooltip />
-                <Bar dataKey="Livres" stackId="a" fill="#3B82F6" stroke="#2563EB" strokeWidth={1}>
-                  <LabelList dataKey="Livres" position="insideTop" style={{ fontWeight: 700, fontSize: 15, fill: '#2563EB' }}
+                <Bar dataKey="Livres" stackId="a" fill={COR_SERIE.livres} stroke={FUNDO} strokeWidth={2}>
+                  <LabelList dataKey="Livres" position="center" style={{ fontWeight: 700, fontSize: 12, fill: '#FFFFFF' }}
                     formatter={(v: any) => (v ? String(v) : '')} />
                 </Bar>
-                <Bar dataKey="Reservado" stackId="a" fill="#FEF2F2" stroke="#DC2626" strokeWidth={1}>
-                  <LabelList dataKey="Reservado" position="top" style={{ fontWeight: 700, fontSize: 12, fill: '#2563EB' }}
+                <Bar dataKey="Reservado" stackId="a" fill={COR_SERIE.reservado} stroke={FUNDO} strokeWidth={2}>
+                  <LabelList dataKey="Reservado" position="center" style={{ fontWeight: 700, fontSize: 12, fill: '#FFFFFF' }}
                     formatter={(v: any) => (v ? String(v) : '')} />
                 </Bar>
-                <Bar dataKey="Opção" stackId="a" fill="#3B82F6" stroke="#3B82F6" strokeWidth={1} />
-                <Bar dataKey="Lista Espera" stackId="a" fill="#2563EB" stroke="#2563EB" strokeWidth={1} />
-                <Bar dataKey="Allotment" stackId="a" fill="#3B82F6" stroke="#2563EB" strokeWidth={1} />
-                <Bar dataKey="Overbook" stackId="a" fill="#DC2626" stroke="#DC2626" strokeWidth={1} />
+                <Bar dataKey="Opção" stackId="a" fill={COR_SERIE.opcao} stroke={FUNDO} strokeWidth={2} />
+                {/* No amarelo o rótulo vai a PRETO: branco sobre amarelo não se lê. */}
+                <Bar dataKey="Lista Espera" stackId="a" fill={COR_SERIE.listaEspera} stroke={FUNDO} strokeWidth={2} />
+                <Bar dataKey="Allotment" stackId="a" fill={COR_SERIE.allotment} stroke={FUNDO} strokeWidth={2} />
+                <Bar dataKey="Overbook" stackId="a" fill={COR_SERIE.overbook} stroke={FUNDO} strokeWidth={2}>
+                  <LabelList dataKey="Overbook" position="center" style={{ fontWeight: 700, fontSize: 12, fill: '#FFFFFF' }}
+                    formatter={(v: any) => (v ? String(v) : '')} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -273,9 +337,7 @@ export default function PmsAvailabilityView() {
 
         <div className="flex items-center justify-between px-2 py-1.5 border-t border-[#E6E8EC] bg-[#EEF1F5] text-[11px] text-gray-600">
           <button onClick={() => setShowNewRes(true)} className="flex items-center gap-2 text-[#111827] hover:text-black">
-            <span className="w-7 h-7 rounded-full flex items-center justify-center text-white" style={{ background: '#3B82F6' }}>
-              <BedDouble size={14} />
-            </span>
+            <BedDouble size={14} style={{ color: '#2F6FB5' }} />
             Criar Reserva
           </button>
           <span>{list.length} categoria(s) de quarto</span>
