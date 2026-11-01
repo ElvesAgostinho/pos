@@ -1,30 +1,54 @@
-import { StrictMode, useEffect } from 'react'
+import { StrictMode, Suspense, lazy, useEffect } from 'react'
 import type { JSX } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 import './styles/erp-classico.css';
-import App from './App.tsx'
+const App = lazy(() => import('./App.tsx'));
 
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import CustomerLogin from './pages/CustomerLogin.tsx'
-import PosStation from './pages/pos/PosTerminal';
-import KdsScreen from './pages/pos/KdsScreen';
 import ErrorBoundary from './components/shell/ErrorBoundary';
-import BookingSite from './pages/BookingSite.tsx'
-import BookingManage from './pages/BookingManage.tsx'
+
+/* ═══ CADA APLICAÇÃO NO SEU FICHEIRO ═══
+   Isto não são ecrãs: são aplicações inteiras, e o utilizador de uma nunca
+   abre a outra. Quem trabalha no backoffice nunca abre o terminal de vendas;
+   quem está ao balcão nunca abre o site público de reservas; o hóspede que
+   gere a sua reserva não tem nada que ver com nenhum dos dois.
+
+   Vinham todas no mesmo ficheiro, descarregadas antes de o login aparecer. */
+const CustomerLogin = lazy(() => import('./pages/CustomerLogin.tsx'));
+const PosStation = lazy(() => import('./pages/pos/PosTerminal'));
+const KdsScreen = lazy(() => import('./pages/pos/KdsScreen'));
+const BookingSite = lazy(() => import('./pages/BookingSite.tsx'));
+const BookingManage = lazy(() => import('./pages/BookingManage.tsx'));
 
 // New Auth & Arch Components
-import Onboarding from './pages/Onboarding.tsx'
+const Onboarding = lazy(() => import('./pages/Onboarding.tsx'));
 import GuideDialog from './components/ui/GuideDialog.tsx'
 import DialogoHost from './ui/dialogo.tsx'
-import PosLoginModern from './pages/PosLoginModern.tsx'
-import Launchpad from './pages/Launchpad.tsx'
+const PosLoginModern = lazy(() => import('./pages/PosLoginModern.tsx'));
+const Launchpad = lazy(() => import('./pages/Launchpad.tsx'));
 import { useLicenseStatus } from './hooks/useActiveModules'
 import { AuthorizationProvider } from './engine/authorization';
 import { mockAuthState } from './engine/authorization/mockData';
+import { FUNDO_SISTEMA } from './config/theme';
 
 const queryClient = new QueryClient()
+
+/**
+ * O QUE SE VÊ ENQUANTO A APLICAÇÃO CHEGA.
+ *
+ * Tem de ser o MESMO fundo do login e do Ambiente de Trabalho. Com um fundo
+ * branco aqui, a entrada piscava branco e logo a seguir escuro — e um ecrã que
+ * pisca ao abrir lê-se como um erro, mesmo quando está tudo bem.
+ *
+ * Não diz "a carregar": em rede local isto passa em milissegundos e uma
+ * palavra que aparece e desaparece num piscar de olhos só distrai. O que faz
+ * falta é a cor certa, para a transição não se notar.
+ */
+function AEsperaDaAplicacao() {
+  return <div style={{ height: '100vh', width: '100%', background: FUNDO_SISTEMA }} />;
+}
 
 // Emular o login inicial com um user mock (ex: Administrador)
 const initialAuthState = {
@@ -133,6 +157,12 @@ createRoot(document.getElementById('root')!).render(
               filhos de <Routes> sejam todos <Route>, e qualquer outro rebenta a
               árvore inteira — a aplicação ficava em branco, em todo o lado. */}
           <MarcaDoTerminal />
+          {/* A ESPERA ENVOLVE AS ROTAS TODAS, e não cada uma.
+              Cada aplicação é agora um ficheiro pedido ao entrar nela; sem esta
+              fronteira, a primeira que fosse pedida rebentava a aplicação em
+              vez de esperar por ela. Uma só aqui chega: nunca há duas rotas a
+              desenhar ao mesmo tempo. */}
+          <Suspense fallback={<AEsperaDaAplicacao />}>
           <Routes>
             {/* First Boot */}
             <Route path="/onboarding" element={<SkipOnboardingIfLicensed><Onboarding /></SkipOnboardingIfLicensed>} />
@@ -165,6 +195,7 @@ createRoot(document.getElementById('root')!).render(
             {/* NOTA: a consola de licenciamento (PCC) vive no projeto separado frontend_pcc/
                 (produto do FORNECEDOR). Nunca é servida no ERP do cliente. */}
           </Routes>
+          </Suspense>
           {/* Popup explicativo global: quando algo corre mal, orienta o utilizador. */}
           <GuideDialog />
           {/* Os NOSSOS diálogos (aviso/confirmar/pedir) — substituem os do Windows.

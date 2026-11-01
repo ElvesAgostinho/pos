@@ -1,94 +1,146 @@
-import type { ComponentType } from 'react';
+import { lazy, type ComponentType } from 'react';
 
 // ---- Views REAIS já implementadas ----
-import DashboardMDMView from '../components/views/DashboardMDMView';
-import ItemsView from '../components/masterdata/ItemsView';
-import CategoriesView from '../components/masterdata/CategoriesView';
-import UomsView from '../components/masterdata/UomsView';
-import TaxesView from '../components/masterdata/TaxesView';
-import BrandsView from '../components/masterdata/BrandsView';
-import PaymentMethodsView from '../components/masterdata/PaymentMethodsView';
-import SupplierListView from '../components/esm/SupplierListView';
-import EsmDashboardView from '../components/esm/EsmDashboardView';
-import PurchaseOrdersView from '../components/procurement/PurchaseOrdersView';
-import GoodsReceiptsView from '../components/procurement/GoodsReceiptsView';
-import CollaboratorsList from '../pages/backoffice/workforce/CollaboratorsList';
-import RolesView from '../components/views/auth/RolesView';
-import PermissionsMatrixView from '../components/views/auth/PermissionsMatrixView';
-import ContextRulesView from '../components/views/auth/ContextRulesView';
-import OutletsView from '../components/posmgmt/OutletsView';
-import SalesView from '../components/posmgmt/SalesView';
-import KDSView from '../components/posmgmt/KDSView';
-import AuditView from '../components/posmgmt/AuditView';
-import EdcInboxView from '../components/views/EdcInboxView';
-import GiftCardsView from '../components/posmgmt/GiftCardsView';
-import DesktopWallpaperView from '../components/admin/DesktopWallpaperView';
-import FeatureFlagsView from '../components/admin/FeatureFlagsView';
-import { CompaniesView, HotelsView, DepartmentsOrgView, AreasView } from '../components/org/OrgViews';
-import { CurrenciesView, CountriesView, BanksView, LanguagesView, CustomersView } from '../components/masterdata/CadastrosViews';
-import { UsersView, SessionsView, LoginHistoryView } from '../components/security/SecurityViews';
-import PriceListsView from '../components/commercial/PriceListsView';
-import ItemAdvancedView from '../components/masterdata/ItemAdvancedView';
-import { WarehousesView as InvWarehousesView, StockLevelsView as InvStockLevelsView, StockMovementsView as InvStockMovementsView } from '../components/warehouse/WarehouseViews';
-import { RequisitionsView, RfqComparisonView } from '../components/procurement/ProcurementFlowViews';
-import AccountsPayableView from '../components/finance/AccountsPayableView';
-import AccountsReceivableView from '../components/finance/AccountsReceivableView';
-import { OperationsCenterView, LiveTablesMonitor } from '../components/ops/OperationsCenterViews';
-import DocumentCenterView from '../components/documents/DocumentCenterView';
-import BookingEngineView from '../components/integration/BookingEngineView';
-import SupportCenterView from '../components/system/SupportCenterView';
-import ChannelManagerView from '../components/integration/ChannelManagerView';
-import ManagementDashboard from '../components/reporting/ManagementDashboard';
-import AccountsView from '../components/finance/AccountsView';
-import ReceiptsView from '../components/finance/ReceiptsView';
-import PaymentsView from '../components/finance/PaymentsView';
-import InvoicesView from '../components/finance/InvoicesView';
-import PromotionsView from '../components/commercial/PromotionsView';
-import CombosView from '../components/commercial/CombosView';
-import { FiscalDashboardView, FiscalSeriesView, FiscalDocumentsView, CommercialDocumentsView, TaxEngineView, FiscalConnectivityView, FiscalAuditView, FiscalArchiveView } from '../components/fiscal/FiscalCenterViews';
-import AgtTransmitView from '../components/fiscal/AgtTransmitView';
-import HotelProfileView from '../components/org/HotelProfileView';
-import AuditTrailView from '../components/system/AuditTrailView';
-import PosConfigView from '../components/posconfig/PosConfigView';
-import AgtCertificationView from '../components/fiscal/AgtCertificationView';
-import SaftCenterViewNew from '../components/fiscal/SaftCenterView';
-import ProfileAccessView from '../components/security/ProfileAccessView';
+const DashboardMDMView = lazy(() => import('../components/views/DashboardMDMView'));
+const ItemsView = lazy(() => import('../components/masterdata/ItemsView'));
+const CategoriesView = lazy(() => import('../components/masterdata/CategoriesView'));
+const UomsView = lazy(() => import('../components/masterdata/UomsView'));
+const TaxesView = lazy(() => import('../components/masterdata/TaxesView'));
+const BrandsView = lazy(() => import('../components/masterdata/BrandsView'));
+const PaymentMethodsView = lazy(() => import('../components/masterdata/PaymentMethodsView'));
+const SupplierListView = lazy(() => import('../components/esm/SupplierListView'));
+const EsmDashboardView = lazy(() => import('../components/esm/EsmDashboardView'));
+const PurchaseOrdersView = lazy(() => import('../components/procurement/PurchaseOrdersView'));
+const GoodsReceiptsView = lazy(() => import('../components/procurement/GoodsReceiptsView'));
+const CollaboratorsList = lazy(() => import('../pages/backoffice/workforce/CollaboratorsList'));
+const RolesView = lazy(() => import('../components/views/auth/RolesView'));
+const PermissionsMatrixView = lazy(() => import('../components/views/auth/PermissionsMatrixView'));
+const ContextRulesView = lazy(() => import('../components/views/auth/ContextRulesView'));
+const OutletsView = lazy(() => import('../components/posmgmt/OutletsView'));
+const SalesView = lazy(() => import('../components/posmgmt/SalesView'));
+const KDSView = lazy(() => import('../components/posmgmt/KDSView'));
+const AuditView = lazy(() => import('../components/posmgmt/AuditView'));
+const EdcInboxView = lazy(() => import('../components/views/EdcInboxView'));
+const GiftCardsView = lazy(() => import('../components/posmgmt/GiftCardsView'));
+const DesktopWallpaperView = lazy(() => import('../components/admin/DesktopWallpaperView'));
+const FeatureFlagsView = lazy(() => import('../components/admin/FeatureFlagsView'));
+const CompaniesView = lazy(() => import('../components/org/OrgViews').then((m) => ({ default: m.CompaniesView })));
+const HotelsView = lazy(() => import('../components/org/OrgViews').then((m) => ({ default: m.HotelsView })));
+const DepartmentsOrgView = lazy(() => import('../components/org/OrgViews').then((m) => ({ default: m.DepartmentsOrgView })));
+const AreasView = lazy(() => import('../components/org/OrgViews').then((m) => ({ default: m.AreasView })));
+const CurrenciesView = lazy(() => import('../components/masterdata/CadastrosViews').then((m) => ({ default: m.CurrenciesView })));
+const CountriesView = lazy(() => import('../components/masterdata/CadastrosViews').then((m) => ({ default: m.CountriesView })));
+const BanksView = lazy(() => import('../components/masterdata/CadastrosViews').then((m) => ({ default: m.BanksView })));
+const LanguagesView = lazy(() => import('../components/masterdata/CadastrosViews').then((m) => ({ default: m.LanguagesView })));
+const CustomersView = lazy(() => import('../components/masterdata/CadastrosViews').then((m) => ({ default: m.CustomersView })));
+const UsersView = lazy(() => import('../components/security/SecurityViews').then((m) => ({ default: m.UsersView })));
+const SessionsView = lazy(() => import('../components/security/SecurityViews').then((m) => ({ default: m.SessionsView })));
+const LoginHistoryView = lazy(() => import('../components/security/SecurityViews').then((m) => ({ default: m.LoginHistoryView })));
+const PriceListsView = lazy(() => import('../components/commercial/PriceListsView'));
+const ItemAdvancedView = lazy(() => import('../components/masterdata/ItemAdvancedView'));
+const InvWarehousesView = lazy(() => import('../components/warehouse/WarehouseViews').then((m) => ({ default: m.WarehousesView })));
+const InvStockLevelsView = lazy(() => import('../components/warehouse/WarehouseViews').then((m) => ({ default: m.StockLevelsView })));
+const InvStockMovementsView = lazy(() => import('../components/warehouse/WarehouseViews').then((m) => ({ default: m.StockMovementsView })));
+const RequisitionsView = lazy(() => import('../components/procurement/ProcurementFlowViews').then((m) => ({ default: m.RequisitionsView })));
+const RfqComparisonView = lazy(() => import('../components/procurement/ProcurementFlowViews').then((m) => ({ default: m.RfqComparisonView })));
+const AccountsPayableView = lazy(() => import('../components/finance/AccountsPayableView'));
+const AccountsReceivableView = lazy(() => import('../components/finance/AccountsReceivableView'));
+const OperationsCenterView = lazy(() => import('../components/ops/OperationsCenterViews').then((m) => ({ default: m.OperationsCenterView })));
+const LiveTablesMonitor = lazy(() => import('../components/ops/OperationsCenterViews').then((m) => ({ default: m.LiveTablesMonitor })));
+const DocumentCenterView = lazy(() => import('../components/documents/DocumentCenterView'));
+const BookingEngineView = lazy(() => import('../components/integration/BookingEngineView'));
+const SupportCenterView = lazy(() => import('../components/system/SupportCenterView'));
+const ChannelManagerView = lazy(() => import('../components/integration/ChannelManagerView'));
+const ManagementDashboard = lazy(() => import('../components/reporting/ManagementDashboard'));
+const AccountsView = lazy(() => import('../components/finance/AccountsView'));
+const ReceiptsView = lazy(() => import('../components/finance/ReceiptsView'));
+const PaymentsView = lazy(() => import('../components/finance/PaymentsView'));
+const InvoicesView = lazy(() => import('../components/finance/InvoicesView'));
+const PromotionsView = lazy(() => import('../components/commercial/PromotionsView'));
+const CombosView = lazy(() => import('../components/commercial/CombosView'));
+const FiscalDashboardView = lazy(() => import('../components/fiscal/FiscalCenterViews').then((m) => ({ default: m.FiscalDashboardView })));
+const FiscalSeriesView = lazy(() => import('../components/fiscal/FiscalCenterViews').then((m) => ({ default: m.FiscalSeriesView })));
+const FiscalDocumentsView = lazy(() => import('../components/fiscal/FiscalCenterViews').then((m) => ({ default: m.FiscalDocumentsView })));
+const CommercialDocumentsView = lazy(() => import('../components/fiscal/FiscalCenterViews').then((m) => ({ default: m.CommercialDocumentsView })));
+const TaxEngineView = lazy(() => import('../components/fiscal/FiscalCenterViews').then((m) => ({ default: m.TaxEngineView })));
+const FiscalConnectivityView = lazy(() => import('../components/fiscal/FiscalCenterViews').then((m) => ({ default: m.FiscalConnectivityView })));
+const FiscalAuditView = lazy(() => import('../components/fiscal/FiscalCenterViews').then((m) => ({ default: m.FiscalAuditView })));
+const FiscalArchiveView = lazy(() => import('../components/fiscal/FiscalCenterViews').then((m) => ({ default: m.FiscalArchiveView })));
+const AgtTransmitView = lazy(() => import('../components/fiscal/AgtTransmitView'));
+const HotelProfileView = lazy(() => import('../components/org/HotelProfileView'));
+const AuditTrailView = lazy(() => import('../components/system/AuditTrailView'));
+const PosConfigView = lazy(() => import('../components/posconfig/PosConfigView'));
+const AgtCertificationView = lazy(() => import('../components/fiscal/AgtCertificationView'));
+const SaftCenterViewNew = lazy(() => import('../components/fiscal/SaftCenterView'));
+const ProfileAccessView = lazy(() => import('../components/security/ProfileAccessView'));
 // PMS — Property Management System (Centro 11)
-import PmsShell from '../components/pms/PmsShell';
+const PmsShell = lazy(() => import('../components/pms/PmsShell'));
 // F&B Operations Center (Centro 10)
 // Warehouse Center (Centro 09)
-import WhDashboardView from '../components/warehouse/wh/WhDashboardView';
-import WhLocationsView from '../components/warehouse/wh/WhLocationsView';
-import WhLotsView from '../components/warehouse/wh/WhLotsView';
-import WhTransfersView from '../components/warehouse/wh/WhTransfersView';
-import WhInventoryView from '../components/warehouse/wh/WhInventoryView';
-import WhCostingView from '../components/warehouse/wh/WhCostingView';
-import WhProductionView from '../components/warehouse/wh/WhProductionView';
-import ImportarDadosView from '../components/masterdata/ImportarDadosView';
+const WhDashboardView = lazy(() => import('../components/warehouse/wh/WhDashboardView'));
+const WhLocationsView = lazy(() => import('../components/warehouse/wh/WhLocationsView'));
+const WhLotsView = lazy(() => import('../components/warehouse/wh/WhLotsView'));
+const WhTransfersView = lazy(() => import('../components/warehouse/wh/WhTransfersView'));
+const WhInventoryView = lazy(() => import('../components/warehouse/wh/WhInventoryView'));
+const WhCostingView = lazy(() => import('../components/warehouse/wh/WhCostingView'));
+const WhProductionView = lazy(() => import('../components/warehouse/wh/WhProductionView'));
+const ImportarDadosView = lazy(() => import('../components/masterdata/ImportarDadosView'));
 // SRM — Supplier Relationship (Centro 07)
-import { SrmContractsView, SrmDocumentsView, SrmCertificatesView, SrmSlaView, SrmEvaluationView } from '../components/esm/SrmViews';
+const SrmContractsView = lazy(() => import('../components/esm/SrmViews').then((m) => ({ default: m.SrmContractsView })));
+const SrmDocumentsView = lazy(() => import('../components/esm/SrmViews').then((m) => ({ default: m.SrmDocumentsView })));
+const SrmCertificatesView = lazy(() => import('../components/esm/SrmViews').then((m) => ({ default: m.SrmCertificatesView })));
+const SrmSlaView = lazy(() => import('../components/esm/SrmViews').then((m) => ({ default: m.SrmSlaView })));
+const SrmEvaluationView = lazy(() => import('../components/esm/SrmViews').then((m) => ({ default: m.SrmEvaluationView })));
 // Hotel Management (Centro 04)
-import { HmcDashboardView, HmcBuildingsView, HmcFloorsView, HmcProfitCentersView, HmcCostCentersView, HmcResourcesView } from '../components/org/HmcViews';
+const HmcDashboardView = lazy(() => import('../components/org/HmcViews').then((m) => ({ default: m.HmcDashboardView })));
+const HmcBuildingsView = lazy(() => import('../components/org/HmcViews').then((m) => ({ default: m.HmcBuildingsView })));
+const HmcFloorsView = lazy(() => import('../components/org/HmcViews').then((m) => ({ default: m.HmcFloorsView })));
+const HmcProfitCentersView = lazy(() => import('../components/org/HmcViews').then((m) => ({ default: m.HmcProfitCentersView })));
+const HmcCostCentersView = lazy(() => import('../components/org/HmcViews').then((m) => ({ default: m.HmcCostCentersView })));
+const HmcResourcesView = lazy(() => import('../components/org/HmcViews').then((m) => ({ default: m.HmcResourcesView })));
 // Configuração transversal — Integração (20), Notificações (06), Documentos (18), Sistema (21)
-import {
-  IntLocksView, IntBankPosView, IntScalesView, IntPrintersView, IntApisView,
-  NtfEmailsView, NtfSmsView, NtfPushView, NtfAlertsView,
-  DocTemplatesView, DocPdfView, DocSignaturesView,
-  SysSchedulerView, SysLogsView, SysUpdatesView, SysCacheView, SysBackupsView,
-} from '../components/system/PlatformViews';
+const IntLocksView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.IntLocksView })));
+const IntBankPosView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.IntBankPosView })));
+const IntScalesView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.IntScalesView })));
+const IntPrintersView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.IntPrintersView })));
+const IntApisView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.IntApisView })));
+const NtfEmailsView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.NtfEmailsView })));
+const NtfSmsView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.NtfSmsView })));
+const NtfPushView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.NtfPushView })));
+const NtfAlertsView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.NtfAlertsView })));
+const DocTemplatesView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.DocTemplatesView })));
+const DocPdfView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.DocPdfView })));
+const DocSignaturesView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.DocSignaturesView })));
+const SysSchedulerView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.SysSchedulerView })));
+const SysLogsView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.SysLogsView })));
+const SysUpdatesView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.SysUpdatesView })));
+const SysCacheView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.SysCacheView })));
+const SysBackupsView = lazy(() => import('../components/system/PlatformViews').then((m) => ({ default: m.SysBackupsView })));
 // Tanda final — Workflow(19), Compras(08), Comercial(06), Finanças(14), Admin(01), Segurança(03)
-import {
-  WfcDashboardView, WfcFlowsView, WfcTasksView,
-  ProcDashboardView, ProcReturnsView, ProcPlanningView,
-  ComDashboardView, ComLoyaltyView,
-  FinReconciliationView, AdmGroupsView, AdmModuleStatusView, AdmVersionsView,
-  SecDashboardView, SecPinView, SecMfaView,
-} from '../components/final/FinalViews';
+const WfcDashboardView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.WfcDashboardView })));
+const WfcFlowsView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.WfcFlowsView })));
+const WfcTasksView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.WfcTasksView })));
+const ProcDashboardView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.ProcDashboardView })));
+const ProcReturnsView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.ProcReturnsView })));
+const ProcPlanningView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.ProcPlanningView })));
+const ComDashboardView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.ComDashboardView })));
+const ComLoyaltyView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.ComLoyaltyView })));
+const FinReconciliationView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.FinReconciliationView })));
+const AdmGroupsView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.AdmGroupsView })));
+const AdmModuleStatusView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.AdmModuleStatusView })));
+const AdmVersionsView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.AdmVersionsView })));
+const SecDashboardView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.SecDashboardView })));
+const SecPinView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.SecPinView })));
+const SecMfaView = lazy(() => import('../components/final/FinalViews').then((m) => ({ default: m.SecMfaView })));
 // Contabilidade Geral (Centro 22 · PGC-AO)
-import {
-  AccDashboardView, AccChartView, AccEntriesView, AccJournalsView,
-  AccLedgerView, AccTrialBalanceView, AccStatementsView, AccIntegrationView,
-} from '../components/accounting/AccountingViews';
+const AccDashboardView = lazy(() => import('../components/accounting/AccountingViews').then((m) => ({ default: m.AccDashboardView })));
+const AccChartView = lazy(() => import('../components/accounting/AccountingViews').then((m) => ({ default: m.AccChartView })));
+const AccEntriesView = lazy(() => import('../components/accounting/AccountingViews').then((m) => ({ default: m.AccEntriesView })));
+const AccJournalsView = lazy(() => import('../components/accounting/AccountingViews').then((m) => ({ default: m.AccJournalsView })));
+const AccLedgerView = lazy(() => import('../components/accounting/AccountingViews').then((m) => ({ default: m.AccLedgerView })));
+const AccTrialBalanceView = lazy(() => import('../components/accounting/AccountingViews').then((m) => ({ default: m.AccTrialBalanceView })));
+const AccStatementsView = lazy(() => import('../components/accounting/AccountingViews').then((m) => ({ default: m.AccStatementsView })));
+const AccIntegrationView = lazy(() => import('../components/accounting/AccountingViews').then((m) => ({ default: m.AccIntegrationView })));
 
 export interface NavItem { id: string; name: string; }
 export interface NavModule { key: string; title: string; items: NavItem[]; }

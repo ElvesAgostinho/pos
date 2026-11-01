@@ -1,3 +1,4 @@
+import { EcraAdiado } from './ui/EcraAdiado';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MODULES, VIEW_REGISTRY, MODULE_MENUS, MODULE_OF, ITEM_TITLES, moduleEnabled } from '../config/navigation';
@@ -165,7 +166,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
           {/* Ao clicar num ícone, o navbar do lado esquerdo aparece para navegar dentro do módulo */}
           <Sidebar scopeKey={moduleKey} activeView={activeView} onSelectView={onOpen} />
           <div className="flex-1 overflow-hidden bg-[#EEF1F5]">
-            {Real ? <Real /> : <RoadmapPlaceholder id={activeView} />}
+            {Real ? <EcraAdiado><Real /></EcraAdiado> : <RoadmapPlaceholder id={activeView} />}
           </div>
         </div>
       )}

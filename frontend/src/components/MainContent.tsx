@@ -1,3 +1,4 @@
+import { EcraAdiado } from './ui/EcraAdiado';
 import React from 'react';
 import { VIEW_REGISTRY, ITEM_TITLES, MODULE_OF } from '../config/navigation';
 import ClassicWindow from './ui/ClassicWindow';
@@ -45,7 +46,8 @@ export default function MainContent({ activeView, onClose, onSelectView }: MainC
       return <ModuleDesktop moduleKey={activeView.slice(5)} activeView={activeView} onOpen={(id) => onSelectView && onSelectView(id)} />;
     }
     const Real = VIEW_REGISTRY[activeView];
-    if (Real) return <Real />;
+    // Cada ecrã é agora um ficheiro próprio, pedido ao abrir — ver EcraAdiado.
+    if (Real) return <EcraAdiado><Real /></EcraAdiado>;
     return <Placeholder id={activeView} />;
   };
 

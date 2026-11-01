@@ -1,3 +1,4 @@
+import { EcraAdiado } from '../ui/EcraAdiado';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -356,9 +357,11 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
     return (
       <div ref={shellRef} className="h-screen w-screen overflow-hidden font-sans select-none">
         <ErrorBoundary viewKey={activeView}>
-          <Active onBack={() => onOpen(tree[0]?.items[0]?.id || 'posc_dashboard')}
-            onOpen={onOpen}
-            onDesktop={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }} />
+          <EcraAdiado>
+            <Active onBack={() => onOpen(tree[0]?.items[0]?.id || 'posc_dashboard')}
+              onOpen={onOpen}
+              onDesktop={() => { localStorage.removeItem('ui_shell'); onDesktop ? onDesktop() : window.location.reload(); }} />
+          </EcraAdiado>
         </ErrorBoundary>
       </div>
     );
@@ -680,7 +683,9 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
 
           <div id="erp-active-view" className="flex-1 overflow-hidden">
             <ErrorBoundary viewKey={activeView}>
-              {Active ? <Active /> : <WelcomePanel tree={tree} moduleName={bizModules.find((b) => b.key === module)?.name} onOpen={onOpen} dark={dark} />}
+              {Active
+                ? <EcraAdiado><Active /></EcraAdiado>
+                : <WelcomePanel tree={tree} moduleName={bizModules.find((b) => b.key === module)?.name} onOpen={onOpen} dark={dark} />}
             </ErrorBoundary>
           </div>
         </div>
