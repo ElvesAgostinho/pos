@@ -351,6 +351,84 @@ const DESENHOS: Record<string, (size: number) => ReactElement> = {
   </>),
 };
 
+/* ─── OS QUE O PAINEL DE INFORMAÇÃO TROUXE ─────────────────────────
+   Sete símbolos que os menus nunca tinham pedido e o painel pede: a vassoura
+   (quartos e mesas por limpar), o calendário (chegadas), a porta (saídas), o
+   prato (mesas), o chapéu de chef (cozinha), o banco (caixas abertas) e o
+   alfinete (barra de acesso rápido).
+
+   Desenhá-los é melhor do que lhes dar um símbolo parecido que já exista: num
+   painel de seis números, dois mosaicos com o mesmo desenho obrigam a ler os
+   rótulos — e é exactamente isso que os ícones estão ali para evitar. Antes de
+   os desenhar, "Por limpar" e "Saídas hoje" saíam os dois como a folha
+   genérica, que era o mesmo que não terem ícone nenhum. */
+
+/** VASSOURA — o que está por limpar. */
+DESENHOS['🧹'] = svg(<>
+  <rect x="14.5" y="3" width="3" height="13" rx="1.5" fill="#A9743F" />
+  <path d="M9 16h14l2 12H7Z" fill="#E0A94A" stroke="#B9822C" strokeWidth="1" />
+  <path d="M9 16h14l.6 3.6H8.4Z" fill="#C8902F" />
+  <g stroke="#B9822C" strokeWidth="0.9">
+    <path d="M11 20.5v7.5" /><path d="M14.3 20.5v7.5" /><path d="M17.7 20.5v7.5" /><path d="M21 20.5v7.5" />
+  </g>
+</>);
+
+/** CALENDÁRIO — as chegadas de hoje. */
+DESENHOS['📅'] = svg(<>
+  <rect x="4" y="6" width="24" height="22" rx="2" fill="#FFFFFF" stroke="#C3D2E0" strokeWidth="1.2" />
+  <path d="M4 8a2 2 0 0 1 2-2h20a2 2 0 0 1 2 2v4H4Z" fill="#C0504A" />
+  <g fill="#4A5461">
+    <rect x="8" y="3" width="2.6" height="6" rx="1.3" /><rect x="21.4" y="3" width="2.6" height="6" rx="1.3" />
+  </g>
+  <g fill="#9AA6B4">
+    <rect x="7.5" y="15" width="4" height="3.4" rx="0.6" /><rect x="14" y="15" width="4" height="3.4" rx="0.6" />
+    <rect x="20.5" y="15" width="4" height="3.4" rx="0.6" /><rect x="14" y="20.5" width="4" height="3.4" rx="0.6" />
+    <rect x="20.5" y="20.5" width="4" height="3.4" rx="0.6" />
+  </g>
+  <rect x="7.5" y="20.5" width="4" height="3.4" rx="0.6" fill="#2F6FB5" />
+</>);
+
+/** PORTA — as saídas de hoje. */
+DESENHOS['🚪'] = svg(<>
+  <rect x="6" y="3" width="20" height="26" rx="1.5" fill="#B07B4F" stroke="#8A5C36" strokeWidth="1.1" />
+  <rect x="9" y="6" width="14" height="20" rx="1" fill="#C89468" />
+  <circle cx="20.5" cy="16.5" r="1.6" fill="#E0A94A" stroke="#B9822C" strokeWidth="0.7" />
+</>);
+
+/** PRATO E TALHERES — as mesas. */
+DESENHOS['🍽'] = svg(<>
+  <circle cx="16" cy="16" r="10" fill="#FFFFFF" stroke="#C3D2E0" strokeWidth="1.2" />
+  <circle cx="16" cy="16" r="6" fill="none" stroke="#DCE3EA" strokeWidth="1.2" />
+  <g fill="#8793A1">
+    <rect x="2.5" y="5" width="1.8" height="22" rx="0.9" />
+    <path d="M26 5h2.4v7a1.2 1.2 0 0 1-2.4 0Z" /><rect x="26.6" y="11" width="1.6" height="16" rx="0.8" />
+  </g>
+</>);
+
+/** CHAPÉU DE CHEF — a cozinha. */
+DESENHOS['👨‍🍳'] = svg(<>
+  <path d="M8 18a6 6 0 1 1 2.4-11.5A6 6 0 0 1 21.6 6.5 6 6 0 1 1 24 18Z"
+    fill="#FFFFFF" stroke="#C3D2E0" strokeWidth="1.2" />
+  <rect x="8" y="18" width="16" height="9" rx="1.5" fill="#EDF1F5" stroke="#C3D2E0" strokeWidth="1.2" />
+  <g stroke="#C3D2E0" strokeWidth="1"><path d="M13 18v9" /><path d="M19 18v9" /></g>
+</>);
+
+/** BANCO — as caixas abertas. */
+DESENHOS['🏦'] = svg(<>
+  <path d="M16 3 30 10H2Z" fill="#6B7786" stroke="#4A5461" strokeWidth="1" />
+  <g fill="#8793A1" stroke="#4A5461" strokeWidth="0.9">
+    <rect x="6" y="12" width="3.5" height="12" /><rect x="14.2" y="12" width="3.5" height="12" />
+    <rect x="22.5" y="12" width="3.5" height="12" />
+  </g>
+  <rect x="2" y="24" width="28" height="4" rx="1" fill="#6B7786" stroke="#4A5461" strokeWidth="1" />
+</>);
+
+/** ALFINETE — fixado na barra de acesso rápido. */
+DESENHOS['📌'] = svg(<>
+  <path d="M19 3 29 13l-3.5 1.2-1.6 5.3-8.4-8.4 5.3-1.6Z" fill="#C0504A" stroke="#9A4236" strokeWidth="1" />
+  <path d="M15.5 11.1 20.9 16.5 8 29Z" fill="#8793A1" stroke="#4A5461" strokeWidth="1" />
+</>);
+
 /**
  * OUTROS NOMES PARA O MESMO DESENHO.
  *

@@ -59,6 +59,7 @@ import PosOnline from './PosOnline';
 import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton, corDoIcone } from './kit';
+import { BarraAcessoRapido, useAcessoRapido } from '../shared/AcessoRapido';
 import Pictograma from '../icons/Pictogramas';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
 import { TOKENS, RADIUS } from '../../config/theme';
@@ -170,8 +171,19 @@ export default function PosConfigView({ onDesktop, onOpen }: {
     staleTime: 5 * 60 * 1000,
   });
   const logoUrl = branding?.logo_url || '';
-  // FAVORITOS — as secções que este utilizador usa todos os dias (ficam no browser dele).
-  const [favs, setFavs] = useState<any[]>(() => JSON.parse(localStorage.getItem('posc_favs') || '[]'));
+  // FAVORITOS — as secções que este utilizador usa todos os dias.
+  //
+  // Eram lidos daqui com `localStorage.getItem('posc_favs')` directamente. Agora
+  // vêm do armazenamento PARTILHADO (shared/AcessoRapido.tsx), que o PMS também
+  // usa: o mesmo favorito aparece na barra de acesso rápido lá em cima e nesta
+  // lista da árvore, e tirar num sítio tira no outro. Duas listas de atalhos a
+  // dizerem coisas diferentes sobre a mesma conta era o próximo defeito à
+  // espera de acontecer. Os favoritos antigos são migrados, não perdidos.
+  const { itens: favs, fixar, desafixar } = useAcessoRapido('pos');
+  const irPara = (destino: string) => {
+    if (destino.startsWith('/')) { window.open(destino, '_blank', 'noopener'); return; }
+    setSection(destino); setEditing(null);
+  };
   const [open, setOpen] = useState<Record<string, boolean>>({ artigos: true });
   const [editing, setEditing] = useState<number | 'new' | null>(null);
   const [sel, setSel] = useState<number | null>(null);
@@ -253,6 +265,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         onDesktop={() => onDesktop?.()}
         extra={
           <div className="ml-auto flex items-center gap-4 text-[12px]">
+            <BarraAcessoRapido modulo="pos" activo={section} onAbrir={irPara} />
             <span className="font-semibold">{new Date().toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
             <span className="opacity-30">|</span>
             <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
@@ -268,13 +281,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 // FAVORITOS — guarda a secção onde o utilizador está agora.
                 // É o atalho de quem passa o dia no mesmo ecrã.
                 const atual = SECTIONS.flatMap((g) => g.items).find((x) => x.key === section);
-                const guardados = JSON.parse(localStorage.getItem('posc_favs') || '[]');
-                if (!guardados.some((f: any) => f.key === section)) {
-                  // Lista NOVA (não a mesma): senão o React não redesenha a barra.
-                  const novos = [...guardados, { key: section, label: atual?.label || section }];
-                  localStorage.setItem('posc_favs', JSON.stringify(novos));
-                  setFavs(novos);
-                }
+                fixar({ id: section, label: atual?.label || section, icon: (atual as any)?.icon });
                 notifyGuide({
                   title: 'Adicionado aos favoritos',
                   message: `"${atual?.label || section}" fica agora no topo da lista de secções.`,
@@ -338,18 +345,13 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                 <Glyph icon="♥" size={12} tom="#C0392B" /> Favoritos
               </div>
               {favs.map((f) => (
-                <div key={f.key}
-                  className={`group flex items-center pl-5 pr-1 py-[2px] text-[11.5px] cursor-pointer ${section === f.key ? 'font-bold' : 'hover:bg-[#FDF4D9]'}`}
-                  style={section === f.key
+                <div key={f.id}
+                  className={`group flex items-center pl-5 pr-1 py-[2px] text-[11.5px] cursor-pointer ${section === f.id ? 'font-bold' : 'hover:bg-[#FDF4D9]'}`}
+                  style={section === f.id
                     ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection }
                     : { color: TOKENS.textOnLight }}>
-                  <span className="flex-1" onClick={() => { setSection(f.key); setEditing(null); }}>{f.label}</span>
-                  <button title="Tirar dos favoritos"
-                    onClick={() => {
-                      const novos = favs.filter((x) => x.key !== f.key);
-                      localStorage.setItem('posc_favs', JSON.stringify(novos));
-                      setFavs(novos);
-                    }}
+                  <span className="flex-1" onClick={() => { setSection(f.id); setEditing(null); }}>{f.label}</span>
+                  <button title="Tirar dos favoritos" onClick={() => desafixar(f.id)}
                     className="opacity-0 group-hover:opacity-100 text-[#DC2626] font-bold px-1">×</button>
                 </div>
               ))}

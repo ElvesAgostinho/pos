@@ -11,6 +11,9 @@ import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
 import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
+import { usePainelRapido, useMosaicosLigados, MOSAICOS_PMS, MOSAICOS_POS }
+  from '../shared/PainelRapido';
+import { Glyph } from '../posconfig/kit';
 import { MENUS as PMS_MENU_GROUPS } from '../pms/pmsMenus';
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -79,6 +82,16 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   const ws = workspaceByKey(wsKey) || licensed[0] || WORKSPACES[0];
 
   const [start, setStart] = useState(false);
+  // O PAINEL DO AMBIENTE. Aberto por defeito — é a razão de existir: quem liga o
+  // computador de manhã vê o estado da casa sem carregar em nada. Fechar fica
+  // gravado, para quem não o quer não ter de o fechar todos os dias.
+  const [painel, setPainel] = useState(() => {
+    try { return localStorage.getItem('painel_ambiente_fechado') !== '1'; } catch { return true; }
+  });
+  const alternarPainel = () => setPainel((v) => {
+    try { localStorage.setItem('painel_ambiente_fechado', v ? '1' : '0'); } catch { /* sem espaço */ }
+    return !v;
+  });
   const [selecionado, setSelecionado] = useState<string | null>(null);
   const [clock, setClock] = useState(new Date());
   // DE MINUTO A MINUTO, não de 15 em 15 segundos. O relógio mostra horas e
@@ -236,8 +249,8 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       <div className="flex-1 relative overflow-hidden">
         {/* Os ícones, em coluna a partir do canto superior esquerdo — como num
             ambiente de trabalho a sério, e não centrados nem em grelha larga. */}
-        <div className="absolute top-2 left-2 grid gap-1 content-start"
-          style={{ gridTemplateRows: 'repeat(7, auto)', gridAutoFlow: 'column' }}>
+        <div className="absolute top-2 left-2 grid gap-y-2 gap-x-1 content-start"
+          style={{ gridTemplateRows: 'repeat(6, auto)', gridAutoFlow: 'column' }}>
           {quick.map((ic, i) => (
             <DesktopIcon key={`quick-${i}`} ic={ic}
               sel={selecionado === `quick-${i}`}
@@ -258,6 +271,22 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
               onOpen={() => abrirModulo(m)} />
           ))}
         </div>
+
+        {/* ═══ COMO ESTÁ A CASA ═══
+            Os mesmos números do painel que vive dentro dos módulos, aqui em
+            escuro. Não é uma segunda conta: é a MESMA consulta (usePainelRapido)
+            e a MESMA lista de mosaicos — só a roupa muda. Duas consultas ao mesmo
+            endereço dariam dois números diferentes no mesmo segundo.
+
+            Está aqui, e não na barra de estado do módulo, porque é isso que um
+            ambiente de trabalho faz: mostra como está a casa ANTES de se entrar
+            em lado nenhum. */}
+        <PainelDoAmbiente modulo={wsKey} aberto={painel} alternar={alternarPainel}
+          onAbrir={(destino) => {
+            if (destino.startsWith('/')) { window.open(destino, '_blank', 'noopener'); return; }
+            if (wsKey === 'pms') { localStorage.setItem('pms_section', destino); open('pms_home', 'PMS'); }
+            else { localStorage.setItem('posc_section', destino); open('posc_config', 'Configuração POS'); }
+          }} />
 
         {/* JANELA EMBEBIDA (iframe) ou WIDGET — a caixa da ficha do módulo decide.
             Moldura quadrada e cinzenta, a mesma das janelas do backoffice. */}
@@ -410,7 +439,7 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
                     style={{ background: '#3A3A3A', color: TEXTO }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = '#474747'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = '#3A3A3A'; }}>
-                    <span className="flex-1 flex items-center"><ClassicIcon name={ic.icon} size={26} /></span>
+                    <span className="flex-1 flex items-center"><ClassicIcon name={ic.icon} size={34} /></span>
                     <span className="text-[11px] leading-tight">{ic.label}</span>
                   </button>
                 ))}
@@ -499,22 +528,135 @@ function DesktopIcon({ ic, sel, onSel, onOpen }:
       onDoubleClick={onOpen}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
       title={`${ic.label} — duplo clique para abrir`}
-      className="w-[84px] flex flex-col items-center gap-1 px-1 py-1.5 focus:outline-none"
+      className="w-[96px] flex flex-col items-center gap-1 px-1 py-1.5 focus:outline-none"
       style={{
         background: sel ? 'rgba(255,255,255,0.14)' : 'transparent',
         border: sel ? '1px solid rgba(255,255,255,0.30)' : '1px solid transparent',
       }}
       onMouseEnter={(e) => { if (!sel) e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; }}
       onMouseLeave={(e) => { if (!sel) e.currentTarget.style.background = 'transparent'; }}>
-      <span className="h-[40px] flex items-center justify-center" style={{ color: '#E8EDF2' }}>
+      <span className="h-[52px] flex items-center justify-center" style={{ color: '#E8EDF2' }}>
         {ic.img
-          ? <img src={`/icons/${ic.img}`} alt="" className="w-9 h-9 object-contain" />
-          : <ClassicIcon name={ic.icon} size={33} />}
+          ? <img src={`/icons/${ic.img}`} alt="" className="w-12 h-12 object-contain" />
+          : <ClassicIcon name={ic.icon} size={48} />}
       </span>
-      <span className="text-[11px] text-center leading-tight text-white"
+      <span className="text-[11.5px] text-center leading-tight text-white"
         style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.6)' }}>
         {ic.label}
       </span>
     </button>
+  );
+}
+
+/**
+ * OS MOSAICOS NO AMBIENTE DE TRABALHO.
+ *
+ * Mesmos números, mesma escolha de utilizador, outra roupa: aqui o fundo é
+ * escuro e os mosaicos são chapas quadradas, como os blocos do menu Iniciar.
+ *
+ * O que MUDA em relação ao painel de dentro dos módulos é só o desenho. A
+ * consulta e a lista de mosaicos vêm de shared/PainelRapido.tsx — se um dia
+ * houver um indicador novo, aparece nos dois sítios sem ninguém se lembrar de
+ * o acrescentar duas vezes.
+ */
+function PainelDoAmbiente({ modulo, aberto, alternar, onAbrir }: {
+  modulo: string; aberto: boolean; alternar: () => void; onAbrir: (destino: string) => void;
+}) {
+  const mosaicos = modulo === 'pms' ? MOSAICOS_PMS : MOSAICOS_POS;
+  const { visiveis, ligados, alternar: ligarMosaico } = useMosaicosLigados(modulo, mosaicos);
+  const [aEscolher, setAEscolher] = useState(false);
+  const { data, isError } = usePainelRapido(aberto);
+  const alertas: any[] = data?.alerts || [];
+
+  // FECHADO, fica só uma pega. Não desaparece de vez: quem o fechou sem querer
+  // tem de ter onde carregar para o trazer de volta, e procurá-lo numa definição
+  // escondida é o mesmo que não o ter.
+  if (!aberto) {
+    return (
+      <button onClick={(e) => { e.stopPropagation(); alternar(); }}
+        title="Mostrar o estado da casa"
+        className="absolute top-2 right-2 px-2 py-1 text-[11px] flex items-center gap-1.5"
+        style={{
+          background: 'rgba(255,255,255,0.10)', color: '#E8EDF2',
+          border: '1px solid rgba(255,255,255,0.18)',
+        }}>
+        <Glyph icon="📊" size={13} /> Como está a casa
+      </button>
+    );
+  }
+
+  return (
+    <div className="absolute top-2 right-2 w-[300px] max-h-[calc(100%-16px)] overflow-auto"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        background: 'rgba(22,27,32,0.88)', backdropFilter: 'blur(3px)',
+        border: '1px solid rgba(255,255,255,0.14)',
+      }}>
+
+      <div className="flex items-center gap-2 px-2.5 py-1.5 text-[11px] font-bold"
+        style={{ color: '#F3F3F3', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+        <span>Como está a casa</span>
+        <span className="flex-1" />
+        <button onClick={() => setAEscolher((v) => !v)} className="font-normal px-1 hover:bg-white/10"
+          title="Escolher o que aparece aqui">{aEscolher ? 'Concluir' : 'Escolher'}</button>
+        <button onClick={alternar} className="font-normal px-1 hover:bg-white/10"
+          title="Esconder">×</button>
+      </div>
+
+      {isError && (
+        <div className="px-2.5 py-2.5 text-[11px]" style={{ color: '#E89A8E' }}>
+          Não foi possível ler o estado da casa. Os números seriam inventados — por
+          isso não se mostram.
+        </div>
+      )}
+
+      {aEscolher ? (
+        <div className="p-1.5">
+          {mosaicos.map((m) => (
+            <label key={m.id}
+              className="flex items-center gap-2 px-1.5 py-[3px] text-[11.5px] cursor-pointer hover:bg-white/10"
+              style={{ color: '#E8EDF2' }}>
+              <input type="checkbox" checked={ligados.includes(m.id)} onChange={() => ligarMosaico(m.id)} />
+              <Glyph icon={m.icon} size={13} />{m.label}
+            </label>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-[1px] p-[1px]" style={{ background: 'rgba(255,255,255,0.10)' }}>
+            {visiveis.map((m) => {
+              const pedeAccao = !!(data && m.alerta?.(data));
+              return (
+                <button key={m.id} onClick={() => onAbrir(m.destino)} title={`Abrir ${m.label}`}
+                  className="px-2 py-1.5 text-left"
+                  style={{ background: 'rgba(255,255,255,0.05)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}>
+                  <span className="block text-[18px] font-bold leading-none num"
+                    style={{ color: pedeAccao ? '#F08C7A' : '#FFFFFF' }}>
+                    {data ? m.valor(data) : '—'}
+                  </span>
+                  <span className="block text-[10.5px] leading-tight mt-[2px] truncate"
+                    style={{ color: '#D6DCE2' }}>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {alertas.length > 0 && (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+              <div className="px-2.5 pt-1.5 pb-0.5 text-[9.5px] font-bold uppercase"
+                style={{ color: '#9AA6B4' }}>A precisar de atenção</div>
+              {alertas.slice(0, 5).map((a, i) => (
+                <div key={i} className="flex items-start gap-1.5 px-2.5 py-[2px] text-[11px]"
+                  style={{ color: a.level === 'error' ? '#F08C7A' : '#D6DCE2' }}>
+                  <span className="flex-shrink-0">{a.icon}</span><span>{a.msg}</span>
+                </div>
+              ))}
+              <div className="h-1.5" />
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }

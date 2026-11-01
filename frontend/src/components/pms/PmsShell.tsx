@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { X, Users } from 'lucide-react';
+import { X, Users, Pin } from 'lucide-react';
 import { aviso } from '../../ui/dialogo';
 import { Glyph } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
 import { MENUS } from './pmsMenus';
 import { MenuTopo, MenuItem } from '../shared/MenuTopo';
+import { BarraAcessoRapido, useAcessoRapido } from '../shared/AcessoRapido';
 import { useActiveModules } from '../../hooks/useActiveModules';
 import { TOKENS, RADIUS } from '../../config/theme';
 import { corDoIcone } from '../posconfig/kit';
@@ -199,6 +200,15 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
   const accScreens = access?.screens ?? [];
   const screenAllowed = (id: string) => accFull || accScreens.length === 0 || accScreens.includes(id);
 
+  // O PAINEL ("como está a casa") e a BARRA DE ACESSO RÁPIDO. As duas peças são
+  // partilhadas com a Configuração POS — mesmo código, mesmo comportamento. O
+  // que é do PMS é só a lista de mosaicos e para onde cada um leva.
+  const { fixar } = useAcessoRapido('pms');
+  const irPara = (destino: string) => {
+    if (destino.startsWith('/')) { window.open(destino, '_blank', 'noopener'); return; }
+    setSection(destino);
+  };
+
   return (
     /* Ver PosConfigView: o atributo liga a folha da grelha clássica. */
     <div data-erp="classico" className="h-full flex flex-col" style={{ background: TOKENS.chrome, fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
@@ -213,6 +223,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         larguraLista={270}
         extra={
           <div className="ml-auto flex items-center gap-4 text-[12px]">
+            <BarraAcessoRapido modulo="pms" activo={section} onAbrir={irPara} />
             <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
           </div>
         }
@@ -243,8 +254,16 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
                  borderBottom: `1px solid ${TOKENS.chromeLine}` }}>
         <Glyph icon={cur.icon} size={13} tom={corDoIcone(cur.icon)} />
         {cur.label}{hotelName && <span className="font-normal text-[11.5px] text-[#6B7280]"> — {hotelName}</span>}
+        {/* FIXAR ESTE ECRÃ. O gesto fica onde o ecrã se chama pelo nome — é aqui
+            que alguém pensa "a este volto todos os dias". O POS já tinha o mesmo
+            comando no ribbon e os dois escrevem no MESMO sítio. */}
+        <button onClick={() => fixar({ id: section, label: cur.label, icon: cur.icon })}
+          title="Fixar este ecrã na barra de acesso rápido"
+          className="ml-auto w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors">
+          <Pin size={14} />
+        </button>
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
-          className="ml-auto w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.pill }}>
+          className="w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.pill }}>
           <Users size={15} />
         </button>
       </div>
