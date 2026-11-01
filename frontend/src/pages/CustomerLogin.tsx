@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authApi, tokenStore } from '../api/auth';
 import { apiClient } from '../api/client';
 import { getAppearance } from '../config/appearance';
-import { TOKENS, RADIUS, shade } from '../config/theme';
+import { TOKENS, RADIUS, FUNDO_SISTEMA, VEU_SOBRE_FOTO } from '../config/theme';
 import { User, Lock, LogIn, Eye, EyeOff, Settings, Building2, X, Wifi, KeyRound } from 'lucide-react';
 
 /**
@@ -183,7 +183,7 @@ const CustomerLogin: React.FC = () => {
   if (aEntrarSozinho) {
     return (
       <div className="h-screen w-full flex items-center justify-center text-white"
-        style={{ background: `linear-gradient(155deg, ${shade(barColor, -32)} 0%, #070D1A 100%)`,
+        style={{ background: FUNDO_SISTEMA,
                  fontFamily: "'Segoe UI', Tahoma, Arial, sans-serif" }}>
         <div className="flex items-center gap-3 text-[15px]">
           <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -207,16 +207,15 @@ const CustomerLogin: React.FC = () => {
         {loginBg ? (
           <>
             <img src={loginBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(8,15,30,0.80) 0%, rgba(8,15,30,0.55) 50%, rgba(8,15,30,0.88) 100%)' }} />
+            <div className="absolute inset-0" style={{ background: VEU_SOBRE_FOTO }} />
           </>
         ) : (
-          <>
-            <div className="absolute inset-0" style={{ background: `linear-gradient(155deg, ${shade(barColor, -32)} 0%, ${shade(barColor, -58)} 58%, #070D1A 100%)` }} />
-            <div className="absolute inset-0 opacity-75" style={{
-              background: `radial-gradient(70% 55% at 15% 8%, ${shade(barColor, 20)}55 0%, transparent 72%),`
-                + `radial-gradient(60% 50% at 95% 90%, ${shade(barColor, 6)}4D 0%, transparent 75%)`,
-            }} />
-          </>
+          /* SEM FOTOGRAFIA, o fundo é o MESMO do Ambiente de Trabalho (theme.ts).
+             Eram dois: aqui um azul-escuro construído a partir da cor da
+             instalação, lá outro. Quem entrava via um ecrã azul e chegava a um
+             ecrã diferente — e o login é o primeiro ecrã que o cliente mostra a
+             visitas, por isso é o pior sítio para o sistema parecer dois. */
+          <div className="absolute inset-0" style={{ background: FUNDO_SISTEMA }} />
         )}
 
         {/* Marca */}
@@ -228,9 +227,9 @@ const CustomerLogin: React.FC = () => {
         </div>
 
         <div className="relative">
-          <div className="text-[34px] lg:text-[40px] font-semibold leading-[1.1] tracking-tight">{company}</div>
+          <div className="text-[26px] lg:text-[30px] font-semibold leading-[1.15] tracking-tight">{company}</div>
           <div className="text-[14px] text-white/55 mt-2">{subtitulo}</div>
-          <p className="text-[15px] leading-relaxed text-white/75 mt-6 max-w-[380px]">{welcome}</p>
+          <p className="text-[13.5px] leading-relaxed text-white/75 mt-5 max-w-[380px]">{welcome}</p>
         </div>
 
         {/* Estado da instalação — a mesma informação da antiga barra de estado,
@@ -277,7 +276,7 @@ const CustomerLogin: React.FC = () => {
                se entra sem a trocar. A caixa desliga-se sozinha ao gravar. */
             <form onSubmit={handleTrocarPassword} className="space-y-5">
               <div>
-                <h1 className="text-[28px] font-semibold text-[#111827] tracking-tight">Defina a sua palavra-passe</h1>
+                <h1 className="text-[21px] font-semibold text-[#111827] tracking-tight">Defina a sua palavra-passe</h1>
                 <p className="text-[13px] text-[#6B7280] mt-1.5">
                   A sua conta foi entregue com uma palavra-passe provisória. Defina a sua antes de continuar.
                 </p>
@@ -307,7 +306,7 @@ const CustomerLogin: React.FC = () => {
           ) : (
             <form onSubmit={handleLogin} className="space-y-5">
               <div>
-                <h1 className="text-[28px] font-semibold text-[#111827] tracking-tight">Início de sessão</h1>
+                <h1 className="text-[21px] font-semibold text-[#111827] tracking-tight">Início de sessão</h1>
                 <p className="text-[14px] text-[#6B7280] mt-2">Entre com as suas credenciais para continuar.</p>
               </div>
 

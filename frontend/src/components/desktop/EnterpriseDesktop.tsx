@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Settings, Power, LogOut, ShieldCheck, Server, Wifi, Building2 } from 'lucide-react';
+import { X, Settings, Power, ShieldCheck, Server, Wifi, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
 import type { DeskIcon } from '../../config/workspace';
 import { getAppearance } from '../../config/appearance';
-import { TOKENS } from '../../config/theme';
+import { TOKENS, FUNDO_SISTEMA, VEU_SOBRE_FOTO } from '../../config/theme';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
@@ -13,86 +13,60 @@ import { useActiveModules } from '../../hooks/useActiveModules';
 import ClassicIcon from './ClassicIcon';
 import { MENUS as PMS_MENU_GROUPS } from '../pms/pmsMenus';
 
-// Fundo ambiente do Ambiente de Trabalho — luz colorida desfocada por trás de uma
-// camada de vidro.
-//
-// Havia aqui uma silhueta de hotel desenhada num SVG de 1000×600 com
-// `preserveAspectRatio="slice"`. Num ecrã largo (1920 de largura, 740 de altura
-// útil) o "slice" escolhe a maior escala para cobrir — 1,92× — e o prédio cresce
-// para 1920×1152, com mais de 400px a sair por cima. O que sobrava no ecrã era o
-// que o dono via: um RETÂNGULO cinzento gigante ao meio, sem forma reconhecível
-// nenhuma. Um desenho decorativo que só funciona numa proporção de ecrã não é um
-// desenho decorativo — é um defeito com boas intenções. Saiu.
-//
-// O que fica é o que se queria desde o princípio: manchas de cor grandes e
-// desfocadas, e por cima delas o VIDRO — um reflexo largo em diagonal e um grão
-// muito fino. É o grão que faz a diferença entre "um gradiente" e "uma
-// superfície": sem ele o olho vê uma impressão lisa, com ele vê material.
-function HotelBackdrop({ tint, accent, glow }: { tint: string; accent: string; glow: string }) {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* A LUZ, por trás de tudo. Manchas largas, bem desfocadas, em movimento
-          lento pelo ecrã — nunca centradas, para o fundo não ter um "meio". */}
-      <div className="absolute rounded-full" style={{ width: '52vw', height: '52vw', left: '-12%', top: '-26%', background: glow, opacity: 0.30, filter: 'blur(130px)' }} />
-      <div className="absolute rounded-full" style={{ width: '46vw', height: '46vw', right: '-12%', top: '4%', background: accent, opacity: 0.24, filter: 'blur(140px)' }} />
-      <div className="absolute rounded-full" style={{ width: '40vw', height: '40vw', left: '26%', bottom: '-24%', background: tint, opacity: 0.20, filter: 'blur(150px)' }} />
-      <div className="absolute rounded-full" style={{ width: '30vw', height: '30vw', right: '18%', bottom: '-14%', background: glow, opacity: 0.18, filter: 'blur(120px)' }} />
+/* ══════════════════════════════════════════════════════════════════════════
+   O AMBIENTE DE TRABALHO, NO REGISTO DO WINDOWS 10
+   ══════════════════════════════════════════════════════════════════════════
 
-      {/* O VIDRO: um reflexo largo a atravessar o ecrã na diagonal. É o que dá a
-          leitura de superfície — luz a bater numa chapa, não um gradiente. */}
-      <div className="absolute inset-0" style={{
-        background: 'linear-gradient(118deg, rgba(255,255,255,0.46) 0%, rgba(255,255,255,0.12) 26%,'
-          + ' rgba(255,255,255,0) 48%, rgba(255,255,255,0.10) 72%, rgba(255,255,255,0.30) 100%)',
-      }} />
-      {/* O brilho do canto superior, onde a luz entra. */}
-      <div className="absolute inset-0" style={{
-        background: 'radial-gradient(80% 60% at 12% -10%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 60%)',
-      }} />
-      {/* E o peso em baixo, para o ecrã assentar em vez de flutuar. */}
-      <div className="absolute inset-0" style={{
-        background: 'linear-gradient(to top, rgba(15,23,42,0.07) 0%, rgba(15,23,42,0) 32%)',
-      }} />
+   O que estava aqui era um ambiente "de telemóvel": fundo claro com manchas
+   de cor desfocadas, cartões de vidro fosco arredondados a flutuar nos cantos,
+   ícones dentro de tiles com bisel, duas barras azuis saturadas (uma em cima e
+   uma em baixo) e cantos de 18px por todo o lado.
 
-      {/* O GRÃO. Ruído gerado em SVG (não é imagem, não pesa nada) a 3,5% —
-          invisível de propósito: nota-se a falta dele, não a presença. */}
-      <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.035, mixBlendMode: 'overlay' }}>
-        <filter id="grao-vidro">
-          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#grao-vidro)" />
-      </svg>
-    </div>
-  );
-}
+   Três coisas o denunciavam como brinquedo e não como ferramenta de trabalho:
 
-/**
- * VIDRO FOSCO — a receita, num só sítio.
- *
- * Os painéis eram `bg-white` com borda cinzenta: cartões de papel pousados em
- * cima do fundo, sem relação nenhuma com ele. Vidro é outra coisa — deixa passar
- * a cor do que está por baixo (`backdrop-filter`), tem um fio de luz na aresta
- * de cima (a borda clara) e projecta sombra larga e suave, não um contorno.
- *
- * Como objeto e não como classes: usam-no o relógio, o painel de estado e os
- * ícones, e três cópias da mesma receita desalinham-se à primeira alteração.
- */
-const VIDRO: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.58)',
-  backdropFilter: 'blur(20px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-  border: '1px solid rgba(255,255,255,0.75)',
-  boxShadow: '0 1px 1px rgba(255,255,255,0.65) inset, 0 8px 28px rgba(15,23,42,0.10),'
-    + ' 0 2px 6px rgba(15,23,42,0.05)',
-};
+    1. A BARRA DE CIMA ERA UMA SEGUNDA NAVEGAÇÃO. Tinha F&B, Marketing,
+       Reporting, Utilitários — exactamente os mesmos menus que o POS já tem
+       lá dentro. Quem clicava num item saía do Ambiente de Trabalho para o
+       módulo, onde o mesmo menu estava outra vez. Duas portas para a mesma
+       sala, e a de fora com a data escrita a VERMELHO sobre AZUL, que é a
+       combinação com menos contraste que se consegue fazer de propósito.
+       Os itens não se perderam: foram para o menu Iniciar, que é onde um
+       sistema operativo põe "todas as aplicações".
+
+    2. OS PAINÉIS DE VIDRO no canto diziam a hora e três estados (licença,
+       servidor, VPN). Um ambiente de trabalho a sério não gasta um quarto do
+       ecrã com isso: põe-no na BANDEJA, ao lado do relógio, em ícones de 13px.
+       É lá que quem trabalha com Windows os vai procurar.
+
+    3. OS ÍCONES TINHAM CARTÃO. Um ícone de desktop é o desenho e o nome — mais
+       nada. O cartão branco por baixo acrescentava uma caixa que não é clicável
+       por si, roubava contraste ao desenho e obrigava a cantos arredondados
+       que nada mais no sistema tem.
+
+   O fundo passa a ser escuro e neutro, por uma razão prática e não estética:
+   num ambiente de trabalho a janela do módulo é que importa, e um fundo claro
+   com cor compete com ela. Escuro, o fundo recua e as janelas saltam à frente.
+
+   NOTA SOBRE A COR: isto tira a última cor forte do sistema. O azul da marca
+   deixa de aparecer no Ambiente de Trabalho — fica no sublinhado do separador
+   activo da barra de tarefas e dentro dos módulos. Foi uma decisão do dono.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/** A moldura do sistema: cinzentos quase-negros, como a barra de tarefas. */
+const BARRA = '#1F1F1F';          // barra de tarefas
+const BARRA_ALTO = '#2B2B2B';     // o que está por cima dela (menu Iniciar)
+const BARRA_HOVER = '#383838';    // rato por cima
+const LINHA = '#3C3C3C';          // divisórias dentro do escuro
+const TEXTO = '#F3F3F3';          // texto principal sobre escuro
+const TEXTO_FRACO = '#A0A0A0';    // legendas, estados
 
 export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string, module: string) => void }) {
   const nav = useNavigate();
   const { data: lic } = useActiveModules();
   const user = tokenStore.getUser();
   const erpName = getAppearance('erpName');
-  // Logótipo real da empresa (Administração → Empresa) — o ambiente de trabalho só
-  // mostrava a palavra "System Mwana Lodge" estilizada, nunca a imagem que o dono
-  // carregou lá. Mesma fonte que o login e os documentos fiscais usam.
+  // Logótipo real da empresa (Administração → Empresa) — mesma fonte que o login
+  // e os documentos fiscais usam. Aparece no cabeçalho do menu Iniciar.
   const [logoUrl, setLogoUrl] = useState('');
   useEffect(() => {
     apiClient.get('platform/branding/').then((r) => setLogoUrl(r.data?.logo_url || '')).catch(() => {});
@@ -104,12 +78,12 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   useEffect(() => { if (!wsKey && licensed.length) setWsKey(licensed[0].key); }, [licensed, wsKey]);
   const ws = workspaceByKey(wsKey) || licensed[0] || WORKSPACES[0];
 
-  const [modMenu, setModMenu] = useState(false);
-  const [topMenu, setTopMenu] = useState<string | null>(null);
-  const [userMenu, setUserMenu] = useState(false);
   const [start, setStart] = useState(false);
+  const [selecionado, setSelecionado] = useState<string | null>(null);
   const [clock, setClock] = useState(new Date());
-  useEffect(() => { const t = setInterval(() => setClock(new Date()), 15000); return () => clearInterval(t); }, []);
+  // DE MINUTO A MINUTO, não de 15 em 15 segundos. O relógio mostra horas e
+  // minutos: três das quatro voltas eram trabalho para pintar o mesmo texto.
+  useEffect(() => { const t = setInterval(() => setClock(new Date()), 30000); return () => clearInterval(t); }, []);
 
   const [recent, setRecent] = useState<{ screen: string; label: string }[]>(() => {
     try { return JSON.parse(localStorage.getItem('recent_screens') || '[]'); } catch { return []; }
@@ -119,12 +93,12 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
     const item = { screen, label: label || ITEM_TITLES[screen] || screen };
     const next = [item, ...recent.filter((r) => r.screen !== screen)].slice(0, 6);
     setRecent(next); localStorage.setItem('recent_screens', JSON.stringify(next));
-    setStart(false); setTopMenu(null); setModMenu(false);
+    setStart(false);
     onOpen(screen, wsKey);
   };
   const openIcon = (ic: DeskIcon) => { if (ic.launch) window.open(ic.launch, '_blank', 'noopener'); else open(ic.screen, ic.label); };
   const logout = async () => { await authApi.logout(); nav('/backoffice/login'); };
-  const closeAll = () => { setModMenu(false); setTopMenu(null); setStart(false); setUserMenu(false); };
+  const closeAll = () => { setStart(false); setSelecionado(null); };
 
   const quick = ws.icons.filter((i) => i.quick);   // atalhos do ambiente de trabalho
 
@@ -163,10 +137,6 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
     open('posc_config', m.name);
   };
 
-  // Dropdowns REAIS da barra de cima — OS MESMOS DO POS (F&B, Marketing, Reporting,
-  // Utilitários). Antes eram outros (Favoritos/Recentes/Relatórios/Ferramentas): o
-  // sistema tinha dois vocabulários para as mesmas coisas, e quem aprendia um não
-  // reconhecia o outro.
   // Abre uma SECÇÃO do POS. Estes menus são os do POS: Compras, Inventário, Stock,
   // Contas a Pagar, Relatórios — tudo isso vive DENTRO do POS. Mandá-los para o
   // Procurement ou para o Warehouse era abrir outro módulo com outro vocabulário
@@ -204,7 +174,6 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       { label: 'Configuração POS', act: () => abrirPos('articles') },
       { label: 'Papel de Parede', act: () => open('adm_appearance', 'Papel de Parede') },
       { label: 'Diagnóstico', act: () => abrirPos('x_diag') },
-      { label: 'Terminar sessão', act: logout },
     ],
   };
 
@@ -229,20 +198,11 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
       })),
     ]),
   );
-  // "Terminar sessão" é uma acção do Ambiente de Trabalho em si (não uma secção
-  // do PMS) — fica à parte, acrescentada ao grupo Utilitários.
-  //
-  // "Papel de Parede" NÃO se acrescenta aqui: desde que o PMS passou a ter o seu
-  // próprio, a entrada já vem da lista partilhada (pmsMenus.ts) e acrescentá-la
-  // outra vez punha duas linhas com o MESMO nome no mesmo menu — e, pior, a
-  // fazerem coisas diferentes (uma abria o fundo do PMS, a outra o do Ambiente
-  // de Trabalho). O fundo do Ambiente de Trabalho continua a chegar-se pelo menu
-  // do POS e pela própria árvore (Administração → Papel de Parede).
-  PMS_MENUS['Utilitários'] = [
-    ...PMS_MENUS['Utilitários'],
-    { label: 'Terminar sessão', act: logout },
-  ];
 
+  // "Terminar sessão" NÃO entra nestas listas. É uma acção do sistema, não uma
+  // aplicação, e o menu Iniciar já a tem no rodapé ao lado do botão de desligar
+  // — como no Windows. Tê-la nos dois sítios punha a mesma coisa duas vezes no
+  // mesmo painel.
   const MENUS = wsKey === 'pms' ? PMS_MENUS : POS_MENUS;
 
   // CADA MÓDULO PODE TER O SEU FUNDO. O papel de parede era um só, partilhado
@@ -256,181 +216,224 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
     : null;
   const customBg = fundoDoModulo || getAppearance('wallpaper') || getAppearance('loginBg');
 
+  // SOBRE A FOTOGRAFIA DO HOTEL vai um véu escuro NEUTRO, não um véu azul.
+  // O véu azul tingia a fotografia do dono de uma cor que não é a dela — e o
+  // véu existe por uma razão só: os nomes dos ícones são brancos e um céu claro
+  // na fotografia tornava-os ilegíveis. Escurecer resolve isso; tingir não.
   const bgStyle = customBg
-    ? { backgroundImage: `linear-gradient(${ws.color}66, ${ws.colorDark}cc), url(${customBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { background: ws.wallpaper };
+    ? {
+      backgroundImage: `${VEU_SOBRE_FOTO}, url(${customBg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }
+    : { background: FUNDO_SISTEMA };
 
   return (
-    <div className="h-screen w-screen overflow-hidden select-none font-sans relative flex flex-col" style={bgStyle} onClick={closeAll}>
-      {!customBg && <HotelBackdrop tint={ws.color} accent={ws.accent} glow={ws.glow} />}
-
-      {/* ===== BARRA SUPERIOR ===== */}
-      {/* A MESMA barra do POS: mesmo fundo, mesma altura, mesma tipografia. Ter duas
-          barras diferentes para a mesma coisa obrigava a aprender o sistema duas vezes. */}
-      <div className="h-[56px] flex items-center px-3 gap-1 flex-shrink-0 relative z-[100] text-white"
-        style={{ background: TOKENS.brand }}>
-        {/* Logo = seletor de módulos. O logótipo próprio da instalação (Empresa →
-            Imagem do Hotel) substitui o de fábrica automaticamente; sem ele, mostra-se
-            o logótipo do sistema em vez de um "ML" escrito por cima da barra. */}
-        <button onClick={(e) => { e.stopPropagation(); setModMenu((s) => !s); setTopMenu(null); }}
-          title="Trocar de módulo"
-          className={`flex items-center gap-2 px-2.5 py-1 pr-3.5 mr-2 leading-none rounded-full transition-colors ${modMenu ? 'bg-white/20' : 'hover:bg-white/10'}`}>
-          {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 object-contain flex-shrink-0 rounded-full" /> : <Building2 size={22} className="flex-shrink-0" />}
-        </button>
-        {modMenu && (
-          <div className="absolute left-2 top-[50px] min-w-[240px] bg-white border border-[#E6E8EC] shadow-2xl rounded-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
-            <div className="px-3 py-2 text-[11px] font-semibold text-[#6B7280] border-b border-[#F1F2F4]">{erpName} — Módulos</div>
-            {licensed.map((m) => (
-              <button key={m.key} onClick={() => { setWsKey(m.key); setModMenu(false); }} className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] hover:bg-[#EEF1F5] text-left border-b border-[#F1F2F4] last:border-b-0">
-                <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ background: `radial-gradient(circle at 30% 30%, ${m.glow}, ${m.color})`, boxShadow: `0 0 6px ${m.glow}` }} />
-                <span className="font-bold" style={{ color: m.color }}>{m.name}</span>
-                {m.key === wsKey && <span className="ml-auto text-[11px] text-gray-500">● ativo</span>}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Menus de topo (dropdowns reais) */}
-        {Object.keys(MENUS).map((m) => (
-          <div key={m} className="relative">
-            <button onClick={(e) => { e.stopPropagation(); setTopMenu((o) => (o === m ? null : m)); setModMenu(false); }}
-              onMouseEnter={() => topMenu && setTopMenu(m)}
-              className={`px-4 py-2 text-[15px] font-medium whitespace-nowrap rounded-[8px] transition-colors ${
-                topMenu === m ? 'bg-white/20 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}>
-              {m}
-            </button>
-            {topMenu === m && (
-              <div className="absolute left-0 top-full min-w-[260px] py-1 shadow-2xl z-[120]"
-                style={{ background: '#FFFFFF', border: '1px solid #E6E8EC' }} onClick={(e) => e.stopPropagation()}>
-                {MENUS[m].map((it, i) => (
-                  <button key={i} onClick={() => it.act ? (it.act(), setTopMenu(null)) : open(it.screen, it.label)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-[14px] text-[#111827] hover:bg-[#EFF6FF] hover:text-[#1D4ED8] transition-colors">
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#2563EB]" />{it.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-
-        <div className="ml-auto flex items-center gap-3 text-[12px]">
-          <span className="text-[#DC2626] font-semibold">
-            {clock.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
-          </span>
-          <span className="opacity-30">|</span>
-          <div className="relative">
-            <button onClick={(e) => { e.stopPropagation(); setUserMenu((s) => !s); setModMenu(false); setTopMenu(null); }}
-              className={`font-bold px-2 py-1 -mx-2 ${userMenu ? 'bg-white/15' : 'hover:bg-white/10'}`}>
-              {user?.username || 'operador'}
-            </button>
-            {userMenu && (
-              <div className="absolute right-0 top-[34px] min-w-[190px] bg-white border border-[#E6E8EC] rounded-[12px] shadow-2xl overflow-hidden z-[120]" onClick={(e) => e.stopPropagation()}>
-                <div className="px-3 py-2 text-[11px] font-semibold text-[#6B7280] border-b border-[#F1F2F4]">
-                  {user?.username || 'operador'}
-                </div>
-                <button onClick={() => { setUserMenu(false); logout(); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-[12px] text-left hover:bg-[#EEF1F5] text-[#DC2626] font-semibold">
-                  <LogOut size={14} /> Terminar sessão
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="h-screen w-screen overflow-hidden select-none font-sans relative flex flex-col"
+      style={bgStyle} onClick={closeAll}>
 
       {/* ===== ÁREA DE TRABALHO ===== */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Poucos ícones — consulta rápida */}
-        <div className="absolute top-5 left-5 grid gap-5 content-start" style={{ gridTemplateRows: 'repeat(3, auto)', gridAutoFlow: 'column' }}>
+        {/* Os ícones, em coluna a partir do canto superior esquerdo — como num
+            ambiente de trabalho a sério, e não centrados nem em grelha larga. */}
+        <div className="absolute top-2 left-2 grid gap-1 content-start"
+          style={{ gridTemplateRows: 'repeat(7, auto)', gridAutoFlow: 'column' }}>
           {quick.map((ic, i) => (
-            <DesktopIcon key={`quick-${i}`} ic={ic} accent={ws.accent} glow={ws.glow} sobreFoto={!!customBg} onOpen={() => openIcon(ic)} />
+            <DesktopIcon key={`quick-${i}`} ic={ic}
+              sel={selecionado === `quick-${i}`}
+              onSel={(e) => { e.stopPropagation(); setSelecionado(`quick-${i}`); }}
+              onOpen={() => openIcon(ic)} />
           ))}
           {/* MÓDULOS com "Mostrar no Desktop" — abrem como a ficha manda (open_as).
               São do backoffice POS (Configuração POS › Módulo) — no ambiente de
               trabalho do PMS não aparecem, o PMS é autossuficiente e traz só o seu
               próprio ícone. Chave prefixada: partilha o painel com os ícones rápidos
               acima (outro .map, outras chaves) — sem prefixo, um module_id como "1"
-              colidia com o índice de um ícone rápido (mesma chave "1" em irmãos).
-              Era isto que fazia aparecer "Encountered two children with the same
-              key" de vez em quando, sempre que o relógio (a cada 15s) forçava
-              este painel a voltar a renderizar. */}
+              colidia com o índice de um ícone rápido (mesma chave "1" em irmãos). */}
           {wsKey !== 'pms' && modulos.map((m: any) => (
             <DesktopIcon key={`mod-${m.module_id}`}
               ic={{ label: m.name, icon: 'app' } as any}
-              accent={ws.accent} glow={ws.glow} sobreFoto={!!customBg} onOpen={() => abrirModulo(m)} />
+              sel={selecionado === `mod-${m.module_id}`}
+              onSel={(e) => { e.stopPropagation(); setSelecionado(`mod-${m.module_id}`); }}
+              onOpen={() => abrirModulo(m)} />
           ))}
         </div>
 
-        {/* JANELA EMBEBIDA (iframe) ou WIDGET — a caixa da ficha do módulo decide */}
+        {/* JANELA EMBEBIDA (iframe) ou WIDGET — a caixa da ficha do módulo decide.
+            Moldura quadrada e cinzenta, a mesma das janelas do backoffice. */}
         {embutido && (
           <div className={embutido.widget
-            ? 'absolute bottom-14 right-5 w-[460px] h-[340px] z-[90] shadow-2xl border border-white/30 rounded overflow-hidden bg-black'
-            : 'absolute inset-6 z-[90] shadow-2xl border border-white/30 rounded overflow-hidden bg-black'}>
-            <div className="h-[34px] flex items-center justify-between px-3 text-white text-[12px] font-bold"
-              style={{ background: ws.colorDark }}>
+            ? 'absolute bottom-3 right-3 w-[460px] h-[340px] z-[90] overflow-hidden'
+            : 'absolute inset-4 z-[90] overflow-hidden'}
+            style={{ border: '1px solid #6E6E6E', boxShadow: '0 10px 30px rgba(0,0,0,0.45)', background: '#FFFFFF' }}>
+            <div className="h-[24px] flex items-center justify-between px-2 text-[11px] font-bold"
+              style={{
+                background: 'linear-gradient(to bottom, #FDFDFD, #F0F0F0)',
+                borderBottom: '1px solid #C8C8C8', color: '#2B2B2B',
+              }}>
               <span>{embutido.title}{embutido.widget ? ' (widget)' : ''}</span>
-              <button onClick={() => setEmbutido(null)} className="hover:bg-white/20 px-2"><X size={15} /></button>
+              <button onClick={() => setEmbutido(null)} className="px-1.5 hover:bg-[#DC2626] hover:text-white"
+                title="Fechar"><X size={13} /></button>
             </div>
             <iframe src={embutido.url} title={embutido.title}
-              className="w-full bg-white" style={{ height: 'calc(100% - 34px)', border: 0 }} />
+              className="w-full bg-white" style={{ height: 'calc(100% - 24px)', border: 0 }} />
           </div>
         )}
-
-        {/* Painel direito — só consultas rápidas */}
-        <div className="absolute top-5 right-5 w-[220px] flex flex-col gap-2.5">
-          <div className="rounded-2xl p-3.5 text-[#111827] text-center" style={VIDRO}>
-            <div className="text-[30px] font-bold leading-none">{clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</div>
-            <div className="text-[11px] text-[#6B7280] mt-1">{clock.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</div>
-          </div>
-          <div className="rounded-2xl p-3.5 text-[#111827] text-[12px] space-y-2" style={VIDRO}>
-            <div className="font-semibold text-[11px] uppercase text-[#9CA3AF] mb-1">{ws.name} · Estado</div>
-            {[['Licença', ShieldCheck, 'ativa'], ['Servidor', Server, 'online'], ['VPN', Wifi, 'ligada']].map(([k, Icon, v]: any) => (
-              <div key={k as string} className="flex items-center justify-between">
-                <span className="text-[#6B7280] flex items-center gap-1.5"><Icon size={13} strokeWidth={1.8} className="text-[#9CA3AF]" />{k}</span>
-                <span className="text-[#6B7280] font-medium">{v}</span></div>
-            ))}
-          </div>
-        </div>
       </div>
 
-      {/* ===== BARRA DE TAREFAS ===== */}
-      <div className="h-[40px] flex items-center px-1.5 gap-1 flex-shrink-0 relative z-[100]"
-        style={{ background: TOKENS.brand }}>
-        <button onClick={(e) => { e.stopPropagation(); setStart((s) => !s); }} className="flex items-center gap-1.5 px-3.5 h-[30px] rounded-[8px] font-semibold text-white text-[12px] transition-colors"
-          style={{ background: start ? `${ws.accent}55` : `${ws.glow}26`, border: `1px solid ${ws.accent}66` }}>
-          <span className="text-[15px]">⊞</span> Iniciar
+      {/* ══════════════════ BARRA DE TAREFAS ══════════════════
+          40px, quase negra, quadrada. Botão Iniciar · módulos abertos como
+          separadores · bandeja com os estados e o relógio. Nada mais: tudo o
+          que cá estava a mais foi para o menu Iniciar. */}
+      <div className="h-[40px] flex items-stretch flex-shrink-0 relative z-[100]"
+        style={{ background: BARRA, borderTop: `1px solid ${LINHA}` }}>
+
+        {/* O botão Iniciar. Quadrado, da altura toda da barra, sem texto —
+            é o símbolo que o torna reconhecível, não a palavra. */}
+        <button onClick={(e) => { e.stopPropagation(); setStart((s) => !s); }}
+          title="Iniciar" aria-label="Iniciar"
+          className="w-[48px] flex items-center justify-center transition-colors"
+          style={{ background: start ? BARRA_HOVER : 'transparent', color: TEXTO }}
+          onMouseEnter={(e) => { if (!start) e.currentTarget.style.background = BARRA_HOVER; }}
+          onMouseLeave={(e) => { if (!start) e.currentTarget.style.background = 'transparent'; }}>
+          <JanelasIcone />
         </button>
-        <div className="w-px h-6 bg-white/20 mx-1" />
-        <span className="text-white/80 text-[12px] px-2">{ws.name}</span>
+
+        {/* OS MÓDULOS COMO SEPARADORES. É aqui que se troca de módulo — era um
+            menu escondido atrás do logótipo, que ninguém encontrava (o dono
+            escreveu "Não vejo o PMS" com o PMS licenciado e a funcionar).
+            Numa barra de tarefas, o que está aberto está à vista. */}
+        {licensed.map((m) => {
+          const act = m.key === wsKey;
+          return (
+            <button key={m.key} onClick={(e) => { e.stopPropagation(); setWsKey(m.key); setStart(false); }}
+              title={`${m.name} — ${erpName}`}
+              className="flex items-center gap-2 px-3 min-w-[150px] text-[12px] transition-colors"
+              style={{
+                background: act ? '#3A3A3A' : 'transparent',
+                color: act ? TEXTO : '#CFCFCF',
+                // O sublinhado é a ÚNICA cor forte que sobra na moldura: diz qual
+                // o módulo em que se está a trabalhar, e é a marca da casa.
+                borderBottom: act ? `3px solid ${TOKENS.accent}` : '3px solid transparent',
+              }}
+              onMouseEnter={(e) => { if (!act) e.currentTarget.style.background = '#2E2E2E'; }}
+              onMouseLeave={(e) => { if (!act) e.currentTarget.style.background = 'transparent'; }}>
+              <span className="flex-shrink-0 opacity-90"><ClassicIcon name="gear" size={15} /></span>
+              <span className="truncate font-medium">{m.name}</span>
+            </button>
+          );
+        })}
+
         <div className="flex-1" />
-        <div className="px-3 text-white/90 text-[12px] font-medium flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#DBEAFE]" /> {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+
+        {/* ══ BANDEJA ══
+            Os três estados que estavam em painéis de vidro de 220px: licença,
+            servidor e VPN. Aqui, em ícones de 13px com o estado no tooltip —
+            é o sítio onde quem usa Windows os vai procurar, e deixam de roubar
+            um canto do ecrã para dizerem sempre a mesma coisa. */}
+        <div className="flex items-center gap-2.5 px-2.5" style={{ color: TEXTO_FRACO }}>
+          <span title="Licença: activa"><ShieldCheck size={14} strokeWidth={1.8} /></span>
+          <span title="Servidor: online"><Server size={14} strokeWidth={1.8} /></span>
+          <span title="VPN: ligada"><Wifi size={14} strokeWidth={1.8} /></span>
+        </div>
+
+        {/* O RELÓGIO, em duas linhas e alinhado à direita — horas em cima, data
+            em baixo. A data estava escrita a VERMELHO sobre AZUL na barra de
+            cima, que é o pior contraste que se consegue fazer. */}
+        <div className="flex flex-col items-end justify-center px-3 leading-[1.15] text-[11px] cursor-default"
+          style={{ color: TEXTO }}
+          title={clock.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}>
+          <span className="num">{clock.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
+          <span className="num" style={{ color: TEXTO_FRACO }}>
+            {clock.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+          </span>
         </div>
       </div>
 
-      {/* ===== MENU INICIAR (todas as apps do módulo) ===== */}
+      {/* ══════════════════ MENU INICIAR ══════════════════
+          Duas colunas, como no Windows 10: à esquerda TODAS AS APLICAÇÕES do
+          módulo, agrupadas pelos mesmos títulos que o módulo usa lá dentro; à
+          direita os mosaicos dos atalhos. Os menus que estavam na barra azul de
+          cima vivem agora aqui — é o sítio certo para eles, porque são uma
+          lista de aplicações e não uma navegação permanente. */}
       {start && (
-        <div className="absolute bottom-[48px] left-1.5 w-[320px] bg-white border border-[#E6E8EC] shadow-2xl z-[130] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-          <div className="px-4 py-3.5 text-white" style={{ background: `linear-gradient(to bottom, ${ws.accent}, ${ws.color})` }}>
-            <div className="font-black text-[15px]">{erpName}</div>
-            <div className="text-[11px] text-white/80">{user?.username} · {ws.name}</div>
-          </div>
-          <div className="p-2.5">
-            <div className="text-[10px] uppercase text-gray-500 px-1 py-1 font-semibold">Aplicações — {ws.name}</div>
-            <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-auto p-0.5">
-              {ws.icons.map((ic, i) => (
-                <button key={i} onClick={() => openIcon(ic)} className="flex flex-col items-center gap-1 px-1.5 py-2.5 text-[11px] hover:bg-[#EEF1F5] text-center rounded-xl transition-colors">
-                  <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{ background: `linear-gradient(155deg, ${ws.accent}, ${ws.color})` }}>
-                    <ClassicIcon name={ic.icon} size={18} />
-                  </span>
-                  <span className="leading-tight text-[#111827]">{ic.label}</span>
-                </button>
-              ))}
+        <div className="absolute bottom-[40px] left-0 w-[560px] z-[130] flex flex-col"
+          style={{
+            background: BARRA_ALTO, border: `1px solid ${LINHA}`, borderBottom: 'none',
+            boxShadow: '0 -8px 26px rgba(0,0,0,0.45)',
+          }}
+          onClick={(e) => e.stopPropagation()}>
+
+          {/* Cabeçalho: quem está ligado e em que módulo. */}
+          <div className="flex items-center gap-2.5 px-3 py-2.5" style={{ borderBottom: `1px solid ${LINHA}` }}>
+            {logoUrl
+              ? <img src={logoUrl} alt="" className="h-7 w-7 object-contain flex-shrink-0" />
+              : <span className="h-7 w-7 flex items-center justify-center flex-shrink-0"
+                style={{ background: '#3A3A3A', color: TEXTO }}><JanelasIcone /></span>}
+            <div className="leading-tight min-w-0">
+              <div className="text-[12px] font-semibold truncate" style={{ color: TEXTO }}>
+                {user?.username || 'operador'}
+              </div>
+              <div className="text-[10.5px] truncate" style={{ color: TEXTO_FRACO }}>{erpName} · {ws.name}</div>
             </div>
           </div>
-          <div className="border-t border-[#F1F2F4] flex">
-            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }} className="flex-1 px-3 py-2.5 text-[12px] hover:bg-[#EEF1F5] text-left flex items-center gap-1.5"><Settings size={13} /> Backoffice clássico</button>
-            <button onClick={logout} className="px-4 py-2.5 text-[12px] hover:bg-[#DC2626] hover:text-white text-left flex items-center gap-1.5"><Power size={13} /> Sair</button>
+
+          <div className="flex" style={{ height: '380px' }}>
+            {/* ── Todas as aplicações ── */}
+            <div className="w-[290px] overflow-auto pt-1 pb-3" style={{ borderRight: `1px solid ${LINHA}` }}>
+              {recent.length > 0 && (
+                <>
+                  <GrupoTitulo>Usado recentemente</GrupoTitulo>
+                  {recent.slice(0, 4).map((r) => (
+                    <ItemIniciar key={`rec-${r.screen}`} label={r.label} onClick={() => open(r.screen, r.label)} />
+                  ))}
+                </>
+              )}
+              {Object.keys(MENUS).map((grupo) => (
+                <React.Fragment key={grupo}>
+                  <GrupoTitulo>{grupo}</GrupoTitulo>
+                  {MENUS[grupo].map((it, i) => (
+                    <ItemIniciar key={`${grupo}-${i}`} label={it.label}
+                      onClick={() => (it.act ? (it.act(), setStart(false)) : open(it.screen, it.label))} />
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+
+            {/* ── Mosaicos ── */}
+            <div className="flex-1 p-2 overflow-auto">
+              <GrupoTitulo>{ws.name}</GrupoTitulo>
+              <div className="grid grid-cols-2 gap-1.5 mt-1">
+                {ws.icons.map((ic, i) => (
+                  <button key={i} onClick={() => openIcon(ic)}
+                    className="flex flex-col items-start justify-end gap-1 h-[88px] p-2 text-left transition-colors"
+                    style={{ background: '#3A3A3A', color: TEXTO }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#474747'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = '#3A3A3A'; }}>
+                    <span className="flex-1 flex items-center"><ClassicIcon name={ic.icon} size={26} /></span>
+                    <span className="text-[11px] leading-tight">{ic.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Rodapé: as acções do sistema, não aplicações. */}
+          <div className="flex" style={{ borderTop: `1px solid ${LINHA}` }}>
+            <button onClick={() => { localStorage.setItem('ui_shell', 'classic'); onOpen('home:admin', wsKey); }}
+              className="flex-1 px-3 py-2 text-[11.5px] text-left flex items-center gap-2 transition-colors"
+              style={{ color: TEXTO }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = BARRA_HOVER; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+              <Settings size={13} /> Backoffice clássico
+            </button>
+            <button onClick={logout}
+              className="px-4 py-2 text-[11.5px] flex items-center gap-2 transition-colors"
+              style={{ color: TEXTO }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#C42B1C'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+              <Power size={13} /> Terminar sessão
+            </button>
           </div>
         </div>
       )}
@@ -438,28 +441,80 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   );
 }
 
-// Ícone do Ambiente de Trabalho — tile plano moderno (fundo translúcido + vidro fosco),
-// sem o bisel/gloss 3D de antes.
-//
-// O NOME do ícone muda de cor conforme o que está por baixo. O fundo de fábrica
-// é claro (um sopro de cor sobre cinzento-claro) e pede texto escuro; mas quando
-// o hotel carrega a sua fotografia, o ecrã fica coberto por um véu escuro — e o
-// mesmo cinzento-escuro passa a ser escuro sobre escuro. Era exactamente o que
-// acontecia: quem punha a fotografia do hotel deixava de conseguir ler os nomes
-// dos seus próprios ícones.
-function DesktopIcon({ ic, accent, sobreFoto, onOpen }: { ic: DeskIcon; accent: string; glow?: string; sobreFoto?: boolean; onOpen: () => void }) {
+/** O símbolo do botão Iniciar — quatro quadrados, desenhados e não um emoji. */
+function JanelasIcone() {
   return (
-    <button onClick={onOpen} className="w-[96px] flex flex-col items-center gap-2 group focus:outline-none" title={ic.label}>
-      <div className="relative w-[64px] h-[64px] rounded-[18px] flex items-center justify-center transition-all duration-150 group-active:scale-95 group-hover:-translate-y-0.5"
-        style={VIDRO}>
-        <div className="absolute inset-0 rounded-[18px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ boxShadow: `0 0 0 2px ${accent}40, 0 8px 20px ${accent}26` }} />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <rect x="0" y="0" width="7" height="7" /><rect x="9" y="0" width="7" height="7" />
+      <rect x="0" y="9" width="7" height="7" /><rect x="9" y="9" width="7" height="7" />
+    </svg>
+  );
+}
+
+/** Título de grupo dentro do menu Iniciar. */
+function GrupoTitulo({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: TEXTO_FRACO }}>
+      {children}
+    </div>
+  );
+}
+
+/** Uma linha da lista de aplicações. */
+function ItemIniciar({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick}
+      className="w-full flex items-center gap-2 px-3 py-[5px] text-left text-[12px] transition-colors"
+      style={{ color: TEXTO }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = BARRA_HOVER; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+      <ChevronRight size={11} style={{ color: TEXTO_FRACO }} className="flex-shrink-0" />
+      <span className="truncate">{label}</span>
+    </button>
+  );
+}
+
+/**
+ * ÍCONE DO AMBIENTE DE TRABALHO — o desenho e o nome, e mais nada.
+ *
+ * Tinha um cartão de vidro fosco de 64px com cantos de 18px por baixo. O cartão
+ * não era clicável por si, roubava contraste ao desenho e era a única coisa no
+ * sistema com cantos daquele tamanho.
+ *
+ * A SELECÇÃO é um rectângulo translúcido fino por cima de tudo — exactamente o
+ * que o Windows faz. Um clique selecciona (e mostra que se seleccionou), um
+ * duplo clique abre; a tecla Enter também abre, para quem navega por teclado.
+ * Sem isto, um clique que não acerte em cheio no desenho não dá resposta
+ * nenhuma e parece que o ambiente de trabalho não reagiu.
+ *
+ * O nome é SEMPRE branco com sombra. O fundo é escuro de fábrica e escuro por
+ * baixo do véu quando o hotel põe a sua fotografia — a sombra é o que o mantém
+ * legível se a fotografia tiver um céu claro naquele canto.
+ */
+function DesktopIcon({ ic, sel, onSel, onOpen }:
+{ ic: DeskIcon; sel?: boolean; onSel: (e: React.MouseEvent) => void; onOpen: () => void }) {
+  return (
+    <button
+      onClick={onSel}
+      onDoubleClick={onOpen}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
+      title={`${ic.label} — duplo clique para abrir`}
+      className="w-[84px] flex flex-col items-center gap-1 px-1 py-1.5 focus:outline-none"
+      style={{
+        background: sel ? 'rgba(255,255,255,0.14)' : 'transparent',
+        border: sel ? '1px solid rgba(255,255,255,0.30)' : '1px solid transparent',
+      }}
+      onMouseEnter={(e) => { if (!sel) e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; }}
+      onMouseLeave={(e) => { if (!sel) e.currentTarget.style.background = 'transparent'; }}>
+      <span className="h-[40px] flex items-center justify-center" style={{ color: '#E8EDF2' }}>
         {ic.img
-          ? <img src={`/icons/${ic.img}`} alt="" className="w-9 h-9 relative object-contain" />
-          : <span className="relative"><ClassicIcon name={ic.icon} size={28} cor={accent} /></span>}
-      </div>
-      <span className={`text-[11px] text-center leading-tight px-0.5 font-medium ${sobreFoto ? 'text-white' : 'text-[#374151]'}`}
-        style={sobreFoto ? { textShadow: '0 1px 3px rgba(2,8,23,0.65)' } : undefined}>{ic.label}</span>
+          ? <img src={`/icons/${ic.img}`} alt="" className="w-9 h-9 object-contain" />
+          : <ClassicIcon name={ic.icon} size={33} />}
+      </span>
+      <span className="text-[11px] text-center leading-tight text-white"
+        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.6)' }}>
+        {ic.label}
+      </span>
     </button>
   );
 }

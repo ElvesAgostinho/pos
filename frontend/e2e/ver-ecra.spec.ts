@@ -64,6 +64,23 @@ test('fotografar os ecrãs principais', async ({ page }) => {
   // eslint-disable-next-line no-console
   console.log('IMAGEM 1 (Ambiente de Trabalho): frontend/test-results/1-ambiente.png');
 
+  // ── O MENU INICIAR ──────────────────────────────────────────────────────
+  // É metade do Ambiente de Trabalho e está fechado na fotografia de cima.
+  // Foi para aqui que vieram os menus que estavam na barra azul (F&B,
+  // Marketing, Reporting, Utilitários) — se algum se perdeu pelo caminho, é
+  // nesta imagem que se vê, e não quando alguem for à procura de "Compras".
+  const iniciar = page.locator('button[aria-label="Iniciar"]');
+  if (await iniciar.isVisible().catch(() => false)) {
+    await iniciar.click();
+    await page.waitForTimeout(700);
+    await page.screenshot({ path: 'test-results/1b-iniciar.png' });
+    // eslint-disable-next-line no-console
+    console.log('IMAGEM 1b (menu Iniciar): frontend/test-results/1b-iniciar.png');
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.mouse.click(LARGURA - 40, Math.round(ALTURA / 2));
+    await page.waitForTimeout(400);
+  }
+
   // ── OS ECRÃS DE MÓDULO ──────────────────────────────────────────────────
   // Entra-se por onde a aplicação entra: deixando o pedido em `ui_nav` e
   // recarregando (config/navegar.ts). É o mesmo caminho do duplo clique num
@@ -127,6 +144,7 @@ test('fotografar os ecrãs principais', async ({ page }) => {
   // Varios ecras do PMS, pelo caminho que o utilizador faz: separador do ribbon,
   // depois o comando. Cada um fica fotografado para se comparar com a imagem.
   const destinos: [string, string, string][] = [
+    ['Gestão de Canais', 'Produtos & Serviços', '5d-produtos'],
     ['EMS', 'Calendário EMS', '5c-calendario-ems'],
     ['Front Desk', 'Planning', '5b-planning'],
     ['Reserva', 'Disponibilidade', '5a-disponibilidade'],
@@ -175,4 +193,16 @@ test('fotografar os ecrãs principais', async ({ page }) => {
   await page.screenshot({ path: 'test-results/9-editor.png' });
   // eslint-disable-next-line no-console
   console.log('IMAGEM (editor): frontend/test-results/9-editor.png');
+
+  // ── O INÍCIO DE SESSÃO ───────────────────────────────────────
+  // Fica para o fim porque TERMINA A SESSÃO — tudo o que vem a seguir teria de
+  // voltar a entrar. É o primeiro ecrã que o cliente vê, e o único que alguns
+  // mostram a visitas: tem de ser fotografado como os outros.
+  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
+  await page.goto('/backoffice/login');
+  await page.locator('input').first().waitFor({ state: 'visible', timeout: 45_000 });
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: 'test-results/10-login.png' });
+  // eslint-disable-next-line no-console
+  console.log('IMAGEM (login): frontend/test-results/10-login.png');
 });

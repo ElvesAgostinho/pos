@@ -1,9 +1,23 @@
 /**
- * Ícones do Ambiente de Trabalho — traço fino lucide-react, a MESMA biblioteca já usada
- * em todo o resto do sistema (grelhas, botões, barras). Antes eram SVGs desenhados à mão
- * em estilo "Windows XP realista" (garrafas, vassouras, "Kz" escrito à mão) — inconsistentes
- * entre si e com o resto da app. Um mapa nome->ícone é mais fácil de manter e cresce sozinho
- * ao acrescentar um workspace novo (basta um caso no mapa, não desenhar um SVG).
+ * O ÍCONE DO AMBIENTE DE TRABALHO — uma porta só, dois sítios onde procurar.
+ *
+ * 1.º o conjunto no registo do Windows (IconesWindows.tsx): cor por objecto,
+ *    faces lisas, sem verniz nem sombra pousada. É o que se vê no ambiente de
+ *    trabalho e nos mosaicos do menu Iniciar, onde o ícone É o elemento.
+ *
+ * 2.º para um nome que ainda não tenha desenho próprio, o traço fino do lucide,
+ *    que é a biblioteca que o resto do sistema usa. Um ícone a menos lê-se pior
+ *    do que um ícone de outra família — mas lê-se.
+ *
+ * Antes daqui passavam os ícones 3D isométricos (Icon3D.tsx, apagado): objecto
+ * em perspectiva, numa cor só, com brilho de verniz e sombra oval. Liam como
+ * ícones de loja de aplicações; o pedido do dono foi o registo do Windows,
+ * sério, e é outra linguagem — ver o cabeçalho de IconesWindows.tsx.
+ *
+ * `cor` já não faz nada e fica por compatibilidade: estes ícones têm a cor do
+ * OBJECTO (a pasta é âmbar, o ecrã é aço), e tingi-los todos da cor da marca
+ * era voltar a ter vinte manchas iguais. Quem chama continua a poder passá-la
+ * sem erro — é só ignorada.
  */
 import {
   BedDouble, CalendarCheck, KeyRound, BarChart3, Wallet, FileBarChart2, Folder, Globe2,
@@ -11,7 +25,7 @@ import {
   ShoppingCart, CreditCard, Landmark, User, Tag, MonitorSmartphone, Moon, Sparkles, Users,
 } from 'lucide-react';
 
-import { ICONES_3D } from '../ui/Icon3D';
+import { ICONES_WINDOWS } from './IconesWindows';
 
 const ICONS: Record<string, any> = {
   rooms: BedDouble, bed: BedDouble,
@@ -40,13 +54,9 @@ const ICONS: Record<string, any> = {
   broom: Sparkles,
 };
 
-export default function ClassicIcon({ name, size = 26, cor }: { name: string; size?: number; cor?: string }) {
-  // ÍCONE 3D PRIMEIRO. No Ambiente de Trabalho o ícone não acompanha texto — é
-  // o elemento, e é por ele que se escolhe onde entrar. Aí vale a pena ter
-  // volume (ver Icon3D.tsx). Para os nomes que ainda não têm versão 3D, volta
-  // ao traço, que continua a ser melhor do que um desenho a menos.
-  const Tridimensional = ICONES_3D[name?.toLowerCase?.()];
-  if (Tridimensional) return <Tridimensional size={Math.round(size * 1.5)} cor={cor} />;
+export default function ClassicIcon({ name, size = 26 }: { name: string; size?: number; cor?: string }) {
+  const Windows = ICONES_WINDOWS[name?.toLowerCase?.()];
+  if (Windows) return <Windows size={size} />;
   const Icon = ICONS[name] || StickyNote;
   return <Icon size={size} strokeWidth={1.75} />;
 }
