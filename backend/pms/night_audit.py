@@ -85,6 +85,8 @@ class NightAuditRunView(APIView):
         rooms_charged = 0
         extras_charged = 0
         sem_conta = []
+        no_shows = []
+        saidas_em_atraso = []
         total_posted = Decimal('0')
         try:
             with transaction.atomic():
@@ -147,6 +149,97 @@ class NightAuditRunView(APIView):
                         extras_charged += 1
                         total_posted += enc.amount
 
+                # ================= O NO-SHOW =================================
+                #
+                # Uma reserva para ONTEM que nunca chegou a check-in continua
+                # "Reservada" para sempre: aparece nas chegadas de todos os
+                # dias, conta na ocupação, e o quarto fica preso a alguém que
+                # não veio. Alguém tinha de a arrumar à mão, todos os dias — e
+                # quem o fizesse teria de se lembrar de cobrar as garantidas.
+                #
+                # A auditoria fecha o dia: é ela que o diz. Marca No-show as
+                # reservas cuja ENTRADA já passou e que nunca entraram.
+                nao_vieram = (scope_qs(request, Reservation.objects
+                                       .select_related('guest', 'room', 'room_type'))
+                              .filter(status__in=('BOOKED', 'OPTION'),
+                                      check_in__lte=audit_date))
+                for res in nao_vieram:
+                    res.status = 'NO_SHOW'
+                    res.save(update_fields=['status'])
+
+                    # UMA RESERVA GARANTIDA COBRA-SE. Foi esse o acordo: o
+                    # hóspede deu garantia para o quarto ficar à espera dele, e
+                    # o hotel deixou de o vender. Não cobrar um no-show
+                    # garantido é oferecer a noite a quem não apareceu — e é a
+                    # receita que o revenue manager conta para aceitar o risco.
+                    cobrado = None
+                    if res.is_guaranteed:
+                        valor = _effective_rate(res)
+                        ref_ns = f'NOSHOW-{res.id}'
+                        # A CONTA ABRE-SE AQUI, e é a única vez em que a auditoria o faz.
+                        #
+                        # O folio nasce no CHECK-IN — e um no-show, por definição, nunca
+                        # entrou: nunca teve conta. Sem abrir uma, um no-show garantido
+                        # nunca poderia ser cobrado, e a garantia não valeria nada.
+                        #
+                        # É diferente do caso lá em cima, em que a conta EXISTE e está
+                        # fechada porque alguém já facturou: aí a auditoria não abre nada,
+                        # porque abrir seria desfazer a decisão de quem emitiu a factura.
+                        # Aqui não há decisão nenhuma para desfazer.
+                        folio = res.folio
+                        if folio is None and valor and valor > 0:
+                            from .models import Folio
+                            from .views import _next_number
+                            folio = Folio.objects.create(
+                                reservation=res,
+                                number=_next_number(Folio.objects, 'number', 'FOL'))
+                        if folio and folio.status == 'OPEN' and valor and valor > 0 \
+                                and not folio.charges.filter(source_reference=ref_ns).exists():
+                            FolioCharge.objects.create(
+                                folio=folio, charge_type='ROOM',
+                                description=f'No-show {audit_date.isoformat()} · reserva '
+                                            f'{res.confirmation}',
+                                amount=valor, source_reference=ref_ns, posted_by=operador)
+                            cobrado = valor
+                            total_posted += valor
+
+                    no_shows.append({
+                        'reservation': res.id, 'confirmation': res.confirmation,
+                        'guest': res.guest.name if res.guest_id else '',
+                        'guaranteed': bool(res.is_guaranteed),
+                        'charged': str(cobrado) if cobrado else None,
+                        # O MOTIVO TEM DE SER O VERDADEIRO. Dizer "sem conta
+                        # aberta" quando o que falta é a tarifa manda quem lê
+                        # procurar no sítio errado — e a noite continua por
+                        # cobrar enquanto ele procura.
+                        'reason': (None if (cobrado or not res.is_guaranteed) else (
+                            'Garantida, mas sem tarifa definida — nada para lançar.'
+                            if not (_effective_rate(res) or 0) > 0 else
+                            'Garantida, mas a conta já está fechada (facturada) — '
+                            'a noite do no-show tem de ser cobrada à parte.')),
+                    })
+
+                # ============ AS SAÍDAS QUE NÃO ACONTECERAM =================
+                #
+                # Um hóspede com saída marcada para ontem e ainda em check-in: ou
+                # ficou mais uma noite (e a diária tem de ser lançada) ou saiu e
+                # ninguém fez o check-out (e o quarto está por limpar e por
+                # vender). Nos dois casos há dinheiro ou um quarto parado.
+                #
+                # A auditoria NÃO decide qual dos dois é — isso só a recepção
+                # sabe. Mas tem de os pôr à frente de alguém, em vez de os deixar
+                # a envelhecer no mapa de quartos.
+                atrasados = (scope_qs(request, Reservation.objects
+                                      .select_related('guest', 'room'))
+                             .filter(status='CHECKED_IN', check_out__lte=audit_date))
+                for res in atrasados:
+                    saidas_em_atraso.append({
+                        'reservation': res.id, 'confirmation': res.confirmation,
+                        'guest': res.guest.name if res.guest_id else '',
+                        'room': res.room.number if res.room_id else '',
+                        'check_out': res.check_out.isoformat() if res.check_out else None,
+                    })
+
                 run = NightAuditRun.objects.create(
                     hotel=hotel, audit_date=audit_date,
                     run_by=str(getattr(request.user, 'username', '') or 'night-audit'),
@@ -158,9 +251,25 @@ class NightAuditRunView(APIView):
         dados = NightAuditRunSerializer(run).data
         dados['extras_charged'] = extras_charged
         dados['skipped_no_folio'] = sem_conta
+        dados['no_shows'] = no_shows
+        dados['late_departures'] = saidas_em_atraso
+
+        # O RESULTADO TEM DE DIZER O QUE FICOU POR RESOLVER, e por ordem de
+        # dinheiro: primeiro o que não foi cobrado, depois o que está parado.
+        avisos = []
         if sem_conta:
-            dados['detail'] = (f'{len(sem_conta)} reserva(s) em check-in ficaram SEM a diária '
-                               f'desta noite por não terem conta aberta. Abra uma conta nova na '
-                               f'ficha da reserva ("Recriar conta") e lance as noites que '
-                               f'faltam — senão é alojamento dado de graça.')
+            avisos.append(f'{len(sem_conta)} reserva(s) em check-in ficaram SEM a diária desta '
+                          f'noite por não terem conta aberta. Abra uma conta nova na ficha da '
+                          f'reserva ("Recriar conta") e lance as noites que faltam — senão é '
+                          f'alojamento dado de graça.')
+        garantidos_por_cobrar = [n for n in no_shows if n['reason']]
+        if garantidos_por_cobrar:
+            avisos.append(f'{len(garantidos_por_cobrar)} no-show(s) GARANTIDO(s) ficaram por '
+                          f'cobrar por não terem conta aberta.')
+        if saidas_em_atraso:
+            avisos.append(f'{len(saidas_em_atraso)} hóspede(s) com saída marcada e ainda em '
+                          f'check-in. Ou ficaram mais uma noite (e falta lançar a diária), ou '
+                          f'saíram sem check-out (e o quarto está por vender).')
+        if avisos:
+            dados['detail'] = ' '.join(avisos)
         return Response(dados, status=201)
