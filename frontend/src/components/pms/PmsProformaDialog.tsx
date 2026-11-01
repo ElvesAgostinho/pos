@@ -77,7 +77,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
 
   const linhasHtml = () => {
     if (!encargos.length) {
-      return `<tr><td colspan="3" style="text-align:center;color:#888;padding:18px">Sem consumos lançados nesta conta.</td></tr>`;
+      return `<tr><td colspan="3" style="text-align:center;color:#8A8A8A;padding:16px">Sem consumos lançados nesta conta.</td></tr>`;
     }
     if (formato === 'Fatura: Sumário por Estadia') {
       // Agrupa por tipo de encargo — uma linha por família de consumo.
@@ -89,8 +89,8 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
         porTipo[k].total += Number(c.amount || 0);
       }
       return Object.values(porTipo).map((g) =>
-        `<tr><td>${esc(g.label)}</td><td style="text-align:center">${g.qt}</td>` +
-        `<td style="text-align:right">${money(g.total)}</td></tr>`).join('');
+        `<tr><td>${esc(g.label)}</td><td class="num" style="text-align:center">${g.qt}</td>` +
+        `<td class="num" style="text-align:right">${money(g.total)}</td></tr>`).join('');
     }
     if (formato === 'Fatura: Sumário por Dia') {
       const porDia: Record<string, { qt: number; total: number }> = {};
@@ -101,44 +101,83 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
         porDia[d].total += Number(c.amount || 0);
       }
       return Object.entries(porDia).sort().map(([d, g]) =>
-        `<tr><td>${esc(d)}</td><td style="text-align:center">${g.qt}</td>` +
-        `<td style="text-align:right">${money(g.total)}</td></tr>`).join('');
+        `<tr><td>${esc(d)}</td><td class="num" style="text-align:center">${g.qt}</td>` +
+        `<td class="num" style="text-align:right">${money(g.total)}</td></tr>`).join('');
     }
     return encargos.map((c: any) =>
       `<tr><td>${esc(c.description)}` +
       `<div style="font-size:10px;color:#777">${esc(c.charge_type_display || c.charge_type)}` +
       `${c.posted_at ? ` · ${esc(String(c.posted_at).slice(0, 10))}` : ''}</div></td>` +
       `<td style="text-align:center">1</td>` +
-      `<td style="text-align:right">${money(c.amount)}</td></tr>`).join('');
+      `<td class="num" style="text-align:right">${money(c.amount)}</td></tr>`).join('');
   };
 
   const montarHtml = () => `<html><head><meta charset="utf-8"><title>Pró-forma — ${esc(r.confirmation)}</title><style>
+      /* ================= A PRÓ-FORMA =================================
+         Era AZUL DE CIMA A BAIXO: o "body" declarava "color:#2563EB", e a partir
+         daí tudo o que não tivesse cor própria — o nome do hóspede, as datas, os
+         valores, o total — nascia azul. Um papel em que tudo está realçado não
+         tem nada realçado: o olho não sabe onde pousar, e o documento lê-se como
+         um folheto, não como uma conta.
+
+         Uma factura séria é TEXTO ESCURO SOBRE BRANCO. A hierarquia faz-se com
+         tamanho, peso e FILETES; a cor fica para as duas coisas que a merecem: o
+         total a pagar e o aviso legal. É assim em qualquer factura de hotel, e
+         não por tradição — é porque este papel é conferido linha a linha por
+         alguém com pressa ao balcão, e depois arquivado a preto e branco.
+         ================================================================= */
       *{box-sizing:border-box}
-      body{font-family:'Segoe UI',Tahoma,sans-serif;color:#2563EB;margin:0;padding:28px;font-size:12px}
-      .topo{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
-            border-bottom:2px solid #2563EB;padding-bottom:14px}
-      .empresa{font-size:11px;line-height:1.5}
-      .empresa .nome{font-size:16px;font-weight:700;color:#2563EB;margin-bottom:2px}
-      .logo{max-height:64px;max-width:190px;object-fit:contain}
+      @page{size:A4;margin:14mm}
+      body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1A1A1A;margin:0;padding:26px;
+           font-size:11.5px;line-height:1.45}
+
+      /* OS NÚMEROS EM LARGURA FIXA ("tabular-nums"): sem isto o "1" é mais
+         estreito do que o "8" e a coluna de valores fica com as vírgulas
+         desalinhadas umas das outras — numa conta, somar com o olho deixa de
+         ser possível. É o detalhe que mais distingue um documento financeiro
+         bem composto de um mal composto. */
+      .num{font-variant-numeric:tabular-nums}
+
+      .topo{display:flex;justify-content:space-between;align-items:flex-start;gap:22px;
+            border-bottom:1.5px solid #1A1A1A;padding-bottom:12px}
+      .empresa{font-size:10.5px;line-height:1.5;color:#3C3C3C}
+      .empresa .nome{font-size:15px;font-weight:700;color:#1A1A1A;margin-bottom:2px;letter-spacing:.2px}
+      .logo{max-height:60px;max-width:180px;object-fit:contain;margin-bottom:6px}
       .titulo{text-align:right}
-      .titulo h1{margin:0;font-size:19px;letter-spacing:1px;color:#2563EB}
-      .titulo .sub{font-size:11px;color:#3B82F6;margin-top:2px}
-      .caixas{display:flex;gap:14px;margin:16px 0}
-      .caixa{flex:1;border:1px solid #E6E8EC;border-radius:8px;padding:10px}
-      .caixa h4{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#3B82F6}
-      .caixa .l{display:flex;justify-content:space-between;gap:10px;padding:1px 0}
-      table{border-collapse:collapse;width:100%;margin-top:6px}
-      th{background:#F1F2F4;color:#2563EB;text-align:left;font-size:10px;text-transform:uppercase;
-         letter-spacing:.5px;padding:7px 8px;border-bottom:1px solid #E6E8EC}
-      td{padding:7px 8px;border-bottom:1px solid #F1F2F4;vertical-align:top}
-      .totais{margin-left:auto;width:290px;margin-top:12px}
-      .totais .l{display:flex;justify-content:space-between;padding:4px 8px}
-      .totais .grande{border-top:2px solid #2563EB;margin-top:4px;padding-top:8px;
-                      font-size:15px;font-weight:700;color:#2563EB}
-      .aviso{margin-top:22px;border:1px solid #DC2626;background:#FEF2F2;color:#B91C1C;
-             border-radius:8px;padding:10px 12px;font-size:11px}
-      .rodape{margin-top:14px;font-size:10px;color:#6B7280;text-align:center;
-              border-top:1px solid #F1F2F4;padding-top:8px}
+      .titulo h1{margin:0;font-size:17px;letter-spacing:1.5px;color:#1A1A1A;font-weight:700}
+      .titulo .sub{font-size:10.5px;color:#4A4A4A;margin-top:3px}
+      .titulo .ref{font-size:12px;color:#1A1A1A;font-weight:700;margin-top:4px}
+
+      .caixas{display:flex;gap:12px;margin:14px 0 4px}
+      .caixa{flex:1;border:1px solid #C8C8C8;padding:0}
+      .caixa h4{margin:0;font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;
+                color:#1A1A1A;background:#EFEFEF;border-bottom:1px solid #C8C8C8;padding:3px 8px}
+      .caixa .corpo{padding:7px 8px}
+      .caixa .l{display:flex;justify-content:space-between;gap:10px;padding:1.5px 0}
+      .caixa .l span:first-child{color:#5A5A5A}
+      .caixa .l span:last-child,.caixa .l b{color:#1A1A1A}
+
+      table{border-collapse:collapse;width:100%;margin-top:14px}
+      th{background:#EFEFEF;color:#1A1A1A;text-align:left;font-size:9.5px;text-transform:uppercase;
+         letter-spacing:.6px;padding:5px 8px;border-top:1px solid #C8C8C8;border-bottom:1px solid #C8C8C8}
+      td{padding:5px 8px;border-bottom:1px solid #E4E4E4;vertical-align:top;color:#1A1A1A}
+
+      .totais{margin-left:auto;width:270px;margin-top:10px}
+      .totais .l{display:flex;justify-content:space-between;padding:3px 8px;color:#3C3C3C}
+      /* O FILETE DUPLO por cima do total é a convenção de qualquer documento de
+         contas: diz "o que vem a seguir é o resultado", sem precisar de cor. */
+      .totais .grande{border-top:3px double #1A1A1A;margin-top:5px;padding-top:7px;
+                      font-size:14px;font-weight:700;color:#1A1A1A}
+      .totais .pagar{color:#B91C1C}
+
+      /* O AVISO FICA VERMELHO, e é a única cor forte do papel: é a advertência
+         legal de que isto não serve como factura. Deixar de o destacar seria o
+         caminho mais curto para um hóspede levar para casa um papel que a AGT
+         não reconhece. */
+      .aviso{margin-top:20px;border:1px solid #C0392B;border-left:4px solid #C0392B;
+             background:#FDF4F3;color:#8E2A20;padding:8px 10px;font-size:10.5px}
+      .rodape{margin-top:16px;font-size:9.5px;color:#6B6B6B;text-align:center;
+              border-top:1px solid #D4D4D4;padding-top:7px}
       @media print{body{padding:0}}
     </style></head><body>
 
@@ -156,7 +195,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
         </div>
         <div class="titulo">
           <h1>FATURA PRÓ-FORMA</h1>
-          <div class="sub">Reserva ${esc(r.confirmation)}</div>
+          <div class="ref">Reserva ${esc(r.confirmation)}</div>
           <div class="sub">Emitida em ${new Date().toLocaleString('pt-PT')}</div>
           <div class="sub">${esc(formato)}</div>
         </div>
@@ -165,17 +204,21 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
       <div class="caixas">
         <div class="caixa">
           <h4>Hóspede</h4>
-          <div class="l"><span>Nome</span><b>${esc(r.guest_name || '—')}</b></div>
-          <div class="l"><span>NIF</span><span>${esc(r.guest_tax_id || '—')}</span></div>
-          ${folio?.payer_name ? `<div class="l"><span>A pagar por</span><span>${esc(folio.payer_name)}</span></div>` : ''}
+          <div class="corpo">
+            <div class="l"><span>Nome</span><b>${esc(r.guest_name || '—')}</b></div>
+            <div class="l"><span>NIF</span><span class="num">${esc(r.guest_tax_id || '—')}</span></div>
+            ${folio?.payer_name ? `<div class="l"><span>A pagar por</span><span>${esc(folio.payer_name)}</span></div>` : ''}
+          </div>
         </div>
         <div class="caixa">
           <h4>Estadia</h4>
-          <div class="l"><span>Quarto</span><b>${esc(r.room_number || '—')}</b></div>
-          <div class="l"><span>Categoria</span><span>${esc(r.room_type_name || '—')}</span></div>
-          <div class="l"><span>Entrada</span><span>${esc(r.check_in || '—')}</span></div>
-          <div class="l"><span>Saída</span><span>${esc(r.check_out || '—')}</span></div>
-          <div class="l"><span>Noites</span><span>${esc(r.nights ?? '—')}</span></div>
+          <div class="corpo">
+            <div class="l"><span>Quarto</span><b>${esc(r.room_number || '—')}</b></div>
+            <div class="l"><span>Categoria</span><span>${esc(r.room_type_name || '—')}</span></div>
+            <div class="l"><span>Entrada</span><span class="num">${esc(r.check_in || '—')}</span></div>
+            <div class="l"><span>Saída</span><span class="num">${esc(r.check_out || '—')}</span></div>
+            <div class="l"><span>Noites</span><span class="num">${esc(r.nights ?? '—')}</span></div>
+          </div>
         </div>
       </div>
 
@@ -186,12 +229,12 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
       </table>
 
       <div class="totais">
-        <div class="l"><span>Base tributável</span><span>${money(base)}</span></div>
-        <div class="l"><span>IVA (${pct}%)</span><span>${money(iva)}</span></div>
-        ${semImposto > 0 ? `<div class="l"><span>Taxas (sem IVA)</span><span>${money(semImposto)}</span></div>` : ''}
-        <div class="l grande"><span>TOTAL</span><span>${money(total)} Kz</span></div>
-        ${totalPago > 0 ? `<div class="l"><span>Já pago</span><span>− ${money(totalPago)}</span></div>
-          <div class="l grande"><span>POR PAGAR</span><span>${money(total - totalPago)} Kz</span></div>` : ''}
+        <div class="l"><span>Base tributável</span><span class="num">${money(base)}</span></div>
+        <div class="l"><span>IVA (${pct}%)</span><span class="num">${money(iva)}</span></div>
+        ${semImposto > 0 ? `<div class="l"><span>Taxas (sem IVA)</span><span class="num">${money(semImposto)}</span></div>` : ''}
+        <div class="l grande"><span>TOTAL</span><span class="num">${money(total)} Kz</span></div>
+        ${totalPago > 0 ? `<div class="l"><span>Já pago</span><span class="num">− ${money(totalPago)}</span></div>
+          <div class="l grande pagar"><span>POR PAGAR</span><span class="num">${money(total - totalPago)} Kz</span></div>` : ''}
       </div>
 
       <div class="aviso">
