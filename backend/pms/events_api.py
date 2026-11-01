@@ -147,19 +147,48 @@ class EventForecastView(APIView):
         last_y, last_m = buckets[-1]
         upper_y, upper_m = (last_y + 1, 1) if last_m == 12 else (last_y, last_m + 1)
 
-        qs = _scope(request, EventRequest.objects.select_related('state').filter(
-            cancelled_at__isnull=True,
-            start_at__date__gte=date(first_y, first_m, 1),
-            start_at__date__lt=date(upper_y, upper_m, 1),
-        ))
+        qs = _scope(request, EventRequest.objects
+                    .select_related('state', 'segment', 'channel', 'event_type')
+                    .filter(cancelled_at__isnull=True,
+                            start_at__date__gte=date(first_y, first_m, 1),
+                            start_at__date__lt=date(upper_y, upper_m, 1)))
+
+        # DE ONDE VEM A RECEITA, e não só quanto é.
+        #
+        # A previsão dizia "em Março esperam-se X kwanzas" e mais nada. É um
+        # número que não se pode accionar: para decidir onde pôr o esforço
+        # comercial é preciso saber se vem de casamentos ou de empresas, e se
+        # chega por venda directa ou por uma agência que leva comissão.
+        #
+        # Os eventos passaram a ter segmento, canal e tipo quando se unificaram
+        # com o motor do comercial — a informação já cá estava, só não era
+        # mostrada. "(Sem ...)" aparece por inteiro em vez de desaparecer: um
+        # eixo onde metade da receita não está classificada é uma coisa que o
+        # dono tem de VER, não de adivinhar por as parcelas não somarem o total.
+        por_segmento, por_canal, por_tipo = {}, {}, {}
+
+        def _junta(d, chave, valor):
+            d[chave] = d.get(chave, 0.0) + valor
+
         for ev in qs:
             if not ev.blocks_space:
                 continue
+            valor = float(ev.price_per_pax or 0) * int(ev.pax or 0) + float(ev.extra_total or 0)
             key = (ev.start_at.year, ev.start_at.month)
             if key in by_month:
-                by_month[key] += float(ev.price_per_pax or 0) * int(ev.pax or 0) + float(ev.extra_total or 0)
+                by_month[key] += valor
+            _junta(por_segmento, ev.segment.name if ev.segment_id else '(Sem segmento)', valor)
+            _junta(por_canal, ev.channel.name if ev.channel_id else '(Venda directa)', valor)
+            _junta(por_tipo, ev.event_type.name if ev.event_type_id else '(Sem tipo)', valor)
+
+        def _lista(d):
+            return [{'label': k, 'revenue': round(v, 2)}
+                    for k, v in sorted(d.items(), key=lambda kv: -kv[1]) if v]
 
         rows = [{'year': y, 'month': m, 'label': date(y, m, 1).strftime('%Y-%m'),
                  'revenue': round(by_month[(y, m)], 2)} for (y, m) in buckets]
         return Response({'months': months, 'rows': rows,
-                         'total': round(sum(r['revenue'] for r in rows), 2)})
+                         'total': round(sum(r['revenue'] for r in rows), 2),
+                         'by_segment': _lista(por_segmento),
+                         'by_channel': _lista(por_canal),
+                         'by_type': _lista(por_tipo)})
