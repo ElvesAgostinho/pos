@@ -98,12 +98,25 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   // minutos: três das quatro voltas eram trabalho para pintar o mesmo texto.
   useEffect(() => { const t = setInterval(() => setClock(new Date()), 30000); return () => clearInterval(t); }, []);
 
-  const [recent, setRecent] = useState<{ screen: string; label: string }[]>(() => {
+  /**
+   * O QUE SE USOU HÁ POUCO — e de que MÓDULO era.
+   *
+   * O módulo guarda-se com cada entrada, e não se adivinha ao desenhar. Sem
+   * ele, a lista mostrava "PMS" a um cliente que só comprou o POS: o nome
+   * ficava no browser desde uma sessão anterior e ninguém o filtrava. Isso é
+   * uma fuga de módulo — o sistema vende-se por módulo, e cada um mostra o
+   * que é seu e mais nada.
+   *
+   * As entradas antigas (gravadas antes disto) não têm módulo. Tratam-se como
+   * desconhecidas e NÃO se mostram: numa dúvida entre esconder o que é do
+   * cliente e mostrar o que não é, esconde-se.
+   */
+  const [recent, setRecent] = useState<{ screen: string; label: string; modulo?: string }[]>(() => {
     try { return JSON.parse(localStorage.getItem('recent_screens') || '[]'); } catch { return []; }
   });
   const open = (screen?: string, label?: string) => {
     if (!screen) return;
-    const item = { screen, label: label || ITEM_TITLES[screen] || screen };
+    const item = { screen, label: label || ITEM_TITLES[screen] || screen, modulo: wsKey };
     const next = [item, ...recent.filter((r) => r.screen !== screen)].slice(0, 6);
     setRecent(next); localStorage.setItem('recent_screens', JSON.stringify(next));
     setStart(false);
@@ -112,6 +125,22 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
   const openIcon = (ic: DeskIcon) => { if (ic.launch) window.open(ic.launch, '_blank', 'noopener'); else open(ic.screen, ic.label); };
   const logout = async () => { await authApi.logout(); nav('/backoffice/login'); };
   const closeAll = () => { setStart(false); setSelecionado(null); };
+
+  /**
+   * O FILTRO DA LICENÇA, aplicado a TUDO o que nomeia um módulo.
+   *
+   * `licensed` já decide os separadores da barra de tarefas. O que faltava era
+   * aplicá-lo às outras listas — e bastou uma para o dono ver "PMS" no menu
+   * Iniciar de um sistema que só tem POS.
+   *
+   * Vale a pena dizer porque é que isto importa mais do que parece: o sistema
+   * vende-se POR MÓDULO. Um cliente que comprou só o POS não pode ver sinal
+   * nenhum do PMS — nem um nome numa lista, nem um atalho, nem um ícone. Ver
+   * aquilo que não se comprou é, na melhor das hipóteses, uma promessa que
+   * ninguém fez; na pior, abre um ecrã vazio e parece um defeito.
+   */
+  const temLicenca = (modulo?: string) => !!modulo && licensed.some((w) => w.key === modulo);
+  const recentesPermitidos = recent.filter((r) => temLicenca(r.modulo));
 
   const quick = ws.icons.filter((i) => i.quick);   // atalhos do ambiente de trabalho
 
@@ -430,10 +459,10 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
           <div className="flex" style={{ height: '380px' }}>
             {/* ── Todas as aplicações ── */}
             <div className="w-[290px] overflow-auto pt-1 pb-3" style={{ borderRight: `1px solid ${LINHA}` }}>
-              {recent.length > 0 && (
+              {recentesPermitidos.length > 0 && (
                 <>
                   <GrupoTitulo>Usado recentemente</GrupoTitulo>
-                  {recent.slice(0, 4).map((r) => (
+                  {recentesPermitidos.slice(0, 4).map((r) => (
                     <ItemIniciar key={`rec-${r.screen}`} label={r.label} onClick={() => open(r.screen, r.label)} />
                   ))}
                 </>

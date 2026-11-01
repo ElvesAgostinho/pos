@@ -59,6 +59,25 @@ export interface ActiveModules { active: string[]; core: string[]; catalog: any[
  */
 const MEMORIA_MODULOS = 'ultimos_modulos_licenciados';
 
+/**
+ * QUANTO TEMPO A MEMÓRIA VALE.
+ *
+ * A memória existe para cobrir um SOLUÇO: um pedido que não chega, segundos
+ * de rede má. Para isso, sete dias são uma eternidade — e é de propósito,
+ * porque uma casa pode ficar sem internet um fim-de-semana inteiro e a
+ * recepção tem de continuar a trabalhar.
+ *
+ * O que ela NÃO pode é valer para sempre. O sistema vende-se por módulo: um
+ * cliente que deixou de pagar o PMS não pode continuar a vê-lo só porque o
+ * computador dele nunca mais falou com o servidor. Passado o prazo, a memória
+ * deixa de contar e o ecrã diz que não conseguiu ler a licença — que é a
+ * verdade, e é melhor do que uma licença antiga apresentada como actual.
+ *
+ * Qualquer leitura BOA reescreve a memória, por isso um downgrade chega
+ * sozinho assim que houver rede.
+ */
+const PRAZO_DA_MEMORIA_MS = 7 * 24 * 60 * 60 * 1000;
+
 export const useActiveModules = () =>
   useQuery({
     queryKey: ['licensing', 'active-modules'],
@@ -66,15 +85,23 @@ export const useActiveModules = () =>
       try {
         const d: ActiveModules = (await apiClient.get('licensing/active-modules/')).data;
         if (Array.isArray(d?.active)) {
-          try { localStorage.setItem(MEMORIA_MODULOS, JSON.stringify(d.active)); } catch { /* sem espaço */ }
+          try {
+            localStorage.setItem(MEMORIA_MODULOS,
+              JSON.stringify({ active: d.active, em: Date.now() }));
+          } catch { /* sem espaço */ }
         }
         return d;
       } catch (erro) {
         try {
-          const ultimos = JSON.parse(localStorage.getItem(MEMORIA_MODULOS) || 'null');
-          if (Array.isArray(ultimos) && ultimos.length) {
-            return { active: ultimos, core: [], catalog: [] };
+          const guardado = JSON.parse(localStorage.getItem(MEMORIA_MODULOS) || 'null');
+          const dentroDoPrazo = guardado?.em && (Date.now() - guardado.em) < PRAZO_DA_MEMORIA_MS;
+          if (dentroDoPrazo && Array.isArray(guardado.active) && guardado.active.length) {
+            return { active: guardado.active, core: [], catalog: [] };
           }
+          // Fora do prazo (ou no formato antigo, sem data): apaga-se. Uma
+          // licença velha guardada sem data não se consegue datar depois, e
+          // mantê-la seria arriscar mostrar módulos que já não são do cliente.
+          if (guardado) localStorage.removeItem(MEMORIA_MODULOS);
         } catch { /* valor estragado: trata-se como se não houvesse */ }
         throw erro;
       }
