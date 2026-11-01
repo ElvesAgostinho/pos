@@ -1,6 +1,7 @@
 """
 Configuração POS — Módulos, Terminais e Parâmetros.
 """
+import logging
 from decimal import Decimal
 from django.db import models, transaction
 from rest_framework import viewsets, serializers
@@ -8,6 +9,8 @@ from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+logger = logging.getLogger(__name__)
 
 from .models import (PosModule, PosTerminal, TerminalPrinter, TerminalHardware,
                      PosParameter, PosSector, POSTable, PosKeyboard, PosKeyboardKey,
@@ -5132,7 +5135,30 @@ class _SectorAccess:
         # só porque o operador dele, hoje, tem acesso aos dois setores.
         so = [c.strip() for c in P.text(8540, '').split(',') if c.strip()]
         if so:
-            qs = qs.filter(code__in=so)
+            # UM FILTRO QUE NÃO ENCONTRA NADA É UM ERRO DE ESCRITA, NÃO UMA POLÍTICA.
+            #
+            # O parâmetro nomeia CÓDIGOS DE SETOR. Quem o preenche tem à frente
+            # dois ecrãs parecidos — Setores e Pontos de Venda — e escreve lá os
+            # códigos do errado (REST, LOUNGE em vez de 1, 2, 3). O filtro passava
+            # a não encontrar nada e o terminal ficava SEM UM ÚNICO SETOR para
+            # escolher, sem dizer porquê: o empregado chega ao balcão, faz login,
+            # e o ecrã de escolha está vazio.
+            #
+            # Se o filtro apanha ALGUNS setores, respeita-se — é uma restrição
+            # real (este posto só vende no Rooftop) e tem de valer. Se não apanha
+            # NENHUM, não há restrição nenhuma a proteger: há um parâmetro mal
+            # escrito, e deixar o terminal vazio não protege nada — só fecha a
+            # casa. Ignora-se e deixa-se dito no registo, para quem for ver.
+            filtrados = qs.filter(code__in=so)
+            if filtrados.exists():
+                qs = filtrados
+            else:
+                logger.warning(
+                    'Parâmetro 8540 ("Setores Disponíveis") nomeia %s, e nenhum '
+                    'desses códigos de setor existe. O filtro foi ignorado — senão o '
+                    'terminal ficava sem setores para escolher. Confirme se não foram '
+                    'escritos códigos de PONTO DE VENDA em vez de códigos de SETOR.',
+                    ', '.join(so))
         if not operator_id:
             return qs
         op = PosUser.objects.filter(pk=operator_id).first()
