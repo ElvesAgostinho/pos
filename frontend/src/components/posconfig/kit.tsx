@@ -249,6 +249,7 @@ export const SECTIONS = [
     { key: 'f_exemptions', label: 'Isenções IVA' },
     { key: 'f_payments', label: 'Modos de Pagamento' },
     { key: 'f_documents', label: 'Documentos' },
+    { key: 'f_templates', label: 'Modelos de Impressão' },
     { key: 'f_analytic', label: 'Conta analítica' },
   ] },
   { key: 'others', title: 'Outros', items: [

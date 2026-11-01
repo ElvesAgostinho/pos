@@ -109,8 +109,16 @@ def _print_document(ticket, doc, copia=False, abre_gaveta=True):
     # fixo do código. Sem modelo configurado para este tipo, usa-se o de sempre.
     cabecalho_pers, rodape_pers = None, None
     if P.bool(8532, False):
-        from core.models import DocumentTemplate
-        modelo = DocumentTemplate.objects.filter(doc_type=doc.doc_type.code).first()
+        # A MESMA ESCOLHA QUE O PAPEL A4 FAZ (core/modelo_impresso.py).
+        #
+        # Aqui estava `filter(doc_type=...).first()`: pegava no primeiro que
+        # aparecesse, sem olhar ao hotel, ao "activo" nem ao marcado como
+        # predefinido. Quando o A4 passou a usar modelos, passariam a existir
+        # duas regras — e o talão e a factura da MESMA venda sairiam com
+        # rodapés diferentes, sem ninguém perceber porquê.
+        from core.modelo_impresso import modelo_para
+        modelo = modelo_para(doc.doc_type.code if doc.doc_type_id else None,
+                             getattr(doc, 'hotel_id', None))
         if modelo:
             tokens = {'empresa': cfg.company_name or '', 'nif': cfg.company_nif or ''}
             try:

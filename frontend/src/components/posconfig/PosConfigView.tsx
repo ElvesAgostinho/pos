@@ -60,6 +60,7 @@ import PosDocSearch from './PosDocSearch';
 import { EntitySearch, EventRequests } from './PosMarketing';
 import { SECTIONS, Toolbar, Field, Sel, money, GridCheck, Glyph, Box, SearchButton, corDoIcone } from './kit';
 import { BarraAcessoRapido, useAcessoRapido } from '../shared/AcessoRapido';
+import ModelosImpressaoView from './ModelosImpressaoView';
 import Pictograma from '../icons/Pictogramas';
 import { useAgtCertificate } from '../../hooks/useActiveModules';
 import { TOKENS, RADIUS } from '../../config/theme';
@@ -715,6 +716,8 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               ]}
               fields={[]}
               renderEditor={(row, close) => <PaymentMethodEditor row={row} onClose={close} />} />
+          ) : section === 'f_templates' ? (
+            <ModelosImpressaoView />
           ) : section === 'f_documents' ? (
             <SimpleSection title="Série de Documento" queryKey="documents" endpoint="pos/config/documents/" copyable
               columns={[

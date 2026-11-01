@@ -80,7 +80,29 @@ class NotificationRule(models.Model):
 
 
 class DocumentTemplate(models.Model):
-    """Modelo de documento (fatura, recibo, voucher…) — cabeçalho/rodapé/corpo e formato."""
+    """COMO O DOCUMENTO SAI NO PAPEL — por tipo de documento.
+
+    ─── O QUE ISTO RESOLVE ───────────────────────────────────────────────
+    O desenho da fatura estava escrito no código: a cor, o que se mostrava e
+    o que se escondia, o texto do rodapé. Cada casa que quisesse a sua morada
+    no rodapé, ou o IBAN, ou não quisesse o resumo de IVA à vista, obrigava a
+    uma alteração do programa — e um programa certificado pela AGT não se
+    altera por causa do gosto de um cliente.
+
+    Agora é uma FICHA. O hotel preenche-a uma vez e todos os documentos desse
+    tipo saem assim.
+
+    ─── O QUE NÃO SE DEIXA ESCOLHER, E PORQUÊ ────────────────────────────
+    Nada do que a lei exige. O número do documento, a data, o NIF, o resumo
+    de IVA por taxa, o total por extenso, o QR Code e a menção "Processado
+    por programa validado" saem SEMPRE — não há caixa para os desligar. Uma
+    factura sem eles não é uma factura mal desenhada: é uma factura inválida,
+    e quem responde por isso é o hotel.
+
+    As caixas abaixo mexem no que é mesmo opcional: a marca, o que se
+    acrescenta, e o que se mostra por conveniência (as formas de pagamento,
+    o espaço para assinar).
+    """
     FORMATS = [('A4', 'A4'), ('A5', 'A5'), ('THERMAL_80', 'Talão 80mm'), ('THERMAL_58', 'Talão 58mm')]
     name = models.CharField(max_length=140)
     doc_type = models.CharField(max_length=40)         # FT, FR, VOUCHER, RC, BEO…
@@ -94,6 +116,36 @@ class DocumentTemplate(models.Model):
     signature_label = models.CharField(max_length=160, blank=True, null=True)
     is_default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+
+    # ─── A MARCA DA CASA ──────────────────────────────────────────────────
+    # A COR não é decoração: é a única coisa no papel que diz, antes de se ler
+    # nada, de que hotel é aquela factura. Estava fixa no código a azul, e um
+    # lodge de marca verde recebia papel azul.
+    accent_color = models.CharField(max_length=9, default='#1F3A5F',
+                                    help_text='Cor da marca no papel (#RRGGBB)')
+    logo_height_mm = models.PositiveSmallIntegerField(default=16)
+
+    # ─── O QUE SE ACRESCENTA ──────────────────────────────────────────────
+    # Dados que a lei não exige mas sem os quais o cliente não consegue pagar
+    # nem devolver: para onde transferir, e a quem se queixar.
+    bank_details = models.TextField(blank=True, default='',
+                                    help_text='IBAN / conta para transferência')
+    payment_terms = models.CharField(max_length=200, blank=True, default='')
+    legal_notes = models.TextField(blank=True, default='',
+                                   help_text='Condições, reclamações, devoluções')
+
+    # ─── O QUE SE MOSTRA POR CONVENIÊNCIA ─────────────────────────────────
+    show_payments = models.BooleanField(default=True, verbose_name='Formas de pagamento')
+    show_signature_line = models.BooleanField(default=False, verbose_name='Linha para assinar')
+    show_bank_details = models.BooleanField(default=False)
+    show_page_numbers = models.BooleanField(default=True)
+
+    # O HOTEL A QUE PERTENCE. Um grupo com três hotéis tem três papéis
+    # diferentes; sem isto, mudar o rodapé de um mudava o dos outros dois.
+    # Nulo = serve qualquer hotel, que é o que uma instalação de um hotel só
+    # quer e o que as fichas que já existem passam a ser.
+    hotel = models.ForeignKey('identity.Hotel', on_delete=models.CASCADE,
+                              null=True, blank=True, related_name='document_templates')
 
     class Meta:
         db_table = 'cfg_document_template'

@@ -209,6 +209,7 @@ class CommercialDocumentViewSet(viewsets.ModelViewSet):
             'qr_data': None,
             'print_mention': f"Documento não fiscal · {doc.get_kind_display()} sem valor fiscal",
             'hash': None,
+            'template': _modelo(doc.kind, doc),
         })
 
     @action(detail=True, methods=['post'])
@@ -401,7 +402,23 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
             'qr_png': _qr_png(doc.qr_data),
             'print_mention': doc.print_mention,
             'hash': doc.doc_hash,
+            # COMO ESTE DOCUMENTO SAI NO PAPEL (Configuração › Modelos de
+            # Impressão). Vem SEMPRE preenchido: sem ficha, vêm os valores de
+            # fábrica, para quem nunca criar um modelo nada mudar.
+            'template': _modelo(doc.doc_type.code if doc.doc_type_id else None, doc),
         })
+
+
+def _modelo(doc_type, doc=None):
+    """O modelo de impressão deste documento, já pronto para o JSON.
+
+    A escolha é a de core/modelo_impresso.py — a MESMA que o talão térmico
+    usa. Duas regras de escolha fariam o talão e a factura da mesma casa sair
+    com rodapés diferentes, e ninguém saberia porquê.
+    """
+    from core.modelo_impresso import modelo_para, modelo_em_dicionario
+    hotel_id = getattr(doc, 'hotel_id', None)
+    return modelo_em_dicionario(modelo_para(doc_type, hotel_id))
 
 
 class FiscalAuditLogViewSet(viewsets.ReadOnlyModelViewSet):
