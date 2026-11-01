@@ -18,17 +18,21 @@ export default function PmsDocumentScanView() {
   const [docType, setDocType] = useState('');
   const [uploading, setUploading] = useState(false);
 
+  // A PESQUISA É FEITA PELO SERVIDOR, e não aqui.
+  //
+  // Antes descarregava-se o cadastro INTEIRO e filtrava-se no browser. Com as
+  // sete fichas de uma instalação nova ninguém nota; com as de um hotel ao fim
+  // de dois anos são megabytes a cada letra escrita, e quem está na recepção
+  // fica à espera com o hóspede à frente. Agora vai o que se escreveu e volta
+  // só o que interessa (`?search=`, ver mdm/views.py::CustomerViewSet).
+  const q = search.trim();
   const { data } = useQuery({
-    queryKey: ['mdm', 'customers', 'docscan'],
-    queryFn: async () => (await apiClient.get('mdm/customers/')).data,
+    queryKey: ['mdm', 'customers', 'docscan', q],
+    queryFn: async () => (await apiClient.get('mdm/customers/', { params: { search: q } })).data,
+    enabled: q.length >= 2,
   });
-  const all: any[] = Array.isArray(data) ? data : data?.results || [];
-  const q = search.trim().toLowerCase();
-  const results: any[] = q.length < 2 ? [] : all.filter((c) =>
-    (c.name || '').toLowerCase().includes(q)
-    || (c.id_number || '').toLowerCase().includes(q)
-    || (c.email || '').toLowerCase().includes(q),
-  ).slice(0, 20);
+  const encontrados: any[] = Array.isArray(data) ? data : data?.results || [];
+  const results: any[] = q.length < 2 ? [] : encontrados.slice(0, 20);
 
   const pick = (c: any) => { setSelected(c); setDocNumber(c.id_number || ''); setDocType(c.doc_type || ''); };
 
@@ -58,18 +62,18 @@ export default function PmsDocumentScanView() {
     } catch (e) { notifyError(e); }
   };
 
-  const inp = 'border border-[#E6E8EC] p-1';
+  const inp = 'border border-[#D0D5DD] px-1.5 py-[2px]';
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex-1 overflow-auto p-3 space-y-3 text-[11px]">
+      <div className="flex-1 overflow-auto p-2 space-y-2 text-[11.5px]">
         <label className="flex flex-col max-w-[400px]">Procurar hóspede (nome, e-mail, nº documento)
           <input value={search} onChange={(e) => setSearch(e.target.value)} className={inp} placeholder="Escreva pelo menos 2 letras…" />
         </label>
         {results.length > 0 && !selected && (
-          <div className="border border-[#E6E8EC] max-w-[400px] max-h-[160px] overflow-auto bg-white">
+          <div className="border border-[#C8C8C8] max-w-[400px] max-h-[180px] overflow-auto bg-white">
             {results.map((c: any) => (
-              <button key={c.id} onClick={() => pick(c)} className="w-full text-left px-2 py-1.5 hover:bg-[#EEF1F5] border-b border-[#F1F2F4] last:border-b-0">
+              <button key={c.id} onClick={() => pick(c)} className="w-full text-left px-2 py-[3px] hover:bg-[#FDF4D9] border-b border-[#EDEDED] last:border-b-0">
                 {c.name} {c.id_number && <span className="text-gray-500">· {c.id_number}</span>}
               </button>
             ))}
@@ -77,7 +81,7 @@ export default function PmsDocumentScanView() {
         )}
 
         {selected && (
-          <div className="border border-[#E6E8EC] p-3 max-w-[500px] space-y-3">
+          <div className="border border-[#C8C8C8] p-2 max-w-[500px] space-y-2">
             <div className="flex items-center justify-between">
               <div className="font-bold text-[#111827]">{selected.name}</div>
               <button onClick={() => { setSelected(null); setSearch(''); }} className="text-[#6B7280] underline">trocar hóspede</button>
@@ -85,7 +89,7 @@ export default function PmsDocumentScanView() {
             <div className="w-full h-40 bg-[#EEF1F5] border border-[#E6E8EC] flex items-center justify-center overflow-hidden">
               {selected.photo_url ? <img src={selected.photo_url} alt="documento" className="max-w-full max-h-full object-contain" /> : <span className="text-gray-400">Sem foto de documento</span>}
             </div>
-            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#EEF1F5] border border-[#E6E8EC] shadow-[inset_1px_1px_0_#FFFFFF] text-[11px] cursor-pointer hover:bg-[#EEF1F5]">
+            <label className="inline-flex items-center gap-1.5 px-2 h-[22px] border border-[#D0D5DD] bg-white text-[11.5px] cursor-pointer hover:bg-[#FDF4D9]">
               {uploading ? 'A carregar…' : 'Carregar foto do documento…'}
               <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => upload(e.target.files?.[0])} />
             </label>
@@ -95,7 +99,24 @@ export default function PmsDocumentScanView() {
             </div>
           </div>
         )}
-        {!selected && <div className="text-gray-500">Sem leitor/scanner automático disponível nesta instalação — procure o hóspede e carregue a foto do documento manualmente.</div>}
+        {/* ESTE TEXTO JÁ DIZIA "sem leitor/scanner automático disponível nesta
+            instalação" — e era a primeira coisa que se lia ao abrir o ecrã. Lido
+            assim, parece que o ecrã está avariado ou por acabar, e ninguém chega
+            a experimentar o que ele faz. O ecrã funciona: procura-se o hóspede,
+            carrega-se a foto do documento e grava-se o número.
+            Uma instrução diz o que FAZER; uma desculpa diz o que falta. */}
+        {!selected && (
+          <div style={{ color: '#5A5A5A', maxWidth: 520 }}>
+            {q.length < 2
+              ? 'Escreva pelo menos duas letras do nome, do e-mail ou do número do documento para encontrar o hóspede.'
+              : results.length === 0
+                ? 'Nenhum hóspede encontrado com esse texto. Experimente parte do nome ou o número do documento.'
+                : 'Escolha o hóspede na lista para lhe juntar a foto do documento.'}
+            <div className="mt-1" style={{ color: '#8A8A8A' }}>
+              Esta instalação não tem leitor automático de documentos ligado; a foto carrega-se à mão.
+            </div>
+          </div>
+        )}
       </div>
       <Toolbar actions={[
         { label: 'Gravar Nº de Documento', icon: '💾', color: '#111827', onClick: saveNumber, disabled: !selected },
