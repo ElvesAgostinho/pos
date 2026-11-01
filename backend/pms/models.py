@@ -716,33 +716,19 @@ class ChatbotSettings(models.Model):
 # ==========================================================================
 # EMS — Events Management (MVP)
 # ==========================================================================
-
-class Event(models.Model):
-    """Um evento/reserva de espaço (casamento, conferência, festa…). MVP:
-    sem modelo de inventário de salas (não existe nenhum "venue"/sala de
-    eventos no sistema ainda) — `venue` é texto livre até isso existir."""
-    STATUS = [('INQUIRY', 'Pedido'), ('CONFIRMED', 'Confirmado'), ('CANCELLED', 'Cancelado'), ('COMPLETED', 'Concluído')]
-
-    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='pms_events')
-    name = models.CharField(max_length=200)
-    event_date = models.DateField()
-    start_time = models.TimeField(blank=True, null=True)
-    end_time = models.TimeField(blank=True, null=True)
-    venue = models.CharField(max_length=150, blank=True, null=True)
-    client = models.ForeignKey('mdm.Customer', on_delete=models.SET_NULL, blank=True, null=True, related_name='pms_events')
-    expected_guests = models.PositiveIntegerField(default=0)
-    status = models.CharField(max_length=10, choices=STATUS, default='INQUIRY')
-    estimated_revenue = models.DecimalField(max_digits=14, decimal_places=2, default=0)
-    notes = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'pms_event'
-        ordering = ['event_date']
-
-    def __str__(self):
-        return f"{self.name} · {self.event_date}"
-
+# ==========================================================================
+# EVENTOS — vivem no motor de eventos (pos.EventRequest), não aqui.
+#
+# Havia aqui um modelo `Event`: um MVP que guardava a sala como TEXTO LIVRE e
+# o estado como quatro palavras fixas. Um evento marcado por ele não reservava
+# o espaço — nada impedia dois eventos na mesma sala à mesma hora, porque o
+# motor de eventos do comercial (`pos.EventRequest`) tinha a sua própria
+# tabela e não sabia desta.
+#
+# Os registos que existissem foram levados para lá (migração pms.0015) e o EMS
+# passou a ser a VISTA hoteleira do mesmo pedido — ver pms/events_api.py. Duas
+# tabelas para a mesma coisa não se sincronizam: escolhe-se uma.
+# ==========================================================================
 
 # ==========================================================================
 # MAPA DE REFEIÇÕES — quantas pessoas usam cada refeição, por dia

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (
     RoomType, Room, RatePlan, RateOverride, Block, BlockRoomType, Reservation, Folio, FolioCharge, MealPlanEntry,
     NightAuditRun, LostFoundItem, HousekeepingTask, PhoneDirectoryEntry,
-    BookingSettings, Channel, ChannelSyncLog, ChatbotSettings, Event,
+    BookingSettings, Channel, ChannelSyncLog, ChatbotSettings,
     ChannelRoomMap, BookingPayment, ReservationFixedCharge, RoomAttribute,
 )
 
@@ -381,19 +381,3 @@ class ChatbotSettingsSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {'hotel': {'required': False}}
 
-
-class EventSerializer(serializers.ModelSerializer):
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    # SerializerMethodField (não CharField(source='client.name', default=None)) de
-    # propósito: um CharField de source composto com `default` fica inconsistente
-    # logo a seguir a um `.save()` dentro do mesmo pedido (ex.: PATCH) — desaparece
-    # da resposta nesse caso específico, mesmo continuando presente num GET normal.
-    client_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Event
-        fields = '__all__'
-        extra_kwargs = {'hotel': {'required': False}}
-
-    def get_client_name(self, obj):
-        return obj.client.name if obj.client_id else None

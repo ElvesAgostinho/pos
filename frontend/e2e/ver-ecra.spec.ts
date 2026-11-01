@@ -100,7 +100,7 @@ test('fotografar os ecrãs principais', async ({ page }) => {
     async () => (await page.evaluate(() => document.body.innerText.length)),
     { timeout: 60_000 },
   ).toBeGreaterThan(40);
-  for (const alvo of ['Famílias', 'Parâmetros do Sistema', 'Documentos']) {
+  for (const alvo of ['Parâmetros do Sistema', 'Pontos de Venda']) {
     const it = page.locator(`text=${alvo}`).first();
     if (await it.isVisible().catch(() => false)) {
       await it.click().catch(() => {});
@@ -127,6 +127,9 @@ test('fotografar os ecrãs principais', async ({ page }) => {
   // Varios ecras do PMS, pelo caminho que o utilizador faz: separador do ribbon,
   // depois o comando. Cada um fica fotografado para se comparar com a imagem.
   const destinos: [string, string, string][] = [
+    ['EMS', 'Calendário EMS', '5c-calendario-ems'],
+    ['Front Desk', 'Planning', '5b-planning'],
+    ['Reserva', 'Disponibilidade', '5a-disponibilidade'],
     ['Reserva', 'Reservas', '5-reservas'],
     ['Reserva', 'Reservas de Grupo', '6-grupos'],
     ['Front Desk', 'Estado do Hotel', '7-frontdesk'],

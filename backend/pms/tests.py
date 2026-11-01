@@ -475,21 +475,65 @@ class PmsMenusRestantesTests(PmsBase):
                          'o planning não sabe em que quarto está o hóspede')
 
     # --------------------------------------------------------------------- EMS
-    def test_ems_evento_filtros_e_previsao(self):
-        confirmado = self.client.post('/api/pms/events/', {
-            'hotel': self.hotel.id, 'name': 'Casamento Teste',
-            'event_date': str(self.hoje + timedelta(days=20)), 'venue': 'Jardim',
-            'client': self.guest.id, 'expected_guests': 120,
-            'status': 'CONFIRMED', 'estimated_revenue': '900000'}, format='json')
-        self.assertIn(confirmado.status_code, (200, 201), confirmado.content)
-        pedido = self.client.post('/api/pms/events/', {
-            'hotel': self.hotel.id, 'name': 'Conferencia Teste',
-            'event_date': str(self.hoje + timedelta(days=25)), 'venue': 'Sala A',
-            'status': 'INQUIRY', 'estimated_revenue': '400000'}, format='json')
-        self.assertIn(pedido.status_code, (200, 201), pedido.content)
+    #
+    # O EMS DEIXOU DE TER TABELA PRÓPRIA. Havia duas a guardar a mesma coisa —
+    # `pms.Event` (um MVP) e `pos.EventRequest` (o motor do comercial) — e um
+    # evento marcado no EMS não reservava a sala, porque um lado não sabia do
+    # outro. Agora `pms/events/` é a VISTA hoteleira do pedido de evento, e quem
+    # cria é o ecrã de Pedidos de Evento.
+    #
+    # Estes testes passaram a montar o evento onde ele vive agora. A regra que
+    # guardam é a mesma de sempre e é a que vale dinheiro: **a previsão só conta
+    # o que já bloqueia o espaço**. Uma opção por confirmar não entra — seria
+    # contar receita que ainda se pode perder para o concorrente.
 
-        self.assertEqual(len(self.client.get('/api/pms/events/').data), 2)
-        self.assertEqual(len(self.client.get('/api/pms/events/', {'status': 'CONFIRMED'}).data), 1)
+    def _config_de_eventos(self):
+        """O mínimo que um pedido de evento precisa: um espaço, um tipo e dois
+        estados — um que bloqueia a sala e outro que não."""
+        from pos.models import (Outlet, PosSector, EventType, EventReservationState)
+        outlet = Outlet.objects.create(hotel=self.hotel, code='SALOES', name='Salões')
+        espaco = PosSector.objects.create(code='JARD', name='Jardim', outlet=outlet)
+        sala_a = PosSector.objects.create(code='SALA', name='Sala A', outlet=outlet)
+        tipo = EventType.objects.create(code='CAS', name='Casamento')
+        # `equivalent` é o que decide: NORMAL bloqueia a sala, OPTION não.
+        confirmado = EventReservationState.objects.create(
+            code='CONF', name='Confirmado', equivalent='NORMAL')
+        opcao = EventReservationState.objects.create(
+            code='OPC', name='Opção', equivalent='OPTION')
+        return espaco, sala_a, tipo, confirmado, opcao
+
+    def _pedido(self, titulo, dias, espaco, tipo, estado, pax, por_pax, cliente=None):
+        from datetime import datetime, time
+        from pos.models import EventRequest
+        dia = self.hoje + timedelta(days=dias)
+        return EventRequest.objects.create(
+            number=titulo[:12], title=titulo, customer=cliente,
+            event_type=tipo, pax=pax, space=espaco, state=estado,
+            start_at=datetime.combine(dia, time(18, 0)),
+            end_at=datetime.combine(dia, time(23, 0)),
+            price_per_pax=por_pax, extra_total=0)
+
+    def test_ems_evento_filtros_e_previsao(self):
+        espaco, sala_a, tipo, confirmado, opcao = self._config_de_eventos()
+        self._pedido('Casamento Teste', 20, espaco, tipo, confirmado,
+                     pax=120, por_pax=7500, cliente=self.guest)      # 900 000
+        pedido = self._pedido('Conferencia Teste', 25, sala_a, tipo, opcao,
+                              pax=100, por_pax=4000)                 # 400 000
+
+        lista = self.client.get('/api/pms/events/')
+        self.assertEqual(lista.status_code, 200, lista.content)
+        self.assertEqual(len(lista.data), 2)
+
+        # O EMS continua a falar a sua língua: nome, sala, hóspede.
+        por_nome = {e['name']: e for e in lista.data}
+        self.assertEqual(por_nome['Casamento Teste']['venue'], 'Jardim')
+        self.assertEqual(por_nome['Casamento Teste']['client_name'], 'Hospede Teste')
+        self.assertEqual(por_nome['Casamento Teste']['status'], 'CONFIRMED')
+        self.assertEqual(por_nome['Conferencia Teste']['status'], 'INQUIRY',
+                         'uma opção por confirmar não pode aparecer como confirmada')
+        # E diz o estado COM AS PALAVRAS DO HOTEL, não com as quatro nossas.
+        self.assertEqual(por_nome['Conferencia Teste']['status_display'], 'Opção')
+
         self.assertEqual(len(self.client.get('/api/pms/events/', {'q': 'Jardim'}).data), 1)
         self.assertEqual(len(self.client.get('/api/pms/events/', {'q': 'Hospede'}).data), 1,
                          'não encontra o evento pelo nome do cliente')
@@ -497,19 +541,28 @@ class PmsMenusRestantesTests(PmsBase):
         prev = self.client.get('/api/pms/events/forecast/', {'months': 3})
         self.assertEqual(prev.status_code, 200, prev.content)
         self.assertEqual(prev.data['total'], 900000.0,
-                         'a previsão contou um evento que ainda é só um pedido')
+                         'a previsão contou um evento que ainda é só uma opção')
 
-        # Confirmar o pedido faz a previsão subir — é o funil a funcionar.
-        self.client.patch(f"/api/pms/events/{pedido.data['id']}/",
-                          {'status': 'CONFIRMED'}, format='json')
+        # Confirmar a opção faz a previsão subir — é o funil a funcionar.
+        pedido.state = confirmado
+        pedido.save(update_fields=['state'])
         self.assertEqual(self.client.get('/api/pms/events/forecast/', {'months': 3}).data['total'],
                          1300000.0)
 
+    def test_o_ems_nao_grava_eventos(self):
+        """Criar e alterar é no ecrã de Pedidos de Evento, e só lá.
+
+        Deixar gravar por aqui recriava a segunda porta que a unificação veio
+        fechar — e com ela a possibilidade de dois eventos na mesma sala à mesma
+        hora, cada um gravado de um lado.
+        """
+        r = self.client.post('/api/pms/events/', {'name': 'Pela porta errada'}, format='json')
+        self.assertEqual(r.status_code, 405, r.content)
+
     def test_previsao_ems_ignora_eventos_fora_da_janela(self):
-        self.client.post('/api/pms/events/', {
-            'hotel': self.hotel.id, 'name': 'Evento daqui a dois anos',
-            'event_date': str(self.hoje + timedelta(days=730)), 'status': 'CONFIRMED',
-            'estimated_revenue': '1000000'}, format='json')
+        espaco, _sala, tipo, confirmado, _opcao = self._config_de_eventos()
+        self._pedido('Evento daqui a dois anos', 730, espaco, tipo, confirmado,
+                     pax=100, por_pax=10000)
         prev = self.client.get('/api/pms/events/forecast/', {'months': 3})
         self.assertEqual(prev.data['total'], 0.0)
         self.assertEqual(len(prev.data['rows']), 3)
@@ -3015,17 +3068,33 @@ class PmsFrontDeskRestanteTests(PmsBase):
             self.assertEqual(len(r.data), 1, 'não encontrou pesquisando por "%s"' % termo)
 
     def test_evento_cancelado_sai_da_previsao_de_receita(self):
-        """A previsão de receita de eventos soma os CONFIRMADOS. Um evento
-        cancelado que continuasse a somar prometia ao dono dinheiro que já
-        tinha desaparecido."""
-        ev = self.client.post('/api/pms/events/', {
-            'hotel': self.hotel.id, 'name': 'Casamento', 'event_date': str(self.hoje),
-            'status': 'CONFIRMED', 'estimated_revenue': '1500000'}, format='json')
-        self.assertEqual(ev.status_code, 201, ev.content)
+        """A previsão soma os eventos que já BLOQUEIAM a sala. Um cancelado que
+        continuasse a somar prometia ao dono dinheiro que já tinha desaparecido.
+
+        (O evento monta-se em `pos.EventRequest`, onde os eventos passaram a
+        viver — o EMS é agora a vista hoteleira do mesmo pedido.)
+        """
+        from datetime import datetime, time
+        from django.utils import timezone
+        from pos.models import (Outlet, PosSector, EventType, EventReservationState,
+                                EventRequest)
+        outlet = Outlet.objects.create(hotel=self.hotel, code='SAL', name='Salões')
+        espaco = PosSector.objects.create(code='SLA', name='Sala Grande', outlet=outlet)
+        tipo = EventType.objects.create(code='CAS', name='Casamento')
+        confirmado = EventReservationState.objects.create(
+            code='CONF', name='Confirmado', equivalent='NORMAL')
+
+        ev = EventRequest.objects.create(
+            number='EV-CANC', title='Casamento', event_type=tipo, space=espaco,
+            state=confirmado, pax=100, price_per_pax=15000, extra_total=0,
+            start_at=datetime.combine(self.hoje, time(18, 0)),
+            end_at=datetime.combine(self.hoje, time(23, 0)))
+
         d = self.client.get('/api/pms/events/forecast/', {'months': 1})
         self.assertEqual(d.data['total'], 1500000.0)
-        self.client.patch('/api/pms/events/%s/' % ev.data['id'],
-                          {'status': 'CANCELLED'}, format='json')
+
+        ev.cancelled_at = timezone.now()
+        ev.save(update_fields=['cancelled_at'])
         d = self.client.get('/api/pms/events/forecast/', {'months': 1})
         self.assertEqual(d.data['total'], 0.0, 'um evento cancelado não é receita prevista')
 
