@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { Toolbar } from '../posconfig/kit';
 import PmsReservationDetailDialog from './PmsReservationDetailDialog';
+import PmsNewReservationDialog from './PmsNewReservationDialog';
 import { STATUS_COLOR } from './reservationStatus';
 
 /** Planning — mapa de ocupação estilo Gantt: quartos em linha, dias em
@@ -17,6 +18,8 @@ const addDays = (d: Date, n: number) => { const c = new Date(d); c.setDate(c.get
 export default function PmsPlanningView() {
   const [weekStart, setWeekStart] = useState(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; });
   const [selId, setSelId] = useState<number | null>(null);
+  // O quarto e o dia onde se carregou, à espera de virarem reserva.
+  const [aCriar, setACriar] = useState<any | null>(null);
 
   const { data: myHotels } = useQuery({
     queryKey: ['auth', 'hotels'],
@@ -32,6 +35,15 @@ export default function PmsPlanningView() {
 
   const { data: roomsData } = useQuery({ queryKey: ['pms', 'rooms'], queryFn: async () => (await apiClient.get('pms/rooms/')).data });
   const rooms: any[] = Array.isArray(roomsData) ? roomsData : roomsData?.results || [];
+
+  // As TIPOLOGIAS, para o diálogo de reserva. O mapa já sabe a tipologia do
+  // quarto onde se carregou, por isso a reserva nasce com ela escolhida.
+  const { data: rtData } = useQuery({
+    queryKey: ['pms', 'room-types'],
+    queryFn: async () => (await apiClient.get('pms/room-types/')).data,
+    staleTime: 5 * 60 * 1000,
+  });
+  const roomTypes: any[] = Array.isArray(rtData) ? rtData : rtData?.results || [];
 
   const { data: resData, refetch } = useQuery({
     queryKey: ['pms', 'reservations', 'planning', rangeStart, rangeEnd],
@@ -96,7 +108,31 @@ export default function PmsPlanningView() {
                   );
                   dayIdx += span;
                 } else {
-                  cells.push(<td key={dayIdx} className="border border-[#E6E8EC] px-1 py-1" />);
+                  // A CÉLULA VAZIA É O SÍTIO ONDE SE PLANEIA.
+                  //
+                  // Era um buraco: clicar nela não fazia nada. Um mapa de
+                  // planeamento onde só se consegue ABRIR o que já existe não é
+                  // um mapa de planeamento — é um relatório em forma de grelha, e
+                  // para marcar uma estadia era preciso sair daqui, ir às
+                  // reservas, criar, escolher o quarto outra vez e voltar.
+                  //
+                  // Agora carrega-se no cruzamento do quarto com o dia e a
+                  // reserva nasce com os dois já escolhidos — que é a única razão
+                  // para se estar a olhar para este ecrã.
+                  const esteDia = dayIso;
+                  const esteQuarto = room;
+                  cells.push(
+                    <td key={dayIdx}
+                      onClick={() => setACriar({
+                        check_in: esteDia,
+                        check_out: fmtISO(addDays(new Date(`${esteDia}T00:00:00`), 1)),
+                        room: esteQuarto.id,
+                        room_number: esteQuarto.number,
+                        room_type: esteQuarto.room_type,
+                      })}
+                      title={`Marcar reserva — quarto ${esteQuarto.number}, ${esteDia}`}
+                      className="border border-[#E6E8EC] px-1 py-1 cursor-pointer hover:bg-[#FDF4D9]" />,
+                  );
                   dayIdx++;
                 }
               }
@@ -114,6 +150,12 @@ export default function PmsPlanningView() {
             )}
           </tbody>
         </table>
+        {/* Um ecrã que só faz alguma coisa se lhe carregarem no sítio certo tem de
+            DIZER qual é o sítio. Sem esta linha, a diferença entre "ainda não
+            faz nada" e "faz, mas tem de se descobrir" é invisível. */}
+        <div className="px-2 py-1 border-t text-[11px]" style={{ borderColor: '#EDEDED', color: '#6B7280' }}>
+          Carregue num dia livre de um quarto para marcar uma reserva; numa barra colorida para abrir a que lá está.
+        </div>
         {unassigned.length > 0 && (
           <div className="p-2 text-[11px] text-[#6B7280] border-t border-[#F1F2F4]">
             {unassigned.length} reserva(s) sem quarto atribuído neste período (não aparecem no mapa) — atribua um quarto na ficha da reserva.
@@ -124,6 +166,12 @@ export default function PmsPlanningView() {
       {selId && selRes && (
         <PmsReservationDetailDialog reservation={selRes} hotelName={hotelName}
           onClose={() => setSelId(null)} onChanged={() => refetch()} />
+      )}
+
+      {aCriar && (
+        <PmsNewReservationDialog roomTypes={roomTypes} inicial={aCriar}
+          onClose={() => setACriar(null)}
+          onCreated={() => { setACriar(null); refetch(); }} />
       )}
     </div>
   );
