@@ -148,7 +148,7 @@ export function AccEntriesView() {
         {/* Lista */}
         <div className="w-2/5 border-r border-[#E6E8EC] flex flex-col">
           <div className="flex-1 overflow-hidden">
-            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
+            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '22%' }, { header: 'Data', accessor: 'entry_date', width: '20%' },
               { header: 'Descrição', accessor: 'description', width: '36%' },
               { header: 'Estado', accessor: (r: any) => <span className={r.status === 'POSTED' ? 'text-[#111827] font-bold' : r.status === 'REVERSED' ? 'text-gray-500' : 'text-[#111827]'}>{r.status_display}</span>, width: '22%' },

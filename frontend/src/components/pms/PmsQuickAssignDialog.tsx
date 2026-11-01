@@ -54,7 +54,7 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
         </div>
         <div className="flex-1 flex overflow-hidden bg-white">
           <div className="w-1/2 overflow-auto border-r border-[#E6E8EC]">
-            <ClassicGrid rowKey="id" data={resRows} selectedRowId={selResId ?? undefined}
+            <ClassicGrid rowKey="id" data={resRows} selectedRowId={selResId}
               onRowClick={(r: any) => setSelResId(r.id)}
               columns={[
                 { header: 'Reserva', accessor: 'confirmation', width: '16%' },

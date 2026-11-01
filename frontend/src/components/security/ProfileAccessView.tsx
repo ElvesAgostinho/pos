@@ -47,7 +47,7 @@ export default function ProfileAccessView() {
             <ClassicButton icon={Plus} label="Criar" onClick={() => newName.trim() && createProfile.mutate(newName.trim())} />
           </div>
           <div className="flex-1 overflow-hidden">
-            <ClassicGrid rowKey="id" data={profiles} selectedRowId={selId ?? undefined} onRowClick={load} columns={[
+            <ClassicGrid rowKey="id" data={profiles} selectedRowId={selId} onRowClick={load} columns={[
               { header: 'Perfil', accessor: 'name', width: '60%' },
               { header: 'Acesso', accessor: (r: any) => r.full_access !== false ? 'Total' : `${(r.allowed_modules || []).length} centro(s)`, width: '40%' },
             ]} />

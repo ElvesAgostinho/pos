@@ -598,7 +598,13 @@ export default function PosConfigView({ onDesktop, onOpen }: {
               columns={[
                 { key: 'code', label: 'Código', width: '12%' },
                 { key: 'name', label: 'Nome', width: '40%' },
-                { key: 'seats', label: 'Lugares', width: '12%' },
+                // A COLUNA QUE FALTAVA. Sem ela, a lista de setores e a de pontos
+                // de venda lêm-se como a mesma coisa escrita duas vezes — e não
+                // há forma de ver, de relance, qual setor serve qual ponto de
+                // venda, que é a única pergunta que se faz nesta lista.
+                { key: 'outlet_name', label: 'Ponto de Venda', width: '20%',
+                  render: (r: any) => r.outlet_name || '—' },
+                { key: 'seats', label: 'Lugares', width: '10%' },
                 { key: 'price_level', label: 'Tipo Preço', width: '12%' },
                 { key: 'keyboard', label: 'Teclados', width: '24%', render: (r: any) => r.keyboard || '—' },
               ]}
@@ -1385,6 +1391,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                   <tbody>
                     {view.map((r, i) => (
                       <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => setEditing(r.id)}
+                        data-sel={sel === r.id ? '1' : undefined}
                         className="cursor-pointer border-b"
                         style={{
                           borderColor: '#EEF1F5',

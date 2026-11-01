@@ -48,7 +48,7 @@ export default function WhInventoryView() {
             <ClassicButton icon={Plus} label="Novo Inventário" onClick={createCount} />
           </div>
           <div className="flex-1 overflow-hidden">
-            <ClassicGrid rowKey="id" data={counts} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
+            <ClassicGrid rowKey="id" data={counts} selectedRowId={selId} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '22%' },
               { header: 'Armazém', accessor: 'warehouse_name', width: '40%' },
               { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#111827] font-bold' : 'text-[#111827]'}>{r.status_display}</span>, width: '26%' },

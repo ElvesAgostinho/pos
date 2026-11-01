@@ -366,7 +366,7 @@ export default function PmsGroupReservationsView() {
             ) : pageRows.map((b: any, i: number) => {
               const sel = selId === b.id;
               return (
-                <tr key={b.id} onClick={() => setSelId(b.id)} className="cursor-pointer"
+                <tr key={b.id} onClick={() => setSelId(b.id)} className="cursor-pointer" data-sel={sel ? '1' : undefined}
                   style={sel ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection } : undefined}>
                   <td className="text-right" style={{ color: sel ? '#FFFFFF' : '#9CA3AF' }}>{i + 1}</td>
                   <td className="font-bold" title={hotelName || ''}>

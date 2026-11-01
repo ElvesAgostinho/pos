@@ -32,7 +32,7 @@ export default function PmsRoomTypesView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/2 border-r border-[#E6E8EC]">
-          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
+          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={select} columns={[
             { header: 'Código', accessor: 'code', width: '20%' },
             { header: 'Nome', accessor: 'name', width: '40%' },
             { header: 'Capacidade', accessor: (r: any) => `${r.capacity_adults}A + ${r.capacity_children}C`, width: '20%' },

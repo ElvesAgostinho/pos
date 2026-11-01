@@ -56,7 +56,7 @@ export default function PmsLostFoundView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/2 border-r border-[#E6E8EC]">
-          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
+          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={select} columns={[
             { header: 'Descrição', accessor: 'description', width: '35%' },
             { header: 'Local', accessor: (r: any) => r.found_location || '—', width: '20%' },
             { header: 'Data', accessor: 'found_date', width: '15%' },

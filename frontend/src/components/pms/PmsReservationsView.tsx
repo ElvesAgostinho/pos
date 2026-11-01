@@ -48,7 +48,7 @@ function ReservationRow({ r, n, hotelName, selected, onSelect, onCheckIn, onChec
   const parar = (e: any) => e.stopPropagation();
   const cor = selected ? '#FFFFFF' : undefined;
   return (
-    <tr onClick={onSelect} className="cursor-pointer"
+    <tr onClick={onSelect} className="cursor-pointer" data-sel={selected ? '1' : undefined}
       style={selected ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection } : undefined}>
       {/* O NÚMERO DE LINHA é o que permite dizer "a sétima" a quem está ao
           telefone, e é por isso que todas as grelhas destes ERP o têm. */}

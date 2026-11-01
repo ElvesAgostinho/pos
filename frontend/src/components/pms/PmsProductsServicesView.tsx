@@ -65,7 +65,7 @@ export default function PmsProductsServicesView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/2 border-r border-[#E6E8EC]">
-          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
+          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={select} columns={[
             { header: 'Nome', accessor: 'name', width: '40%' },
             { header: 'Preço', accessor: (r: MdItem) => `${money(r.sale_price)} Kz`, width: '20%' },
             { header: 'IVA %', accessor: 'tax_percentage', width: '15%' },

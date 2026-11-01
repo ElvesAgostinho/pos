@@ -35,7 +35,7 @@ export default function PmsBlockPickerDialog({ onClose, onSelect }: { onClose: (
           </span>
         </div>
         <div className="flex-1 overflow-auto bg-white">
-          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
+          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={(r: any) => setSelId(r.id)} columns={[
             { header: 'Código', accessor: 'code', width: '10%' },
             { header: 'Válido de', accessor: 'valid_from', width: '12%' },
             { header: 'Válido até', accessor: 'valid_to', width: '12%' },

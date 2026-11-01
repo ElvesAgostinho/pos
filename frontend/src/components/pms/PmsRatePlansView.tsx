@@ -35,7 +35,7 @@ export default function PmsRatePlansView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/2 border-r border-[#E6E8EC]">
-          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
+          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={select} columns={[
             { header: 'Código', accessor: 'code', width: '18%' },
             { header: 'Nome', accessor: 'name', width: '30%' },
             { header: 'Categoria', accessor: 'room_type_name', width: '22%' },

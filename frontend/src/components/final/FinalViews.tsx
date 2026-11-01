@@ -156,7 +156,7 @@ export function ProcReturnsView() {
             <ClassicButton icon={Plus} label="Nova" onClick={createRet} />
           </div>
           <div className="flex-1 overflow-hidden">
-            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
+            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '20%' }, { header: 'Fornecedor', accessor: 'supplier_name', width: '40%' },
               { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#111827] font-bold' : 'text-[#111827]'}>{r.status_display}</span>, width: '28%' },
               { header: '', accessor: (r: any) => r.status !== 'CONFIRMED' ? <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button> : null, width: '12%' },
@@ -239,7 +239,7 @@ export function ComLoyaltyView() {
             <ClassicButton icon={Plus} label="Criar" onClick={addProg} />
           </div>
           <div className="flex-1 overflow-hidden">
-            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
+            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Programa', accessor: 'name', width: '44%' }, { header: 'Pts/Kz', accessor: 'points_per_currency', width: '18%' },
               { header: 'Escalões', accessor: 'tier_count', width: '18%' },
               { header: '', accessor: (r: any) => <button onClick={(e) => { e.stopPropagation(); remove.mutate(r.id); }} className="text-[#B91C1C] hover:text-[#B91C1C]"><Trash2 size={12} /></button>, width: '10%' },

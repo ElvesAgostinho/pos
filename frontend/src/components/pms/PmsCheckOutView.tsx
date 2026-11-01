@@ -68,7 +68,7 @@ export default function PmsCheckOutView() {
               className="w-full border border-[#E6E8EC] p-1.5 text-[12px]" />
           </div>
           <div className="flex-1 overflow-hidden">
-            <ClassicGrid rowKey="id" selectedRowId={selId ?? undefined} data={rows} onRowClick={(r: any) => setSelId(r.id)} columns={[
+            <ClassicGrid rowKey="id" selectedRowId={selId} data={rows} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Confirmação', accessor: 'confirmation', width: '25%' },
               { header: 'Hóspede', accessor: 'guest_name', width: '40%' },
               { header: 'Quarto', accessor: (r: any) => r.room_number || '—', width: '15%' },

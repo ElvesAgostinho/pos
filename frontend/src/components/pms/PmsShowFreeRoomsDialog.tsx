@@ -96,7 +96,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
         </div>
         <div className="flex-1 overflow-auto bg-white">
           {isFetching ? <div className="p-4 text-gray-400 text-[12px]">A carregar…</div> : (
-            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined}
+            <ClassicGrid rowKey="id" data={rows} selectedRowId={selId}
               onRowClick={(r: any) => setSelId(r.id)} onRowDoubleClick={(r: any) => onSelect(r)}
               // As colunas "Camas Extra", "C.O. Esperado hoje", "Inspeccionado",
               // "Fumador", "Alérgico" e "Mobilidade reduzida" saíram daqui: vinham

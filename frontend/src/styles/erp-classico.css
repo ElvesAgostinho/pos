@@ -44,16 +44,35 @@
   font-size: 11.5px;
 }
 
+/*
+ * A LINHA ESCOLHIDA MANDA EM TUDO O RESTO.
+ *
+ * Esta regra vem primeiro por uma razão que custou um defeito: o fundo é pintado
+ * na CÉLULA, e a célula fica por cima da linha. A zebra tapava o azul que o
+ * componente pinta no `tr` — mas a cor do TEXTO herda-se da linha e continuava
+ * branca. Dava texto branco sobre fundo quase branco, ilegível, precisamente na
+ * linha que o utilizador acabou de escolher.
+ *
+ * Por isso as linhas escolhidas trazem `data-sel`, e as duas regras seguintes
+ * deixam-nas em paz. O atributo não é decoração: é o que permite à folha saber
+ * o que o componente sabe.
+ */
+[data-erp='classico'] tbody tr[data-sel] > td {
+  background: #316ac5;
+  color: #ffffff;
+}
+
 /* A LINHA ALTERNADA é o que permite seguir uma linha larga sem a perder. Muito
    ténue de propósito: se se notar, passa a ser um padrão às riscas e cansa. */
-[data-erp='classico'] tbody tr:nth-child(even) > td {
+[data-erp='classico'] tbody tr:not([data-sel]):nth-child(even) > td {
   background: #f7f9fc;
 }
 
 /* O realce de quem passa por cima é âmbar — a mesma convenção do ribbon: âmbar
    é "o rato está aqui", azul é "isto está escolhido". Duas coisas diferentes,
-   duas cores diferentes. */
-[data-erp='classico'] tbody tr:hover > td {
+   duas cores diferentes; e sobre a linha escolhida não se passa nenhuma das
+   duas por cima da outra. */
+[data-erp='classico'] tbody tr:not([data-sel]):hover > td {
   background: #fdf4d9;
 }
 

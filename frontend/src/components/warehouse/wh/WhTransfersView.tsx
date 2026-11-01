@@ -51,7 +51,7 @@ export default function WhTransfersView() {
             <ClassicButton icon={Plus} label="Nova" onClick={createTransfer} />
           </div>
           <div className="flex-1 overflow-hidden">
-            <ClassicGrid rowKey="id" data={transfers} selectedRowId={selId ?? undefined} onRowClick={(r: any) => setSelId(r.id)} columns={[
+            <ClassicGrid rowKey="id" data={transfers} selectedRowId={selId} onRowClick={(r: any) => setSelId(r.id)} columns={[
               { header: 'Nº', accessor: 'number', width: '20%' },
               { header: 'Origem → Destino', accessor: (r: any) => `${r.source_name} → ${r.destination_name}`, width: '46%' },
               { header: 'Estado', accessor: (r: any) => <span className={r.status === 'CONFIRMED' ? 'text-[#111827] font-bold' : 'text-[#111827]'}>{r.status_display}</span>, width: '22%' },

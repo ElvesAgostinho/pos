@@ -48,7 +48,7 @@ export default function PmsPhoneDirectoryView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/2 border-r border-[#E6E8EC]">
-          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
+          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={select} columns={[
             { header: 'Nome', accessor: 'name', width: '28%' },
             { header: 'Departamento', accessor: (r: any) => r.department || '—', width: '24%' },
             { header: 'Ramal', accessor: (r: any) => r.extension || '—', width: '16%' },

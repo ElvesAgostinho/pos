@@ -74,7 +74,7 @@ export default function PmsTasksView() {
     <div className="flex flex-col h-full bg-white">
       <div className="flex flex-1 overflow-hidden">
         <div className="w-1/2 border-r border-[#E6E8EC]">
-          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined} onRowClick={select} columns={[
+          <ClassicGrid rowKey="id" data={rows} selectedRowId={selId} onRowClick={select} columns={[
             { header: 'Título', accessor: 'title', width: '26%' },
             { header: 'Tipo', accessor: (r: any) => r.task_type_display || '—', width: '12%' },
             { header: 'Quarto', accessor: (r: any) => r.room_number

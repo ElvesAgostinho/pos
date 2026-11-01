@@ -231,6 +231,7 @@ export default function SimpleSection({ title, endpoint, columns, fields, queryK
           <tbody>
             {view.map((r: any, i: number) => (
               <tr key={r.id} onClick={() => setSel(r.id)} onDoubleClick={() => !readOnly && setEditing({ ...r })}
+                data-sel={sel === r.id ? '1' : undefined}
                 className="cursor-pointer border-b"
                 style={{
                   borderColor: '#EEF1F5',

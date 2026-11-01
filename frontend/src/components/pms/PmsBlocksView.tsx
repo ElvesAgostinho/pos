@@ -17,7 +17,7 @@ export default function PmsBlocksView() {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 overflow-hidden">
-        <ClassicGrid rowKey="id" data={rows} selectedRowId={selId ?? undefined}
+        <ClassicGrid rowKey="id" data={rows} selectedRowId={selId}
           onRowClick={(r: any) => setSelId(r.id)} onRowDoubleClick={() => setEditing('edit')}
           columns={[
             { header: 'Código', accessor: 'code', width: '15%' },
