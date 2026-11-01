@@ -78,10 +78,8 @@ EXPOSE 8000
 # sobrevive à morte do contentor.
 COPY deploy/pcc/arrancar.sh /app/arrancar.sh
 # Normaliza os fins de linha: o ficheiro e editado em Windows, e um \r no fim
-" no fim
 # do "#!/bin/sh" faz o contentor morrer com "no such file or directory" — o erro
 # mais enganador que há, porque o ficheiro ESTÁ lá.
 RUN sed -i 's/\r$//' /app/arrancar.sh && chmod +x /app/arrancar.sh
-$//' /app/arrancar.sh && chmod +x /app/arrancar.sh
 
 CMD ["/app/arrancar.sh"]
