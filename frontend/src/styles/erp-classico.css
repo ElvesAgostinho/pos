@@ -63,9 +63,9 @@
      justamente a que se quer ler. Esta diz qual é e deixa-a legível; é o que o
      Excel faz, e por isso que uma folha de cálculo se lê com a linha marcada.
      A barra azul cheia fica para a ÁRVORE, onde só há nomes. */
-  background: #dce9f7;
-  border-top: 1px solid #8fb8e0;
-  border-bottom: 1px solid #8fb8e0;
+  background: #dee6ef;
+  border-top: 1px solid #9eb2c8;
+  border-bottom: 1px solid #9eb2c8;
 }
 
 /* A LINHA ALTERNADA é o que permite seguir uma linha larga sem a perder. Muito

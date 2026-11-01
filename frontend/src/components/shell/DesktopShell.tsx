@@ -411,7 +411,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
           </div>
         )}
         <span className="flex items-center gap-1.5 text-[11px] mr-1.5 opacity-80">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" /> {user?.username || 'operador'}
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--marca-clara)]" /> {user?.username || 'operador'}
         </span>
         <button onClick={() => setLocked(true)} title="Bloquear ecrã" className="flex items-center justify-center w-7 h-7 hover:bg-black/10 transition-colors" style={{ borderRadius: RADIUS.sm }}>
           <Lock size={13} />
@@ -700,7 +700,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
         <span className="flex items-center gap-1 font-bold" title="Propriedade ativa">{hotelName}</span>
         <span className="flex items-center gap-1 opacity-90"><Server size={12} /> {window.location.hostname}:8000</span>
         <span className="flex items-center gap-1 opacity-90" title="Base de dados"><Database size={12} /> {lic ? 'SQL' : '—'}</span>
-        <span className="flex items-center gap-1 text-[#6B7280]"><span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" /> Ligado</span>
+        <span className="flex items-center gap-1 text-[#6B7280]"><span className="w-1.5 h-1.5 rounded-full bg-[var(--marca-clara)]" /> Ligado</span>
         <span className="flex items-center gap-1 opacity-90" title="VPN de suporte"><Wifi size={12} /> VPN</span>
         <span className="flex items-center gap-1 opacity-90"><ShieldCheck size={12} /> Licença ativa</span>
         <span className="flex items-center gap-1 opacity-90" title="Memória usada pela aplicação"><Cpu size={12} /> {mem}</span>
@@ -718,7 +718,7 @@ export default function DesktopShell({ activeView, onOpen, onDesktop, module }: 
 // Página inicial do módulo — mostra as PASTAS por tarefa e os seus ecrãs.
 function WelcomePanel({ tree, moduleName, onOpen, dark }:
   { tree: { key: string; title: string; items: { id: string; name: string }[] }[]; moduleName?: string; onOpen: (id: string) => void; dark: boolean }) {
-  const card = dark ? 'bg-[#2563EB] border-[#E6E8EC] text-[#6B7280]' : 'bg-white border-[#E6E8EC] text-[#111827]';
+  const card = dark ? 'bg-[var(--marca)] border-[#E6E8EC] text-[#6B7280]' : 'bg-white border-[#E6E8EC] text-[#111827]';
   return (
     <div className="h-full overflow-auto p-4">
       <div className="text-[15px] font-bold mb-3" style={{ color: dark ? '#F1F2F4' : '#3B82F6' }}>{moduleName || 'Módulo'} — o que quer fazer?</div>

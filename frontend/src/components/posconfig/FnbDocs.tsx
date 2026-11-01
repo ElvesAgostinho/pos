@@ -144,7 +144,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
       <div className="flex-1 flex flex-col overflow-hidden bg-[#EEF1F5]">
         <div className="px-3 py-2 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold">
           {edit.id ? `Documento ${edit.number}` : 'Novo documento'}
-          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[#2563EB] text-[11px]">LANÇADO NO STOCK</span>}
+          {edit.posted && <span className="ml-3 px-2 py-0.5 bg-[var(--marca)] text-[11px]">LANÇADO NO STOCK</span>}
         </div>
 
         <div className="flex gap-3 p-3">
@@ -302,7 +302,7 @@ export default function FnbDocs({ mode }: { mode: 'PURCHASE' | 'INTERNAL' | 'INV
             <input value={filtro} onChange={(e) => setFiltro(e.target.value)}
               className={`${inp} w-[240px]`} style={inputStyle} />
             <button onClick={addLinha} disabled={edit.posted}
-              className="ml-2 px-3 py-1 bg-[#3B82F6] text-white disabled:bg-[#DBEAFE]">+ Adicionar linha</button>
+              className="ml-2 px-3 py-1 bg-[var(--marca-clara)] text-white disabled:bg-[#DBEAFE]">+ Adicionar linha</button>
           </div>
           <div className="flex-1 overflow-auto">
             <table className="w-full text-[12px] border-collapse">

@@ -326,7 +326,7 @@ export default function HRResourceEditor({ row, onClose }: { row: any; onClose: 
                           <td className="px-2 py-2 border border-[#F1F2F4] sticky left-0 bg-white whitespace-nowrap">{m.label}</td>
                           {Array.from({ length: 31 }, (_, i) => {
                             const day = i + 1;
-                            if (day > m.days) return <td key={i} className="border border-[#F1F2F4] bg-[#3B82F6]" />;
+                            if (day > m.days) return <td key={i} className="border border-[#F1F2F4] bg-[var(--marca-clara)]" />;
                             const wd = new Date(m.year, m.month, day).getDay();
                             const on = workDays.has(wd);
                             return (

@@ -18,26 +18,39 @@ import { getAppearance } from './appearance';
 
 export const TOKENS = {
   // ── A COR DE MARCA ────────────────────────────────────────────────────────
-  // Azul, a cor das acções. Num SaaS moderno a cor não pinta superfícies — pinta
-  // o que se pode FAZER: o botão que avança, a linha escolhida, o separador
-  // activo. Tudo o resto é branco e cinzento muito claro. É essa economia que dá
-  // o ar leve; encher ecrãs de cor é o que faz um sistema parecer pesado.
-  get accent() { return getAppearance('barColor') || '#2563EB'; },
-  gold: '#2563EB',           // nome antigo, dezenas de ecrãs ainda o leem
-  goldDark: '#1D4ED8',
+  // AZUL-MARINHO PROFUNDO, e não o azul vivo de antes (#2563EB).
+  //
+  // O #2563EB é o azul dos botões da web — o mesmo do Bootstrap, do Tailwind,
+  // de metade dos sítios da internet. Num ecrã de recepção lê-se como uma
+  // página, não como o sistema da casa. Um hotel de cinco estrelas imprime o
+  // seu papel em marinho, verde-garrafa ou bordeaux, nunca em azul de ligação.
+  //
+  // É a MESMA cor do papel da factura (FUNDO_SISTEMA e o filete dos totais):
+  // o hóspede vê o marinho na factura, o recepcionista vê o marinho no ecrã, e
+  // os dois são a mesma casa. Era a coisa mais barata de alinhar e estava por
+  // alinhar.
+  //
+  // A economia mantém-se: a cor pinta o que se pode FAZER — o botão que
+  // avança, a linha escolhida, o separador activo — e mais nada. Encher ecrãs
+  // de cor é o que faz um sistema parecer pesado; o que muda aqui é o TOM, não
+  // a quantidade.
+  //
+  // Cada instalação continua a poder pôr a sua (Administração → Aparência):
+  // isto é só o que sai da caixa.
+  get accent() { return getAppearance('barColor') || '#1F3A5F'; },
+  gold: '#1F3A5F',           // nome antigo, dezenas de ecrãs ainda o leem
+  goldDark: '#16293F',
 
-  brand: '#2563EB',          // acção principal
-  brandDeep: '#1D4ED8',      // a mesma, carregada (hover/activo)
-  brandSoft: '#EFF6FF',      // fundo de realce muito leve
-  brandTint: '#DBEAFE',      // selecção
+  brand: '#1F3A5F',          // acção principal
+  brandDeep: '#16293F',      // a mesma, carregada (hover/activo)
+  brandSoft: '#F2F5F9',      // fundo de realce muito leve
+  brandTint: '#D8E2EE',      // selecção
 
   // ── A MOLDURA ─────────────────────────────────────────────────────────────
-  // Ardósia azulada, não preto: é escura o suficiente para ancorar o ecrã e
-  // suave o suficiente para não competir com o conteúdo.
-  bar: '#2563EB',            // barra principal / navegação — a cor da marca
-  barDeep: '#1D4ED8',        // a mesma, carregada (rodapé, estados premidos)
-  barSoft: '#2563EB',        // item seleccionado na navegação
-  active: '#3B82F6',         // elementos activos, gráficos
+  bar: '#1F3A5F',            // barra principal / navegação — a cor da marca
+  barDeep: '#16293F',        // a mesma, carregada (rodapé, estados premidos)
+  barSoft: '#2C5180',        // item seleccionado na navegação
+  active: '#2C5180',         // elementos activos, gráficos
 
   // ── SUPERFÍCIES ───────────────────────────────────────────────────────────
   canvas: '#EEF1F5',         // fundo da página — cinzento a sério, para os cartões brancos se verem
@@ -82,9 +95,13 @@ export const TOKENS = {
   // se acabou de escolher — justamente a linha que se quer ler. O Excel resolve
   // isto há trinta anos com preenchimento claro e uma moldura fina: vê-se qual
   // é, e continua a ler-se o que lá está.
-  selectedBg: '#316AC5',          // ÁRVORE: a barra azul cheia (Windows)
-  selectedRow: '#DCE9F7',         // GRELHA: preenchimento claro
-  selectedRowLine: '#8FB8E0',     // GRELHA: a moldura que diz onde ela começa e acaba
+  // A SELECÇÃO ACOMPANHA A MARCA. Era azul-vivo (#316AC5) com marca azul-viva;
+  // com a marca em marinho, a barra de selecção tinha de descer com ela, senão
+  // ficam duas famílias de azul no mesmo ecrã — e duas famílias de azul lêem-se
+  // como um erro de quem montou o sistema, não como uma escolha.
+  selectedBg: '#1F3A5F',          // ÁRVORE: a barra cheia (Windows)
+  selectedRow: '#DEE6EF',         // GRELHA: preenchimento claro
+  selectedRowLine: '#9EB2C8',     // GRELHA: a moldura que diz onde ela começa e acaba
   selectedSoft: '#DBEAFE',        // realce leve (linha sob o rato, pré-selecção)
   selectedText: '#111827',        // TEXTO SOBRE FUNDO CLARO (o significado antigo, mantido)
   textOnSelection: '#FFFFFF',     // texto POR CIMA da barra azul — e só aí
@@ -246,4 +263,54 @@ export function classicTheme(dark: boolean) {
         body: '#F0F0F0', status: TOKENS.accent, hover: TOKENS.selectedSoft,
         accent: TOKENS.accent,
       };
+}
+
+/**
+ * A BARRA DE TÍTULO DE UM DIÁLOGO — no registo do terminal.
+ *
+ * Dezanove diálogos do PMS tinham `background: '#2563EB'` escrito à mão. Quando
+ * a cor da marca passou a azul-marinho, ficaram todos para trás — e o dono viu
+ * logo: abriu a "Nova Reserva" e lá estava o azul antigo, sozinho, no meio de
+ * um sistema inteiro já mudado. Dezanove literais iguais são dezanove sítios
+ * para esquecer.
+ *
+ * O GRADIENTE É DE PROPÓSITO, e vai contra o que está escrito em
+ * `accentGradient` aqui em cima. Aquilo foi escrito a pensar em barras de
+ * navegação, onde um gradiente lê mesmo como um botão de 2008. Uma barra de
+ * título de janela é outra coisa: é a pega por onde se agarra a janela, e tem
+ * de parecer sólida. É assim no terminal — e o terminal é a referência que o
+ * dono deu para "robusto".
+ *
+ * A aresta escura em baixo é o que faz a diferença entre uma faixa de cor e uma
+ * peça com espessura.
+ */
+export function barraDeTitulo(cor: string = TOKENS.accent) {
+  return {
+    background: `linear-gradient(to bottom, ${shade(cor, 22)} 0%, ${cor} 55%, ${shade(cor, -18)} 100%)`,
+    borderBottom: `1px solid ${shade(cor, -34)}`,
+    color: '#FFFFFF',
+  } as const;
+}
+
+/**
+ * A COR DA MARCA, TAMBÉM EM CSS.
+ *
+ * Os tokens aqui em cima servem o que é escrito em JavaScript (`style={{…}}`).
+ * Mas metade do sistema pinta-se com classes do Tailwind — `bg-[#2563EB]`,
+ * `border-[#2563EB]` — e uma classe não consegue ler uma variável do programa.
+ * Era por isso que, com a marca já mudada, ainda havia dezenas de sítios com o
+ * azul antigo lá escrito: não estavam esquecidos, estavam inalcançáveis.
+ *
+ * Com uma variável de CSS passam a ser alcançáveis: `bg-[var(--marca)]` muda
+ * com a instalação, tal como tudo o resto.
+ *
+ * Chamada ao arrancar e sempre que a Aparência muda — se só fosse ao arrancar,
+ * mudar a cor obrigava a recarregar a página para se ver alguma coisa.
+ */
+export function aplicarCorDaMarca(cor: string = TOKENS.accent) {
+  if (typeof document === 'undefined') return;
+  const raiz = document.documentElement;
+  raiz.style.setProperty('--marca', cor);
+  raiz.style.setProperty('--marca-escura', shade(cor, -26));
+  raiz.style.setProperty('--marca-clara', shade(cor, 38));
 }

@@ -362,7 +362,7 @@ export function PosSaft({ modulo = 'pos' }: { modulo?: keyof typeof SAFT_ORIGENS
         </div>
 
         <button onClick={() => criar.mutate()} disabled={criar.isPending || !d?.documents}
-          className="mt-4 px-6 py-3 bg-[#3B82F6] text-white text-[14px] font-semibold hover:bg-[#3B82F6] disabled:bg-[#DBEAFE]">
+          className="mt-4 px-6 py-3 bg-[var(--marca-clara)] text-white text-[14px] font-semibold hover:bg-[var(--marca-clara)] disabled:bg-[#DBEAFE]">
           {criar.isPending ? 'A criar…' : <span className="inline-flex items-center gap-1.5"><Glyph icon="▶" size={13} /> Criar ficheiro</span>}
         </button>
         {!d?.documents && (
@@ -463,7 +463,7 @@ export function PosDiagnostics() {
         </span>
         <button onClick={() => enviarLogs.mutate()} disabled={enviarLogs.isPending}
           title="Envia o retrato do sistema para a empresa de suporte (parâmetro 9510)"
-          className="ml-4 px-3 py-1 text-[12px] font-semibold bg-[#3B82F6] text-white
+          className="ml-4 px-3 py-1 text-[12px] font-semibold bg-[var(--marca-clara)] text-white
             disabled:opacity-50">
           {enviarLogs.isPending ? 'A enviar…' : 'Enviar logs ao suporte'}
         </button>
@@ -545,7 +545,7 @@ export function PosDiagnostics() {
             <input value={testEmail} onChange={(e) => setTestEmail(e.target.value)}
               placeholder="destinatario@exemplo.com" className={`${inp} flex-1`} style={inputStyle} />
             <button onClick={() => testEmail.trim() && enviarTeste.mutate()} disabled={enviarTeste.isPending}
-              className="px-3 py-1.5 bg-[#3B82F6] text-white text-[12px] font-semibold disabled:opacity-50">
+              className="px-3 py-1.5 bg-[var(--marca-clara)] text-white text-[12px] font-semibold disabled:opacity-50">
               {enviarTeste.isPending ? 'A enviar…' : 'Enviar mensagem de teste'}
             </button>
           </div>

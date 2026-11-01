@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { barraDeTitulo } from '../../config/theme';
 
 const fmtDT = (iso: string) => iso ? new Date(iso).toLocaleString('pt-PT', {
   day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
@@ -19,7 +20,7 @@ export default function PmsHistoryDialog({ reservation: r, onClose }: { reservat
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
       <div className="w-[720px] max-w-full max-h-[70vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={barraDeTitulo()}>
           Histórico
           <button onClick={onClose} title="Fechar"
             className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">

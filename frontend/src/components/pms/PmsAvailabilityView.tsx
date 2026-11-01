@@ -170,7 +170,7 @@ export default function PmsAvailabilityView() {
             </button>
           </div>
           <button onClick={() => setTreeOpen((o) => !o)}
-            className="text-left px-2 py-1.5 text-[12px] font-bold flex items-center gap-1 bg-[#3B82F6] text-black">
+            className="text-left px-2 py-1.5 text-[12px] font-bold flex items-center gap-1 bg-[var(--marca-clara)] text-black">
             {treeOpen ? <ChevronDown size={13} /> : <ChevronUp size={13} className="rotate-90" />}
             <Building2 size={13} /> {hotelName || '—'}
           </button>

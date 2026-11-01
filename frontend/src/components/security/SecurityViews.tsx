@@ -68,7 +68,7 @@ export function UsersView() {
                     const on = (r.hotels || []).some((x: any) => x.id === h.id);
                     return (
                       <button key={h.id} onClick={() => toggleHotel(r, h.id)} title={on ? 'Retirar acesso' : 'Dar acesso'}
-                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[#3B82F6] text-white border-[#E6E8EC]' : 'bg-white text-gray-500 border-[#E6E8EC]'}`}>
+                        className={`px-1.5 py-0.5 text-[10px] font-bold border ${on ? 'bg-[var(--marca-clara)] text-white border-[#E6E8EC]' : 'bg-white text-gray-500 border-[#E6E8EC]'}`}>
                         {h.name}
                       </button>
                     );

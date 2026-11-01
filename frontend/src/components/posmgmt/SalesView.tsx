@@ -113,7 +113,7 @@ function TicketScreen({ ticketId, onBack }: { ticketId: number; onBack: () => vo
               </div>
               <div className="flex flex-wrap gap-1">
                 {methods.map((m: any) => (
-                  <button key={m.id} onClick={() => doPay(m.payment_method)} className="px-2 py-1 bg-[#3B82F6] hover:bg-[#3B82F6] text-white text-[11px] font-bold border border-[#E6E8EC]">
+                  <button key={m.id} onClick={() => doPay(m.payment_method)} className="px-2 py-1 bg-[var(--marca-clara)] hover:bg-[var(--marca-clara)] text-white text-[11px] font-bold border border-[#E6E8EC]">
                     {m.payment_method_name}
                   </button>
                 ))}

@@ -221,6 +221,7 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
         logoUrl={logoUrl}
         onDesktop={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
         larguraLista={270}
+        grupoDe={(it: any) => it.grupo}
         extra={
           <div className="ml-auto flex items-center gap-4 text-[12px]">
             <BarraAcessoRapido modulo="pms" activo={section} onAbrir={irPara} />
@@ -259,11 +260,11 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
             comando no ribbon e os dois escrevem no MESMO sítio. */}
         <button onClick={() => fixar({ id: section, label: cur.label, icon: cur.icon })}
           title="Fixar este ecrã na barra de acesso rápido"
-          className="ml-auto w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors">
+          className="ml-auto w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[var(--marca)] hover:bg-[#EFF6FF] transition-colors">
           <Pin size={14} />
         </button>
         <button onClick={() => setShowPerms(true)} title="Permissões deste ecrã"
-          className="w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.pill }}>
+          className="w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[var(--marca)] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.pill }}>
           <Users size={15} />
         </button>
       </div>

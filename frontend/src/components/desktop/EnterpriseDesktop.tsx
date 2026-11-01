@@ -5,7 +5,7 @@ import { ITEM_TITLES, moduleEnabled } from '../../config/navigation';
 import { WORKSPACES, workspaceByKey } from '../../config/workspace';
 import type { DeskIcon } from '../../config/workspace';
 import { getAppearance } from '../../config/appearance';
-import { TOKENS, FUNDO_SISTEMA, VEU_SOBRE_FOTO } from '../../config/theme';
+import { TOKENS, FUNDO_SISTEMA, VEU_SOBRE_FOTO, shade } from '../../config/theme';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { tokenStore, authApi } from '../../api/auth';
@@ -341,9 +341,15 @@ export default function EnterpriseDesktop({ onOpen }: { onOpen: (screen: string,
               style={{
                 background: act ? '#3A3A3A' : 'transparent',
                 color: act ? TEXTO : '#CFCFCF',
-                // O sublinhado é a ÚNICA cor forte que sobra na moldura: diz qual
-                // o módulo em que se está a trabalhar, e é a marca da casa.
-                borderBottom: act ? `3px solid ${TOKENS.accent}` : '3px solid transparent',
+                // O SUBLINHADO É A ÚNICA COR FORTE QUE SOBRA NA MOLDURA: diz em que
+                // módulo se está a trabalhar, e é a marca da casa.
+                //
+                // CLAREADO para esta barra. A cor da marca é azul-marinho, e
+                // marinho sobre uma barra quase preta não é um sublinhado — é
+                // mais escuridão. Uma cor que se escolheu para contrastar com
+                // papel branco não serve tal e qual sobre fundo escuro: aqui
+                // sobe-se o tom até se ver, mantendo a família.
+                borderBottom: act ? `3px solid ${shade(TOKENS.accent, 72)}` : '3px solid transparent',
               }}
               onMouseEnter={(e) => { if (!act) e.currentTarget.style.background = '#2E2E2E'; }}
               onMouseLeave={(e) => { if (!act) e.currentTarget.style.background = 'transparent'; }}>
@@ -649,7 +655,14 @@ function PainelDoAmbiente({ modulo, aberto, alternar, onAbrir }: {
               {alertas.slice(0, 5).map((a, i) => (
                 <div key={i} className="flex items-start gap-1.5 px-2.5 py-[2px] text-[11px]"
                   style={{ color: a.level === 'error' ? '#F08C7A' : '#D6DCE2' }}>
-                  <span className="flex-shrink-0">{a.icon}</span><span>{a.msg}</span>
+                  {/* O ÍCONE DO AVISO VEM DO SERVIDOR COMO EMOJI (o Centro de
+                      Operações escreve "🍽️", "👨‍🍳", "💰"). Desenhado pelo
+                      Glyph, sai o pictograma do sistema quando existe um; só
+                      cai no emoji colorido do sistema operativo quando não há.
+                      Emojis a brilhar no meio de uma lista de avisos é
+                      exactamente o que o dono pediu para não haver. */}
+                  <span className="flex-shrink-0 mt-[1px]"><Glyph icon={a.icon} size={13} /></span>
+                  <span>{a.msg}</span>
                 </div>
               ))}
               <div className="h-1.5" />

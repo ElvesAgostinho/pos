@@ -4,6 +4,7 @@ import { Toolbar } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { aviso } from '../../ui/dialogo';
+import { barraDeTitulo } from '../../config/theme';
 
 /** Chatbot — assistente de reservas por WhatsApp. "Configuração" guarda as
     credenciais da Meta Business API (não usadas ainda para enviar nada a
@@ -20,9 +21,9 @@ function Cartao({ valor, titulo, texto, selo, f, setF, modo }: any) {
   return (
   <button type="button" onClick={() => setF({ ...f, connection_mode: valor })}
     className={`flex-1 text-left p-3 rounded-[12px] border transition-colors ${
-      modo === valor ? 'border-[#2563EB] bg-white shadow-sm' : 'border-[#E6E8EC] bg-[#EEF1F5] hover:bg-white'}`}>
+      modo === valor ? 'border-[var(--marca)] bg-white shadow-sm' : 'border-[#E6E8EC] bg-[#EEF1F5] hover:bg-white'}`}>
     <div className="flex items-center gap-2">
-      <span className={`w-3.5 h-3.5 rounded-full border-[4px] ${modo === valor ? 'border-[#2563EB]' : 'border-[#D0D5DD]'}`} />
+      <span className={`w-3.5 h-3.5 rounded-full border-[4px] ${modo === valor ? 'border-[var(--marca)]' : 'border-[#D0D5DD]'}`} />
       <span className="font-bold text-[11px] text-[#111827]">{titulo}</span>
       {selo && <span className="text-[9.5px] px-1.5 py-0.5 rounded-full bg-[#EEF1F5] text-[#6B7280] font-semibold uppercase tracking-wide">{selo}</span>}
     </div>
@@ -113,7 +114,7 @@ export default function PmsChatbotView() {
       <div className="flex border-b border-[#E6E8EC] bg-[#EEF1F5]">
         {(['ligacao', 'config', 'sim'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
+            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[var(--marca)]' : 'text-[#6B7280] hover:bg-white'}`}>
             {t === 'ligacao' ? 'Ligação' : t === 'config' ? 'Configuração' : 'Simular Conversa'}
           </button>
         ))}
@@ -335,7 +336,7 @@ function PainelLigacao({ f, setF, estado, settings, ligar, desligar, testar, tes
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => ligar.mutate()} disabled={ligar.isPending}
             className="px-4 py-2 rounded-[8px] text-white text-[12px] font-semibold disabled:opacity-50"
-            style={{ background: '#2563EB' }}>
+            style={barraDeTitulo()}>
             {ligar.isPending ? 'A ligar…' : emparelhando ? 'Gerar novo código' : 'Ligar'}
           </button>
           {(ligado || emparelhando) && (

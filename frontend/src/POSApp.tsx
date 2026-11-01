@@ -30,7 +30,7 @@ const POSApp: React.FC = () => {
 
   // If token exists, render the actual Frontoffice POS
   return (
-    <div className="h-screen w-screen bg-[#2563EB] p-4 flex flex-col">
+    <div className="h-screen w-screen bg-[var(--marca)] p-4 flex flex-col">
       <ClassicWindow 
         title={`Frente de Loja - ${terminalName}`} 
         icon={<ShoppingBag size={14} className="text-gray-300" />}

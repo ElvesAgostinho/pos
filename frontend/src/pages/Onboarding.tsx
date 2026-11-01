@@ -132,7 +132,7 @@ const Onboarding: React.FC = () => {
   }, [refetch, refetchPre]);
 
   return (
-    <div className="min-h-screen bg-[#2563EB] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--marca)] flex items-center justify-center p-4">
       <div className="bg-white max-w-lg w-full rounded shadow-2xl overflow-hidden">
         <div className="bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] p-6 flex items-center gap-3">
           <ShieldCheck size={28} className="text-[#6B7280]" />
@@ -160,14 +160,14 @@ const Onboarding: React.FC = () => {
             </p>
             <input ref={fileInputRef} type="file" accept=".key,text/plain"
               onChange={(e) => setFicheiro(e.target.files?.[0] || null)}
-              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[#3B82F6] file:text-[#111827] file:font-bold hover:file:bg-[#FFFFFF] border-b border-[#E6E8EC] file:cursor-pointer" />
+              className="w-full text-[12px] text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[var(--marca-clara)] file:text-[#111827] file:font-bold hover:file:bg-[#FFFFFF] border-b border-[#E6E8EC] file:cursor-pointer" />
             {enviarMsg && (
               <div className={`text-[12px] px-2 py-1 rounded border ${enviarMsg.ok ? 'text-[#111827] bg-[#EEF1F5] border-[#F1F2F4]' : 'text-[#B91C1C] bg-[#FEF2F2] border-[#DC2626]'}`}>
                 {enviarMsg.text}
               </div>
             )}
             <button onClick={handleEnviarFicheiro} disabled={enviando || !ficheiro}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-[#3B82F6] text-[#111827] rounded font-bold hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-50">
+              className="w-full flex items-center justify-center gap-2 py-2 bg-[var(--marca-clara)] text-[#111827] rounded font-bold hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-50">
               {enviando ? 'A enviar…' : 'Submeter'}
             </button>
           </div>
@@ -197,7 +197,7 @@ const Onboarding: React.FC = () => {
               </div>
             )}
             <button type="submit" disabled={ativando || !clientCode || !installPassword}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-[#3B82F6] text-[#111827] rounded font-bold hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-50">
+              className="w-full flex items-center justify-center gap-2 py-2 bg-[var(--marca-clara)] text-[#111827] rounded font-bold hover:bg-[#FFFFFF] border-b border-[#E6E8EC] disabled:opacity-50">
               {ativando ? 'A ativar…' : 'Ativar via Internet'}
             </button>
           </form>

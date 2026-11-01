@@ -4,6 +4,7 @@ import { X, Printer, Mail } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { aviso, pedir } from '../../ui/dialogo';
 import { notifyError } from '../../utils/friendlyError';
+import { barraDeTitulo } from '../../config/theme';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 const FORMATOS = ['Fatura: Detalhada', 'Fatura: Sumário por Dia', 'Fatura: Sumário por Estadia'];
@@ -288,7 +289,7 @@ export default function PmsProformaDialog({ reservation: r, onClose }: { reserva
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
       <div className="w-[560px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={barraDeTitulo()}>
           Fatura Proforma para a reserva {r.confirmation}
           <button onClick={onClose} title="Fechar"
             className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">

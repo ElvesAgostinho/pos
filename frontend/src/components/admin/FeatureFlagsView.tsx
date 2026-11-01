@@ -30,7 +30,7 @@ export default function FeatureFlagsView() {
       <div className="p-4 space-y-4 bg-[#EEF1F5] h-full overflow-auto">
         {Object.entries(groups).map(([mod, feats]) => (
           <div key={mod} className="bg-white border border-[#E6E8EC]">
-            <div className="px-3 py-1.5 bg-[#3B82F6] text-white text-[12px] font-bold">{MOD_NAME[mod] || mod}</div>
+            <div className="px-3 py-1.5 bg-[var(--marca-clara)] text-white text-[12px] font-bold">{MOD_NAME[mod] || mod}</div>
             {feats.map((f: any) => (
               <div key={f.key} className="flex items-center justify-between px-3 py-2 border-b border-[#F1F2F4] text-[12px]">
                 <div>

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, Glyph } from './kit';
+import { barraDeTitulo } from '../../config/theme';
 
 const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 
@@ -156,7 +157,7 @@ export default function TableMapDesigner({ sector, mode, onClose }:
               <div className="flex gap-2 p-3 border-b border-[#F1F2F4]">
                 {[['SQUARE', 'rounded-none w-12 h-12'], ['RECT', 'rounded-none w-12 h-9'], ['ROUND', 'rounded-full w-12 h-12']].map(([shape, cls]) => (
                   <button key={shape} onClick={() => addTable(shape)} title="Arraste para a sala"
-                    className={`${cls} border border-[#E6E8EC]`} style={{ background: '#2563EB' }} />
+                    className={`${cls} border border-[#E6E8EC]`} style={barraDeTitulo()} />
                 ))}
               </div>
 

@@ -60,7 +60,7 @@ export default function ReportFilters({
         className="w-full flex items-center gap-2 px-3 py-2 bg-[#EEF1F5] border-b border-[#E6E8EC] text-left">
         <span className="text-[12px] font-bold text-[#111827] flex items-center gap-1"><Glyph icon="⚙" size={13} /> Filtro avançado</span>
         {ativos > 0 && (
-          <span className="px-2 py-0.5 bg-[#3B82F6] text-white text-[11px] font-semibold">
+          <span className="px-2 py-0.5 bg-[var(--marca-clara)] text-white text-[11px] font-semibold">
             {ativos} ativo(s)
           </span>
         )}
@@ -108,7 +108,7 @@ export default function ReportFilters({
               <button key={p.value}
                 onClick={() => setPreset(preset === p.value ? '' : p.value)}
                 className={`px-3 py-1 text-[12px] border ${preset === p.value
-                  ? 'bg-[#3B82F6] text-white border-[#E6E8EC] font-semibold'
+                  ? 'bg-[var(--marca-clara)] text-white border-[#E6E8EC] font-semibold'
                   : 'bg-white border-[#E6E8EC] hover:bg-[#FFFFFF]'}`}>
                 {p.label}
               </button>

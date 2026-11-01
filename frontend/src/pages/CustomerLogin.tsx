@@ -175,7 +175,7 @@ const CustomerLogin: React.FC = () => {
   // ── vocabulário visual do ecrã ───────────────────────────────────────────
   const campo = 'w-full h-11 pl-10 pr-3 text-[14px] text-[#111827] bg-white border border-[#E6E8EC]'
     + ' outline-none transition-shadow placeholder:text-[#9CA3AF]'
-    + ' focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE]';
+    + ' focus:border-[var(--marca)] focus:ring-2 focus:ring-[#DBEAFE]';
   const rotulo = 'block text-[12px] font-medium text-[#6B7280] mb-1.5';
   const botaoClaro = 'h-10 px-4 text-[13px] font-medium text-[#374151] bg-white border border-[#E6E8EC]'
     + ' hover:bg-[#F3F4F6] transition-colors';
@@ -266,7 +266,7 @@ const CustomerLogin: React.FC = () => {
             </div>
           </div>
           <button onClick={() => setConfig(true)} title="Configurações de ligação"
-            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors"
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#9CA3AF] hover:text-[var(--marca)] hover:bg-[#EFF6FF] transition-colors"
             style={{ borderRadius: RADIUS.sm }}>
             <Settings size={16} />
           </button>
@@ -352,7 +352,7 @@ const CustomerLogin: React.FC = () => {
                   </label>
                 </div>
                 <button type="button" onClick={() => { setShowReset(true); setResetMsg(null); }}
-                  className="flex items-center gap-1.5 text-[#2563EB] hover:underline">
+                  className="flex items-center gap-1.5 text-[var(--marca)] hover:underline">
                   <KeyRound size={13} />Esqueci-me da password
                 </button>
               </div>

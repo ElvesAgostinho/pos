@@ -559,7 +559,7 @@ export default function ArticleEditor({ id, onClose, onSaved }: { id: number | '
               <div className="flex items-center gap-3 py-2 border-t border-[#E6E8EC] mt-1">
                 <button onClick={() => setPickerAberto(true)} title="Adicionar componente à ficha técnica"
                   className="flex items-center gap-1 text-[12px] font-semibold text-[#6B7280] hover:underline">
-                  <span className="w-5 h-5 rounded-full bg-[#3B82F6] text-white flex items-center justify-center text-[12px]">+</span>
+                  <span className="w-5 h-5 rounded-full bg-[var(--marca-clara)] text-white flex items-center justify-center text-[12px]">+</span>
                   Adicionar
                 </button>
                 <button onClick={() => {

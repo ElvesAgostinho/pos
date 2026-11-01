@@ -147,7 +147,7 @@ export default function UserGroupEditor({ row, onClose }: { row: any; onClose: (
           <div className="flex border-b border-[#E6E8EC] px-2 overflow-x-auto flex-shrink-0">
             {TABS.map(([k, label]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`px-3 py-1.5 text-[12px] font-medium whitespace-nowrap border-b-2 -mb-px ${tab === k ? 'border-[#2563EB] text-[#1D4ED8]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
+                className={`px-3 py-1.5 text-[12px] font-medium whitespace-nowrap border-b-2 -mb-px ${tab === k ? 'border-[var(--marca)] text-[var(--marca-escura)]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'}`}>
                 {label}
               </button>
             ))}

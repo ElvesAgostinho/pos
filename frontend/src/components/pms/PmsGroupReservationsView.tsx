@@ -5,7 +5,7 @@ import {
   ChevronsLeft, ChevronsRight, FileSpreadsheet, Eye, X, BedDouble,
 } from 'lucide-react';
 import { apiClient } from '../../api/client';
-import { TOKENS } from '../../config/theme';
+import { TOKENS, barraDeTitulo } from '../../config/theme';
 import ClassicGrid from '../ui/ClassicGrid';
 import PmsBlockEditorDialog from './PmsBlockEditorDialog';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
@@ -50,7 +50,7 @@ function PickupDialog({ block, onClose }: { block: any; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
       <div className="w-[820px] max-w-full max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={barraDeTitulo()}>
           Pickup — {block.code} · {block.description}
           <button onClick={onClose} title="Fechar"
             className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">

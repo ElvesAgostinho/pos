@@ -449,12 +449,26 @@ for (const [de, para] of Object.entries(ALIAS)) {
   if (DESENHOS[para] && !DESENHOS[de]) DESENHOS[de] = DESENHOS[para];
 }
 
+/**
+ * O SELECTOR DE VARIAÇÃO (U+FE0F) TIRA-SE ANTES DE PROCURAR.
+ *
+ * O mesmo símbolo escreve-se de duas maneiras: "🍽" e "🍽️" — o segundo leva um
+ * caractere invisível a seguir que pede ao sistema para o desenhar a cores. São
+ * o mesmo desenho para quem lê e dois textos DIFERENTES para o código.
+ *
+ * Os menus foram escritos sem ele e o Centro de Operações (que vem do servidor)
+ * com ele. Resultado: o pictograma aparecia nos menus e no painel saía o emoji
+ * colorido do sistema operativo — precisamente o que não se quer. Um alias por
+ * símbolo resolvia os de hoje e deixava o próximo por resolver.
+ */
+const limpar = (nome: string) => (nome || '').replace(/\uFE0F/g, '');
+
 /** Há desenho cheio para este símbolo? */
 export function temPictograma(nome: string): boolean {
-  return !!DESENHOS[nome];
+  return !!DESENHOS[limpar(nome)];
 }
 
 export default function Pictograma({ nome, size = 22 }: { nome: string; size?: number }) {
-  const desenho = DESENHOS[nome];
+  const desenho = DESENHOS[limpar(nome)];
   return desenho ? desenho(size) : null;
 }

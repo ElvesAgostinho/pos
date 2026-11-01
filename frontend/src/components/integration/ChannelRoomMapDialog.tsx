@@ -76,7 +76,7 @@ export default function ChannelRoomMapDialog({ channel, onClose }: { channel: an
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-[12px] shadow-xl w-full max-w-4xl max-h-[88vh] flex flex-col overflow-hidden"
            onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-b from-[#2563EB] to-[#2563EB] text-white">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-b from-[var(--marca)] to-[var(--marca)] text-white">
           <span className="font-bold text-[12px] flex items-center gap-2">
             <Link2 size={14} />Mapeamento de categorias — {channel.provider_display} · {channel.name}
           </span>

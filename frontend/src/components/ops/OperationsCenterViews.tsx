@@ -98,7 +98,7 @@ export function LiveTablesMonitor() {
   return (
     <ClassicWindow title="Monitor de Mesas — Tempo Real" icon={<Table2 size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Planta em tempo real · valor consumido e tempo de permanência por mesa</div>}>
-      <div className="p-4 bg-[#2563EB] h-full overflow-auto">
+      <div className="p-4 bg-[var(--marca)] h-full overflow-auto">
         <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
           {tables.map((t: any) => {
             const tk = ticketOf(t);

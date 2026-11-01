@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Toolbar } from '../posconfig/kit';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
+import { barraDeTitulo } from '../../config/theme';
 
 const STATUS_STYLE: Record<string, string> = {
   VACANT_CLEAN: 'bg-[#EEF1F5] border-[#E6E8EC] text-[#111827]',
@@ -50,7 +51,7 @@ export default function PmsRoomsView() {
             {r.status === 'VACANT_DIRTY' && (
               <button onClick={() => setStatus(r.id, 'VACANT_CLEAN')}
                 className="w-full mb-1 px-1 py-1 text-[10px] font-semibold text-white rounded-[8px] hover:brightness-110 transition-[filter]"
-                style={{ background: '#2563EB' }}>
+                style={barraDeTitulo()}>
                 ✔ Marcar como limpo
               </button>
             )}

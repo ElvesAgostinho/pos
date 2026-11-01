@@ -6,6 +6,7 @@ import { notifyError } from '../../utils/friendlyError';
 import { aviso } from '../../ui/dialogo';
 import EntityEditor from '../posconfig/EntityEditor';
 import PmsShowFreeRoomsDialog from './PmsShowFreeRoomsDialog';
+import { barraDeTitulo } from '../../config/theme';
 
 /** Check-In — igual ao popup do PMS de referência: escolher/confirmar o
  * quarto (com o mesmo "Mostrar quartos livres" que a Nova Reserva já usa) e
@@ -45,7 +46,7 @@ export default function PmsCheckInDialog({ reservation, onClose, onDone }: {
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
       <div className="w-[520px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={barraDeTitulo()}>
           Check-In
           <button onClick={onClose} title="Fechar"
             className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">

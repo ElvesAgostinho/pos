@@ -131,7 +131,7 @@ export function RfqComparisonView() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {comp.quote_totals.map((q: any) => (
                   <button key={q.quote} onClick={() => convert.mutate(q.quote, { onSuccess: (po: any) => aviso('Ordem de Compra gerada: ' + po.po_number + ' · total ' + money(po.total_amount)) })}
-                    className="px-3 py-1.5 bg-[#3B82F6] text-[#111827] rounded text-[11px] font-bold hover:bg-[#FFFFFF] border-b border-[#E6E8EC]">Gerar OC de {q.supplier} ({money(q.total)})</button>
+                    className="px-3 py-1.5 bg-[var(--marca-clara)] text-[#111827] rounded text-[11px] font-bold hover:bg-[#FFFFFF] border-b border-[#E6E8EC]">Gerar OC de {q.supplier} ({money(q.total)})</button>
                 ))}
               </div>
             ) : null}

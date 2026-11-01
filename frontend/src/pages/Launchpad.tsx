@@ -35,7 +35,7 @@ export default function Launchpad() {
 
   return (
     <div className="min-h-screen bg-[#EEF1F5] font-sans">
-      <div className="h-14 bg-[#3B82F6] flex items-center px-5 text-white">
+      <div className="h-14 bg-[var(--marca-clara)] flex items-center px-5 text-white">
         <span className="font-bold text-lg tracking-wide">System Mwana Lodge</span>
         <span className="ml-3 text-white/70 text-sm">· Launchpad</span>
         <div className="flex-1" />

@@ -85,7 +85,7 @@ export default function PermissoesBotao({ right, titulo }: { right: number; titu
                 className="py-1.5 bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] text-[12px] font-bold disabled:opacity-50">
                 {gravando ? 'A gravar…' : 'Gravar'}
               </button>
-              <button onClick={() => setAberto(false)} className="py-1.5 bg-[#3B82F6] text-white text-[12px] font-bold">Fechar</button>
+              <button onClick={() => setAberto(false)} className="py-1.5 bg-[var(--marca-clara)] text-white text-[12px] font-bold">Fechar</button>
             </div>
           </div>
         </div>

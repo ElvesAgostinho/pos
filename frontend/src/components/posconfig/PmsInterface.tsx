@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph } from './kit';
+import { barraDeTitulo } from '../../config/theme';
 
 const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border-0 px-1.5 py-1 text-[12px] bg-transparent outline-none';
@@ -387,7 +388,7 @@ function LinkForm({ row, kind, onClose }: { row: any; kind: 'hotel' | 'ext'; onC
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
+      <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={barraDeTitulo()}>
         <span>
           {isHotel
             ? `Ligações Multi Hotel - ${isNew ? 'Adicionar' : `Editar ${d.description || ''}`}`

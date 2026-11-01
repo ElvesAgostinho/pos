@@ -82,19 +82,19 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
       {/* ================= HEADER (navegação real do módulo) ================= */}
-      <div className="h-12 bg-[#2563EB] flex items-center px-2 flex-shrink-0 relative z-30"
+      <div className="h-12 bg-[var(--marca)] flex items-center px-2 flex-shrink-0 relative z-30"
         onMouseLeave={() => setOpenGroup(null)}>
         {/* ML — switcher de módulos */}
         <div className="relative mr-2">
-          <button onClick={() => licensed.length > 1 && setSwitcher((o) => !o)} className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-[#2563EB]">
+          <button onClick={() => licensed.length > 1 && setSwitcher((o) => !o)} className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-[var(--marca)]">
             <ML /> {licensed.length > 1 && <ChevronDown size={14} className="text-gray-400" />}
           </button>
           {switcher && (
-            <div className="absolute left-0 top-11 bg-[#2563EB] border border-[#E6E8EC] min-w-[280px] shadow-2xl py-1 z-40 max-h-[75vh] overflow-auto">
+            <div className="absolute left-0 top-11 bg-[var(--marca)] border border-[#E6E8EC] min-w-[280px] shadow-2xl py-1 z-40 max-h-[75vh] overflow-auto">
               <div className="px-3 py-1.5 flex items-center gap-2 border-b border-[#E6E8EC]"><ML cls="text-base" /><span className="text-[10px] uppercase tracking-widest text-gray-500">Os seus módulos</span></div>
               {licensed.map((m) => (
                 <button key={m.key} onClick={() => { setSwitcher(false); onOpen(`home:${m.key}`); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-[#2563EB] ${m.key === moduleKey ? 'bg-[#2563EB]' : ''}`}>
+                  className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-[var(--marca)] ${m.key === moduleKey ? 'bg-[var(--marca)]' : ''}`}>
                   <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: ICON_COLORS[MODULES.indexOf(m) % ICON_COLORS.length] }} />
                   <span className="text-gray-200 text-sm text-left flex-1">{m.title.replace(/^\d+\s·\s/, '')}</span>
                 </button>
@@ -115,11 +115,11 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
                 {g.label} <ChevronDown size={13} className="opacity-70" />
               </button>
               {openGroup === g.label && (
-                <div className="absolute left-0 top-12 bg-[#2563EB] border border-[#E6E8EC] min-w-[230px] shadow-xl py-1 z-30">
+                <div className="absolute left-0 top-12 bg-[var(--marca)] border border-[#E6E8EC] min-w-[230px] shadow-xl py-1 z-30">
                   {g.items.filter((id) => byId[id]).map((id) => (
                     <button key={id} onClick={() => pick(id)}
                       className={`w-full text-left px-4 py-2 text-sm hover:bg-[#FFFFFF] border-b border-[#E6E8EC] flex items-center justify-between ${VIEW_REGISTRY[id] ? 'text-[#111827]' : 'text-gray-500'}`}>
-                      {byId[id].name}{VIEW_REGISTRY[id] && <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />}
+                      {byId[id].name}{VIEW_REGISTRY[id] && <span className="w-1.5 h-1.5 rounded-full bg-[var(--marca-clara)]" />}
                     </button>
                   ))}
                 </div>
@@ -187,7 +187,7 @@ export default function ModuleDesktop({ moduleKey, activeView, onOpen }: Props) 
           <div className="absolute left-1 bottom-9 w-64 bg-[#DBEAFE] py-1 z-40" onMouseLeave={() => setStartOpen(false)}
             style={{ boxShadow: 'inset -1px -1px 0 #2563EB, inset 1px 1px 0 #FFFFFF, inset -2px -2px 0 #3B82F6, inset 2px 2px 0 #F1F2F4' }}>
             <div className="flex">
-              <div className="w-7 bg-[#3B82F6] flex items-end justify-center pb-2">
+              <div className="w-7 bg-[var(--marca-clara)] flex items-end justify-center pb-2">
                 <span className="text-white font-black text-xs" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>MÓDULOS</span>
               </div>
               <div className="flex-1 py-1">

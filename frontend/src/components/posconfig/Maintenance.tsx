@@ -205,7 +205,7 @@ export default function Maintenance() {
             </button>
             <span className="opacity-30">|</span>
             <span>Estado:</span>
-            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#3B82F6] text-white text-[11px] flex items-center justify-center">·</span>{lines.length}</span>
+            <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[var(--marca-clara)] text-white text-[11px] flex items-center justify-center">·</span>{lines.length}</span>
             <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#FFFFFF] border-b border-[#E6E8EC] text-[#111827] flex items-center justify-center"><Glyph icon="✔" size={11} /></span>{result.ok}</span>
             <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#DC2626] text-white flex items-center justify-center"><Glyph icon="✖" size={11} /></span>{result.fail}</span>
             <button onClick={() => { setLines([{ code: '', name: '', plu_code: '', p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }]); setResult({ ok: 0, fail: 0, errors: [] }); }}

@@ -48,7 +48,7 @@ export default function PmsReportsView() {
       <div className="flex border-b border-[#E6E8EC] bg-[#EEF1F5]">
         {TABS.map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[#2563EB]' : 'text-[#6B7280] hover:bg-white'}`}>
+            className={`px-4 py-2 text-[12px] font-semibold border-r border-[#E6E8EC] ${tab === t ? 'bg-white text-[#111827] border-b-2 border-b-[var(--marca)]' : 'text-[#6B7280] hover:bg-white'}`}>
             {label}
           </button>
         ))}
@@ -75,8 +75,8 @@ export default function PmsReportsView() {
                 <div className="flex items-center justify-between mb-1">
                   <div className="font-bold text-[#111827] text-[12px]">Origem das Reservas</div>
                   <div className="flex gap-1">
-                    <button onClick={() => setSourceMetric('revenue')} className={`text-[10px] px-1.5 py-0.5 border ${sourceMetric === 'revenue' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>Receita</button>
-                    <button onClick={() => setSourceMetric('reservations')} className={`text-[10px] px-1.5 py-0.5 border ${sourceMetric === 'reservations' ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>Reservas</button>
+                    <button onClick={() => setSourceMetric('revenue')} className={`text-[10px] px-1.5 py-0.5 border ${sourceMetric === 'revenue' ? 'bg-[var(--marca)] text-white border-[var(--marca)]' : 'border-[#E6E8EC]'}`}>Receita</button>
+                    <button onClick={() => setSourceMetric('reservations')} className={`text-[10px] px-1.5 py-0.5 border ${sourceMetric === 'reservations' ? 'bg-[var(--marca)] text-white border-[var(--marca)]' : 'border-[#E6E8EC]'}`}>Reservas</button>
                   </div>
                 </div>
                 <MiniBarChart data={perf.reservation_sources} labelKey="source" valueKey={sourceMetric}
@@ -168,7 +168,7 @@ export default function PmsReportsView() {
           <div>
             <div className="flex gap-1 mb-2">
               {([['check_ins', 'Check-in'], ['check_outs', 'Check-out'], ['stay_overs', 'Estadia']] as const).map(([k, label]) => (
-                <button key={k} onClick={() => setHkTab(k)} className={`px-2 py-1 text-[11px] border ${hkTab === k ? 'bg-[#2563EB] text-white border-[#2563EB]' : 'border-[#E6E8EC]'}`}>{label}</button>
+                <button key={k} onClick={() => setHkTab(k)} className={`px-2 py-1 text-[11px] border ${hkTab === k ? 'bg-[var(--marca)] text-white border-[var(--marca)]' : 'border-[#E6E8EC]'}`}>{label}</button>
               ))}
             </div>
             {hk.rows.map((r: any, i: number) => (

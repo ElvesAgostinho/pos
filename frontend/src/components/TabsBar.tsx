@@ -18,7 +18,7 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
   const ActiveIcon = activeMeta.icon;
 
   return (
-    <div className="flex items-center justify-between bg-[#2563EB] h-7 px-2 select-none border-b border-[#E6E8EC]">
+    <div className="flex items-center justify-between bg-[var(--marca)] h-7 px-2 select-none border-b border-[#E6E8EC]">
 
       {/* Window Title */}
       <div className="flex items-center text-white text-[12px] font-medium">
@@ -30,14 +30,14 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
       <div className="flex items-center space-x-1">
         {userName && (
           <span className="text-[#6B7280] text-[11px] mr-2 flex items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] mr-1.5" /> {userName}
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--marca-clara)] mr-1.5" /> {userName}
           </span>
         )}
         {onLock && (
           <div
             onClick={onLock}
             title="Bloquear ecrã"
-            className="w-5 h-5 flex items-center justify-center hover:bg-[#3B82F6] cursor-pointer text-white"
+            className="w-5 h-5 flex items-center justify-center hover:bg-[var(--marca-clara)] cursor-pointer text-white"
           >
             <Lock size={12} />
           </div>
@@ -51,10 +51,10 @@ export default function TabsBar({ activeView, onCloseTab, viewMetadata, onLock, 
             <LogOut size={12} />
           </div>
         )}
-        <div className="w-5 h-5 flex items-center justify-center hover:bg-[#3B82F6] cursor-pointer text-white">
+        <div className="w-5 h-5 flex items-center justify-center hover:bg-[var(--marca-clara)] cursor-pointer text-white">
           <div className="w-2.5 h-0.5 bg-white mb-[-8px]"></div>
         </div>
-        <div className="w-5 h-5 flex items-center justify-center hover:bg-[#3B82F6] cursor-pointer text-white">
+        <div className="w-5 h-5 flex items-center justify-center hover:bg-[var(--marca-clara)] cursor-pointer text-white">
           <div className="w-2.5 h-2.5 border border-white"></div>
         </div>
         <div

@@ -92,48 +92,53 @@ const TITULOS: Record<string, [string, string]> = {
 /** Ecrãs que ocupam a janela toda — sem a árvore de secções à esquerda. */
 const SEM_ARVORE = ['x_reports', 'x_online'];
 
+/**
+ * Os menus de topo. `grupo` é o nome da secção DENTRO do separador do ribbon.
+ *
+ * Antes havia `{ sep: true }`: uma divisória muda, que dizia "daqui para a
+ * frente é outra coisa" sem dizer QUE outra coisa. A informação já estava lá —
+ * faltava o nome. Os grupos são runs contíguos, por isso nenhum comando muda
+ * de sítio.
+ */
 const MENUS: any[] = [
   {
     title: 'F&B', items: [
-      { icon: '🛒', label: 'Compras', section: 'x_purchases' },
-      { icon: '📄', label: 'Documentos Internos', section: 'x_internal' },
-      { icon: '📋', label: 'Inventário', section: 'x_inventory' },
-      { icon: '📦', label: 'Existências Stock', section: 'x_stock' },
-      { icon: '💸', label: 'Contas a pagar', section: 'x_payables' },
-      { sep: true },
-      { icon: '📑', label: 'Artigos', section: 'articles' },
+      { icon: '🛒', label: 'Compras', grupo: 'Movimentos', section: 'x_purchases' },
+      { icon: '📄', label: 'Documentos Internos', grupo: 'Movimentos', section: 'x_internal' },
+      { icon: '📋', label: 'Inventário', grupo: 'Stock', section: 'x_inventory' },
+      { icon: '📦', label: 'Existências Stock', grupo: 'Stock', section: 'x_stock' },
+      { icon: '💸', label: 'Contas a pagar', grupo: 'Fornecedores', section: 'x_payables' },
+      { icon: '📑', label: 'Artigos', grupo: 'Cadastro', section: 'articles' },
     ],
   },
   {
     title: 'Marketing', items: [
-      { icon: '🔎', label: 'Pesquisa de Entidades', section: 'x_entities' },
-      { icon: '🎉', label: 'Pedidos de eventos', section: 'x_events' },
-      { sep: true },
-      { icon: '✉', label: 'Modelos de E-mail', section: 'm_templates' },
-      { icon: '🗂', label: 'Códigos de Seleção', section: 'm_selcodes' },
+      { icon: '🔎', label: 'Pesquisa de Entidades', grupo: 'Clientes', section: 'x_entities' },
+      { icon: '🎉', label: 'Pedidos de eventos', grupo: 'Eventos', section: 'x_events' },
+      { icon: '✉', label: 'Modelos de E-mail', grupo: 'Comunicação', section: 'm_templates' },
+      { icon: '🗂', label: 'Códigos de Seleção', grupo: 'Comunicação', section: 'm_selcodes' },
     ],
   },
   {
     title: 'Reporting', items: [
-      { icon: '🖨', label: 'Relatórios', section: 'x_reports' },
-      { icon: '📈', label: 'Informação Online', section: 'x_online' },
-      { icon: '🔎', label: 'Pesquisar Documentos', section: 'x_docsearch' },
+      { icon: '🖨', label: 'Relatórios', grupo: 'Relatórios', section: 'x_reports' },
+      { icon: '📈', label: 'Informação Online', grupo: 'Relatórios', section: 'x_online' },
+      { icon: '🔎', label: 'Pesquisar Documentos', grupo: 'Documentos', section: 'x_docsearch' },
     ],
   },
   {
     title: 'Utilitários', items: [
-      { icon: '🖥', label: 'POS Front Office', url: '/pos/terminal' },
-      { sep: true },
-      { icon: '🌙', label: 'Fecho do Dia', section: 'x_dayclose' },
-      { icon: '💰', label: 'Contas Correntes', section: 'x_accounts' },
-      { icon: '🧾', label: 'SAFT-AO', section: 'x_saft' },
-      { icon: '🔧', label: 'Configuração POS', section: 'articles' },
-      { sep: true },
-      { icon: '⚙', label: 'Diagnóstico', section: 'x_diag' },
-      { icon: '♥', label: 'Adicionar aos favoritos…', fav: true },
+      { icon: '🖥', label: 'POS Front Office', grupo: 'Balcão', url: '/pos/terminal' },
+      { icon: '🌙', label: 'Fecho do Dia', grupo: 'Fecho', section: 'x_dayclose' },
+      { icon: '💰', label: 'Contas Correntes', grupo: 'Fecho', section: 'x_accounts' },
+      { icon: '🧾', label: 'SAFT-AO', grupo: 'Fiscal', section: 'x_saft' },
+      { icon: '🔧', label: 'Configuração POS', grupo: 'Sistema', section: 'articles' },
+      { icon: '⚙', label: 'Diagnóstico', grupo: 'Sistema', section: 'x_diag' },
+      { icon: '♥', label: 'Adicionar aos favoritos…', grupo: 'Sistema', fav: true },
     ],
   },
 ];
+
 
 /**
  * CONFIGURAÇÃO POS — o backoffice do ponto de venda.
@@ -272,6 +277,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
             <span className="font-bold">{JSON.parse(localStorage.getItem('erp_user') || '{}').username || 'operador'}</span>
           </div>
         }
+        grupoDe={(it: any) => it.grupo}
         renderItem={(it: any, i, fechar) => it.sep ? (
           <MenuSeparador key={i} />
         ) : (
@@ -316,7 +322,7 @@ export default function PosConfigView({ onDesktop, onOpen }: {
         </div>
         <div className="flex items-center gap-0.5 text-[12px] font-normal">
           <button onClick={() => setLocked(true)} title="Bloquear ecrã"
-            className="w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[#2563EB] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.sm }}>
+            className="w-8 h-8 flex items-center justify-center text-[#6B7280] hover:text-[var(--marca)] hover:bg-[#EFF6FF] transition-colors" style={{ borderRadius: RADIUS.sm }}>
             <Lock size={14} />
           </button>
           <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}

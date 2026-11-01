@@ -16,6 +16,7 @@ import PmsProformaDialog from './PmsProformaDialog';
 import PmsMealPlanDialog from './PmsMealPlanDialog';
 import { openGuestInfoWindow } from './guestInfoWindow';
 import { STATUS_LABEL, STATUS_COLOR } from './reservationStatus';
+import { barraDeTitulo } from '../../config/theme';
 import {
   EncargosFixos, Depositos, Voucher, Comissoes, EnviarEmail, CartaoHospede, TiposLimpeza,
 } from './PmsReservationFunctions';
@@ -130,7 +131,7 @@ export default function PmsReservationDetailDialog({ reservation, hotelName, onC
   return (
     <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
       <div className="w-[1150px] max-w-[97vw] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col" style={{ height: 'min(88vh, 800px)' }}>
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={barraDeTitulo()}>
           Reserva {res.confirmation} - {hotelName}
           <div className="flex items-center gap-2">
             <button className="text-white/75 hover:text-white transition-colors" title="Janelas"><Copy size={13} /></button>

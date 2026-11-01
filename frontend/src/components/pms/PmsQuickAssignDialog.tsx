@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import ClassicGrid from '../ui/ClassicGrid';
+import { barraDeTitulo } from '../../config/theme';
 
 /** "Atribuição rápida de quartos" — 1) escolhe uma reserva sem quarto à esquerda,
  * 2) escolhe um quarto livre dessa categoria à direita, 3) atribui logo (sem
@@ -45,7 +46,7 @@ export default function PmsQuickAssignDialog({ onClose }: { onClose: () => void 
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
       <div className="w-[1100px] max-w-full max-h-[80vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={barraDeTitulo()}>
           Atribuição rápida de quartos
           <button onClick={onClose} title="Fechar"
             className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">

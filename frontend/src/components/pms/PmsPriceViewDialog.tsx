@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { X, RefreshCw } from 'lucide-react';
 import { apiClient } from '../../api/client';
+import { barraDeTitulo } from '../../config/theme';
 
 const money = (v: any) => Number(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 });
 const plusDays = (iso: string, n: number) => { const d = new Date(iso); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
@@ -22,7 +23,7 @@ export default function PmsPriceViewDialog({ reservation: r, onClose }: { reserv
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
       <div className="w-[720px] max-w-full bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={barraDeTitulo()}>
           Visualizar Preço
           <button onClick={onClose} title="Fechar"
             className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">

@@ -52,7 +52,7 @@ export default function Divisor({ onMove, titulo = 'Arraste para redimensionar' 
                  bg-[#EEF1F5] hover:bg-[#DBEAFE] transition-colors group">
       {/* A pega: três traços curtos, como nas janelas que se redimensionam.
           Sem marca nenhuma, ninguém descobre que a linha se pode puxar. */}
-      <span className="w-10 h-[3px] rounded-full bg-[#C8CDD4] group-hover:bg-[#2563EB] transition-colors" />
+      <span className="w-10 h-[3px] rounded-full bg-[#C8CDD4] group-hover:bg-[var(--marca)] transition-colors" />
     </div>
   );
 }

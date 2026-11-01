@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/client';
 import { notifyError, notifyGuide } from '../../utils/friendlyError';
 import { Toolbar, inputStyle, GridCheck, Glyph, Box } from './kit';
+import { barraDeTitulo } from '../../config/theme';
 
 const inp = 'border border-[#E6E8EC] px-2 py-1 text-[12px] bg-white';
 const cell = 'w-full border border-[#F1F2F4] px-1.5 py-1 text-[12px] bg-white';
@@ -522,7 +523,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
       {popup && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" onClick={() => setPopup(null)}>
           <div className="bg-white border border-[#E6E8EC] w-[560px] max-w-full shadow-2xl rounded-[16px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
+            <div className="flex items-center justify-between px-3 py-2 text-white text-[14px] font-bold" style={barraDeTitulo()}>
               <span>A editar {groups.find((g: any) => g.id === popup.group)?.name || 'grupo'}</span>
               <button onClick={() => setPopup(null)} className="text-white inline-flex"><Glyph icon="✕" size={14} /></button>
             </div>
@@ -624,7 +625,7 @@ export default function CompanyEditor({ row, onClose }: { row: any; onClose: () 
                     className="flex-1 text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-[#FFFFFF] border-b border-[#E6E8EC] file:text-[#111827] file:font-bold file:cursor-pointer" />
                   <button onClick={enviarFicheiroLicenca} disabled={uploading || !ficheiroLic}
                     className="h-8 px-3 text-[12px] font-bold text-white rounded disabled:opacity-50 flex-shrink-0"
-                    style={{ background: '#2563EB' }}>
+                    style={barraDeTitulo()}>
                     {uploading ? 'A enviar…' : 'Submeter'}
                   </button>
                 </div>

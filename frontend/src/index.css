@@ -108,16 +108,46 @@ input[type='radio']:disabled {
    ninguém pedir. `body.pos-terminal` (posto por `MarcaDoTerminal`, em main.tsx,
    enquanto a rota começa por /pos) devolve-lhe exactamente o que tinha.
    ========================================================================== */
+/* ============================================================================
+   O CAMPO AFUNDADO — a receita, UMA vez.
+
+   O dono olhou para o backoffice e para o PMS e disse que não eram sólidos
+   como o TERMINAL. Tinha razão, e a diferença não era de cor: no terminal um
+   campo é uma depressão na superfície — sombra para dentro em cima e à
+   esquerda, um fio de luz em baixo e à direita, moldura firme. Vê-se onde se
+   escreve antes de se ler a etiqueta. No backoffice era um rectângulo branco
+   com um traço claro à volta: lia-se como texto, não como controlo.
+
+   Estes valores eram do terminal e só do terminal. Agora são de ambos — as
+   mesmas três declarações, num sítio só. Copiá-las para a folha do backoffice
+   era garantir que daqui a um mês os dois teriam campos diferentes outra vez.
+   ========================================================================== */
+:root {
+  --campo-relevo: inset 1px 1px 3px rgba(0,0,0,0.20), inset -1px -1px 0 rgba(255,255,255,0.6);
+  --campo-linha: #7d8a9c;
+  --campo-foco: 0 0 0 2px rgba(30,63,102,0.35);
+  --campo-gradiente: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(0,0,0,0.03));
+}
+
 body.pos-terminal input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
 body.pos-terminal select,
-body.pos-terminal textarea {
-  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.20), inset -1px -1px 0 rgba(255,255,255,0.6);
-  border-color: #7d8a9c;
+body.pos-terminal textarea,
+[data-erp='classico'] input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]):not([type="file"]),
+[data-erp='classico'] select,
+[data-erp='classico'] textarea {
+  box-shadow: var(--campo-relevo);
+  border-color: var(--campo-linha);
 }
-body.pos-terminal select { background-image: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(0,0,0,0.03)); }
+body.pos-terminal select,
+[data-erp='classico'] select { background-image: var(--campo-gradiente); }
 body.pos-terminal input:focus,
 body.pos-terminal select:focus,
-body.pos-terminal textarea:focus { outline: none; border-color: #7d8a9c; box-shadow: 0 0 0 2px rgba(30,63,102,0.35); }
+body.pos-terminal textarea:focus,
+[data-erp='classico'] input:focus,
+[data-erp='classico'] select:focus,
+[data-erp='classico'] textarea:focus {
+  outline: none; border-color: var(--campo-linha); box-shadow: var(--campo-foco);
+}
 body.pos-terminal input[type='checkbox'],
 body.pos-terminal input[type='radio'] { accent-color: #1f7a34; }
 body.pos-terminal ::selection { background: #D97706; color: #fff; }

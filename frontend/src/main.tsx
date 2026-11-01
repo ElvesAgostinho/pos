@@ -31,7 +31,12 @@ const Launchpad = lazy(() => import('./pages/Launchpad.tsx'));
 import { useLicenseStatus } from './hooks/useActiveModules'
 import { AuthorizationProvider } from './engine/authorization';
 import { mockAuthState } from './engine/authorization/mockData';
-import { FUNDO_SISTEMA } from './config/theme';
+import { FUNDO_SISTEMA, aplicarCorDaMarca } from './config/theme';
+
+// A cor da marca também como variável de CSS, antes de desenhar fosse o que
+// for — senão o primeiro ecrã pinta-se com o valor de fábrica e corrige-se
+// depois, o que se vê como um piscar.
+aplicarCorDaMarca();
 
 const queryClient = new QueryClient()
 
@@ -67,19 +72,19 @@ const RequireLicense = ({ children }: { children: JSX.Element }) => {
   // Validação REAL da licença (fonte: PCC/clm no admin, fallback license.key assinada).
   const { data, isLoading, isError, refetch } = useLicenseStatus();
   if (isLoading) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-[#2563EB] text-gray-300 text-sm">A validar licença…</div>;
+    return <div className="h-screen w-screen flex items-center justify-center bg-[var(--marca)] text-gray-300 text-sm">A validar licença…</div>;
   }
   // Falha de REDE (servidor em baixo/a arrancar) NÃO é "sem licença" — não manda para o
   // onboarding; mostra o erro com opção de repetir.
   if (isError) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[#2563EB]">
+      <div className="h-screen w-screen flex items-center justify-center bg-[var(--marca)]">
         <div className="bg-white border border-[#E6E8EC] shadow-2xl w-[440px] max-w-full">
           <div className="px-4 py-2 bg-[#DC2626] text-white font-bold text-sm">Sem ligação ao servidor</div>
           <div className="p-4 text-[12px] text-gray-700 space-y-3">
             <p>Não foi possível contactar o servidor da aplicação (<b>localhost:8000</b>). Verifique se o serviço está a correr.</p>
             <div className="flex gap-2">
-              <button onClick={() => refetch()} className="px-3 py-1.5 bg-[#3B82F6] text-white text-[12px] font-semibold">Tentar novamente</button>
+              <button onClick={() => refetch()} className="px-3 py-1.5 bg-[var(--marca-clara)] text-white text-[12px] font-semibold">Tentar novamente</button>
               <button onClick={() => window.location.reload()} className="px-3 py-1.5 bg-[#EEF1F5] border border-[#E6E8EC] text-[12px]">Recarregar</button>
             </div>
           </div>
@@ -99,7 +104,7 @@ const RequireLicense = ({ children }: { children: JSX.Element }) => {
 const SkipOnboardingIfLicensed = ({ children }: { children: JSX.Element }) => {
   const { data, isLoading } = useLicenseStatus();
   if (isLoading) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-[#2563EB] text-gray-300 text-sm">A validar licença…</div>;
+    return <div className="h-screen w-screen flex items-center justify-center bg-[var(--marca)] text-gray-300 text-sm">A validar licença…</div>;
   }
   if (data?.licensed) {
     return <Navigate to="/backoffice/login" replace />;

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, X, Hand } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import ClassicGrid from '../ui/ClassicGrid';
+import { barraDeTitulo } from '../../config/theme';
 
 
 /** "Mostrar quartos livres" — usado a partir do "+" ao lado de Quarto, na Nova
@@ -47,7 +48,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
   return (
     <div className="fixed inset-0 z-[9100] flex items-center justify-center bg-black/40">
       <div className="w-[1000px] max-w-full max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold" style={barraDeTitulo()}>
           Mostrar quartos livres
           <button onClick={onClose} title="Fechar"
             className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">
@@ -90,7 +91,7 @@ export default function PmsShowFreeRoomsDialog({ roomTypes, dateFrom, dateTo, ro
           </label>
           <button onClick={() => refetch()}
             className="w-[130px] flex-shrink-0 flex items-center justify-center gap-2 text-white font-bold text-[12px] py-2"
-            style={{ background: '#2563EB' }}>
+            style={barraDeTitulo()}>
             <RefreshCw size={16} /> Pesquisar
           </button>
         </div>

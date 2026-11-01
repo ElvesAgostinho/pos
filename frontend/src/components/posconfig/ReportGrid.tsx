@@ -216,7 +216,7 @@ export default function ReportGrid({ d, onView, page = 1, pageSize = 40, onPageI
             </select>
             <span>se verificam:</span>
             <button onClick={() => setConds([...conds, { col: cols[0][0], op: 'contains', v1: '', v2: '' }])}
-              className="ml-auto px-3 py-1 bg-[#3B82F6] text-white">+ Condição</button>
+              className="ml-auto px-3 py-1 bg-[var(--marca-clara)] text-white">+ Condição</button>
           </div>
 
           {conds.length === 0 && (

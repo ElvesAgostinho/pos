@@ -359,7 +359,7 @@ export function Sel({ value, onChange, options, all, allLabel = '(Todos)' }:
     // juntava as palavras nos painéis de filtros. Agora acompanha a coluna.
     <select value={value ?? ''} onChange={(e) => onChange(e.target.value)}
       className="border border-[#E6E8EC] rounded-[8px] px-2.5 py-1.5 text-[12px] bg-white
-        min-w-0 w-full flex-1 outline-none focus:border-[#2563EB] transition-colors">
+        min-w-0 w-full flex-1 outline-none focus:border-[var(--marca)] transition-colors">
       {all && <option value="">{allLabel}</option>}
       {options.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
     </select>
@@ -533,7 +533,7 @@ export function Row({ label, children, w = 'w-[120px]' }: { label: string; child
 // escuro do que as divisórias de propósito, porque uma divisória deve
 // desaparecer e um campo tem de se ver.
 export const inputCls = 'border border-[#D0D5DD] px-1.5 py-[2px] text-[11.5px] bg-white flex-1 min-w-0 '
-  + 'rounded-none outline-none focus:border-[#2563EB] transition-colors';
+  + 'rounded-none outline-none focus:border-[var(--marca)] transition-colors';
 // Sombra interior discreta (substitui o "afundado" 3D de antes) — aplicada
 // inline (style={inputStyle}) para continuar a ganhar da regra global em
 // index.css em todos os formulários que já a usam.

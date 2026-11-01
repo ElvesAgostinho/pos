@@ -4,6 +4,7 @@ import { X, Check } from 'lucide-react';
 import { apiClient } from '../../api/client';
 import { notifyError } from '../../utils/friendlyError';
 import { MENUS as PMS_MENU_GROUPS } from './pmsMenus';
+import { barraDeTitulo } from '../../config/theme';
 
 /**
  * Variante POR UTILIZADOR do `PmsPermissionsDialog` (que é por ecrã): em vez
@@ -96,7 +97,7 @@ export default function PmsUserAccessDialog({ user, onClose }: { user: any; onCl
   return (
     <div className="fixed inset-0 z-[9200] flex items-center justify-center bg-black/40">
       <div className="w-[520px] max-w-full max-h-[75vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-xl rounded-[16px] overflow-hidden flex flex-col">
-        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
+        <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={barraDeTitulo()}>
           Acesso PMS — {user?.username}
           <button onClick={onClose} title="Fechar" className="w-6 h-6 rounded-[8px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition-colors">
             <X size={12} strokeWidth={3} />

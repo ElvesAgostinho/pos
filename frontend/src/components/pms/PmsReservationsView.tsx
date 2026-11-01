@@ -10,7 +10,7 @@ import {
 } from './PmsReservationFunctions';
 import { notifyError } from '../../utils/friendlyError';
 import { confirmar } from '../../ui/dialogo';
-import { TOKENS, RADIUS, SHADOW } from '../../config/theme';
+import { TOKENS, RADIUS, SHADOW, barraDeTitulo } from '../../config/theme';
 import PmsFolioPanel from './PmsFolioPanel';
 import PmsNewReservationDialog from './PmsNewReservationDialog';
 import PmsQuickAssignDialog from './PmsQuickAssignDialog';
@@ -700,7 +700,7 @@ export default function PmsReservationsView({ autoMode, onCloseDialog }: { autoM
       {showAutoDialog && !autoMode && (
         <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
           <div className="w-[97vw] h-[92vh] bg-[#EEF1F5] border border-[#E6E8EC] shadow-2xl rounded-[16px] overflow-hidden flex flex-col">
-            <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={{ background: '#2563EB' }}>
+            <div className="h-9 flex items-center justify-between px-3 text-white text-[14px] font-bold flex-shrink-0" style={barraDeTitulo()}>
               Reservation Search (automatic reservations)
               <div className="flex items-center gap-2">
                 <button className="text-white/75 hover:text-white transition-colors" title="Janelas"><Copy size={13} /></button>
