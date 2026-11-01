@@ -191,8 +191,14 @@ export default function WhProductionView() {
                       </tr>
                     </thead>
                     <tbody>
-                      {necessidades.lines.map((l) => (
-                        <tr key={l.item} className={`border-t border-[#F1F2F4] ${l.missing ? 'bg-[#FEF2F2]' : ''}`}>
+                      {necessidades.lines.map((l, i) => (
+                        // A POSIÇÃO entra na chave: a mesma ficha técnica pode
+                        // nomear o mesmo artigo em duas linhas, e aí `l.item`
+                        // repete-se. Com chaves repetidas o React pode reaproveitar
+                        // a linha errada ao redesenhar — a quantidade de um
+                        // ingrediente ao lado do nome de outro, numa lista que
+                        // serve para decidir se há stock para produzir.
+                        <tr key={`${l.item}-${i}`} className={`border-t border-[#F1F2F4] ${l.missing ? 'bg-[#FEF2F2]' : ''}`}>
                           <td className="px-2 py-1">{l.item_code} · {l.item_name}</td>
                           <td className="px-2 py-1">{l.uom}</td>
                           <td className="px-2 py-1 text-right">{num(l.needed)}</td>

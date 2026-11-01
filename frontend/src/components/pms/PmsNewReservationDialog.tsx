@@ -34,15 +34,22 @@ const inp = 'border border-[#E6E8EC] p-1 bg-white flex-1 min-w-0';
  * Traz o seu próprio cabeçalho (não é um popup genérico) — igual ao resto dos
  * ecrãs do PMS. Os campos que ainda não têm motor por trás ficam visíveis mas
  * desativados, com aviso claro, em vez de fingir que gravam alguma coisa. */
-export default function PmsNewReservationDialog({ roomTypes, reservation, onClose, onCreated }: {
-  roomTypes: any[]; reservation?: any; onClose: () => void; onCreated: () => void;
+export default function PmsNewReservationDialog({ roomTypes, reservation, inicial, onClose, onCreated }: {
+  roomTypes: any[];
+  /** Reserva EXISTENTE a alterar. Com ela, grava-se por cima dessa reserva. */
+  reservation?: any;
+  /** Valores de PARTIDA para uma reserva nova (quarto e dia escolhidos no mapa).
+   *  Não é uma reserva: é o que já se sabe sobre a que vai nascer. */
+  inicial?: { check_in?: string; check_out?: string; room?: number; room_number?: string; room_type?: number };
+  onClose: () => void; onCreated: () => void;
 }) {
   const editing = !!reservation;
-  const [checkIn, setCheckIn] = useState(reservation?.check_in || todayISO());
-  const [checkOut, setCheckOut] = useState(reservation?.check_out || plusDays(todayISO(), 1));
+  const p = reservation || inicial || {};
+  const [checkIn, setCheckIn] = useState(p.check_in || todayISO());
+  const [checkOut, setCheckOut] = useState(p.check_out || plusDays(p.check_in || todayISO(), 1));
   const [source, setSource] = useState(reservation?.source || 'DIRECT');
-  const [roomType, setRoomType] = useState(reservation?.room_type ? String(reservation.room_type) : '');
-  const [room, setRoom] = useState<any>(reservation?.room_number ? { id: reservation.room, number: reservation.room_number } : null);
+  const [roomType, setRoomType] = useState(p.room_type ? String(p.room_type) : '');
+  const [room, setRoom] = useState<any>(p.room_number ? { id: p.room, number: p.room_number } : null);
   const [allotment, setAllotment] = useState<any>(reservation?.block_code ? { id: reservation.block, code: reservation.block_code } : null);
   const [adults, setAdults] = useState(reservation?.adults ?? 1);
   const [children, setChildren] = useState(reservation?.children ?? 0);
@@ -310,7 +317,15 @@ export default function PmsNewReservationDialog({ roomTypes, reservation, onClos
             <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={isGuaranteed} onChange={(e) => setIsGuaranteed(e.target.checked)} /> Garantido</label>
             <Row label="Cor:">
               <div className="flex items-center gap-1.5 flex-1">
-                {['', '#DC2626', '#D97706', '#2563EB', '#3B82F6', '#3B82F6'].map((c) => (
+                {/* SEIS CORÉS DIFERENTES, e nenhuma repetida.
+                    A lista tinha `#3B82F6` duas vezes: dava dois botões
+                    exactamente iguais (escolher um ou outro fazia o mesmo) e
+                    duas chaves repetidas — que o React avisa na consola e que o
+                    autoriza a reaproveitar o botão errado ao redesenhar.
+                    Uma etiqueta de cor existe para DISTINGUIR reservas de
+                    relance no mapa; duas iguais não distinguem nada. São as
+                    primeiras cores da paleta do sistema, pela ordem dela. */}
+                {['', '#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4'].map((c) => (
                   <button key={c || 'none'} type="button" onClick={() => setColorTag(c)} title={c || '(nenhuma)'}
                     className={`w-6 h-6 rounded-full border-2 flex-shrink-0 ${colorTag === c ? 'border-[#111827]' : 'border-[#E6E8EC]'}`}
                     style={{ background: c || '#FFFFFF' }}>
