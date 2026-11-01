@@ -62,11 +62,26 @@ ENV SYSTEM_MODE=PCC \
 
 EXPOSE 8000
 
-# migrate + collectstatic a cada arranque: idempotente (mesma lógica do
-# configurar.py do instalador do cliente) — um redeploy nunca deixa a base
-# desatualizada em relação ao código. Se DJANGO_SUPERUSER_* estiver definida,
-# cria o primeiro admin sozinho (Django trata disto nativamente com --noinput);
-# nos arranques seguintes o utilizador já existe e o comando falha em silêncio
-# (|| true) — não há consola interativa num contentor, por isso não se pode
-# contar com "createsuperuser" à mão na primeira vez.
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && (python manage.py createsuperuser --noinput || true) && gunicorn erp_server.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60 --access-logfile - --error-logfile -"]
+# O ARRANQUE VIVE NUM GUIÃO PRÓPRIO (deploy/pcc/arrancar.sh), e não numa linha
+# de CMD com "&&" encadeados.
+#
+# A ordem é a mesma e a regra também: migrar, recolher os estáticos, criar o
+# primeiro administrador se as variáveis estiverem lá, e só então servir. Se as
+# migrações falham, NÃO se serve — um servidor de licenças com a base a meio é
+# pior do que um servidor em baixo.
+#
+# O que muda é o que fica para trás quando corre mal. Numa linha de CMD, a
+# mensagem de erro do Django vai para o stdout de um contentor que morre a
+# seguir; se o subsistema de registos do painel estiver em baixo, não há nada
+# para ler, e um ciclo de reinícios passa a ser um mistério. O guião escreve
+# tudo em /app/dados/logs/arranque.log, que está no volume persistente e
+# sobrevive à morte do contentor.
+COPY deploy/pcc/arrancar.sh /app/arrancar.sh
+# Normaliza os fins de linha: o ficheiro e editado em Windows, e um \r no fim
+" no fim
+# do "#!/bin/sh" faz o contentor morrer com "no such file or directory" — o erro
+# mais enganador que há, porque o ficheiro ESTÁ lá.
+RUN sed -i 's/\r$//' /app/arrancar.sh && chmod +x /app/arrancar.sh
+$//' /app/arrancar.sh && chmod +x /app/arrancar.sh
+
+CMD ["/app/arrancar.sh"]
