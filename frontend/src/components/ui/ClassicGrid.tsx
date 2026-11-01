@@ -107,8 +107,11 @@ export default function ClassicGrid({ columns, data, onRowClick, onRowDoubleClic
                 data-sel={isSelected ? '1' : undefined}
                 className="border-b border-[#F1F2F4] cursor-pointer transition-colors hover:bg-[#EEF1F5]"
                 style={{
-                  background: isSelected ? TOKENS.selectedBg : idx % 2 === 0 ? TOKENS.surface : '#FFFFFF',
-                  color: isSelected ? TOKENS.textOnSelection : undefined,
+                  background: isSelected ? TOKENS.selectedRow : idx % 2 === 0 ? TOKENS.surface : '#FFFFFF',
+                  // Texto normal: a linha escolhida tem de continuar a LER-SE.
+                  boxShadow: isSelected
+                    ? `inset 0 1px 0 ${TOKENS.selectedRowLine}, inset 0 -1px 0 ${TOKENS.selectedRowLine}`
+                    : undefined,
                 }}
               >
                 {columns.map((col, cIdx) => (

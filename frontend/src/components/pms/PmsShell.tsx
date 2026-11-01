@@ -268,22 +268,30 @@ export default function PmsShell({ onDesktop }: { onBack?: () => void; onOpen?: 
 
       {/* Rodapé — um bar só (era dois empilhados: ação do ecrã + hora, e depois
           separador/versão/hotel — a mesma informação cabe toda numa linha). */}
-      <div className="h-8 flex items-center px-3 gap-3 flex-shrink-0 text-white/85 text-[11px]"
-        style={{ background: TOKENS.brand }}>
-        <span>Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+      {/* A BARRA DE ESTADO DEIXA DE SER AZUL.
+          Era uma faixa na cor da marca, de ponta a ponta, no fundo do ecrã — a
+          coisa mais berrante da janela, no sítio de menos importância. Numa
+          aplicação de escritório a barra de estado é cinzenta, e a razão é que
+          ela existe para ser consultada quando se precisa, não para puxar o
+          olho. A cor fica para onde informa: o separador aberto, a linha
+          escolhida e a acção principal. */}
+      <div className="h-[24px] flex items-center px-2 gap-3 flex-shrink-0 text-[11px] border-t"
+        style={{ background: 'linear-gradient(to bottom, #FDFDFD, #F0F0F0)',
+                 borderColor: TOKENS.chromeLine, color: '#4A4A4A' }}>
+        <span className="num">Atualizado em {clock.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
         {hotels.length > 1 && (
           <select value={hotelId || String(hotels[0]?.id)} onChange={(e) => { setHotelId(e.target.value); localStorage.setItem('erp_hotel', e.target.value); }}
-            className="h-6 text-[11px] px-1.5 border text-white" style={{ background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)', borderRadius: RADIUS.sm }}>
+            className="h-[18px] text-[11px] px-1 border"
+            style={{ background: '#FFFFFF', borderColor: TOKENS.field, color: TOKENS.textOnLight }}>
             {hotels.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </select>
         )}
         <div className="flex-1" />
-        <span className="opacity-50">PMS v1.0</span>
+        <span style={{ color: '#8A8A8A' }}>PMS v1.0</span>
         <button onClick={() => { localStorage.removeItem('ui_shell'); onDesktop?.(); }}
-          className="flex items-center gap-1.5 font-semibold text-white/90 hover:text-white transition-colors" title="Fechar (volta ao Ambiente de Trabalho)">
-          <span className="w-4 h-4 rounded-full flex items-center justify-center bg-[#DC2626] text-white">
-            <X size={10} strokeWidth={3} />
-          </span>
+          className="flex items-center gap-1 px-1.5 h-[18px] hover:bg-[#DC2626] hover:text-white"
+          style={{ color: '#4A4A4A' }} title="Fechar (volta ao Ambiente de Trabalho)">
+          <X size={11} strokeWidth={2.5} />
           Fechar
         </button>
       </div>

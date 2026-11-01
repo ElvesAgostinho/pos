@@ -72,7 +72,19 @@ export const TOKENS = {
   // acaso, por os dois serem escuros. No dia em que a linha seleccionada passou
   // a azul cheio e este token passou a branco, todos esses títulos
   // desapareceram: branco sobre branco. Um nome só pode querer dizer uma coisa.
-  selectedBg: '#316AC5',          // a barra azul cheia da linha escolhida (Windows)
+  // DUAS SELECÇÕES, PORQUE SÃO DOIS TRABALHOS.
+  //
+  // Numa ÁRVORE, a linha escolhida é uma barra azul cheia com texto branco — é
+  // a convenção do Explorador do Windows e lê-se de relance numa lista de
+  // quarenta nós onde só há nomes.
+  //
+  // Numa GRELHA DE DADOS não serve: a barra cheia apaga os números da linha que
+  // se acabou de escolher — justamente a linha que se quer ler. O Excel resolve
+  // isto há trinta anos com preenchimento claro e uma moldura fina: vê-se qual
+  // é, e continua a ler-se o que lá está.
+  selectedBg: '#316AC5',          // ÁRVORE: a barra azul cheia (Windows)
+  selectedRow: '#DCE9F7',         // GRELHA: preenchimento claro
+  selectedRowLine: '#8FB8E0',     // GRELHA: a moldura que diz onde ela começa e acaba
   selectedSoft: '#DBEAFE',        // realce leve (linha sob o rato, pré-selecção)
   selectedText: '#111827',        // TEXTO SOBRE FUNDO CLARO (o significado antigo, mantido)
   textOnSelection: '#FFFFFF',     // texto POR CIMA da barra azul — e só aí
@@ -140,6 +152,31 @@ export function accentGradient(accent: string = TOKENS.accent): string {
 // Sidebar, kit.tsx, ClassicWindow, ClassicGrid) se aproximar do mesmo visual sem
 // imitar janelas do sistema operativo nem cair no extremo oposto (cartão SaaS
 // pastel/whitespace exagerado). A cor não muda — só a forma.
+/**
+ * O FUNDO DO SISTEMA — o Ambiente de Trabalho e o início de sessão.
+ *
+ * Está aqui, e não em cada um dos dois ecrãs, porque são o MESMO fundo visto em
+ * dois momentos: quem entra vê esta superfície no login e volta a encontrá-la
+ * atrás das janelas. Duas cópias desalinham-se à primeira alteração.
+ *
+ * É cinzento-azulado escuro e NEUTRO, sem a cor da marca: num ambiente de
+ * trabalho a janela do módulo é que importa, e um fundo com cor compete com ela.
+ * Uma fonte de luz fraca em cima à esquerda dá-lhe orientação; mais do que isso
+ * já é decoração, e um fundo que se nota é um fundo mal feito.
+ */
+export const FUNDO_SISTEMA =
+  'radial-gradient(120% 90% at 8% -10%, #33414F 0%, #2A3540 38%, transparent 72%),'
+  + ' linear-gradient(165deg, #273039 0%, #1E252C 58%, #171C21 100%)';
+
+/**
+ * O VÉU que vai por cima da FOTOGRAFIA do hotel. Escurece, e não tinge: era
+ * azul-escuro, e tingia a fotografia do dono de uma cor que não é a dela. O véu
+ * existe por uma razão só — o texto por cima é branco, e um céu claro na
+ * fotografia tornava-o ilegível.
+ */
+export const VEU_SOBRE_FOTO =
+  'linear-gradient(rgba(14,18,22,0.52), rgba(14,18,22,0.68))';
+
 export const RADIUS = {
   // CANTO VIVO. Esta escala já foi o contrário — 8/12/16px, cantos generosos,
   // na ideia de que isso lê como "software desta década". Lê; mas lê como uma

@@ -58,8 +58,14 @@
  * o que o componente sabe.
  */
 [data-erp='classico'] tbody tr[data-sel] > td {
-  background: #316ac5;
-  color: #ffffff;
+  /* PREENCHIMENTO CLARO E MOLDURA, e não uma barra azul cheia.
+     A barra cheia apaga os números da linha que se acabou de escolher —
+     justamente a que se quer ler. Esta diz qual é e deixa-a legível; é o que o
+     Excel faz, e por isso que uma folha de cálculo se lê com a linha marcada.
+     A barra azul cheia fica para a ÁRVORE, onde só há nomes. */
+  background: #dce9f7;
+  border-top: 1px solid #8fb8e0;
+  border-bottom: 1px solid #8fb8e0;
 }
 
 /* A LINHA ALTERNADA é o que permite seguir uma linha larga sem a perder. Muito
@@ -157,4 +163,25 @@
  */
 [data-erp='classico'] {
   font-size: 11.5px;
+
+  /*
+   * OS NÚMEROS EM LARGURA FIXA, EM TODO O LADO.
+   *
+   * Nas fontes de ecrã, o "1" é mais estreito do que o "8". Numa coluna de
+   * valores isso desalinha as vírgulas umas das outras, e a partir daí deixa de
+   * se poder comparar duas linhas com o olho — que é o que uma coluna de
+   * dinheiro existe para permitir. Num ERP de hotelaria, onde quase todas as
+   * grelhas têm valores, é o detalhe que mais separa um ecrã bem composto de um
+   * mal composto.
+   *
+   * Vai na raiz e não coluna a coluna: alinhar só algumas seria pior do que não
+   * alinhar nenhuma, e cada grelha nova nasceria desalinhada outra vez. Só mexe
+   * em dígitos; letras e símbolos ficam como estão.
+   */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Para quem precise de o pedir fora da moldura (a factura, por exemplo). */
+.num {
+  font-variant-numeric: tabular-nums;
 }

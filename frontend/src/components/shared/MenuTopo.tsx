@@ -110,7 +110,15 @@ export function MenuTopo<T>({
                 // isto são dois rectângulos encostados e não se percebe que o de
                 // cima manda no de baixo.
                 background: sel ? TOKENS.chrome : 'transparent',
-                borderTop: `1px solid ${sel ? TOKENS.chromeLine : 'transparent'}`,
+                // O TRAÇO DE ACENTO NO TOPO DO SEPARADOR ABERTO.
+                //
+                // É a assinatura das aplicações de escritório, e faz um trabalho
+                // concreto: numa fila de nove separadores todos cinzentos, o
+                // aberto distingue-se só por ser um tom mais claro — pouco, num
+                // ecrã de recepção com luz a bater. Dois pixéis de cor resolvem,
+                // e é um dos três únicos sítios onde a cor aparece na moldura.
+                borderTop: sel ? `2px solid ${TOKENS.accent}`
+                               : '1px solid transparent',
                 borderLeft: `1px solid ${sel ? TOKENS.chromeLine : 'transparent'}`,
                 borderRight: `1px solid ${sel ? TOKENS.chromeLine : 'transparent'}`,
                 marginBottom: sel ? '-1px' : 0,

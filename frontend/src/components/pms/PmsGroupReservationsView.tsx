@@ -367,19 +367,19 @@ export default function PmsGroupReservationsView() {
               const sel = selId === b.id;
               return (
                 <tr key={b.id} onClick={() => setSelId(b.id)} className="cursor-pointer" data-sel={sel ? '1' : undefined}
-                  style={sel ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection } : undefined}>
-                  <td className="text-right" style={{ color: sel ? '#FFFFFF' : '#9CA3AF' }}>{i + 1}</td>
+                  style={sel ? { background: TOKENS.selectedRow, color: TOKENS.textOnLight, boxShadow: `inset 0 1px 0 ${TOKENS.selectedRowLine}, inset 0 -1px 0 ${TOKENS.selectedRowLine}` } : undefined}>
+                  <td className="text-right" style={{ color: '#9CA3AF' }}>{i + 1}</td>
                   <td className="font-bold" title={hotelName || ''}>
                     {b.code}
                     {/* "Garantido" era uma pastilha azul numa linha à parte. Numa
                         grelha não há linha à parte: fica um ponto a seguir ao
                         código, que é onde o olho já está. */}
-                    {b.is_guaranteed && <span title="Garantido" className="ml-1" style={{ color: sel ? '#FFFFFF' : '#2E7D32' }}>●</span>}
+                    {b.is_guaranteed && <span title="Garantido" className="ml-1" style={{ color: '#2E7D32' }}>●</span>}
                   </td>
                   <td>{b.description}</td>
                   <td title={b.contact_name || ''}>{b.main_entity_name || b.group_name || '—'}</td>
                   <td>{b.valid_from}</td>
-                  <td style={{ color: sel ? '#FFFFFF' : '#B91C1C' }}>{b.valid_to}</td>
+                  <td style={{ color: '#B91C1C' }}>{b.valid_to}</td>
                   <td className="text-center">{b.nights}</td>
                   <td className="text-right">{b.total_rooms || 0}</td>
                   <td className="text-right">{b.reservations_count || 0}</td>
@@ -392,7 +392,7 @@ export default function PmsGroupReservationsView() {
                   <td onClick={(e) => e.stopPropagation()}>
                     <button title="Ver Pickup" onClick={() => setShowPickup(b)}
                       className="w-[18px] h-[18px] flex items-center justify-center"
-                      style={{ color: sel ? '#FFFFFF' : '#2F6FB5' }}><Eye size={13} /></button>
+                      style={{ color: '#2F6FB5' }}><Eye size={13} /></button>
                   </td>
                 </tr>
               );

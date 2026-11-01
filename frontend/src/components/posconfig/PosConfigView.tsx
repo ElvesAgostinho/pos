@@ -1395,8 +1395,14 @@ export default function PosConfigView({ onDesktop, onOpen }: {
                         className="cursor-pointer border-b"
                         style={{
                           borderColor: '#EEF1F5',
-                          background: sel === r.id ? TOKENS.selectedBg : i % 2 ? '#FFFFFF' : TOKENS.surface,
-                          color: sel === r.id ? TOKENS.textOnSelection : undefined,
+                          background: sel === r.id ? TOKENS.selectedRow : i % 2 ? '#FFFFFF' : TOKENS.surface,
+                          color: undefined,
+                          // A MOLDURA da linha escolhida — desenhada com sombra interior para
+                          // não mexer na altura da linha (uma borda a sério empurrava a grelha
+                          // toda um pixel para baixo a cada clique).
+                          boxShadow: sel === r.id
+                            ? `inset 0 1px 0 ${TOKENS.selectedRowLine}, inset 0 -1px 0 ${TOKENS.selectedRowLine}`
+                            : undefined,
                         }}
                         onMouseEnter={(e) => { if (sel !== r.id) e.currentTarget.style.background = TOKENS.hover; }}
                         onMouseLeave={(e) => { if (sel !== r.id) e.currentTarget.style.background = i % 2 ? '#FFFFFF' : TOKENS.surface; }}>

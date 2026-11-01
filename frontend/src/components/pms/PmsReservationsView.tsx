@@ -46,13 +46,13 @@ const fmtCurta = (iso: string) => iso
  */
 function ReservationRow({ r, n, hotelName, selected, onSelect, onCheckIn, onCheckOut, onCancel, onVerConta }: any) {
   const parar = (e: any) => e.stopPropagation();
-  const cor = selected ? '#FFFFFF' : undefined;
+  const cor = undefined;
   return (
     <tr onClick={onSelect} className="cursor-pointer" data-sel={selected ? '1' : undefined}
-      style={selected ? { background: TOKENS.selectedBg, color: TOKENS.textOnSelection } : undefined}>
+      style={selected ? { background: TOKENS.selectedRow, color: TOKENS.textOnLight, boxShadow: `inset 0 1px 0 ${TOKENS.selectedRowLine}, inset 0 -1px 0 ${TOKENS.selectedRowLine}` } : undefined}>
       {/* O NÚMERO DE LINHA é o que permite dizer "a sétima" a quem está ao
           telefone, e é por isso que todas as grelhas destes ERP o têm. */}
-      <td className="text-right" style={{ color: selected ? '#FFFFFF' : '#9CA3AF' }}>{n}</td>
+      <td className="text-right" style={{ color: '#9CA3AF' }}>{n}</td>
       <td className="font-bold" title={hotelName || ''}>{r.confirmation}</td>
       <td>
         <span className="text-[10px] text-white font-semibold px-1.5 rounded-full"
@@ -64,7 +64,7 @@ function ReservationRow({ r, n, hotelName, selected, onSelect, onCheckIn, onChec
         {r.guest_name}
       </td>
       <td>{fmtCurta(r.check_in)}</td>
-      <td style={{ color: selected ? '#FFFFFF' : '#B91C1C' }}>{fmtCurta(r.check_out)}</td>
+      <td style={{ color: '#B91C1C' }}>{fmtCurta(r.check_out)}</td>
       <td className="text-center">{r.adults}/{r.children}</td>
       <td title={r.rate_plan_code || ''}>{r.room_type_name}</td>
       <td>{r.room_number || (r.block_code ? 'Bloco ' + r.block_code : '—')}</td>
@@ -72,7 +72,7 @@ function ReservationRow({ r, n, hotelName, selected, onSelect, onCheckIn, onChec
         {Number(r.rate) > 0 ? Number(r.rate).toLocaleString('pt-PT', { minimumFractionDigits: 2 }) : ''}
       </td>
       <td className="text-right font-bold"
-        style={{ color: selected ? '#FFFFFF' : (Number(r.folio_balance) > 0 ? '#B91C1C' : undefined) }}>
+        style={{ color: Number(r.folio_balance) > 0 ? '#B91C1C' : undefined }}>
         {r.folio_balance != null ? r.folio_balance : ''}
       </td>
       <td onClick={parar}>

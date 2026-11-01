@@ -410,7 +410,8 @@ export function Tab({ active, onClick, children }: any) {
       className="px-3 h-[22px] text-[11.5px]"
       style={{
         background: active ? TOKENS.surface : 'transparent',
-        borderTop: `1px solid ${active ? TOKENS.chromeLine : 'transparent'}`,
+        // O mesmo traço de acento do separador de topo — ver MenuTopo.
+        borderTop: active ? `2px solid ${TOKENS.accent}` : '1px solid transparent',
         borderLeft: `1px solid ${active ? TOKENS.chromeLine : 'transparent'}`,
         borderRight: `1px solid ${active ? TOKENS.chromeLine : 'transparent'}`,
         marginBottom: active ? '-1px' : 0,
