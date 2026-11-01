@@ -78,3 +78,12 @@ frontend/blob-report/
 # um binario de 4,7 MB fica no historico para sempre, e este componente e
 # de seguranca e deve vir sempre actualizado da fonte.
 instalador/msodbcsql.msi
+
+# Capturas de ecrã largadas na RAIZ do projecto. São do dono — vêm do telemóvel
+# ou do Windows para me mostrar um defeito, e não são código. Ficavam a aparecer
+# em cada `git status` e bastava um `git add -A` para entrarem no histórico, de
+# onde já não saem. Uma imagem que é para o repositório vive em frontend/public/
+# ou em docs/, nunca na raiz.
+/*.png
+/*.jpg
+/*.jpeg
