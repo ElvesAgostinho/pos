@@ -30,16 +30,35 @@ export default function OutletsView() {
   const add = () => { if (draft.code && draft.name) create.mutate(draft, { onSuccess: () => setDraft({ code: '', name: '', outlet_type: 'RESTAURANT' }) }); };
 
   return (
-    <ClassicWindow title="Outlets (Pontos de Venda)" icon={<Store size={14} className="text-gray-300" />}
+    <ClassicWindow title="Pontos de Venda" icon={<Store size={14} className="text-gray-300" />}
       footer={<div className="text-gray-600">Nº registos: {outlets.length}</div>}>
       <div className="flex flex-col h-full">
-        <div className="flex items-end gap-2 bg-[#EEF1F5] border-b border-[#E6E8EC] px-3 py-2 text-[11px]">
-          <input placeholder="Código" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })} className="border border-[#E6E8EC] p-1 w-28" />
-          <input placeholder="Nome do outlet" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="border border-[#E6E8EC] p-1" />
-          <select value={draft.outlet_type} onChange={(e) => setDraft({ ...draft, outlet_type: e.target.value })} className="border border-[#E6E8EC] p-1 bg-white">
-            {OUTLET_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
-          <ClassicButton icon={Plus} label="Adicionar Outlet" onClick={add} />
+        {/* A LINHA DE INSERÇÃO — a mesma altura dos campos do resto do sistema
+            (22px) e o mesmo contorno de campo. Tinha 11px de texto dentro de
+            caixas de 30 de altura: era a única coisa do ecrã fora do registo. */}
+        <div className="flex items-center gap-1.5 border-b px-1.5 py-1 text-[11.5px]"
+          style={{ background: 'linear-gradient(to bottom, #FDFDFD, #F0F0F0)', borderColor: '#C8C8C8' }}>
+          <label className="flex items-center gap-1.5">
+            <span className="text-[#5A5A5A]">Código:</span>
+            <input value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })}
+              className="border border-[#D0D5DD] px-1.5 py-[2px] w-24" />
+          </label>
+          <label className="flex items-center gap-1.5 flex-1 min-w-0 max-w-[320px]">
+            <span className="text-[#5A5A5A] whitespace-nowrap">Nome:</span>
+            <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+              className="border border-[#D0D5DD] px-1.5 py-[2px] flex-1 min-w-0" />
+          </label>
+          <label className="flex items-center gap-1.5">
+            <span className="text-[#5A5A5A]">Tipo:</span>
+            <select value={draft.outlet_type} onChange={(e) => setDraft({ ...draft, outlet_type: e.target.value })}
+              className="border border-[#D0D5DD] px-1.5 py-[2px] bg-white">
+              {OUTLET_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+          </label>
+          {/* Desligado enquanto faltar o essencial: um botão que se pode carregar
+              e não faz nada ensina a desconfiar de todos os outros. */}
+          <ClassicButton icon={Plus} label="Adicionar" onClick={add}
+            disabled={!draft.code || !draft.name} />
         </div>
         <div className="flex-1 overflow-hidden">
           <ClassicGrid

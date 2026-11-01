@@ -215,9 +215,21 @@ export const SECTIONS = [
     // modos de pagamento, happy hour) e não tinha ali forma nenhuma de criar um,
     // nem uma pista de onde ele se criava. Ficava com as listas todas vazias e
     // sem saber porquê. É o MESMO ecrã, não uma cópia: aparece nos dois sítios.
-    { key: 'p_outlets', label: 'Pontos de Venda (Outlets)', icon: '🏪' },
+    //
+    // OS NOMES: "Pontos de Venda (Outlets)" e "Setores" apareciam na mesma
+    // árvore, com listas parecidas e nomes repetidos nos registos ("Lounge Bar"
+    // era o nome de um ponto de venda E de um setor). O dono olhou para os dois
+    // e perguntou, com razão, para que servia o segundo.
+    //
+    // NÃO SÃO A MESMA COISA, e agora o nome di-lo:
+    //  · o PONTO DE VENDA é onde a venda cai — a sessão de caixa, o talão e a
+    //    saída de stock ficam agarrados a ele (`CashSession.outlet`,
+    //    `ticket.outlet`);
+    //  · o SETOR é a SALA por onde se entra — dá o teclado, o nível de preço,
+    //    o happy hour e a planta das mesas.
+    { key: 'p_outlets', label: 'Pontos de Venda', icon: '🏪' },
     { key: 'p_terminals', label: 'Terminais' },
-    { key: 'p_sectors', label: 'Setores' },
+    { key: 'p_sectors', label: 'Setores (salas de venda)' },
     { key: 'p_params', label: 'Parâmetros' },
     { key: 'p_keyboards', label: 'Teclados' },
     { key: 'p_periods', label: 'Horários - Períodos' },
