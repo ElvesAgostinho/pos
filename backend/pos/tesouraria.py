@@ -84,7 +84,13 @@ def lancar_fecho_de_caixa(sessao, by=None):
         metodo = PaymentMethod.objects.filter(pk=linha['payment_method']).first()
         if metodo is None:
             continue
-        if not metodo.treasury_account_id:
+        # A CONTA SAI DE finance/conta_do_metodo.py — a ficha primeiro e, se
+        # estiver vazia, a única conta do tipo certo que o hotel tenha. Sem
+        # isso, o circuito ficava inerte numa instalação nova: nada no sistema
+        # preenche a ficha, e o dinheiro nunca chegava à tesouraria.
+        from finance.conta_do_metodo import conta_para
+        conta = conta_para(metodo, getattr(sessao.outlet, 'hotel_id', None))
+        if conta is None:
             por_configurar.append((metodo.name, valor))
             continue
 
@@ -94,7 +100,7 @@ def lancar_fecho_de_caixa(sessao, by=None):
 
         lancados.append(Receipt.objects.create(
             number=ref,
-            account=metodo.treasury_account,
+            account=conta,
             party_name='Vendas POS · %s' % (sessao.outlet.name if sessao.outlet_id else 'POS'),
             description='Fecho de caixa %s · %s' % (sessao.id, metodo.name),
             amount=valor,

@@ -26,6 +26,7 @@ from pathlib import Path
 RAIZ_PROJETO = Path(__file__).resolve().parent.parent          # ...\POS\backend
 DOCKERFILE = RAIZ_PROJETO.parent / 'deploy' / 'pcc' / 'Dockerfile'
 ENV_EXEMPLO = RAIZ_PROJETO.parent / 'deploy' / 'pcc' / '.env.example'
+ARRANQUE = RAIZ_PROJETO.parent / 'deploy' / 'pcc' / 'arrancar.sh'
 
 
 def _arrancar_settings(**ambiente):
@@ -108,6 +109,12 @@ class OContentorDoPccTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.texto = DOCKERFILE.read_text(encoding='utf-8')
+        # O ARRANQUE SAIU DO `CMD` PARA UM GUIÃO (deploy/pcc/arrancar.sh), para
+        # uma falha deixar rasto no volume em vez de morrer com o contentor.
+        # O teste tem de ler os DOIS: o que o contentor promete está agora
+        # repartido entre o Dockerfile e o guião que ele copia para dentro.
+        cls.arranque = ARRANQUE.read_text(encoding='utf-8') if ARRANQUE.exists() else ''
+        cls.tudo = cls.texto + '\n' + cls.arranque
         # As variáveis do bloco ENV, como o contentor as vai ter.
         cls.env = dict(re.findall(r'^\s*(?:ENV\s+)?([A-Z_]+)=(\S+)', cls.texto, re.M))
 
@@ -154,14 +161,22 @@ class OContentorDoPccTests(unittest.TestCase):
     def test_o_contentor_arranca_a_servir_em_todas_as_interfaces(self):
         """`--bind 0.0.0.0:8000`: ligado só a 127.0.0.1, o painel não chega ao
         contentor e o domínio responde 502 sem o log dizer porquê."""
-        self.assertIn('0.0.0.0:8000', self.texto)
+        self.assertIn('0.0.0.0:8000', self.tudo)
         self.assertIn('EXPOSE 8000', self.texto)
 
     def test_a_base_e_migrada_a_cada_arranque(self):
         """Um redeploy traz código novo contra uma base antiga. As migrações têm
         de correr no arranque, senão o primeiro pedido rebenta."""
-        self.assertIn('migrate --noinput', self.texto)
-        self.assertIn('collectstatic --noinput', self.texto)
+        self.assertIn('migrate --noinput', self.tudo)
+        self.assertIn('collectstatic --noinput', self.tudo)
+        # E TÊM DE CORRER ANTES DO GUNICORN, não ao lado dele. Se o servidor
+        # subisse em paralelo com as migrações, os primeiros pedidos apanhavam
+        # a base a meio — e num servidor de licenças isso é pior do que estar
+        # em baixo: responde, e responde mal.
+        if self.arranque:
+            self.assertLess(self.arranque.index('migrate --noinput'),
+                            self.arranque.index('exec gunicorn'),
+                            'o gunicorn arranca antes das migrações acabarem')
 
 
 @unittest.skipUnless(ENV_EXEMPLO.exists(), 'deploy/pcc/.env.example não está presente')

@@ -463,6 +463,13 @@ def main():
     # mexe no que o contabilista já ajustou.
     correr('seed_accounting')
 
+    # A CAIXA DA CASA. Mesma história do `seed_accounting` logo acima, um ano
+    # depois e um andar ao lado: o circuito da tesouraria está escrito e
+    # testado, mas numa instalação nova não havia conta nenhuma onde lançar o
+    # dinheiro. O hotel vendia o dia todo, fechava a caixa, e a tesouraria
+    # ficava a zero — com um aviso no fim do fecho que ninguém lê.
+    correr('seed_tesouraria')
+
     # A LICENÇA primeiro: pode trazer a conta do dono com ela, e nesse caso não
     # se pede nada a ninguém.
     activar_licenca()

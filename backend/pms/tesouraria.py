@@ -48,9 +48,17 @@ def lancar_pagamento_de_folio(encargo, by=None):
     metodo = encargo.payment_method
     if metodo is None:
         return None, 'o pagamento não diz como foi pago'
-    if not metodo.treasury_account_id:
-        return None, ('o meio de pagamento "%s" não tem conta de tesouraria '
-                      'configurada' % metodo.name)
+    # A MESMA REGRA DE ESCOLHA DO POS (finance/conta_do_metodo.py): a ficha
+    # primeiro e, se estiver vazia, a única conta do tipo certo que o hotel
+    # tenha. Duas regras diferentes fariam o mesmo dinheiro entrar em contas
+    # diferentes conforme tivesse vindo do balcão ou da recepção.
+    from finance.conta_do_metodo import conta_para
+    hotel_id = getattr(getattr(encargo.folio, 'reservation', None), 'hotel_id', None)
+    conta = conta_para(metodo, hotel_id)
+    if conta is None:
+        return None, ('o meio de pagamento "%s" não tem conta de tesouraria, e o '
+                      'hotel não tem uma única conta do tipo certo para se '
+                      'escolher sozinha' % metodo.name)
 
     # A chave de origem impede repetir: um duplo clique a lançar o pagamento, ou
     # uma reposição que volte a correr isto, não pode dar entrada ao mesmo
@@ -66,7 +74,7 @@ def lancar_pagamento_de_folio(encargo, by=None):
 
     recebimento = Receipt.objects.create(
         number=ref,
-        account=metodo.treasury_account,
+        account=conta,
         party_name=nome,
         description='Pagamento de conta · %s' % (folio.label or 'folio'),
         amount=valor,
