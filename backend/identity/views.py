@@ -51,9 +51,12 @@ class HotelViewSet(viewsets.ModelViewSet):
             if not comp:
                 grp = _first(EnterpriseGroup) or EnterpriseGroup.objects.create(name='Grupo Principal')
                 comp = Company.objects.create(group=grp, name='Empresa Principal')
-            serializer.save(company=comp)
+            hotel = serializer.save(company=comp)
         else:
-            serializer.save()
+            hotel = serializer.save()
+        # A casa nasce com caixa: é onde o fecho do dia lança o dinheiro.
+        from finance.conta_do_metodo import garantir_caixa
+        garantir_caixa(hotel)
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):

@@ -1,0 +1,28 @@
+<!--
+  O AGENDADOR: é ele que manda tratar a fila da AGT a cada 30 segundos.
+
+  Serviço à parte porque o Celery recusa correr o agendador dentro do trabalhador no
+  Windows. Sem ele o trabalhador fica de pé, à espera de tarefas que nunca chegam, e
+  os documentos pendentes não seguem para a AGT.
+
+  O ficheiro com a hora de cada tarefa fica na pasta de dados, que sobrevive a updates.
+-->
+<service>
+  <id>MwanaLodgeAgendador</id>
+  <name>Mwana Lodge — Agendador</name>
+  <description>Agenda as tarefas periódicas do sistema, como o envio dos documentos pendentes à AGT.</description>
+
+  <executable>%BASE%\..\python\python.exe</executable>
+  <arguments>-m celery -A erp_server beat -l info -s "%BASE%\..\dados\celerybeat-schedule"</arguments>
+  <workingdirectory>%BASE%\..\app</workingdirectory>
+
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+
+  <log mode="roll-by-size">
+    <logpath>%BASE%\..\dados\logs</logpath>
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
+  <startmode>Automatic</startmode>
+</service>

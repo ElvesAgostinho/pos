@@ -115,6 +115,9 @@ def _aplicar_dados_empresa(company):
             mudou = True
     if criado or mudou:
         hotel.save()
+        if criado:
+            from finance.conta_do_metodo import garantir_caixa
+            garantir_caixa(hotel)
         return True
     return False
 

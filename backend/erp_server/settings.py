@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # O ambiente real ganha sempre ao ficheiro (setdefault): um técnico pode sobrepor.
 _env_file = Path(__file__).resolve().parent.parent / '.env'
 if _env_file.exists():
-    for _linha in _env_file.read_text(encoding='utf-8').splitlines():
+    for _linha in _env_file.read_text(encoding='utf-8-sig').splitlines():
         _linha = _linha.strip()
         if _linha and not _linha.startswith('#') and '=' in _linha:
             _k, _, _v = _linha.partition('=')
@@ -390,6 +390,10 @@ elif not DEBUG:
     else:
         # ficheiro IRMÃO do db.sqlite3, nunca o mesmo ficheiro.
         _fila_path = Path(str(DATABASES["default"]["NAME"])).with_name("fila_celery.sqlite3")
+        # No SQL Server o NAME é o nome da base, não um caminho: o ficheiro nascia na
+        # pasta do programa, de onde uma atualização o pode levar. Fica na de dados.
+        if DATABASES["default"]["ENGINE"] == "mssql" and os.environ.get("DJANGO_MEDIA_ROOT"):
+            _fila_path = Path(os.environ["DJANGO_MEDIA_ROOT"]).with_name("fila_celery.sqlite3")
         CELERY_BROKER_URL = f'sqla+sqlite:///{_fila_path}'
         CELERY_RESULT_BACKEND = f'db+sqlite:///{_fila_path}'
 else:

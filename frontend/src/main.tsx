@@ -38,6 +38,14 @@ import { FUNDO_SISTEMA, aplicarCorDaMarca } from './config/theme';
 // depois, o que se vê como um piscar.
 aplicarCorDaMarca();
 
+// E OUTRA VEZ SEMPRE QUE A APARÊNCIA MUDAR. É aqui e não dentro do
+// `setAppearance` porque este ficheiro já conhece os dois lados — e assim o
+// módulo das definições não precisa de importar o do tema, que criaria um
+// ciclo (o tema lê as definições).
+if (typeof window !== 'undefined') {
+  window.addEventListener('aparencia-mudou', () => aplicarCorDaMarca());
+}
+
 const queryClient = new QueryClient()
 
 /**

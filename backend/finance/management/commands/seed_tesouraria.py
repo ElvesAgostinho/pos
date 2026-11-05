@@ -31,7 +31,7 @@ existe, e não cria uma segunda caixa a quem já tem a sua.
 """
 from django.core.management.base import BaseCommand
 
-from finance.models import FinanceAccount
+from finance.conta_do_metodo import garantir_caixa
 from identity.models import Hotel
 
 
@@ -42,21 +42,10 @@ class Command(BaseCommand):
         criadas, existentes = 0, 0
 
         for hotel in Hotel.objects.all():
-            # JÁ TEM UMA CAIXA? Não se mexe. E repare-se que a pergunta é "tem
-            # alguma conta de dinheiro", não "tem uma com este código": quem
-            # criou a sua à mão, com outro nome, tem a casa resolvida — criar
-            # outra ao lado era dar-lhe duas e estragar a escolha automática,
-            # que precisa de haver UMA só para poder decidir sozinha.
-            if FinanceAccount.objects.filter(hotel=hotel, account_type='CASH',
-                                             is_active=True).exists():
+            if garantir_caixa(hotel):
+                criadas += 1
+            else:
                 existentes += 1
-                continue
-
-            FinanceAccount.objects.create(
-                hotel=hotel, code='CAIXA', name='Caixa',
-                account_type='CASH', currency='AOA', opening_balance=0,
-                is_active=True)
-            criadas += 1
 
         self.stdout.write(f'Tesouraria: {criadas} caixa(s) criada(s), '
                           f'{existentes} hotel(éis) já tinham a sua.')

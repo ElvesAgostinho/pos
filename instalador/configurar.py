@@ -20,6 +20,10 @@ import sys
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent            # {app}
+# O Python embutido tem python312._pth: não procura módulos na pasta do script.
+# Sem isto o `import preparar_base` rebentava em quem escolhia SQL Server ou PostgreSQL.
+if str(RAIZ) not in sys.path:
+    sys.path.insert(0, str(RAIZ))
 APP = RAIZ / 'app'                                # o backend Django
 _EMBUTIDO = RAIZ / 'python' / 'python.exe'         # o Python embutido no pacote
 
@@ -321,13 +325,41 @@ def _driver_odbc():
     return preferidos[0]
 
 
+def limpar_passwords_do_ini(caminho_ini):
+    """Tira as passwords do instalacao.ini depois de usadas.
+
+    O wizard escreve-as em claro para este script as ler, e o ficheiro ficava na
+    pasta da aplicação para sempre. Só se apagam as passwords: o resto da escolha
+    (motor, servidor, base) continua lá para quem tiver de dar assistência.
+    """
+    cfg = configparser.ConfigParser()
+    cfg.read(caminho_ini, encoding='utf-8-sig')
+    for seccao, chave in (('dono', 'password'), ('bd', 'admin_password')):
+        if cfg.has_option(seccao, chave):
+            cfg.remove_option(seccao, chave)
+    with open(caminho_ini, 'w', encoding='utf-8') as f:
+        cfg.write(f)
+
+
+def _para_o_registo(args):
+    """Os argumentos como podem ir para o configurar.log: sem o valor da password."""
+    limpos, esconder = [], False
+    for a in args:
+        limpos.append('***' if esconder else a)
+        esconder = a == '--password'
+    return limpos
+
+
 def correr(*args):
     """manage.py com o Python embutido — o cliente não tem (nem precisa de) Python."""
+    # UTF-8 dos dois lados: numa saída redirigida o Windows usa cp1252, e um "→" num
+    # comando fazia-o rebentar a meio com UnicodeEncodeError.
     r = subprocess.run([str(_python()), str(APP / 'manage.py'), *args],
-                       cwd=str(APP), capture_output=True, text=True)
+                       cwd=str(APP), capture_output=True, encoding='utf-8', errors='replace',
+                       env={**os.environ, 'PYTHONUTF8': '1'})
     # Sempre para o log (sucesso ou falha) — antes só se via a saída quando FALHAVA;
     # foi assim que "criar_dono correu mas não criou ninguém" ficou invisível.
-    print(f'$ manage.py {" ".join(args)}')
+    print(f'$ manage.py {" ".join(_para_o_registo(args))}')
     if r.stdout:
         print(r.stdout.rstrip())
     if r.returncode != 0:
@@ -406,23 +438,85 @@ def activar_licenca():
             pass
 
 
+def caminho_do_ini():
+    return sys.argv[sys.argv.index('--ini') + 1] if '--ini' in sys.argv else str(RAIZ / 'instalacao.ini')
+
+
+def registar_resultado(sucesso, saida):
+    """Deixa ao instalador as marcas que ele lê: o Inno Setup não vê o código de saída."""
+    import locale
+    logs = DADOS / 'logs'
+    marca, erro = logs / 'configurar.ok', logs / 'configurar.erro.txt'
+    if sucesso:
+        marca.write_text('ok', encoding='ascii')
+        erro.unlink(missing_ok=True)
+    else:
+        marca.unlink(missing_ok=True)
+        # Na codificação do Windows, que é a que a caixa de mensagem do instalador lê.
+        erro.write_text(saida[-1500:], encoding=locale.getpreferredencoding(False),
+                        errors='replace')
+
+
+def esperar_servidor(segundos=180):
+    """Só dá a instalação por pronta quando o servidor responde. Sai sempre com 0."""
+    import time
+    import urllib.error
+    import urllib.request
+    marca = DADOS / 'logs' / 'servidor.ok'
+    marca.unlink(missing_ok=True)
+    fim = time.monotonic() + segundos
+    while time.monotonic() < fim:
+        try:
+            urllib.request.urlopen('http://127.0.0.1:8000/api/licensing/status/', timeout=5).close()
+            marca.write_text('ok', encoding='ascii')
+            return 0
+        except urllib.error.HTTPError:
+            marca.write_text('ok', encoding='ascii')   # respondeu: está de pé
+            return 0
+        except Exception:
+            time.sleep(2)
+    return 0
+
+
+SERVICOS = ('MwanaLodgeServidor', 'MwanaLodgeImpressao', 'MwanaLodgeCelery', 'MwanaLodgeAgendador')
+
+
+def registar_servicos_em_falta():
+    """Escreve os serviços que não estão a correr, para o instalador os mostrar."""
+    ficheiro = DADOS / 'logs' / 'servicos-em-falta.txt'
+    ficheiro.unlink(missing_ok=True)
+    falta = []
+    for nome in SERVICOS:
+        r = subprocess.run(['sc', 'query', nome], capture_output=True, text=True, errors='replace')
+        if 'RUNNING' not in (r.stdout or ''):
+            falta.append(nome)
+    if falta:
+        ficheiro.write_text(', '.join(falta), encoding='ascii')
+    return falta
+
+
 def main():
-    ini = sys.argv[sys.argv.index('--ini') + 1] if '--ini' in sys.argv else str(RAIZ / 'instalacao.ini')
+    ini = caminho_do_ini()
     DADOS.mkdir(exist_ok=True)
     (DADOS / 'media').mkdir(exist_ok=True)
     (DADOS / 'logs').mkdir(exist_ok=True)
     bd = ler_escolha(ini)
     estado, feito = escrever_env(bd)
-    print(f'.env {estado}; base = {bd.get("tipo", "sqlite")}')
+    print(f'.env {estado}; base escolhida = {bd.get("tipo", "sqlite")}')
     # A ficha para o dono da casa — sem ela, a resposta a "quais são as minhas
     # credenciais?" é "ninguém sabe": a password é gerada na instalação.
-    try:
-        escrever_ficha_da_base(bd, feito)
-    except Exception as e:
-        # Não é fatal: a instalação não pode parar por causa de um ficheiro de
-        # apoio. Mas diz-se, para quem instala poder escrever os dados à mão.
-        print(f'AVISO: não consegui escrever a ficha da base de dados ({e}). '
-              f'As credenciais estão no .env da aplicação.')
+    #
+    # SÓ quando o .env acabou de ser criado. Numa reinstalação a base é a que já lá
+    # está, e reescrever a ficha com a escolha do assistente apagava as credenciais
+    # verdadeiras da única folha onde o dono as tem.
+    if estado == 'criado':
+        try:
+            escrever_ficha_da_base(bd, feito)
+        except Exception as e:
+            # Não é fatal: a instalação não pode parar por causa de um ficheiro de
+            # apoio. Mas diz-se, para quem instala poder escrever os dados à mão.
+            print(f'AVISO: não consegui escrever a ficha da base de dados ({e}). '
+                  f'As credenciais estão no .env da aplicação.')
     correr('migrate', '--noinput')
     correr('collectstatic', '--noinput')
     # O CATÁLOGO DE PARÂMETROS (Configuração POS → Parâmetros) — sem isto, uma
@@ -474,27 +568,38 @@ def main():
     # se pede nada a ninguém.
     activar_licenca()
 
-    # A CONTA DO DONO — do PCC se ela de lá vier, senão a que o técnico escreveu.
-    #
-    # Vir do PCC é melhor por uma razão que não é de comodidade: assim o técnico
-    # não precisa de SABER a senha com que o dono entra no sistema dele. Ela
-    # viaja cifrada no mesmo canal da licença, é usada uma vez para criar a
-    # conta, e o dono é obrigado a trocá-la no primeiro login — não fica senha
-    # de fábrica nenhuma viva na instalação.
+    # A CONTA DO DONO: vale a senha escrita no assistente, porque quem a escreveu
+    # duas vezes tem de conseguir entrar com ela. Quando a do PCC ganhava, a
+    # escrita era ignorada em silêncio e o login respondia "credenciais inválidas".
+    # A do PCC só serve quando ninguém escreveu nenhuma.
     dono_pcc = globals().get('DONO_DO_PCC')
     dono = ler_dono(ini)
-    if dono_pcc and dono_pcc.get('password'):
+    if dono and dono.get('password'):
+        correr('criar_dono', '--username', dono.get('utilizador', 'dono'),
+               '--password', dono['password'])
+        print('Conta do dono pronta (do wizard).')
+    elif dono_pcc and dono_pcc.get('password'):
         correr('criar_dono', '--username', dono_pcc.get('username', 'dono'),
                '--password', dono_pcc['password'],
                *(['--trocar-no-primeiro-login'] if dono_pcc.get('must_change') else []))
         print(f"Conta do dono criada a partir do PCC ({dono_pcc.get('username', 'dono')}).")
-    elif dono and dono.get('password'):
-        correr('criar_dono', '--username', dono.get('utilizador', 'dono'),
-               '--password', dono['password'])
-        print('Conta do dono pronta (do wizard).')
     else:
         print(f'AVISO: sem secção [dono] (ou password vazia) em {ini} — '
               'nenhuma conta de acesso foi criada.')
+
+    # A ÚLTIMA PERGUNTA: alguém consegue entrar?
+    #
+    # Até aqui, o ramo de cima podia imprimir "AVISO: nenhuma conta de acesso
+    # foi criada" e a instalação seguia para o fim a dizer que estava pronta. O
+    # aviso ia para um ficheiro de registo que ninguém abre; o técnico ia-se
+    # embora; e o dono descobria no ecrã de login, que lhe responde
+    # "credenciais inválidas" — a frase errada para o problema certo.
+    #
+    # `verificar_acesso` sai com código 1 se não houver conta nenhuma, e o
+    # `correr()` acima faz a instalação parar com a mensagem à vista. Uma
+    # instalação que acaba bem tem de deixar o sistema USÁVEL, e usável começa
+    # em alguém conseguir entrar.
+    correr('verificar_acesso')
 
     print('Base de dados pronta. Os serviços podem arrancar.')
 
@@ -505,15 +610,27 @@ if __name__ == '__main__':
     # correu) ficava invisível: nenhum ecrã de erro, nenhum registo em lado
     # nenhum, só "a conta do dono nunca chegou a existir" descoberto dias
     # depois pelo cliente a tentar entrar. Regista sempre, sucesso ou falha.
+    if '--esperar-servidor' in sys.argv:
+        codigo = esperar_servidor()
+        registar_servicos_em_falta()
+        sys.exit(codigo)
+    # Nunca rebentar por um carácter que a consola não saiba escrever.
+    for fluxo in (sys.stdout, sys.stderr):
+        try:
+            fluxo.reconfigure(errors='replace')
+        except Exception:
+            pass
     (DADOS / 'logs').mkdir(parents=True, exist_ok=True)
     log_path = DADOS / 'logs' / 'configurar.log'
     import io
     import datetime
     buf = io.StringIO()
     real_stdout, real_stderr = sys.stdout, sys.stderr
+    sucesso = False
     try:
         sys.stdout = sys.stderr = _Tee(real_stdout, buf)
         main()
+        sucesso = True
     except Exception as e:
         buf.write(f'ERRO: {e}\n')
         raise
@@ -522,3 +639,8 @@ if __name__ == '__main__':
         with open(log_path, 'a', encoding='utf-8') as f:
             f.write(f'\n=== {datetime.datetime.now().isoformat(timespec="seconds")} ===\n')
             f.write(buf.getvalue())
+        registar_resultado(sucesso, buf.getvalue())
+        try:
+            limpar_passwords_do_ini(caminho_do_ini())
+        except Exception:
+            pass

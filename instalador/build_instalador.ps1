@@ -15,6 +15,25 @@
 #
 # Precisa (só nesta máquina): node, python, Inno Setup 6, e internet no passo 3.
 # ============================================================================
+# ----------------------------------------------------------------------------
+# OS DADOS DO BUILD — perguntados, ou passados por parâmetro.
+#
+# Eram SEMPRE perguntados com `Read-Host`, que exige uma consola interactiva a
+# sério. Corrido de outra maneira — por um atalho, por outra ferramenta, por um
+# agendador — os `Read-Host` não têm de onde ler: devolvem vazio, o ciclo da
+# senha fica a rodar, e quem está a ver julga que o guião "saltou os pedidos" e
+# seguiu em frente.
+#
+# Com parâmetros, quem quiser escrever à mão continua a escrever (é o que
+# acontece se não os passar). E passa a ser possível repetir um build exacto,
+# automatizá-lo, ou ensaiá-lo — que até aqui não era, porque não havia forma de
+# lá chegar sem um teclado humano.
+param(
+    [string] $SenhaInstalacao,
+    [string] $CodigoCliente,
+    [string] $PccUrl
+)
+
 $ErrorActionPreference = 'Stop'
 
 # ----------------------------------------------------------------------------
@@ -67,41 +86,58 @@ function Ler-SenhaPlana([string]$Prompt) {
 }
 
 Write-Host "== 1/6 Senha de instalação =="
-Write-Host "Vá ao PCC (Gestão de Clientes > Acessos) e gere/copie a senha de instalação DESTE cliente."
-Write-Host "Cole-a aqui — nunca fica gravada no código."
-do {
-  $senha1 = Ler-SenhaPlana 'Senha de instalação (do PCC)'
-  $senha2 = Ler-SenhaPlana 'Repita a senha'
-  if ($senha1 -ne $senha2) { Write-Warning 'As duas senhas não coincidem — tente outra vez.' }
-  elseif ([string]::IsNullOrWhiteSpace($senha1)) { Write-Warning 'A senha não pode ficar vazia.' }
-} while ($senha1 -ne $senha2 -or [string]::IsNullOrWhiteSpace($senha1))
-
-# O CÓDIGO DO CLIENTE — o que o identifica no PCC (Gestão de Clientes). Junto
-# com a senha de instalação, é o que permite ao próprio instalador ir buscar a
-# licença no fim, sem ninguém copiar ficheiros à mão. Este build já é POR
-# CLIENTE (a senha de instalação é dele), por isso não se perde nada em o fixar
-# aqui — ganha-se uma instalação que acaba com o sistema a funcionar.
-Write-Host ""
-Write-Host "== Código do cliente (PCC > Gestão de Clientes) =="
-Write-Host "Com ele, o instalador ativa a licença sozinho no fim. Enter para saltar"
-Write-Host "(a licença terá depois de ser ativada no ecrã, como até agora)."
-$CodigoCliente = (Read-Host 'Código do cliente').Trim()
-if ([string]::IsNullOrWhiteSpace($CodigoCliente)) {
-  Write-Warning 'Sem código do cliente: o instalador não vai poder ativar a licença sozinho.'
+if (-not [string]::IsNullOrWhiteSpace($SenhaInstalacao)) {
+  $senha1 = $SenhaInstalacao
+  Write-Host "   senha recebida por parâmetro (não se pergunta)."
+} else {
+  Write-Host "Vá ao PCC (Gestão de Clientes > Acessos) e gere/copie a senha de instalação DESTE cliente."
+  Write-Host "Cole-a aqui — nunca fica gravada no código."
+  # SE NÃO HOUVER CONSOLA, NÃO SE PERGUNTA — explica-se.
+  #
+  # `Read-Host` sem consola devolve vazio sem bloquear, e o ciclo abaixo rodava
+  # para sempre a avisar "a senha não pode ficar vazia". De fora via-se um
+  # guião pendurado, ou — pior — alguém concluía que ele tinha saltado os
+  # pedidos e continuado.
+  if ([Console]::IsInputRedirected) {
+    throw ('Este build precisa da senha de instalação e não há consola para a ' +
+           'escrever. Corra-o numa janela do PowerShell, ou passe-a por ' +
+           'parâmetro: .\build_instalador.ps1 -SenhaInstalacao "..." ' +
+           '-CodigoCliente "..." -PccUrl "..."')
+  }
+  do {
+    $senha1 = Ler-SenhaPlana 'Senha de instalação (do PCC)'
+    $senha2 = Ler-SenhaPlana 'Repita a senha'
+    if ($senha1 -ne $senha2) { Write-Warning 'As duas senhas não coincidem — tente outra vez.' }
+    elseif ([string]::IsNullOrWhiteSpace($senha1)) { Write-Warning 'A senha não pode ficar vazia.' }
+  } while ($senha1 -ne $senha2 -or [string]::IsNullOrWhiteSpace($senha1))
 }
+
+# O CÓDIGO DO CLIENTE NÃO SE PERGUNTA AQUI. Quem instala escreve o CLI e a chave no
+# ecrã de ativação, depois da instalação. Selá-lo no pacote saltava esse passo sem
+# ninguém perceber porquê. Fica só o parâmetro, para quem o pedir de propósito.
+$CodigoCliente = "$CodigoCliente".Trim()
 
 # O ENDEREÇO DO PCC — o MESMO para todos os clientes (é a sua VPS). Sem isto,
 # "Sincronizar com o PCC" no cliente aponta sempre para o próprio servidor dele.
 # Só se pergunta da primeira vez; fica guardado (fora do git) para os próximos builds.
 $PccUrlFile = Join-Path $PSScriptRoot 'pcc_url.txt'
-if (Test-Path $PccUrlFile) {
+if (-not [string]::IsNullOrWhiteSpace($PccUrl)) {
+  $PccUrl = $PccUrl.Trim()
+  Write-Host "Endereço do PCC recebido por parâmetro: $PccUrl"
+} elseif (Test-Path $PccUrlFile) {
   $PccUrl = (Get-Content $PccUrlFile -Raw).Trim()
-  Write-Host "Endereço do PCC (guardado): $PccUrl — Enter para manter, ou escreva um novo:"
-  $novo = Read-Host 'PCC_URL'
-  if (-not [string]::IsNullOrWhiteSpace($novo)) { $PccUrl = $novo.Trim() }
-} else {
+  if (-not [Console]::IsInputRedirected) {
+    Write-Host "Endereço do PCC (guardado): $PccUrl — Enter para manter, ou escreva um novo:"
+    $novo = Read-Host 'PCC_URL'
+    if (-not [string]::IsNullOrWhiteSpace($novo)) { $PccUrl = $novo.Trim() }
+  } else {
+    Write-Host "Endereço do PCC (guardado): $PccUrl"
+  }
+} elseif (-not [Console]::IsInputRedirected) {
   Write-Host 'Ainda não tem o endereço do PCC guardado (ex.: https://pcc.mwanalodge.ao).'
   $PccUrl = (Read-Host 'PCC_URL').Trim()
+} else {
+  $PccUrl = ''
 }
 if ([string]::IsNullOrWhiteSpace($PccUrl)) {
   Write-Warning 'Sem PCC_URL, este cliente nunca vai conseguir sincronizar (licença, AGT). Continuando mesmo assim.'
@@ -111,8 +147,18 @@ if ([string]::IsNullOrWhiteSpace($PccUrl)) {
 
 Write-Host "== 2/6 Frontend (vite build) =="
 Push-Location (Join-Path $Raiz 'frontend')
-npm run build
-if ($LASTEXITCODE -ne 0) { throw 'vite build falhou' }
+# PELO `Invoke-Externo`, e não em cru.
+#
+# A função existe neste ficheiro precisamente por causa deste comando (ver o
+# comentário dela, lá em cima), e este era o único sítio que não a usava. Em
+# cru, QUALQUER linha que o vite escreva no stderr — um aviso, não um erro —
+# vira NativeCommandError e mata o build com `$ErrorActionPreference='Stop'`,
+# antes sequer de se chegar à verificação do código de saída na linha seguinte.
+#
+# Aconteceu outra vez esta semana: um aviso sobre um módulo importado das duas
+# formas, o frontend compilado com sucesso, e o instalador a falhar a meio sem
+# ninguém perceber porquê.
+Invoke-Externo -Descricao 'vite build' -Comando { npm run build }
 Pop-Location
 
 Write-Host "== 3/6 Pacote: backend limpo + webapp =="
@@ -231,6 +277,9 @@ Copy-Item "$PSScriptRoot\servicos\impressao.xml" "$Pacote\servicos\"
 # base de dados escolhida no wizard — ver settings.py).
 Copy-Item $WinSW "$Pacote\servicos\celery.exe"
 Copy-Item "$PSScriptRoot\servicos\celery.xml" "$Pacote\servicos\"
+# O agendador: serviço à parte, o Celery não o junta ao trabalhador no Windows.
+Copy-Item $WinSW "$Pacote\servicos\agendador.exe"
+Copy-Item "$PSScriptRoot\servicos\agendador.xml" "$Pacote\servicos\"
 
 Write-Host "== 6/6 Inno Setup =="
 $iscc = @('C:\Program Files (x86)\Inno Setup 6\ISCC.exe', 'C:\Program Files\Inno Setup 6\ISCC.exe',

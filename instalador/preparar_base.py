@@ -139,6 +139,18 @@ def preparar_sqlserver(servidor, porta, base, admin_user, admin_pass,
     criou_base = False
     with ligacao:
         cur = ligacao.cursor()
+        # A aplicação entra com utilizador e senha. Num servidor só com autenticação
+        # do Windows o login criado abaixo nunca entraria, e o erro só apareceria
+        # depois da instalação "acabar bem".
+        if app_user:
+            cur.execute("SELECT CAST(SERVERPROPERTY('IsIntegratedSecurityOnly') AS int)")
+            if cur.fetchone()[0] == 1:
+                raise ErroDeBase(
+                    'Este SQL Server só aceita autenticação do Windows, e o sistema '
+                    'precisa de entrar com utilizador e senha.\n'
+                    'No SQL Server Management Studio: Propriedades do servidor > '
+                    'Segurança > "Autenticação do SQL Server e do Windows", reinicie '
+                    'o serviço do SQL Server e volte a correr o instalador.')
         cur.execute('SELECT DB_ID(?)', base)
         if cur.fetchone()[0] is None:
             cur.execute(f'CREATE DATABASE [{base}]')

@@ -959,7 +959,7 @@ class PosParameter(models.Model):
     group = models.CharField(max_length=40, default='Geral')
     choices = models.JSONField(default=list, blank=True)       # ["Mesas", "Venda Direta", …]
     default = models.CharField(max_length=120, blank=True, null=True)
-    help_text = models.CharField(max_length=250, blank=True, null=True)
+    help_text = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = 'pos_parameter'

@@ -46,6 +46,21 @@ TIPO_DE_CONTA = {
 }
 
 
+def garantir_caixa(hotel):
+    """Cria a caixa do hotel se ele ainda não tiver conta de dinheiro activa.
+
+    Numa instalação real o hotel nasce na ATIVAÇÃO, depois de o instalador ter
+    corrido os seeds: só o `seed_tesouraria` deixava esse hotel sem caixa nenhuma.
+    Devolve True se criou.
+    """
+    from .models import FinanceAccount
+    if FinanceAccount.objects.filter(hotel=hotel, account_type='CASH', is_active=True).exists():
+        return False
+    FinanceAccount.objects.create(hotel=hotel, code='CAIXA', name='Caixa', account_type='CASH',
+                                  currency='AOA', opening_balance=0, is_active=True)
+    return True
+
+
 def conta_para(metodo, hotel_id=None):
     """A conta de tesouraria deste método, ou None se não se puder decidir."""
     if metodo is None:

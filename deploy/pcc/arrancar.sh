@@ -15,9 +15,9 @@
 # processo morria, o Docker voltava a levantar o contentor, e repetia-se para
 # sempre: 0 réplicas, 1 réplica, 0, 1, de doze em doze segundos. De fora
 # viam-se 502 e mais nada. A mensagem de erro do Django ia para o stdout de um
-# contentor que já não existe — e se o subsistema de registos do painel
-# estiver em baixo (foi o caso), não há ABSOLUTAMENTE nada para ler. Ficou-se
-# a adivinhar durante horas o que o Django tinha escrito em claro.
+# contentor que morre logo a seguir, e só se lê no separador de registos do
+# painel enquanto o serviço ainda tem histórico. Com este ficheiro, o motivo
+# fica também no volume e sobrevive ao contentor e a um redeploy.
 #
 # A correcção não é tornar a falha silenciosa — é deixá-la ESCRITA num sítio
 # que sobrevive à morte do contentor: o volume persistente (/app/dados), que é

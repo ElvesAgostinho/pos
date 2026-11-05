@@ -9,15 +9,14 @@
   grande e a fila da AGT ficam parados EM FILA (não se perdem, mas não avançam)
   até o serviço voltar — por isso é obrigatório, não opcional como antes.
 
-  -B embute o agendador (Beat) no mesmo processo: um hotel não precisa de dois
-  serviços Windows só para ter a fila da AGT a correr sozinha a cada 30s. Se um dia
-  for preciso escalar para vários workers numa instalação grande a sério, tira-se o
-  -B daqui e cria-se um segundo serviço "MwanaLodgeCeleryBeat" só com o agendador.
+  SÓ O TRABALHADOR. O agendador que manda tratar a fila da AGT a cada 30 segundos é
+  outro serviço (agendador.xml), porque o Celery recusa juntar os dois no Windows.
 
-  --pool=solo: no Windows o pool de processos por omissão do Celery (prefork) não
-  funciona. "solo" corre as tarefas uma a uma na mesma thread — chega perfeitamente
-  para o volume de e-mails/SAF-T/AGT de um hotel; se algum dia isso for pouco,
-  aumenta-se a concorrência com "--pool=threads --concurrency=4" em vez de "solo".
+  Corre com o conjunto "solo": o de processos, que é o normal, não funciona no Windows.
+  Trata as tarefas uma a uma, o que chega para os e-mails, o SAF-T e a AGT de um hotel.
+
+  ATENÇÃO: dois hífenes seguidos são proibidos dentro de um comentário XML. O WinSW
+  recusa o ficheiro inteiro, e foi isso que deixou este serviço sem nunca se instalar.
 -->
 <service>
   <id>MwanaLodgeCelery</id>
@@ -25,7 +24,7 @@
   <description>Processa em fundo o envio de e-mail, a geração de SAF-T grande e a fila da AGT — serviço obrigatório, tal como o Servidor e a Impressão.</description>
 
   <executable>%BASE%\..\python\python.exe</executable>
-  <arguments>-m celery -A erp_server worker -B -l info --pool=solo</arguments>
+  <arguments>-m celery -A erp_server worker -l info --pool=solo</arguments>
   <workingdirectory>%BASE%\..\app</workingdirectory>
 
   <onfailure action="restart" delay="10 sec"/>

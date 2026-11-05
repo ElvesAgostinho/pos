@@ -72,7 +72,7 @@ EXPOSE 8000
 #
 # O que muda é o que fica para trás quando corre mal. Numa linha de CMD, a
 # mensagem de erro do Django vai para o stdout de um contentor que morre a
-# seguir; se o subsistema de registos do painel estiver em baixo, não há nada
+# seguir; depois de um redeploy ou sem histórico no painel, não há nada
 # para ler, e um ciclo de reinícios passa a ser um mistério. O guião escreve
 # tudo em /app/dados/logs/arranque.log, que está no volume persistente e
 # sobrevive à morte do contentor.

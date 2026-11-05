@@ -56,11 +56,23 @@ export function getAppearance(key: keyof typeof APPEARANCE_KEYS): string {
 export function setAppearance(key: keyof typeof APPEARANCE_KEYS, value: string) {
   const k = APPEARANCE_KEYS[key];
   if (value) localStorage.setItem(k, value); else localStorage.removeItem(k);
-  // A COR TEM DE CHEGAR AO CSS NO MESMO INSTANTE. Sem isto, mudar a cor da
-  // barra na Aparência não dava diferença nenhuma até alguém recarregar a
-  // página — e quem experimenta uma cor e não vê nada acontecer conclui que
-  // a definição não funciona.
-  if (k === 'ui_bar_color') {
-    import('./theme').then((t) => t.aplicarCorDaMarca()).catch(() => {});
+
+  // AVISA QUEM QUISER SABER — e não vai ele próprio mexer no tema.
+  //
+  // Aqui estava `import('./theme')`, um import dinâmico, para evitar um ciclo:
+  // o tema importa `getAppearance` deste ficheiro, por isso este não pode
+  // importar o tema de volta.
+  //
+  // Funcionava, e partiu o build. O mesmo módulo importado das duas formas faz
+  // o Rollup avisar (INEFFECTIVE_DYNAMIC_IMPORT), o PowerShell transforma
+  // qualquer linha de aviso num erro fatal, e o `build_instalador.ps1` morria
+  // no passo do frontend — com o frontend compilado com sucesso.
+  //
+  // Um evento resolve o ciclo sem import nenhum: este ficheiro anuncia que a
+  // aparência mudou, e quem sabe pintar (main.tsx) trata disso. É também mais
+  // honesto — gravar uma definição e repintar o ecrã são duas
+  // responsabilidades, e só uma delas é deste ficheiro.
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('aparencia-mudou', { detail: { chave: k, valor: value } }));
   }
 }

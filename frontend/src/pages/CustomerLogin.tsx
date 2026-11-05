@@ -236,7 +236,6 @@ const CustomerLogin: React.FC = () => {
             agora onde não concorre com o formulário. */}
         <dl className="relative space-y-2.5 text-[12.5px] max-w-[380px]">
           <Linha rotulo="Servidor" valor="localhost:8000" />
-          <Linha rotulo="Base de dados" valor="ERP_2026" />
           <Linha rotulo="Versão" valor="1.0.0" />
           <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-white/10">
             <span className="text-white/55 flex items-center gap-1.5"><Wifi size={13} />Ligação</span>
@@ -374,7 +373,6 @@ const CustomerLogin: React.FC = () => {
         <Modal titulo="Configurações de ligação" icone={<Settings size={15} />} cor={barColor} onClose={() => setConfig(false)}>
           <div className="p-5 space-y-3 text-[13px]">
             <Row label="Servidor SQL / API" value="localhost:8000" />
-            <Row label="Base de dados" value="ERP_2026" />
             <Row label="Idioma" value="Português (Angola)" />
             <div className="flex items-center justify-between pt-1">
               <span className="flex items-center gap-1.5 text-[13px] text-[#374151]">

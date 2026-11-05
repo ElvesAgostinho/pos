@@ -35,6 +35,12 @@ DefaultDirName={autopf}\MwanaLodge
 DefaultGroupName={#AppNome}
 ; instala serviços — precisa de administrador, como qualquer ERP
 PrivilegesRequired=admin
+; 64 BITS, e não é pormenor. Sem isto o instalador corre como programa de 32 bits
+; e o Windows mostra-lhe a vista WOW6432Node do registo. Um SQL Server de 64 bits
+; regista-se na outra vista: estava instalado e a correr, e o instalador dizia que
+; não existia. O pacote já só serve em x64 (Python amd64, WinSW-x64).
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 OutputBaseFilename=MwanaLodge-Setup-{#AppVersao}
 Compression=lzma2/max
 SolidCompression=yes
@@ -119,23 +125,31 @@ Filename: "msiexec.exe"; \
   Check: PrecisaDoDriverODBC; Flags: waituntilterminated
 
 Filename: "{app}\python\python.exe"; Parameters: """{app}\configurar.py"" --ini ""{app}\instalacao.ini"""; \
-  StatusMsg: "A preparar a base de dados…"; Flags: runhidden waituntilterminated
+  StatusMsg: "A preparar a base de dados…"; Flags: runhidden waituntilterminated; \
+  BeforeInstall: PrepararConfiguracao; AfterInstall: VerificarConfiguracao
 ; 2) os TRÊS SERVIÇOS, como a Oracle instala os dela:
-Filename: "{app}\servicos\servidor.exe";  Parameters: "install"; StatusMsg: "A instalar o serviço do Servidor…";  Flags: runhidden waituntilterminated
-Filename: "{app}\servicos\impressao.exe"; Parameters: "install"; StatusMsg: "A instalar o serviço de Impressão…"; Flags: runhidden waituntilterminated
-Filename: "{app}\servicos\servidor.exe";  Parameters: "start";   StatusMsg: "A arrancar o Servidor…";             Flags: runhidden waituntilterminated
-Filename: "{app}\servicos\impressao.exe"; Parameters: "start";   StatusMsg: "A arrancar a Impressão…";            Flags: runhidden waituntilterminated
+Filename: "{app}\servicos\servidor.exe";  Parameters: "install"; StatusMsg: "A instalar o serviço do Servidor…";  Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
+Filename: "{app}\servicos\impressao.exe"; Parameters: "install"; StatusMsg: "A instalar o serviço de Impressão…"; Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
+Filename: "{app}\servicos\servidor.exe";  Parameters: "start";   StatusMsg: "A arrancar o Servidor…";             Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
+Filename: "{app}\servicos\impressao.exe"; Parameters: "start";   StatusMsg: "A arrancar a Impressão…";            Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
 ; 2b) A FILA DE FUNDO (Celery) — TERCEIRO serviço, sempre instalado, como os
 ;     outros dois. Não precisa de Redis nem de pergunta nenhuma: a fila vive na
 ;     própria base de dados que o wizard já escolheu (SQLite ou PostgreSQL) —
 ;     ver o comentário "FILA DE FUNDO" em backend/erp_server/settings.py.
-Filename: "{app}\servicos\celery.exe"; Parameters: "install"; StatusMsg: "A instalar o serviço da Fila de Fundo…"; Flags: runhidden waituntilterminated
-Filename: "{app}\servicos\celery.exe"; Parameters: "start";   StatusMsg: "A arrancar a Fila de Fundo…";            Flags: runhidden waituntilterminated
+Filename: "{app}\servicos\celery.exe"; Parameters: "install"; StatusMsg: "A instalar o serviço da Fila de Fundo…"; Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
+Filename: "{app}\servicos\celery.exe"; Parameters: "start";   StatusMsg: "A arrancar a Fila de Fundo…";            Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
+Filename: "{app}\servicos\agendador.exe"; Parameters: "install"; StatusMsg: "A instalar o serviço do Agendador…"; Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
+Filename: "{app}\servicos\agendador.exe"; Parameters: "start";   StatusMsg: "A arrancar o Agendador…";            Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
 ; 3) firewall: os terminais POS da casa (tablets, outras caixas) ligam-se a este servidor
-Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""Mwana Lodge Servidor"" dir=in action=allow protocol=TCP localport=8000"; Flags: runhidden waituntilterminated
+Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""Mwana Lodge Servidor"" dir=in action=allow protocol=TCP localport=8000"; Flags: runhidden waituntilterminated; Check: ConfiguracaoOk
 ; 4) no fim, abre o sistema: sem licença ativa cai no ONBOARDING (ativar a licença,
 ;    associar o hardware, criar os pontos de venda) — é aí que a instalação acaba.
-Filename: "{#AppURL}"; Description: "Abrir o {#AppNome} e ativar a licença"; Flags: postinstall shellexec nowait
+;    Só se abre depois de o servidor responder: abrir antes dava "página não
+;    encontrada" a quem acabou de instalar.
+Filename: "{app}\python\python.exe"; Parameters: """{app}\configurar.py"" --esperar-servidor"; \
+  StatusMsg: "A iniciar o sistema…"; Flags: runhidden waituntilterminated; \
+  Check: ConfiguracaoOk; AfterInstall: VerificarServidor
+Filename: "{#AppURL}"; Description: "Abrir o {#AppNome} e ativar a licença"; Flags: postinstall shellexec nowait; Check: ConfiguracaoOk
 
 [UninstallRun]
 ; parar e remover os serviços ANTES de apagar ficheiros — senão ficam órfãos no Windows
@@ -145,6 +159,10 @@ Filename: "{app}\servicos\servidor.exe";  Parameters: "uninstall"; Flags: runhid
 Filename: "{app}\servicos\impressao.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "DelImp"
 Filename: "{app}\servicos\celery.exe"; Parameters: "stop";      Flags: runhidden waituntilterminated; RunOnceId: "StopCel"
 Filename: "{app}\servicos\celery.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "DelCel"
+Filename: "{app}\servicos\agendador.exe"; Parameters: "stop";      Flags: runhidden waituntilterminated; RunOnceId: "StopAge"
+Filename: "{app}\servicos\agendador.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "DelAge"
+; a regra da firewall que a instalação abriu não fica para trás
+Filename: "netsh"; Parameters: "advfirewall firewall delete rule name=""Mwana Lodge Servidor"""; Flags: runhidden waituntilterminated; RunOnceId: "DelFw"
 
 [UninstallDelete]
 ; os DADOS não se apagam na desinstalação: a base de dados do cliente (vendas,
@@ -168,10 +186,11 @@ var
   CaminhoMotor: String;    { o instalador do motor, depois de descarregado }
   EdHost, EdPorta, EdBase, EdUser, EdPass: TNewEdit;
   { ── A CONTA DO DONO — como a Oracle pede a password do SYS/SYSTEM na instalação,
-    aqui pede-se a conta com que o dono do hotel faz o PRIMEIRO login. O técnico
-    traz o utilizador/senha que o PCC gerou (ecrã "Acessos" do cliente) — nunca se
-    inventa uma ali, na hora, sem ficar registada em lado nenhum. }
+    aqui pede-se a conta com que o dono do hotel faz o PRIMEIRO login. É ESTA a
+    senha que vale: quem a escreveu duas vezes tem de conseguir entrar com ela. }
   DonoPagina: TWizardPage;
+  ConfigOk: Boolean;       { o configurar.py chegou ao fim sem erro? }
+  AvisouAnterior: Boolean; { o aviso de instalação existente já foi mostrado? }
   EdDonoUser, EdDonoPass, EdDonoPass2: TNewEdit;
 
 { O Pascal Script do Inno Setup não suporta funções aninhadas (ao contrário do
@@ -190,8 +209,11 @@ begin
   if APass then Result.PasswordChar := '*';
 end;
 
+procedure ManterPastaAnterior(); forward;
+
 procedure InitializeWizard;
 begin
+  ManterPastaAnterior();
   TipoBD := CreateInputOptionPage(wpSelectDir,
     'Base de Dados', 'Onde ficam guardadas as vendas',
     'Escolha onde ficam guardados os dados desta casa.'#13#10 +
@@ -222,7 +244,7 @@ begin
 
   PgDados := CreateCustomPage(SemMotor.ID,
     'Ligação ao servidor',
-    'Os dados de acesso ao servidor da casa. O instalador testa a ligação antes de continuar.');
+    'Os dados de acesso ao servidor da casa. Se a ligação falhar, o instalador diz porquê.');
   { O QUE SE PEDE AQUI É A CONTA DE ADMINISTRAÇÃO DO SERVIDOR, e não a da
     aplicação. O instalador usa-a uma vez para CRIAR a base e um utilizador só
     para ela — e esquece-a. Antes pedia-se a conta da aplicação e obrigava-se
@@ -240,7 +262,7 @@ begin
   EdPass  := Campo(PgDados, 136, 'Password admin:',  '',           True);
 
   DonoPagina := CreateCustomPage(PgDados.ID,
-    'Conta do Dono', 'A conta com que o dono do sistema faz o primeiro login');
+    'Conta do Dono', 'Escolha o utilizador e a senha com que o dono vai entrar no sistema');
   EdDonoUser  := Campo(DonoPagina, 8,   'Utilizador:',        'dono', False);
   EdDonoPass  := Campo(DonoPagina, 40,  'Password:',          '',     True);
   EdDonoPass2 := Campo(DonoPagina, 72,  'Confirmar Password:', '',    True);
@@ -259,9 +281,112 @@ end;
   tem de parar e ir instalar software. Procura-se onde cada motor se regista —
   o serviço e a chave de registo —, que é o que existe mesmo numa máquina com
   o servidor instalado e parado. }
-function TemSqlServer(): Boolean;
+function InstanciasSqlServer(var Nomes: TArrayOfString): Boolean;
+var
+  Chave: String;
 begin
-  Result := RegKeyExists(HKLM, 'SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL');
+  { Conta-se as INSTÂNCIAS, e não a chave: a chave pode sobrar de um SQL Server
+    já desinstalado. Só o motor regista aqui; o Analysis Services fica em OLAP. }
+  Chave := 'SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL';
+  Result := RegGetValueNames(HKLM, Chave, Nomes) and (GetArrayLength(Nomes) > 0);
+  if not Result then
+    Result := RegGetValueNames(HKLM32, Chave, Nomes) and (GetArrayLength(Nomes) > 0);
+end;
+
+function TemSqlServer(): Boolean;
+var
+  Nomes: TArrayOfString;
+begin
+  Result := InstanciasSqlServer(Nomes);
+end;
+
+{ O endereço da instância que encontrámos. A instância por omissão chama-se
+  MSSQLSERVER e não leva nome no endereço; as outras levam (SQLEXPRESS...). }
+function ServidorSqlDetectado(): String;
+var
+  Nomes: TArrayOfString;
+  I: Integer;
+begin
+  Result := 'localhost';
+  if not InstanciasSqlServer(Nomes) then Exit;
+  for I := 0 to GetArrayLength(Nomes) - 1 do
+    if CompareText(Nomes[I], 'MSSQLSERVER') = 0 then Exit;
+  Result := 'localhost\' + Nomes[0];
+end;
+
+function ConfiguracaoOk(): Boolean;
+begin
+  Result := ConfigOk;
+end;
+
+{ O INNO SETUP IGNORA O CÓDIGO DE SAÍDA das entradas [Run]. Sem isto, uma falha na
+  base de dados não aparecia a ninguém: a barra chegava ao fim, os serviços
+  arrancavam contra uma base a meio e o cliente só o descobria no login. }
+procedure VerificarConfiguracao();
+var
+  Texto: AnsiString;
+begin
+  ConfigOk := FileExists(ExpandConstant('{app}\dados\logs\configurar.ok'));
+  if ConfigOk then Exit;
+  if not LoadStringFromFile(ExpandConstant('{app}\dados\logs\configurar.erro.txt'), Texto) then
+    Texto := 'O configurador terminou sem dizer porquê.';
+  MsgBox('A instalação NÃO ficou pronta. Os serviços não foram arrancados.' + #13#10 + #13#10 +
+         String(Texto) + #13#10 + #13#10 +
+         'Corrija o problema e volte a correr o instalador.' + #13#10 +
+         'Registo completo: ' + ExpandConstant('{app}\dados\logs\configurar.log'),
+         mbCriticalError, MB_OK);
+end;
+
+{ JÁ HÁ AQUI UMA INSTALAÇÃO? O .env e a licença ficam na pasta, mesmo depois de
+  desinstalar, porque guardam a ligação à base e a ativação de um hotel a trabalhar.
+  Quem instalava por cima escolhia uma base que era ignorada em silêncio e não via o
+  ecrã da licença, sem perceber porquê. Agora não se pergunta o que não vai contar,
+  e diz-se o que vai acontecer. }
+function HaInstalacaoAnterior(): Boolean;
+begin
+  Result := FileExists(AddBackslash(WizardForm.DirEdit.Text) + 'app\.env');
+end;
+
+{ As versões anteriores eram de 32 bits e instalavam em Program Files (x86). Instalar
+  noutra pasta deixava dois sistemas e os dados do hotel para trás. }
+procedure ManterPastaAnterior();
+var
+  Antiga: String;
+begin
+  Antiga := ExpandConstant('{commonpf32}\MwanaLodge');
+  if FileExists(Antiga + 'pp\.env') then
+    WizardForm.DirEdit.Text := Antiga;
+end;
+
+{ Os serviços têm de parar antes de os ficheiros serem substituídos: com o python.exe
+  em uso, a cópia ficava presa num erro "ficheiro em uso" a meio da instalação. }
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  Codigo: Integer;
+begin
+  Result := '';
+  Exec(ExpandConstant('{sys}\sc.exe'), 'stop MwanaLodgeServidor', '', SW_HIDE, ewWaitUntilTerminated, Codigo);
+  Exec(ExpandConstant('{sys}\sc.exe'), 'stop MwanaLodgeImpressao', '', SW_HIDE, ewWaitUntilTerminated, Codigo);
+  Exec(ExpandConstant('{sys}\sc.exe'), 'stop MwanaLodgeCelery', '', SW_HIDE, ewWaitUntilTerminated, Codigo);
+  Exec(ExpandConstant('{sys}\sc.exe'), 'stop MwanaLodgeAgendador', '', SW_HIDE, ewWaitUntilTerminated, Codigo);
+  Sleep(4000);
+end;
+
+procedure VerificarServidor();
+var
+  Falta: AnsiString;
+begin
+  { O Inno ignora o código de saída das entradas [Run], por isso um serviço que não
+    se instalou passava em silêncio. Foi assim que a Fila de Fundo nunca existiu. }
+  if LoadStringFromFile(ExpandConstant('{app}\dados\logs\servicos-em-falta.txt'), Falta) then
+    MsgBox('Estes serviços não ficaram a correr: ' + String(Falta) + #13#10 + #13#10 +
+           'Sem eles, a fila da AGT e o envio de e-mails não avançam. Abra "Serviços" no ' +
+           'Windows e veja os registos em ' + ExpandConstant('{app}\dados\logs'),
+           mbError, MB_OK);
+  if not FileExists(ExpandConstant('{app}\dados\logs\servidor.ok')) then
+    MsgBox('O servidor ainda não respondeu. Aguarde um minuto e abra {#AppURL}.' + #13#10 +
+           'Se continuar sem abrir, veja os registos em ' +
+           ExpandConstant('{app}\dados\logs'), mbInformation, MB_OK);
 end;
 
 function TemPostgres(): Boolean;
@@ -327,6 +452,12 @@ end;
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
+  { Numa instalação existente a base já está decidida: perguntar era mentir. }
+  if ((PageID = TipoBD.ID) or (PageID = SemMotor.ID) or (PageID = PgDados.ID)
+      or (PageID = Descarga.ID)) and HaInstalacaoAnterior() then begin
+    Result := True;
+    Exit;
+  end;
   { A página "não tem servidor" só aparece quando é mesmo o caso. }
   if PageID = SemMotor.ID then
     Result := (TipoBD.SelectedValueIndex = 0) or MotorEscolhidoExiste();
@@ -346,6 +477,25 @@ end;
   erro que faz a ligação falhar sem se perceber porquê. }
 procedure CurPageChanged(CurPageID: Integer);
 begin
+  { Numa reinstalação o ecrã da pasta é saltado, por isso avisa-se no primeiro ecrã que
+    aparece a seguir à senha: o da conta do dono. }
+  if (CurPageID = DonoPagina.ID) and HaInstalacaoAnterior() and (not AvisouAnterior) then begin
+    AvisouAnterior := True;
+    MsgBox('Esta pasta já tem uma instalação do {#AppNome}: ' + WizardForm.DirEdit.Text + #13#10 + #13#10 +
+           'O programa vai ser atualizado. A base de dados e a licença ficam como estão, ' +
+           'por isso não se volta a perguntar por elas. A senha que escrever a seguir ' +
+           'passa a ser a senha do dono.' + #13#10 + #13#10 +
+           'Para instalar de raiz (escolher outra base e ativar de novo): desinstale, ' +
+           'apague ou mude o nome desta pasta e corra o instalador outra vez.',
+           mbInformation, MB_OK);
+  end;
+  { Depois de uma falha, o ecrã final não pode dizer que correu tudo bem. }
+  if (CurPageID = wpFinished) and (not ConfigOk) then begin
+    WizardForm.FinishedHeadingLabel.Caption := 'A instalação não ficou pronta';
+    WizardForm.FinishedLabel.Caption :=
+      'Os ficheiros foram copiados, mas a preparação do sistema falhou e os serviços ' +
+      'não foram arrancados. Corrija o problema indicado e volte a correr o instalador.';
+  end;
   { O SERVIDOR ACABOU DE SER INSTALADO POR NÓS: sabemos o endereço, a instância
     e as credenciais — não há nada para o técnico adivinhar. Preenche-se tudo,
     e ele só confirma. Era aqui que uma instalação automática deixava de o ser:
@@ -371,6 +521,9 @@ begin
 
   if CurPageID = PgDados.ID then begin
     if TipoBD.SelectedValueIndex = 1 then begin
+      { O SERVIDOR QUE JÁ EXISTE NESTA MÁQUINA: preenche-se, não se pergunta. }
+      if (not VaiInstalarMotor()) and (Trim(EdHost.Text) = 'localhost') then
+        EdHost.Text := ServidorSqlDetectado();
       PgDados.Caption := 'Ligação ao SQL Server';
       PgDados.Description :=
         'O instalador cria a base e o utilizador sozinho — não precisa de SQL.' + #13#10 +
@@ -378,6 +531,7 @@ begin
         'Administrador vazio = usar a conta do Windows com que está a instalar.';
       if EdPorta.Text = '5432' then EdPorta.Text := '';
     end else begin
+      if Pos('\', EdHost.Text) > 0 then EdHost.Text := 'localhost';
       PgDados.Caption := 'Ligação ao PostgreSQL';
       PgDados.Description :=
         'O instalador cria a base e o utilizador sozinho — não precisa de SQL.' + #13#10 +
@@ -472,7 +626,7 @@ begin
   end;
   if CurPageID = DonoPagina.ID then begin
     if EdDonoPass.Text = '' then begin
-      MsgBox('Indique a password do dono — foi gerada no PCC (ecrã Acessos do cliente).', mbError, MB_OK);
+      MsgBox('Indique a senha com que o dono vai entrar no sistema.', mbError, MB_OK);
       Result := False;
     end else if EdDonoPass.Text <> EdDonoPass2.Text then begin
       MsgBox('As duas passwords não coincidem.', mbError, MB_OK);
@@ -481,12 +635,21 @@ begin
   end;
 end;
 
-procedure CurStepChanged(CurStep: TSetupStep);
+{ AS ESCOLHAS DO ASSISTENTE, escritas IMEDIATAMENTE antes de o configurador correr.
+  Estavam em CurStepChanged(ssPostInstall), e o Inno Setup corre as entradas [Run]
+  ANTES desse passo: o configurar.py não encontrava o ini, assumia SQLite e não criava
+  conta nenhuma, e o ficheiro só aparecia dois segundos depois. Por isso a base
+  escolhida era ignorada e o login respondia "credenciais inválidas". }
+procedure PrepararConfiguracao();
 var
   Ini: String;
   Motor: String;
 begin
-  if CurStep = ssPostInstall then begin
+  begin
+    { Marcas de uma instalação anterior não podem passar por sucesso desta. }
+    DeleteFile(ExpandConstant('{app}\dados\logs\configurar.ok'));
+    DeleteFile(ExpandConstant('{app}\dados\logs\configurar.erro.txt'));
+    DeleteFile(ExpandConstant('{app}\dados\logs\servidor.ok'));
     { o wizard entrega a escolha ao configurar.py por um ini simples }
     Ini := ExpandConstant('{app}\instalacao.ini');
     { "Usar a base local" na página do servidor vale o mesmo que ter escolhido
