@@ -44,7 +44,7 @@ const CustomerLogin: React.FC = () => {
   // em localStorage — não chega sozinha ao logótipo real da empresa (Administração →
   // Empresa), que fica na base. Sem isto, o login mostrava sempre o "ML" de fábrica
   // em qualquer terminal onde não se tivesse carregado o MESMO ficheiro à mão.
-  type Marca = { name: string; company_name: string; logo_url: string; login_bg_url: string };
+  type Marca = { version?: string; build?: string; name: string; company_name: string; logo_url: string; login_bg_url: string };
   const [marca, setMarca] = useState<Marca | null>(null);
   useEffect(() => {
     apiClient.get('platform/branding/').then((r) => setMarca(r.data)).catch(() => {});
@@ -236,7 +236,7 @@ const CustomerLogin: React.FC = () => {
             agora onde não concorre com o formulário. */}
         <dl className="relative space-y-2.5 text-[12.5px] max-w-[380px]">
           <Linha rotulo="Servidor" valor="localhost:8000" />
-          <Linha rotulo="Versão" valor="1.0.0" />
+          <Linha rotulo="Versão" valor={[marca?.version, marca?.build].filter(Boolean).join(' · ') || '—'} />
           <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-white/10">
             <span className="text-white/55 flex items-center gap-1.5"><Wifi size={13} />Ligação</span>
             <span className="flex items-center gap-1.5 font-medium">

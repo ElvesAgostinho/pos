@@ -31,6 +31,12 @@ except Exception as e:
     sys.stderr.write(f'[run_server] migrate falhou no arranque: {e}\n')
 
 if __name__ == '__main__':
+    # Uma licença com módulos novos (ativação, ficheiro, sincronização) recarrega o
+    # servidor sozinha: ver licensing/recarga.py.
+    from django.conf import settings
+    from licensing.recarga import vigiar
+    vigiar(settings.BASE_DIR)
+
     from waitress import serve
     from erp_server.wsgi import application
     serve(application, listen='0.0.0.0:8000', threads=8)

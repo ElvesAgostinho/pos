@@ -171,8 +171,10 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
     prefix = f"{series.prefix} " if series.prefix else ''
     invoice_no = f"{prefix}{doc_type.code} {series.code}/{number}"
 
-    d = doc_date or date.today()
-    system_entry = timezone.now()
+    # EM HORA DE ANGOLA. Estava em UTC: a gravação ficava uma hora atrasada na assinatura e
+    # no SAF-T, e entre as 00:00 e as 01:00 uma factura de hoje ficava gravada ontem.
+    d = doc_date or timezone.localdate()
+    system_entry = timezone.localtime(timezone.now())
     system_entry_str = system_entry.strftime('%Y-%m-%dT%H:%M:%S')
 
     # Encadeamento: hash do último documento da MESMA série (contínuo).
@@ -195,7 +197,7 @@ def issue_document(series_id, customer_name=None, customer_tax_id=None, lines=No
         # venda, o PMS pela reserva — e passa-o; quem não souber deixa a nulo.
         hotel=hotel,
         series=series, doc_type=doc_type, number=number, invoice_no=invoice_no,
-        doc_date=d, system_entry_date=system_entry,
+        doc_date=d, system_entry_date=system_entry, system_entry_text=system_entry_str,
         customer=customer,
         customer_name=customer_name, customer_tax_id=customer_tax_id,
         customer_address=customer_address,
@@ -369,7 +371,7 @@ def verify_chain(series_id):
         ok_sig = True
         if doc.doc_type.signable:
             msg = signing.build_message(doc.doc_date.isoformat(),
-                                        doc.system_entry_date.strftime('%Y-%m-%dT%H:%M:%S'),
+                                        doc.texto_da_gravacao,
                                         doc.invoice_no, f"{doc.gross_total}", doc.previous_hash)
             # Com a versão da chave DO DOCUMENTO: uma factura assinada antes de
             # uma renovação de chave continua a verificar-se com a chave dela.

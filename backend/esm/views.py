@@ -71,7 +71,7 @@ class SupplierViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def dashboard(self, request):
         """KPIs e alertas para o Dashboard ESM do Backoffice."""
-        today = timezone.now().date()
+        today = timezone.localdate()
         soon = today + timedelta(days=30)
 
         base = Supplier.objects.all()

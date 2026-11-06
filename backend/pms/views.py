@@ -797,7 +797,7 @@ class ReservationViewSet(HotelScopedMixin, viewsets.ModelViewSet):
                 faturas.append({
                     'id': d.id, 'kind': 'FISCAL', 'number': d.invoice_no,
                     'type_name': d.doc_type.name if d.doc_type_id else '',
-                    'date': d.system_entry_date.strftime('%Y-%m-%d %H:%M') if d.system_entry_date else '',
+                    'date': timezone.localtime(d.system_entry_date).strftime('%Y-%m-%d %H:%M') if d.system_entry_date else '',
                     'total': str(d.gross_total), 'status': d.get_status_display(),
                 })
 

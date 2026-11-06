@@ -376,7 +376,7 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
             'document': {
                 'invoice_no': doc.invoice_no, 'type_name': doc.doc_type.name,
                 'copy_label': copy_label, 'status': doc.get_status_display(),
-                'date': doc.system_entry_date.strftime('%Y-%m-%d %H:%M'),
+                'date': timezone.localtime(doc.system_entry_date).strftime('%Y-%m-%d %H:%M'),
                 'operator': doc.operator_name, 'place': doc.place_ref, 'room': doc.room_ref,
                 'signable': doc.doc_type.signable,
             },

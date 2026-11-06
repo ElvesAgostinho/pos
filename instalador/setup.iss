@@ -12,7 +12,14 @@
 ; ============================================================================
 
 #define AppNome      "System Mwana Lodge"
-#define AppVersao    "1.0.0"
+; Vêm do build_instalador.ps1. Todos os builds se chamavam MwanaLodge-Setup-1.0.0.exe, e
+; foi assim que um instalador antigo seguiu para um cliente sem ninguém poder dar por isso.
+#ifndef AppVersao
+  #define AppVersao "0.0.0"
+#endif
+#ifndef Carimbo
+  #define Carimbo "manual"
+#endif
 #define AppEditor    "Mwana Lodge"
 #define AppURL       "http://localhost:8000"
 
@@ -41,7 +48,7 @@ PrivilegesRequired=admin
 ; não existia. O pacote já só serve em x64 (Python amd64, WinSW-x64).
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-OutputBaseFilename=MwanaLodge-Setup-{#AppVersao}
+OutputBaseFilename=MwanaLodge-Setup-{#AppVersao}-{#Carimbo}
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern

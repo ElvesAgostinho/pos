@@ -6,7 +6,7 @@
 
 ## O que o CLIENTE vê (a experiência Primavera)
 
-1. Recebe **um ficheiro**: `MwanaLodge-Setup-1.0.0.exe`.
+1. Recebe **um ficheiro**: `MwanaLodge-Setup-<versão>-<data-hora>.exe`.
 2. Duplo clique → **o Windows pede logo a senha de instalação**, antes de mostrar
    qualquer ecrã do wizard (como a Oracle e a Primavera). Sem a senha certa, o
    .exe nem chega a extrair um ficheiro — não é uma caixa decorativa, é o próprio
@@ -63,7 +63,7 @@ nenhum do projeto: vive só na memória do PowerShell durante o build e passa
 diretamente ao compilador. Entregue-a ao técnico por um canal separado do `.exe`
 — nunca no mesmo e-mail.
 
-Sai em `instalador\Output\MwanaLodge-Setup-1.0.0.exe`. O pacote **nunca** leva a base
+Sai em `instalador\Output\MwanaLodge-Setup-<versão>-<data-hora>.exe`, com o SHA256 no fim do build. O pacote **nunca** leva a base
 de dev, o `.env`, o `private.pem` nem a `license.key` — a licença é do cliente e vem
 do PCC na ativação.
 

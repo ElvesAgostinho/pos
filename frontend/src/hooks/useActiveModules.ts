@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 
-export interface LicenseStatus { licensed: boolean; client?: string; license_number?: string; valid_until?: string; modules: string[]; }
+export interface LicenseStatus { modulos_a_carregar?: boolean; licensed: boolean; client?: string; license_number?: string; valid_until?: string; modules: string[]; }
 
 // Estado da licença local (on-premises). Sem licença válida = sem acesso à plataforma.
 export const useLicenseStatus = () =>

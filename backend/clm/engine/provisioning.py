@@ -36,7 +36,7 @@ class ProvisioningWorkflow:
         CommercialData.objects.create(
             client=client,
             plan=commercial_data.get('plan', 'STANDARD'),
-            activation_date=timezone.now().date(),
+            activation_date=timezone.localdate(),
             expiration_date=(timezone.now() + timedelta(days=365)).date() # 1 year default
         )
         

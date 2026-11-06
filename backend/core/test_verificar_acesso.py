@@ -217,3 +217,98 @@ class OsServicosDoWindowsArrancam(TestCase):
             self.assertRegex(build, r'servicos\\' + nome + r'\.exe', nome)
             for acao in ('install', 'start', 'stop', 'uninstall'):
                 self.assertRegex(setup, r'servicos\\' + nome + r'\.exe"; +Parameters: "' + acao + '"')
+
+
+class OsModulosDaLicencaFicamCarregados(TestCase):
+    """O cliente comprou tudo, ativou no ecrã e via só o POS até alguém reiniciar o serviço."""
+
+    def _licenca(self, pasta, modulos):
+        import base64
+        import json
+        from licensing.engine.crypto import sign_license
+        dados = {'license_number': 'L1', 'client_code': 'C1', 'modules': modulos, 'feature_flags': {},
+                 'valid_until': '2099-12-31', 'limits': {}}
+        dados['signature'] = sign_license(dict(dados))
+        caminho = Path(pasta) / 'license.key'
+        caminho.write_text(base64.b64encode(json.dumps(dados).encode()).decode())
+        return caminho
+
+    def setUp(self):
+        from licensing.engine.crypto import private_key_available
+        if not private_key_available():
+            self.skipTest('sem private.pem nesta máquina')
+        self.sempre = ['inventory', 'pos', 'commercial', 'finance']
+
+    def test_a_licenca_nova_pede_uma_recarga(self):
+        from licensing.recarga import deve_reiniciar, por_carregar
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = self._licenca(pasta, ['pos', 'pms'])
+            self.assertEqual(por_carregar(pasta, self.sempre), ['pms'])
+            agora = caminho.stat().st_mtime + 60
+            self.assertTrue(deve_reiniciar(pasta, self.sempre, agora))
+
+    def test_nao_reinicia_a_meio_da_ativacao(self):
+        """A licença é gravada antes de se aplicar a empresa e a certificação."""
+        from licensing.recarga import deve_reiniciar
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = self._licenca(pasta, ['pms'])
+            self.assertFalse(deve_reiniciar(pasta, self.sempre, caminho.stat().st_mtime + 1))
+
+    def test_so_tenta_uma_vez_por_licenca(self):
+        """Um módulo que não carrega não pode deixar o hotel sem servidor em ciclo."""
+        from licensing.recarga import deve_reiniciar, marcar_tentativa
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = self._licenca(pasta, ['pms'])
+            agora = caminho.stat().st_mtime + 60
+            marcar_tentativa(pasta)
+            self.assertFalse(deve_reiniciar(pasta, self.sempre, agora))
+            # outra licença (o cliente comprou mais): volta a poder
+            caminho = self._licenca(pasta, ['pms', 'edc'])
+            self.assertTrue(deve_reiniciar(pasta, self.sempre, caminho.stat().st_mtime + 60))
+
+    def test_com_tudo_carregado_nao_mexe(self):
+        from licensing.recarga import deve_reiniciar
+        with tempfile.TemporaryDirectory() as pasta:
+            caminho = self._licenca(pasta, ['pos'])
+            self.assertFalse(deve_reiniciar(pasta, self.sempre, caminho.stat().st_mtime + 60))
+
+    def test_sem_licenca_nao_mexe(self):
+        from licensing.recarga import deve_reiniciar
+        with tempfile.TemporaryDirectory() as pasta:
+            self.assertFalse(deve_reiniciar(pasta, self.sempre))
+
+    def test_depois_de_tentar_o_ecra_nao_fica_preso(self):
+        from licensing.recarga import marcar_tentativa, recarga_pendente
+        with tempfile.TemporaryDirectory() as pasta:
+            self._licenca(pasta, ['pms'])
+            self.assertTrue(recarga_pendente(pasta, self.sempre))
+            marcar_tentativa(pasta)
+            self.assertFalse(recarga_pendente(pasta, self.sempre))
+
+
+class CadaBuildTemIdentidade(TestCase):
+    """Todos se chamavam Setup-1.0.0.exe: um instalador antigo seguiu para um cliente."""
+
+    def test_o_nome_do_instalador_leva_a_versao_e_a_data(self):
+        raiz = Path(__file__).resolve().parents[2] / 'instalador'
+        setup = (raiz / 'setup.iss').read_text(encoding='utf-8')
+        build = (raiz / 'build_instalador.ps1').read_text(encoding='utf-8-sig')
+        self.assertIn('OutputBaseFilename=MwanaLodge-Setup-{#AppVersao}-{#Carimbo}', setup)
+        self.assertIn('"/DCarimbo=$Carimbo"', build)
+        self.assertIn('sha256=$Hash', build)
+
+    def test_o_login_mostra_o_que_esta_instalado(self):
+        from core.support import APP_VERSION
+        r = self.client.get('/api/platform/branding/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()['version'], APP_VERSION)
+        self.assertIn('build', r.json())
+
+    def test_o_build_vem_do_ficheiro_do_pacote(self):
+        from django.test import override_settings
+        from core.support import identificacao_do_build
+        with tempfile.TemporaryDirectory() as pasta:
+            with override_settings(BASE_DIR=pasta):
+                self.assertEqual(identificacao_do_build(), '')
+                (Path(pasta) / 'build.txt').write_text('20261105-2354', encoding='ascii')
+                self.assertEqual(identificacao_do_build(), '20261105-2354')

@@ -110,7 +110,7 @@ New-Item -ItemType Directory -Force "$Temp\app" | Out-Null
 # MESMOS excludes do build_instalador.ps1 — um pacote de atualização NUNCA pode
 # levar a base de dev, a licença de teste, nem as chaves privadas.
 robocopy (Join-Path $Raiz 'backend') "$Temp\app" /E /NFL /NDL /NJH /NJS `
-  /XF *.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.* *.pem.bak license.key* servidor.log `
+  /XF *.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.* *.pem.bak license.key* .licenca_ja_recarregada servidor.log `
   /XD __pycache__ .pytest_cache staticfiles venv .venv media | Out-Null
 Copy-Item (Join-Path $Raiz 'frontend\dist') "$Temp\webapp" -Recurse
 

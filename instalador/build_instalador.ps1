@@ -191,7 +191,7 @@ New-Item -ItemType Directory -Force "$Pacote\app" | Out-Null
 # A exclusao e por isso cirurgica: as privadas e as copias, nunca as publicas.
 # Ver core/test_pacote_sem_segredos.py, que prova as duas metades.
 robocopy (Join-Path $Raiz 'backend') "$Pacote\app" /E /NFL /NDL /NJH /NJS `
-  /XF *.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.* *.pem.bak license.key* servidor.log `
+  /XF *.sqlite3 *.sqlite3-wal *.sqlite3-shm .env private.* *.pem.bak license.key* .licenca_ja_recarregada servidor.log `
   /XD __pycache__ .pytest_cache staticfiles venv .venv media | Out-Null
 # o site compilado vai DENTRO do backend: um serviço serve tudo
 Copy-Item (Join-Path $Raiz 'frontend\dist') "$Pacote\app\webapp" -Recurse
@@ -281,6 +281,14 @@ Copy-Item "$PSScriptRoot\servicos\celery.xml" "$Pacote\servicos\"
 Copy-Item $WinSW "$Pacote\servicos\agendador.exe"
 Copy-Item "$PSScriptRoot\servicos\agendador.xml" "$Pacote\servicos\"
 
+# A IDENTIDADE DESTE BUILD: a versão vem do código, e a data e hora distinguem os builds.
+# Vai no nome do ficheiro e no ecrã de login, para se saber sempre o que está instalado.
+$Versao = [regex]::Match((Get-Content (Join-Path $Raiz 'backend\core\support.py') -Raw -Encoding UTF8),
+                         "APP_VERSION\s*=\s*'([^']+)'").Groups[1].Value
+if (-not $Versao) { throw 'Não encontrei APP_VERSION em backend\core\support.py.' }
+$Carimbo = Get-Date -Format 'yyyyMMdd-HHmm'
+[IO.File]::WriteAllText("$Pacote\app\build.txt", $Carimbo)
+
 Write-Host "== 6/6 Inno Setup =="
 $iscc = @('C:\Program Files (x86)\Inno Setup 6\ISCC.exe', 'C:\Program Files\Inno Setup 6\ISCC.exe',
           "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe") |
@@ -296,7 +304,7 @@ if (-not $iscc) {
 # compilar, dentro de instalador\Output\ (pasta já no .gitignore): sem isto, uma
 # senha esquecida perdia-se para sempre e ninguém instalava mais aquela versão.
 try {
-    Invoke-Externo 'Inno Setup' { & $iscc "/DInstallPassword=$senha1" (Join-Path $PSScriptRoot 'setup.iss') }
+    Invoke-Externo 'Inno Setup' { & $iscc "/DInstallPassword=$senha1" "/DAppVersao=$Versao" "/DCarimbo=$Carimbo" (Join-Path $PSScriptRoot 'setup.iss') }
 } catch {
     # A senha nao fica em memoria se o instalador nao chegou a ser compilado.
     $senha1 = $null; $senha2 = $null
@@ -305,10 +313,19 @@ try {
 
 $RegistoSenhas = Join-Path $PSScriptRoot 'Output\senhas.txt'
 $OutputDir = Join-Path $PSScriptRoot 'Output'
-$Instalador = Get-ChildItem $OutputDir -Filter 'MwanaLodge-Setup-*.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-"$(Get-Date -Format 'yyyy-MM-dd HH:mm')  $($Instalador.Name)  $senha1" | Add-Content -Path $RegistoSenhas -Encoding UTF8
+$Instalador = Get-Item (Join-Path $OutputDir "MwanaLodge-Setup-$Versao-$Carimbo.exe")
+$Hash = (Get-FileHash $Instalador.FullName -Algorithm SHA256).Hash.ToLower()
+"$(Get-Date -Format 'yyyy-MM-dd HH:mm')  $($Instalador.Name)  $senha1  sha256=$Hash" | Add-Content -Path $RegistoSenhas -Encoding UTF8
+# Os instaladores anteriores saem da vista: em Output só fica o que é para entregar.
+$Antigos = Join-Path $OutputDir 'antigos'
+Get-ChildItem $OutputDir -Filter 'MwanaLodge-Setup-*.exe' | Where-Object { $_.Name -ne $Instalador.Name } | ForEach-Object {
+  New-Item -ItemType Directory -Force $Antigos | Out-Null
+  Move-Item $_.FullName $Antigos -Force
+}
 $senha1 = $null; $senha2 = $null
 
-Write-Host "`nFEITO: instalador em $PSScriptRoot\Output\MwanaLodge-Setup-*.exe"
+Write-Host "`nFEITO: $($Instalador.FullName)"
+Write-Host "SHA256: $Hash"
+Write-Host "No PC do cliente, confirme com: certutil -hashfile $($Instalador.Name) SHA256"
 Write-Host "Senha registada em $RegistoSenhas — ficheiro LOCAL, fora do git, só seu. Trate-o como uma password (mova para um gestor de senhas se quiser)."
 Write-Host "Entregue a senha ao técnico por um canal separado do .exe (nunca por e-mail junto)."

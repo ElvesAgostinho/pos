@@ -76,9 +76,63 @@ const initialAuthState = {
 };
 
 // Componente Intercetor (Verifica Licença)
+const MARCA_A_CARREGAR = 'modulos_a_carregar_desde';
+const LIMITE_DE_ESPERA_MS = 6 * 60 * 1000;
+
+function lerMarcaACarregar(): number | null {
+  try {
+    const valor = Number(sessionStorage.getItem(MARCA_A_CARREGAR));
+    return valor > 0 ? valor : null;
+  } catch { return null; }
+}
+
+function escreverMarcaACarregar(valor: number | null) {
+  try {
+    if (valor) sessionStorage.setItem(MARCA_A_CARREGAR, String(valor));
+    else sessionStorage.removeItem(MARCA_A_CARREGAR);
+  } catch { /* sem armazenamento: a espera continua a funcionar nesta página */ }
+}
+
 const RequireLicense = ({ children }: { children: JSX.Element }) => {
   // Validação REAL da licença (fonte: PCC/clm no admin, fallback license.key assinada).
   const { data, isLoading, isError, refetch } = useLicenseStatus();
+
+  // A LICENÇA TEM MÓDULOS QUE O SERVIDOR AINDA NÃO CARREGOU. Ele reinicia sozinho
+  // (licensing/recarga.py) e fica uns minutos em baixo a preparar as tabelas. Sem esta
+  // espera, o cliente via "Sem ligação" logo a seguir a ativar, ou entrava só com o POS.
+  const aCarregar = !!data?.modulos_a_carregar;
+  const desde = lerMarcaACarregar();
+  const dentroDoPrazo = !!desde && Date.now() - desde < LIMITE_DE_ESPERA_MS;
+  const aEsperar = aCarregar || dentroDoPrazo;
+
+  useEffect(() => {
+    if (aCarregar && !lerMarcaACarregar()) escreverMarcaACarregar(Date.now());
+    if (!aEsperar) return;
+    const relogio = setInterval(() => { refetch(); }, 3000);
+    return () => clearInterval(relogio);
+  }, [aCarregar, aEsperar, refetch]);
+
+  useEffect(() => {
+    // Respondeu e já não falta nada: recarrega para os menus lerem os módulos novos.
+    if (desde && !isLoading && !isError && data && !aCarregar) {
+      escreverMarcaACarregar(null);
+      window.location.reload();
+    }
+  }, [desde, isLoading, isError, data, aCarregar]);
+
+  if (aEsperar) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-[var(--marca)]">
+        <div className="bg-white border border-[#E6E8EC] shadow-2xl w-[440px] max-w-full p-6 text-center">
+          <div className="font-bold text-[15px] text-gray-800">A preparar os módulos da sua licença</div>
+          <p className="mt-2 text-[13px] text-gray-600">
+            O sistema está a reiniciar para os carregar. Pode demorar alguns minutos.
+            Não é preciso fazer nada: esta página continua sozinha.
+          </p>
+        </div>
+      </div>
+    );
+  }
   if (isLoading) {
     return <div className="h-screen w-screen flex items-center justify-center bg-[var(--marca)] text-gray-300 text-sm">A validar licença…</div>;
   }

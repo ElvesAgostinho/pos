@@ -77,12 +77,17 @@ class PublicBrandingView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from core.support import APP_VERSION, identificacao_do_build
         from identity.models import Hotel
         h = (Hotel.objects.filter(is_master=True).select_related('company').first()
              or Hotel.objects.select_related('company').order_by('id').first())
+        # O que está instalado vê-se no login: sem isto, um instalador antigo passava
+        # por novo, porque a versão no ecrã era um texto fixo.
+        versao = {'version': APP_VERSION, 'build': identificacao_do_build()}
         if not h:
-            return Response({'name': '', 'company_name': '', 'logo_url': '', 'login_bg_url': ''})
+            return Response({'name': '', 'company_name': '', 'logo_url': '', 'login_bg_url': '', **versao})
         return Response({
+            **versao,
             'name': h.name or '',
             'company_name': getattr(h.company, 'name', '') or '',
             'logo_url': h.logo_url or '',

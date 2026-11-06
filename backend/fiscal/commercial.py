@@ -5,7 +5,7 @@ Orçamento / Proforma / Encomenda de Cliente -> (conversão) -> Fatura (fiscal, 
 Regras: editável só em rascunho; numeração sequencial própria por tipo/exercício;
 a conversão delega no motor fiscal (services.issue_document) para numerar e assinar.
 """
-from datetime import date
+from django.utils import timezone
 
 from django.db import transaction
 
@@ -18,7 +18,7 @@ def create_document(kind='BUDGET', customer_name=None, customer_tax_id=None,
                     customer_address=None, operator_name=None, notes=None,
                     valid_until=None, lines=None, user=None, source_ref=None):
     cfg = FiscalConfig.get()
-    year = date.today().year
+    year = timezone.localdate().year
     prefix = CommercialDocument.PREFIX.get(kind, 'DOC')
     # select_for_update: dois operadores a criar um orçamento ao mesmo tempo não podem
     # sair com o mesmo número — bloqueia as linhas existentes deste kind/ano até
@@ -28,7 +28,7 @@ def create_document(kind='BUDGET', customer_name=None, customer_tax_id=None,
     seq = (ultimo.seq if ultimo else 0) + 1
     number = f"{prefix} {year}/{seq}"
     doc = CommercialDocument.objects.create(
-        kind=kind, number=number, year=year, seq=seq, doc_date=date.today(),
+        kind=kind, number=number, year=year, seq=seq, doc_date=timezone.localdate(),
         valid_until=valid_until, customer_name=customer_name, customer_tax_id=customer_tax_id,
         customer_address=customer_address, operator_name=operator_name, notes=notes,
         tax_inclusive=cfg.prices_include_tax, state='DRAFT', created_by=user, source_ref=source_ref,

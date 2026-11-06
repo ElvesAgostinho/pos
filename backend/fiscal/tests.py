@@ -166,6 +166,8 @@ class CertificacaoAgtTests(APITestCase):
 import io
 
 from datetime import date, timedelta
+
+from django.utils import timezone
 from xml.etree import ElementTree as ET
 
 from django.core.management import call_command
@@ -393,7 +395,40 @@ class AssinaturaEEncadeamentoTests(BaseMotorFiscal):
         ontem = date.today() - timedelta(days=1)
         doc = self.emitir(doc_date=ontem)
         self.assertEqual(doc.doc_date, ontem)
-        self.assertEqual(doc.system_entry_date.date(), date.today())
+        self.assertEqual(timezone.localtime(doc.system_entry_date).date(), timezone.localdate())
+
+    def test_uma_factura_depois_da_meia_noite_nao_fica_gravada_no_dia_anterior(self):
+        """00:30 em Luanda ainda é 23:30 em UTC. A suite só apanhou isto por atravessar
+        a meia-noite: a gravação ficava antes da própria factura."""
+        from datetime import datetime, timezone as tz
+        from unittest import mock
+        from fiscal import saft
+        from fiscal.services import verify_chain
+        utc = datetime(2026, 11, 5, 23, 30, 0, tzinfo=tz.utc)
+        with mock.patch('django.utils.timezone.now', return_value=utc):
+            doc = self.emitir()
+        doc.refresh_from_db()
+        self.assertEqual(doc.doc_date, date(2026, 11, 6))
+        self.assertEqual(doc.texto_da_gravacao, '2026-11-06T00:30:00')
+        self.assertTrue(verify_chain(doc.series_id)['all_ok'])
+        self.assertIn('<SystemEntryDate>2026-11-06T00:30:00</SystemEntryDate>',
+                      saft._doc_xml(doc, 'Invoice', 'InvoiceNo'))
+
+    def test_os_documentos_assinados_em_utc_continuam_validos(self):
+        """Corrigir a hora não pode invalidar o que já foi assinado e entregue."""
+        from datetime import timezone as tz
+        from fiscal import signing
+        from fiscal.models import FiscalDocument
+        from fiscal.services import verify_chain
+        doc = self.emitir()
+        texto_utc = doc.system_entry_date.astimezone(tz.utc).strftime('%Y-%m-%dT%H:%M:%S')
+        msg = signing.build_message(doc.doc_date.isoformat(), texto_utc, doc.invoice_no,
+                                    f'{doc.gross_total}', doc.previous_hash)
+        FiscalDocument.objects.filter(pk=doc.pk).update(
+            system_entry_text='', doc_hash=signing.sign_message(msg))
+        doc.refresh_from_db()
+        self.assertEqual(doc.texto_da_gravacao, texto_utc)
+        self.assertTrue(verify_chain(doc.series_id)['all_ok'])
 
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -159,7 +159,7 @@ def _doc_xml(doc, wrapper, no_tag):
         + _e('HashControl', doc.key_version)
         + _e('InvoiceDate' if wrapper == 'Invoice' else 'WorkDate', doc.doc_date.isoformat())
         + _e('InvoiceType' if wrapper == 'Invoice' else 'WorkType', doc.doc_type.invoice_type or doc.doc_type.code)
-        + _e('SystemEntryDate', doc.system_entry_date.strftime('%Y-%m-%dT%H:%M:%S'))
+        + _e('SystemEntryDate', doc.texto_da_gravacao)
         + "<Customer>" + _e('CustomerID', doc.customer_tax_id or 'CF') + "</Customer>"
         + _lines_xml(doc)
         + "<DocumentTotals>" + _e('TaxPayable', doc.tax_total)

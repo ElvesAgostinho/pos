@@ -24,6 +24,17 @@ from rest_framework.permissions import IsAuthenticated
 APP_VERSION = '1.1.0'
 
 
+def identificacao_do_build():
+    """A data e hora do build instalado (app/build.txt). Vazio em desenvolvimento."""
+    from pathlib import Path
+
+    from django.conf import settings
+    try:
+        return (Path(settings.BASE_DIR) / 'build.txt').read_text(encoding='ascii').strip()
+    except (OSError, UnicodeDecodeError):
+        return ''
+
+
 def _collect(request=None):
     import os
     import socket

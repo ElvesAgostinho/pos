@@ -558,7 +558,15 @@ class LicenseStatusView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        return Response(_real_license())
+        info = _real_license()
+        if info.get('licensed'):
+            # O ecrã espera por isto em vez de mostrar "Sem ligação" ou só o POS.
+            try:
+                from .recarga import recarga_pendente
+                info['modulos_a_carregar'] = recarga_pendente(settings.BASE_DIR)
+            except Exception:
+                info['modulos_a_carregar'] = False
+        return Response(info)
 
 
 class LicensePreflightView(APIView):

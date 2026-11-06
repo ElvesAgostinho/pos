@@ -6,6 +6,8 @@ Quando a AGT altera um requisito, ajusta-se a configuração/o catálogo, sem re
 o POS/Financeiro/PMS. Documentos são assinados (RSA) e encadeados por hash (imutáveis).
 """
 from decimal import Decimal
+from datetime import timezone as datetime_timezone
+
 from django.db import models
 
 
@@ -275,6 +277,9 @@ class FiscalDocument(models.Model):
     invoice_no = models.CharField(max_length=60, unique=True)   # ex: "FT A/1"
     doc_date = models.DateField()
     system_entry_date = models.DateTimeField()                  # data/hora de gravação (imutável)
+    # O TEXTO EXACTO DA GRAVAÇÃO QUE FOI ASSINADO, em hora de Angola. Vazio nos documentos
+    # anteriores a este campo, que foram assinados em UTC: ver `texto_da_gravacao`.
+    system_entry_text = models.CharField(max_length=19, blank=True, default='')
     # O NOME fica gravado (o documento e imutavel: o nome que saiu na fatura e este,
     # mesmo que a ficha do cliente mude amanha). A LIGACAO ao cliente serve a conta
     # corrente — sem ela, so se podia procurar por nome, e "Sonangol" nunca casava
@@ -376,6 +381,18 @@ class FiscalDocument(models.Model):
                 name='fis_um_documento_por_origem',
             ),
         ]
+
+
+    @property
+    def texto_da_gravacao(self):
+        """A data de gravação tal como foi assinada: é esta que a assinatura e o SAF-T usam.
+
+        Os documentos antigos foram assinados em UTC e continuam em UTC. Reescrevê-los em
+        hora de Angola invalidava a assinatura e partia a cadeia da série.
+        """
+        if self.system_entry_text:
+            return self.system_entry_text
+        return self.system_entry_date.astimezone(datetime_timezone.utc).strftime('%Y-%m-%dT%H:%M:%S')
 
     def __str__(self):
         return self.invoice_no
